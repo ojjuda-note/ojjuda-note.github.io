@@ -61,7 +61,7 @@ assert.match(world,/<small class="game-test-badge">테스트게임<\/small>/);
 let opened;
 ctx.window.OjjudaArcheryGame={open:options=>{opened=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(opened),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onAmmoReceipt'],'event ammo uses explicit parent callbacks without adding ranked score hooks');
+ctx.Al('archery');assert.deepEqual(Object.keys(opened).sort(),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and coach rental use explicit parent callbacks without adding ranked score hooks');
 assert.equal(opened.owner,null);assert.ok(!('client' in opened),'the authenticated client stays in the arcade');
 assert.equal(opened.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(opened.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
@@ -72,7 +72,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.7.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.8.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);

@@ -3,8 +3,10 @@ const CHILD = 'ojjuda-archery-game', PARENT = 'ojjuda-archery-world';
 const STORAGE_PREFIX = 'forest-archer-ammo-pending-v2:';
 const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy']);
-const SNAPSHOT_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price'];
+const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy', 'coach-buy']);
+const SNAPSHOT_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price', 'server_now', 'coach_expires_at', 'coach_active', 'coach_price', 'coach_duration_seconds'];
+const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid']);
+const COUNTER_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'main_rounds', 'milestones_granted'];
 const validStage = stage => Number.isInteger(stage) && stage >= 1 && stage <= 50;
 const fail = (reason, extra = {}) => ({ ok: false, reason, ...extra });
 
@@ -23,12 +25,21 @@ export function createAmmoClient({ onChange } = {}) {
   const origin = host?.location?.origin || globalThis.location?.origin;
   const usable = !!(host?.addEventListener && parent && parent !== host && origin && origin !== 'null');
   let identity = null, snapshot = null, revision = null, connection = usable ? 'connecting' : 'unavailable';
+  let serverAnchor = null, monotonicAnchor = null, lastServerTimestamp = null;
   let pending = null, disposed = false, notifyQueued = false, initTimer = null, readySettled = false;
   let wireTail = Promise.resolve();
   let settleReady;
   const ready = new Promise(resolve => { settleReady = value => { if (!readySettled) { readySettled = true;resolve(value); } }; });
   const requests = new Map();
   const defer = fn => Promise.resolve().then(fn);
+  const monotonicNow = () => {
+    const clock = globalThis.performance || host?.performance;
+    const value = clock?.now?.();
+    return Number.isFinite(value) ? value : null;
+  };
+  const serverNow = (now = monotonicNow()) => {
+    return identity && serverAnchor !== null && monotonicAnchor !== null && now !== null ? serverAnchor + Math.max(0, now - monotonicAnchor) : null;
+  };
   const keyFor = owner => STORAGE_PREFIX + encodeURIComponent(owner);
   const describePending = () => pending ? Object.freeze({ action: pending.action, requestId: pending.requestId, runId: pending.localRunId || pending.payload.runId, stage: pending.payload.stage, status: pending.status, recovered: pending.recovered }) : null;
   const notify = () => {
@@ -76,15 +87,33 @@ export function createAmmoClient({ onChange } = {}) {
     } catch { return null; }
   }
   function applySnapshot(result) {
-    if (!result || !Number.isSafeInteger(result.remaining) || result.remaining < 0) return;
+    // A definitive business decline still contains the account's authoritative
+    // state. Generic transport errors and incomplete snapshots do not.
+    if (!result || !(result.ok === true || result.ok === false && SNAPSHOT_DECLINES.has(result.reason)) ||
+      !SNAPSHOT_FIELDS.every(field => Object.prototype.hasOwnProperty.call(result, field)) ||
+      !COUNTER_FIELDS.every(field => Number.isSafeInteger(result[field]) && result[field] >= 0) ||
+      !['pack_ammo', 'pack_price', 'coach_price', 'coach_duration_seconds'].every(field => Number.isSafeInteger(result[field]) && result[field] > 0) ||
+      !['daily_eligible', 'daily_checked', 'coach_active'].every(field => typeof result[field] === 'boolean') || typeof result.day !== 'string') return;
+    const timestamp = typeof result.server_now === 'string' ? Date.parse(result.server_now) : NaN;
+    const expiry = result.coach_expires_at === null ? null : typeof result.coach_expires_at === 'string' ? Date.parse(result.coach_expires_at) : NaN;
+    if (!Number.isFinite(timestamp) || expiry !== null && !Number.isFinite(expiry) ||
+      result.coach_active && !(expiry !== null && expiry > timestamp)) return;
     let nextRevision;
     try {
       if (!(Number.isSafeInteger(result.revision) && result.revision >= 0) && !(typeof result.revision === 'string' && /^\d+$/.test(result.revision))) return;
       nextRevision = BigInt(result.revision);
     } catch { return; }
     if (revision !== null && nextRevision < revision) return;
+    if (revision !== null && nextRevision === revision && lastServerTimestamp !== null && timestamp < lastServerTimestamp) return;
     const next = {};
     for (const field of SNAPSHOT_FIELDS) if (field in result) next[field] = result[field];
+    const now = monotonicNow(), current = serverNow(now);
+    if (now !== null) {
+      // Equal-time cached replies cannot rewind elapsed rental time. The user's
+      // adjustable wall clock is never part of this account-time estimate.
+      serverAnchor = Math.max(timestamp, current ?? timestamp);monotonicAnchor = now;
+    }
+    lastServerTimestamp = timestamp;
     snapshot = Object.freeze(next);revision = nextRevision;connection = 'ready';
   }
   function finishRequest(entry, result, keepLate = false) {
@@ -184,7 +213,12 @@ export function createAmmoClient({ onChange } = {}) {
       return fail('pending', { requestId: operation.requestId, recovered: operation.recovered, found: response.found === true });
     }
     const result = { ...response.receipt };
-    for (const field of SNAPSHOT_FIELDS) if (field in response) result[field] = response[field];
+    for (const field of SNAPSHOT_FIELDS) {
+      // A stored purchase describes its original moment. Only the current
+      // outer snapshot may provide balances, clock or rental entitlement.
+      delete result[field];
+      if (field in response) result[field] = response[field];
+    }
     const answer = originalResult(operation, result, { receiptOnly: true });
     if (automatic && operation.action !== 'spend') {
       operation.status = 'confirmed';operation.settled = answer;notify();return answer;
@@ -215,7 +249,7 @@ export function createAmmoClient({ onChange } = {}) {
       if (identity?.sessionId === data.sessionId && identity.owner === data.owner && data.available === true) return;
       for (const entry of requests.values()) finishRequest(entry, fail('identity_changed'));
       if (pending) persist(pending);
-      pending = null;snapshot = null;revision = null;
+      pending = null;snapshot = null;revision = null;serverAnchor = null;monotonicAnchor = null;lastServerTimestamp = null;
       clearTimeout(initTimer);
       if (data.available !== true || !data.owner) { identity = null;connection = 'unavailable';settleReady(false);notify();return; }
       identity = { owner: data.owner, sessionId: data.sessionId };connection = 'connecting';pending = restore(data.owner);
@@ -238,6 +272,7 @@ export function createAmmoClient({ onChange } = {}) {
   }
   const client = {
     get snapshot() { return snapshot; },
+    get serverNow() { return serverNow(); },
     get connection() { return connection; },
     get pending() { return describePending(); },
     refresh,
@@ -245,6 +280,7 @@ export function createAmmoClient({ onChange } = {}) {
     completeRound(runId, stage) { return UUID.test(runId) && validStage(stage) ? mutate('round-complete', { stage, runId }) : Promise.resolve(fail('invalid')); },
     spend(runId) { return typeof runId === 'string' && runId ? mutate('spend', {}, undefined, runId) : Promise.resolve(fail('invalid')); },
     buy() { return mutate('buy', {}); },
+    buyCoach() { return mutate('coach-buy', {}); },
     retryPending,
     dispose() {
       if (disposed) return;disposed = true;clearTimeout(initTimer);host?.removeEventListener?.('message', onMessage);

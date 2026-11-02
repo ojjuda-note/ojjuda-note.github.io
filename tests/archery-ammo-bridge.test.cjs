@@ -10,7 +10,7 @@ const bridge=fs.readFileSync(path.join(root,'world-archery-game.js'),'utf8');
 const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const origin='https://ojjuda.test',owner='11111111-1111-4111-8111-111111111111';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-const snapshot=(extra={})=>({ok:true,remaining:20,free_remaining:20,paid_remaining:0,coins:100,revision:1,main_rounds:5,milestones_granted:1,daily_eligible:true,day:'2026-11-02',daily_checked:true,pack_ammo:20,pack_price:1,...extra});
+const snapshot=(extra={})=>({ok:true,remaining:20,free_remaining:20,paid_remaining:0,coins:100,revision:1,main_rounds:5,milestones_granted:1,daily_eligible:true,day:'2026-11-02',daily_checked:true,pack_ammo:10,pack_price:5,server_now:'2026-11-02T12:00:00.000Z',coach_expires_at:null,coach_active:false,coach_price:10,coach_duration_seconds:86400,...extra});
 
 // Only the bridge and parent callback wiring run here. There is no network client.
 function fixture(options={},fakeTimers=false){
@@ -29,7 +29,7 @@ function fixture(options={},fakeTimers=false){
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
  const window={addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
  vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
- const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
+ const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onCoachBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
  const api={
   open(overrides={}){window.OjjudaArcheryGame.open({...defaults,...options,...overrides});return nodes.at(-1).frame;},
   close(){window.OjjudaArcheryGame.close();},
@@ -68,16 +68,17 @@ test('initialization reveals no auth client and only the live same-origin owner/
 });
 
 test('only allowlisted argument shapes reach callbacks, with no client price/count or arbitrary RPC',async()=>{
- const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();}});
+ const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();},onCoachBuy:async(...args)=>{calls.push(['coach-buy',...args]);return snapshot();}});
  try{
-  for(const [action,fields]of [['round-start',{stage:0}],['round-start',{stage:51}],['round-start',{stage:'5'}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
+  for(const [action,fields]of [['round-start',{stage:0}],['round-start',{stage:51}],['round-start',{stage:'5'}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
    await f.request(action,fields);assert.equal(f.responses().at(-1).result.reason,'invalid');
   }
   assert.equal(calls.length,0);
   const start=await f.request('round-start',{stage:50});
   const complete=await f.request('round-complete',{stage:50,runId:owner});
   const buy=await f.request('buy');
-  assert.deepEqual(calls,[['start',start.requestId,50],['complete',complete.requestId,owner,50],['buy',buy.requestId]]);
+  const coach=await f.request('coach-buy');
+  assert.deepEqual(calls,[['start',start.requestId,50],['complete',complete.requestId,owner,50],['buy',buy.requestId],['coach-buy',coach.requestId]]);
  }finally{f.close();}
 });
 
@@ -88,7 +89,7 @@ test('duplicate purchases share one operation; parallel actions and conflicting 
   assert.equal(calls,1);assert.equal(f.responses().length,0);
   await f.request('spend');assert.equal(f.responses().at(-1).result.reason,'busy');assert.equal(spends,0);
   await f.request('spend',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'request_conflict');
-  resolve(snapshot({remaining:40,coins:99,revision:2}));await tick();
+  resolve(snapshot({remaining:30,coins:95,revision:2}));await tick();
   assert.equal(f.responses().filter(reply=>reply.requestId===id&&reply.result.ok).length,2);
   await f.request('buy',{requestId:id});assert.equal(calls,1,'successful replay uses the same receipt');
  }finally{f.close();}
@@ -97,13 +98,13 @@ test('duplicate purchases share one operation; parallel actions and conflicting 
 test('unknown payment outcomes retry the same UUID, while receipt recovery performs no purchase or spend',async()=>{
  const receipts=new Map();let balance=100,buys=0,spends=0,lookups=0;
  const f=fixture({
-  onAmmoBuy:async id=>{buys++;if(!receipts.has(id)){balance--;receipts.set(id,snapshot({coins:balance,remaining:40,revision:2}));throw Error('lost response after commit');}return receipts.get(id);},
+  onAmmoBuy:async id=>{buys++;if(!receipts.has(id)){balance-=5;receipts.set(id,snapshot({coins:balance,remaining:30,revision:2}));throw Error('lost response after commit');}return receipts.get(id);},
   onAmmoSpend:async()=>{spends++;throw Error('unreachable in receipt recovery');},
-  onAmmoReceipt:async(id,action)=>{lookups++;return snapshot({coins:balance,remaining:40,revision:2,found:receipts.has(id),receipt:receipts.has(id)?{action,request_id:id}:null});}
+  onAmmoReceipt:async(id,action)=>{lookups++;return snapshot({coins:balance,remaining:30,revision:2,found:receipts.has(id),receipt:receipts.has(id)?{action,request_id:id}:null});}
  });
  try{
-  const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'pending');assert.equal(balance,99);
-  await f.request('buy',{requestId:id});assert.equal(buys,2);assert.equal(balance,99,'mock server idempotency prevents a second debit');
+  const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'pending');assert.equal(balance,95);
+  await f.request('buy',{requestId:id});assert.equal(buys,2);assert.equal(balance,95,'mock server idempotency prevents a second debit');
   const oldFrame=f.dialog.frame,oldNonce=oldFrame.sent[0].data.sessionId;f.close();const newFrame=f.open();const init=f.ready();
   assert.notEqual(init.sessionId,oldNonce);assert.equal(buys,2,'opening has no financial side effect');
   await f.request('receipt',{receiptId:id,originalAction:'buy'});assert.equal(lookups,1);assert.equal(f.responses().at(-1).result.found,true);assert.equal(buys,2);assert.equal(spends,0);
@@ -113,10 +114,36 @@ test('unknown payment outcomes retry the same UUID, while receipt recovery perfo
  }finally{f.close();}
 });
 
+test('a lost coach-rental reply retries its own receipt without a second debit or extending expiry',async()=>{
+ const receipts=new Map(),expires='2026-11-03T12:00:00.000Z';let balance=100,buys=0,charges=0,ammoBuys=0;
+ const f=fixture({
+  onCoachBuy:async id=>{
+   buys++;
+   if(!receipts.has(id)){balance-=10;charges++;receipts.set(id,snapshot({coins:balance,revision:2,coach_active:true,coach_expires_at:expires}));throw Error('reply lost after rental committed');}
+   return receipts.get(id);
+  },
+  onAmmoBuy:async()=>{ammoBuys++;return snapshot();},
+  onAmmoReceipt:async(id,action)=>{
+   assert.equal(action,'coach-buy');return snapshot({coins:balance,revision:2,coach_active:true,coach_expires_at:expires,found:receipts.has(id),receipt:receipts.get(id)||null});
+  }
+ });
+ try{
+  const id=randomUUID();await f.request('coach-buy',{requestId:id});
+  assert.equal(f.responses().at(-1).result.reason,'pending');assert.equal(balance,90);assert.equal(charges,1);
+  await f.request('coach-buy',{requestId:id});assert.equal(buys,2);assert.equal(charges,1);
+  assert.equal(f.responses().at(-1).result.coach_expires_at,expires);
+  await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'request_conflict');assert.equal(ammoBuys,0);
+  const frame=f.dialog.frame;f.close();f.open();f.ready();
+  await f.request('receipt',{receiptId:id,originalAction:'coach-buy'});
+  assert.equal(f.responses().at(-1).result.coach_expires_at,expires);assert.equal(buys,2);assert.equal(balance,90);
+  await f.request('coach-buy',{}, {frame});assert.equal(buys,2,'a closed game cannot rent through its previous session');
+ }finally{f.close();}
+});
+
 test('a transport timeout stays pending and its original UUID can reconcile an already committed purchase',async()=>{
  let calls=0,charged=0,resolveOriginal;const receipts=new Map();
  const f=fixture({onAmmoBuy:id=>{
-  calls++;if(!receipts.has(id)){charged++;receipts.set(id,snapshot({coins:99,remaining:40,revision:2}));return new Promise(resolve=>{resolveOriginal=resolve;});}
+  calls++;if(!receipts.has(id)){charged++;receipts.set(id,snapshot({coins:95,remaining:30,revision:2}));return new Promise(resolve=>{resolveOriginal=resolve;});}
   return Promise.resolve(receipts.get(id));
  }},true);
  try{
@@ -137,13 +164,13 @@ test('guest requests, late replies after close/account changes, and insufficient
   f.close();f.open({owner:null});const guest=f.ready();assert.equal(guest.available,false);
   await f.request('buy');assert.equal(f.responses().at(-1).result.reason,'sign_in');assert.equal(calls,1);
   f.close();let funded=false;
-  f.open({onAmmoBuy:async()=>funded?snapshot({coins:0,remaining:40}):{ok:false,reason:'coins',coins:0,pack_ammo:20,pack_price:1}});f.ready();
+  f.open({onAmmoBuy:async()=>funded?snapshot({coins:0,remaining:30}):{ok:false,reason:'coins',coins:0,pack_ammo:10,pack_price:5}});f.ready();
   const id=randomUUID();await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.reason,'coins');
   funded=true;await f.request('buy',{requestId:id});assert.equal(f.responses().at(-1).result.ok,true,'a definitive declined receipt is not cached as a purchase');
  }finally{f.close();}
 });
 
-test('the real archery launch branch routes all six RPCs through the existing account-bound wallet wrapper',async()=>{
+test('the real archery launch branch routes all seven RPCs through the existing account-bound wallet wrapper',async()=>{
  const start=world.indexOf(' if(t==="archery"){'),end=world.indexOf('\n if(t==="saetbyeol")',start);
  assert.ok(start>=0&&end>start);const calls=[];let opened,version=0;
  const D={online:true,user:{id:owner}};
@@ -151,11 +178,11 @@ test('the real archery launch branch routes all six RPCs through the existing ac
  const launch=()=>vm.runInContext(`(function(t){${world.slice(start,end)}})('archery');`,context);
  launch();assert.equal(opened.owner,owner);assert.ok(!('client' in opened));
  const requestId=randomUUID(),runId=randomUUID();
- await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onAmmoReceipt(requestId,'spend');
+ await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onCoachBuy(requestId);await opened.onAmmoReceipt(requestId,'coach-buy');
  assert.deepEqual(calls.map(call=>[call.rpc,call.args]),[
-  ['archery_ammo_status',{}],['archery_round_start',{p_request_id:requestId,p_stage:7}],['archery_round_complete',{p_request_id:requestId,p_run_id:runId,p_stage:7}],['archery_ammo_spend',{p_request_id:requestId}],['archery_ammo_buy',{p_request_id:requestId}],['archery_ammo_receipt',{p_request_id:requestId,p_action:'spend'}]
+  ['archery_ammo_status',{}],['archery_round_start',{p_request_id:requestId,p_stage:7}],['archery_round_complete',{p_request_id:requestId,p_run_id:runId,p_stage:7}],['archery_ammo_spend',{p_request_id:requestId}],['archery_ammo_buy',{p_request_id:requestId}],['archery_coach_buy',{p_request_id:requestId}],['archery_ammo_receipt',{p_request_id:requestId,p_action:'coach-buy'}]
  ]);
- assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6]);
- D.user={id:'another-owner'};assert.equal((await opened.onAmmoBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,6);
- D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,6);
+ assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6,7]);
+ D.user={id:'another-owner'};assert.equal((await opened.onCoachBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,7);
+ D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,7);
 });

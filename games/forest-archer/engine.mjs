@@ -58,20 +58,28 @@ function equipmentScore(item) {
 }
 function equipmentCatalog(items, kind) {
   const ranked = items.filter(item => item.weaponType !== 'gun').slice().sort((a, b) =>
+    (kind === 'arrow' ? Number(!!a.ability) - Number(!!b.ability) || (a.ability && b.ability ? a.id - b.id : 0) : 0) ||
     Number(a.weaponType === 'crossbow') - Number(b.weaponType === 'crossbow') ||
     equipmentScore(a) - equipmentScore(b) || a.id - b.id);
+  const familyRanks = new Map();
   ranked.forEach((item, rank) => {
     item.shopRank = rank + 1;
+    const family = item.weaponType || kind;
+    item.familyRank = (familyRanks.get(family) || 0) + 1;
+    familyRanks.set(family, item.familyRank);
     // Increasing marginal costs keep early choices reachable and later gear a goal.
     item.price = kind === 'arrow' ? 300 * rank + 25 * rank * (rank - 1) : 500 * rank + 50 * rank * (rank - 1);
     if (kind === 'weapon') {
+      item.gearTier = item.weaponType === 'bow' && item.familyRank === 1 ? 'starter' :
+        item.familyRank <= (item.weaponType === 'bow' ? 4 : 3) ? 'lower' : item.familyRank <= 7 ? 'middle' : 'upper';
+      item.gearLabel = {starter:'기본',lower:'하위',middle:'중간',upper:'상위'}[item.gearTier];
       item.steadyDuration = Math.round((.5 + 1.5 * rank / (ranked.length - 1)) * 100) / 100;
       item.scopePrice = item.scopeCompatible ? Math.max(500, Math.ceil(item.price * .2 / 50) * 50) : 0;
     }
   });
   // Event guns have their own shop and retain their separate economy and timing.
   items.filter(item => item.weaponType === 'gun').forEach((item, rank) => {
-    item.shopRank = rank + 1;item.steadyDuration = .5;
+    item.shopRank = rank + 1;item.familyRank = rank + 1;item.steadyDuration = .5;
   });
   return Object.freeze(items);
 }
@@ -135,7 +143,11 @@ export const ARROWS = equipmentCatalog([
   arrow(8, '철갑촉 화살', '중량형', '가장 무거운 촉. 천천히 출발하며, 삼각 깃의 저항도 고려하세요.', 14, '삼각 깃', 0.95, 0.140, 86, '#89909b'),
   arrow(9, '비연 화살', '속도형', '작은 날개로 저항을 줄였어요. 발사 속도 편차는 가장 커요.', 3, '초소형 날개', 0.22, 0.025, 30, '#93a8b3'),
   arrow(10, '금빛 화살', '정밀형', '정교한 곡면 날개로 일정하게 출발해요. 촉은 조금 무거워요.', 9, '곡면 날개', 0.48, 0.075, 98, '#ceb36c'),
-  arrow(11, '바람깃 화살', '저항형', '쐐기 날개가 옆바람을 가장 적게 받아요. 정밀형보다 속도 편차가 있어요.', 7, '쐐기 날개', 0.18, 0.035, 88, '#82a7a5')
+  arrow(11, '바람깃 화살', '저항형', '쐐기 날개가 옆바람을 가장 적게 받아요. 정밀형보다 속도 편차가 있어요.', 7, '쐐기 날개', 0.18, 0.035, 88, '#82a7a5'),
+  {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 다시 날아요. 속도가 줄고, 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 8, '탄성 안정깃', .55, .095, 85, '#be9a69'),
+    ability:Object.freeze({type:'bounce',label:'한 번 튕김',description:'과녁 앞 지면에서 1회 튕김 · 전진 속도 75% · 수직 반발 55%',maxBounces:1,horizontalRetention:.75,restitution:.55})},
+  {...arrow(13, '자석 화살', '특수 · 근접 유도', '실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 10, '유도 안정깃', .40, .080, 90, '#629d98'),
+    ability:Object.freeze({type:'magnetic',label:'근접 유도',description:'실제 표적 5m 안에서 약하게 유도 · 최대 약 10° 보정 · 명중 보장 없음',radius:5,maxAcceleration:24,maxTurnRate:1,maxTurnAngle:.18,maxCorrectionSpeed:4})}
 ], 'arrow');
 
 const motion = (amplitudeX = 0, amplitudeY = 0, speed = 0) => ({ amplitudeX, amplitudeY, speed, irregular: speed > 0 });
@@ -146,132 +158,207 @@ const stage = (id, name, subtitle, hint, distance, extra = {}) => ({
   ...extra
 });
 
-const laterStageNames = [
-  '푸른 능선', '흔들리는 길목', '능선의 날갯짓', '바위틈의 토끼', '낮은 담장 너머', '먼 초원의 발자국', '숲 위의 샛길', '두 겹의 담장',
-  '강바람', '오가는 숲 표적', '갈대 위의 새', '개울가의 토끼', '돌담의 그림자', '언덕 너머 사슴', '가지 사이 날갯짓', '겹쳐진 숲길',
-  '바람이 머무는 곳', '흐르는 과녁', '구름 아래 날갯짓', '꽃밭의 토끼', '높은 담장의 비밀', '멀어진 발자국', '바람 속의 새', '돌담 사잇길',
-  '산등성이 바람', '흔들리는 먼 과녁', '깊은 숲의 새', '덤불 속의 토끼', '바람막이 너머', '먼 언덕의 사슴', '빠른 날갯짓', '높고 낮은 담장',
-  '먼빛의 과녁', '끊임없는 움직임', '바람 위의 새', '질주하는 토끼', '세 겹의 담장', '바람의 달인'
-];
-function laterStage(id) {
-  const progress = (id - 12) / 38, pattern = (id - 13) % 8;
-  let kind = pattern === 2 || pattern === 6 ? 'bird' : pattern === 3 ? 'rabbit' : pattern === 5 ? 'deer' : 'target';
-  if (id === 50) kind = 'target';
-  const people = [17, 25, 33, 41, 49].includes(id);
-  const distance = Math.round(people ? 55 + ((id - 17) / 32) * 35 : kind === 'rabbit' ? 24 + progress * 10 : kind === 'deer' ? 50 + progress * 30 : kind === 'bird' ? 38 + progress * 32 : 70 + progress * 34);
-  const radius = people ? .90 - progress * .12 : kind === 'rabbit' ? .85 - progress * .12 : kind === 'deer' ? 1.65 - progress * .15 : kind === 'bird' ? 1.4 - progress * .1 : 1.5 - progress * .2;
-  const height = people ? 1.15 : kind === 'rabbit' ? .7 : kind === 'deer' ? 1.65 : kind === 'bird' ? 5.2 + progress * 2 : 2.5 + progress * .4;
-  const moving = kind === 'target' && !people;
-  const movement = kind === 'bird' ? motion(0, .7 + progress * .35, 0) : moving ? motion(3.5 + progress * 2.4, .1 + progress * .15, .45 + progress * .3) : motion();
-  let obstacles = [];
-  if (moving) {
-    const count = Math.min(5, 3 + Math.floor((id - 13) / 8)), spacing = 3.4 + progress * .2;
-    obstacles = Array.from({ length: count }, (_, index) => ({
-      ...wall(Math.round(distance * .46), 3.2 + progress, 1.45 + progress * .2, (index - (count - 1) / 2) * spacing, 'pillar'),
-      depth: .9, material: Math.floor(id / 8) % 2 ? 'wood' : 'stone'
-    }));
-  } else if (pattern === 6) {
-    obstacles = [wall(Math.round(distance * .42), 3.0 + progress * .9, 7.5 + progress * 1.5, 0, id % 16 < 8 ? 'timber' : 'stone')];
+// Distances repeat whenever a new skill is introduced. The teaching order is
+// intentional; a global difficulty sort would place unfamiliar mechanics early.
+const learningDistances = Object.freeze([10, 20, 30, 50]);
+const targetRadii = Object.freeze([1.45, 1.65, 1.85, 2.1]);
+const stageShapes = Object.freeze({
+  rabbit: [1.10, .72, 16], wildcat: [1.12, .66, 15], deer: [1.23, .73, 17],
+  pigeon: [1.18, .86, 15], eagle: [1.55, .95, 18], cheetah: [1.38, .62, 12],
+  bird: [1.38, .88, 8]
+});
+const flyingKinds = new Set(['bird', 'pigeon', 'eagle']);
+
+// Solve a central circular strip by its fraction of the actual round face.
+// A face-area fraction differs from the same fraction of its bounding width.
+function circularStripHalfWidth(fraction) {
+  let low = 0, high = 1;
+  for (let i = 0; i < 48; i++) {
+    const middle = (low + high) / 2;
+    const area = 2 / Math.PI * (Math.asin(middle) + middle * Math.sqrt(1 - middle * middle));
+    if (area < fraction) low = middle; else high = middle;
   }
-  const passers = people ? Array.from({ length: 3 + Math.floor(progress * 2) }, (_, index) => ({
-    id: index, z: distance * (.82 + index * .025), width: .90 + progress * .12,
-    height: 2.0, depth: .42, passDuration: 24 + distance * .13 + index * 1.5,
-    phase: (.45 + index * .23) % 1
-  })) : [];
-  const subtitle = id === 50 ? '마지막 기둥 사격장' : people ? '지나가는 사람 사이로' : kind === 'rabbit' ? '가까운 풀숲의 질주' : kind === 'deer' ? '먼 들판을 가로질러' : kind === 'bird' ? '속도를 바꾸는 날갯짓' : '기둥 사이 나타나는 중심';
-  const hint = people ? '사람들이 지나간 틈으로 뒤쪽 과녁만 맞혀요. 사람이 화살을 가로막으면 이번 발은 0점이에요.' : kind === 'rabbit' ? '가까운 토끼가 왼쪽이나 오른쪽에서 들어와요. 달라지는 속도를 읽어보세요.' : kind === 'deer' ? '멀리 달리는 사슴이 도착할 위치를 앞서 겨눠보세요.' : kind === 'bird' ? '새는 방향을 바꾸지 않고 숲을 건너요. 위아래 움직임과 속도를 함께 읽으세요.' : '기둥 뒤 과녁이 불규칙한 속도로 움직여요. 틈으로 보이는 순간과 화살 도착 시간을 함께 읽으세요.';
-  return stage(id, people ? `${['첫', '두 번째', '세 번째', '네 번째', '마지막'][(id - 17) / 8]} 숲길 행렬` : laterStageNames[id - 13], subtitle, hint, distance, {
-    kind, radius, height, motion: movement, obstacles, passers,
-    wind: (id % 4 === 0 || id % 4 === 3 ? -1 : 1) * Number((1.35 + progress * 2.65).toFixed(3)),
-    goal: id === 50 ? 40 : 22 + Math.floor(progress * 14),
-    ...(kind === 'target' ? {} : { passDuration: (kind === 'bird' ? 8 : kind === 'rabbit' ? 7 : 10) - progress * (kind === 'bird' ? 2.2 : kind === 'rabbit' ? 1.6 : 3) })
-  });
+  return (low + high) / 2;
 }
 
-// Preserve the encounter templates independently from their playable order.
-// Difficulty is a balancing estimate, not a promise that every player will find
-// every adjacent encounter harder. Precision, lead and cover each teach a skill.
-const stageShapes = Object.freeze({ rabbit: [1.10, .72, 7], deer: [1.23, .73, 10], bird: [1.38, .88, 8] });
-function stageCover(template, rx, ry, animal) {
-  if (!template.obstacles.length) return 0;
-  let hidden = 0, samples = 0;
-  // Sample several real randomized layouts and points across the target face.
-  // Animal samples stay in the normal aiming field; offscreen travel is not cover.
-  for (const seed of [0, 5, 19, 31, 47, 61]) {
-    const layout = prepareStage(template, seed);
-    for (let index = 0; index < 48; index++) {
-      const fraction = (index + .5) / 48, angle = fraction * Math.PI * 2;
-      const x = (layout.targetX || 0) + (animal ? .38 * template.distance * (2 * fraction - 1) : template.motion.amplitudeX * Math.sin(angle));
-      for (let phase = 0; phase < (animal ? 8 : 1); phase++) {
-        const y = template.height + template.motion.amplitudeY * Math.sin(template.kind === 'bird' ? phase * Math.PI / 4 + angle * 1.83 : angle * 1.37);
-        for (const dy of [-.7, 0, .7]) for (const dx of [-.7, 0, .7]) {
-          hidden += Number(layout.obstacles.some(obstacle => {
-            const ratio = obstacle.z / template.distance;
-            return Math.abs((x + dx * rx) * ratio - obstacle.x) <= obstacle.width / 2 &&
-              PLAYER.y + (y + dy * ry - PLAYER.y) * ratio <= obstacle.height;
-          }));
-          samples++;
-        }
-      }
-    }
+
+// Describe a box by its silhouette at the target plane. Correct both near and
+// far faces so a thick pillar cannot quietly narrow the promised opening.
+function projectedBox(distance, left, right, z, height, type = 'stone', depth = .16) {
+  const near = z - depth / 2, far = z + depth / 2;
+  const worldLeft = left * (left < 0 ? near : far) / distance;
+  const worldRight = right * (right > 0 ? near : far) / distance;
+  return { ...wall(z, height, worldRight - worldLeft, (worldLeft + worldRight) / 2, type), depth };
+}
+function partialCover(stage, targetX = 0) {
+  const { distance, radius, height, coverageMode } = stage;
+  const z = distance * .82, top = height + radius + .3;
+  if (coverageMode === 'side-walls') {
+    const edge = radius * circularStripHalfWidth(stage.visibleFraction ?? .75);
+    return [
+      projectedBox(distance, targetX - radius * 4.5, targetX - edge, z, top, stage.coverMaterial || 'stone'),
+      projectedBox(distance, targetX + edge, targetX + radius * 4.5, z, top, stage.coverMaterial || 'stone')
+    ];
   }
-  return hidden / samples;
+  // Seven thin columns cover roughly one quarter of the round face throughout
+  // its movement. Fixed columns and open gaps are independent collision boxes.
+  const spacing = radius * .70, width = spacing * .25;
+  return Array.from({ length: 7 }, (_, index) => {
+    const center = targetX + (index - 3) * spacing;
+    return { ...projectedBox(distance, center - width / 2, center + width / 2, z, top, 'pillar'),
+      material: stage.coverMaterial === 'timber' ? 'wood' : 'stone' };
+  });
+}
+function coverStage(id, name, subtitle, hint, distance, extra) {
+  const template = stage(id, name, subtitle, hint, distance, extra);
+  template.obstacles = partialCover(template);
+  return template;
+}
+function roundFaceSlice(left, right, center, radius) {
+  const primitive = x => { const u = clamp((x - center) / radius, -1, 1);return (Math.asin(u) + u * Math.sqrt(Math.max(0, 1 - u * u))) / Math.PI; };
+  return Math.max(0, primitive(right) - primitive(left));
+}
+function stageCover(template) {
+  if (!template.obstacles.length) return 0;
+  let total = 0;
+  for (let index = 0; index < 48; index++) {
+    const x = (template.targetX || 0) + (template.motion.amplitudeX || 0) * Math.sin(index * Math.PI / 24);
+    const intervals = template.obstacles.map(obstacle => {
+      const near = obstacle.z - obstacle.depth / 2, far = obstacle.z + obstacle.depth / 2;
+      const left = obstacle.x - obstacle.width / 2, right = obstacle.x + obstacle.width / 2;
+      return [Math.min(left / near, left / far) * template.distance,
+        Math.max(right / near, right / far) * template.distance];
+    }).sort((a, b) => a[0] - b[0]);
+    const merged = [];
+    for (const interval of intervals) {
+      const previous = merged.at(-1);
+      if (previous && interval[0] <= previous[1]) previous[1] = Math.max(previous[1], interval[1]);
+      else merged.push([...interval]);
+    }
+    total += merged.reduce((sum, [left, right]) => sum + roundFaceSlice(left, right, x, template.radius), 0);
+  }
+  return total / 48;
 }
 function stageDifficulty(template) {
   const shape = stageShapes[template.kind], animal = !!shape;
   const rx = template.radius * (shape?.[0] || 1), ry = template.radius * (shape?.[1] || 1);
   const radius = Math.sqrt(rx * ry), angularRadius = Math.atan2(radius, template.distance);
-  // One animal pass travels the entire span once. Unlike an oscillating target,
-  // its amplitudeX/speed fields do not control the actual crossing speed.
   const movementSpeed = animal ? 2 * (template.distance * 1.25 + template.radius * 3) / (template.passDuration || shape[2]) :
     2 / Math.PI * Math.hypot(template.motion.amplitudeX * template.motion.speed, template.motion.amplitudeY * template.motion.speed * 1.37);
   const basicArrow = ARROWS[0], mass = basicArrow.shaftMass + basicArrow.tipMass;
   const speed = BOWS[0].speed * Math.sqrt(REFERENCE_ARROW_MASS / mass), drag = basicArrow.fletching.drag * REFERENCE_ARROW_MASS / mass;
-  // Horizontal flight time with the starter loadout; elevation adds flight time.
   const flightSeconds = -Math.log1p(-drag * template.distance / speed) / drag;
   const windDriftPerUnit = WIND_RESPONSE * basicArrow.windFactor * (flightSeconds - template.distance / speed) / drag;
-  const cover = stageCover(template, rx, ry, animal);
-  const pillars = template.obstacles.filter(obstacle => obstacle.type === 'pillar').length;
+  const cover = stageCover(template), pillars = template.obstacles.filter(obstacle => obstacle.type === 'pillar').length;
   const walls = template.obstacles.length - pillars, people = template.passers.length;
   const components = {
-    precision: 8 * Math.log2(1 + .05 / angularRadius),
-    flight: 2 * Math.log2(1 + flightSeconds),
-    lead: (animal ? 4 : 3.5) * Math.log2(1 + movementSpeed * flightSeconds / radius),
-    cover: 10 * cover,
-    obstacles: pillars * 1.4 + walls * 2 + Math.max(0, walls - 1) * 3 + (people ? 8 + people * 1.5 : 0),
-    vertical: template.kind === 'bird' ? 1.8 * Math.log2(1 + template.motion.amplitudeY / radius) : 0
+    precision: 8 * Math.log2(1 + .05 / angularRadius), flight: 2 * Math.log2(1 + flightSeconds),
+    lead: (animal ? 4 : 3.5) * Math.log2(1 + movementSpeed * flightSeconds / radius), cover: 10 * cover,
+    obstacles: pillars * .25 + walls * .75 + (people ? 3 + people : 0),
+    vertical: flyingKinds.has(template.kind) ? 1.8 * Math.log2(1 + template.motion.amplitudeY / radius) : 0
   };
-  return { baseScore: Object.values(components).reduce((sum, value) => sum + value, 0),
+  const baseScore = Object.values(components).reduce((sum, value) => sum + value, 0), windStrength = Math.abs(template.wind);
+  return Object.freeze({ baseScore, score: baseScore + windStrength * 2.5,
     angularRadius, movementSpeed, flightSeconds, windDriftPerUnit, cover, pillars, walls, people,
-    components: Object.freeze(components) };
+    windStrength, windDrift: windDriftPerUnit * windStrength, components: Object.freeze(components) });
 }
-function stageProgression(templates) {
-  const ranked = templates.map(template => ({ template, difficulty: stageDifficulty(template) }))
-    .sort((a, b) => a.difficulty.baseScore - b.difficulty.baseScore || a.template.legacyId - b.template.legacyId);
-  return Object.freeze(ranked.map(({ template, difficulty }, index) => {
-    const strength = Number((.12 + 3.88 * index / (ranked.length - 1)).toFixed(3));
-    return { ...template, id: index + 1, wind: (Math.sign(template.wind) || 1) * strength,
-      goal: 16 + Math.round(24 * index / (ranked.length - 1)),
-      difficulty: Object.freeze({ ...difficulty, score: difficulty.baseScore + strength * 2.5,
-        windStrength: strength, windDrift: difficulty.windDriftPerUnit * strength }) };
-  }));
+const signedWind = (id, amount) => (id % 4 < 2 ? 1 : -1) * Number(amount.toFixed(3));
+function lessonStages() {
+  const templates = [];
+  const chapters = [
+    ['고정 표적', '먼저 거리와 당기는 힘을 익혀요.', '바람 없는 과녁이에요. 충분히 당긴 뒤, 멀수록 조금 높이 겨눠보세요.'],
+    ['움직이는 표적', '천천히 움직이는 중심을 따라가요.', '과녁이 천천히 좌우로 움직여요. 화살이 도착할 앞쪽을 조금 겨눠보세요.'],
+    ['벽 사이 · 3/4 보임', '양옆이 조금 가려진 고정 과녁이에요.', '과녁의 3/4이 보여요. 가운데 넓게 열린 부분으로 쏴보세요.'],
+    ['벽 사이 · 1/2 보임', '열린 틈을 조금 좁혀볼까요?', '과녁의 절반이 보여요. 짧은 거리부터 좁아진 틈에 익숙해져 보세요.'],
+    ['벽 사이 · 1/3 보임', '작은 틈의 중심을 읽어요.', '과녁의 1/3이 보여요. 충분히 조준하고 열린 가운데 부분으로 쏴보세요.'],
+    ['기둥 뒤 표적', '기둥 사이로 움직임을 읽어요.', '과녁의 약 3/4이 보이도록 가는 기둥을 놓았어요. 움직이는 중심과 열린 틈을 함께 읽어보세요.']
+  ];
+  for (let chapter = 0; chapter < chapters.length; chapter++) for (const [index, distance] of learningDistances.entries()) {
+    const id = templates.length + 1, radius = targetRadii[index], [title, subtitle, hint] = chapters[chapter];
+    const extra = { chapterId: chapter + 1, chapterName: title, radius, height: radius + .5,
+      goal: 10 + chapter * 2 + index * 2, wind: chapter ? signedWind(id, .03 + (id - 5) * .008) : 0,
+      motion: chapter === 1 ? motion(radius * (.60 + index * .10), 0, .24 + index * .025) :
+        chapter === 5 ? motion(radius * .85, 0, .25 + index * .025) : motion() };
+    if (chapter >= 2) {
+      extra.coverageMode = chapter < 5 ? 'side-walls' : 'pillars';
+      extra.visibleFraction = chapter < 5 ? [.75, .5, 1 / 3][chapter - 2] : .75;
+      extra.coverMaterial = index % 2 ? 'timber' : 'stone';
+      extra.layoutJitter = distance * .055;
+      templates.push(coverStage(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
+    } else templates.push(stage(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
+  }
+  const animals = [
+    {kind:'rabbit',name:'토끼',radius:.85,height:.72,duration:16,bob:.16,pace:.55,hint:'낮게 통통 뛰는 토끼를 따라가요. 양쪽 중 어디에서 들어오는지 먼저 살펴보세요.'},
+    {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:15,bob:.07,pace:.65,hint:'짧은 보폭으로 속도를 바꾸는 살쾡이를 따라가요. 이동 방향 앞쪽을 겨눠보세요.'},
+    {kind:'deer',name:'사슴',radius:1.4,height:1.3,duration:17,bob:.23,pace:.5,hint:'긴 보폭으로 달리는 사슴이 떠오르고 내려오는 흐름을 읽어보세요.'},
+    {kind:'pigeon',name:'비둘기',radius:1.03,height:2.25,duration:15,bob:.28,pace:.6,hint:'짧게 위아래로 날갯짓하는 비둘기를 따라가요. 움직일 앞쪽과 높이를 함께 읽으세요.'},
+    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:18,bob:.45,pace:.5,hint:'넓게 날개를 펴고 천천히 높이를 바꾸는 독수리를 따라가요.'},
+    {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:12,bob:.12,pace:.8,hint:'가속했다가 숨을 고르는 치타를 따라가요. 빨라질 때는 조금 더 앞을 겨누세요.'}
+  ];
+  for (const [animalIndex, animal] of animals.entries()) for (const [index, distance] of learningDistances.entries()) {
+    const id = templates.length + 1, scale = 1 + index * .09;
+    templates.push(stage(id, `${animal.name} 따라가기 · ${distance}m`, `${animal.name}의 움직임 익히기`, animal.hint, distance, {
+      kind: animal.kind, chapterId: animalIndex + 7, chapterName: `${animal.name} 따라가기`,
+      radius: animal.radius * scale, height: animal.height * scale,
+      motion: motion(0, animal.bob * scale, 0), passDuration: animal.duration - index * .4,
+      paceVariation: animal.pace, approachEase: .45,
+      wind: signedWind(id, .22 + (id - 25) * .025), goal: 18 + Math.floor((id - 25) / 4) + index
+    }));
+  }
+  // Full cover comes only after every visible-target and tracking lesson.
+  // The wall blocks the sightline but leaves a reachable parabolic path above it.
+  for (const moving of [false, true]) {
+    const id = moving ? 50 : 49;
+    templates.push(stage(id, moving ? '벽 뒤에서 움직이는 과녁' : '완전히 숨은 고정 과녁',
+      moving ? '미리 본 움직임을 이어서 읽어요.' : '미리 보고 포물선으로 넘겨요.',
+      moving ? '시작할 때 벽 뒤 과녁과 움직임을 먼저 보여줘요. 과녁 보기로 다시 살피고, 도착할 위치를 앞서 겨눠 벽 위로 쏘세요.' :
+        '시작할 때 벽 뒤 과녁을 먼저 보여줘요. 과녁 보기로 다시 살피고, 조금 높게 겨눠 벽 위로 쏘세요.', 50, {
+        chapterId:13,chapterName:'완전히 숨은 과녁',radius:2.1,height:2.6,visibleFraction:0,
+        motion:moving ? motion(1.8,0,.28) : motion(),
+        obstacles:[wall(25,3.35,9,0,moving ? 'timber' : 'stone')],
+        wind:moving ? -1 : .9,goal:moving ? 28 : 26
+      }));
+  }
+  return templates;
 }
+const gearBand = (gearTier, gearLabel, first, last, weaponIds, referenceLoadouts, balance) => Object.freeze({
+  gearTier, gearLabel, first, last,
+  weaponIds: Object.freeze({bow:Object.freeze(weaponIds.bow),crossbow:Object.freeze(weaponIds.crossbow)}),
+  referenceLoadouts: Object.freeze(referenceLoadouts.map(loadout => Object.freeze(loadout))),
+  balance: Object.freeze(balance)
+});
 
-export const STAGES = stageProgression([
-  stage(1, '첫 번째 시위', '햇살 드는 숲길', '누른 채 방향을 조절하고, 조준점이 과녁을 지날 때 손을 떼세요.', 14, { goal: 16, radius: 1.35, wind: 0.12 }),
-  stage(2, '조금 더 멀리', '낙하를 읽는 연습', '화살이 아래로 떨어져요. 과녁 중심보다 조금 위를 겨눠보세요.', 18, { radius: 1.30, wind: -0.20 }),
-  stage(3, '숲의 끝자락', '거리 감각 익히기', '충분히 당긴 화살은 빠르게 날아요. 점선으로 낙하를 살펴보세요.', 24, { goal: 22, radius: 1.30, height: 2.5, wind: 0.30 }),
-  stage(4, '긴 사거리', '높이와 힘의 균형', '나뭇잎이 날리는 쪽으로 화살도 밀려요. 반대쪽으로 조금 보정해보세요.', 32, { goal: 24, height: 2.6, wind: -0.40 }),
-  stage(5, '오가는 과녁', '한 걸음 앞을 향해', '움직이는 과녁이 화살 도착 때 있을 자리를 겨눠요.', 32, { goal: 22, motion: motion(3.5, 0, 0.72), radius: 1.35, wind: 0.50 }),
-  stage(6, '하늘의 날갯짓', '숲을 가로지르는 새', '들어오는 방향을 읽고, 위아래로 나는 새의 앞쪽을 겨눠요.', 36, { kind: 'bird', height: 4.8, radius: 1.3, motion: motion(5.0, 0.65, 0.88), goal: 20, wind: -0.60 }),
-  stage(7, '풀숲의 토끼', '가까이 달려가는 토끼', '풀숲에서 들어오는 토끼가 속도를 바꿔 달려요. 진행 방향 앞을 겨눠보세요.', 24, { kind: 'rabbit', height: 0.7, radius: 0.85, goal: 22, wind: 0.72 }),
-  stage(8, '담장 너머', '곡선으로 넘어서기', '힘을 조금 줄이고 더 위로 조준해, 큰 포물선으로 담장을 넘겨보세요.', 42, { radius: 1.35, obstacles: [wall(22, 2.8)], goal: 20, wind: -0.84 }),
-  stage(9, '벽 너머 날갯짓', '숨었다 나타나는 새', '새가 벽 위로 떠오르는 순간을 노리세요. 나뭇잎으로 바람을 읽고 날아갈 앞쪽을 겨눠보세요.', 44, { kind: 'bird', height: 5.8, radius: 1.4, motion: motion(5.2, 3.6, 0.72), passDuration: 12, wind: 0.96, obstacles: [wall(24, 3.8, 24)], goal: 22 }),
-  stage(10, '바람의 들판', '멀리 움직이는 작은 중심', '바람 반대쪽으로 보정하면서, 작게 보이는 과녁이 이동할 앞쪽을 겨누세요.', 55, { radius: 1.15, motion: motion(4.5, 0.15, 0.95), wind: 1.08, goal: 26 }),
-  stage(11, '숨은 숲길', '멀리 달리는 사슴', '멀리서 숲을 가로지르는 사슴의 속도를 읽고, 담장을 넘겨 쏘세요.', 58, { kind: 'deer', height: 1.65, radius: 1.65, motion: motion(6.0, 0, 0.58), wind: -1.20, obstacles: [wall(31, 3.5, 7, 0, 'timber')], goal: 26 }),
-  stage(12, '바람의 궁수', '첫 복합 사격장', '거리·움직임·바람·담장. 익힌 감각을 모아 더 깊은 숲으로 나아가세요.', 70, { radius: 1.55, motion: motion(2.5, 0.2, 0.45), wind: 1.35, obstacles: [wall(26, 3.4, 5.4), wall(46, 3.2, 5, -1.6)], goal: 30 }),
-  ...Array.from({ length: 38 }, (_, index) => laterStage(index + 13))
+/** Optional equipment guidance. Family ranks never lock a stage or a weapon. */
+export const STAGE_GEAR_BANDS = Object.freeze([
+  gearBand('starter','기본 활',1,8,{bow:[0],crossbow:[]},
+    [{family:'bow',bow:0,arrow:0}],{radiusScale:1,speedScale:1}),
+  gearBand('lower','하위 활·석궁',9,24,{bow:[4,5,6],crossbow:[13,12,10]},
+    [{family:'bow',bow:4,arrow:6},{family:'crossbow',bow:13,arrow:6}],
+    {radiusScale:1,speedScale:1,windStart:.10,windEnd:.32,goalStart:18,goalEnd:26}),
+  gearBand('middle','중간 활·석궁',25,35,{bow:[1,2,8],crossbow:[14,11,15,16]},
+    [{family:'bow',bow:1,arrow:6},{family:'crossbow',bow:14,arrow:6}],
+    {radiusScale:.94,speedScale:1.03,windStart:.35,windEnd:.65,goalStart:26,goalEnd:30}),
+  gearBand('upper','상위 활·석궁',36,50,{bow:[7,9,3],crossbow:[17,18,19]},
+    [{family:'bow',bow:3,arrow:3},{family:'crossbow',bow:19,arrow:3}],
+    {radiusScale:.82,speedScale:1.08,windStart:.75,windEnd:1.30,goalStart:32,goalEnd:36})
 ]);
+
+function applyEquipmentLesson(template) {
+  const band = STAGE_GEAR_BANDS.find(entry => template.id >= entry.first && template.id <= entry.last);
+  const fraction = (template.id - band.first) / Math.max(1, band.last - band.first), balance = band.balance;
+  const adjusted = {...template,gearTier:band.gearTier,gearLabel:band.gearLabel,referenceLoadouts:band.referenceLoadouts,
+    radius:template.radius * balance.radiusScale,
+    motion:{...template.motion,speed:template.motion.speed * balance.speedScale},
+    ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale} : {})};
+  if (band.gearTier !== 'starter') {
+    adjusted.wind = signedWind(template.id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
+    adjusted.goal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
+  }
+  // Keep promised circular face fractions after any balance change to size.
+  if (adjusted.coverageMode) adjusted.obstacles = partialCover(adjusted);
+  return {...adjusted,difficulty:stageDifficulty(adjusted)};
+}
+export const STAGES = Object.freeze(lessonStages().map(applyEquipmentLesson));
 
 /** Separate timed gun event; the fifty main archery stages retain their own progress. */
 export function createClayEvent(level = 1) {
@@ -304,7 +391,7 @@ for (const weapon of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
   weapon.muzzleSpeed = BULLET_SPEED;weapon.speed = BULLET_SPEED;
 }
 
-const animalPassDuration = Object.freeze({ bird: 8, rabbit: 7, deer: 10 });
+const animalPassDuration = Object.freeze(Object.fromEntries(Object.entries(stageShapes).map(([kind, shape]) => [kind, shape[2]])));
 function hashUnit(value) {
   value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
   value = Math.imul(value ^ (value >>> 15), 0x846ca68b);
@@ -319,6 +406,17 @@ export function prepareStage(stage, seed = 0) {
     passers: (stage.passers || []).map(person => ({ ...person })), encounterSeed,
     ...(stage.kind === 'clay' ? { brokenPasses: [] } : {})
   };
+  if (stage.coverageMode === 'side-walls' || stage.coverageMode === 'pillars') {
+    const mixed = encounterSeed ^ Math.imul(stage.id || 1, 0x9e3779b1);
+    const slot = Math.min(2, Math.floor(hashUnit(mixed ^ 0x6a09e667) * 3));
+    const extent = stage.layoutJitter || stage.distance * .055;
+    const jitter = (hashUnit(mixed ^ 0xbb67ae85) * 2 - 1) * extent * .12;
+    prepared.targetX = (slot - 1) * extent + jitter;
+    prepared.wallLayout = ['left', 'center', 'right'][slot];
+    // Rebuild from the fresh center, never shift a previously prepared group.
+    prepared.obstacles = partialCover(prepared, prepared.targetX);
+    return prepared;
+  }
   if ((stage.kind || 'target') !== 'target' || !prepared.obstacles.length) return prepared;
   const cover = prepared.obstacles[0];
   const group = cover.type === 'pillar' ? prepared.obstacles.filter(obstacle => obstacle.type === 'pillar') : [cover];
@@ -362,19 +460,29 @@ function animalMotion(stage, time, forcedPassId) {
   const random = salt => hashUnit(passSeed ^ salt);
   const direction = random(0x243f6a88) < .5 ? -1 : 1;
   const phase = random(0xb7e15162) * Math.PI * 2, secondPhase = random(0x8aed2a6b) * Math.PI * 2;
-  const a = .18 + random(0x9e3779b9) * .18, b = .06 + random(0x3c6ef372) * .10;
+  const variation = clamp(stage.paceVariation ?? 1, .2, 1);
+  const a = (.18 + random(0x9e3779b9) * .18) * variation, b = (.06 + random(0x3c6ef372) * .10) * variation;
+  const approach = clamp(stage.approachEase || 0, 0, .45);
   const u = (t - passId * duration) / duration, tau = Math.PI * 2;
   // Integral of a positive varying velocity. Each pass crosses once, never reverses.
-  const progress = u + a / tau * (Math.sin(tau * u + phase) - Math.sin(phase)) +
+  const progress = u + approach / tau * Math.sin(tau * u) + a / tau * (Math.sin(tau * u + phase) - Math.sin(phase)) +
     b / (tau * 2) * (Math.sin(tau * 2 * u + secondPhase) - Math.sin(secondPhase));
-  const rate = 1 + a * Math.cos(tau * u + phase) + b * Math.cos(tau * 2 * u + secondPhase);
+  const rate = 1 + approach * Math.cos(tau * u) + a * Math.cos(tau * u + phase) + b * Math.cos(tau * 2 * u + secondPhase);
   const span = stage.distance * 1.25 + (stage.radius || 1.25) * 3;
   const x = (stage.targetX || 0) + direction * span * (2 * progress - 1);
-  let y = stage.height ?? (stage.kind === 'bird' ? 4.8 : stage.kind === 'rabbit' ? .7 : 1.65);
-  if (stage.kind === 'bird') {
+  let y = stage.height ?? (flyingKinds.has(stage.kind) ? 4.8 : stage.kind === 'rabbit' ? .7 : 1.65);
+  if (flyingKinds.has(stage.kind)) {
     const amplitude = stage.motion?.amplitudeY || .7;
-    const cycles = 1.2 + random(0xa54ff53a) * 1.2;
+    const cycles = stage.kind === 'pigeon' ? 3.6 + random(0xa54ff53a) * 1.2 :
+      stage.kind === 'eagle' ? .8 + random(0xa54ff53a) * .6 : 1.2 + random(0xa54ff53a) * 1.2;
     y += amplitude * (.72 * Math.sin(tau * cycles * u + phase) + .28 * Math.sin(tau * (cycles + .8) * u + secondPhase));
+  } else {
+    const amplitude = stage.motion?.amplitudeY || 0;
+    const frequency = stage.kind === 'rabbit' ? 2.0 : stage.kind === 'wildcat' ? 2.8 : stage.kind === 'deer' ? 1.35 : 3.1;
+    // Root movement follows the animal while the drawing only animates limbs.
+    // Positive smooth hops keep the body above its ground-level baseline.
+    const stride = Math.sin(t * Math.PI * frequency + phase);
+    y += amplitude * stride * stride;
   }
   return { x, y, passId, direction, passDuration: duration, velocityX: direction * span * 2 / duration * rate, active: true };
 }
@@ -445,8 +553,8 @@ export function targetAt(stage, time = 0, forcedPassId) {
   };
   return {
     ...position, z: stage.distance, radius: r,
-    rx: kind === 'bird' ? r * 1.38 : kind === 'deer' ? r * 1.23 : kind === 'rabbit' ? r * 1.10 : r,
-    ry: kind === 'bird' ? r * .88 : kind === 'deer' ? r * .73 : kind === 'rabbit' ? r * .72 : r,
+    rx: r * (stageShapes[kind]?.[0] || 1),
+    ry: r * (stageShapes[kind]?.[1] || 1),
     kind
   };
 }
@@ -499,6 +607,7 @@ export function launchArrow(params = {}) {
   const { yaw = 0, pitch = 0, charge = 1, bow, arrow, velocityBias = 0 } = params;
   const speed = getSpeed({ charge, bow, arrow, velocityBias });
   const cp = Math.cos(pitch), weapon = getBow(bow), bullet = weapon.weaponType === 'gun';
+  const ability = bullet ? null : getArrow(arrow).ability || null;
   return {
     position: { ...PLAYER },
     velocity: { x: Math.sin(yaw) * cp * speed, y: Math.sin(pitch) * speed, z: Math.cos(yaw) * cp * speed },
@@ -507,7 +616,9 @@ export function launchArrow(params = {}) {
     projectileType: bullet ? 'bullet' : 'arrow', shaftLength: bullet ? .12 : .85,
     // Crossbow drag is an explicit short-range game balance, not a real-weapon claim.
     dragRate: bullet ? weapon.ammo.dragRate : (Math.max(0, getArrow(arrow).fletching?.drag ?? 0) + Math.max(0, weapon.extraDragRate ?? 0)) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
-    lastTrailTime: 0, targetPassed: false
+    lastTrailTime: 0, targetPassed: false, ability,
+    bounceCount:0,bouncesRemaining:ability?.type === 'bounce' ? ability.maxBounces : 0,
+    magnetActive:false,magnetSteered:false,magnetTurn:0,magnetCorrection:0,magnetTargetPassId:null,magnetLost:false
   };
 }
 
@@ -649,13 +760,15 @@ function scoreAt(point, target) {
   return { score: [10, 8, 6, 4, 2][ring], zone: ['정중앙', '빨간 원', '파란 원', '검은 원', '흰 원'][ring] };
 }
 
-/** Advance a shot; worldTime is the absolute scene time at the START of this interval. */
-export function stepArrow(shot, dt, stage, worldTime = 0) {
+// A constant-acceleration segment retains the exact original damped solution.
+// Special guidance supplies the same acceleration to movement and swept hits.
+function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
   if (!shot.active) return shot.result;
   if (!(dt > 0) || !Number.isFinite(dt)) return null;
   const position = shot.position, velocity = shot.velocity;
   const drag = Math.max(0, shot.dragRate ?? 0);
   const acceleration = { x: (stage.wind || 0) * WIND_RESPONSE * (shot.windFactor ?? 1), y: -GRAVITY, z: 0 };
+  if (steering) for (const axis of ['x','y','z']) acceleration[axis] += steering[axis];
   const events = [];
   const ground = roots(position.y, velocity.y, acceleration.y, 0, dt, drag).filter(t => t >= 0 && t <= dt && velocityAt(velocity, acceleration, t, drag).y <= 0);
   if (ground.length) events.push({ t: Math.min(...ground), type: 'ground', score: 0, zone: '땅에 떨어졌어요' });
@@ -665,7 +778,7 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
   }
   const person = personCollision(position, velocity, acceleration, stage, worldTime, dt, drag);
   if (person) events.push({ ...person, type: 'person', score: 0, zone: '사람이 가로막았어요' });
-  const targetTime = velocity.z > 0 ? roots(position.z, velocity.z, 0, stage.distance, dt, drag).find(t => t >= -1e-9 && t <= dt + 1e-9) ?? -1 : -1;
+  const targetTime = velocity.z > 0 ? roots(position.z, velocity.z, acceleration.z, stage.distance, dt, drag).find(t => t >= -1e-9 && t <= dt + 1e-9) ?? -1 : -1;
   if (!shot.targetPassed && targetTime >= -1e-9 && targetTime <= dt + 1e-9) {
     const t = clamp(targetTime, 0, dt);
     const point = at(position, velocity, acceleration, t, drag);
@@ -681,7 +794,6 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
     // All event targets share this plane. A missed bullet is finished here;
     // arrows retain their full falling trajectory beyond the target.
     else if (shot.projectileType === 'bullet' && stage.kind === 'clay') events.push({ t, type: 'miss', score: 0, zone: '표적을 지나쳤어요' });
-    shot.targetPassed = true;
   }
   if (shot.elapsed + dt >= 8) events.push({ t: Math.max(0, 8 - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
   const eventPriority = { person: 0, obstacle: 1, ground: 2, hit: 3, miss: 4 };
@@ -690,15 +802,112 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
   shot.position = at(position, velocity, acceleration, usedTime, drag);
   shot.velocity = velocityAt(velocity, acceleration, usedTime, drag);
   shot.elapsed += usedTime;
+  // An earlier ground contact must not consume a future target-plane crossing.
+  if (!shot.targetPassed && targetTime >= -1e-9 && targetTime <= usedTime + 1e-9) {
+    shot.targetPassed = true;
+    shot.magnetActive = false;
+  }
+  if (steering) {
+    const strength = Math.hypot(steering.x,steering.y,steering.z);
+    shot.magnetCorrection += strength * usedTime;
+    shot.magnetTurn += steering.turnRate * usedTime;
+    if (strength > 0 && usedTime > 0) shot.magnetSteered = true;
+  }
   if (shot.elapsed - shot.lastTrailTime >= 0.025 || event) {
     shot.trail.push({ ...shot.position });
     shot.lastTrailTime = shot.elapsed;
     if (shot.trail.length > 180) shot.trail.shift();
   }
   if (event) {
+    if (event.type === 'ground' && shot.projectileType === 'arrow' && shot.ability?.type === 'bounce' &&
+      shot.bouncesRemaining > 0 && !shot.targetPassed && shot.position.z < stage.distance - 1e-7 && shot.velocity.z > 0) {
+      shot.bounceCount++;shot.bouncesRemaining--;
+      shot.bouncePoint = {...shot.position};shot.bounceTime = shot.elapsed;
+      shot.velocity = {x:shot.velocity.x * shot.ability.horizontalRetention,
+        y:Math.abs(shot.velocity.y) * shot.ability.restitution,z:shot.velocity.z * shot.ability.horizontalRetention};
+      const remaining = dt - usedTime;
+      return remaining > 1e-10 ? advanceBallistic(shot,remaining,stage,worldTime + usedTime) : null;
+    }
     shot.active = false;
+    shot.magnetActive = false;
     const { t, ...result } = event;
     shot.result = { ...result, point: { ...shot.position }, flightTime: shot.elapsed };
+  }
+  return shot.result;
+}
+
+const MAGNET_STEP = 1 / 240;
+const noSteering = Object.freeze({x:0,y:0,z:0,turnRate:0});
+function currentMagnetTarget(shot, stage, worldTime) {
+  const targets = stage.kind === 'clay' ? eventTargetsAt(stage,worldTime) : [targetAt(stage,worldTime)];
+  const active = targets.filter(target => target.active !== false);
+  if (shot._magnetTargetKey !== undefined) {
+    const same = active.find(target => `${target.kind}:${target.passId ?? 'fixed'}` === shot._magnetTargetKey);
+    if (!same) {shot.magnetLost = true;shot.magnetActive = false;return null;}
+    return same;
+  }
+  return active.sort((a,b)=>Math.hypot(a.x-shot.position.x,a.y-shot.position.y,a.z-shot.position.z)-
+    Math.hypot(b.x-shot.position.x,b.y-shot.position.y,b.z-shot.position.z))[0] || null;
+}
+function guidanceForInterval(shot, stage, worldTime, duration) {
+  const ability = shot.ability;
+  shot.magnetActive = false;
+  if (shot.targetPassed || shot.magnetLost || shot.position.z >= stage.distance - 1e-10 || shot.velocity.z <= 0) return noSteering;
+  const target = currentMagnetTarget(shot,stage,worldTime);
+  if (!target) return noSteering;
+  const delta = {x:target.x-shot.position.x,y:target.y-shot.position.y,z:target.z-shot.position.z};
+  const distance = Math.hypot(delta.x,delta.y,delta.z), speed = Math.hypot(shot.velocity.x,shot.velocity.y,shot.velocity.z);
+  if (!(distance > 1e-8 && distance <= ability.radius) || !(speed > 1e-8) || delta.z <= 0) return noSteering;
+  if (shot._magnetTargetKey === undefined) {
+    shot._magnetTargetKey = `${target.kind}:${target.passId ?? 'fixed'}`;
+    shot.magnetTargetPassId = target.passId ?? null;
+  }
+  shot._magnetPassEnd = Number.isInteger(target.waveId) ? target.waveId * (stage.waveDuration || target.passDuration) + target.flightDuration :
+    Number.isInteger(target.passId) && Number.isFinite(target.passDuration) ? (target.passId + 1) * target.passDuration : Infinity;
+  const forward = {x:shot.velocity.x/speed,y:shot.velocity.y/speed,z:shot.velocity.z/speed};
+  const desired = {x:delta.x/distance,y:delta.y/distance,z:delta.z/distance};
+  const dot = clamp(forward.x*desired.x+forward.y*desired.y+forward.z*desired.z,-1,1);
+  const lateral = {x:desired.x-dot*forward.x,y:desired.y-dot*forward.y,z:desired.z-dot*forward.z};
+  const sideways = Math.hypot(lateral.x,lateral.y,lateral.z), angle = Math.atan2(sideways,dot);
+  if (sideways < 1e-10) return noSteering;
+  const correctionLeft = Math.max(0,ability.maxCorrectionSpeed-shot.magnetCorrection);
+  const turnLeft = Math.max(0,ability.maxTurnAngle-shot.magnetTurn);
+  const strength = Math.min(ability.maxAcceleration,speed*Math.min(ability.maxTurnRate,angle*5),
+    correctionLeft/duration,turnLeft*speed/duration);
+  if (!(strength > 1e-10)) return noSteering;
+  shot.magnetActive = true;
+  return {x:lateral.x/sideways*strength,y:lateral.y/sideways*strength,z:lateral.z/sideways*strength,turnRate:strength/speed};
+}
+
+/** Advance a shot; worldTime is the absolute scene time at the START of this interval. */
+export function stepArrow(shot, dt, stage, worldTime = 0) {
+  if (!shot.active) return shot.result;
+  if (!(dt > 0) || !Number.isFinite(dt)) return null;
+  if (shot.projectileType !== 'arrow' || shot.ability?.type !== 'magnetic') return advanceBallistic(shot,dt,stage,worldTime);
+  const startElapsed = shot.elapsed, endElapsed = startElapsed + dt;
+  while (shot.active && shot.elapsed < endElapsed - 1e-10) {
+    const sceneTime = worldTime + shot.elapsed - startElapsed;
+    if (shot.targetPassed || shot.magnetLost || shot.position.z >= stage.distance - 1e-10) {
+      shot.magnetActive = false;
+      return advanceBallistic(shot,endElapsed-shot.elapsed,stage,sceneTime);
+    }
+    if (shot._magnetTargetKey !== undefined && !currentMagnetTarget(shot,stage,sceneTime)) continue;
+    if (!Number.isFinite(shot._magnetFrameEnd) || shot.elapsed >= shot._magnetFrameEnd - 1e-10) {
+      const frame = Math.floor((shot.elapsed+1e-10)/MAGNET_STEP);
+      shot._magnetFrameEnd = (frame+1)*MAGNET_STEP;
+      shot._magnetSteering = guidanceForInterval(shot,stage,sceneTime,shot._magnetFrameEnd-shot.elapsed);
+    }
+    let duration = Math.min(endElapsed-shot.elapsed,shot._magnetFrameEnd-shot.elapsed);
+    if (Number.isFinite(shot._magnetPassEnd)) duration = Math.min(duration,Math.max(0,shot._magnetPassEnd-sceneTime));
+    if (duration < 1e-10) {
+      // A pass boundary ends this target's guidance, never selects a replacement.
+      shot.magnetLost = true;shot.magnetActive = false;continue;
+    }
+    const steering = shot._magnetSteering;
+    const crossing = roots(shot.position.z,shot.velocity.z,steering.z,stage.distance,duration,Math.max(0,shot.dragRate||0))
+      .find(time=>time>1e-10 && time<duration);
+    if (Number.isFinite(crossing)) duration = crossing;
+    advanceBallistic(shot,duration,stage,sceneTime,steering);
   }
   return shot.result;
 }
@@ -710,7 +919,9 @@ export function predictTrajectory(params, stage, worldTime = 0, maxSeconds = 8) 
   let time = 0;
   while (shot.active && time < maxSeconds) {
     const step = Math.min(dt, maxSeconds - time);
+    const beforeBounce = shot.bounceCount;
     stepArrow(shot, step, stage, worldTime + time);
+    if (shot.bounceCount > beforeBounce && shot.bouncePoint) points.push({...shot.bouncePoint});
     points.push({ ...shot.position });
     time += step;
   }

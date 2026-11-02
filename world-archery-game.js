@@ -1,12 +1,12 @@
-/* Local archery play shares only server-approved event ammo with the arcade. */
+/* Local archery play shares server-approved event ammo and coach rentals with the arcade. */
 (() => {
  'use strict';
  let active=null;
  const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
- const actions=new Set(['status','round-start','round-complete','spend','buy','receipt']);
- const receiptActions=new Set(['round-start','round-complete','spend','buy']);
+ const actions=new Set(['status','round-start','round-complete','spend','buy','coach-buy','receipt']);
+ const receiptActions=new Set(['round-start','round-complete','spend','buy','coach-buy']);
  window.OjjudaArcheryGame={
-  open({owner=null,authorized=()=>true,onAmmoStatus=null,onRoundStart=null,onRoundComplete=null,onAmmoSpend=null,onAmmoBuy=null,onAmmoReceipt=null}={}){
+  open({owner=null,authorized=()=>true,onAmmoStatus=null,onRoundStart=null,onRoundComplete=null,onAmmoSpend=null,onAmmoBuy=null,onCoachBuy=null,onAmmoReceipt=null}={}){
    if(!authorized())return;
    if(active){if(active.owner===owner&&active.current()){active.dialog.focus();return;}active.close();}
    const previous=document.activeElement;
@@ -14,7 +14,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label','바람의 궁수 · 테스트게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-top-draw1" allow="autoplay; fullscreen"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-gentle1" allow="autoplay; fullscreen"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null;
@@ -25,9 +25,10 @@
     'round-complete':message=>onRoundComplete?.(message.requestId,message.runId,message.stage),
     spend:message=>onAmmoSpend?.(message.requestId),
     buy:message=>onAmmoBuy?.(message.requestId),
+    'coach-buy':message=>onCoachBuy?.(message.requestId),
     receipt:message=>onAmmoReceipt?.(message.receiptId,message.originalAction)
    };
-   const available={status:onAmmoStatus,'round-start':onRoundStart,'round-complete':onRoundComplete,spend:onAmmoSpend,buy:onAmmoBuy,receipt:onAmmoReceipt};
+   const available={status:onAmmoStatus,'round-start':onRoundStart,'round-complete':onRoundComplete,spend:onAmmoSpend,buy:onAmmoBuy,'coach-buy':onCoachBuy,receipt:onAmmoReceipt};
    function send(message){if(current())frame.contentWindow.postMessage({source:'ojjuda-archery-world',owner,sessionId,...message},location.origin);}
    function initialize(){send({type:'init',available:!!owner&&Object.values(available).every(fn=>typeof fn==='function')});}
    function reply(message,result){send({type:'ammo-response',action:message.action,requestId:message.requestId,result});}

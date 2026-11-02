@@ -8,9 +8,11 @@ const OWNER = '11111111-1111-4111-8111-111111111111';
 const SESSION = '22222222-2222-4222-8222-222222222222';
 const OTHER = '33333333-3333-4333-8333-333333333333';
 const ORIGIN = 'https://ojjuda.test';
+const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 let fixtureSequence = 0;
-const snapshot = (extra = {}) => ({ ok: true, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 20, pack_price: 1, ...extra });
+const snapshot = (extra = {}) => ({ ok: true, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+  server_now: new Date(SERVER_EPOCH).toISOString(), coach_expires_at: null, coach_active: false, coach_price: 10, coach_duration_seconds: 86400, ...extra });
 
 // Real client, isolated browser globals and fake parent messages. No RPC or wallet
 // connector is present in this harness, including the purchase tests.
@@ -21,7 +23,7 @@ async function fixture({ store = new Map(), initialize = true, owner = OWNER, se
   const parent = { postMessage(data, origin) { messages.push({ data: JSON.parse(JSON.stringify(data)), origin }); } };
   const window = { parent, location: { origin: ORIGIN }, addEventListener(type, fn) { if (type === 'message') listeners.add(fn); }, removeEventListener(type, fn) { listeners.delete(fn); } };
   const storage = { getItem: key => store.get(key) ?? null, setItem(key, value) { if (storageFails) throw Error('storage blocked');store.set(key, String(value)); }, removeItem: key => store.delete(key) };
-  const context = vm.createContext({ window, localStorage: storage, crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(fixtureId * 10000 + ++sequence).padStart(12, '0')}` }, Uint8Array,
+  const context = vm.createContext({ window, localStorage: storage, performance: {now: () => now}, crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(fixtureId * 10000 + ++sequence).padStart(12, '0')}` }, Uint8Array,
     setTimeout(fn, delay) { const id = ++timerId;timers.set(id, { fn, due: now + delay });return id; }, clearTimeout(id) { timers.delete(id); } });
   const module = new vm.SourceTextModule(source, { context });await module.link(() => {});await module.evaluate();
   const client = module.namespace.createAmmoClient({ onChange(value) { changes.push({ connection: value.connection, pending: value.pending, snapshot: value.snapshot }); } });
@@ -119,17 +121,17 @@ test('a recovered purchase never buys on initialization and an explicit retry re
   assert.equal(f.client.pending.recovered, true);assert.ok(f.requests().every(item => item.action !== 'buy'));
   const retry = f.client.retryPending();await f.flush();const replay = f.requests().at(-1);
   assert.equal(replay.action, 'buy');assert.equal(replay.requestId, request.requestId);assert.equal(replay.sessionId, OTHER);
-  f.reply(replay, snapshot({ remaining: 40, paid_remaining: 20, coins: 99, revision: 2 }));
-  assert.equal((await retry).ok, true);assert.equal(f.client.snapshot.coins, 99);assert.equal(f.client.pending, null);f.client.dispose();
+  f.reply(replay, snapshot({ remaining: 30, paid_remaining: 10, coins: 95, revision: 2 }));
+  assert.equal((await retry).ok, true);assert.equal(f.client.snapshot.coins, 95);assert.equal(f.client.pending, null);f.client.dispose();
 });
 
 test('a late live confirmation can be acknowledged without creating another purchase or spend', async () => {
   const f = await fixture();const buying = f.client.buy();await f.flush();const request = f.requests().at(-1);
   f.advance(12000);assert.equal((await buying).reason, 'pending');
-  f.reply(request, snapshot({ remaining: 40, coins: 99, paid_remaining: 20, revision: 2 }));await f.flush();
+  f.reply(request, snapshot({ remaining: 30, coins: 95, paid_remaining: 10, revision: 2 }));await f.flush();
   assert.equal(f.client.pending.status, 'confirmed');const count = f.requests().length;
   const receipt = await f.client.retryPending();assert.equal(receipt.ok, true);assert.equal(f.client.pending, null);
-  assert.equal(f.requests().length, count);assert.equal(f.client.snapshot.remaining, 40);f.client.dispose();
+  assert.equal(f.requests().length, count);assert.equal(f.client.snapshot.remaining, 30);f.client.dispose();
 });
 
 test('older revisions cannot restore spent ammo and daily or milestone balances come only from the server', async () => {
@@ -155,10 +157,88 @@ test('owner changes isolate persisted intents and late replies cannot affect the
 test('invalid inputs and unavailable durable storage never submit a financial request', async () => {
   const f = await fixture({ storageFails: true });const count = f.requests().length;
   assert.equal((await f.client.buy()).reason, 'storage_unavailable');
+  assert.equal((await f.client.buyCoach()).reason, 'storage_unavailable');
   assert.equal((await f.client.startRound('bad', 1)).reason, 'invalid');
   assert.equal((await f.client.startRound(OTHER, 51)).reason, 'invalid');
   assert.equal((await f.client.completeRound('bad', 1)).reason, 'invalid');
   assert.equal((await f.client.spend('')).reason, 'invalid');assert.equal(f.requests().length, count);
   assert.match(f.module.namespace.createRequestId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/);
   f.client.dispose();
+});
+
+test('coach rental requests share one UUID, accept only server terms and cannot race another purchase', async () => {
+  const f = await fixture(), before = f.requests().length;
+  const first = f.client.buyCoach(), second = f.client.buyCoach();await f.flush();
+  assert.equal(f.requests().length, before + 1);
+  const request = f.requests().at(-1);assert.equal(request.action, 'coach-buy');
+  assert.deepEqual(Object.keys(request).sort(), ['action', 'owner', 'requestId', 'sessionId', 'source', 'type'].sort());
+  assert.equal((await f.client.buy()).reason, 'busy');assert.equal((await f.client.spend('event')).reason, 'busy');
+  const expires = new Date(SERVER_EPOCH + 86400000).toISOString();
+  f.reply(request, snapshot({coins: 90, revision: 2, coach_active: true, coach_expires_at: expires}));
+  assert.equal((await first).ok, true);assert.equal((await second).ok, true);
+  assert.equal(f.client.snapshot.remaining, 20);assert.equal(f.client.snapshot.coins, 90);
+  assert.equal(f.client.snapshot.coach_expires_at, expires);assert.equal(f.client.snapshot.coach_active, true);
+  assert.equal(f.client.snapshot.coach_price, 10);assert.equal(f.client.snapshot.coach_duration_seconds, 86400);
+  assert.equal(f.client.pending, null);f.client.dispose();
+});
+
+test('a definitive coach-active decline reconciles the rental bought elsewhere without charging again', async () => {
+  const f = await fixture(), buying = f.client.buyCoach();await f.flush();
+  const request = f.requests().at(-1), expires = new Date(SERVER_EPOCH + 86400000).toISOString();
+  f.reply(request, snapshot({ok: false, reason: 'coach_active', coins: 90, revision: 2,
+    coach_active: true, coach_expires_at: expires}));
+  assert.equal((await buying).reason, 'coach_active');assert.equal(f.client.pending, null);
+  assert.equal(f.client.snapshot.coins, 90);assert.equal(f.client.snapshot.coach_active, true);
+  assert.equal(f.client.snapshot.coach_expires_at, expires);assert.equal(f.client.snapshot.remaining, 20);
+  assert.equal(f.requests().filter(item => item.action === 'coach-buy').length, 1);
+  f.client.dispose();
+});
+
+test('an uncertain coach rental is recovered by receipt and explicit retry keeps the original purchase UUID', async () => {
+  const original = await fixture();const buying = original.client.buyCoach();await original.flush();
+  const request = original.requests().at(-1);original.reply(request, {ok: false, reason: 'pending'});await buying;original.client.dispose();
+  const f = await fixture({store: original.store, sessionId: OTHER});await f.flush();
+  const lookup = f.requests().at(-1);assert.equal(lookup.action, 'receipt');assert.equal(lookup.originalAction, 'coach-buy');
+  assert.equal(lookup.receiptId, request.requestId);assert.equal(f.requests().some(item => item.action === 'coach-buy'), false);
+  f.reply(lookup, snapshot({found: false, receipt: null}));await f.flush();
+  const retry = f.client.retryPending();await f.flush();const replay = f.requests().at(-1);
+  assert.equal(replay.action, 'coach-buy');assert.equal(replay.requestId, request.requestId);
+  const expires = new Date(SERVER_EPOCH + 86400000).toISOString();
+  f.reply(replay, snapshot({coins: 90, revision: 2, coach_active: true, coach_expires_at: expires}));
+  assert.equal((await retry).ok, true);assert.equal(f.client.snapshot.coach_expires_at, expires);assert.equal(f.client.pending, null);
+  f.client.dispose();
+});
+
+test('rental expiry follows a monotonic server clock and late same-revision replies cannot revive expired access', async () => {
+  const f = await fixture(), start = f.client.serverNow;
+  assert.equal(start, SERVER_EPOCH);f.advance(2500);assert.equal(f.client.serverNow, SERVER_EPOCH + 2500);
+  const expires = new Date(SERVER_EPOCH + 10000).toISOString();
+  let refreshing = f.client.refresh();await f.flush();
+  f.reply(f.requests().at(-1), snapshot({revision: 2, server_now: new Date(SERVER_EPOCH + 2500).toISOString(), coach_active: true, coach_expires_at: expires}));await refreshing;
+  f.advance(8000);assert.equal(f.client.serverNow, SERVER_EPOCH + 10500);
+  refreshing = f.client.refresh();await f.flush();
+  f.reply(f.requests().at(-1), snapshot({revision: 2, server_now: new Date(SERVER_EPOCH + 10500).toISOString(), coach_active: false, coach_expires_at: expires}));await refreshing;
+  assert.equal(f.client.snapshot.coach_active, false);
+  refreshing = f.client.refresh();await f.flush();
+  f.reply(f.requests().at(-1), snapshot({revision: 2, server_now: new Date(SERVER_EPOCH + 2500).toISOString(), coach_active: true, coach_expires_at: expires}));await refreshing;
+  assert.equal(f.client.snapshot.coach_active, false);assert.equal(f.client.serverNow, SERVER_EPOCH + 10500);
+  f.init({owner: OTHER, sessionId: OTHER});await f.flush();
+  assert.equal(f.client.snapshot, null, 'another account cannot inherit this rental or clock snapshot');
+  f.client.dispose();
+});
+
+test('an expired recovered rental uses current outer snapshot fields instead of an old active payment receipt', async () => {
+  const original = await fixture(), buying = original.client.buyCoach();await original.flush();
+  const request = original.requests().at(-1);original.reply(request, {ok: false, reason: 'pending'});await buying;original.client.dispose();
+  const f = await fixture({store: original.store, sessionId: OTHER});await f.flush();
+  const lookup = f.requests().at(-1), expires = new Date(SERVER_EPOCH + 86400000).toISOString();
+  const historical = snapshot({coins: 90, revision: 2, coach_active: true, coach_expires_at: expires});
+  f.reply(lookup, snapshot({coins: 90, revision: 2, coach_active: false, coach_expires_at: expires,
+    server_now: new Date(SERVER_EPOCH + 86400001).toISOString(), found: true, receipt: historical}));
+  await f.flush();assert.equal(f.client.pending.status, 'confirmed');
+  assert.equal(f.client.snapshot.coach_active, false);assert.ok(f.client.serverNow > Date.parse(expires));
+  const count = f.requests().length, result = await f.client.retryPending();
+  assert.equal(result.ok, true);assert.equal(result.coach_active, false);assert.equal(result.coach_expires_at, expires);
+  assert.equal(f.requests().length, count);assert.equal(f.requests().some(item => item.action === 'coach-buy'), false);
+  assert.equal(f.client.pending, null);f.client.dispose();
 });

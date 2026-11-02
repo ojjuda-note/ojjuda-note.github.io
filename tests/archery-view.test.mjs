@@ -11,7 +11,13 @@ import {ARROWS, BOWS, STAGES, prepareStage, targetAt, launchArrow, stepArrow} fr
 const near = (actual, expected, epsilon = 1e-9) => assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
 const length = (a, b) => Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
 const base = (w = 1000, h = 600) => ({x: 0, y: 1.65, z: 0, cx: w / 2, horizon: h * .405, focal: Math.min(w * 1.08, h * 1.5)});
-const legacyStage = id => STAGES.find(stage => stage.legacyId === id);
+// Keep the solid-wall projection regression independent of the gentler lesson catalog.
+const coveredBird = {
+  id: 28, distance: 44, radius: 1.4, height: 5.8, kind: 'bird',
+  motion: {amplitudeX: 5.2, amplitudeY: 3.6, speed: .72, irregular: true},
+  wind: 2.258, passDuration: 12, passers: [],
+  obstacles: [{x: 0, z: 24, width: 24, height: 3.8, depth: .65, type: 'stone'}]
+};
 
 function birdCover(stage, time, camera) {
   const target = targetAt(stage, time), obstacle = stage.obstacles[0];
@@ -33,12 +39,12 @@ function birdCover(stage, time, camera) {
   };
 }
 
-test('the original wall-bird encounter hides and reveals its bird in either direction at its new difficulty', () => {
+test('a solid wall hides and reveals a crossing bird in either direction without projection leaks', () => {
   for (const {seed, hiddenAt, aboveAt, direction} of [
     {seed: 2, hiddenAt: 3.84, aboveAt: 5.76, direction: -1},
     {seed: 3, hiddenAt: 16.56, aboveAt: 17.8, direction: 1}
   ]) {
-    const stage = prepareStage(legacyStage(9), seed), obstacle = stage.obstacles[0];
+    const stage = prepareStage(coveredBird, seed), obstacle = stage.obstacles[0];
     for (const {w, h} of [{w: 1000, h: 600}, {w: 390, h: 410}, {w: 844, h: 280}]) {
       const hidden = birdCover(stage, hiddenAt, base(w, h)), above = birdCover(stage, aboveAt, base(w, h));
       for (const {target, bird, wall} of [hidden, above]) {
@@ -56,14 +62,13 @@ test('the original wall-bird encounter hides and reveals its bird in either dire
   }
 });
 
-test('starter equipment can hit the relocated wall bird in its stronger wind from either direction', () => {
+test('starter equipment clears a solid wall to hit an exposed bird, while a low shot strikes masonry', () => {
   // These are normal full-charge aiming inputs, with gravity, drag and stage wind enabled.
   for (const {seed, time, yaw, pitch, direction} of [
     {seed: 0, time: 5.36, yaw: -.106966, pitch: .259706, direction: -1},
     {seed: 0, time: 17, yaw: -.181823, pitch: .286257, direction: 1}
   ]) {
-    const stage = prepareStage(legacyStage(9), seed);
-    assert.ok(stage.id > 9 && stage.wind > .96, 'verify the real later-stage wind instead of the old template conditions');
+    const stage = prepareStage(coveredBird, seed);
     const shot = launchArrow({bow: BOWS[0], arrow: ARROWS[0], charge: 1, yaw, pitch});
     const result = stepArrow(shot, 8, stage, time);
     assert.equal(result.type, 'hit', 'the real trajectory must clear the solid wall');
@@ -178,8 +183,30 @@ test('launch begins in the saved aiming view and interpolation restores it exact
   assert.equal(RETURN_DURATION, .7);
 });
 
+test('all six animal lessons fit vertically when crossing the normal aiming view at every distance', () => {
+  const animalKinds = ['rabbit', 'wildcat', 'deer', 'pigeon', 'eagle', 'cheetah'];
+  for (const template of STAGES.filter(stage => animalKinds.includes(stage.kind))) for (const seed of [0, 5, 19]) {
+    const stage = prepareStage(template, seed), duration = targetAt(stage, 0).passDuration;
+    for (const [w, h] of [[1000, 600], [390, 410], [844, 280]]) {
+      let visibleSamples = 0;
+      for (let index = 0; index < 120; index++) {
+        const target = targetAt(stage, duration * (index + .5) / 120), camera = base(w, h);
+        const left = projectPoint({...target, x: target.x - target.rx}, camera);
+        const right = projectPoint({...target, x: target.x + target.rx}, camera);
+        if (left.x < 0 || right.x > w) continue;
+        visibleSamples++;
+        const top = projectPoint({...target, y: target.y + target.ry}, camera);
+        const bottom = projectPoint({...target, y: target.y - target.ry}, camera);
+        assert.ok(top.y >= 0 && bottom.y <= h, `${stage.kind} at ${stage.distance}m fits a ${w}×${h} view`);
+      }
+      assert.ok(visibleSamples > 0, 'each animal crosses the visible aiming field');
+    }
+  }
+});
+
 test('elevated preview reveals the full target above every wall in all obstacle stages', () => {
-  for (const stage of STAGES.filter(stage => stage.obstacles.length)) {
+  for (const template of STAGES.filter(stage => stage.obstacles.length)) for (const seed of [0, 19]) {
+    const stage = prepareStage(template, seed);
     for (const time of [0, 1.3, 5.7, 19]) {
       const target = targetAt(stage, time);
       for (const {w, h} of [{w: 1000, h: 600}, {w: 390, h: 410}, {w: 844, h: 280}]) {
@@ -208,6 +235,11 @@ test('elevated preview reveals the full target above every wall in all obstacle 
             assert.ok(bottom.y < top.y, `stage ${stage.id} entire target appears above masonry`);
             const ground = projectPoint({x: wall.x, y: 0, z: wallZ}, camera);
             assert.ok(ground.y > top.y && ground.y < h, `stage ${stage.id} wall and ground fit in overview`);
+            for (const x of [wall.x - wall.width / 2, wall.x + wall.width / 2]) for (const y of [0, wall.height]) {
+              const corner = projectPoint({x, y, z: wallZ}, camera);
+              assert.ok(corner.x >= 0 && corner.x <= w && corner.y >= 0 && corner.y <= h,
+                `stage ${stage.id} near and far wall corners fit a ${w}×${h} overview`);
+            }
           }
         }
       }
@@ -216,7 +248,7 @@ test('elevated preview reveals the full target above every wall in all obstacle 
 });
 
 test('preview centers moving targets independently of the saved zoom and pan', () => {
-  const stage = legacyStage(11), target = targetAt(stage, 2.4);
+  const stage = STAGES.find(stage => stage.kind === 'deer' && stage.distance === 30), target = targetAt(stage, 2.4);
   const normal = base(390, 410);
   const zoomed = {...normal, cx: normal.cx + 90, horizon: normal.horizon + 130, focal: normal.focal * 2};
   const camera = desiredPreviewCamera(stage, target, normal, {w: 390, h: 410});
