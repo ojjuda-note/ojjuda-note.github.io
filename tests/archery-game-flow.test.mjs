@@ -5,8 +5,11 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const SAVE_KEY = 'forest-archer-progress-v2';
+const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
 const engineSource = await readFile(new URL('../games/forest-archer/engine.mjs', import.meta.url), 'utf8');
 const viewSource = await readFile(new URL('../games/forest-archer/view.mjs', import.meta.url), 'utf8');
+const cinematicSource = await readFile(new URL('../games/forest-archer/cinematic.mjs', import.meta.url), 'utf8');
+const coachSource = await readFile(new URL('../games/forest-archer/coach.mjs', import.meta.url), 'utf8');
 const gameSource = await readFile(new URL('../games/forest-archer/game.mjs', import.meta.url), 'utf8');
 const ammoSource = await readFile(new URL('../games/forest-archer/ammo-client.mjs', import.meta.url), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
@@ -15,7 +18,8 @@ let harnessSequence = 0;
 async function appHarness(saved = null, ammoOptions = {}) {
   let now = 0, nextFrame = null, frameId = 0, timerId = 0;
   let viewport = { width: 1000, height: 600 }, canvasOrigin = { left: 0, top: 0 }, sceneryFrame, firstPersonFrame;
-  const timers = new Map(), canvasText = [], canvasArcs = [];
+  const timers = new Map(), canvasText = [], canvasArcs = [], bullseyeFrames = [], vignetteFrames = [];
+  const speech = {utterances: [], times: [], cancellations: 0, overlaps: 0, activeUntil: 0};
   const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify(saved)]] : []);
   const noop = () => {};
   const gradient = { addColorStop: noop };
@@ -63,13 +67,26 @@ async function appHarness(saved = null, ammoOptions = {}) {
   };
   document = { ...eventHub(), hidden: false, activeElement: null, body: { style: {} }, getElementById: getElement, querySelectorAll: () => [] };
   const window = eventHub();
+  window.matchMedia = query => ({ media: query, matches: query === '(prefers-reduced-motion: reduce)' && !!ammoOptions.reducedMotion,
+    addEventListener: noop, removeEventListener: noop });
+  if (ammoOptions.speechAvailable !== false) {
+    window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
+    window.speechSynthesis = {getVoices: () => [{lang: 'ko-KR', name: 'Korean test voice'}],
+      speak: utterance => {
+        if (now < speech.activeUntil) speech.overlaps++;
+        speech.activeUntil = now + 350;speech.utterances.push(utterance);speech.times.push(now);
+      }, cancel: () => { speech.cancellations++;speech.activeUntil = now; }};
+  }
   let requestSequence = 0;
   const harnessId = ++harnessSequence;
   const uuid = () => `00000000-0000-4000-8000-${String(harnessId * 100000 + ++requestSequence).padStart(12, '0')}`;
   const owner = '11111111-1111-4111-8111-111111111111', sessionId = '22222222-2222-4222-8222-222222222222', origin = 'https://ojjuda.test';
   const ammoRequests = [], heldActions = new Set(ammoOptions.hold || []), receipts = ammoOptions.server?.receipts || new Map(), runs = ammoOptions.server?.runs || new Map();
-  const account = ammoOptions.server?.account || { remaining: ammoOptions.remaining ?? 10000, coins: ammoOptions.coins ?? 100, main_rounds: saved?.mainRounds || 0, revision: 1 };
-  const accountSnapshot = extra => ({ ok: true, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 20, pack_price: 1, ...extra });
+  const account = ammoOptions.server?.account || { remaining: ammoOptions.remaining ?? 10000, coins: ammoOptions.coins ?? 100, main_rounds: saved?.mainRounds || 0, revision: 1,
+    coach_expires_at: ammoOptions.coachExpiresAt ?? (ammoOptions.coachActive ? new Date(SERVER_EPOCH + 86400000).toISOString() : null) };
+  const accountSnapshot = extra => ({ ok: true, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+    server_now: new Date(SERVER_EPOCH + now).toISOString(), coach_expires_at: account.coach_expires_at ?? null,
+    coach_active: Date.parse(account.coach_expires_at) > SERVER_EPOCH + now, coach_price: 10, coach_duration_seconds: 86400, ...extra });
   const executeAmmo = request => {
     if (request.action === 'status') return accountSnapshot();
     if (request.action === 'receipt') return accountSnapshot({ found: receipts.has(request.receiptId), receipt: receipts.get(request.receiptId) || null });
@@ -81,7 +98,12 @@ async function appHarness(saved = null, ammoOptions = {}) {
       if (!run || run.stage !== request.stage) return accountSnapshot({ ok: false, reason: 'run_not_found' });
       if (!run.complete) { run.complete = true;account.main_rounds++;if (account.main_rounds % 5 === 0 && account.main_rounds <= 50) account.remaining += 20; }
     } else if (request.action === 'spend') { if (!account.remaining) return accountSnapshot({ ok: false, reason: 'ammo_empty' });account.remaining--; }
-    else if (request.action === 'buy') { if (account.coins < 1) return accountSnapshot({ ok: false, reason: 'coins' });account.coins--;account.remaining += 20; }
+    else if (request.action === 'buy') { if (account.coins < 5) return accountSnapshot({ ok: false, reason: 'coins' });account.coins -= 5;account.remaining += 10; }
+    else if (request.action === 'coach-buy') {
+      if (accountSnapshot().coach_active) return accountSnapshot({ok: false, reason: 'coach_active'});
+      if (account.coins < 10) return accountSnapshot({ok: false, reason: 'coins'});
+      account.coins -= 10;account.coach_expires_at = new Date(SERVER_EPOCH + now + 86400000).toISOString();
+    }
     account.revision++;const result = accountSnapshot(extra);receipts.set(request.requestId, result);return result;
   };
   const replyAmmo = (request, result = executeAmmo(request)) => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'ammo-response', owner, sessionId, requestId: request.requestId, action: request.action, result } });
@@ -94,7 +116,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const fakeMath = Object.create(Math); fakeMath.random = () => 0.5;
   const context = vm.createContext({
     document, Math: fakeMath, console, performance: { now: () => now }, devicePixelRatio: 1, crypto: { randomUUID: uuid },
-    navigator: { vibrate: noop }, window,
+    navigator: { vibrate: noop }, window, matchMedia: window.matchMedia,
     localStorage: { getItem: key => store.get(key) ?? null, setItem: (key, value) => store.set(key, String(value)), removeItem: key => store.delete(key) },
     requestAnimationFrame(fn) { nextFrame = fn; return ++frameId; },
     setTimeout(fn, delay = 0) { const id = ++timerId; timers.set(id, { due: now + Math.max(0, delay), fn }); return id; }, clearTimeout: id => timers.delete(id),
@@ -102,18 +124,20 @@ async function appHarness(saved = null, ammoOptions = {}) {
   });
   const engine = new vm.SourceTextModule(engineSource, { context, identifier: 'engine.mjs' });
   const view = new vm.SourceTextModule(viewSource, { context, identifier: 'view.mjs' });
+  const cinematic = new vm.SourceTextModule(cinematicSource, { context, identifier: 'cinematic.mjs' });
+  const coach = new vm.SourceTextModule(coachSource, { context, identifier: 'coach.mjs' });
   const ammoModule = new vm.SourceTextModule(ammoSource, { context, identifier: 'ammo-client.mjs' });
-  const sceneryNames = ['drawScenery', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow'];
+  const sceneryNames = ['drawScenery', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
-    for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : noop);
+    for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
-  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, get coachRemaining(){return coachRemaining;}, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
   api = game.namespace.testApi;
   return {
-    api, engine: engine.namespace, view: view.namespace, getElement, store, document, window, canvasText, canvasArcs, flush,
+    api, engine: engine.namespace, view: view.namespace, cinematic: cinematic.namespace, coach: coach.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, speech, flush,
     ammo: { account, receipts, runs, requests: ammoRequests, held: heldActions, reply: replyAmmo, execute: executeAmmo, snapshot: accountSnapshot },
     get viewport() { return { ...viewport }; },
     get sceneryFrame() { return sceneryFrame; },
@@ -190,6 +214,37 @@ async function centeredShot(app) {
   app.until(() => ['ready', 'finished'].includes(app.api.state.mode));
   await app.flush();
 }
+
+// Solve one ordinary damped shot at the current release time. This also gives
+// moving-target replay tests an actual centre hit without injecting a result.
+function preciseMainDraw(app, offset = { x: 0, y: 0 }, {missDuringHold = false} = {}) {
+  const { api, engine } = app, { state } = api, pad = app.getElement('aimTouchpad');
+  pad.emit('pointerdown');
+  if (missDuringHold) moveHeldAim(app, .4, .5);
+  holdFor(app, 1300);
+  const probe = engine.launchArrow({bow: api.activeBow(), arrow: api.activeArrow(), charge: 1, velocityBias: state.velocityBias});
+  const drag = probe.dragRate, wind = state.stage.wind * engine.WIND_RESPONSE * probe.windFactor;
+  const velocityForTime = time => {
+    const target = engine.targetAt(state.stage, state.time + time);
+    const a = drag ? -Math.expm1(-drag * time) / drag : time;
+    const b = drag ? (time - a) / drag : time * time / 2;
+    return {x: (target.x + offset.x * target.rx - engine.PLAYER.x - wind * b) / a,
+      y: (target.y + offset.y * target.ry - engine.PLAYER.y + engine.GRAVITY * b) / a,
+      z: (target.z - engine.PLAYER.z) / a};
+  };
+  let lo = .001, hi = 2;
+  assert.ok(Math.hypot(...Object.values(velocityForTime(hi))) < probe.speed, 'fixture has a reachable low trajectory');
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    if (Math.hypot(...Object.values(velocityForTime(mid))) > probe.speed) lo = mid;else hi = mid;
+  }
+  const v = velocityForTime((lo + hi) / 2), sway = api.effectiveSway();
+  const coords = moveHeldAim(app, Math.atan2(v.x, v.z) - sway.x, Math.atan2(v.y, Math.hypot(v.x, v.z)) - sway.y);
+  return {pad, coords};
+}
+
+const shotAccounting = app => [app.api.state.used, app.api.state.score, app.api.state.hits,
+  app.api.progress.shots, app.api.progress.hits, app.api.progress.coins, app.ammo.account.remaining];
 
 function modalAction(app, action) {
   const button = app.getElement(`action-${action}`);
@@ -557,6 +612,331 @@ for (const fixture of [
   assert.equal(app.api.progress.shots, 1);assert.equal(app.api.progress.coins, 104, 'a repeated final impact cannot award a second reward');
   app.until(() => state.mode === 'ready');
   assert.equal(state.used, 1);assert.equal(app.api.progress.shots, 1);
+});
+
+test('a real bullseye replays recorded flight once, holds impact, and restores aim without a second score', async () => {
+  const app = await appHarness({version: 1, coins: 100, sound: false});
+  const {pad, coords} = preciseMainDraw(app), {state} = app.api;
+  const originalAim = {...state.aim}, originalCamera = {...app.api.camera};
+  pad.emit('pointerup', coords);await app.flush();
+  app.until(() => state.mode === 'settling');
+  const shot = state.shot, replay = state.cinematic;
+  assert.equal(shot.result.score, 10);assert.ok(replay);
+  assert.equal(replay.shot, shot);assert.ok(shot.replayFrames.length > 2);
+  assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'flight');
+  assert.deepEqual(shotAccounting(app), [1, 10, 1, 1, 1, 110, 10000]);
+  const accounting = shotAccounting(app), physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result});
+  const worldTime = state.time;
+  app.api.onImpact();app.api.onImpact();
+  assert.equal(state.cinematic, replay, 'a repeated impact cannot restart the same replay');
+  app.frames(18);
+  assert.equal(state.mode, 'settling');assert.equal(app.api.cinematicFrame().phase, 'flight');
+  assert.equal(state.time, worldTime, 'the replay has its own presentation clock');
+  assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result}), physics);
+  assert.deepEqual(shotAccounting(app), accounting);
+  const sample = app.api.cinematicFrame(), target = app.engine.targetAt(state.stage, app.api.renderTime());
+  const tips = app.api.sceneItems(target).filter(item => item.kind === 'tip');
+  assert.equal(tips.length, 1, 'the final attachment is hidden until replay impact');
+  assert.equal(tips[0].flying, true);
+  for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(tips[0].point[axis] - sample.point[axis]) < 1e-9);
+  assert.equal(app.sceneryFrame.time, sample.time, 'wind leaves and targets use the recorded scene time');
+  app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'impact');
+  assert.equal(state.time, worldTime);assert.ok(app.bullseyeFrames.length > 0);
+  assertAttachedArrows(app, [{x: shot.attachment.x, y: shot.attachment.y}], [shot.velocity]);
+  app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'return');
+  app.until(() => state.mode === 'ready');
+  assert.equal(state.cinematic, null);assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
+  assert.deepEqual(shotAccounting(app), accounting);
+  assert.deepEqual({...state.aim}, originalAim);assert.deepEqual({...app.api.camera}, originalCamera);
+  app.frames(4);assert.ok(state.time > worldTime, 'normal scene time resumes when the replay is complete');
+});
+
+test('eight-point hits, misses, event guns and animal hits do not start the circular-target bullseye replay', async () => {
+  for (const outcome of ['eight', 'miss']) {
+    const app = await appHarness(), {state} = app.api;
+    const {pad, coords} = outcome === 'eight' ? preciseMainDraw(app, {x: .3, y: 0}) : startHighMiss(app);
+    pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
+    assert.equal(state.shot.result.score, outcome === 'eight' ? 8 : 0);
+    assert.equal(state.cinematic, null);app.frames(5);
+    assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
+    assert.equal(app.bullseyeFrames.length, 0);assert.equal(app.vignetteFrames.length, 0);
+  }
+  const event = await appHarness();event.api.enterEvent(1);await event.flush();
+  await resolvedEventShot(event);
+  assert.equal(event.api.state.cinematic, null);assert.equal(event.api.state.score, 10);
+  const animal = await appHarness();await enterScene(animal, 'rabbit');
+  resolveTestHit(animal, {x: 0, y: 0}, {x: 0, y: -2, z: 30}, 10);
+  assert.equal(animal.api.state.cinematic, null);assert.equal(animal.api.state.score, 10);
+});
+
+test('moving-target replay follows recorded time through resizing and preserves the real impact attachment', async () => {
+  const app = await appHarness();await enterScene(app, 'moving');
+  const {pad, coords} = preciseMainDraw(app), {state} = app.api;
+  pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
+  const shot = state.shot, worldTime = state.time, elapsed = shot.elapsed;
+  assert.equal(shot.result.score, 10);assert.ok(state.cinematic);
+  app.frames(16);
+  for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+    app.resize(width, height);app.frames(1);
+    const frame = app.api.cinematicFrame(), target = app.engine.targetAt(state.stage, frame.time);
+    const items = app.api.sceneItems(target), displayedTarget = items.find(item => item.kind === 'target').target;
+    assert.equal(displayedTarget.x, target.x);assert.equal(displayedTarget.y, target.y);
+    assert.equal(app.sceneryFrame.time, frame.time);
+    assert.ok(Object.values(app.api.camera).every(Number.isFinite));
+    const visible = app.api.project(frame.point);
+    assert.equal(visible.visible, true);assert.ok(visible.x >= 0 && visible.x <= width && visible.y >= 0 && visible.y <= height);
+    assert.equal(shot.elapsed, elapsed);assert.equal(state.time, worldTime);
+  }
+  app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'impact');
+  const offset = {x: shot.attachment.x, y: shot.attachment.y};
+  assertAttachedArrows(app, [offset], [shot.velocity]);
+  app.until(() => state.mode === 'ready');app.frames(90);
+  const moved = assertAttachedArrows(app, [offset], [shot.velocity]);
+  assert.ok(Math.abs(moved.x - shot.result.targetCenter.x) > .01);
+  assert.deepEqual(shotAccounting(app).slice(0, 5), [1, 10, 1, 1, 1]);
+});
+
+for (const fixture of [{id: 12, stage: 4, charge: .225, pitch: .558}, {id: 13, stage: 2, charge: 1, pitch: .066}]) {
+  test(`a genuine special-arrow ${fixture.id} bullseye replays its resolved path without repeating its ability`, async () => {
+    const app = await appHarness({version: 1, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false});
+    const {state} = app.api, pad = app.getElement('aimTouchpad');
+    pad.emit('pointerdown');holdFor(app, fixture.charge * 1250);
+    const sway = app.api.effectiveSway(), coords = moveHeldAim(app, -sway.x, fixture.pitch - sway.y);
+    pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
+    const shot = state.shot;
+    assert.equal(shot.result.score, 10);assert.ok(state.cinematic);
+    if (fixture.id === 12) assert.equal(shot.bounceCount, 1);else assert.equal(shot.magnetSteered, true);
+    const counters = [shot.elapsed, shot.bounceCount, shot.bouncesRemaining, shot.magnetTurn, shot.magnetCorrection];
+    const accounting = shotAccounting(app);
+    app.until(() => state.mode === 'ready');
+    assert.deepEqual([shot.elapsed, shot.bounceCount, shot.bouncesRemaining, shot.magnetTurn, shot.magnetCorrection], counters);
+    assert.deepEqual(shotAccounting(app), accounting);
+  });
+}
+
+test('reduced-motion bullseyes skip replay flight and pass the preference to impact rendering', async () => {
+  const app = await appHarness(null, {reducedMotion: true}), {state} = app.api;
+  const {pad, coords} = preciseMainDraw(app), baseCamera = {...app.api.camera};pad.emit('pointerup', coords);await app.flush();
+  app.until(() => state.mode === 'settling');
+  assert.ok(state.cinematic?.reducedMotion);assert.equal(state.cinematic.flightDuration, 0);
+  assert.equal(app.api.cinematicFrame().phase, 'impact');
+  app.resize(1000, 600);
+  assert.deepEqual({...app.api.camera}, {...app.view.desiredFollowCamera(state.shot.position, baseCamera, {w: 1000, h: 600})},
+    'reduced motion retains the ordinary impact view without the cinematic camera move');
+  const accounting = shotAccounting(app);app.frames(10);
+  assert.ok(app.bullseyeFrames.length > 0);
+  assert.ok(app.bullseyeFrames.every(frame => frame.at(-1).reducedMotion));
+  assert.ok(app.vignetteFrames.every(frame => frame.at(-1).reducedMotion));
+  app.until(() => state.mode === 'ready');assert.deepEqual(shotAccounting(app), accounting);
+});
+
+test('a new round discards an active replay and old recorded frames without replaying its award', async () => {
+  const app = await appHarness(), {state} = app.api;
+  const {pad, coords} = preciseMainDraw(app);pad.emit('pointerup', coords);await app.flush();
+  app.until(() => state.mode === 'settling');assert.ok(state.cinematic);
+  const old = state.shot, coins = app.api.progress.coins;
+  app.api.resetRound(app.engine.STAGES[0]);await app.flush();app.frames(3);
+  assert.equal(state.cinematic, null);assert.equal(state.shot, null);assert.equal(state.mode, 'ready');
+  assert.equal(state.targetMarks.length, 0);assert.equal(state.effects.length, 0);assert.equal(state.used, 0);
+  assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
+  assert.equal(app.api.progress.coins, coins);assert.equal(app.api.progress.shots, 1);
+  assert.equal(old.handled, true);
+});
+
+test('a moving-target burst starts one replay after the last arrival using the chosen arrow’s actual impact time', async () => {
+  const app = await appHarness({version: 1, coins: 100, ownedBows: [0, 19], bow: 19, lastStage: 5, sound: false});
+  const {state} = app.api, {pad, coords} = preciseMainDraw(app);
+  pad.emit('pointerup', coords);await app.flush();
+  const volley = state.volley;assert.equal(volley.shots.length, 3);
+  app.until(() => volley.shots.some(shot => shot.result) && volley.shots.some(shot => shot.active));
+  assert.equal(state.cinematic, null);assert.equal(state.score, 0);
+  app.until(() => state.mode === 'settling');
+  assert.ok(volley.shots.every(shot => !shot.active));
+  const replay = state.cinematic, shot = state.shot;
+  assert.ok(replay);assert.equal(replay.shot, shot);assert.equal(shot.result.score, 10);
+  assert.equal(replay.impactTime, shot.targetMark.born);
+  assert.ok(replay.impactTime < state.time, 'the best first arrival predates the last burst arrow');
+  const accounting = shotAccounting(app);app.api.onImpact();assert.equal(state.cinematic, replay);
+  app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'impact');
+  const time = app.api.renderTime(), target = app.engine.targetAt(state.stage, time);
+  assert.ok(Math.abs(time - shot.targetMark.born) < 1e-9);
+  assert.ok(Math.abs(target.x - shot.result.targetCenter.x) < 1e-9);
+  assert.ok(Math.abs(target.y - shot.result.targetCenter.y) < 1e-9);
+  app.until(() => state.mode === 'ready');
+  assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, 3);
+});
+
+test('the coach rents for twenty-four server hours and ten 쭈 while its on/off preference survives reload', async () => {
+  const app = await appHarness({version: 1, coins: 10000, sound: false}, {coins: 20});
+  assert.equal(app.api.coachRemaining(), 0);
+  app.api.showShop('bow');assert.match(app.getElement('modalContent').innerHTML, /data-shop-tab="coach"/);
+  app.api.showShop('coach');assert.match(app.getElement('modalContent').innerHTML, /10\s*쭈/);assert.match(app.getElement('modalContent').innerHTML, /24시간/);
+  modalAction(app, 'buy-coach');modalAction(app, 'buy-coach');await app.flush();
+  assert.equal(app.api.progress.coins, 10000);assert.equal(app.ammo.account.coins, 10);
+  assert.equal(app.api.coachRemaining(), 86400);assert.equal(app.api.progress.coachEnabled, true);
+  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 1);
+  const expiry = app.ammo.account.coach_expires_at;
+  modalAction(app, 'buy-coach');await app.flush();assert.equal(app.ammo.account.coins, 10);assert.equal(app.ammo.account.coach_expires_at, expiry);
+  modalAction(app, 'toggle-coach');assert.equal(app.api.progress.coachEnabled, false);
+  const loaded = await appHarness(app.snapshot(), {server: app.ammo});
+  assert.equal(loaded.api.progress.coachEnabled, false);assert.ok(loaded.api.coachRemaining() > 0);
+  assert.equal(loaded.api.progress.coins, 10000);assert.equal(loaded.ammo.account.coins, 10);
+  loaded.api.showShop('coach');modalAction(loaded, 'toggle-coach');
+  assert.equal(loaded.api.progress.coachEnabled, true);assert.equal(loaded.ammo.account.coins, 10);
+  assert.equal(loaded.snapshot().coachEnabled, true);
+  assert.equal(Object.hasOwn(loaded.snapshot(), 'coachOwned'), false, 'local storage cannot grant a rental');
+  const poor = await appHarness({version: 1, coins: 99999, coachOwned: true, coachEnabled: true}, {coins: 9});
+  assert.equal(poor.api.coachRemaining(), 0, 'a legacy local ownership flag grants no access');
+  poor.api.showShop('coach');modalAction(poor, 'buy-coach');await poor.flush();
+  assert.equal(poor.api.coachRemaining(), 0);assert.equal(poor.ammo.account.coins, 9);assert.equal(poor.api.progress.coins, 99999);
+});
+
+test('an uncertain coach purchase retries one receipt without a second ten-쭈 charge or a longer rental', async () => {
+  const app = await appHarness({version: 1, coins: 777, sound: false}, {coins: 20, hold: ['coach-buy']});
+  app.api.showShop('coach');modalAction(app, 'buy-coach');modalAction(app, 'buy-coach');await app.flush();
+  const requests = app.ammo.requests.filter(request => request.action === 'coach-buy');assert.equal(requests.length, 1);
+  const original = requests[0];app.ammo.execute(original);
+  const expires = app.ammo.account.coach_expires_at;
+  app.ammo.reply(original, {ok: false, reason: 'pending'});await app.flush();
+  assert.equal(app.api.coachRemaining(), 0, 'an uncertain local result cannot grant rental access');
+  assert.equal(app.ammo.account.coins, 10);assert.equal(app.api.progress.coins, 777);
+  modalAction(app, 'buy-coach');await app.flush();
+  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 1);
+  app.ammo.held.delete('coach-buy');await app.api.retryAmmo();await app.flush();
+  const attempts = app.ammo.requests.filter(request => request.action === 'coach-buy');
+  assert.equal(attempts.length, 2);assert.equal(attempts[1].requestId, original.requestId);
+  assert.equal(app.ammo.account.coins, 10);assert.equal(app.ammo.account.coach_expires_at, expires);
+  assert.equal(app.api.coachRemaining(), 86400);assert.equal(app.api.ammo.pending, null);
+});
+
+test('coach access expires while the player is drawing without firing or silently renewing it', async () => {
+  const app = await appHarness({version: 1, coachEnabled: true, sound: true},
+    {coachExpiresAt: new Date(SERVER_EPOCH + 1800).toISOString()});
+  const {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  app.until(() => app.api.state.coachSaid, 20);assert.equal(app.speech.utterances.length, 1);
+  holdFor(app, 700);
+  assert.equal(app.api.coachRemaining(), 0);assert.equal(app.api.state.mode, 'drawing');
+  assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);assert.equal(app.api.state.used, 0);
+  pad.emit('pointercancel');
+  preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(15);
+  assert.equal(app.api.state.coachSaid, false);assert.equal(app.speech.utterances.length, 1);
+  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+  app.getElement('aimTouchpad').emit('pointercancel');
+});
+
+test('resuming a paused clock waits for fresh coach access and never revives the old rental after a failed refresh', async () => {
+  for (const failed of [false, true]) {
+    const app = await appHarness({version: 1, coachEnabled: true, sound: true}, {coachActive: true});
+    const {state} = app.api, expires = app.ammo.account.coach_expires_at;
+    assert.equal(app.api.coachRemaining(), 86400);
+    app.ammo.held.add('status');
+    app.document.hidden = true;app.document.emit('visibilitychange');
+    app.document.hidden = false;app.document.emit('visibilitychange');await app.flush();
+    const refresh = app.ammo.requests.filter(request => request.action === 'status').at(-1);
+    assert.equal(state.coachRefreshing, true);assert.equal(app.api.coachRemaining(), 0);
+    preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(8);
+    assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
+    app.ammo.reply(refresh, failed ? {ok: false, reason: 'unavailable'} : app.ammo.snapshot({
+      server_now: new Date(Date.parse(expires) + 1).toISOString(), coach_active: false
+    }));
+    await app.flush();app.frames(8);
+    assert.equal(state.coachRefreshing, false);assert.equal(app.api.coachRemaining(), 0);
+    assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
+    assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+    app.getElement('aimTouchpad').emit('pointercancel');
+    if (failed) {
+      const retry = app.api.retryAmmo();await app.flush();
+      const request = app.ammo.requests.filter(item => item.action === 'status').at(-1);
+      assert.notEqual(request.requestId, refresh.requestId);
+      app.ammo.reply(request, app.ammo.snapshot({server_now: new Date(SERVER_EPOCH + 3600000).toISOString(), coach_active: true}));
+      await retry;await app.flush();
+      assert.equal(app.api.coachRemaining(), 82800, 'a later valid server confirmation can restore the still-active rental');
+    }
+    assert.ok(app.now < 10000, 'server elapsed hours are independent of the short local performance clock');
+    assert.equal(state.used, 0);assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+  }
+});
+
+test('the rented coach keeps good timing visible and repeats each new opportunity without overlapping voices or firing', async () => {
+  const app = await appHarness({version: 1, coins: 100, coachEnabled: true, sound: true}, {coachActive: true});
+  const {state} = app.api, {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  assert.equal(state.coachSaid, false);assert.equal(state.coachReady, false);
+  const goodAim = {...state.aim}, before = shotAccounting(app);
+  app.until(() => app.speech.utterances.length === 1, 20);
+  assert.equal(state.coachReady, true);assert.equal(state.coachSaid, true);
+  const firstVoice = app.speech.times[0];
+  while (app.now - firstVoice < 1100) {
+    app.frames(1);
+    assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/, 'a continuous good window keeps its visual cue');
+    assert.equal(app.speech.utterances.length, 1, 'continuous speech does not flood each prediction check');
+  }
+  app.until(() => app.speech.utterances.length === 2, 30);
+  assert.ok(app.speech.times[1] - firstVoice >= 1400 - 1e-8);
+  assert.ok(app.speech.times[1] - firstVoice <= 1480);
+  assert.deepEqual({...state.aim}, goodAim, 'coach checks never adjust the player’s aim');
+
+  moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);
+  assert.equal(state.coachCueUntil, 0);assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+  assert.equal(state.coachSaid, true, 'having spoken before does not disable later opportunities');
+  moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => state.coachReady, 8);
+  assert.ok(app.now - app.speech.times[1] < 450);
+  assert.equal(app.speech.utterances.length, 2, 'a quick re-entry respects the minimum voice interval');
+  assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/);
+  app.until(() => app.speech.utterances.length === 3, 30);
+  assert.ok(app.speech.times[2] - app.speech.times[1] >= 450 - 1e-8);
+  assert.ok(app.speech.times[2] - app.speech.times[1] <= 530, 'a still-good new window speaks after cooldown without waiting for the long repeat');
+
+  // A short good window that disappears during voice cooldown must not leave a
+  // delayed command queued for the now-bad aim.
+  moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);
+  moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => state.coachReady, 8);
+  moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);holdFor(app, 600);
+  assert.equal(app.speech.utterances.length, 3);assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+  moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => app.speech.utterances.length === 4, 8);
+  assert.equal(state.mode, 'drawing');assert.equal(state.shot, null);assert.deepEqual(shotAccounting(app), before);
+  assert.equal(app.speech.overlaps, 0);
+  for (let i = 1; i < app.speech.times.length; i++) assert.ok(app.speech.times[i] - app.speech.times[i - 1] >= 450 - 1e-8);
+  assert.ok(app.speech.utterances.every(utterance => utterance.text === '쏴!' && utterance.lang === 'ko-KR'));
+
+  pad.emit('pointercancel');assert.equal(state.coachReady, false);assert.equal(state.coachCueUntil, 0);
+  const nextDraw = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  assert.equal(state.coachSaid, false);app.until(() => app.speech.utterances.length === 5, 20);
+  assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);
+  nextDraw.pad.emit('pointerup', nextDraw.coords);await app.flush();
+  assert.equal(state.used, 1);assert.equal(state.mode, 'flight', 'only the player’s release fires the arrow');
+});
+
+test('coach evaluates up to sixteen times per second and remains absent when disabled or in gun events', async () => {
+  const app = await appHarness({version: 1, coachEnabled: true, sound: true}, {coachActive: true});
+  const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');moveHeldAim(app, .4, .5);
+  const checks = [];let previous = app.api.state.coachLastCheck;
+  for (let i = 0; i < 120; i++) {
+    app.frames(1);const next = app.api.state.coachLastCheck;
+    if (next !== previous) checks.push(next);previous = next;
+  }
+  assert.ok(checks.length >= 24 && checks.length <= 32, 'a two-second draw samples promptly without exceeding sixteen checks per second');
+  for (let i = 1; i < checks.length; i++) assert.ok(checks[i] - checks[i - 1] >= 62.5 - 1e-8);
+  assert.equal(app.speech.utterances.length, 0);pad.emit('pointercancel');
+  for (const event of [false, true]) {
+    const quiet = await appHarness({version: 1, coachEnabled: event, sound: true}, {coachActive: true});
+    if (event) {quiet.api.enterEvent(1);await quiet.flush();}
+    const input = quiet.getElement('aimTouchpad');input.emit('pointerdown');holdFor(quiet, 1500);
+    assert.equal(quiet.api.state.mode, 'drawing');assert.equal(quiet.api.state.coachSaid, false);
+    assert.equal(quiet.api.state.coachLastCheck, -Infinity);assert.equal(quiet.speech.utterances.length, 0);
+    assert.equal(quiet.api.state.used, 0);assert.equal(quiet.ammo.requests.filter(request => request.action === 'spend').length, 0);
+    input.emit('pointercancel');
+    if (event) {quiet.api.showShop('coach');assert.doesNotMatch(quiet.getElement('modalContent').innerHTML, /data-action="buy-coach"|data-action="toggle-coach"/);}
+  }
+});
+
+test('muted or speech-unavailable coaching still gives the upper cue without firing', async () => {
+  for (const options of [{sound: false, speechAvailable: true}, {sound: true, speechAvailable: false}]) {
+    const app = await appHarness({version: 1, coachEnabled: true, sound: options.sound}, {speechAvailable: options.speechAvailable, coachActive: true});
+    preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachSaid, 20);
+    assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/);
+    assert.equal(app.speech.utterances.length, 0);assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
+    app.getElement('aimTouchpad').emit('pointercancel');assert.equal(app.api.state.coachCueUntil, 0);
+  }
 });
 
 test('shop stat choices reorder actual cards while purchases still use stable equipment IDs', async () => {
@@ -1520,7 +1900,7 @@ test('a lost spend response retries the same receipt and an exhausted server bal
 });
 
 test('ammo purchases require a deliberate click, reject insufficient 쭈 and reconcile a lost reply without a second debit', async () => {
-  const app = await appHarness({ version: 1, coins: 777, sound: false }, { remaining: 0, coins: 1, hold: ['buy'] });
+  const app = await appHarness({ version: 1, coins: 777, sound: false }, { remaining: 0, coins: 5, hold: ['buy'] });
   app.api.enterEvent();await app.flush();app.api.showAmmoShop();
   assert.equal(app.ammo.requests.filter(request => request.action === 'buy').length, 0);
   const buying = app.api.buyAmmo();const duplicate = app.api.buyAmmo();await app.flush();
@@ -1528,14 +1908,14 @@ test('ammo purchases require a deliberate click, reject insufficient 쭈 and rec
   app.ammo.account.coins = 0;app.ammo.reply(purchases[0]);await buying;await duplicate;
   assert.equal(app.api.ammo.pending, null);assert.equal(app.api.ammo.snapshot.remaining, 0);assert.equal(app.api.ammo.snapshot.coins, 0);
   assert.equal(app.api.progress.coins, 777, 'platform 쭈 and ordinary game coins are separate balances');
-  app.ammo.account.coins = 2;app.ammo.account.revision++;await app.api.retryAmmo();
+  app.ammo.account.coins = 10;app.ammo.account.revision++;await app.api.retryAmmo();
   const retryBuy = app.api.buyAmmo();await app.flush();purchases = app.ammo.requests.filter(request => request.action === 'buy');
   const request = purchases.at(-1);app.ammo.execute(request);app.ammo.reply(request, { ok: false, reason: 'pending' });await retryBuy;
   await app.api.buyAmmo();assert.equal(app.ammo.requests.filter(item => item.action === 'buy').length, 2);
   app.ammo.held.delete('buy');await app.api.retryAmmo();await app.flush();
   purchases = app.ammo.requests.filter(item => item.action === 'buy');
   assert.equal(purchases.length, 3);assert.equal(purchases[1].requestId, purchases[2].requestId);
-  assert.equal(app.ammo.account.coins, 1);assert.equal(app.ammo.account.remaining, 20);assert.equal(app.api.progress.coins, 777);
+  assert.equal(app.ammo.account.coins, 5);assert.equal(app.ammo.account.remaining, 10);assert.equal(app.api.progress.coins, 777);
 });
 
 test('rejected and unknown main-round saves never advance cadence or duplicate a milestone before confirmation', async () => {
@@ -1594,7 +1974,7 @@ test('connected main play waits for its server run and recovered intents cannot 
     if (action === 'buy') { assert.equal(reopened.api.ammo.pending.status, 'confirmed');await reopened.api.retryAmmo();await reopened.flush(); }
     assert.equal(reopened.api.ammo.pending, null);assert.ok(reopened.api.state.serverRunId, 'clearing the old intent resumes registration of the current main round');
     assert.equal(reopened.ammo.requests.filter(item => item.action === 'round-start').length, 1, `${action} recovery sent duplicate round-start envelopes: ${JSON.stringify(reopened.ammo.requests.map(({ action, requestId }) => ({ action, requestId })))}`);
-    assert.equal(reopened.ammo.account.remaining, action === 'buy' ? 22 : 2);
+    assert.equal(reopened.ammo.account.remaining, action === 'buy' ? 12 : 2);
   }
 });
 
@@ -1897,7 +2277,7 @@ for (const outcome of ['hit', 'ground']) {
     const app = await appHarness();
     app.getElement('zoomBtn').emit('click');
     assert.equal(app.api.state.zoom, 2);
-    const { pad, coords } = outcome === 'hit' ? startCenteredDraw(app) : startHighMiss(app);
+    const { pad, coords } = outcome === 'hit' ? preciseMainDraw(app, {x: .3, y: 0}) : startHighMiss(app);
     const originalCamera = { ...app.api.camera }, originalAim = { ...app.api.state.aim };
     const originalPan = [app.api.state.panX, app.api.state.panY], releaseTime = app.now;
     pad.emit('pointerup', coords);await app.flush();
@@ -1910,6 +2290,7 @@ for (const outcome of ['hit', 'ground']) {
     app.until(() => app.api.state.mode === 'settling');
     const shot = app.api.state.shot;
     assert.equal(shot.result.type, outcome);
+    if (outcome === 'hit') assert.equal(shot.result.score, 8, 'ordinary impact-camera behavior is separate from the bullseye replay');
     assert.ok(Math.abs((app.now - releaseTime) / 1000 - shot.elapsed / .32) < .02, 'slow motion changes presentation time, not the ballistic flight duration');
     if (outcome === 'ground') {
       assert.ok(shot.position.z > app.api.state.stage.distance + 20, 'a long miss keeps flying well beyond the target');
@@ -2019,13 +2400,13 @@ test('a shaft clearing the masonry top stays visible while trail behind its back
 // Inject the already-resolved contact, then exercise the actual impact handler,
 // animation ticks and render composition. Ballistic hit resolution is covered
 // separately by engine.test.mjs; these checks focus on persistent attachments.
-function resolveTestHit(app, offset, velocity = { x: 2, y: -3, z: 38 }) {
+function resolveTestHit(app, offset, velocity = { x: 2, y: -3, z: 38 }, score = 8) {
   const { state } = app.api, target = app.engine.targetAt(state.stage, state.time);
   const point = { x: target.x + offset.x, y: target.y + offset.y, z: target.z };
   state.shot = {
     ...app.engine.launchArrow(), position: { ...point }, velocity: { ...velocity }, elapsed: .9,
     active: false, handled: false, trail: [{ ...app.engine.PLAYER }, { ...point }],
-    result: { type: 'hit', point, targetCenter: target, score: 8, flightTime: .9, zone: '명중' }
+    result: { type: 'hit', point, targetCenter: target, score, flightTime: .9, zone: '명중' }
   };
   state.mode = 'flight';state.used++;
   app.api.onImpact();
