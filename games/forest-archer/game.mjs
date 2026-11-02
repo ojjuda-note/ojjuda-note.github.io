@@ -8,8 +8,10 @@ import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-ar
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), touchpad = $('aimTouchpad');
-// Keep equipment and currency while moving old fifty-stage records to their matching missions.
-const SAVE_KEY = 'forest-archer-progress-v2';
+// Reset records once while carrying equipment and currency forward. A new key
+// prevents a still-open old game from overwriting the new journey's records.
+const SAVE_KEY = 'forest-archer-progress-v3';
+const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
 const STAGE_CATALOG = 'missions-120-v1';
 const DRAW_LIMIT = 10;
 const AIM_SWAY_SCALE = .68;
@@ -19,7 +21,8 @@ const defaults = () => ({version:1,stageCatalog:STAGE_CATALOG,coins:0,clayCredit
 let persistence = true;
 function loadProgress(){
   try {
-    const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    const current = localStorage.getItem(SAVE_KEY), importAssetsOnly = current === null;
+    const raw = JSON.parse((importAssetsOnly ? localStorage.getItem(LEGACY_SAVE_KEY) : current) || 'null');
     if(!raw || raw.version!==1) return defaults();
     const base=defaults(), finite=(v,f=0)=>Number.isFinite(v)?v:f;
     const ids=(arr,catalog)=>[...new Set([0,...(Array.isArray(arr)?arr:[]).filter(x=>Number.isInteger(x)&&catalog.some(item=>item.id===x))])];
@@ -31,19 +34,21 @@ function loadProgress(){
     base.scopedBows=ids(raw.scopedBows,BOWS).filter(id=>base.ownedBows.includes(id)&&BOWS.find(item=>item.id===id)?.scopeCompatible);
     base.bow=base.ownedBows.includes(raw.bow)&&BOWS[raw.bow]?.weaponType!=='gun'?raw.bow:0;base.arrow=base.ownedArrows.includes(raw.arrow)?raw.arrow:0;
     base.eventGun=base.ownedBows.includes(raw.eventGun)&&BOWS[raw.eventGun]?.weaponType==='gun'?raw.eventGun:20;
-    base.eventBest=clamp(Math.floor(finite(raw.eventBest)),0,300);base.eventPlays=Math.max(0,Math.floor(finite(raw.eventPlays)));
-    base.mainRounds=clamp(Math.floor(finite(raw.mainRounds)),0,1e7);
-    for(let level=1;level<=10;level++)if(Number.isFinite(raw.eventBestByLevel?.[level]))base.eventBestByLevel[level]=clamp(Math.floor(raw.eventBestByLevel[level]),0,createClayEvent(level).maxScore);
-    base.unlocked=STAGES.length;
-    const legacyStages=raw.stageCatalog!==STAGE_CATALOG;
-    const savedStage=clamp(Math.floor(finite(raw.lastStage,1)),1,legacyStages?50:base.unlocked);
-    base.lastStage=legacyStages?(LEGACY_STAGE_MAP[savedStage]||1):savedStage;
-    for(const [key,score] of Object.entries(raw.best||{})){
-      const oldId=Number(key),id=legacyStages?LEGACY_STAGE_MAP[oldId]:oldId;
-      if(Number.isInteger(oldId)&&oldId>=1&&Number.isInteger(id)&&id>=1&&id<=STAGES.length&&Number.isFinite(score))
-        base.best[id]=clamp(Math.floor(score),0,50);
+    if(!importAssetsOnly){
+      base.eventBest=clamp(Math.floor(finite(raw.eventBest)),0,300);base.eventPlays=Math.max(0,Math.floor(finite(raw.eventPlays)));
+      base.mainRounds=clamp(Math.floor(finite(raw.mainRounds)),0,1e7);
+      for(let level=1;level<=10;level++)if(Number.isFinite(raw.eventBestByLevel?.[level]))base.eventBestByLevel[level]=clamp(Math.floor(raw.eventBestByLevel[level]),0,createClayEvent(level).maxScore);
+      const legacyStages=raw.stageCatalog!==STAGE_CATALOG;
+      const savedStage=clamp(Math.floor(finite(raw.lastStage,1)),1,legacyStages?50:base.unlocked);
+      base.lastStage=legacyStages?(LEGACY_STAGE_MAP[savedStage]||1):savedStage;
+      for(const [key,score] of Object.entries(raw.best||{})){
+        const oldId=Number(key),id=legacyStages?LEGACY_STAGE_MAP[oldId]:oldId;
+        if(Number.isInteger(oldId)&&oldId>=1&&Number.isInteger(id)&&id>=1&&id<=STAGES.length&&Number.isFinite(score))
+          base.best[id]=clamp(Math.floor(score),0,50);
+      }
+      base.shots=Math.max(0,finite(raw.shots));base.hits=Math.max(0,finite(raw.hits));
     }
-    base.sound=raw.sound!==false;base.shots=Math.max(0,finite(raw.shots));base.hits=Math.max(0,finite(raw.hits));
+    base.sound=raw.sound!==false;
     return base;
   }catch{persistence=false;return defaults();}
 }
