@@ -9,6 +9,7 @@ const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), to
 // The reordered test game starts a fresh journey; old saves cannot reappear.
 const SAVE_KEY = 'forest-archer-progress-v2';
 const DRAW_LIMIT = 10;
+const AIM_SWAY_SCALE = .85;
 const STABILIZER_COST = 5;
 const CONSUMABLE_LIMIT = 1e8;
 const defaults = () => ({version:1,coins:0,clayCredits:0,stabilizers:0,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
@@ -130,7 +131,11 @@ const shotLimit=()=>state.stage.shots;
 const shotUnit=()=>activeBow().burstCount>1?'회':'발';
 const drawElapsed=(now=performance.now())=>Math.max(0,(now-state.drawStarted)/1000);
 const isSteady=(now=performance.now())=>state.mode==='drawing'&&drawElapsed(now)>=state.steadyStart&&drawElapsed(now)<state.steadyStart+state.steadyDuration;
-const effectiveSway=(now=performance.now())=>isSteady(now)?{x:0,y:0}:state.stabilizerActive?{x:state.sway.x*.5,y:state.sway.y*.5}:state.sway;
+const effectiveSway=(now=performance.now())=>{
+  if(isSteady(now))return {x:0,y:0};
+  const scale=AIM_SWAY_SCALE*(state.stabilizerActive ? .5 : 1);
+  return {x:state.sway.x*scale,y:state.sway.y*scale};
+};
 const aimAngles=(now=performance.now())=>{const sway=effectiveSway(now);return {yaw:state.aim.yaw+sway.x,pitch:state.aim.pitch+sway.y};};
 function shotParams(now=performance.now()){return {...aimAngles(now),charge:state.charge,bow:activeBow(),arrow:activeArrow(),velocityBias:state.velocityBias};}
 function syncDraw(now=performance.now()){
