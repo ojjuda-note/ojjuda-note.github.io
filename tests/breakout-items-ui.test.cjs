@@ -18,8 +18,8 @@ window.breakoutTest={
   const game=R.game,s=game.inspect();if(s.waiting)game.onKey(' ');
   const state=game.inspect(),brick=state.bricks.filter(b=>b.on&&!b.solid&&b.hp===1).at(-1),ball=state.balls[0];
   for(const b of state.balls)Object.assign(b,{x:180,y:380,vx:0,vy:-state.speed});
-  Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+6,vx:0,vy:-state.speed});
-  const original=Math.random,roll={two:.1,ten:.6,pierce:.9}[kind],queue=[0,roll];
+  Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h+5.1,vx:0,vy:-state.speed});
+  const original=Math.random,roll={two:.04,ten:.125,pierce:.21,wide:.3,slow:.44,shrink:.6,fast:.75,single:.95}[kind],queue=[0,roll];
   Math.random=()=>queue.shift()??.99;try{game.update(1/240)}finally{Math.random=original}
   return game.inspect().drops.at(-1);
  },
@@ -75,7 +75,7 @@ g.tab='friends';H();
    await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.breakoutTest);
    const choices=page.locator('#gscreen [data-g="breakout-stage"]');
    const savedStage=()=>page.evaluate(()=>localStorage.getItem('ojjuda-breakout-last-stage-v1'));
-   const snapshot=()=>page.evaluate(()=>{const r=breakoutTest.current,g=r.game,s=g.inspect();return{stage:g.stage,level:s.level,running:r.running,score:s.score,lives:s.lives,balls:s.balls.length,waiting:s.waiting,finished:s.finished,completed:s.completed,cleared:g.stageCleared,speed:s.speed,bricks:s.bricks.length,drops:s.drops.length,piercing:s.balls.some(b=>b.piercing),fullBoard:s.bricks.every(b=>b.on&&b.hp===b.maxHp)}});
+   const snapshot=()=>page.evaluate(()=>{const r=breakoutTest.current,g=r.game,s=g.inspect();return{stage:g.stage,level:s.level,running:r.running,score:s.score,lives:s.lives,balls:s.balls.length,waiting:s.waiting,finished:s.finished,completed:s.completed,cleared:g.stageCleared,speed:s.speed,paddleWidth:s.paddle.w,bricks:s.bricks.length,drops:s.drops.length,piercing:s.balls.some(b=>b.piercing),fullBoard:s.bricks.every(b=>b.on&&b.hp===b.maxHp)}});
    async function assertChoices(level){
     await choices.first().waitFor();assert.equal(await choices.count(),3);
     const values=await choices.evaluateAll(buttons=>buttons.map(button=>{
@@ -96,7 +96,7 @@ g.tab='friends';H();
    }
    async function assertFresh(level,bricks){
     const s=await snapshot();
-    assert.deepEqual([s.stage,s.level,s.bricks,s.score,s.lives,s.balls,s.waiting,s.running,s.cleared,s.finished,s.completed,s.drops,s.piercing,s.fullBoard],[level,level,bricks,0,3,1,true,true,false,false,false,0,false,true]);
+    assert.deepEqual([s.stage,s.level,s.bricks,s.score,s.lives,s.balls,s.waiting,s.running,s.cleared,s.finished,s.completed,s.drops,s.piercing,s.fullBoard,s.paddleWidth],[level,level,bricks,0,3,1,true,true,false,false,false,0,false,true,80]);
     assert.equal(await choices.count(),0,'playing begins immediately without another level question');
     assert.equal(await savedStage(),String(level),'starting commits the selected level');
    }
@@ -146,16 +146,40 @@ g.tab='friends';H();
    async function catchItem(kind){
     const x=await page.evaluate(kind=>breakoutTest.hit(kind).x,kind);
     await page.mouse.move(logicalX(x),logicalY(450));
-    await page.evaluate(()=>{
+    const result=await page.evaluate(()=>{
      const s=breakoutTest.current.game.inspect();for(const b of s.balls)Object.assign(b,{x:180,y:360,vx:s.speed,vy:0});
-     const item=s.drops.at(-1);breakoutTest.step((s.paddle.y-10-item.y)/125+1/240);
+     const item=s.drops.at(-1),startY=item.y,fallSpeed=['shrink','fast','single'].includes(item.kind)?87.5:125;
+     breakoutTest.step(.1);const fallDistance=item.y-startY;
+     breakoutTest.step(Math.max(0,(s.paddle.y-14-item.y)/fallSpeed));
+     const before={width:s.paddle.w,speed:breakoutTest.current.game.inspect().speed};
+     breakoutTest.step(1/60);const after=breakoutTest.current.game.inspect();
+     return{fallDistance,before,after:{width:after.paddle.w,speed:after.speed,drops:after.drops.length}};
     });
+    assert.ok(Math.abs(result.fallDistance-(['shrink','fast','single'].includes(kind)?8.75:12.5))<.0001,`${kind}: actual falling distance matches its box color`);
+    return result;
    }
    await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),2);
    await catchItem('two');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),4);
-   await catchItem('ten');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),10);
+   await catchItem('ten');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.length),40,'tenfold multiplies the current four balls');
    await catchItem('pierce');assert.equal(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.filter(b=>b.piercing).length),1);
    assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus')),['bonus','bonus','bonus','bonus']);checks++;
+   const grown=await catchItem('wide');assert.equal(grown.after.width,grown.before.width+16);assert.equal(grown.after.drops,0);
+   const shrunk=await catchItem('shrink');assert.equal(shrunk.after.width,shrunk.before.width-16);assert.equal(shrunk.after.drops,0);
+   const fast=await catchItem('fast');assert.ok(Math.abs(fast.after.speed-fast.before.speed*1.1)<.05,'catching the black speed box raises the actual speed by ten percent');
+   const slow=await catchItem('slow');assert.ok(Math.abs(slow.after.speed-slow.before.speed*.9)<.05,'catching a slowdown box lowers the actual speed by ten percent');
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.audio.filter(k=>k==='bonus'||k==='bad').slice(-4)),['bonus','bad','bad','bonus']);checks++;
+   const survivorId=await page.evaluate(()=>{
+    const g=breakoutTest.current.game,s=g.inspect();g.onMove(180);
+    for(const index of [s.balls.length-1,2,1]){
+     for(const ball of s.balls)Object.assign(ball,{x:180,y:380,vx:0,vy:-g.inspect().speed});
+     Object.assign(s.balls[index],{x:190,y:s.paddle.y-s.balls[index].r-.1,vx:0,vy:g.inspect().speed});
+     g.update(1/240);if(s.balls[index].vy>=0)throw Error('the intended survivor did not bounce on the paddle');
+    }
+    return s.balls[1].id;
+   });
+   await catchItem('single');
+   assert.deepEqual(await page.evaluate(()=>breakoutTest.current.game.inspect().balls.map(ball=>ball.id)),[survivorId],'the black single-ball pickup retains the latest actual paddle contact');
+   assert.equal(await page.evaluate(()=>breakoutTest.audio.at(-1)),'bad');checks++;
    const speed=await page.evaluate(()=>breakoutTest.current.game.inspect().speed);await page.evaluate(()=>breakoutTest.step(2));
    assert.ok(Math.abs(await page.evaluate(()=>breakoutTest.current.game.inspect().speed)-speed-4)<.01);checks++;
    await page.evaluate(()=>{window.firstBreakoutRun=breakoutTest.current.game;breakoutTest.loseLife();breakoutTest.finishStage()});
@@ -217,17 +241,28 @@ g.tab='friends';H();
      const r=breakoutTest.current,g=r.game,s=g.inspect(),brick=s.bricks.find(b=>!b.solid),transform=r.ctx.getTransform(),x=Math.floor((brick.x+brick.w/2)*transform.a+transform.e),y=Math.floor((brick.y+brick.h/2)*transform.d+transform.f);
      const before=Array.from(r.ctx.getImageData(x,y,1,1).data);brick.on=false;g.draw(r.ctx);
      const after=Array.from(r.ctx.getImageData(x,y,1,1).data);
-     g.onKey(' ');const times=[];
-     for(let i=0;i<180;i++){
-      const state=g.inspect();while(state.balls.length<10)state.balls.push({...state.balls[0],id:1000+state.balls.length,contacts:new Set()});
-      for(const [j,b] of state.balls.entries())Object.assign(b,{x:24+j*32,y:150+(i%20)*5,vx:j%2?state.speed:-state.speed,vy:-state.speed*.2});
-      const start=performance.now();g.update(1/60);g.draw(r.ctx);times.push(performance.now()-start);
-     }
-     times.sort((a,b)=>a-b);return {before,after,p95:times[Math.floor(times.length*.95)]};
+     g.onKey(' ');const frames={},originalRandom=Math.random;Math.random=()=>.99;
+     try{
+      for(const count of [10,100]){
+       const times=[];
+       for(let i=0;i<180;i++){
+        const state=g.inspect();while(state.balls.length<count)state.balls.push({...state.balls[0],id:1000+state.balls.length,contacts:new Set()});
+        // Keep a full board so the capped-ball sample cannot become an empty-board benchmark.
+        for(const brick of state.bricks){brick.on=true;brick.hp=brick.maxHp;}
+        for(const [j,b] of state.balls.entries())Object.assign(b,{x:24+(j%10)*32,y:104+Math.floor(j/10)*16+(i%4)*2,vx:(j%2?1:-1)*state.speed*Math.sqrt(.96),vy:-state.speed*.2,contacts:new Set()});
+        const start=performance.now();g.update(1/60);g.draw(r.ctx);times.push(performance.now()-start);
+        if(g.inspect().finished||g.inspect().balls.length!==count)throw Error('the performance sample must keep its full active ball count');
+       }
+       times.sort((a,b)=>a-b);frames[count]=times[Math.floor(times.length*.95)];
+      }
+     }finally{Math.random=originalRandom}
+     return {before,after,frames};
     });
     assert.notDeepEqual(metrics.before,metrics.after,'destroyed bricks disappear from the cached layer');
-    assert.ok(metrics.p95<40,'1000-brick, ten-ball update and draw stay within the regression frame budget');
-    console.log('1000 bricks / 10 balls: p95 '+metrics.p95.toFixed(2)+' ms');
+    for(const [count,p95] of Object.entries(metrics.frames)){
+     assert.ok(p95<40,`1000-brick, ${count}-ball update and draw stay within the regression frame budget`);
+     console.log('1000 bricks / '+count+' balls: p95 '+p95.toFixed(2)+' ms');
+    }
    }
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
    await page.locator('#gres').waitFor();assert.match(await page.locator('#gscreen').innerText(),/100단계 클리어/);
