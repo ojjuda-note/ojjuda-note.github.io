@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 거리·바람·이동·장애물을 익히는 120개 미션, 활 10종·석궁 10종·총기 5종과 화살 14종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261102-archery-120-missions1">
+  <link rel="stylesheet" href="style.css?v=20261102-archery-coach-burst1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -54,6 +54,20 @@
             <canvas id="gameCanvas" aria-label="과녁과 조준점이 보이는 사격장"></canvas>
             <div id="aimTouchpad" data-active="false" class="aim-touchpad" tabindex="0" role="group" aria-label="사격장 아래 3분의 1 조준 영역. 누른 채 끌어 조준하고 손을 떼면 발사합니다." aria-describedby="controlTitle controlHint steadyLabel"></div>
             <div class="field-top"><span class="field-pill"><span class="tiny-dot"></span><strong id="distanceLabel">14 m</strong></span><span class="field-pill wind-pill"><svg><use href="#i-wind"/></svg><span id="windLabel">고요한 바람</span></span><button class="field-pill zoom-button" id="zoomBtn" aria-label="조준 화면 두 배 확대">1×</button></div>
+            <div id="coachCue" class="coach-burst hidden" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
+              <svg class="coach-burst__art" viewBox="0 0 144 108" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="coachBurstGold" x1="0" y1="0" x2="0.3" y2="1"><stop stop-color="#ffe28c"/><stop offset="1" stop-color="#ee9d37"/></linearGradient>
+                  <path id="coachBurstShape" d="M72 3 82 19 101 7 104 27 127 19 121 38 141 45 126 57 139 76 116 78 119 99 97 89 87 105 72 90 55 105 47 88 24 99 28 77 7 80 17 59 3 47 24 38 18 18 43 26 46 7 64 20Z"/>
+                </defs>
+                <use href="#coachBurstShape" transform="translate(0 2)" fill="#795026" opacity=".30"/>
+                <use href="#coachBurstShape" fill="url(#coachBurstGold)" stroke="#785023" stroke-width="2.5" stroke-linejoin="round"/>
+                <use href="#coachBurstShape" transform="translate(72 54) scale(.79) translate(-72 -54)" fill="#ffdf78"/>
+                <ellipse cx="70" cy="43" rx="30" ry="18" fill="#fff0b5" opacity=".45"/>
+                <path d="m27 32 8 4m77-5-8 5m-69 43 7-4m62 3-7-4" stroke="#b77a29" stroke-width="2"/>
+              </svg>
+              <span class="coach-burst__copy"><span class="coach-burst__label">코치</span><strong class="coach-burst__word">쏴!</strong></span>
+            </div>
             <div class="field-bottom"><div class="shot-counter"><span id="shotDots"></span><span id="shotCountLabel">5발 남음</span></div><button class="field-pill hidden" id="previewBtn">과녁 보기</button><button class="field-pill" id="recenterBtn" aria-label="조준을 가운데로"><svg><use href="#i-target"/></svg><span>가운데</span></button></div>
           </div>
           <div class="controls">
@@ -83,6 +97,6 @@
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
   </div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script type="module" src="game.mjs?v=20261102-archery-120-missions1"></script>
+  <script type="module" src="game.mjs?v=20261102-archery-coach-burst1"></script>
 </body>
 </html>
