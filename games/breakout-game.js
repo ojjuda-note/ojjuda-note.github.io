@@ -1,11 +1,25 @@
 (function () {
   'use strict';
-  const W=360,H=540,MAX_BALLS=10,MAX_SPEED=460,LEVELS=100;
+  const W=360,H=540,MAX_BALLS=100,MIN_SPEED=140,MAX_SPEED=460,LEVELS=100;
+  const MIN_PADDLE=48,MAX_PADDLE=144,PADDLE_STEP=16,DROP_W=44,DROP_H=26;
   const STAGE_KEY='ojjuda-breakout-last-stage-v1';
   function readStage(){try{const n=Number(localStorage.getItem(STAGE_KEY));return Number.isInteger(n)&&n>=1&&n<=LEVELS?n:1;}catch(_){return 1;}}
   function saveStage(stage){try{localStorage.setItem(STAGE_KEY,String(stage));}catch(_){/* Storage restrictions must not interrupt play. */}}
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
-  const ITEMS={two:{text:'공 2배'},ten:{text:'공 10개'},pierce:{text:'관통 · 판 2회'}};
+  const ITEMS={
+    two:{text:'공 2배',box:'white'},
+    ten:{text:'공 10배',box:'white'},
+    pierce:{text:'관통 · 판 2회',box:'white'},
+    wide:{text:'받침대 길어짐',box:'yellow'},
+    slow:{text:'공 속도 -10%',box:'yellow'},
+    shrink:{text:'받침대 짧아짐',box:'black',bad:true},
+    fast:{text:'공 속도 +10%',box:'black',bad:true}
+  };
+  const BOXES={
+    white:{fill:'#FFFFFF',edge:'#D5DDEC',ink:'#253047'},
+    yellow:{fill:'#FFD36A',edge:'#FFE8AA',ink:'#253047'},
+    black:{fill:'#111111',edge:'#D8D8E2',ink:'#FFFFFF'}
+  };
   function rounded(c,x,y,w,h,r,color){
     c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.fillStyle=color;c.fill();
   }
@@ -53,7 +67,7 @@
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
     const paddle={x:140,y:490,w:80,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,stageCleared=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
-    let nextBallId=1,notice='',noticeTime=0;
+    let nextBallId=1,notice='',noticeTime=0,noticeBad=false;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
     brickContext?.scale(2,2);
@@ -76,10 +90,16 @@
     function newTurn(){
       balls=[ballAt(paddle.x+paddle.w/2,paddle.y-8)];drops=[];waiting=true;
     }
-    function setNotice(text){notice=text;noticeTime=1.6;}
-    function faster(amount){
-      const next=Math.min(MAX_SPEED*pace,speed+amount*pace);if(next===speed)return;speed=next;
+    function setNotice(text,bad=false){notice=text;noticeTime=1.6;noticeBad=bad;}
+    function setSpeed(value){
+      const next=Math.max(MIN_SPEED*pace,Math.min(MAX_SPEED*pace,value));if(next===speed)return;speed=next;
       for(const ball of balls){const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude){ball.vx=ball.vx/magnitude*speed;ball.vy=ball.vy/magnitude*speed;}}
+    }
+    function faster(amount){setSpeed(speed+amount*pace);}
+    function resizePaddle(amount){
+      const center=paddle.x+paddle.w/2;
+      paddle.w=Math.max(MIN_PADDLE,Math.min(MAX_PADDLE,paddle.w+amount));
+      paddle.x=Math.max(0,Math.min(W-paddle.w,center-paddle.w/2));
     }
     function launch(){
       if(finished||stageCleared||!waiting)return;
@@ -87,22 +107,32 @@
       balls[0].vx=Math.cos(angle)*speed;balls[0].vy=Math.sin(angle)*speed;api.sound?.tap?.();
     }
     function dropFrom(brick){
-      // Rare mystery drops, including the first brick; avoid crowded pickup showers.
+      // White : yellow : black = 1 : 1 : 2; each group's effects remain hidden.
       if(drops.length>=2||Math.random()>=.08)return;
-      const roll=Math.random(),kind=roll<.5?'two':roll<.7?'ten':'pierce';
-      drops.push({x:brick.x+brick.w/2,y:brick.y+brick.h/2,kind});
+      const roll=Math.random(),kind=roll<1/12?'two':roll<1/6?'ten':roll<.25?'pierce':roll<.375?'wide':roll<.5?'slow':roll<.75?'shrink':'fast';
+      drops.push({x:Math.max(DROP_W/2,Math.min(W-DROP_W/2,brick.x+brick.w/2)),y:brick.y+brick.h/2,kind});
     }
     function breakBrick(brick){
       brick.on=false;score+=10;dropFrom(brick);api.sound?.hit?.();api.setScore(score);
     }
     function collect(item){
-      if(!balls.length||waiting)return;
+      if(!balls.length||waiting||!ITEMS[item.kind])return;
+      const meta=ITEMS[item.kind];let message=meta.text;
       if(item.kind==='pierce'){
         const chosen=balls.find(ball=>ball.piercing)||balls[0];
         for(const ball of balls){ball.piercing=ball===chosen;ball.pierceBounces=ball===chosen?2:0;}
+      }else if(item.kind==='wide'||item.kind==='shrink'){
+        resizePaddle(item.kind==='wide'?PADDLE_STEP:-PADDLE_STEP);
+        if(paddle.w===MAX_PADDLE&&item.kind==='wide')message='받침대 최대 길이';
+        if(paddle.w===MIN_PADDLE&&item.kind==='shrink')message='받침대 최소 길이';
+      }else if(item.kind==='fast'||item.kind==='slow'){
+        const requested=speed*(item.kind==='fast'?1.1:.9);
+        setSpeed(requested);
+        if(requested>MAX_SPEED*pace)message='최고 속도에 도달했어요';
+        if(requested<MIN_SPEED*pace)message='최저 속도에 도달했어요';
       }else{
-        const target=Math.max(balls.length,item.kind==='ten'?MAX_BALLS:balls.length*2),source=balls.find(ball=>!ball.piercing)||balls[0];
-        const count=Math.min(MAX_BALLS,target)-balls.length;
+        const target=Math.min(MAX_BALLS,balls.length*(item.kind==='ten'?10:2)),source=balls.find(ball=>!ball.piercing)||balls[0];
+        const count=Math.max(0,target-balls.length);
         for(let i=0;i<count;i++){
           let angle=-Math.PI/2+(count===1?.65:(i/(count-1)-.5)*2.1);
           const sourceAngle=Math.atan2(source.vy,source.vx);
@@ -110,8 +140,10 @@
           // Extra balls start with their own direction and never copy piercing.
           balls.push(ballAt(source.x,source.y,Math.cos(angle)*speed,Math.sin(angle)*speed));
         }
+        message=meta.text+' · '+(balls.length===MAX_BALLS?'최대 '+MAX_BALLS+'개':balls.length+'개');
       }
-      setNotice(item.kind==='two'?'공 2배 · '+balls.length+'개':ITEMS[item.kind].text);api.sound?.bonus?.();
+      setNotice(message,meta.bad===true);
+      if(meta.bad)api.sound?.bad?.();else api.sound?.bonus?.();
     }
     function movePaddle(x){if(Number.isFinite(x))paddle.x=Math.max(0,Math.min(W-paddle.w,x-paddle.w/2));}
     function touchBrick(ball,brick){
@@ -166,8 +198,8 @@
       }
       drops=drops.filter(item=>{
         item.y+=125*dt;
-        if(item.y+11>=paddle.y&&item.y-11<=paddle.y+paddle.h&&item.x+15>paddle.x&&item.x-15<paddle.x+paddle.w){collect(item);return false;}
-        return item.y<H+20;
+        if(item.y+DROP_H/2>=paddle.y&&item.y-DROP_H/2<=paddle.y+paddle.h&&item.x+DROP_W/2>paddle.x&&item.x-DROP_W/2<paddle.x+paddle.w){collect(item);return false;}
+        return item.y<H+DROP_H/2;
       });
     }
     fillBricks();newTurn();
@@ -193,8 +225,10 @@
           c.drawImage(brickLayer,0,0,W,H);
         }else for(const brick of bricks)if(brick.on)drawBrick(c,brick);
         for(const item of drops){
-          rounded(c,item.x-15,item.y-11,30,22,7,'#B9ACEC');
-          c.fillStyle='#263047';c.textAlign='center';c.font='bold 13px sans-serif';c.fillText('?',item.x,item.y+4);
+          const box=BOXES[ITEMS[item.kind].box];
+          rounded(c,item.x-DROP_W/2,item.y-DROP_H/2,DROP_W,DROP_H,7,box.fill);
+          c.strokeStyle=box.edge;c.lineWidth=1.2;c.stroke();
+          c.fillStyle=box.ink;c.textAlign='center';c.font='bold 12px sans-serif';c.fillText('?',item.x,item.y+4);
         }
         rounded(c,paddle.x,paddle.y,paddle.w,paddle.h,6,'#F4F6FB');
         for(const ball of balls){
@@ -205,7 +239,7 @@
         c.textAlign='right';c.fillStyle='#F0679A';c.fillText('♥'.repeat(lives),W-16,38);
         c.textAlign='center';c.font='13px sans-serif';c.fillStyle='#ACB7DD';c.fillText(level+' / '+LEVELS+'단계',W/2,38);
         c.fillText('공 '+balls.length+'개'+(balls.some(ball=>ball.piercing)?' · 관통 '+balls.find(ball=>ball.piercing).pierceBounces+'회':'') ,W/2,63);
-        if(noticeTime>0){rounded(c,108,426,144,29,10,'#343B58');c.fillStyle='#FFF2CA';c.font='bold 14px sans-serif';c.fillText(notice,W/2,446);}
+        if(noticeTime>0){rounded(c,80,426,200,29,10,noticeBad?'#111111':'#343B58');c.fillStyle=noticeBad?'#FFFFFF':'#FFF2CA';c.font='bold 14px sans-serif';c.fillText(notice,W/2,446);}
         if(waiting&&!finished){c.fillStyle='#FFFFFF';c.font='bold 16px sans-serif';c.fillText('탭하면 출발',W/2,407);}
       },
       onDown(x){if(finished||stageCleared)return;movePaddle(x);launch();},
