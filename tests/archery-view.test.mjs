@@ -4,7 +4,7 @@ import {
   FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, NEAR_PLANE,
   PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN,
   projectPoint, clipSegmentNear, splitSegmentAtDepths, depthFragments,
-  desiredFollowCamera, desiredPreviewCamera, lerpCamera
+  desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera
 } from '../games/forest-archer/view.mjs';
 import {ARROWS, BOWS, STAGES, prepareStage, targetAt, launchArrow, stepArrow} from '../games/forest-archer/engine.mjs';
 
@@ -37,6 +37,33 @@ function birdCover(stage, time, camera) {
       bottom: projectPoint({x: obstacle.x, y: 0, z}, camera).y
     }
   };
+}
+
+const shaftTail = shot => {
+  const speed = Math.hypot(shot.velocity.x, shot.velocity.y, shot.velocity.z) || 1;
+  return Object.fromEntries(['x', 'y', 'z'].map(key =>
+    [key, shot.position[key] - shot.velocity[key] / speed * (shot.shaftLength ?? .85)]));
+};
+
+// Independent three-axis ray/box intersection: a projection can be inside the
+// canvas and still be hidden by a solid front, side or top face.
+function wallBlocks(camera, point, wall) {
+  let first = 0, last = 1;
+  const bounds = {
+    x: [wall.x - wall.width / 2, wall.x + wall.width / 2],
+    y: [0, wall.height], z: [wall.z - wall.depth / 2, wall.z + wall.depth / 2]
+  };
+  for (const axis of ['x', 'y', 'z']) {
+    const delta = point[axis] - camera[axis], [low, high] = bounds[axis];
+    if (Math.abs(delta) < 1e-10) {
+      if (camera[axis] < low || camera[axis] > high) return false;
+    } else {
+      const a = (low - camera[axis]) / delta, b = (high - camera[axis]) / delta;
+      first = Math.max(first, Math.min(a, b)); last = Math.min(last, Math.max(a, b));
+      if (first > last) return false;
+    }
+  }
+  return first < 1 - 1e-9 && last > 1e-9;
 }
 
 test('a solid wall hides and reveals a crossing bird in either direction without projection leaks', () => {
@@ -167,6 +194,116 @@ test('follow view trails the arrow through rising, falling, and ground positions
       assert.ok(projected.y > 0 && projected.y < h, `arrow y remains in ${h}px view`);
     }
   }
+});
+
+test('post-shot camera reveals ordinary off-centre impacts through partial cover on every viewport', () => {
+  let hiddenContacts = 0;
+  for (const id of [17, 19, 21, 23, 25, 26, 94]) for (const seed of [19, 123, 0x80000000]) {
+    const stage = prepareStage(STAGES[id - 1], seed);
+    for (const time of [0, 9.3]) for (const [offsetX, offsetY] of [[-.3, 0], [0, .3], [.3, 0]]) {
+      const target = targetAt(stage, time), shot = {
+        position: {x: target.x + target.rx * offsetX, y: target.y + target.ry * offsetY, z: target.z - .002},
+        velocity: {x: target.x / target.z * 30, y: -5, z: 30}
+      };
+      const points = [shot.position, shaftTail(shot)];
+      for (const [w, h] of [[390, 300], [1000, 600], [844, 280]]) {
+        const original = desiredFollowCamera(shot.position, base(w, h), {w, h});
+        const snapshot = structuredClone({original, stage, shot});
+        const camera = clearShotCamera(original, stage, shot, {w, h});
+        const hidden = points.some(point => stage.obstacles.some(wall => wallBlocks(original, point, wall)));
+        if (hidden) hiddenContacts++;
+        for (const point of points) {
+          assert.ok(stage.obstacles.every(wall => !wallBlocks(camera, point, wall)),
+            `stage ${id}: real tip and tail clear the wall on ${w}×${h}`);
+          const projected = projectPoint(point, camera);
+          assert.ok(projected.visible && projected.x > 0 && projected.x < w && projected.y > 0 && projected.y < h,
+            `stage ${id}: visible shaft fits the canvas`);
+        }
+        assert.ok(camera.z <= original.z && shaftTail(shot).z - camera.z >= NEAR_PLANE,
+          'the camera cannot overtake the shaft to fake visibility');
+        assert.ok(camera.y - original.y <= 6 && Math.abs(camera.x - original.x) <= 4.5,
+          'near cover cannot send the camera to an unbounded height or sideways position');
+        assert.deepEqual({original, stage, shot}, snapshot, 'camera correction leaves physics, walls and saved view unchanged');
+      }
+    }
+  }
+  assert.ok(hiddenContacts > 100, 'exercise genuinely occluded contacts, including the reported left-shoulder view');
+});
+
+test('camera sightlines clear both faces of thick double walls and keep impact surroundings in frame', () => {
+  const stage = {radius: 1.6, obstacles: [
+    {x: 0, z: 13, width: 24, height: 3.8, depth: 1.8},
+    {x: 0, z: 15, width: 24, height: 3, depth: .8}
+  ]};
+  const shot = {position: {x: .2, y: 2, z: 18}, velocity: {x: 0, y: -3, z: 25}};
+  for (const [w, h] of [[390, 300], [1000, 600], [844, 280]]) {
+    const original = desiredFollowCamera(shot.position, base(w, h), {w, h});
+    assert.ok(stage.obstacles.some(wall => wallBlocks(original, shot.position, wall)));
+    const camera = clearShotCamera(original, stage, shot, {w, h});
+    assert.ok(camera.y > original.y, 'wide walls require an actual elevated viewpoint');
+    near(camera.x, original.x); near(camera.z, original.z);
+    const radius = .32, surrounding = [
+      shot.position, shaftTail(shot),
+      {...shot.position, x: shot.position.x - radius}, {...shot.position, x: shot.position.x + radius},
+      {...shot.position, y: shot.position.y - radius}, {...shot.position, y: shot.position.y + radius}
+    ];
+    for (const point of [shot.position, shaftTail(shot)]) {
+      assert.ok(stage.obstacles.every(wall => !wallBlocks(camera, point, wall)), 'neither wall thickness hides the shaft');
+    }
+    for (const point of surrounding) {
+      const p = projectPoint(point, camera);
+      assert.ok(p.visible && p.x >= w * .10 - 1e-7 && p.x <= w * .90 + 1e-7 &&
+        p.y >= h * .12 - 1e-7 && p.y <= h * .88 + 1e-7, 'real impact vicinity fits after the elevation');
+    }
+    // The final impact shaft wiggles by less than .1m; reserve physical sight
+    // clearance rather than merely ensuring the unanimated centreline shows.
+    const tail = shaftTail(shot);
+    for (const dx of [-.08, .08]) for (const dy of [-.05, .05]) {
+      assert.ok(stage.obstacles.every(wall => !wallBlocks(camera, {...tail, x: tail.x + dx, y: tail.y + dy}, wall)));
+    }
+  }
+});
+
+test('close side cover uses a finite view through the gap and embedded shaft stays physically hidden', () => {
+  const shot = {position: {x: 0, y: 2, z: 10}, velocity: {x: 0, y: 0, z: 30}};
+  const stage = {radius: 1.3, obstacles: [{x: -2, z: 9.6, width: 3.96, height: 4, depth: .4}]};
+  const original = desiredFollowCamera(shot.position, base(390, 300), {w: 390, h: 300});
+  assert.ok(wallBlocks(original, shot.position, stage.obstacles[0]));
+  const camera = clearShotCamera(original, stage, shot, {w: 390, h: 300});
+  assert.ok(Math.abs(camera.x - original.x) > 0 && Math.abs(camera.x - original.x) <= 4.5);
+  assert.ok(camera.y - original.y <= 6);
+  for (const point of [shot.position, shaftTail(shot)]) assert.equal(wallBlocks(camera, point, stage.obstacles[0]), false);
+
+  const embedded = {position: {x: 0, y: 2, z: 10.5}, velocity: {x: 0, y: 0, z: 30}};
+  const solid = {obstacles: [{x: 0, z: 9.8, width: 12, height: 4, depth: .5}]};
+  const view = desiredFollowCamera(embedded.position, base(390, 300), {w: 390, h: 300});
+  const bounded = clearShotCamera(view, solid, embedded, {w: 390, h: 300});
+  assert.ok(Object.values(bounded).every(Number.isFinite));
+  assert.ok(bounded.y - view.y <= 6 && Math.abs(bounded.x - view.x) <= 4.5);
+  assert.equal(wallBlocks(bounded, shaftTail(embedded), solid.obstacles[0]), true,
+    'a tail inside masonry remains hidden instead of being painted through it');
+});
+
+test('post-shot correction leaves launch, open views and already-passed walls unchanged', () => {
+  const original = {...base(390, 300), cx: 240, horizon: 160, focal: 600};
+  const shot = {position: {x: 0, y: 3, z: 20}, velocity: {x: 0, y: -2, z: 30}};
+  const openWall = {x: 20, z: 10, width: 2, height: 10, depth: 1};
+  assert.strictEqual(clearShotCamera(original, {obstacles: []}, shot, {w: 390, h: 300}), original);
+  assert.strictEqual(clearShotCamera(original, {obstacles: [openWall]}, shot, {w: 390, h: 300}), original);
+  for (const id of [97, 117, 120]) {
+    const stage = prepareStage(STAGES[id - 1], 19), target = targetAt(stage, 9.3);
+    const landed = {position: {...target}, velocity: {x: 0, y: -4, z: 30}};
+    const follow = desiredFollowCamera(landed.position, original, {w: 390, h: 300});
+    assert.strictEqual(clearShotCamera(follow, stage, landed, {w: 390, h: 300}), follow,
+      'once both single/double walls are behind the camera, keep the established follow view');
+  }
+  for (const z of [0, 2.5, 4.999]) {
+    const launching = {position: {x: 0, y: 2, z}, velocity: {x: 0, y: 0, z: 30}};
+    const follow = desiredFollowCamera(launching.position, original, {w: 390, h: 300});
+    assert.strictEqual(clearShotCamera(follow, {obstacles: [{x: 0, z: 1, width: 8, height: 8, depth: .5}]}, launching, {w: 390, h: 300}), follow);
+  }
+  assert.strictEqual(clearShotCamera(original, {}, {position: {x: NaN, y: 2, z: 20}, velocity: shot.velocity}), original);
+  assert.strictEqual(clearShotCamera(original, {}, shot), original);
 });
 
 test('launch begins in the saved aiming view and interpolation restores it exactly', () => {
