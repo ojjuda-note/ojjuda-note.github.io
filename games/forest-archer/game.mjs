@@ -2,8 +2,8 @@ import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CLAY_E
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261102-archery-120-missions1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, lerpCamera} from './view.mjs?v=20261102-archery-120-missions1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261102-archery-120-missions1';
-import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-120-missions1';
-import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-archery-120-missions1';
+import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-basic-coach1';
+import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-archery-basic-coach1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -65,19 +65,10 @@ let w=1,h=1,dpr=1,camera={},pointer=null,lastFrame=performance.now(),audio=null,
 let ammo=null,roundRegistration=Promise.resolve();
 const ammoRemaining=()=>Number.isInteger(ammo?.snapshot?.remaining)?ammo.snapshot.remaining:null;
 const ammoOffer=()=>Number.isSafeInteger(ammo?.snapshot?.pack_ammo)&&ammo.snapshot.pack_ammo>0&&Number.isSafeInteger(ammo?.snapshot?.pack_price)&&ammo.snapshot.pack_price>0?{amount:ammo.snapshot.pack_ammo,price:ammo.snapshot.pack_price}:null;
-const coachOffer=()=>Number.isSafeInteger(ammo?.snapshot?.coach_price)&&ammo.snapshot.coach_price>0&&Number.isSafeInteger(ammo?.snapshot?.coach_duration_seconds)&&ammo.snapshot.coach_duration_seconds>0?{price:ammo.snapshot.coach_price,seconds:ammo.snapshot.coach_duration_seconds}:null;
-function coachRemaining(){
-  if(state.coachRefreshing||state.coachUnverified)return 0;
-  const snapshot=ammo?.snapshot,expires=Date.parse(snapshot?.coach_expires_at),now=ammo?.serverNow;
-  return snapshot?.coach_active===true&&Number.isFinite(expires)&&Number.isFinite(now)?Math.max(0,Math.ceil((expires-now)/1000)):0;
-}
-const coachTimeLabel=seconds=>seconds>0?`${Math.floor(seconds/3600)}시간 ${String(Math.floor(seconds%3600/60)).padStart(2,'0')}분 ${String(seconds%60).padStart(2,'0')}초`:'이용 기간 없음';
-async function refreshCoachAccess(){
-  if(!ammo||state.coachRefreshing)return;
-  state.coachUnverified=true;state.coachRefreshSnapshot=ammo.snapshot;
-  if(ammo.pending){onAmmoChange();return;}
-  state.coachRefreshing=true;
-  try{await ammo.refresh();}finally{state.coachRefreshing=false;onAmmoChange();}
+async function refreshAmmoStatus(){
+  if(!ammo||ammo.pending||state.ammoRefreshing)return;
+  state.ammoRefreshing=true;
+  try{await ammo.refresh();}finally{state.ammoRefreshing=false;onAmmoChange();}
 }
 const ammoLocked=()=>!!state.pendingAmmoShot||!!state.roundSaving||!!ammo?.pending;
 const preparingMainRound=()=>!state.isEvent&&!state.practiceOnly&&!state.serverRunId&&ammo?.connection!=='unavailable'&&state.mode!=='finished';
@@ -104,10 +95,6 @@ function updateAmmoPanel(){
 }
 function onAmmoChange(){
   if(!ammo)return;
-  if(state.coachUnverified&&ammo.snapshot&&ammo.snapshot!==state.coachRefreshSnapshot&&
-    Date.parse(ammo.snapshot.server_now)>Date.parse(state.coachRefreshSnapshot?.server_now||'1970-01-01T00:00:00Z')){
-    state.coachUnverified=false;state.coachRefreshSnapshot=null;
-  }
   if(Number.isInteger(ammo.snapshot?.main_rounds)&&!state.roundSaving&&progress.mainRounds!==ammo.snapshot.main_rounds){progress.mainRounds=ammo.snapshot.main_rounds;save();updateRound();}
   const remaining=ammoRemaining();
   if(remaining!==null&&state.isEvent&&!state.pendingAmmoShot){
@@ -117,7 +104,6 @@ function onAmmoChange(){
   }
   updateAmmoPanel();
   if(state.modal==='ammo')renderAmmoShop();
-  if(state.modal==='shop'&&shopTab==='coach')renderCoachShop();
   if(state.modal==='stabilizer')renderStabilizers();
   updatePower();
   resumeRoundRegistration();
@@ -192,14 +178,14 @@ function announceCoach(){
     try{
       const cue=new Utterance('쏴!');cue.lang='ko-KR';cue.rate=1.15;cue.pitch=1;cue.volume=.85;
       const voice=synth.getVoices?.().find(voice=>/^ko(?:-|_)/i.test(voice.lang));if(voice)cue.voice=voice;
-      cue.onerror=()=>{if(progress.sound&&state.mode==='drawing'&&state.coachReady&&coachRemaining()>0)sound('coach');};
+      cue.onerror=()=>{if(progress.sound&&progress.coachEnabled&&!state.isEvent&&state.mode==='drawing'&&state.coachReady)sound('coach');};
       synth.cancel();synth.speak(cue);return;
     }catch{}
   }
   sound('coach');
 }
 function updateCoach(now){
-  if(state.mode!=='drawing'||state.isEvent||coachRemaining()<=0||!progress.coachEnabled){state.coachReady=false;state.coachCueUntil=0;return;}
+  if(state.mode!=='drawing'||state.isEvent||!progress.coachEnabled){state.coachReady=false;state.coachCueUntil=0;return;}
   if(now-state.coachLastCheck<62.5)return;
   state.coachLastCheck=now;
   const result=evaluateCoachShot(shotParams(now),state.stage,state.time,{held:drawElapsed(now),steadyStart:state.steadyStart,steadyDuration:state.steadyDuration});
@@ -745,17 +731,15 @@ async function buyAmmo(){
   if(result?.ok)sound('buy');toast(state.ammoNotice);onAmmoChange();
 }
 async function retryAmmo(){
-  if(state.ammoBusy||state.coachBusy||state.roundSaving)return;
+  if(state.ammoBusy||state.roundSaving)return;
   if(state.pendingAmmoShot){await submitPendingShot(true);return;}
   const previous=ammo.pending,record=state.awaitingRoundSave;
   if(previous?.action==='round-start'&&previous.requestId===state.runId)state.deferRegistration=false;
-  state.ammoBusy=true;updateAmmoPanel();if(state.modal==='ammo')renderAmmoShop();if(state.modal==='shop'&&shopTab==='coach')renderCoachShop();
+  state.ammoBusy=true;updateAmmoPanel();if(state.modal==='ammo')renderAmmoShop();
   const result=await (ammo.pending?ammo.retryPending():ammo.refresh());
   state.ammoBusy=false;state.ammoNotice=result?.ok?'보유 총알을 확인했어요.':ammoError(result);
-  if(previous?.action==='coach-buy'||(state.modal==='shop'&&shopTab==='coach')){
-    state.coachNotice=result?.ok?(coachRemaining()>0?'코치 이용 기간을 확인했어요.':'코치 이용 기간이 없거나 만료됐어요.'):ammoError(result);
-    if(result?.ok&&previous?.action==='coach-buy'&&coachRemaining()>0){progress.coachEnabled=true;save();}
-    state.ammoNotice=state.coachNotice;
+  if(previous?.action==='coach-buy'){
+    state.ammoNotice=result?.ok||result?.reason==='coach_basic'?'코치는 이제 무료 기본 기능이에요. 이전 처리 결과를 확인했어요.':ammoError(result);
   }
   if(result?.ok&&previous?.action==='round-start'&&previous.requestId===state.runId){
     state.serverRunId=result.run_id;state.roundStart=Promise.resolve(result);state.deferRegistration=false;
@@ -765,7 +749,7 @@ async function retryAmmo(){
   if(result?.ok&&!state.isEvent&&!state.serverRunId&&!state.registering&&state.mode!=='finished'&&!ammo.pending){registerMainRound();await state.roundStart;}
   onAmmoChange();toast(state.ammoNotice);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없고, 이후에는 약한 바람부터 익혀요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 실제 포물선으로 넘길 수 있도록 30·35·40·50m에서 연습해요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 상점의 코치는 10쭈로 구매한 시점부터 24시간 동안 사용할 수 있어요. 접속하지 않은 시간도 포함되며 자동으로 연장되지 않아요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 상점에서 켜거나 끌 수 있어요. 1~16단계는 기본 활, 17~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 마지막 15판인 106~120단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈·코치 이용 기간은 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없고, 이후에는 약한 바람부터 익혀요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 실제 포물선으로 넘길 수 있도록 30·35·40·50m에서 연습해요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~16단계는 기본 활, 17~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 마지막 15판인 106~120단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const statRow=(label,value)=>`<div class="item-stat"><span>${label}</span><strong>${value}</strong></div>`;
@@ -773,8 +757,7 @@ const statMeter=(label,value)=>`${statRow(label,`${value} / 100`)}<div class="st
 function showShop(tab=shopTab){
   if(guardAmmoAction())return;
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 발사가 끝난 뒤 상점을 열 수 있어요.');return;}
-  if(state.isEvent)tab='bow';
-  if(tab==='coach'){showCoachShop();return;}
+  if(state.isEvent||!['bow','arrow'].includes(tab))tab='bow';
   shopTab=tab;
   const isBow=tab==='bow',catalog=isBow?BOWS.filter(item=>(item.weaponType==='gun')===!!state.isEvent):ARROWS;
   const sortOptions=isBow
@@ -824,43 +807,17 @@ function showShop(tab=shopTab){
     'tip-heavy':'촉이 무거운 순서예요. 같은 활에서 촉만 무거워지면 더 느리게 출발해요. 무겁다고 항상 더 멀리 날아가지는 않아요.'
   };
   const orderNote=sortNotes[shopSort];
-  openModal('shop',`<p class="eyebrow">THE ARCHER'S WORKSHOP</p><h2 id="modalTitle">무기 상점</h2><p class="modal-subtitle">${state.isEvent?'이벤트 전용 총기 5종. 2·4·10발 탄창과 장전 속도를 비교해보세요.':isBow?'활 10종 · 석궁 10종. 총기 5종은 접시 사격 이벤트에서 만날 수 있어요.':'일반 화살 12종과 특수 화살 2종. 촉 무게·날개·특수 능력을 조합해보세요.'}</p><div class="shop-top"><div class="shop-tabs"><button class="${isBow?'active':''}" data-shop-tab="bow"> ${state.isEvent?'이벤트 총기 5종':'무기 20종'}</button>${state.isEvent?'':`<button class="${!isBow?'active':''}" data-shop-tab="arrow">화살 ${ARROWS.length}종</button><button data-shop-tab="coach">코치</button>`}</div><div class="shop-coins">${icon('coin')}<strong>${formatCoins(progress.coins)}</strong></div></div><div class="shop-loadout"><span>지금의 조합</span><strong>${b.name}${hasScope()?' · 조준경':''} + ${projectile.name}</strong><small>기준 발사속도 ${comboSpeed} m/s</small><small class="shop-loadout-steady">조준 안정 ${formatSeconds(weaponSteadyDuration(b))}초</small></div>${state.isEvent?`<button class="button ammo-shop-link" data-action="ammo-shop"><span>보유 총알 <strong>${ammoRemaining()??"—"}발</strong></span><span>${ammoOffer()?`${ammoOffer().amount}발 충전 · ${ammoOffer().price}쭈 →`:'총알 충전 →'}</span></button>`:""}${filters}${sorting}<p class="shop-order-note">${orderNote}</p><div class="shop-grid">${cards}</div><p class="shop-footnote">${state.isEvent?'총기는 접시·UFO 사격 이벤트 전용이에요. 탄창을 비우면 자동 장전하며 장전 중에는 발사할 수 없어요.<br>조준하고 손을 떼면 발사하며, 당기는 시간과 화살 옵션은 탄환 속도에 영향을 주지 않아요.<br>총기에 단 조준경도 해당 총기에 영구 귀속돼요.':isBow?'일반 석궁은 단발, 레어 석궁만 3연발이에요. 집탄성이 높을수록 3발이 더 가깝게 모여요.<br>3연발은 발사 기회 1회를 사용하고 최고 점수 하나를 받아요. 사람이 맞으면 그 발사 전체가 0점이에요.<br>석궁은 빠르게 출발하지만 감속이 커서 사거리가 짧게 설정되어 있어요.<br>총기는 전용 탄환을 사용하고 화살 옵션과 당긴 힘은 적용하지 않아요.<br>조준경은 장착한 장비에 영구 귀속돼요. 다른 장비에는 새로 구매해야 해요.':'바람 영향은 나무 화살을 100%로 비교하며, 낮을수록 바람에 덜 밀려요.<br>무거운 촉이 항상 더 멀리 날아가지는 않아요.<br>탄성 화살은 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안에서 조금 휘어요.<br>두 화살 모두 벽·기둥에 막히고, 총기에는 적용되지 않아요.'}<br>${state.isEvent?'전용 탄환의 출발 속도는 총기마다 같아요.':'표시 속도는 기준값이며 실제 발사에는 편차가 있어요.'}<br>게임에서 모은 코인으로 구매해요. 장비와 활·석궁 화살은 계속 사용할 수 있어요. 이벤트 총알은 발사할 때 1발씩 소모돼요.</p>`);
+  openModal('shop',`<p class="eyebrow">THE ARCHER'S WORKSHOP</p><h2 id="modalTitle">무기 상점</h2><p class="modal-subtitle">${state.isEvent?'이벤트 전용 총기 5종. 2·4·10발 탄창과 장전 속도를 비교해보세요.':isBow?'활 10종 · 석궁 10종. 총기 5종은 접시 사격 이벤트에서 만날 수 있어요.':'일반 화살 12종과 특수 화살 2종. 촉 무게·날개·특수 능력을 조합해보세요.'}</p><div class="shop-top"><div class="shop-tabs"><button class="${isBow?'active':''}" data-shop-tab="bow"> ${state.isEvent?'이벤트 총기 5종':'무기 20종'}</button>${state.isEvent?'':`<button class="${!isBow?'active':''}" data-shop-tab="arrow">화살 ${ARROWS.length}종</button>`}</div><div class="shop-coins">${icon('coin')}<strong>${formatCoins(progress.coins)}</strong></div></div><div class="shop-loadout"><span>지금의 조합</span><strong>${b.name}${hasScope()?' · 조준경':''} + ${projectile.name}</strong><small>기준 발사속도 ${comboSpeed} m/s</small><small class="shop-loadout-steady">조준 안정 ${formatSeconds(weaponSteadyDuration(b))}초</small></div>${state.isEvent?`<button class="button ammo-shop-link" data-action="ammo-shop"><span>보유 총알 <strong>${ammoRemaining()??"—"}발</strong></span><span>${ammoOffer()?`${ammoOffer().amount}발 충전 · ${ammoOffer().price}쭈 →`:'총알 충전 →'}</span></button>`:""}${filters}${sorting}<p class="shop-order-note">${orderNote}</p><div class="shop-grid">${cards}</div><p class="shop-footnote">${state.isEvent?'총기는 접시·UFO 사격 이벤트 전용이에요. 탄창을 비우면 자동 장전하며 장전 중에는 발사할 수 없어요.<br>조준하고 손을 떼면 발사하며, 당기는 시간과 화살 옵션은 탄환 속도에 영향을 주지 않아요.<br>총기에 단 조준경도 해당 총기에 영구 귀속돼요.':isBow?'일반 석궁은 단발, 레어 석궁만 3연발이에요. 집탄성이 높을수록 3발이 더 가깝게 모여요.<br>3연발은 발사 기회 1회를 사용하고 최고 점수 하나를 받아요. 사람이 맞으면 그 발사 전체가 0점이에요.<br>석궁은 빠르게 출발하지만 감속이 커서 사거리가 짧게 설정되어 있어요.<br>총기는 전용 탄환을 사용하고 화살 옵션과 당긴 힘은 적용하지 않아요.<br>조준경은 장착한 장비에 영구 귀속돼요. 다른 장비에는 새로 구매해야 해요.':'바람 영향은 나무 화살을 100%로 비교하며, 낮을수록 바람에 덜 밀려요.<br>무거운 촉이 항상 더 멀리 날아가지는 않아요.<br>탄성 화살은 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안에서 조금 휘어요.<br>두 화살 모두 벽·기둥에 막히고, 총기에는 적용되지 않아요.'}<br>${state.isEvent?'전용 탄환의 출발 속도는 총기마다 같아요.':'표시 속도는 기준값이며 실제 발사에는 편차가 있어요.'}<br>게임에서 모은 코인으로 구매해요. 장비와 활·석궁 화살은 계속 사용할 수 있어요. 이벤트 총알은 발사할 때 1발씩 소모돼요.</p>`);
   for(const cv of document.querySelectorAll('[data-item-art]')){const item=items.find(entry=>entry.id===+cv.dataset.itemArt);drawEquipmentIcon(cv.getContext('2d'),cv.width,cv.height,{...item,kind:tab,tier:item.id,scopeMounted:isBow&&hasScope(item.id)});}
 }
-function showCoachShop(){
-  if(state.isEvent){showShop('bow');return;}
-  if(guardAmmoAction()||state.mode==='flight'||state.mode==='settling')return;
-  shopTab='coach';renderCoachShop();
-}
-function renderCoachShop(){
-  const remaining=coachRemaining(),active=remaining>0,enabled=active&&progress.coachEnabled,offer=coachOffer();
-  const coins=Number.isSafeInteger(ammo?.snapshot?.coins)?ammo.snapshot.coins:null,busy=!!state.coachBusy||!!state.ammoBusy||!!state.coachRefreshing;
-  const canBuy=!active&&!!offer&&coins!==null&&coins>=offer.price&&!busy&&!state.coachUnverified&&!ammo?.pending;
-  state.coachShopActive=active;state.coachShownSecond=remaining;
-  openModal('shop',`<p class="eyebrow">YOUR ARCHERY COACH</p><h2 id="modalTitle">무기 상점</h2><p class="modal-subtitle">좋은 한 발의 순간을 알려주는 코치예요.</p><div class="shop-top"><div class="shop-tabs"><button data-shop-tab="bow">무기 20종</button><button data-shop-tab="arrow">화살 ${ARROWS.length}종</button><button class="active" data-shop-tab="coach">코치</button></div><div class="shop-coins"><strong>${coins===null?'—':formatCoins(coins)}</strong><span>쭈</span></div></div><div class="shop-grid coach-shop-grid"><article class="item-card ${enabled?'equipped':''}" data-equipment="coach"><div class="item-art"><span class="item-tag">보조 아이템 · 24시간</span><span class="item-owned">${enabled?'코칭 켜짐':active?'코칭 꺼짐':''}</span><canvas id="coachArt" width="420" height="180" aria-label="초록 모자와 호루라기를 든 코치"></canvas></div><h3>코치</h3><p>조준 방향, 당긴 힘, 바람과 표적의 움직임을 읽어요. 맞히기 좋은 위치와 타이밍이 올 때마다 “쏴!” 하고 알려줘요. 좋은 조준을 유지하면 상단 표시가 계속 켜져요.</p><div class="item-traits">${statRow('안내','음성 + 상단 표시')}${statRow('사용','활 · 석궁')}${statRow('이용 기간','구매 시점부터 24시간')}${statRow('남은 시간',`<span id="coachRemaining">${coachTimeLabel(remaining)}</span>`)}</div><div class="item-price"><span>이용 가격</span><strong>${offer?`24시간 · ${offer.price}쭈`:'가격 확인 중'}</strong></div><div class="item-actions">${active?`<button class="button ${enabled?'':'primary-button'}" data-action="toggle-coach" aria-pressed="${enabled}" ${busy||ammo?.pending?'disabled':''}>${enabled?'코치 끄기':'코치 켜기'}</button>`:`<button id="coachBuyBtn" class="button primary-button" data-action="buy-coach" ${canBuy?'':'disabled'}>${busy?'구매 확인 중…':offer?`24시간 이용 · ${offer.price}쭈`:'계정 확인 중'}</button>`}</div><p class="coach-purchase-note" role="status">${ammo?.pending?'이전 처리 결과를 확인한 뒤 다시 구매할 수 있어요.':state.coachUnverified?'이용 기간을 다시 확인해 주세요. 연결이 확인되면 코칭이 이어져요.':!offer?'로그인한 오락실에서 이용권을 확인해 주세요.':!active&&coins!==null&&coins<offer.price?'쭈가 부족해요. 오락실 지갑에서 확인해 주세요.':state.coachNotice||(active?'남은 시간 동안 다른 기기에서도 이용할 수 있어요.':'구매 버튼을 누르면 쭈가 차감되고 24시간이 시작돼요.')}</p><button class="button soft-button" data-action="retry-ammo" ${busy||state.roundSaving?'disabled':''}>${ammo?.pending?'이전 처리 다시 확인':'이용권 다시 확인'}</button></article></div><p class="shop-footnote">알려준 순간에 손을 떼면 현재 조준한 방향으로 쏴요. 이후의 조준 움직임과 놓는 시점에 따라 결과가 달라질 수 있어요.<br>소리를 끄면 상단의 “쏴!” 표시로 안내해요. 음성을 지원하지 않는 환경에서는 짧은 알림음이 나와요.<br>코치를 끄거나 접속하지 않아도 이용 시간은 흘러가요. 자동 결제·자동 연장은 없고, 만료 후 다시 구매할 수 있어요.<br>이용 기간과 쭈는 계정에, 코치 켜기·끄기는 현재 브라우저에 저장돼요.</p>`);
-  const art=$('coachArt');drawEquipmentIcon(art.getContext('2d'),art.width,art.height,{kind:'coach',color:'#6f8e71'});
-}
-function updateCoachShopStatus(){
-  const remaining=coachRemaining();
-  if((remaining>0)!==state.coachShopActive){renderCoachShop();return;}
-  if(remaining!==state.coachShownSecond){$('coachRemaining').textContent=coachTimeLabel(remaining);state.coachShownSecond=remaining;}
-}
-async function buyCoach(){
-  if(state.modal!=='shop'||shopTab!=='coach'||state.coachBusy||state.coachRefreshing||state.coachUnverified||state.ammoBusy||ammoLocked()||state.isEvent||state.mode==='flight'||state.mode==='settling'||coachRemaining()>0)return;
-  const offer=coachOffer();if(!offer||!Number.isSafeInteger(ammo?.snapshot?.coins)||ammo.snapshot.coins<offer.price)return;
-  state.coachBusy=true;state.coachNotice='구매를 확인하고 있어요.';renderCoachShop();
-  const result=await ammo.buyCoach();state.coachBusy=false;
-  state.coachNotice=result?.ok?'코치 24시간 이용이 시작됐어요.':result?.reason==='coach_active'?'이미 코치를 이용하고 있어요.':ammoError(result);
-  if(result?.ok){progress.coachEnabled=true;save();sound('buy');}
-  toast(state.coachNotice);onAmmoChange();
-}
 function toggleCoach(){
-  if(guardAmmoAction()||state.isEvent||state.mode==='flight'||state.mode==='settling'||coachRemaining()<=0)return;
-  progress.coachEnabled=!progress.coachEnabled;state.coachCueUntil=0;stopCoachVoice();save();renderCoachShop();
+  if(state.modal!=='menu'||state.isEvent)return;
+  progress.coachEnabled=!progress.coachEnabled;state.coachReady=false;state.coachCueUntil=0;
+  stopCoachVoice();setCoachCue(false);save();showMenu();
+  $('modalContent').querySelector?.('[data-action="toggle-coach"]')?.focus();
 }
 function equipItem(id){
   if(guardAmmoAction())return;
-  if(shopTab==='coach')return;
   const kind=shopTab,item=(kind==='bow'?BOWS:ARROWS)[id],owned=kind==='bow'?progress.ownedBows:progress.ownedArrows;
   if(!item)return;
   if(state.isEvent?(kind==='arrow'||item.weaponType!=='gun'):(kind==='bow'&&item.weaponType==='gun')){toast(state.isEvent?'접시 이벤트에는 전용 총기를 사용해요.':'총기는 접시 사격 이벤트에서 사용할 수 있어요.');return;}
@@ -897,7 +854,8 @@ function showMenu(){
   const choices=!event||finished?stageChoiceMarkup('menu-stage-actions'):'';
   const route=event?action('ammo-shop','coin','총알 충전',`보유 ${ammoRemaining()??'—'}발`):action('stages','grid','전체 단계',`1~${STAGES.length}단계에서 선택`);
   const subtitle=event?`접시 사격 이벤트 ${state.stage.eventLevel}단계 · 활쏘기 5판마다 한 번`:`지금 ${level}단계 · 접시 사격 이벤트까지 ${5-progress.mainRounds%5}판`;
-  openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${choices}<div class="menu-actions">${route}${action('stabilizers','tonic','안정제',`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`)}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${action('help','help','게임 방법','조준·장비·이벤트 안내')}</div>${event&&!finished?`<button class="button soft-button menu-return" data-action="leave-event" ${ammoLocked()?'disabled':''}>활쏘기로 돌아가기</button>`:''}<button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'게임 계속하기'}</button></div>`,true);
+  const coachSetting=event?'':`<button class="menu-action" data-action="toggle-coach" aria-pressed="${progress.coachEnabled}">${icon('target')}<span><strong>코치 ${progress.coachEnabled?'켜짐':'꺼짐'}</strong><small>무료 기본 기능 · 눌러서 ${progress.coachEnabled?'끄기':'켜기'}</small></span></button>`;
+  openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${choices}<div class="menu-actions">${route}${action('stabilizers','tonic','안정제',`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`)}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${coachSetting}${action('help','help','게임 방법','조준·장비·이벤트 안내')}</div>${event&&!finished?`<button class="button soft-button menu-return" data-action="leave-event" ${ammoLocked()?'disabled':''}>활쏘기로 돌아가기</button>`:''}<button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'게임 계속하기'}</button></div>`,true);
 }
 function showStages(){
   if(guardAmmoAction())return;
@@ -924,7 +882,6 @@ document.addEventListener('click',e=>{
   if(act==='ammo-shop')showAmmoShop();
   if(act==='buy-ammo')buyAmmo();
   if(act==='buy-stabilizer')buyStabilizer();
-  if(act==='buy-coach')buyCoach();
   if(act==='toggle-coach')toggleCoach();
   if(act==='use-stabilizer')useStabilizer();
   if(act==='retry-ammo')retryAmmo();
@@ -960,7 +917,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='Space'&&!e.repeat&&!(document.activeElement?.tagName==='BUTTON')){e.preventDefault();beginDraw();}
 });
 document.addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='Space'&&!state.modal&&!pointer){e.preventDefault();releaseShot();}});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDraw();else void refreshCoachAccess();lastFrame=performance.now();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDraw();else void refreshAmmoStatus();lastFrame=performance.now();});
 window.addEventListener('blur',()=>cancelDraw());new ResizeObserver(resize).observe(canvas);
 
 function poly(points,fill,stroke=null,width=1){
@@ -1163,7 +1120,6 @@ function updateGunReload(reloading){
 }
 function updatePower(){
   if(state.modal==='stabilizer')renderStabilizers();
-  if(state.modal==='shop'&&shopTab==='coach')updateCoachShopStatus();
   const reloading=state.isEvent&&state.reloadRemaining>0,drawing=state.mode==='drawing',steady=isSteady(),replay=cinematicFrame();
   $('flightBadge').classList.toggle('bullseye',replay?.phase==='impact');
   updateGunReload(reloading);
@@ -1192,7 +1148,7 @@ function updatePower(){
   touchpad.setAttribute('aria-disabled',reloading||ammoWait||empty||preparing||state.roundSaving||!['ready','drawing'].includes(state.mode)?'true':'false');
   const fatigue=drawing&&state.held>2.6;
   $('powerFill').style.background=reloading?'#829b9d':steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
-  const coachCue=drawing&&!state.isEvent&&coachRemaining()>0&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
+  const coachCue=drawing&&!state.isEvent&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
   setCoachCue(coachCue);
   const mode=state.mode+activeBow().id+(replay?.phase??'')+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
   canvas.dataset.mode=state.mode;

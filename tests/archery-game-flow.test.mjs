@@ -115,7 +115,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
     if (data.type === 'ready') Promise.resolve().then(() => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'init', owner, sessionId, available: true } }));
     if (data.type === 'ammo-request') { ammoRequests.push(data);if (!heldActions.has(data.action)) Promise.resolve().then(() => replyAmmo(data)); }
   } };
-  window.parent = parentBridge;window.location = { origin };
+  window.parent = ammoOptions.offline ? window : parentBridge;window.location = { origin };
   const fakeMath = Object.create(Math); fakeMath.random = () => 0.5;
   const context = vm.createContext({
     document, Math: fakeMath, console, performance: { now: () => now }, devicePixelRatio: 1, crypto: { randomUUID: uuid },
@@ -134,7 +134,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, get coachRemaining(){return coachRemaining;}, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
@@ -339,7 +339,7 @@ test('v2 record reset preserves all inventory and options while clearing both ol
     assert.equal(app.api.state.stage.id, 1);
     assert.equal(saved.stageCatalog, STAGE_CATALOG);assert.equal(saved.unlocked, STAGE_COUNT);
     assert.equal(app.api.ammo.snapshot.remaining, 55, 'account ammunition is outside the local record reset');
-    assert.ok(app.api.coachRemaining() > 0, 'a paid coach rental remains active');
+    assert.equal(app.api.ammo.snapshot.coach_expires_at, new Date(SERVER_EPOCH + 86400000).toISOString(), 'the historical account entitlement remains available for receipt recovery');
     assert.equal(store.get(LEGACY_SAVE_KEY), backup, 'the previous journey remains an untouched backup');
     assert.equal(store.get(pendingKey), 'pending-purchase');assert.equal(store.get(recoveryKey), 'recovery-receipts');
     assert.equal(store.get('another-game-progress'), 'unrelated-record');
@@ -888,102 +888,94 @@ function assertCoachCue(app, visible, message = 'the speech bubble follows the c
   assert.equal(cue.getAttribute('aria-hidden'), String(!visible), 'assistive visibility matches the displayed cue');
 }
 
-test('the coach rents for twenty-four server hours and ten 쭈 while its on/off preference survives reload', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, sound: false}, {coins: 20});
-  assert.equal(app.api.coachRemaining(), 0);
-  app.api.showShop('bow');assert.match(app.getElement('modalContent').innerHTML, /data-shop-tab="coach"/);
-  app.api.showShop('coach');assert.match(app.getElement('modalContent').innerHTML, /10\s*쭈/);assert.match(app.getElement('modalContent').innerHTML, /24시간/);
-  modalAction(app, 'buy-coach');modalAction(app, 'buy-coach');await app.flush();
-  assert.equal(app.api.progress.coins, 10000);assert.equal(app.ammo.account.coins, 10);
-  assert.equal(app.api.coachRemaining(), 86400);assert.equal(app.api.progress.coachEnabled, true);
-  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 1);
-  const expiry = app.ammo.account.coach_expires_at;
-  modalAction(app, 'buy-coach');await app.flush();assert.equal(app.ammo.account.coins, 10);assert.equal(app.ammo.account.coach_expires_at, expiry);
+test('basic coaching is on by default and its menu preference survives reload without a purchase', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, sound: false}, {coins: 0});
+  assert.equal(app.api.progress.coachEnabled, true);
+  app.api.showShop('bow');
+  assert.doesNotMatch(app.getElement('modalContent').innerHTML, /data-shop-tab="coach"|data-action="buy-coach"/);
+  app.getElement('menuBtn').emit('click');
+  assert.match(app.getElement('modalContent').innerHTML, /무료 기본 기능/);
+  assert.match(app.getElement('modalContent').innerHTML, /data-action="toggle-coach" aria-pressed="true"/);
   modalAction(app, 'toggle-coach');assert.equal(app.api.progress.coachEnabled, false);assertCoachCue(app, false);
+  assert.match(app.getElement('modalContent').innerHTML, /data-action="toggle-coach" aria-pressed="false"/);
+  assert.equal(app.snapshot().coachEnabled, false);
   const loaded = await appHarness(app.snapshot(), {server: app.ammo});
-  assert.equal(loaded.api.progress.coachEnabled, false);assert.ok(loaded.api.coachRemaining() > 0);assertCoachCue(loaded, false);
-  assert.equal(loaded.api.progress.coins, 10000);assert.equal(loaded.ammo.account.coins, 10);
-  loaded.api.showShop('coach');modalAction(loaded, 'toggle-coach');
-  assert.equal(loaded.api.progress.coachEnabled, true);assert.equal(loaded.ammo.account.coins, 10);
-  assert.equal(loaded.snapshot().coachEnabled, true);
-  assert.equal(Object.hasOwn(loaded.snapshot(), 'coachOwned'), false, 'local storage cannot grant a rental');
-  const poor = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 99999, coachOwned: true, coachEnabled: true}, {coins: 9});
-  assert.equal(poor.api.coachRemaining(), 0, 'a legacy local ownership flag grants no access');
-  poor.api.showShop('coach');modalAction(poor, 'buy-coach');await poor.flush();
-  assert.equal(poor.api.coachRemaining(), 0);assert.equal(poor.ammo.account.coins, 9);assert.equal(poor.api.progress.coins, 99999);
+  assert.equal(loaded.api.progress.coachEnabled, false);assertCoachCue(loaded, false);
+  loaded.getElement('menuBtn').emit('click');modalAction(loaded, 'toggle-coach');
+  assert.equal(loaded.api.progress.coachEnabled, true);assert.equal(loaded.snapshot().coachEnabled, true);
+  assert.equal(loaded.api.progress.coins, 10000);assert.equal(loaded.ammo.account.coins, 0);
+  assert.equal(loaded.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+  modalAction(loaded, 'help');
+  assert.match(loaded.getElement('modalContent').innerHTML, /무료로 쓰는 기본 기능/);
+  assert.doesNotMatch(loaded.getElement('modalContent').innerHTML, /24시간|10쭈|코치 이용 기간/);
 });
 
-test('an uncertain coach purchase retries one receipt without a second ten-쭈 charge or a longer rental', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 777, sound: false}, {coins: 20, hold: ['coach-buy']});
-  app.api.showShop('coach');modalAction(app, 'buy-coach');modalAction(app, 'buy-coach');await app.flush();
-  const requests = app.ammo.requests.filter(request => request.action === 'coach-buy');assert.equal(requests.length, 1);
-  const original = requests[0];app.ammo.execute(original);
-  const expires = app.ammo.account.coach_expires_at;
-  app.ammo.reply(original, {ok: false, reason: 'pending'});await app.flush();
-  assert.equal(app.api.coachRemaining(), 0, 'an uncertain local result cannot grant rental access');
-  assert.equal(app.ammo.account.coins, 10);assert.equal(app.api.progress.coins, 777);
-  modalAction(app, 'buy-coach');await app.flush();
-  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 1);
-  app.ammo.held.delete('coach-buy');await app.api.retryAmmo();await app.flush();
-  const attempts = app.ammo.requests.filter(request => request.action === 'coach-buy');
-  assert.equal(attempts.length, 2);assert.equal(attempts[1].requestId, original.requestId);
-  assert.equal(app.ammo.account.coins, 10);assert.equal(app.ammo.account.coach_expires_at, expires);
-  assert.equal(app.api.coachRemaining(), 86400);assert.equal(app.api.ammo.pending, null);
+test('basic coaching works with no rental, an empty wallet, expired legacy access or no account connection', async () => {
+  for (const options of [{coins: 0}, {coachExpiresAt: new Date(SERVER_EPOCH - 1).toISOString()}, {offline: true}]) {
+    const app = await appHarness(null, options), beforeCoins = app.ammo.account.coins;
+    assert.equal(app.api.progress.coachEnabled, true);
+    if (options.offline) assert.equal(app.api.ammo.connection, 'unavailable');
+    preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachReady, 20);
+    assertCoachCue(app, true);assert.equal(app.speech.utterances.length, 1);
+    assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
+    assert.equal(app.ammo.account.coins, beforeCoins);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+    app.getElement('aimTouchpad').emit('pointercancel');assertCoachCue(app, false);
+  }
 });
 
-test('coach access expires while the player is drawing without firing or silently renewing it', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true},
+test('a saved legacy coach receipt recovers its balance without another charge or changing an off preference', async () => {
+  const original = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 777, coachEnabled: false, sound: false}, {coins: 20});
+  const owner = '11111111-1111-4111-8111-111111111111', requestId = '33333333-3333-4333-8333-333333333333';
+  const purchased = original.ammo.execute({action: 'coach-buy', requestId});
+  assert.equal(purchased.coins, 10);
+  original.store.set('forest-archer-ammo-pending-v2:' + owner, JSON.stringify({version: 1, owner, action: 'coach-buy', requestId, payload: {}, localRunId: null}));
+  const app = await appHarness(original.snapshot(), {store: new Map(original.store), server: original.ammo});
+  await app.flush();assert.equal(app.api.ammo.pending.action, 'coach-buy');
+  assert.equal(app.api.ammo.pending.status, 'confirmed');
+  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+  await app.api.retryAmmo();await app.flush();
+  assert.equal(app.api.ammo.pending, null);assert.equal(app.ammo.account.coins, 10);
+  assert.equal(app.api.ammo.snapshot.coins, 10);assert.equal(app.api.progress.coins, 777);
+  assert.equal(app.ammo.account.coach_expires_at, purchased.coach_expires_at);
+  assert.equal(app.api.progress.coachEnabled, false);
+  assert.match(app.api.state.ammoNotice, /무료 기본 기능/);
+  assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+});
+
+test('legacy rental expiry never stops basic coaching during a held draw or purchases an extension', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: true},
     {coachExpiresAt: new Date(SERVER_EPOCH + 1800).toISOString()});
   const {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
-  app.until(() => app.api.state.coachSaid, 20);assert.equal(app.speech.utterances.length, 1);
-  assertCoachCue(app, true);
+  app.until(() => app.api.state.coachSaid, 20);assertCoachCue(app, true);
   holdFor(app, 700);
-  assert.equal(app.api.coachRemaining(), 0);assert.equal(app.api.state.mode, 'drawing');
-  assertCoachCue(app, false, 'rental expiry hides the speech bubble during an active draw');assert.equal(app.api.state.used, 0);
+  assert.ok(SERVER_EPOCH + app.now > Date.parse(app.ammo.account.coach_expires_at));
+  assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
+  assertCoachCue(app, true, 'the legacy expiration no longer controls the default coaching cue');
   pad.emit('pointercancel');
-  preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(15);
-  assert.equal(app.api.state.coachSaid, false);assert.equal(app.speech.utterances.length, 1);
-  assertCoachCue(app, false);
+  preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachSaid, 20);
+  assertCoachCue(app, true);assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
+  app.getElement('aimTouchpad').emit('pointercancel');
+});
+
+test('resuming the game and a failed account refresh do not interrupt basic coaching', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: true});
+  app.ammo.held.add('status');
+  app.document.hidden = true;app.document.emit('visibilitychange');
+  app.document.hidden = false;app.document.emit('visibilitychange');await app.flush();
+  const refresh = app.ammo.requests.filter(request => request.action === 'status').at(-1);
+  assert.equal(app.api.state.ammoRefreshing, true);
+  preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachReady, 20);
+  assertCoachCue(app, true, 'coaching is available while account status is still being checked');
+  app.ammo.reply(refresh, {ok: false, reason: 'unavailable'});await app.flush();app.frames(8);
+  assert.equal(app.api.state.ammoRefreshing, false);assertCoachCue(app, true);
+  assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
   assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
   app.getElement('aimTouchpad').emit('pointercancel');
 });
 
-test('resuming a paused clock waits for fresh coach access and never revives the old rental after a failed refresh', async () => {
-  for (const failed of [false, true]) {
-    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true}, {coachActive: true});
-    const {state} = app.api, expires = app.ammo.account.coach_expires_at;
-    assert.equal(app.api.coachRemaining(), 86400);
-    app.ammo.held.add('status');
-    app.document.hidden = true;app.document.emit('visibilitychange');
-    app.document.hidden = false;app.document.emit('visibilitychange');await app.flush();
-    const refresh = app.ammo.requests.filter(request => request.action === 'status').at(-1);
-    assert.equal(state.coachRefreshing, true);assert.equal(app.api.coachRemaining(), 0);
-    preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(8);
-    assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
-    assertCoachCue(app, false, 'unverified server access never displays a firing cue');
-    app.ammo.reply(refresh, failed ? {ok: false, reason: 'unavailable'} : app.ammo.snapshot({
-      server_now: new Date(Date.parse(expires) + 1).toISOString(), coach_active: false
-    }));
-    await app.flush();app.frames(8);
-    assert.equal(state.coachRefreshing, false);assert.equal(app.api.coachRemaining(), 0);
-    assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
-    assertCoachCue(app, false);
-    app.getElement('aimTouchpad').emit('pointercancel');
-    if (failed) {
-      const retry = app.api.retryAmmo();await app.flush();
-      const request = app.ammo.requests.filter(item => item.action === 'status').at(-1);
-      assert.notEqual(request.requestId, refresh.requestId);
-      app.ammo.reply(request, app.ammo.snapshot({server_now: new Date(SERVER_EPOCH + 3600000).toISOString(), coach_active: true}));
-      await retry;await app.flush();
-      assert.equal(app.api.coachRemaining(), 82800, 'a later valid server confirmation can restore the still-active rental');
-    }
-    assert.ok(app.now < 10000, 'server elapsed hours are independent of the short local performance clock');
-    assert.equal(state.used, 0);assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
-  }
-});
-
-test('the rented coach keeps good timing visible and repeats each new opportunity without overlapping voices or firing', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, coachEnabled: true, sound: true}, {coachActive: true});
+test('the basic coach keeps good timing visible and repeats each new opportunity without overlapping voices or firing', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, coachEnabled: true, sound: true});
   const {state} = app.api, {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
   assert.equal(state.coachSaid, false);assert.equal(state.coachReady, false);
   assertCoachCue(app, false);
@@ -1043,7 +1035,7 @@ test('the rented coach keeps good timing visible and repeats each new opportunit
 });
 
 test('coach evaluates up to sixteen times per second and remains absent when disabled or in gun events', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true}, {coachActive: true});
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true});
   const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');moveHeldAim(app, .4, .5);
   const checks = [];let previous = app.api.state.coachLastCheck;
   for (let i = 0; i < 120; i++) {
@@ -1054,7 +1046,7 @@ test('coach evaluates up to sixteen times per second and remains absent when dis
   for (let i = 1; i < checks.length; i++) assert.ok(checks[i] - checks[i - 1] >= 62.5 - 1e-8);
   assert.equal(app.speech.utterances.length, 0);assertCoachCue(app, false);pad.emit('pointercancel');
   for (const event of [false, true]) {
-    const quiet = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: event, sound: true}, {coachActive: true});
+    const quiet = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: event, sound: true});
     if (event) {quiet.api.enterEvent(1);await quiet.flush();}
     const input = quiet.getElement('aimTouchpad');input.emit('pointerdown');holdFor(quiet, 1500);
     assert.equal(quiet.api.state.mode, 'drawing');assert.equal(quiet.api.state.coachSaid, false);
@@ -1062,13 +1054,13 @@ test('coach evaluates up to sixteen times per second and remains absent when dis
     assertCoachCue(quiet, false, event ? 'gun events never display the archery coach bubble' : 'disabled coaching never displays the bubble');
     assert.equal(quiet.api.state.used, 0);assert.equal(quiet.ammo.requests.filter(request => request.action === 'spend').length, 0);
     input.emit('pointercancel');
-    if (event) {quiet.api.showShop('coach');assert.doesNotMatch(quiet.getElement('modalContent').innerHTML, /data-action="buy-coach"|data-action="toggle-coach"/);}
+    if (event) {quiet.getElement('menuBtn').emit('click');assert.doesNotMatch(quiet.getElement('modalContent').innerHTML, /data-action="toggle-coach"/);}
   }
 });
 
 test('muted or speech-unavailable coaching still gives the speech bubble without firing', async () => {
   for (const options of [{sound: false, speechAvailable: true}, {sound: true, speechAvailable: false}]) {
-    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: options.sound}, {speechAvailable: options.speechAvailable, coachActive: true});
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: options.sound}, {speechAvailable: options.speechAvailable});
     preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachSaid, 20);
     assertCoachCue(app, true);
     assert.equal(app.speech.utterances.length, 0);assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
