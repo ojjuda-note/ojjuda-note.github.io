@@ -5,7 +5,7 @@ const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy', 'coach-buy']);
 const SNAPSHOT_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price', 'server_now', 'coach_expires_at', 'coach_active', 'coach_price', 'coach_duration_seconds'];
-const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid']);
+const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'coach_basic', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid']);
 const COUNTER_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'main_rounds', 'milestones_granted'];
 const validStage = stage => Number.isInteger(stage) && stage >= 1 && stage <= 120;
 const fail = (reason, extra = {}) => ({ ok: false, reason, ...extra });

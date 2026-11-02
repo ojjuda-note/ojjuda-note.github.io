@@ -1,4 +1,4 @@
-/* Local archery play shares server-approved event ammo and coach rentals with the arcade. */
+/* Local archery play shares server-approved event ammo and legacy receipt recovery with the arcade. */
 (() => {
  'use strict';
  let active=null;
@@ -14,7 +14,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label','바람의 궁수 · 테스트게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-records-reset1" allow="autoplay; fullscreen"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-basic-coach1" allow="autoplay; fullscreen"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null;

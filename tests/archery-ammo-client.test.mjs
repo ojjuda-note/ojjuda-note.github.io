@@ -216,6 +216,32 @@ test('a definitive coach-active decline reconciles the rental bought elsewhere w
   f.client.dispose();
 });
 
+test('retired coach purchases settle definitively and still reconcile the latest account snapshot', async () => {
+  const f = await fixture(), buying = f.client.buyCoach();await f.flush();
+  const request = f.requests().at(-1);
+  f.reply(request, snapshot({ok: false, reason: 'coach_basic', coins: 95, revision: 2, remaining: 18, free_remaining: 18}));
+  assert.equal((await buying).reason, 'coach_basic');
+  assert.equal(f.client.pending, null);
+  assert.equal(f.client.snapshot.coins, 95);assert.equal(f.client.snapshot.remaining, 18);
+  assert.equal(f.requests().filter(item => item.action === 'coach-buy').length, 1);
+  f.client.dispose();
+});
+
+test('a retired coach receipt clears a recovered request without resubmitting a purchase', async () => {
+  const original = await fixture();const buying = original.client.buyCoach();await original.flush();
+  const request = original.requests().at(-1);original.reply(request, {ok: false, reason: 'pending'});await buying;original.client.dispose();
+  const f = await fixture({store: original.store, sessionId: OTHER});await f.flush();
+  const lookup = f.requests().at(-1);
+  assert.equal(lookup.action, 'receipt');assert.equal(lookup.receiptId, request.requestId);
+  f.reply(lookup, snapshot({found: true, receipt: snapshot({ok: false, reason: 'coach_basic', action: 'coach-buy', request_id: request.requestId})}));
+  await f.flush();
+  const count = f.requests().length, result = await f.client.retryPending();
+  assert.equal(result.ok, false);assert.equal(result.reason, 'coach_basic');
+  assert.equal(f.client.pending, null);assert.equal(f.client.snapshot.coins, 100);
+  assert.equal(f.requests().length, count);assert.equal(f.requests().some(item => item.action === 'coach-buy'), false);
+  f.client.dispose();
+});
+
 test('an uncertain coach rental is recovered by receipt and explicit retry keeps the original purchase UUID', async () => {
   const original = await fixture();const buying = original.client.buyCoach();await original.flush();
   const request = original.requests().at(-1);original.reply(request, {ok: false, reason: 'pending'});await buying;original.client.dispose();

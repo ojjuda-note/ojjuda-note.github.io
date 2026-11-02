@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BOWS, ARROWS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, stepArrow, targetAt} from '../games/forest-archer/engine.mjs';
-import {COACH_PRICE, COACH_DURATION_SECONDS, COACH_REACTION_SECONDS, evaluateCoachShot} from '../games/forest-archer/coach.mjs';
+import {evaluateCoachShot} from '../games/forest-archer/coach.mjs';
 
 const timing = {held: 2, steadyStart: 5, steadyDuration: .5};
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -27,10 +27,6 @@ function centreAim(stage, worldTime = 0, bow = 0, arrow = 0) {
   const v = velocity((lo + hi) / 2);
   return {bow, arrow, charge: 1, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z))};
 }
-
-test('the coach contract is a 24-hour ten-쭈 rental and a short reaction window', () => {
-  assert.equal(COACH_PRICE, 10);assert.equal(COACH_DURATION_SECONDS, 86400);assert.equal(COACH_REACTION_SECONDS, .1);
-});
 
 test('a stable centre shot earns a cue without changing the supplied aim, stage or equipment', () => {
   const stage = clone(STAGES[0]), params = centreAim(stage), before = clone({stage, params, timing});
