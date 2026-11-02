@@ -10,7 +10,8 @@ world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:u
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 window.breakoutTest={
- open(){Al('breakout')},close:El,get current(){return R},audio:[],records:[],pendingRecords:[],holdRecords:false,
+ open(){Al('breakout')},close:El,dispatchAction:M2,get current(){return R},audio:[],records:[],pendingRecords:[],holdRecords:false,
+ async tryStartAt(stage){const selected=R.breakoutStage;R.breakoutStage=stage;await _2();R.breakoutStage=selected},
  settleRecords(){for(const resolve of this.pendingRecords.splice(0))resolve()},
  freeze(){cancelAnimationFrame(R.raf)},
  step(seconds){const n=Math.ceil(seconds*240);for(let i=0;i<n&&R.running;i++)R.game.update(seconds/n);R.game.draw(R.ctx)},
@@ -76,14 +77,15 @@ g.tab='friends';H();
    const choices=page.locator('#gscreen [data-g="breakout-stage"]');
    const savedStage=()=>page.evaluate(()=>localStorage.getItem('ojjuda-breakout-last-stage-v1'));
    const snapshot=()=>page.evaluate(()=>{const r=breakoutTest.current,g=r.game,s=g.inspect();return{stage:g.stage,level:s.level,running:r.running,score:s.score,lives:s.lives,balls:s.balls.length,waiting:s.waiting,finished:s.finished,completed:s.completed,cleared:g.stageCleared,speed:s.speed,paddleWidth:s.paddle.w,bricks:s.bricks.length,drops:s.drops.length,piercing:s.balls.some(b=>b.piercing),fullBoard:s.bricks.every(b=>b.on&&b.hp===b.maxHp)}});
-   async function assertChoices(level){
+   async function assertChoices(level,cleared=true){
     await choices.first().waitFor();assert.equal(await choices.count(),3);
     const values=await choices.evaluateAll(buttons=>buttons.map(button=>{
      const box=button.getBoundingClientRect();return{label:button.textContent,stage:Number(button.dataset.stage),pressed:button.getAttribute('aria-pressed'),disabled:button.disabled,x:box.x,y:box.y,right:box.right,bottom:box.bottom};
     }));
     for(const [i,value] of values.entries()){
      assert.ok(value.label.includes(['이전 단계','지금 단계','다음 단계'][i]));
-     assert.equal(value.disabled,(i===0&&level===1)||(i===2&&level===100));
+     assert.equal(value.disabled,(i===0&&level===1)||(i===2&&(level===100||!cleared)));
+     if(i===2&&!cleared&&level<100)assert.match(value.label,/현재 단계 클리어 필요/);
      if(!value.disabled)assert.equal(value.stage,level+i-1);
      assert.equal(value.pressed,null,'level buttons are direct actions, not a selection followed by Start');
      assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport: '+JSON.stringify({width,height,level,value}));
@@ -209,14 +211,22 @@ g.tab='friends';H();
    }
    await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(3);const clearedThird=await snapshot();
    assert.equal(await savedStage(),'3','the choices refer to the actual cleared stage reached from level 1');
-   await page.evaluate(()=>{breakoutTest.holdRecords=true;window.finishedBreakoutRun=breakoutTest.current.game});
+   await page.evaluate(()=>{breakoutTest.holdRecords=true;window.finishedBreakoutRun=breakoutTest.current.game;window.staleBreakoutNext=document.querySelector('[data-g="breakout-stage"][data-stage="4"]')});
    await choices.filter({hasText:'지금 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(3,34);
    assert.deepEqual(await page.evaluate(()=>breakoutTest.records),[{game:'breakout',score:clearedThird.score}],'replaying records the previous run once');
    assert.equal(await page.evaluate(()=>window.finishedBreakoutRun.finishRun()),false,'an old completed run cannot finish twice');
    await page.evaluate(async()=>{window.restartedBreakoutRun=breakoutTest.current.game;breakoutTest.holdRecords=false;breakoutTest.settleRecords();await new Promise(requestAnimationFrame);breakoutTest.freeze()});
    await assertFresh(3,34);assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.restartedBreakoutRun),true,'a late score response cannot replace the restarted game');
    assert.equal(await page.evaluate(()=>breakoutTest.records.length),1);checks++;
-   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(3);
+   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(3,false);
+   const failedThird=await snapshot();
+   await choices.filter({hasText:'다음 단계'}).evaluate(button=>{button.disabled=false;button.click();button.disabled=true});
+   assert.deepEqual(await snapshot(),failedThird,'re-enabling a failed result button cannot bypass the current-stage clear requirement');
+   await page.evaluate(()=>breakoutTest.tryStartAt(4));
+   assert.deepEqual(await snapshot(),failedThird,'the actual start handler rejects a forward transition after a loss');
+   await page.evaluate(()=>breakoutTest.dispatchAction({target:window.staleBreakoutNext}));
+   assert.deepEqual(await snapshot(),failedThird,'a next button from an earlier cleared round cannot advance a failed replay');
+   assert.equal(await savedStage(),'3','a blocked next action never changes saved progress');
    const recordsAfterLoss=await page.evaluate(()=>breakoutTest.records.length);
    await choices.filter({hasText:'이전 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(2,24);
    assert.equal(await page.evaluate(()=>breakoutTest.records.length),recordsAfterLoss,'choosing after game over does not submit the ended run again');checks++;
@@ -269,6 +279,7 @@ g.tab='friends';H();
    await assertChoices(100);assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'the final run submits one terminal result');
    await choices.filter({hasText:'지금 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(100,1000);
    assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'restarting the final stage does not duplicate its old result');
+   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(100,false);
    await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
    assert.deepEqual(errors,[],'no application errors while playing, finishing and restarting');checks++;
    await context.close();

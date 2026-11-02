@@ -111,7 +111,7 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   await page.getByRole('button',{name:'다시 도전',exact:true}).click();
   await page.evaluate(()=>{paused=true;lives=1;world.time=10;me.shieldT=0;world.kill(me,0,'mob');handleEvents();});
   await page.getByText('아쉬워요!',{exact:true}).waitFor();await returnToSave();
-  await tryPhoto();await page.evaluate(()=>{paused=true;win();});
+  await tryPhoto();await page.evaluate(()=>{paused=true;mySil=silTotal*GOAL;win();});
   await page.getByText('🎉 사진 공개!',{exact:true}).waitFor();await returnToSave();
   assert.equal(await page.evaluate(()=>savedPhotos.length),1,'playing did not register the draft');
   await page.click('#send');await page.getByText('등록했어요!',{exact:true}).waitFor();

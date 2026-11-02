@@ -102,3 +102,14 @@ test('replaying a failed picture consumes the old round help without changing hi
  assert.equal(f.state().current,1);assert.equal(f.round().status,'playing');assert.equal(f.round().hearts,3);assert.equal(f.round().totalMs,60000);assert.deepEqual(f.round().paid,[]);assert.equal(f.round().timeBought,false);assert.equal(f.round().hintIndex,null);
  assert.deepEqual(f.state().completed,[7]);assert.equal(f.charges.length,2,'choosing the new round does not buy help');assert.deepEqual(f.records,[],'failure and replay never submit a completion');
 });
+
+test('explicit picture selection and the open-stage tool retain free access without permitting Next on an unfinished round',t=>{
+ const f=fixture(t),open=f.registered.find(tool=>tool.name==='open_game_stage');
+ assert.equal(f.state().current,expectedOrder[0]);assert.equal(f.$('next').disabled,true);
+ f.$('next').onclick();assert.equal(f.state().current,expectedOrder[0]);
+ f.select(0);assert.equal(f.state().current,0,'the menu may explicitly select any existing picture');
+ assert.equal(open.execute({stage:3}).stage,61,'the tool keeps original array-index selection semantics');
+ assert.equal(f.state().current,2);assert.equal(f.round().status,'ready');assert.deepEqual(f.charges,[]);assert.deepEqual(f.records,[]);
+ assert.equal(Object.hasOwn(f.state(),'unlockedStage'),false);
+ f.$('continue').onclick();assert.equal(f.state().current,2,'explicit access does not change the current-clear requirement for sequential progress');
+});

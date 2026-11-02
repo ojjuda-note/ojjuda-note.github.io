@@ -26,7 +26,7 @@
 <script src="/world-admin-loader.js?v=20261101-game-challenges1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261103-archery-wall-clearance1" defer></script>
+<script src="/world-game-assets.js?v=20261103-stage-clear-gates1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261101-game-challenges1" defer></script>
 <script src="/world-navigation.js?v=20261022-back1" defer></script>
@@ -1234,11 +1234,15 @@ function El(){
 }
 window.addEventListener('pagehide',()=>{void El();});
 var Cl=t=>{let e=R.cv.getBoundingClientRect();return[(t.clientX-e.left)*Z/e.width,(t.clientY-e.top)*he/e.height]};function E2(t){if(!R||!R.running||!R.game)return;t.preventDefault();if(R.id==="screw"||R.id==="breakout")try{t.target.setPointerCapture(t.pointerId)}catch{}let[e,o]=Cl(t);R.ptr={x:e,y:o},R.game.onDown&&R.game.onDown(e,o,...(R.id==="screw"?[t.pointerId]:[]))}function A2(t){if(!R||!R.running||!R.game||!R.game.onMove)return;let[e,o]=Cl(t);R.game.onMove(e,o,...(R.id==="screw"?[t.pointerId]:[]))}function C2(t){if(!R||!R.running||!R.game)return;if(R.id==="screw"){let[e,o]=Cl(t);R.game.onUp&&R.game.onUp(e,o,t.pointerId);R.ptr=null;return}let e=R.ptr;if(R.ptr=null,!e||!R.game.onSwipe)return;let[o,r]=Cl(t),a=o-e.x,i=r-e.y;Math.max(Math.abs(a),Math.abs(i))>22&&R.game.onSwipe(Math.abs(a)>Math.abs(i)?a>0?"R":"L":i>0?"D":"U")}function M2(t){let e=t.target.closest("[data-g]");if(!e||!R)return;let o=e.dataset.g;if(R.id==="breakout"&&o==="breakout-stage"){
- if(R.running||R.loading||e.disabled||!R.game)return;
- const stage=Number(e.dataset.stage),levels=window.OjjudaBreakoutGame?.levels||100;
- if(!Number.isInteger(stage)||stage<1||stage>levels||Math.abs(stage-R.breakoutBaseStage)>1)return;
+ if(e.disabled||!R.ov.contains(e))return;
+ const stage=Number(e.dataset.stage);
+ if(!canChooseBreakoutStage(stage))return;
  R.breakoutStage=stage;_2();return;
 }if(R.id==="screw"&&o==="screw-modes"){if(R.running&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;R.screwMode=e.dataset.mode;_2();return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
+function canChooseBreakoutStage(stage){
+ const current=R?.game?.stage,levels=window.OjjudaBreakoutGame?.levels||100;
+ return R?.id==='breakout'&&!R.running&&!R.loading&&Number.isInteger(current)&&R.breakoutBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=levels&&Math.abs(stage-current)<=1&&(stage<=current||R.game.stageCleared===true);
+}
 function focusBreakoutChoice(){R?.ov.querySelector(`[data-g="breakout-stage"][data-stage="${R.breakoutBaseStage}"]`)?.focus({preventScroll:true});}
 function breakoutStageComplete(score){
  if(R?.id!=='breakout'||!R.running||!R.game?.stageCleared)return;
@@ -1248,12 +1252,12 @@ function breakoutStageComplete(score){
 }
 function breakoutStagePicker(stage){
  if(R?.id!=='breakout'||!window.OjjudaBreakoutGame)return '';
- const levels=window.OjjudaBreakoutGame.levels,current=Number.isInteger(stage)&&stage>=1&&stage<=levels?stage:1;
+ const levels=window.OjjudaBreakoutGame.levels,current=Number.isInteger(stage)&&stage>=1&&stage<=levels?stage:1,cleared=R.game?.stage===current&&R.game.stageCleared===true;
  R.breakoutBaseStage=current;
  return '<div class="breakout-stage-picker" role="group" aria-label="다음에 할 단계 선택">'+['이전 단계','지금 단계','다음 단계'].map((label,index)=>{
-  const next=current+index-1,disabled=next<1||next>levels,detail=disabled?(index===0?'첫 단계':'마지막 단계'):next+'단계'+(index===1?' 다시 하기':'');
+  const next=current+index-1,locked=index===2&&!cleared,disabled=next<1||next>levels||locked,detail=next<1?'첫 단계':next>levels?'마지막 단계':locked?'현재 단계 클리어 필요':next+'단계'+(index===1?' 다시 하기':'');
   return `<button type="button" class="breakout-stage-choice${index===2?' breakout-stage-next':''}" data-g="breakout-stage" data-stage="${next}"${disabled?' disabled':''}><span>${label}</span><strong>${detail}</strong></button>`;
- }).join('')+'</div><p class="breakout-choice-hint">원하는 단계를 누르면 바로 시작해요.<br>선택할 때까지 이 화면에서 기다려요.</p>';
+ }).join('')+'</div><p class="breakout-choice-hint">다음 단계는 현재 단계를 클리어하면 열려요.<br>이전 단계와 지금 단계는 다시 도전할 수 있어요.</p>';
 }
 function B2(){
  const t=_r[R.id];if(R.id==='breakout'){R.breakoutStage=undefined;R.breakoutBaseStage=undefined;}D2();Ja(0);
@@ -1307,6 +1311,7 @@ function resumeScrewScores(){
  }
 }
 async function _2(){if(!R||R.running||R.loading||window.OjjudaGuestAccess?.canPlay()===false)return;let t=R.id,factory=G2[t];
+if(t==="breakout"&&R.game&&R.breakoutStage!==undefined&&!canChooseBreakoutStage(R.breakoutStage))return;
 if(t==="breakout"&&R.game?.stageCleared){
  const previous=R.game,stage=R.breakoutStage;
  if(previous.continueStage(stage)){

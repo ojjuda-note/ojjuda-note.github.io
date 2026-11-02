@@ -68,7 +68,7 @@ try{
  await frame.evaluate(()=>{paused=true;endAt=world.time+80;hud()});
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});await frame.evaluate(()=>{paused=true;OjjudaPhotoHelp.open()});assert.equal(await frame.locator('.photo-help').evaluate(n=>n.scrollWidth<=n.clientWidth+1),true);assert.equal(await frame.locator('.overlay:not(#menu) .panel').evaluate(n=>n.getBoundingClientRect().width<=innerWidth),true);}
  // A real win after paid heart/time/slow help still saves a ranking record.
- await page.evaluate(()=>window.rankFail=true);await frame.evaluate(()=>win());
+ await page.evaluate(()=>window.rankFail=true);await frame.evaluate(()=>{mySil=silTotal*GOAL;win();});
  await page.getByRole('button',{name:'기록 저장 다시 시도',exact:true}).waitFor();
  assert.equal(await page.evaluate(()=>rankCalls.length),1);
  await page.getByRole('button',{name:'기록 저장 다시 시도',exact:true}).click();

@@ -1,9 +1,9 @@
-import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261103-archery-wall-clearance1';
-import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261103-archery-wall-clearance1';
-import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261103-archery-wall-clearance1';
-import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261103-archery-wall-clearance1';
-import {evaluateCoachShot} from './coach.mjs?v=20261103-archery-wall-clearance1';
-import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261103-archery-wall-clearance1';
+import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261103-stage-clear-gates1';
+import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261103-stage-clear-gates1';
+import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261103-stage-clear-gates1';
+import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261103-stage-clear-gates1';
+import {evaluateCoachShot} from './coach.mjs?v=20261103-stage-clear-gates1';
+import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261103-stage-clear-gates1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -383,14 +383,14 @@ function updateRound(){
   $('gearRecommendation').textContent=state.isEvent?'':`${s.gearLabel}${s.longRange?` · ${s.distance}m 장거리 화살`:''} 권장`;
   $('gearRecommendation').classList.toggle('hidden',!!state.isEvent);
   $('scoreCount').textContent=state.isEvent?state.hits:state.score;$('goalCount').textContent=state.isEvent?s.totalTargets:s.goal;
-  $('scoreUnit').textContent=state.isEvent?'개':'점';$('goalLabel').textContent=state.isEvent?'깬 표적 / 전체 표적':'현재 점수 / 참고 목표';
+  $('scoreUnit').textContent=state.isEvent?'개':'점';$('goalLabel').textContent=state.isEvent?'깬 표적 / 전체 표적':'현재 점수 / 목표 점수';
   $('scoreLegend').classList.toggle('hidden',!!state.isEvent);$('missionTitle').textContent=state.isEvent?'제한시간 기록 도전':'이번 한 발의 목표';
   $('distanceLabel').textContent=`${s.distance} m`;
   $('windLabel').textContent=s.wind?`${s.wind>0?'→ 오른쪽':'← 왼쪽'} 바람 ${Number(Math.abs(s.wind).toPrecision(2))}`:'바람 없음';
   $('stageHint').textContent=s.hint;
   $('mobileHint').textContent=$('stageHint').textContent;
   $('missionFill').style.width=`${Math.min(100,(state.isEvent?state.hits/s.totalTargets:state.score/s.goal)*100)}%`;
-  $('missionState').textContent=state.isEvent?`${state.hits}개 격파 · 시간 동안 기록 도전`:state.score>=s.goal?'참고 목표 달성!':'점수와 관계없이 다음 단계로 이동할 수 있어요';
+  $('missionState').textContent=state.isEvent?`${state.hits}개 격파 · 시간 동안 기록 도전`:state.score>=s.goal?'목표 점수 달성!':`목표 ${s.goal}점을 달성해 이번 판을 통과하세요`;
   $('roundProgress').textContent=state.isEvent?`${state.hits} / ${s.totalTargets}개 명중`:`${state.used} / ${shotLimit()}${shotUnit()}`;
   if(!state.isEvent){$('shotDots').innerHTML=Array.from({length:shotLimit()},(_,i)=>`<i class="arrow-dot ${i<state.used?'used':''}"></i>`).join('');$('shotCountLabel').textContent=`${Math.max(0,shotLimit()-state.used)}${shotUnit()} 남음${activeBow().burstCount>1?' · 3연발':''}`;}
   $('journeyCount').textContent=state.isEvent?`최고 ${(progress.eventBestByLevel[s.eventLevel]||0)/10}개`:`${s.id} / ${STAGES.length}`;
@@ -406,6 +406,7 @@ function updateRound(){
 function resetRound(stage=state.stage){
   if(guardAmmoAction())return;
   state.isEvent=stage.kind==='clay';
+  if(!state.isEvent){state.eventReturnStage=null;state.eventMainResult=null;}
   state.eventStarted=!state.isEvent;
   state.resultSummary=null;
   state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=false;state.ammoNotice='';state.ammoLoading=false;
@@ -430,7 +431,12 @@ function startStage(id){
 function enterEvent(level=Math.max(1,Math.min(10,Math.floor(progress.mainRounds/5)))){
   if(guardAmmoAction())return;
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 발사가 끝나면 이벤트로 이동할 수 있어요.');return;}
-  if(!state.isEvent)state.eventReturnStage=state.stage.id;
+  if(!state.isEvent){
+    state.eventReturnStage=state.stage.id;
+    // Keep this completed main round separate from the event's score. Event
+    // purchases and result redraws must neither grant nor discard its clear.
+    state.eventMainResult={stage:state.stage.id,completed:state.mode==='finished',score:state.score,goal:state.stage.goal};
+  }
   dismissModal();resetRound(createClayEvent(level));
 }
 function exitEvent(){
@@ -440,8 +446,20 @@ function exitEvent(){
   startStage(progress.lastStage);
 }
 const mainStageForChoices=()=>state.isEvent?(state.eventReturnStage||progress.lastStage):state.stage.id;
+function mainRoundCleared(){
+  if(state.isEvent){
+    const result=state.eventMainResult;
+    return !!result&&result.stage===mainStageForChoices()&&result.completed&&result.score>=result.goal;
+  }
+  return state.mode==='finished'&&state.score>=state.stage.goal;
+}
+const mainGoalForChoices=()=>state.isEvent?(state.eventMainResult?.goal??STAGES[mainStageForChoices()-1].goal):state.stage.goal;
+const canAdvanceStage=()=>state.mode==='finished'&&mainStageForChoices()<STAGES.length&&mainRoundCleared();
 function navigateStage(delta){
   if(guardAmmoAction())return;
+  if(delta>0&&!canAdvanceStage()){
+    toast(mainStageForChoices()>=STAGES.length?'마지막 단계예요.':state.isEvent&&mainRoundCleared()?'접시 사격을 마친 뒤 다음 단계를 선택해 주세요.':`이번 활쏘기 판에서 목표 ${mainGoalForChoices()}점을 달성해야 다음 단계로 갈 수 있어요.`);return;
+  }
   startStage(clamp(mainStageForChoices()+delta,1,STAGES.length));
 }
 function beginDraw(){
@@ -617,7 +635,7 @@ function installScope(id){
 function finishMainScreen(record, counted){
   if(state.roundEpoch!==record.epoch)return;
   if(counted&&progress.mainRounds>0&&progress.mainRounds%5===0){
-    progress.lastStage=Math.min(STAGES.length,record.stage+1);save();
+    progress.lastStage=record.stage;save();
     enterEvent(Math.min(10,progress.mainRounds/5));toast(`${progress.mainRounds}판 완료! 접시 사격 이벤트 ${state.stage.eventLevel}단계`);return;
   }
   save();updateHeader();updateRound();showResult(record.passed,record.bonus);
@@ -839,7 +857,7 @@ async function retryAmmo(){
   if(result?.ok&&!state.isEvent&&!state.serverRunId&&!state.registering&&state.mode!=='finished'&&!ammo.pending){registerMainRound();await state.roundStart;}
   onAmmoChange();toast(state.ammoNotice);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 벽·기둥이 있는 곳에서는 화살이 꽂히는 지점이 보이도록 시점을 보정해요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 1~4단계 기본 고정 과녁 다음에는 5~8단계 높은 고정 과녁으로 위쪽 조준을 익혀요. 이어서 이동 과녁, 바람, 높낮이, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 여덟 단계는 바람이 없어요. 13~16단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 과녁을 60·65·70·80m에 두고 벽 뒤에 충분한 공간을 마련했어요. 충분히 당긴 화살도 벽을 넘어 과녁으로 내려오도록 겨눠보세요. 사람이 나오는 판에서는 한 명이 과녁 바로 앞을 빠르게 왕복하거나 여러 명이 겹쳐 지나가다가 잠깐 틈이 열려요. 화살이 도착할 때 틈이 열리도록 기다렸다 쏘세요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 움직이는 과녁과 동물 표적은 이전보다 15% 빠르게 움직여요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 껑충 뛰고 살쾡이는 빨라졌다 느려지며, 사슴은 크게 도약해요. 비둘기는 빠르게 상하로 출렁이고 독수리는 크게 솟구쳤다 내려와요. 치타는 강하게 가속하는 구간이 있어요. 같은 거리에서 뒤에 나오는 종일수록 몸집에 비해 더 빠르게 움직여요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요. 동물은 심장 10점, 머리 8점, 몸통 5점, 다리·귀 3점으로 맞힌 부위에 따라 점수가 달라져요. 화면에 그려진 몸에만 맞고 다리 사이나 몸 주변의 빈 공간은 통과해요. 맞힌 점수만큼 피해가 쌓여 토끼 5점, 살쾡이 8점, 사슴 10점, 비둘기 12점, 독수리 15점, 치타 18점에 도달하면 그 자리에서 쓰러져요. 쓰러진 동물에 다시 맞혀도 점수를 얻지 않아요. 명중 안내에서 부위·점수·남은 체력을 확인하세요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종, 특수 2종, 장거리 5종으로 총 19종이 있어요. 장거리 화살은 60·80·100·120·150m에 맞춰 무게와 공기 저항이 단계적으로 줄어들고, 같은 거리에서 더 빠르게 도착해 덜 떨어져요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~20단계는 기본 활, 21~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 106~220단계는 상위 활·석궁을 기준으로 맞췄어요. 기존 마지막 판 뒤에는 과제 순서대로 60·80·100·120·150m 장거리 100개 판이 이어져요. 장거리에서는 거리별 장거리 화살 5종으로 더 빠르고 낮은 탄도로 쏴보세요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 빠른 동물이 확대 화면 밖으로 벗어나면 배율을 낮춰 동물과 앞쪽 겨냥점을 함께 보세요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 준비 화면이 열려요. 총기와 총알을 확인하고 ‘사격 시작’을 눌러야 제한 시간과 표적이 움직여요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 이벤트가 끝나면 안정제 교환과 총기 구매·장착, 이어 할 단계 선택을 한 창에서 보여줘요. 접시 점수 5개로 안정제 1개를 교환하며, 점수가 부족해도 총기를 구매하거나 바로 다음 단계로 갈 수 있어요. 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 벽·기둥이 있는 곳에서는 화살이 꽂히는 지점이 보이도록 시점을 보정해요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 1~4단계 기본 고정 과녁 다음에는 5~8단계 높은 고정 과녁으로 위쪽 조준을 익혀요. 이어서 이동 과녁, 바람, 높낮이, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 여덟 단계는 바람이 없어요. 13~16단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 과녁을 60·65·70·80m에 두고 벽 뒤에 충분한 공간을 마련했어요. 충분히 당긴 화살도 벽을 넘어 과녁으로 내려오도록 겨눠보세요. 사람이 나오는 판에서는 한 명이 과녁 바로 앞을 빠르게 왕복하거나 여러 명이 겹쳐 지나가다가 잠깐 틈이 열려요. 화살이 도착할 때 틈이 열리도록 기다렸다 쏘세요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 움직이는 과녁과 동물 표적은 이전보다 15% 빠르게 움직여요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 껑충 뛰고 살쾡이는 빨라졌다 느려지며, 사슴은 크게 도약해요. 비둘기는 빠르게 상하로 출렁이고 독수리는 크게 솟구쳤다 내려와요. 치타는 강하게 가속하는 구간이 있어요. 같은 거리에서 뒤에 나오는 종일수록 몸집에 비해 더 빠르게 움직여요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요. 동물은 심장 10점, 머리 8점, 몸통 5점, 다리·귀 3점으로 맞힌 부위에 따라 점수가 달라져요. 화면에 그려진 몸에만 맞고 다리 사이나 몸 주변의 빈 공간은 통과해요. 맞힌 점수만큼 피해가 쌓여 토끼 5점, 살쾡이 8점, 사슴 10점, 비둘기 12점, 독수리 15점, 치타 18점에 도달하면 그 자리에서 쓰러져요. 쓰러진 동물에 다시 맞혀도 점수를 얻지 않아요. 명중 안내에서 부위·점수·남은 체력을 확인하세요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종, 특수 2종, 장거리 5종으로 총 19종이 있어요. 장거리 화살은 60·80·100·120·150m에 맞춰 무게와 공기 저항이 단계적으로 줄어들고, 같은 거리에서 더 빠르게 도착해 덜 떨어져요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~20단계는 기본 활, 21~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 106~220단계는 상위 활·석궁을 기준으로 맞췄어요. 기존 마지막 판 뒤에는 과제 순서대로 60·80·100·120·150m 장거리 100개 판이 이어져요. 장거리에서는 거리별 장거리 화살 5종으로 더 빠르고 낮은 탄도로 쏴보세요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 빠른 동물이 확대 화면 밖으로 벗어나면 배율을 낮춰 동물과 앞쪽 겨냥점을 함께 보세요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 이번 판의 목표 점수를 달성하면 다음 단계로 갈 수 있어요. 부족하면 지금 단계에 다시 도전하거나 이전 단계로 돌아갈 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 준비 화면이 열려요. 총기와 총알을 확인하고 ‘사격 시작’을 눌러야 제한 시간과 표적이 움직여요. 이벤트가 끝나면 직전에 마친 본편을 기준으로 이전·지금·다음 단계를 고를 수 있어요. 다음 단계는 그 본편 판의 목표를 달성했을 때 열려요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 이벤트가 끝나면 안정제 교환과 총기 구매·장착, 이어 할 단계 선택을 한 창에서 보여줘요. 접시 점수 5개로 안정제 1개를 교환하며, 접시 점수가 부족해도 총기를 구매할 수 있어요. 본편 목표를 달성했다면 다음 단계로 이어 갈 수 있어요. 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const formatStat=value=>String(Number(value.toFixed(2)));
@@ -928,7 +946,8 @@ function equipItem(id){
 function starsFor(score,goal){return score<goal?0:score>=44?3:score>=34?2:1;}
 function stageChoiceMarkup(className){
   const level=mainStageForChoices(),busy=ammoLocked()||state.mode==='flight'||state.mode==='settling';
-  return `<div class="${className}" aria-label="이어 할 활쏘기 단계 선택"><button class="button stage-choice" data-action="previous-stage" ${level<=1||busy?'disabled':''}><strong>이전 단계</strong><small>${level<=1?'첫 단계':`${level-1}단계`}</small></button><button class="button stage-choice" data-action="retry" ${busy?'disabled':''}><strong>지금 단계</strong><small>${level}단계 다시</small></button><button class="button stage-choice primary-button" data-action="next-stage" ${level>=STAGES.length||busy?'disabled':''}><strong>다음 단계</strong><small>${level>=STAGES.length?'마지막 단계':`${level+1}단계`}</small></button></div>`;
+  const next=canAdvanceStage(),nextHint=level>=STAGES.length?'마지막 단계':next?`${level+1}단계`:'이번 판 통과 후';
+  return `<div class="${className}" aria-label="이어 할 활쏘기 단계 선택"><button class="button stage-choice" data-action="previous-stage" ${level<=1||busy?'disabled':''}><strong>이전 단계</strong><small>${level<=1?'첫 단계':`${level-1}단계`}</small></button><button class="button stage-choice" data-action="retry" ${busy?'disabled':''}><strong>지금 단계</strong><small>${level}단계 다시</small></button><button class="button stage-choice primary-button" data-action="next-stage" ${!next||busy?'disabled':''}><strong>다음 단계</strong><small>${nextHint}</small></button></div>`;
 }
 function eventRewardsMarkup(){
   const reason=progress.stabilizers>=CONSUMABLE_LIMIT?'안정제 보유 한도에 도달했어요.':progress.clayCredits<STABILIZER_COST?`교환하려면 접시 점수 ${STABILIZER_COST-progress.clayCredits}개가 더 필요해요.`:'';
@@ -938,10 +957,12 @@ function showResult(passed,bonus){
   state.resultSummary={passed,bonus};
   const event=state.isEvent,level=mainStageForChoices();
   const stars=starsFor(state.score,state.stage.goal),bestCount=(progress.eventBestByLevel[state.stage.eventLevel]||0)/10;
-  const title=event?`표적 ${state.hits}개 격파!`:`${level}단계 완료`;
-  const description=event?`활쏘기 ${level}단계에 이어 이벤트를 마쳤어요.<br>안정제와 총기를 준비하거나 바로 다음 단계로 가세요.`:'점수와 관계없이 이어 할 단계를 골라주세요.';
+  const cleared=mainRoundCleared();
+  const title=event?`표적 ${state.hits}개 격파!`:`${level}단계 ${cleared?'통과':'다시 도전'}`;
+  const description=event?`활쏘기 ${level}단계에 이어 이벤트를 마쳤어요.<br>${cleared?'본편 목표를 달성했어요. 안정제와 총기를 준비한 뒤 이어 할 단계를 고르세요.':`본편에서 목표 ${mainGoalForChoices()}점을 달성해야 다음 단계로 갈 수 있어요. 지금 단계에 다시 도전하세요.`}`:
+    cleared?'목표를 달성했어요. 이어 할 단계를 골라주세요.':`목표 ${state.stage.goal}점에 도달하지 못했어요. 지금 단계에 다시 도전해 보세요.`;
   const metrics=event?`<div><small>깨뜨린 표적</small><strong>${state.hits}</strong><em>개</em></div><div><small>발사한 탄환</small><strong>${state.used}</strong><em>발</em></div>`:`<div><small>이번 점수</small><strong>${state.score}</strong><em>/ 50</em></div><div><small>명중</small><strong>${state.hits}</strong><em>/ 5${shotUnit()}</em></div>`;
-  const note=event?`이번 이벤트 최고 ${bestCount}개 · 다음은 활쏘기 차례예요.`:bonus?`참고 목표 보너스 ${bonus}코인이 포함되어 있어요.`:'이번에 얻은 코인은 그대로 남아 있어요.';
+  const note=event?`이번 이벤트 최고 ${bestCount}개 · 다음은 활쏘기 차례예요.`:bonus?`목표 달성 보너스 ${bonus}코인이 포함되어 있어요.`:'이번에 얻은 코인은 그대로 남아 있어요.';
   openModal('result',`<div class="result-content ${event?'event-result':''}"><div class="result-emblem">${icon(event||passed?'target':'wind')}</div><p class="eyebrow">${event?'YOUR EVENT RECORD':'YOUR NEXT SHOT'}</p><h2 id="modalTitle">${title}</h2><p>${description}</p>${event?'':`<div class="result-stars" aria-label="별 ${stars}개">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`}<div class="result-metrics">${metrics}<div><small>획득 코인</small><strong>+${state.earned}</strong></div></div>${event?eventRewardsMarkup():''}${stageChoiceMarkup('result-actions stage-result-actions')}<p class="result-note">${note}</p>${ammo?.pending?'<button class="button soft-button" data-action="retry-ammo">이전 처리 다시 확인</button>':''}${event?'':`<button class="button soft-button result-shop-button" data-action="result-shop">${icon('bag')}무기 상점</button>`}<button class="text-button" data-action="menu">메뉴</button></div>`,true);
 }
 function showMenu(){
@@ -963,7 +984,7 @@ function showStages(){
     else chapters.push({chapterId:stage.chapterId,first:stage.id,last:stage.id,name:stage.chapterName});
   }
   const ranges=STAGE_GEAR_BANDS.map((band,index)=>({...band,name:['기초','응용','심화','최종'][index]}));
-  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}개 미션 · 고정 과녁부터 이동·가림막·동물·복합 장애물까지 한 가지씩 익혀요. 121~220단계는 60·80·100·120·150m 장거리 미션이에요. 상위 활·석궁과 거리별 장거리 화살을 권장해요. 모든 단계를 자유롭게 선택할 수 있어요.</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.gearLabel} 권장"><strong>${range.first}–${range.last}</strong><small>${range.name}</small></button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=false,best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-chapter-${s.chapterId}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" id="stage-range-${s.id}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · ◇':''}</span><strong>${s.name}</strong><small>${s.gearLabel}${s.longRange?` + ${s.distance}m 화살`:""} 권장</small><small>${s.distance}m · 참고 목표 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
+  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}개 미션 · 고정 과녁부터 이동·가림막·동물·복합 장애물까지 한 가지씩 익혀요. 121~220단계는 60·80·100·120·150m 장거리 미션이에요. 상위 활·석궁과 거리별 장거리 화살을 권장해요. 모든 단계를 자유롭게 선택할 수 있어요.</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.gearLabel} 권장"><strong>${range.first}–${range.last}</strong><small>${range.name}</small></button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=false,best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-chapter-${s.chapterId}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" id="stage-range-${s.id}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · ◇':''}</span><strong>${s.name}</strong><small>${s.gearLabel}${s.longRange?` + ${s.distance}m 화살`:""} 권장</small><small>${s.distance}m · 목표 점수 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
 }
 document.addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn||btn.disabled)return;

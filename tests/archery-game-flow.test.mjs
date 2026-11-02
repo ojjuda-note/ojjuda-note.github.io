@@ -306,6 +306,14 @@ function modalActionDisabled(app, action) {
   return /\bdisabled\b/.test(tag);
 }
 
+function staleModalAction(app, action) {
+  // An enabled button retained by an older result must still pass the real
+  // delegated click handler's current-round checks.
+  const button = app.getElement(`stale-action-${action}`);
+  button.tagName = 'BUTTON';button.dataset.action = action;button.disabled = false;
+  app.document.emit('click', { target: button });
+}
+
 // Probe the actual painted walker paths at a target's perspective position.
 // Curves are sampled independently; a collider box alone cannot satisfy this.
 function paintedPersonBlocks(person, target, time, player) {
@@ -606,7 +614,12 @@ test('all four wind lessons retain their real wind and readable direction throug
     app.getElement('menuBtn').emit('click');modalAction(app, 'retry');await app.flush();
     assert.equal(app.api.state.stage.id, id);assert.equal(app.api.state.stage.wind, wind);
     assert.equal(app.getElement('windLabel').textContent, label, 'a new layout keeps the same lesson wind');
-    if (id < lessons.at(-1)[0]) {app.getElement('menuBtn').emit('click');modalAction(app, 'next-stage');await app.flush();}
+    if (id < lessons.at(-1)[0]) {
+      app.api.state.score = app.api.state.stage.goal;app.api.state.used = 5;
+      app.api.finishRound();await app.flush();
+      assert.equal(modalActionDisabled(app, 'next-stage'), false);
+      modalAction(app, 'next-stage');await app.flush();
+    }
   }
   const resumed = await appHarness(app.snapshot());
   assert.equal(resumed.api.state.stage.id, lessonStageId('wind-intro', 50));assert.equal(resumed.api.state.stage.wind, 1.3);
@@ -1553,6 +1566,13 @@ test('all 220 missions are freely selectable while current-journey coins and rec
   for (const match of html.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>/g)) {
     assert.equal(/\bdisabled\b/.test(match[0]), false, `stage ${match[1]} is available without a passing score`);
   }
+  const stageCards = Array.from(html.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>[\s\S]*?<\/button>/g));
+  assert.equal(stageCards.length, STAGE_COUNT);
+  for (const card of stageCards) {
+    const stage = app.engine.STAGES[Number(card[1]) - 1];
+    assert.ok(card[0].includes(`목표 점수 ${stage.goal}점`), `stage ${stage.id} shows its real clear threshold`);
+  }
+  assert.doesNotMatch(html, /참고 목표/);
   const button = app.getElement('selectorStage');button.tagName = 'BUTTON';
   button.dataset.stage = '201';app.document.emit('click', { target: button });
   assert.equal(app.api.state.stage.id, 201, 'the actual selector opens one of the hundred added missions');
@@ -1618,24 +1638,31 @@ test('the Next button reaches mission 220 and final records survive reload witho
   assert.deepEqual(Array.from(reloaded.api.progress.scopedBows), [11]);
 });
 
-test('main results offer previous, current and next with safe first and last boundaries and exactly one new registration', async () => {
-  for (const stage of [1, 50, 101, STAGE_COUNT]) for (const [action, delta] of [['previous-stage', -1], ['retry', 0], ['next-stage', 1]]) {
-    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 345, lastStage: stage, mainRounds: 2, sound: false });
+test('main results require this round to reach its goal for Next and retain safe boundaries and one new registration', async () => {
+  for (const stage of [1, 50, 101, STAGE_COUNT]) for (const passed of [false, true]) for (const [action, delta] of [['previous-stage', -1], ['retry', 0], ['next-stage', 1]]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 345, lastStage: stage,
+      best: { [stage]: 50 }, mainRounds: 2, sound: false });
     const state = app.api.state;
-    state.score = 0;state.used = 5;app.api.finishRound();await app.flush();
+    state.score = state.stage.goal - (passed ? 0 : 1);state.used = 5;app.api.finishRound();await app.flush();
     assert.equal(state.mode, 'finished');assert.equal(state.modal, 'result');
     assert.equal(app.api.progress.mainRounds, 3);
+    assert.equal(app.api.progress.best[stage], 50, 'a better historical score does not grant the current clear');
     const html = app.getElement('modalContent').innerHTML;
     const choices = Array.from(html.matchAll(/<button\b[^>]*data-action="(previous-stage|retry|next-stage)"[^>]*>/g), match => [match[1], match[0]]);
     assert.deepEqual(choices.map(([name]) => name), ['previous-stage', 'retry', 'next-stage']);
     assert.match(html, /이전 단계/);assert.match(html, /지금 단계/);assert.match(html, /다음 단계/);
-    const disabled = stage + delta < 1 || stage + delta > STAGE_COUNT;
+    assert.match(html, passed ? /목표를 달성했어요/ : /도달하지 못했어요/);
+    const disabled = stage + delta < 1 || stage + delta > STAGE_COUNT || delta > 0 && !passed;
     assert.equal(/\bdisabled\b/.test(choices.find(([name]) => name === action)[1]), disabled);
     const starts = app.ammo.requests.filter(request => request.action === 'round-start').length, epoch = state.roundEpoch;
+    const saved = app.snapshot();
     modalAction(app, action);modalAction(app, action);await app.flush();
     if (disabled) {
+      if (delta > 0) for (const stale of ['next-stage', 'next']) staleModalAction(app, stale);
+      await app.flush();
       assert.equal(state.stage.id, stage);assert.equal(state.mode, 'finished');assert.equal(state.modal, 'result');
       assert.equal(state.roundEpoch, epoch);assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
+      assert.deepEqual(app.snapshot(), saved, 'a stale enabled Next cannot alter saves or begin another round');
     } else {
       assert.equal(state.isEvent, false);assert.equal(state.stage.id, stage + delta);
       assert.equal(state.used, 0);assert.equal(state.score, 0);assert.equal(state.modal, null);
@@ -1644,14 +1671,120 @@ test('main results offer previous, current and next with safe first and last bou
         'a repeated click on the old result registers only the explicitly selected round');
       assert.equal(app.snapshot().lastStage, stage + delta);
     }
-    assert.equal(app.api.progress.mainRounds, 3);assert.equal(app.api.progress.coins, 345);
+    assert.equal(app.api.progress.mainRounds, 3);assert.equal(app.api.progress.coins, 345 + (passed ? 12 : 0));
   }
 });
 
-test('event result choices return to the completed MAIN stage and never replay or navigate event levels', async () => {
-  for (const [stage, action, expected] of [[17, 'previous-stage', 16], [17, 'retry', 17], [17, 'next-stage', 18], [1, 'previous-stage', 1], [STAGE_COUNT, 'next-stage', STAGE_COUNT]]) {
-    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 123, lastStage: stage, mainRounds: 5, sound: false });
+test('an unfinished main round cannot use a stale Next even after reaching the score or clearing the previous round', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: 17,
+    best: { 17: 50, 18: 50 }, mainRounds: 2, sound: false });
+  const { state } = app.api;
+  assert.equal(app.getElement('goalLabel').textContent, '현재 점수 / 목표 점수');
+  assert.ok(app.getElement('missionState').textContent.includes(`${state.stage.goal}점`));
+  assert.doesNotMatch(app.getElement('missionState').textContent, /점수와 관계없이|참고/);
+  const assertUnfinishedBlocked = async () => {
+    state.score = state.stage.goal;state.used = 1;
+    app.getElement('menuBtn').emit('click');
+    assert.equal(modalActionDisabled(app, 'next-stage'), true);
+    const before = { stage: state.stage.id, epoch: state.roundEpoch, requests: app.ammo.requests.length, saved: app.snapshot() };
+    for (const action of ['next-stage', 'next']) staleModalAction(app, action);
+    await app.flush();
+    assert.equal(state.stage.id, before.stage);assert.equal(state.roundEpoch, before.epoch);
+    assert.equal(state.used, 1);assert.equal(state.mode, 'ready');assert.equal(state.modal, 'menu');
+    assert.equal(app.ammo.requests.length, before.requests);assert.deepEqual(app.snapshot(), before.saved);
+    app.api.closeModal();
+  };
+  await assertUnfinishedBlocked();
+  state.used = 5;app.api.finishRound();await app.flush();
+  assert.equal(modalActionDisabled(app, 'next-stage'), false, 'the exact goal unlocks Next after the round finishes');
+  modalAction(app, 'next-stage');modalAction(app, 'next-stage');await app.flush();
+  assert.equal(state.stage.id, 18);assert.equal(app.api.progress.mainRounds, 3);
+  await assertUnfinishedBlocked();
+  assert.equal(app.api.progress.best[17], 50);assert.equal(app.api.progress.best[18], 50);
+});
+
+test('automatic events preserve the main clear through preparation, exchanges and shops without granting a new clear', async () => {
+  for (const [stage, passed] of [[17, false], [17, true], [STAGE_COUNT, true]]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: stage,
+      best: { [stage]: 50 }, mainRounds: 4, coins: 100000, clayCredits: 10, stabilizers: 2, sound: false });
+    const { state } = app.api, goal = state.stage.goal;
+    state.score = goal - (passed ? 0 : 1);state.used = 5;
+    app.api.finishRound();await app.flush();
+    assert.equal(state.isEvent, true);assert.equal(state.modal, 'event-ready');
+    assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.api.progress.lastStage, stage);
+    assert.equal(app.snapshot().lastStage, stage, 'entering the event alone never saves a successor stage');
+    const eventEpoch = state.roundEpoch;
+    const assertRunningBlocked = async () => {
+      const saved = app.snapshot(), starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
+      app.getElement('menuBtn').emit('click');
+      assert.doesNotMatch(app.getElement('modalContent').innerHTML, /data-action="next-stage"/);
+      for (const action of ['next-stage', 'next']) staleModalAction(app, action);
+      await app.flush();
+      assert.equal(state.isEvent, true);assert.equal(state.roundEpoch, eventEpoch);assert.equal(state.mode, 'ready');
+      assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
+      assert.deepEqual(app.snapshot(), saved);
+      app.api.closeModal();
+    };
+    await assertRunningBlocked();
+    assert.equal(state.modal, 'event-ready');assert.equal(state.eventStarted, false);
+    await startPreparedEvent(app);await assertRunningBlocked();
+    assert.equal(state.modal, null);assert.equal(state.eventStarted, true);
+    // Opposing event scores prove that only the preceding main result counts.
+    state.score = passed ? 0 : state.stage.maxScore;state.hits = state.score / 10;state.used = state.hits;
+    state.time = state.stage.eventDuration - .001;app.frames();
+    const blocked = !passed || stage === STAGE_COUNT;
+    const assertResult = () => {
+      assert.equal(state.modal, 'result');assert.equal(state.mode, 'finished');assert.equal(state.roundEpoch, eventEpoch);
+      assert.equal(modalActionDisabled(app, 'next-stage'), blocked);
+      assert.equal(state.resultSummary.passed, !passed, 'event success is deliberately different from main success');
+      assert.equal(app.api.progress.eventPlays, 1);assert.equal(app.api.progress.mainRounds, 5);
+      assert.equal(app.snapshot().lastStage, stage);
+      assert.equal(app.ammo.requests.filter(request => request.action === 'round-complete').length, 1);
+    };
+    assertResult();
+    modalAction(app, 'buy-stabilizer');assertResult();
+    assert.equal(app.api.progress.clayCredits, 5);assert.equal(app.api.progress.stabilizers, 3);
+    app.getElement('stabilizerBtn').emit('click');assert.equal(state.modal, 'stabilizer');
+    modalAction(app, 'buy-stabilizer');assertResult();
+    assert.equal(app.api.progress.clayCredits, 0);assert.equal(app.api.progress.stabilizers, 4);
+    const gun = app.engine.BOWS.find(item => item.weaponType === 'gun' && item.price > 0);
+    modalAction(app, 'result-shop');app.api.equipItem(gun.id);app.api.equipItem(gun.id);
+    app.api.closeModal();assertResult();
+    assert.equal(app.api.progress.coins, 100000 + (passed ? 12 : 0) - gun.price);
+    assert.equal(app.api.progress.eventGun, gun.id);
+    for (const close of [() => app.getElement('modalClose').emit('click'), () => app.getElement('modalBackdrop').emit('click'),
+      () => app.document.emit('keydown', { code: 'Escape' }), () => modalAction(app, 'close')]) {
+      close();assertResult();
+      modalAction(app, 'result-shop');close();assertResult();
+    }
+    app.getElement('menuBtn').emit('click');assert.equal(modalActionDisabled(app, 'next-stage'), blocked);
+    modalAction(app, 'help');app.api.closeModal();assertResult();
+    app.api.finishRound();assertResult();
+    const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
+    if (blocked) {
+      const saved = app.snapshot();
+      for (const action of ['next-stage', 'next']) staleModalAction(app, action);
+      await app.flush();assertResult();assert.deepEqual(app.snapshot(), saved);
+      assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
+    }
+    const action = blocked ? 'retry' : 'next-stage';
+    modalAction(app, action);modalAction(app, action);await app.flush();
+    assert.equal(state.isEvent, false);assert.equal(state.stage.id, blocked ? stage : stage + 1);
+    app.until(() => state.mode === 'ready');
+    assert.equal(state.mode, 'ready');assert.equal(state.modal, null);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts + 1);
+    assert.equal(app.api.progress.eventPlays, 1);assert.equal(app.api.progress.mainRounds, 5);
+    app.getElement('menuBtn').emit('click');assert.equal(modalActionDisabled(app, 'next-stage'), true,
+      'the previous main clear cannot leak into the newly started round');
+  }
+});
+
+test('a manual event cannot unlock Next for an unfinished main round or navigate event levels', async () => {
+  for (const [stage, action, expected] of [[17, 'previous-stage', 16], [17, 'retry', 17], [17, 'next-stage', 17], [1, 'previous-stage', 1], [STAGE_COUNT, 'next-stage', STAGE_COUNT]]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 123, lastStage: stage,
+      best: { [stage]: 50 }, mainRounds: 5, sound: false });
     const state = app.api.state;
+    state.score = state.stage.goal;
     await enterAndStartEvent(app, 3);state.time = state.stage.eventDuration - .001;app.frames();
     assert.equal(state.mode, 'finished');assert.equal(state.hits, 0);assert.equal(state.score, 0);
     assert.equal(Number(app.getElement('scoreCount').textContent), 0);assert.equal(app.getElement('scoreUnit').textContent, '개');
@@ -1661,14 +1794,17 @@ test('event result choices return to the completed MAIN stage and never replay o
     assert.doesNotMatch(html, /data-action="(?:event-next|next-event|retry-event|enter-event)"/);
     const tag = html.match(new RegExp('<button\\b[^>]*data-action="' + action + '"[^>]*>'))?.[0];
     assert.ok(tag);
-    const disabled = stage === 1 && action === 'previous-stage' || stage === STAGE_COUNT && action === 'next-stage';
+    const disabled = stage === 1 && action === 'previous-stage' || action === 'next-stage';
     assert.equal(/\bdisabled\b/.test(tag), disabled);
     const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
     modalAction(app, action);modalAction(app, action);await app.flush();
     if (disabled) {
+      if (action === 'next-stage') for (const stale of ['next-stage', 'next']) staleModalAction(app, stale);
+      await app.flush();
       assert.equal(state.isEvent, true);assert.equal(state.mode, 'finished');assert.equal(state.modal, 'result');
       assert.equal(state.stage.eventLevel, 3);
       assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
+      assert.equal(app.snapshot().lastStage, stage);
     } else {
       assert.equal(state.isEvent, false);assert.equal(state.stage.id, expected);assert.equal(state.modal, null);
       assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts + 1);
@@ -2081,8 +2217,9 @@ test('preparation and zero-credit event results offer real gun purchases without
   assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
   assert.equal(app.ammo.requests.filter(request => ['spend', 'buy', 'round-complete'].includes(request.action)).length, 0);
   assert.equal(app.snapshot().eventGun, guns[4].id);assert.equal(app.snapshot().coins, expectedCoins);
-  modalAction(app, 'next-stage');await app.flush();
-  assert.equal(state.isEvent, false);assert.equal(state.stage.id, 18);assert.equal(app.api.activeBow().id, 0);
+  assert.equal(modalActionDisabled(app, 'next-stage'), true, 'a manually entered event has no completed main clear');
+  modalAction(app, 'retry');await app.flush();
+  assert.equal(state.isEvent, false);assert.equal(state.stage.id, 17);assert.equal(app.api.activeBow().id, 0);
 
   const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 0, clayCredits: 0, sound: false });
   await enterAndStartEvent(poor);poor.api.finishRound();
@@ -2090,7 +2227,7 @@ test('preparation and zero-credit event results offer real gun purchases without
   assert.equal(poor.api.progress.eventGun, 20);assert.equal(poor.api.progress.coins, 0);
   assert.equal(poor.api.progress.ownedBows.includes(guns[1].id), false);assert.deepEqual(poor.snapshot(), saved);
   poor.api.closeModal();assert.equal(poor.api.state.modal, 'result');assert.equal(poor.api.progress.eventPlays, 1);
-  assert.equal(modalActionDisabled(poor, 'next-stage'), false);
+  assert.equal(modalActionDisabled(poor, 'next-stage'), true);
 });
 
 test('the separate clay event keeps guns, bullets and records independent of the main mission journey', async () => {
@@ -2209,7 +2346,8 @@ test('finished clay events always offer guns and stage choices while exchange av
     assert.match(html, /표적 0개 격파/);assert.match(html, /안정제 1개 교환 · 접시 점수 5개/);assert.match(html, /총기 구매·장착/);
     assert.equal(modalActionDisabled(app, 'buy-stabilizer'), !exchange);
     assert.equal(modalActionDisabled(app, 'result-shop'), false, 'gun shopping remains available even with no exchange credits');
-    for (const action of ['previous-stage', 'retry', 'next-stage']) assert.equal(modalActionDisabled(app, action), false);
+    for (const action of ['previous-stage', 'retry']) assert.equal(modalActionDisabled(app, action), false);
+    assert.equal(modalActionDisabled(app, 'next-stage'), true, 'saved exchange credits cannot grant a main clear');
     assert.doesNotMatch(html, /data-action="use-stabilizer"/, 'a finished event cannot consume an item for the expired round');
     assert.equal(app.api.useStabilizer(), false);assert.equal(state.stabilizerActive, false);
     if (!exchange) {
@@ -2271,7 +2409,8 @@ test('result exchanges keep gun shopping and stage choices available after credi
       assert.equal(state.modal, 'result');
       assert.equal(modalActionDisabled(app, 'buy-stabilizer'), purchase === purchases);
       assert.equal(modalActionDisabled(app, 'result-shop'), false);
-      for (const action of ['previous-stage', 'retry', 'next-stage']) assert.equal(modalActionDisabled(app, action), false);
+      for (const action of ['previous-stage', 'retry']) assert.equal(modalActionDisabled(app, action), false);
+      assert.equal(modalActionDisabled(app, 'next-stage'), true, 'exchanges cannot unlock an unfinished main round');
       assert.equal(state.stabilizerActive, false, 'exchanging an item never uses it automatically');
     }
     assert.match(app.getElement('modalContent').innerHTML, /표적 0개 격파/);
@@ -2281,8 +2420,8 @@ test('result exchanges keep gun shopping and stage choices available after credi
     assert.equal(app.api.progress.eventPlays, 1);assert.equal(app.api.progress.mainRounds, 5);
     assert.equal(app.api.progress.coins, 375);assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
     const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
-    modalAction(app, 'next-stage');modalAction(app, 'next-stage');await app.flush();
-    assert.equal(state.isEvent, false);assert.equal(state.stage.id, 3);assert.equal(state.modal, null);
+    modalAction(app, 'retry');modalAction(app, 'retry');await app.flush();
+    assert.equal(state.isEvent, false);assert.equal(state.stage.id, 2);assert.equal(state.modal, null);
     assert.equal(state.stabilizerActive, false);assert.equal(app.api.progress.stabilizers, inventory + purchases);
     assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts + 1);
     if (credits === 12 && inventory === 0) {
@@ -2778,7 +2917,7 @@ test('rejected and unknown main-round saves never advance cadence or duplicate a
     const attempts = app.ammo.requests.filter(item => item.action === 'round-complete');
     assert.equal(attempts.length, 2);assert.equal(attempts[0].requestId, attempts[1].requestId);
     assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.ammo.account.main_rounds, 5);assert.equal(app.ammo.account.remaining, 10020);
-    assert.equal(app.api.state.isEvent, true);assert.equal(app.api.state.stage.eventLevel, 1);assert.equal(app.api.progress.lastStage, 2);
+    assert.equal(app.api.state.isEvent, true);assert.equal(app.api.state.stage.eventLevel, 1);assert.equal(app.api.progress.lastStage, 1);
     assert.equal(app.api.progress.coins, 25, 'retrying the confirmed main-round receipt cannot award the game bonus again');
   }
 });
@@ -2834,8 +2973,8 @@ test('every fifth completed main round offers event preparation and event play n
   }
   const state = app.api.state;
   assert.equal(state.isEvent, true);assert.equal(state.stage.eventLevel, 1);assert.equal(state.stage.targetsPerWave, 2);
-  assert.equal(app.api.progress.lastStage, 2);assert.equal(app.api.progress.unlocked, STAGE_COUNT, 'a fifth round resumes at the next freely available stage');
-  assert.equal(app.snapshot().mainRounds, 5);assert.equal(app.snapshot().lastStage, 2);
+  assert.equal(app.api.progress.lastStage, 1);assert.equal(app.api.progress.unlocked, STAGE_COUNT, 'event entry keeps the current main stage while the full picker remains available');
+  assert.equal(app.snapshot().mainRounds, 5);assert.equal(app.snapshot().lastStage, 1);
   assert.equal(state.modal, 'event-ready');assert.equal(state.eventStarted, false);assert.equal(state.time, 0);
   app.frames(30);assert.equal(state.time, 0);assert.equal(app.api.progress.eventPlays, 0);
   await startPreparedEvent(app);
@@ -2863,7 +3002,10 @@ test('every fifth completed main round offers event preparation and event play n
   }
   assert.equal(reloaded.api.state.isEvent, true);assert.equal(reloaded.api.state.stage.eventLevel, 2);
   assert.equal(reloaded.api.state.stage.targetsPerWave, 3);
-  assert.equal(reloaded.api.progress.lastStage, 3, 'a fifth round advances the saved resume stage even without reaching its reference goal');
+  assert.equal(reloaded.api.progress.lastStage, 2, 'an automatic event after a failed main round never advances the saved resume stage');
+  const failedReload = await appHarness(reloaded.snapshot(), { server: reloaded.ammo });
+  assert.equal(failedReload.api.state.stage.id, 2);assert.equal(failedReload.api.state.isEvent, false);
+  failedReload.getElement('menuBtn').emit('click');assert.equal(modalActionDisabled(failedReload, 'next-stage'), true);
 });
 
 test('unowned equipment cannot be used without purchase and normal rounds remain five shots', async () => {

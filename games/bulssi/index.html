@@ -603,13 +603,17 @@ function endRun(){
   overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')},'primary'],['바로 다시 타오르기',()=>{closeOv();startRun(!!R.boss)}]]});
 }
 function winBoss(){
+  const wonRun=R,wonProgress=S;
+  if(mode!=='run'||!wonRun?.boss||wonRun.boss.hp>0)return false;
   window.OjjudaSaetbyeolEntry.ended(R.id);
   mode='end';R.flash=1;burst(R.boss.x,R.boss.y,col().color,60,3);ring(R.boss.x,R.boss.y,Math.hypot(W,H),1.2,col().rgb,8);ring(R.boss.x,R.boss.y,Math.hypot(W,H)*.5,.9,'255,246,232',4);tone(note(10),1.5,.06,'triangle');tone(note(14),1.5,.04,'triangle');
   const s=S.stage;
   setTimeout(()=>{
+    if(R!==wonRun||S!==wonProgress||mode!=='end'||S.stage!==s)return;
     if(s<4){S.stage=s+1;save();st=stats();applyTheme();story(EVO[s],()=>{selectDefault();setMode('hub');toast(`${STAGES[S.stage].name}의 별자리가 열렸다`,3000)})}
     else{save();ending()}
   },900);
+  return true;
 }
 function ending(){
   overlay(MEM[4].map(l=>`<p class="new">${l}</p>`).join(''),{buttons:[
