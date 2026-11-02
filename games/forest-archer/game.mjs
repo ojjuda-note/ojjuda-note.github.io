@@ -174,6 +174,12 @@ function syncDraw(now=performance.now()){
   const steady=isSteady(now);if(steady!==state.steadyActive)state.guide=null;state.steadyActive=steady;
 }
 function stopCoachVoice(){try{window.speechSynthesis?.cancel();}catch{}}
+function setCoachCue(visible){
+  const cue=$('coachCue');
+  if(!cue)return;
+  cue.classList.toggle('hidden',!visible);cue.classList.toggle('is-ready',visible);
+  cue.setAttribute('aria-hidden',visible?'false':'true');
+}
 function announceCoach(){
   if(!progress.sound)return;
   const synth=window.speechSynthesis,Utterance=window.SpeechSynthesisUtterance;
@@ -432,7 +438,7 @@ function beginDraw(){
 }
 function cancelDraw(){
   clearDrawTimer();
-  stopCoachVoice();state.coachCueUntil=0;state.coachReady=false;
+  stopCoachVoice();state.coachCueUntil=0;state.coachReady=false;setCoachCue(false);
   if(state.mode==='drawing'){state.mode='ready';state.charge=0;state.held=0;state.steadyActive=false;}
   clearPointer();keys.clear();
 }
@@ -1181,8 +1187,8 @@ function updatePower(){
   touchpad.setAttribute('aria-disabled',reloading||ammoWait||empty||preparing||state.roundSaving||!['ready','drawing'].includes(state.mode)?'true':'false');
   const fatigue=drawing&&state.held>2.6;
   $('powerFill').style.background=reloading?'#829b9d':steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
-  const coachCue=drawing&&coachRemaining()>0&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
-  $('powerLabel').classList.toggle('coach-cue',coachCue);
+  const coachCue=drawing&&!state.isEvent&&coachRemaining()>0&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
+  setCoachCue(coachCue);
   const mode=state.mode+activeBow().id+(replay?.phase??'')+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
   canvas.dataset.mode=state.mode;
   if(mode===hudMode)return;hudMode=mode;
@@ -1211,7 +1217,6 @@ function updatePower(){
   }else{
     $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent='화면 아래 1/3을 끌어 조준';$('controlHint').textContent=state.isEvent?'탄창을 비우면 자동 장전 · 접시와 UFO를 노려요':state.practiceOnly?'저장 없이 연습 중 · 계정 총알 보상 제외':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
   }
-  if(coachCue)$('powerLabel').textContent='코치 · 쏴!';
 }
 function tick(now){
   const dt=Math.min(.25,Math.max(0,(now-lastFrame)/1000));lastFrame=now;

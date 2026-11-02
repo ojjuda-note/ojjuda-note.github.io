@@ -803,6 +803,13 @@ test('a moving-target burst starts one replay after the last arrival using the c
   assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, 3);
 });
 
+function assertCoachCue(app, visible, message = 'the speech bubble follows the current coaching opportunity') {
+  const cue = app.getElement('coachCue');
+  assert.equal(cue.classList.contains('hidden'), !visible, message);
+  assert.equal(cue.classList.contains('is-ready'), visible, message);
+  assert.equal(cue.getAttribute('aria-hidden'), String(!visible), 'assistive visibility matches the displayed cue');
+}
+
 test('the coach rents for twenty-four server hours and ten 쭈 while its on/off preference survives reload', async () => {
   const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, sound: false}, {coins: 20});
   assert.equal(app.api.coachRemaining(), 0);
@@ -814,9 +821,9 @@ test('the coach rents for twenty-four server hours and ten 쭈 while its on/off 
   assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 1);
   const expiry = app.ammo.account.coach_expires_at;
   modalAction(app, 'buy-coach');await app.flush();assert.equal(app.ammo.account.coins, 10);assert.equal(app.ammo.account.coach_expires_at, expiry);
-  modalAction(app, 'toggle-coach');assert.equal(app.api.progress.coachEnabled, false);
+  modalAction(app, 'toggle-coach');assert.equal(app.api.progress.coachEnabled, false);assertCoachCue(app, false);
   const loaded = await appHarness(app.snapshot(), {server: app.ammo});
-  assert.equal(loaded.api.progress.coachEnabled, false);assert.ok(loaded.api.coachRemaining() > 0);
+  assert.equal(loaded.api.progress.coachEnabled, false);assert.ok(loaded.api.coachRemaining() > 0);assertCoachCue(loaded, false);
   assert.equal(loaded.api.progress.coins, 10000);assert.equal(loaded.ammo.account.coins, 10);
   loaded.api.showShop('coach');modalAction(loaded, 'toggle-coach');
   assert.equal(loaded.api.progress.coachEnabled, true);assert.equal(loaded.ammo.account.coins, 10);
@@ -851,12 +858,14 @@ test('coach access expires while the player is drawing without firing or silentl
     {coachExpiresAt: new Date(SERVER_EPOCH + 1800).toISOString()});
   const {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
   app.until(() => app.api.state.coachSaid, 20);assert.equal(app.speech.utterances.length, 1);
+  assertCoachCue(app, true);
   holdFor(app, 700);
   assert.equal(app.api.coachRemaining(), 0);assert.equal(app.api.state.mode, 'drawing');
-  assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);assert.equal(app.api.state.used, 0);
+  assertCoachCue(app, false, 'rental expiry hides the speech bubble during an active draw');assert.equal(app.api.state.used, 0);
   pad.emit('pointercancel');
   preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(15);
   assert.equal(app.api.state.coachSaid, false);assert.equal(app.speech.utterances.length, 1);
+  assertCoachCue(app, false);
   assert.equal(app.ammo.requests.filter(request => request.action === 'coach-buy').length, 0);
   app.getElement('aimTouchpad').emit('pointercancel');
 });
@@ -873,13 +882,14 @@ test('resuming a paused clock waits for fresh coach access and never revives the
     assert.equal(state.coachRefreshing, true);assert.equal(app.api.coachRemaining(), 0);
     preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.frames(8);
     assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
+    assertCoachCue(app, false, 'unverified server access never displays a firing cue');
     app.ammo.reply(refresh, failed ? {ok: false, reason: 'unavailable'} : app.ammo.snapshot({
       server_now: new Date(Date.parse(expires) + 1).toISOString(), coach_active: false
     }));
     await app.flush();app.frames(8);
     assert.equal(state.coachRefreshing, false);assert.equal(app.api.coachRemaining(), 0);
     assert.equal(state.coachSaid, false);assert.equal(app.speech.utterances.length, 0);
-    assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+    assertCoachCue(app, false);
     app.getElement('aimTouchpad').emit('pointercancel');
     if (failed) {
       const retry = app.api.retryAmmo();await app.flush();
@@ -898,13 +908,16 @@ test('the rented coach keeps good timing visible and repeats each new opportunit
   const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, coachEnabled: true, sound: true}, {coachActive: true});
   const {state} = app.api, {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
   assert.equal(state.coachSaid, false);assert.equal(state.coachReady, false);
+  assertCoachCue(app, false);
   const goodAim = {...state.aim}, before = shotAccounting(app);
   app.until(() => app.speech.utterances.length === 1, 20);
   assert.equal(state.coachReady, true);assert.equal(state.coachSaid, true);
+  assertCoachCue(app, true);
+  assert.doesNotMatch(app.getElement('powerLabel').textContent, /코치 · 쏴!/, 'the draw gauge retains its own label when the coach bubble appears');
   const firstVoice = app.speech.times[0];
   while (app.now - firstVoice < 1100) {
     app.frames(1);
-    assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/, 'a continuous good window keeps its visual cue');
+    assertCoachCue(app, true, 'a continuous good window keeps its visual cue');
     assert.equal(app.speech.utterances.length, 1, 'continuous speech does not flood each prediction check');
   }
   app.until(() => app.speech.utterances.length === 2, 30);
@@ -913,12 +926,12 @@ test('the rented coach keeps good timing visible and repeats each new opportunit
   assert.deepEqual({...state.aim}, goodAim, 'coach checks never adjust the player’s aim');
 
   moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);
-  assert.equal(state.coachCueUntil, 0);assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+  assert.equal(state.coachCueUntil, 0);assertCoachCue(app, false, 'bad aim hides the bubble at the next coaching check');
   assert.equal(state.coachSaid, true, 'having spoken before does not disable later opportunities');
   moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => state.coachReady, 8);
   assert.ok(app.now - app.speech.times[1] < 450);
   assert.equal(app.speech.utterances.length, 2, 'a quick re-entry respects the minimum voice interval');
-  assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/);
+  assertCoachCue(app, true, 'a new good window is visible during the voice cooldown');
   app.until(() => app.speech.utterances.length === 3, 30);
   assert.ok(app.speech.times[2] - app.speech.times[1] >= 450 - 1e-8);
   assert.ok(app.speech.times[2] - app.speech.times[1] <= 530, 'a still-good new window speaks after cooldown without waiting for the long repeat');
@@ -928,19 +941,27 @@ test('the rented coach keeps good timing visible and repeats each new opportunit
   moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);
   moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => state.coachReady, 8);
   moveHeldAim(app, .4, .5);app.until(() => !state.coachReady, 8);holdFor(app, 600);
-  assert.equal(app.speech.utterances.length, 3);assert.doesNotMatch(app.getElement('powerLabel').textContent, /쏴!/);
+  assert.equal(app.speech.utterances.length, 3);assertCoachCue(app, false);
   moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => app.speech.utterances.length === 4, 8);
   assert.equal(state.mode, 'drawing');assert.equal(state.shot, null);assert.deepEqual(shotAccounting(app), before);
   assert.equal(app.speech.overlaps, 0);
   for (let i = 1; i < app.speech.times.length; i++) assert.ok(app.speech.times[i] - app.speech.times[i - 1] >= 450 - 1e-8);
   assert.ok(app.speech.utterances.every(utterance => utterance.text === '쏴!' && utterance.lang === 'ko-KR'));
 
-  pad.emit('pointercancel');assert.equal(state.coachReady, false);assert.equal(state.coachCueUntil, 0);
-  const nextDraw = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  pad.emit('pointercancel');assert.equal(state.coachReady, false);assert.equal(state.coachCueUntil, 0);assertCoachCue(app, false, 'cancelling a draw immediately removes its cue');
+  preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
   assert.equal(state.coachSaid, false);app.until(() => app.speech.utterances.length === 5, 20);
+  assertCoachCue(app, true);
+  app.getElement('menuBtn').emit('click');assertCoachCue(app, false, 'opening a menu cancels and hides the live cue');
+  app.api.closeModal();
+  const nextDraw = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  assert.equal(state.coachSaid, false);app.until(() => app.speech.utterances.length === 6, 20);
+  assertCoachCue(app, true);
   assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);
   nextDraw.pad.emit('pointerup', nextDraw.coords);await app.flush();
   assert.equal(state.used, 1);assert.equal(state.mode, 'flight', 'only the player’s release fires the arrow');
+  assertCoachCue(app, false, 'releasing the arrow immediately removes the firing cue');
+  assert.equal(app.speech.overlaps, 0);
 });
 
 test('coach evaluates up to sixteen times per second and remains absent when disabled or in gun events', async () => {
@@ -953,26 +974,27 @@ test('coach evaluates up to sixteen times per second and remains absent when dis
   }
   assert.ok(checks.length >= 24 && checks.length <= 32, 'a two-second draw samples promptly without exceeding sixteen checks per second');
   for (let i = 1; i < checks.length; i++) assert.ok(checks[i] - checks[i - 1] >= 62.5 - 1e-8);
-  assert.equal(app.speech.utterances.length, 0);pad.emit('pointercancel');
+  assert.equal(app.speech.utterances.length, 0);assertCoachCue(app, false);pad.emit('pointercancel');
   for (const event of [false, true]) {
     const quiet = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: event, sound: true}, {coachActive: true});
     if (event) {quiet.api.enterEvent(1);await quiet.flush();}
     const input = quiet.getElement('aimTouchpad');input.emit('pointerdown');holdFor(quiet, 1500);
     assert.equal(quiet.api.state.mode, 'drawing');assert.equal(quiet.api.state.coachSaid, false);
     assert.equal(quiet.api.state.coachLastCheck, -Infinity);assert.equal(quiet.speech.utterances.length, 0);
+    assertCoachCue(quiet, false, event ? 'gun events never display the archery coach bubble' : 'disabled coaching never displays the bubble');
     assert.equal(quiet.api.state.used, 0);assert.equal(quiet.ammo.requests.filter(request => request.action === 'spend').length, 0);
     input.emit('pointercancel');
     if (event) {quiet.api.showShop('coach');assert.doesNotMatch(quiet.getElement('modalContent').innerHTML, /data-action="buy-coach"|data-action="toggle-coach"/);}
   }
 });
 
-test('muted or speech-unavailable coaching still gives the upper cue without firing', async () => {
+test('muted or speech-unavailable coaching still gives the speech bubble without firing', async () => {
   for (const options of [{sound: false, speechAvailable: true}, {sound: true, speechAvailable: false}]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: options.sound}, {speechAvailable: options.speechAvailable, coachActive: true});
     preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});app.until(() => app.api.state.coachSaid, 20);
-    assert.match(app.getElement('powerLabel').textContent, /코치 · 쏴!/);
+    assertCoachCue(app, true);
     assert.equal(app.speech.utterances.length, 0);assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
-    app.getElement('aimTouchpad').emit('pointercancel');assert.equal(app.api.state.coachCueUntil, 0);
+    app.getElement('aimTouchpad').emit('pointercancel');assert.equal(app.api.state.coachCueUntil, 0);assertCoachCue(app, false);
   }
 });
 
