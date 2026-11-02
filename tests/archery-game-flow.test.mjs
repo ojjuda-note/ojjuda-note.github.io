@@ -29,25 +29,28 @@ async function appHarness(saved = null, ammoOptions = {}) {
   }, set(target, key, value) { target[key] = value; return true; } });
   let document, api;
   const makeElement = id => {
-    const classes = new Set(), listeners = new Map(), attributes = new Map(), pointerPositions = new Map();
+    const classes = new Set(), listeners = new Map(), attributes = new Map(), pointerPositions = new Map(), capturedPointers = new Set();
     const el = {
       id, tagName: 'DIV', textContent: '', innerHTML: '', style: {}, dataset: {}, width: 420, height: 180,
       classList: { add: (...values) => values.forEach(v => classes.add(v)), remove: (...values) => values.forEach(v => classes.delete(v)), contains: v => classes.has(v), toggle(v, force) { const add = force ?? !classes.has(v); add ? classes.add(v) : classes.delete(v); return add; } },
       addEventListener(type, fn) { (listeners.get(type) || listeners.set(type, []).get(type)).push(fn); },
       emit(type, properties = {}) {
-        // Omitted coordinates keep the finger at its last screen position;
-        // the joystick and reticle intentionally move independently.
+        // A new omitted touch starts in the lower input area. Moves and releases
+        // keep the finger's last screen position, including captured movement.
         const pointerId = properties.pointerId ?? 1;
-        const point = pointerPositions.get(pointerId) || {
+        const point = (type !== 'pointerdown' && pointerPositions.get(pointerId)) || {
           clientX: canvasOrigin.left + viewport.width * .35,
-          clientY: canvasOrigin.top + viewport.height * .72
+          clientY: canvasOrigin.top + viewport.height * .8
         };
         const event = { button: 0, pointerId, ...point, currentTarget: el, target: el, preventDefault: noop, ...properties };
         if (type.startsWith('pointer')) pointerPositions.set(pointerId, { clientX: event.clientX, clientY: event.clientY });
         for (const fn of listeners.get(type) || []) fn(event);
       },
-      getContext: () => drawing, getBoundingClientRect: () => ({ ...viewport, ...canvasOrigin }),
-      setPointerCapture: noop, releasePointerCapture: noop,
+      getContext: () => drawing,
+      getBoundingClientRect: () => id === 'aimTouchpad'
+        ? { width: viewport.width, height: viewport.height / 3, left: canvasOrigin.left, top: canvasOrigin.top + viewport.height * 2 / 3 }
+        : { ...viewport, ...canvasOrigin },
+      setPointerCapture: pointerId => capturedPointers.add(pointerId), releasePointerCapture: pointerId => capturedPointers.delete(pointerId), hasPointerCapture: pointerId => capturedPointers.has(pointerId),
       setAttribute(name, value) { attributes.set(name, String(value)); }, getAttribute(name) { return attributes.get(name) ?? null; },
       querySelectorAll: () => [], focus() { document.activeElement = el; }, closest() { return el.tagName === 'BUTTON' ? el : null; }
     };
@@ -104,7 +107,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, JOYSTICK_RADIUS, JOYSTICK_DEADZONE, JOYSTICK_SPEED, JOYSTICK_RESPONSE, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
@@ -141,19 +144,20 @@ function holdFor(app, milliseconds, frameMs = 1000 / 60) {
   while (app.now < end - 1e-9) app.advanceTo(Math.min(end, app.now + frameMs));
 }
 
+function baseAimScreen(app, angles = app.api.state.aim) {
+  const shot = app.engine.launchArrow({ ...angles, bow: app.api.activeBow(), arrow: app.api.activeArrow(), charge: 1, velocityBias: 0 });
+  return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
+}
+
 function moveHeldAim(app, yaw, pitch) {
-  const { state, pointer, JOYSTICK_RADIUS, JOYSTICK_SPEED } = app.api;
-  assert.ok(pointer && state.mode === 'drawing', 'an actual held joystick is required');
-  const pad = app.getElement('gameCanvas'), origin = { clientX: pointer.originX, clientY: pointer.originY };
-  const dx = yaw - state.aim.yaw, dy = pitch - state.aim.pitch, length = Math.hypot(dx, dy);
-  if (length > 1e-12) {
-    pad.emit('pointermove', { clientX: origin.clientX + JOYSTICK_RADIUS * dx / length, clientY: origin.clientY - JOYSTICK_RADIUS * dy / length });
-    holdFor(app, length / (JOYSTICK_SPEED / state.zoom) * 1000);
-  }
-  pad.emit('pointermove', origin);
+  const { state, pointer } = app.api;
+  assert.ok(pointer && state.mode === 'drawing', 'an actual held lower-area touch is required');
+  const pad = app.getElement('aimTouchpad'), current = baseAimScreen(app), target = baseAimScreen(app, { yaw, pitch });
+  const coordinates = { clientX: pointer.x + target.x - current.x, clientY: pointer.y + target.y - current.y };
+  pad.emit('pointermove', coordinates);
   assert.ok(Math.abs(state.aim.yaw - yaw) < 1e-9 && Math.abs(state.aim.pitch - pitch) < 1e-9,
-    `held joystick reaches ${yaw},${pitch}; actual ${state.aim.yaw},${state.aim.pitch}; time ${app.now}`);
-  return origin;
+    `relative touch reaches ${yaw},${pitch}; actual ${state.aim.yaw},${state.aim.pitch}`);
+  return coordinates;
 }
 
 function startCenteredDraw(app) {
@@ -161,7 +165,7 @@ function startCenteredDraw(app) {
   const speed = engine.getSpeed({ charge: 1, bow: api.activeBow(), arrow: api.activeArrow(), velocityBias: 0 });
   const target = engine.targetAt(state.stage, state.time), d = target.z, dy = target.y - engine.PLAYER.y;
   const pitch = Math.atan((speed ** 2 - Math.sqrt(speed ** 4 - engine.GRAVITY * (engine.GRAVITY * d ** 2 + 2 * dy * speed ** 2))) / (engine.GRAVITY * d));
-  const pad = app.getElement('gameCanvas');pad.emit('pointerdown');
+  const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');
   const coords = moveHeldAim(app, 0, pitch);
   app.frames(78);
   return { pad, coords };
@@ -193,7 +197,7 @@ function modalAction(app, action) {
 }
 
 async function resolvedEventShot(app, kind = 'clay') {
-  const { state } = app.api, pad = app.getElement('gameCanvas');
+  const { state } = app.api, pad = app.getElement('aimTouchpad');
   app.until(() => state.fireCooldown === 0 && state.reloadRemaining === 0);
   const target = kind === 'miss' ? null : app.engine.eventTargetsAt(state.stage, state.time).find(item => item.kind === kind && item.active);
   if (kind !== 'miss') assert.ok(target, `an active ${kind} is available`);
@@ -256,173 +260,162 @@ test('pointer hold waits for release and pointer cancellation never consumes an 
   assert.equal(Number(app.getElement('scoreCount').textContent), 10);
 });
 
-test('floating joystick starts at the touched point without jumping aim and keeps its reticle and bullet ray aligned at every zoom', async () => {
+test('only the lower-third touchpad can start a shot, and captured bottom gestures steer the upper view', async () => {
+  for (const [width, height, left, top] of [[390, 480, 17, 83], [844, 235, 9, 48], [1000, 600, 55, 137]]) {
+    const app = await appHarness({ version: 1, ownedBows: [0, 20], eventGun: 20, sound: false });
+    app.api.enterEvent(1);await app.flush();app.resize(width, height, { left, top });
+    const pad = app.getElement('aimTouchpad'), canvas = app.getElement('gameCanvas'), state = app.api.state;
+    const boundary = top + height * 2 / 3;
+    const lower = { clientX: left + width * .4, clientY: top + height * .85 };
+    const before = { ...state.aim };
+    canvas.emit('pointerdown', lower);canvas.emit('pointermove', lower);canvas.emit('pointerup', lower);
+    assert.equal(state.mode, 'ready', 'the canvas is rendering only and cannot start a shot');
+    for (const point of [
+      { ...lower, clientY: top + height * .35 },
+      { ...lower, clientY: boundary - .01 },
+      { ...lower, clientX: left - 1 },
+      { ...lower, clientX: left + width + 1 },
+      { ...lower, clientY: top + height + 1 }
+    ]) {
+      pad.emit('pointerdown', point);pad.emit('pointermove', lower);pad.emit('pointerup', lower);
+      assert.equal(app.api.pointer, null, 'an invalid starting position cannot acquire a gesture by moving into the lower area');
+      assert.equal(state.mode, 'ready');assert.equal(state.used, 0);
+    }
+    app.advanceTo(app.now + 11000, { frame: false });await app.flush();
+    assert.deepEqual({ ...state.aim }, before);assert.equal(state.shot, null);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 0, 'upper taps never start an auto-fire timer or consume ammunition');
+    for (const y of [boundary, boundary + .01]) {
+      pad.emit('pointerdown', { ...lower, clientY: y });
+      assert.equal(state.mode, 'drawing', 'the exact lower-third boundary and the area below it accept a gesture');
+      assert.ok(pad.hasPointerCapture(1));pad.emit('pointercancel');
+      assert.equal(app.api.pointer, null);assert.equal(pad.hasPointerCapture(1), false);
+    }
+    pad.emit('pointerdown', { ...lower, clientY: boundary });
+    const initialPitch = state.aim.pitch;
+    pad.emit('pointermove', { ...lower, clientY: boundary - 12 });holdFor(app, 200);
+    assert.ok(state.aim.pitch > initialPitch, 'a captured gesture keeps steering even when the finger crosses above the input area');
+    const shot = app.engine.launchArrow({ ...state.aim, bow: app.api.activeBow(), charge: 1, velocityBias: 0 });
+    const reticle = app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
+    assert.ok(reticle.y > 0 && reticle.y < height * 2 / 3, 'the aiming ray stays in the upper two-thirds');
+    pad.emit('pointerup', { ...lower, clientY: top - 10 });await app.flush();
+    assert.equal(state.used, 1, 'releasing outside the lower area still fires the captured gesture once');
+    assert.equal(app.api.pointer, null);assert.equal(pad.hasPointerCapture(1), false);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 1);
+  }
+});
+
+test('the invisible lower touchpad anchors at the touched point without jumping aim and keeps reticle and bullet ray aligned at every zoom', async () => {
   for (const [width, height] of [[1000, 600], [390, 480], [844, 235]]) for (const zoom of [1, 2, 3]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
     const origin = { left: 17, top: 83 };
     app.resize(width, height, origin);app.api.enterEvent(1);await app.flush();
     for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
     assert.equal(app.api.state.zoom, zoom);
-    const canvas = app.getElement('gameCanvas'), state = app.api.state, before = { ...state.aim };
+    const canvas = app.getElement('aimTouchpad'), state = app.api.state, before = { ...state.aim };
     const local = { x: zoom === 3 ? width - 2 : width * .26, y: height * .73 };
     const down = { clientX: origin.left + local.x, clientY: origin.top + local.y };
-    const stick = app.getElement('aimJoystick'), knob = app.getElement('aimJoystickKnob');
     canvas.emit('pointerdown', down);
     assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);
     assert.deepEqual({ ...state.aim }, before, 'touch location anchors the control without teleporting the aim');
-    assert.equal(stick.classList.contains('hidden'), false);
-    assert.equal(parseFloat(stick.style.left), local.x);assert.equal(parseFloat(stick.style.top), local.y);
-    const radius = app.api.JOYSTICK_RADIUS;
-    canvas.emit('pointermove', { clientX: down.clientX + radius * .6, clientY: down.clientY - radius * .8 });
+    assert.equal(app.api.pointer.el, canvas);
+    assert.equal(app.api.pointer.x, down.clientX);assert.equal(app.api.pointer.y, down.clientY);
+    assert.ok(canvas.hasPointerCapture(1));
+    const beforeScreen = baseAimScreen(app), coordinates = { clientX: down.clientX + 20, clientY: down.clientY - 16 };
+    canvas.emit('pointermove', coordinates);
+    const moved = baseAimScreen(app), held = { ...state.aim };
+    assert.ok(Math.abs(moved.x - beforeScreen.x - 20) < 1e-9 && Math.abs(moved.y - beforeScreen.y + 16) < 1e-9,
+      'finger and aiming direction move by the same CSS pixel distance at every zoom and viewport size');
     holdFor(app, 240);
-    const travel = app.api.JOYSTICK_SPEED * .24 / zoom;
-    assert.ok(Math.abs(state.aim.yaw - before.yaw - travel * .6) < 1e-10);
-    assert.ok(Math.abs(state.aim.pitch - before.pitch - travel * .8) < 1e-10);
-    const thumb = Array.from(knob.style.transform.matchAll(/-?[0-9]+(?:\.[0-9]+)?/g), entry => Number(entry[0]));
-    assert.ok(Math.hypot(...thumb) <= radius + 1e-8, 'the visible thumb stays within the joystick radius');
-    canvas.emit('pointermove', down);
+    assert.deepEqual({ ...state.aim }, held, 'holding the moved finger still does not continue aiming');
     app.canvasArcs.length = 0;app.frames();
     const reticle = app.canvasArcs.filter(arc => arc.radius === 1.7).at(-1);
     assert.ok(reticle, 'the real renderer draws the current aiming centre');
     const frozen = { ...state.aim }, pan = [state.panX, state.panY];
-    canvas.emit('pointerup', down);await app.flush();
+    canvas.emit('pointerup', coordinates);await app.flush();
     const velocity = state.shot.velocity;
     const ray = app.api.project({ x: velocity.x, y: app.engine.PLAYER.y + velocity.y, z: velocity.z });
     assert.ok(Math.abs(ray.x - reticle.x) < 1e-9 && Math.abs(ray.y - reticle.y) < 1e-9,
       'the real bullet leaves along the rendered aiming ray, independently of the joystick position');
     assert.deepEqual({ ...state.aim }, frozen);assert.deepEqual([state.panX, state.panY], pan);
     assert.equal(state.shot.projectileType, 'bullet');assert.equal(state.used, 1);
-    assert.equal(stick.classList.contains('hidden'), true);
+    assert.equal(app.api.pointer, null);assert.equal(canvas.hasPointerCapture(1), false);
     assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 1);
   }
 });
 
-test('joystick travel responds to distance, stops at its centre and is independent of frame cadence, direction and viewport size', async () => {
-  const sample = async ({ fraction = 1, angle = 0, frameMs = 1000 / 60, zoom = 1, width = 390 } = {}) => {
+test('touch movement follows every small relative pixel delta and holding a finger still never drifts', async () => {
+  for (const zoom of [1, 2, 3]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
-    app.resize(width, 480);app.api.enterEvent(1);await app.flush();
+    app.resize(390, 480);app.api.enterEvent(1);await app.flush();
     for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
-    const canvas = app.getElement('gameCanvas'), state = app.api.state, before = { ...state.aim };
-    const down = { clientX: 80, clientY: 350 }, distance = app.api.JOYSTICK_RADIUS * fraction;
-    canvas.emit('pointerdown', down);
-    canvas.emit('pointermove', { clientX: down.clientX + Math.cos(angle) * distance, clientY: down.clientY - Math.sin(angle) * distance });
-    holdFor(app, 400, frameMs);
-    const delta = { x: state.aim.yaw - before.yaw, y: state.aim.pitch - before.pitch };
-    canvas.emit('pointermove', down);const stopped = { ...state.aim };holdFor(app, 300, frameMs);
-    assert.deepEqual({ ...state.aim }, stopped, 'returning the thumb to its origin stops manual aim drift');
-    assert.equal(state.used, 0);canvas.emit('pointercancel');
-    return { ...delta, length: Math.hypot(delta.x, delta.y) };
-  };
-  const full = await sample(), slow = await sample({ fraction: .5 }), dead = await sample({ fraction: .1 });
-  assert.ok(full.length > .19 && full.length < .21, 'full deflection remains controllable at about half a radian per second');
-  assert.ok(slow.length > 0 && slow.length < full.length * .5, 'a short pull gives finer control');
-  assert.equal(dead.length, 0, 'small finger jitter remains inside the neutral deadzone');
-  for (const options of [{ frameMs: 1000 / 30 }, { frameMs: 1000 / 120 }, { frameMs: 400 }, { fraction: 4 }, { angle: Math.PI / 4 }, { width: 1000 }]) {
-    const value = await sample(options);
-    assert.ok(Math.abs(value.length - full.length) < 1e-10, `equal duration has equal speed: ${JSON.stringify(options)}`);
-  }
-  const zoomed = await sample({ zoom: 3 });
-  assert.ok(Math.abs(zoomed.length * 3 - full.length) < 1e-10, 'scope magnification slows world-angle input for precision');
-});
-
-test('small joystick pulls make continuous pixel-scale corrections at every zoom without sacrificing outer tracking speed', async () => {
-  for (const [width, height] of [[390, 480], [1000, 600]]) {
-    const movesByZoom = [];
-    for (const zoom of [1, 2, 3]) {
-      const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
-      app.resize(width, height);app.api.enterEvent(1);await app.flush();
-      for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
-      const canvas = app.getElement('gameCanvas'), state = app.api.state;
-      // Measure the manual aiming ray through the actual launch/projection code;
-      // equipment sway remains separate from joystick sensitivity.
-      const screenPoint = () => {
-        const shot = app.engine.launchArrow({ ...state.aim, bow: app.api.activeBow(), charge: 1, velocityBias: 0 });
-        return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
-      };
-      const samples = [];
-      for (const distance of [5, 8, 10, 12, 17, 24, 34]) {
-        app.getElement('recenterBtn').emit('click');
-        const down = { clientX: width * .3, clientY: height * .75 };
-        const before = screenPoint(), beforeYaw = state.aim.yaw;
-        canvas.emit('pointerdown', down);
-        canvas.emit('pointermove', { clientX: down.clientX + distance, clientY: down.clientY });
-        holdFor(app, 100);const first = screenPoint().x - before.x;
-        holdFor(app, 100);const second = screenPoint().x - before.x;
-        const angle = state.aim.yaw - beforeYaw;
-        samples.push({ distance, first, second, angle });
-        if (distance > 5) {
-          assert.ok(first > 0 && second > first, 'a held deflection keeps moving without a sudden start or stall');
-          assert.ok(Math.abs(second / first - 2) < .03, 'equal holding intervals give smooth continuous travel');
-        }
-        if (distance === 10) assert.ok(second > 0 && second < .65, `${width}px ${zoom}x: a 10px pull allows a subpixel correction in 200ms`);
-        if (distance === 12) assert.ok(second > 0 && second < 1.6, `${width}px ${zoom}x: a 12px pull is still fine aiming`);
-        canvas.emit('pointermove', down);const stopped = screenPoint();holdFor(app, 200);
-        assert.deepEqual(screenPoint(), stopped, 'centring the joystick stops manual movement immediately');
-        canvas.emit('pointercancel');
-      }
-      assert.equal(samples[0].second, 0, 'finger jitter inside the neutral zone does not drift');
-      for (let i = 1; i < samples.length; i++) assert.ok(samples[i].angle > samples[i - 1].angle, 'larger pulls increase speed continuously');
-      const outer = samples.at(-1);
-      assert.ok(Math.abs(outer.angle * zoom - .1) < 1e-10, 'the outer ring retains 0.5rad/s for tracking moving targets');
-      assert.ok(samples.find(sample => sample.distance === 12).angle < outer.angle * .025, 'the fine region is much slower than the outer ring');
-      assert.equal(state.used, 0);
-      movesByZoom.push(samples.filter(sample => sample.distance === 10 || sample.distance === 12).map(sample => sample.second));
+    const pad = app.getElement('aimTouchpad'), state = app.api.state;
+    let coordinates = { clientX: 120, clientY: 400 };
+    pad.emit('pointerdown', coordinates);const original = { ...state.aim };
+    for (const [dx, dy] of [[1, .5], [-.25, -.25], [6, -5], [-2, 1], [-4.75, 3.75]]) {
+      const before = baseAimScreen(app);
+      coordinates = { clientX: coordinates.clientX + dx, clientY: coordinates.clientY + dy };
+      pad.emit('pointermove', coordinates);const after = baseAimScreen(app);
+      assert.ok(Math.abs(after.x - before.x - dx) < 1e-9 && Math.abs(after.y - before.y - dy) < 1e-9,
+        `${zoom}x follows ${dx},${dy}px exactly, including subpixel movement without a deadzone`);
+      const held = { ...state.aim };holdFor(app, 250);
+      assert.deepEqual({ ...state.aim }, held, 'elapsed time cannot add movement when the finger stays still');
     }
-    for (const values of movesByZoom.slice(1)) for (let i = 0; i < values.length; i++) {
-      assert.ok(Math.abs(values[i] - movesByZoom[0][i]) < .01, 'scope magnification preserves tiny screen-space adjustments');
-    }
+    assert.ok(Math.abs(state.aim.yaw - original.yaw) < 1e-9 && Math.abs(state.aim.pitch - original.pitch) < 1e-9,
+      'reversing the same displacement returns to the original physical direction');
+    pad.emit('pointercancel');assert.equal(state.used, 0);
   }
 });
 
-test('fine joystick movement pans continuously across screen edges without a 24px view jump', async () => {
+test('relative touch movement pans continuously at the upper aiming area edges without a 24px view jump', async () => {
   for (const [width, height] of [[390, 480], [1000, 600]]) for (const zoom of [1, 3]) {
     const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, ...(zoom === 3 ? [{ x: 0, y: 1 }] : [])];
     for (const direction of directions) {
       const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
       app.resize(width, height);app.api.enterEvent(1);await app.flush();
       for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
-      const canvas = app.getElement('gameCanvas'), state = app.api.state;
+      const canvas = app.getElement('aimTouchpad'), state = app.api.state;
       const screenPoint = () => {
         const shot = app.engine.launchArrow({ ...state.aim, bow: app.api.activeBow(), charge: 1, velocityBias: 0 });
         return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
       };
-      const camera = app.api.camera, current = screenPoint();
-      const x = direction.x < 0 ? 42.01 : direction.x > 0 ? width - 42.01 : current.x;
-      const y = direction.y < 0 ? 58.01 : direction.y > 0 ? height - 78.01 : current.y;
+      const camera = app.api.camera, current = screenPoint(), bounds = app.api.aimBounds();
+      const x = direction.x < 0 ? bounds.left + .01 : direction.x > 0 ? bounds.right - .01 : current.x;
+      const y = direction.y < 0 ? bounds.top + .01 : direction.y > 0 ? bounds.bottom - .01 : current.y;
       const yaw = Math.atan2(x - camera.cx, camera.focal);
       const pitch = Math.atan((camera.horizon - y) / camera.focal * Math.cos(yaw));
       canvas.emit('pointerdown');const origin = moveHeldAim(app, yaw, pitch);
       const before = screenPoint(), cameraBefore = { ...app.api.camera };
-      canvas.emit('pointermove', { clientX: origin.clientX + direction.x * 12, clientY: origin.clientY + direction.y * 12 });
+      canvas.emit('pointermove', { clientX: origin.clientX + direction.x * .5, clientY: origin.clientY + direction.y * .5 });
       holdFor(app, 200);
       const after = screenPoint(), cameraAfter = app.api.camera;
       const pan = Math.hypot(cameraAfter.cx - cameraBefore.cx, cameraAfter.horizon - cameraBefore.horizon);
-      assert.ok(pan > 0 && pan < 2, `${width}px ${zoom}x ${JSON.stringify(direction)}: edge pans by just the tiny overflow (${pan}px)`);
+      assert.ok(Math.abs(pan - .49) < 1e-8, `${width}px ${zoom}x ${JSON.stringify(direction)}: edge pans by just the tiny overflow (${pan}px)`);
       assert.ok(Math.hypot(after.x - before.x, after.y - before.y) < .2, 'reticle stays at the edge while the view moves smoothly');
-      canvas.emit('pointermove', origin);const stopped = { ...app.api.camera };holdFor(app, 200);
-      assert.deepEqual({ ...app.api.camera }, stopped, 'edge panning stops immediately when the joystick returns to centre');
+      assert.ok(after.y < height * 2 / 3, 'the aiming area remains above the invisible touch area');
+      const stopped = { ...app.api.camera };holdFor(app, 200);
+      assert.deepEqual({ ...app.api.camera }, stopped, 'edge panning stops immediately when the finger stops moving');
       canvas.emit('pointercancel');assert.equal(state.used, 0);
     }
   }
 });
 
-test('release integrates the last held joystick velocity once without a final-coordinate jump and preserves sway through ammo authorization', async () => {
+test('release applies the last relative touch delta exactly once and preserves its direction and sway through ammo authorization', async () => {
   const app = await appHarness({ version: 1, ownedBows: [0, 20], eventGun: 20, sound: false }, { hold: ['spend'] });
   app.resize(390, 480, { left: 9, top: 74 });app.api.enterEvent(1);await app.flush();
-  const canvas = app.getElement('gameCanvas'), state = app.api.state, before = { ...state.aim };
-  const down = { clientX: 120, clientY: 360 }, radius = app.api.JOYSTICK_RADIUS;
-  canvas.emit('pointerdown', down);canvas.emit('pointermove', { clientX: down.clientX + radius, clientY: down.clientY });
+  const canvas = app.getElement('aimTouchpad'), state = app.api.state, before = baseAimScreen(app);
+  const down = { clientX: 120, clientY: 460 };
+  canvas.emit('pointerdown', down);canvas.emit('pointermove', { clientX: down.clientX + 12, clientY: down.clientY - 6 });
   state.sway.x = .012;state.sway.y = -.009;
   app.advanceTo(app.now + 300, { frame: false });
-  const release = { clientX: down.clientX - 200, clientY: down.clientY - 150 };
+  const release = { clientX: down.clientX + 16, clientY: down.clientY - 10 };
   canvas.emit('pointerup', release);await app.flush();
-  const yaw = before.yaw + app.api.JOYSTICK_SPEED * .3, pitch = before.pitch;
+  const after = baseAimScreen(app), { yaw, pitch } = state.aim;
   const pending = state.pendingAmmoShot.shot, velocity = pending.velocity;
-  assert.ok(Math.abs(state.aim.yaw - yaw) < 1e-12 && Math.abs(state.aim.pitch - pitch) < 1e-12,
-    'an unseen final pointer coordinate cannot invent holding time or teleport the sight');
+  assert.ok(Math.abs(after.x - before.x - 16) < 1e-9 && Math.abs(after.y - before.y + 10) < 1e-9,
+    'the release includes exactly the final four right and four upward pixels');
   assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - yaw - .012) < 1e-12);
   assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - pitch + .009) < 1e-12);
-  assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), true);
+  assert.equal(app.api.pointer, null);
   const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
   app.advanceTo(app.now + 500);app.ammo.reply(request);await app.flush();
   assert.equal(state.shot, pending, 'waiting for ammo preserves the released direction');
@@ -430,20 +423,20 @@ test('release integrates the last held joystick velocity once without a final-co
   assert.equal(state.used, 1);assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 1);
 });
 
-test('other fingers cannot move or release the active joystick and cancellation paths hide it without consuming a shot', async () => {
+test('other fingers cannot move or release the active lower touch and cancellation paths clear it without consuming a shot', async () => {
   for (const reason of ['pointercancel', 'lostpointercapture', 'blur', 'hidden', 'modal', 'stage', 'event', 'resize']) {
-    const app = await appHarness(), canvas = app.getElement('gameCanvas'), state = app.api.state;
+    const app = await appHarness(), canvas = app.getElement('aimTouchpad'), state = app.api.state;
     const down = { clientX: 230, clientY: 420, pointerId: 7 };
     canvas.emit('pointerdown', { ...down, pointerId: 8, isPrimary: false });
     assert.equal(state.mode, 'ready', 'a secondary finger cannot start the joystick');
-    assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), true);
+    assert.equal(app.api.pointer, null);
     canvas.emit('pointerdown', down);
-    const original = { ...state.aim }, origin = [app.getElement('aimJoystick').style.left, app.getElement('aimJoystick').style.top];
+    const original = { ...state.aim }, origin = [app.api.pointer.x, app.api.pointer.y];
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture']) canvas.emit(type, { pointerId: 8, clientX: 800, clientY: 10 });
     app.document.emit('keyup', { code: 'Space' });
     assert.equal(state.mode, 'drawing', 'an unrelated keyboard release cannot fire the held touch');assert.deepEqual({ ...state.aim }, original);
-    assert.deepEqual([app.getElement('aimJoystick').style.left, app.getElement('aimJoystick').style.top], origin);
-    assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), false);
+    assert.deepEqual([app.api.pointer.x, app.api.pointer.y], origin);
+    assert.ok(app.api.pointer);
     if (reason === 'pointercancel' || reason === 'lostpointercapture') canvas.emit(reason, down);
     if (reason === 'blur') app.window.emit('blur');
     if (reason === 'hidden') { app.document.hidden = true;app.document.emit('visibilitychange'); }
@@ -452,7 +445,7 @@ test('other fingers cannot move or release the active joystick and cancellation 
     if (reason === 'event') app.api.enterEvent(1);
     if (reason === 'resize') app.resize(390, 480);
     await app.flush();
-    assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), true, `${reason} hides the visual control`);
+    assert.equal(app.api.pointer, null, `${reason} clears the invisible touch control`);
     canvas.emit('pointerup', down);app.advanceTo(app.now + 11000);await app.flush();
     assert.equal(state.used, 0, `${reason} must never release or auto-fire the cancelled gesture`);
     assert.equal(state.shot, null);assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 0);
@@ -804,7 +797,7 @@ test('both equipment shops show independent traits and speeds for the currently 
   assert.equal(app.getElement('bowStat').textContent, `그립감 ${app.api.activeBow().grip} · 탄성 ${app.api.activeBow().elasticity}`);
   assert.equal(app.getElement('arrowStat').textContent, `촉 ${app.api.activeArrow().tipMass}g · ${app.api.activeArrow().fletching.name}`);
   app.api.closeModal();await app.flush();
-  const pad = app.getElement('gameCanvas');pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
+  const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
   assert.equal(app.api.state.shot.speed.toFixed(1) + ' m/s', speed(app.api.activeBow(), app.api.activeArrow()), 'the released arrow uses the same selected equipment as the displayed speed');
 });
 
@@ -904,7 +897,7 @@ for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
     assert.ok(enlarged.x - enlarged.rx > 0 && enlarged.x + enlarged.rx < width);
     assert.ok(enlarged.y - enlarged.ry > 0 && enlarged.y + enlarged.ry < height);
     app.api.closeModal();await app.flush();
-    const pad = app.getElement('gameCanvas'), expectedYaw = state.aim.yaw + .04, expectedPitch = state.aim.pitch + .02;
+    const pad = app.getElement('aimTouchpad'), expectedYaw = state.aim.yaw + .04, expectedPitch = state.aim.pitch + .02;
     pad.emit('pointerdown', { clientX: width * .51, clientY: height * .68 });
     moveHeldAim(app, expectedYaw, expectedPitch);pad.emit('pointercancel');
     close(state.aim.yaw, expectedYaw, 'the scoped joystick preserves horizontal control');
@@ -1025,7 +1018,7 @@ test('the separate clay event keeps guns, bullets and records independent of the
   assert.deepEqual(Array.from(app.api.progress.ownedArrows), [0, 2]);assert.deepEqual(mainProgress(), before);
   assert.equal(app.getElement('arrowStat').textContent, `탄창 ${top.magazineSize}발 · 장전 ${top.reloadSeconds}초`);
   app.api.closeModal();await app.flush();
-  const state = app.api.state, pad = app.getElement('gameCanvas');
+  const state = app.api.state, pad = app.getElement('aimTouchpad');
   state.time = .2;pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
   assert.equal(state.shot.projectileType, 'bullet');assert.equal(state.volley, null);
   assert.equal(state.mode, 'ready', 'event shooting stays interactive while bullets fly');
@@ -1176,7 +1169,7 @@ test('stabilizers halve real visual and launch sway for bows, crossbows and guns
     app.api.showStabilizers();assert.equal(app.api.useStabilizer(), true);
     assert.equal(app.api.state.sway.x, original.x);assert.equal(app.api.state.sway.y, original.y, 'consumption must not mutate the underlying random-motion process');
     assert.equal(app.api.effectiveSway().x, original.x / 2);assert.equal(app.api.effectiveSway().y, original.y / 2);
-    const pad = app.getElement('gameCanvas'), sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
+    const pad = app.getElement('aimTouchpad'), sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
     pad.emit('pointerdown');
     const { state } = app.api, start = state.drawStarted + state.steadyStart * 1000, end = start + state.steadyDuration * 1000;
     app.advanceTo(state.drawStarted + 300);
@@ -1202,13 +1195,13 @@ test('stabilizers halve real visual and launch sway for bows, crossbows and guns
 
 test('stabilizers never consume stock while flight, preview, results, account actions or an earlier event bullet are unresolved', async () => {
   const cases = [
-    { name: 'main arrow flight', prepare: async app => { app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'flight'); } },
+    { name: 'main arrow flight', prepare: async app => { app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'flight'); } },
     { name: 'target preview', prepare: async app => { app.api.startStage(app.engine.STAGES.find(stage => stage.obstacles.length).id);await app.flush();assert.equal(app.api.state.mode, 'preview'); } },
     { name: 'finished round', prepare: async app => { app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.mode, 'finished'); } },
     { name: 'round save', hold: ['round-complete'], prepare: async app => { app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.roundSaving, true); } },
     { name: 'round registration', hold: ['round-start'], prepare: async app => { assert.equal(app.api.state.registering, true); } },
-    { name: 'pending bullet debit', hold: ['spend'], prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.ok(app.api.state.pendingAmmoShot); } },
-    { name: 'live event bullet', prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('gameCanvas').emit('pointerdown');app.getElement('gameCanvas').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'ready');assert.ok(app.api.state.eventShots.some(shot => shot.active)); } }
+    { name: 'pending bullet debit', hold: ['spend'], prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');await app.flush();assert.ok(app.api.state.pendingAmmoShot); } },
+    { name: 'live event bullet', prepare: async app => { app.api.enterEvent();await app.flush();app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');await app.flush();assert.equal(app.api.state.mode, 'ready');assert.ok(app.api.state.eventShots.some(shot => shot.active)); } }
   ];
   for (const { name, hold, prepare } of cases) {
     const app = await appHarness({ version: 1, stabilizers: 1, sound: false }, { hold });
@@ -1243,19 +1236,17 @@ test('all event guns hit promptly after authorization without slow motion or dup
   for (const gunId of [20, 21, 22, 23, 24]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: gunId, sound: false }, { remaining: 20, hold: ['spend'] });
     app.api.enterEvent(10);await app.flush();
-    const state = app.api.state, engine = app.engine, pad = app.getElement('gameCanvas'), gun = app.api.activeBow();
+    const state = app.api.state, engine = app.engine, pad = app.getElement('aimTouchpad'), gun = app.api.activeBow();
     state.stage = engine.prepareStage(engine.createClayEvent(10), 42);state.time = 0;
-    const before = { ...state.aim }, speed = app.api.JOYSTICK_SPEED / state.zoom;
     let planned;
     for (let fireTime = .2; fireTime <= 4; fireTime += .05) {
       const target = engine.targetAt(state.stage, fireTime + state.stage.distance / gun.muzzleSpeed, 0);
       const yaw = Math.atan2(target.x, target.z), pitch = Math.atan2(target.y - engine.PLAYER.y, Math.hypot(target.x, target.z));
-      const duration = Math.hypot(yaw - before.yaw, pitch - before.pitch) / speed;
-      if (target.active && Math.abs(yaw) < .48 && pitch > -.22 && pitch < .58 && duration < fireTime) {
+      if (target.active && Math.abs(yaw) < .48 && pitch > -.22 && pitch < .58) {
         planned = { yaw, pitch, fireTime };break;
       }
     }
-    assert.ok(planned, 'the moving UFO has a reachable interception window for the joystick');
+    assert.ok(planned, 'the moving UFO has a reachable interception window for relative touch aiming');
     pad.emit('pointerdown');const coords = moveHeldAim(app, planned.yaw, planned.pitch);
     holdFor(app, Math.max(0, planned.fireTime - state.time) * 1000);
     const releasedAtWorld = state.time;
@@ -1319,7 +1310,7 @@ test('all five event guns consume their magazines, reload automatically and paus
   for (let index = 0; index < capacities.length; index++) {
     const app = await appHarness({ version: 1, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: 20 + index, sound: false });
     app.api.enterEvent();await app.flush();
-    const state = app.api.state, gun = app.api.activeBow(), pad = app.getElement('gameCanvas');
+    const state = app.api.state, gun = app.api.activeBow(), pad = app.getElement('aimTouchpad');
     assert.equal(gun.magazineSize, capacities[index]);assert.equal(state.magazine, capacities[index]);
     for (let fired = 0; fired < capacities[index]; fired++) {
       app.until(() => state.fireCooldown === 0);
@@ -1356,7 +1347,7 @@ test('all five event guns consume their magazines, reload automatically and paus
 test('pending shot authorization freezes the event and commits a single bullet only after the server agrees', async () => {
   const app = await appHarness({ version: 1, ownedBows: [0, 20, 21], sound: false }, { remaining: 5, hold: ['spend'] });
   app.api.enterEvent();await app.flush();
-  const state = app.api.state, pad = app.getElement('gameCanvas');
+  const state = app.api.state, pad = app.getElement('aimTouchpad');
   state.aim.yaw = .48;state.aim.pitch = .58; // Keep the first real bullet airborne past the .14-second firing interval.
   pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
   const first = app.ammo.requests.filter(request => request.action === 'spend').at(-1);
@@ -1381,7 +1372,7 @@ test('pending shot authorization freezes the event and commits a single bullet o
 
 test('a lost spend response retries the same receipt and an exhausted server balance never creates a projectile', async () => {
   const app = await appHarness({ version: 1, sound: false }, { remaining: 2, hold: ['spend'] });
-  app.api.enterEvent();await app.flush();const state = app.api.state, pad = app.getElement('gameCanvas');
+  app.api.enterEvent();await app.flush();const state = app.api.state, pad = app.getElement('aimTouchpad');
   pad.emit('pointerdown');pad.emit('pointerup');await app.flush();const request = app.ammo.requests.at(-1);
   app.ammo.execute(request);app.ammo.reply(request, { ok: false, reason: 'pending' });await app.flush();
   assert.equal(state.used, 0);assert.equal(state.eventShots.length, 0);assert.equal(state.magazine, 2);assert.equal(app.ammo.account.remaining, 1);
@@ -1451,7 +1442,7 @@ test('an unknown round registration can be retried before completing that same s
 
 test('connected main play waits for its server run and recovered intents cannot strand the next registration', async () => {
   const waiting = await appHarness({ version: 1, sound: false }, { hold: ['round-start'] });
-  const pad = waiting.getElement('gameCanvas');pad.emit('pointerdown');waiting.frames(12);pad.emit('pointerup');await waiting.flush();
+  const pad = waiting.getElement('aimTouchpad');pad.emit('pointerdown');waiting.frames(12);pad.emit('pointerup');await waiting.flush();
   assert.equal(waiting.api.state.mode, 'ready');assert.equal(waiting.api.state.used, 0);assert.equal(waiting.api.state.shot, null);
   const registration = waiting.ammo.requests.find(request => request.action === 'round-start');waiting.ammo.reply(registration);await waiting.flush();
   assert.ok(waiting.api.state.serverRunId);
@@ -1462,7 +1453,7 @@ test('connected main play waits for its server run and recovered intents cannot 
     const original = await appHarness({ version: 1, sound: false }, { remaining: 2, hold: [action] });
     let request;
     if (action === 'spend') {
-      original.api.enterEvent();await original.flush();const firing = original.getElement('gameCanvas');firing.emit('pointerdown');firing.emit('pointerup');await original.flush();request = original.ammo.requests.at(-1);
+      original.api.enterEvent();await original.flush();const firing = original.getElement('aimTouchpad');firing.emit('pointerdown');firing.emit('pointerup');await original.flush();request = original.ammo.requests.at(-1);
     } else {
       original.api.showAmmoShop();original.api.buyAmmo();await original.flush();request = original.ammo.requests.at(-1);original.ammo.execute(request);
     }
@@ -1489,7 +1480,7 @@ test('every fifth completed main round opens a timed event and event play never 
   assert.equal(state.isEvent, true);assert.equal(state.stage.eventLevel, 1);assert.equal(state.stage.targetsPerWave, 2);
   assert.equal(app.api.progress.lastStage, 2);assert.equal(app.api.progress.unlocked, 50, 'a fifth round resumes at the next freely available stage');
   assert.equal(app.snapshot().mainRounds, 5);assert.equal(app.snapshot().lastStage, 2);
-  const pad = app.getElement('gameCanvas');
+  const pad = app.getElement('aimTouchpad');
   state.time = state.stage.eventDuration - .001;pad.emit('pointerdown');pad.emit('pointerup');await app.flush();app.frames();
   assert.ok(state.time >= state.stage.eventDuration && state.eventShots.some(shot => shot.active));
   assert.equal(state.mode, 'ready', 'the event waits for a bullet already in flight when time expires');
@@ -1554,14 +1545,14 @@ test('unowned equipment cannot be used without purchase and normal rounds remain
 });
 
 test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and ignores later releases', async () => {
-  const app = await appHarness(), pad = app.getElement('gameCanvas');
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
   pad.emit('pointerdown');
-  const beforeYaw = app.api.state.aim.yaw, pointer = app.api.pointer;
-  pad.emit('pointermove', { clientX: pointer.originX + 8, clientY: pointer.originY });
-  const rate = app.api.JOYSTICK_SPEED * ((8 - app.api.JOYSTICK_DEADZONE) / (app.api.JOYSTICK_RADIUS - app.api.JOYSTICK_DEADZONE)) ** app.api.JOYSTICK_RESPONSE;
-  assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), false);
+  const pointer = app.api.pointer;
+  pad.emit('pointermove', { clientX: pointer.x + 8, clientY: pointer.y });
+  const aimed = { ...app.api.state.aim };
+  assert.ok(app.api.pointer);
   app.advanceTo(9900);
-  assert.ok(Math.abs(app.api.state.aim.yaw - beforeYaw - rate * 9.9) < 1e-10);
+  assert.deepEqual({ ...app.api.state.aim }, aimed, 'a stationary finger keeps the same aim through9.9seconds');
   assert.equal(app.api.state.mode, 'drawing');
   assert.equal(app.api.state.used, 0);
   assert.equal(app.api.state.shot, null);
@@ -1572,8 +1563,8 @@ test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and i
   assert.equal(app.api.state.used, 1);
   assert.equal(shot.startedAt, 10000);
   assert.equal(shot.automatic, true);
-  assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), true);
-  assert.ok(Math.abs(app.api.state.aim.yaw - beforeYaw - rate * 10) < 1e-10, 'automatic fire integrates exactly ten seconds of held input');
+  assert.equal(app.api.pointer, null);
+  assert.deepEqual({ ...app.api.state.aim }, aimed, 'automatic fire uses the held direction without time-based drift');
   assert.equal(app.api.state.held, 10);
   assert.equal(app.api.state.charge, 1);
   pad.emit('pointerup');await app.flush();pad.emit('lostpointercapture');
@@ -1586,13 +1577,13 @@ test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and i
 });
 
 test('frame fallback uses elapsed time when timer delivery is delayed', async () => {
-  const app = await appHarness(), pad = app.getElement('gameCanvas');
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
   pad.emit('pointerdown');
   app.advanceTo(9900, { runTimers: false });
   assert.equal(app.api.state.used, 0);
   app.advanceTo(10000, { runTimers: false });
   assert.equal(app.api.state.used, 1);
-  assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), true);
+  assert.equal(app.api.pointer, null);
   assert.equal(app.api.state.shot.startedAt, 10000);
   assert.equal(app.api.state.shot.elapsed, 0, 'a new shot cannot simulate time before it was fired');
   const sceneAtRelease = app.api.state.time;
@@ -1604,7 +1595,7 @@ test('frame fallback uses elapsed time when timer delivery is delayed', async ()
 });
 
 test('a fresh random steady window lasts exactly 0.5 seconds while normal sway continues outside it', async () => {
-  const app = await appHarness(), pad = app.getElement('gameCanvas');
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
   let sequence = [0.5, 0.4];app.setRandom(() => sequence.length ? sequence.shift() : 0.9);
   pad.emit('pointerdown');
   assert.equal(app.api.state.steadyStart, 4.4);
@@ -1634,7 +1625,7 @@ test('a fresh random steady window lasts exactly 0.5 seconds while normal sway c
 for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer' }, { id: 19, duration: 2, input: 'keyboard' }]) {
   test(`${input} aiming uses the equipped ${duration}-second steady interval and still auto-fires once at ten seconds`, async () => {
     const app = await appHarness({ version: 1, ownedBows: [0, id], ownedArrows: [0], bow: id, sound: false });
-    const pad = app.getElement('gameCanvas'), sequence = [.5, .4];
+    const pad = app.getElement('aimTouchpad'), sequence = [.5, .4];
     app.setRandom(() => sequence.length ? sequence.shift() : .9);
     assert.ok(app.getElement('loadoutSteady').textContent.includes(`${duration}초`));
     if (input === 'pointer') pad.emit('pointerdown');
@@ -1679,7 +1670,7 @@ for (const { id, duration, input } of [{ id: 3, duration: 1.21, input: 'pointer'
 
 test('the longest steady opportunity starts randomly between one and eight seconds and survives equipment reselection', async () => {
   const app = await appHarness({ version: 1, coins: 0, ownedBows: [0, 19], ownedArrows: [0], bow: 19, sound: false });
-  const pad = app.getElement('gameCanvas'), starts = [];
+  const pad = app.getElement('aimTouchpad'), starts = [];
   for (const fraction of [0, .5, 1 - Number.EPSILON]) {
     const sequence = [.5, fraction];app.setRandom(() => sequence.length ? sequence.shift() : .9);
     pad.emit('pointerdown');
@@ -1701,7 +1692,7 @@ test('the longest steady opportunity starts randomly between one and eight secon
 });
 
 test('manual aiming still moves during stability and release uses the exact stable direction', async () => {
-  const app = await appHarness(), pad = app.getElement('gameCanvas');
+  const app = await appHarness(), pad = app.getElement('aimTouchpad');
   const sequence = [0.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : 0.8);
   pad.emit('pointerdown');app.advanceTo(1200);
   assert.equal(app.api.isSteady(), true);
@@ -1721,7 +1712,7 @@ test('manual aiming still moves during stability and release uses the exact stab
 
 test('cancel, blur and a hidden document clear the ten-second deadline safely', async () => {
   for (const reason of ['pointercancel', 'blur', 'hidden']) {
-    const app = await appHarness(), pad = app.getElement('gameCanvas');
+    const app = await appHarness(), pad = app.getElement('aimTouchpad');
     pad.emit('pointerdown');app.advanceTo(9900);
     if (reason === 'pointercancel') pad.emit('pointercancel');
     if (reason === 'blur') app.window.emit('blur');
@@ -1738,7 +1729,7 @@ test('every stage shares 0.32-speed arrow, target and scenery time from the firs
   for (const stage of app.engine.STAGES) {
     app.api.startStage(stage.id);await app.flush();
     app.until(() => app.api.state.mode === 'ready');
-    const pad = app.getElement('gameCanvas');
+    const pad = app.getElement('aimTouchpad');
     pad.emit('pointerdown');app.frames(78);pad.emit('pointerup');await app.flush();
     const before = app.api.state.time, realStart = app.now;
     app.advanceTo(realStart + 100);
@@ -1755,7 +1746,7 @@ test('every stage shares 0.32-speed arrow, target and scenery time from the firs
 });
 
 function startHighMiss(app) {
-  const { api } = app, state = api.state, pad = app.getElement('gameCanvas');
+  const { api } = app, state = api.state, pad = app.getElement('aimTouchpad');
   pad.emit('pointerdown');const coords = moveHeldAim(app, .18, .44);app.frames(78);
   return { pad, coords };
 }
@@ -2022,7 +2013,7 @@ test('obstacle stages automatically reveal the real target above every wall, ign
     await enterLegacyScene(app, legacyId);
     const stageId = app.api.state.stage.id;
     const { state } = app.api, baseCamera = { ...app.api.camera }, originalAim = { ...state.aim }, previewStart = app.now;
-    const preview = app.getElement('previewBtn'), pad = app.getElement('gameCanvas');
+    const preview = app.getElement('previewBtn'), pad = app.getElement('aimTouchpad');
     assert.equal(state.mode, 'preview', `stage ${stageId} starts with its overview`);
     assert.equal(preview.classList.contains('hidden'), false);
     assert.equal(preview.textContent, '조준하기');
@@ -2066,7 +2057,7 @@ test('stages without obstacles stay immediately playable and do not expose an ov
     assert.equal(app.getElement('previewBtn').classList.contains('hidden'), true);
     app.getElement('previewBtn').emit('click');
     assert.equal(app.api.state.mode, 'ready', 'a hidden control cannot start an irrelevant preview');
-    const pad = app.getElement('gameCanvas');pad.emit('pointerdown');
+    const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');
     assert.equal(app.api.state.mode, 'drawing');pad.emit('pointercancel');
     assert.equal(app.api.state.used, 0);
   }
@@ -2077,7 +2068,7 @@ test('manual overview cancels a drawn arrow, allows an early return, preserves p
   await enterLegacyScene(app, 8);
   app.until(() => app.api.state.mode === 'ready');
   app.getElement('zoomBtn').emit('click');
-  const pad = app.getElement('gameCanvas'), preview = app.getElement('previewBtn');
+  const pad = app.getElement('aimTouchpad'), preview = app.getElement('previewBtn');
   pad.emit('pointerdown');moveHeldAim(app, .4, .3);app.frames(18);
   assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.zoom, 2);
   assert.ok(app.api.state.panX !== 0 || app.api.state.panY !== 0, 'the saved view includes actual aiming pan');

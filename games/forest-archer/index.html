@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 바람과 낙하를 계산하는 50개 사격장, 활 10종·석궁 10종·총기 5종과 화살 12종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261102-archery-joystick1">
+  <link rel="stylesheet" href="style.css?v=20261102-archery-touchpad1">
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -40,15 +40,15 @@
         <section class="game-card" aria-label="활쏘기 게임">
           <div class="round-heading"><div class="round-label"><span class="level-number" id="levelNumber">01</span><div><span class="small-label" id="stageChapter">숲길의 시작</span><h2 id="stageName">첫 번째 한 발</h2><div class="round-notes"><span class="flight-badge hidden" id="flightBadge">슬로모션 · 화살을 따라가는 중</span><span id="stabilizerBadge" class="stabilizer-badge hidden" role="status"><svg><use href="#i-tonic"/></svg><span>떨림 50%</span></span></div></div></div><div class="round-score"><strong id="scoreCount">0</strong><span>/ <span id="goalCount">16</span><span id="scoreUnit">점</span></span><small id="goalLabel">현재 점수 / 참고 목표</small></div></div>
           <div class="field" id="field">
-            <canvas id="gameCanvas" tabindex="0" aria-label="사격장 화면을 누르면 그곳에 조이스틱이 나타납니다. 누른 채 끌어 조준하고 손을 떼면 발사합니다." aria-describedby="controlTitle controlHint steadyLabel"></canvas>
-            <div id="aimJoystick" class="aim-joystick hidden" aria-hidden="true"><span id="aimJoystickKnob" class="aim-joystick-knob"></span></div>
+            <canvas id="gameCanvas" aria-label="과녁과 조준점이 보이는 사격장"></canvas>
+            <div id="aimTouchpad" data-active="false" class="aim-touchpad" tabindex="0" role="group" aria-label="사격장 아래 3분의 1 조준 영역. 누른 채 끌어 조준하고 손을 떼면 발사합니다." aria-describedby="controlTitle controlHint steadyLabel"></div>
             <div class="field-top"><span class="field-pill"><span class="tiny-dot"></span><strong id="distanceLabel">14 m</strong></span><span class="field-pill wind-pill"><svg><use href="#i-wind"/></svg><span id="windLabel">고요한 바람</span></span><button class="field-pill zoom-button" id="zoomBtn" aria-label="조준 화면 두 배 확대">1×</button></div>
             <div class="field-bottom"><div class="shot-counter"><span id="shotDots"></span><span id="shotCountLabel">5발 남음</span></div><button class="field-pill hidden" id="previewBtn">과녁 보기</button><button class="field-pill" id="recenterBtn" aria-label="조준을 가운데로"><svg><use href="#i-target"/></svg><span>가운데</span></button></div>
           </div>
           <div class="controls">
             <div class="power-row"><span id="powerLabel">활을 당겨보세요</span><div class="power-track"><span id="powerFill"></span></div><strong id="powerValue">0%</strong></div>
             <div class="draw-timing" id="drawTiming"><span id="steadyLabel" role="status">1~10초 사이, 한 번은 0.5초 안정</span><strong id="autoReleaseLabel">최대 10초</strong></div>
-            <div class="control-status" id="controlStatus"><span class="control-copy"><strong id="controlTitle">누른 곳에 조이스틱 · 끌어서 조준</strong><small id="controlHint">손을 떼면 발사</small></span><div class="shot-feedback hidden" id="shotFeedback" aria-live="polite"><strong id="feedbackTitle"></strong><span id="feedbackDetail"></span></div></div>
+            <div class="control-status" id="controlStatus"><span class="control-copy"><strong id="controlTitle">화면 아래 1/3을 끌어 조준</strong><small id="controlHint">손을 떼면 발사</small></span><div class="shot-feedback hidden" id="shotFeedback" aria-live="polite"><strong id="feedbackTitle"></strong><span id="feedbackDetail"></span></div></div>
             <p class="mobile-hint" id="mobileHint"></p>
             <section id="ammoPanel" class="event-ammo hidden" aria-label="이벤트 총알">
               <div class="ammo-balance"><span>보유 총알</span><strong id="ammoRemaining">—</strong><span>발</span></div>
@@ -74,6 +74,6 @@
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
   </div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script type="module" src="game.mjs?v=20261102-archery-precision1"></script>
+  <script type="module" src="game.mjs?v=20261102-archery-touchpad1"></script>
 </body>
 </html>
