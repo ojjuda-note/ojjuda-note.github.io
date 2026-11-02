@@ -27,7 +27,7 @@ for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot',
 // Exercise the real controller with a fake Auth service: no accounts or emails are created.
 function setup(query, { user = null, confirmed = false, sessionError = false, sessionResponse = null, signupResponse = null, recoveryResponse = null, recoveryError = null, recoveryVerified = true, resetError = null, now = Date.now() } = {}) {
   let clock = now;
-  const elements = new Map(), tasks = [], navigations = [], signups = [], recoveries = [], storage = new Map();
+  const elements = new Map(), tasks = [], navigations = [], signups = [], passwordUpdates = [], recoveries = [], storage = new Map();
   const element = key => {
     if (!elements.has(key)) elements.set(key, {
       hidden: false, disabled: false, value: '', checked: false, textContent: '',
@@ -53,6 +53,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
       onAuthStateChange(callback) { authListener = callback; },
       async getSession() { if (sessionResponse) return sessionResponse(); if (sessionError) throw new Error('network'); return { data: { session: account } }; },
       async getUser() { return { data: { user } }; },
+      async updateUser(args) { passwordUpdates.push({ owner: user?.id, ...args }); return { data: { user } }; },
       async signUp(args) {
         signups.push(args);
         if (signupResponse) return signupResponse(args);
@@ -80,7 +81,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, submit, fill, navigations, signups, recoveries, storage, location, advance: ms => { clock += ms; } };
+  return { element, flush, emit, submit, fill, navigations, signups, passwordUpdates, recoveries, storage, location, advance: ms => { clock += ms; } };
 }
 
 (async () => {
@@ -158,6 +159,16 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
 
   const cardId = '00000000-0000-4000-8000-000000000010';
   const reader = { id: 'reader', email: 'reader@example.invalid' };
+  const runningWorldRecovery = setup('?reset=1&next=world', { user: reader });
+  await runningWorldRecovery.flush();
+  assert.equal(runningWorldRecovery.element('auth-title').textContent, '새 비밀번호 설정');
+  assert.deepEqual(runningWorldRecovery.navigations, [], 'World recovery handoff must not resume World before resetting');
+  await runningWorldRecovery.emit('TOKEN_REFRESHED', { user: reader });
+  assert.equal(runningWorldRecovery.element('auth-title').textContent, '새 비밀번호 설정');
+  runningWorldRecovery.element('password').value = runningWorldRecovery.element('password-confirm').value = 'replacement-password';
+  await runningWorldRecovery.submit();
+  assert.deepEqual(runningWorldRecovery.passwordUpdates, [{ owner: 'reader', password: 'replacement-password' }], 'the handoff retains the current recovery session');
+  assert.equal(runningWorldRecovery.element('auth-title').textContent, '비밀번호가 바뀌었어요');
   const photoLogin = setup('?auth=login&next=photo', { user: reader });
   await photoLogin.flush();
   assert.deepEqual(photoLogin.navigations, ['/photo-ttang.html'], 'photo login returns to the full game page');
