@@ -270,8 +270,13 @@ function updateCamera(dt=0,immediate=false){
     const ease=value=>value*value*(3-2*value);
     if(replay.phase==='return')camera=lerpCamera(close,base,ease(replay.progress));
     else{
-      const enter=clamp(state.settle/.22,0,1);
+      const enter=clamp(state.settle/state.cinematic.entryDuration,0,1);
       camera=lerpCamera(state.cinematic.entryCamera||camera,close,ease(enter));
+      // Entry starts from the prior live follow view, but the replay shaft must
+      // stay in front of the near plane while that short transition completes.
+      const speed=Math.hypot(replay.velocity.x,replay.velocity.y,replay.velocity.z)||1;
+      const tailZ=replay.point.z-replay.velocity.z/speed*replay.shaftLength;
+      camera.z=Math.min(camera.z,tailZ-NEAR_PLANE-.25);
     }
     return;
   }
@@ -553,7 +558,7 @@ function onImpact(){
   if(state.cinematic)state.cinematic.entryCamera={...camera};
   for(const arrow of state.volley?.shots||[shot])recordImpact(arrow);
   moveAttachedArrows();
-  $('flightBadge').textContent=state.cinematic?'정중앙 10점 · 명중 다시 보기':'착지 확인 · 조준 화면으로 돌아가요';
+  $('flightBadge').textContent=state.cinematic?'명중 순간 · 화살을 따라':'착지 확인 · 조준 화면으로 돌아가요';
   const hit=r.type==='hit';state.score+=r.score;state.shotScores.push(r.score);
   if(hit)state.hits++;
   const reward=hit?Math.ceil(r.score*.8)+2:1;
@@ -561,7 +566,7 @@ function onImpact(){
   state.feedbackUntil=state.time+1.6;
   $('feedbackTitle').textContent=hit?`${state.volley?'3연발 최고점':r.score===10?'정중앙!':'명중!'} +${r.score}점`:r.zone;
   $('feedbackDetail').textContent=hit?`${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 사람이 지나간 틈을 노려보세요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
-  $('shotFeedback').className=`shot-feedback ${!hit?'miss':r.score===10?'gold':''}`;
+  $('shotFeedback').className=`shot-feedback ${!hit?'miss':r.score===10?'gold':''}${state.cinematic&&!state.cinematic.reducedMotion?' hidden':''}`;
   sound(state.cinematic?'cinematic':hit?(r.score===10?'bull':'hit'):'miss');if(hit&&!state.cinematic&&navigator.vibrate)navigator.vibrate(r.score===10?[15,30,15]:15);
   updateHeader();updateRound();
 }
@@ -1036,15 +1041,23 @@ function sceneItems(target){
     const length=Math.hypot(velocity.x,velocity.y,velocity.z)||1;
     const tail={x:tip.x-velocity.x/length*.85,y:tip.y-velocity.y/length*.85,z:tip.z-velocity.z/length*.85};
     addLine(tail,tip,'shaft',alpha);
-    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha});
-    items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying});
+    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha,visualVelocity:velocity});
+    items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying,visualVelocity:velocity});
   };
   for(const stuck of state.stuck)if((stuck.born??0)<=time+1e-9)addArrow(stuck,stuck.velocity||{x:0,y:-.5,z:1},.75,false,stuck.projectileType);
   // Keep every hit in target-local coordinates, including each animal pass.
-  // Full shafts remain at their original entry angle as the target moves.
+  // Only the celebrated shaft flexes around its fixed tip for 0.60 seconds.
+  // The saved entry velocity and all physical attachments remain untouched.
   for(const mark of state.targetMarks){
     if((mark.born??0)>time+1e-9||(replay?.phase==='flight'&&mark===state.cinematic.shot.targetMark))continue;
-    const subject=targets.get(mark.passId)||target;addArrow({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002},mark.velocity||{x:0,y:-.2,z:1},1,false,mark.projectileType);
+    let visualVelocity=mark.velocity||{x:0,y:-.2,z:1};
+    if(replay&&!replay.reducedMotion&&mark===state.cinematic.shot.targetMark&&replay.impactAge>=0&&replay.impactAge<.60){
+      const age=replay.impactAge,decay=(1-age/.60)**2;
+      const yaw=.085*Math.sin(age*Math.PI*22)*decay,pitch=.05*Math.sin(age*Math.PI*26)*decay;
+      const side=visualVelocity.x*Math.cos(yaw)+visualVelocity.z*Math.sin(yaw),forward=visualVelocity.z*Math.cos(yaw)-visualVelocity.x*Math.sin(yaw);
+      visualVelocity={x:side,y:visualVelocity.y*Math.cos(pitch)-forward*Math.sin(pitch),z:forward*Math.cos(pitch)+visualVelocity.y*Math.sin(pitch)};
+    }
+    const subject=targets.get(mark.passId)||target;addArrow({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002},visualVelocity,1,false,mark.projectileType);
   }
   if(replay?.phase==='flight'){
     const points=state.cinematic.frames.filter(frame=>frame.time<=replay.time).slice(-36).map(frame=>frame.point);
@@ -1090,7 +1103,9 @@ function drawSceneItem(item){
   }else if(item.kind==='effect'){
     const effect=item.effect,replay=cinematicFrame(),age=renderTime()-effect.born,q=project(effect);
     if(replay&&effect===state.cinematic.shot.impactEffect){
-      if(q.visible&&replay.phase!=='flight')drawBullseyeImpact(ctx,w,h,{x:q.x,y:q.y,age:replay.impactAge,scale:clamp(q.scale/85,.65,1.5),reducedMotion:state.cinematic.reducedMotion});
+      const mark=state.cinematic.shot.targetMark,subject=targetAt(state.stage,replay.time,mark?.passId);
+      const impact=mark?project({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002}):q;
+      if(impact.visible&&replay.phase!=='flight')drawBullseyeImpact(ctx,w,h,{x:impact.x,y:impact.y,age:replay.impactAge,scale:clamp(impact.scale/85,.65,1.5),reducedMotion:state.cinematic.reducedMotion});
     }else if(q.visible&&age>=0&&age<1.5){
       ctx.globalAlpha=Math.max(0,1-age/1.5);
       if(effect.kind==='clay'||effect.kind==='ufo'){for(let i=0;i<10;i++){const angle=i/10*Math.PI*2,dist=5+age*(25+i*4),x=q.x+Math.cos(angle)*dist,y=q.y+Math.sin(angle)*dist+age*age*28,r=Math.max(1,4-age*2);poly([{x:x-r,y},{x:x+r,y:y-r},{x:x+r*.4,y:y+r}],effect.kind==='ufo'?(i%2?'#96c4c8':'#c9f6e3'):i%2?'#dd743e':'#f4b565');}}
@@ -1109,7 +1124,7 @@ function render(){
   drawGuide();
   if(state.mode==='ready'||state.mode==='drawing'){const sway=effectiveSway();drawFirstPersonBow(ctx,w,h,{charge:state.charge,swayX:sway.x,swayY:sway.y,color:activeBow().color,weaponType:activeBow().weaponType,scopeMounted:hasScope(),tier:activeBow().id,burstCount:activeBow().burstCount,grouping:activeBow().grouping,grip:activeBow().grip,elasticity:activeBow().elasticity,tipMass:activeArrow().tipMass,fletching:activeArrow().fletching,arrowColor:activeArrow().color,drawing:state.mode==='drawing'});}
   drawReticle();
-  if(replay)drawBullseyeVignette(ctx,w,h,{age:state.settle,duration:impactHold()+impactReturn(),reducedMotion:state.cinematic.reducedMotion});
+  if(replay)drawBullseyeVignette(ctx,w,h,{age:state.settle,duration:impactHold()+impactReturn(),impactAge:replay.phase==='flight'?-1:replay.impactAge,entryMask:replay.entryMask,reducedMotion:state.cinematic.reducedMotion});
   canvas.dataset.scope=hasScope()?((state.mode==='ready'||state.mode==='drawing')&&state.zoom===3?'active':'mounted'):'none';
   canvas.dataset.cinematic=replay?.phase??'none';
   canvas.dataset.camera=replay?(replay.phase==='return'?'return':`bullseye-${replay.phase}`):state.mode==='preview'?'preview':state.mode==='flight'?'follow':state.mode==='settling'?(state.settle>impactHold()?'return':'impact'):'aim';
@@ -1138,7 +1153,8 @@ function updateGunReload(reloading){
 function updatePower(){
   if(state.modal==='stabilizer')renderStabilizers();
   if(state.modal==='shop'&&shopTab==='coach')updateCoachShopStatus();
-  const reloading=state.isEvent&&state.reloadRemaining>0,drawing=state.mode==='drawing',steady=isSteady();
+  const reloading=state.isEvent&&state.reloadRemaining>0,drawing=state.mode==='drawing',steady=isSteady(),replay=cinematicFrame();
+  $('flightBadge').classList.toggle('bullseye',replay?.phase==='impact');
   updateGunReload(reloading);
   const steadySeconds=formatSeconds(drawing?state.steadyDuration:weaponSteadyDuration());
   const ammoWait=state.isEvent&&(state.ammoLoading||!!state.pendingAmmoShot||!!ammo?.pending||ammoRemaining()===null),empty=state.isEvent&&ammoRemaining()===0;
@@ -1158,8 +1174,7 @@ function updatePower(){
     const effect=state.shot.bounceCount>0?'1회 튕김 · ':state.shot.magnetActive?'근접 유도 · ':'';
     $('flightBadge').textContent=`${effect|| (state.volley?`3연발 ${state.volley.shots.filter(shot=>shot.launched).length}/3 · `:'슬로모션 · ')}${Math.max(0,Math.round(state.shot.position.z))} m 비행 중`;
   }else if(state.mode==='settling'&&state.cinematic){
-    const replay=cinematicFrame();
-    $('flightBadge').textContent=replay?.phase==='flight'?'정중앙 10점 · 명중 다시 보기':replay?.phase==='impact'?'정중앙! · 10점':'조준 화면으로 돌아가요';
+    $('flightBadge').textContent=replay?.phase==='flight'?'명중 순간 · 화살을 따라':replay?.phase==='impact'?'✦ 정중앙! 10점 ✦':'멋진 한 발 · 조준 화면으로';
   }
   $('previewBtn').textContent=state.mode==='preview'?'조준하기':'과녁 보기';
   $('previewBtn').disabled=state.mode==='flight'||state.mode==='settling'||state.mode==='finished';
@@ -1168,7 +1183,7 @@ function updatePower(){
   $('powerFill').style.background=reloading?'#829b9d':steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
   const coachCue=drawing&&coachRemaining()>0&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
   $('powerLabel').classList.toggle('coach-cue',coachCue);
-  const mode=state.mode+activeBow().id+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
+  const mode=state.mode+activeBow().id+(replay?.phase??'')+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
   canvas.dataset.mode=state.mode;
   if(mode===hudMode)return;hudMode=mode;
   touchpad.setAttribute('aria-label',`화면 아래 3분의 1 조준 영역. 손가락을 움직인 방향과 거리만큼 위쪽 조준점이 움직이며 손을 떼면 발사. 1초에서 10초 사이에 한 번 ${steadySeconds}초간 흔들림이 멈추고, 10초가 되면 자동발사합니다. 키보드는 화살표로 조준, 스페이스를 누른 후 떼어 발사.`);
@@ -1189,6 +1204,8 @@ function updatePower(){
     $('powerLabel').textContent='과녁 위치를 확인해요';$('controlTitle').textContent='장애물 너머 과녁을 기억하세요';$('controlHint').textContent='곧 사격 위치로 돌아가요 · 과녁 보기로 다시 확인할 수 있어요';
   }else if(state.mode==='flight'){
     $('powerLabel').textContent='슬로모션으로 날아가요';$('controlTitle').textContent='화살을 따라가고 있어요';$('controlHint').textContent='궤적과 떨어지는 위치를 보고 다음 한 발을 준비해요';
+  }else if(replay&&replay.phase!=='return'){
+    $('powerLabel').textContent=replay.phase==='flight'?'명중 순간을 따라가요':'정중앙! 완벽한 한 발';$('controlTitle').textContent=replay.phase==='flight'?'과녁을 향해, 마지막 순간':'정중앙에 꽂혔어요';$('controlHint').textContent=replay.phase==='flight'?'':'10점 · 멋진 한 발!';
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent='곧 다음 화살을 쏠 수 있어요';
   }else{
@@ -1245,7 +1262,7 @@ function tick(now){
       if(!state.cinematic)state.time+=dt*FLIGHT_TIME_SCALE;
       state.settle+=dt;
       if(state.cinematic&&!state.cinematic.soundPlayed&&state.settle>=state.cinematic.flightDuration){
-        state.cinematic.soundPlayed=true;sound('bull');if(navigator.vibrate)navigator.vibrate([18,35,28]);
+        state.cinematic.soundPlayed=true;$('shotFeedback').classList.remove('hidden');sound('bull');if(navigator.vibrate)navigator.vibrate([18,35,28]);
       }
       moveAttachedArrows();
       if(state.settle>=impactHold()+impactReturn()){
