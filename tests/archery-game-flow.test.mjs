@@ -104,7 +104,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, JOYSTICK_RADIUS, JOYSTICK_DEADZONE, JOYSTICK_SPEED, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, JOYSTICK_RADIUS, JOYSTICK_DEADZONE, JOYSTICK_SPEED, JOYSTICK_RESPONSE, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
@@ -323,6 +323,87 @@ test('joystick travel responds to distance, stops at its centre and is independe
   }
   const zoomed = await sample({ zoom: 3 });
   assert.ok(Math.abs(zoomed.length * 3 - full.length) < 1e-10, 'scope magnification slows world-angle input for precision');
+});
+
+test('small joystick pulls make continuous pixel-scale corrections at every zoom without sacrificing outer tracking speed', async () => {
+  for (const [width, height] of [[390, 480], [1000, 600]]) {
+    const movesByZoom = [];
+    for (const zoom of [1, 2, 3]) {
+      const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
+      app.resize(width, height);app.api.enterEvent(1);await app.flush();
+      for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
+      const canvas = app.getElement('gameCanvas'), state = app.api.state;
+      // Measure the manual aiming ray through the actual launch/projection code;
+      // equipment sway remains separate from joystick sensitivity.
+      const screenPoint = () => {
+        const shot = app.engine.launchArrow({ ...state.aim, bow: app.api.activeBow(), charge: 1, velocityBias: 0 });
+        return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
+      };
+      const samples = [];
+      for (const distance of [5, 8, 10, 12, 17, 24, 34]) {
+        app.getElement('recenterBtn').emit('click');
+        const down = { clientX: width * .3, clientY: height * .75 };
+        const before = screenPoint(), beforeYaw = state.aim.yaw;
+        canvas.emit('pointerdown', down);
+        canvas.emit('pointermove', { clientX: down.clientX + distance, clientY: down.clientY });
+        holdFor(app, 100);const first = screenPoint().x - before.x;
+        holdFor(app, 100);const second = screenPoint().x - before.x;
+        const angle = state.aim.yaw - beforeYaw;
+        samples.push({ distance, first, second, angle });
+        if (distance > 5) {
+          assert.ok(first > 0 && second > first, 'a held deflection keeps moving without a sudden start or stall');
+          assert.ok(Math.abs(second / first - 2) < .03, 'equal holding intervals give smooth continuous travel');
+        }
+        if (distance === 10) assert.ok(second > 0 && second < .65, `${width}px ${zoom}x: a 10px pull allows a subpixel correction in 200ms`);
+        if (distance === 12) assert.ok(second > 0 && second < 1.6, `${width}px ${zoom}x: a 12px pull is still fine aiming`);
+        canvas.emit('pointermove', down);const stopped = screenPoint();holdFor(app, 200);
+        assert.deepEqual(screenPoint(), stopped, 'centring the joystick stops manual movement immediately');
+        canvas.emit('pointercancel');
+      }
+      assert.equal(samples[0].second, 0, 'finger jitter inside the neutral zone does not drift');
+      for (let i = 1; i < samples.length; i++) assert.ok(samples[i].angle > samples[i - 1].angle, 'larger pulls increase speed continuously');
+      const outer = samples.at(-1);
+      assert.ok(Math.abs(outer.angle * zoom - .1) < 1e-10, 'the outer ring retains 0.5rad/s for tracking moving targets');
+      assert.ok(samples.find(sample => sample.distance === 12).angle < outer.angle * .025, 'the fine region is much slower than the outer ring');
+      assert.equal(state.used, 0);
+      movesByZoom.push(samples.filter(sample => sample.distance === 10 || sample.distance === 12).map(sample => sample.second));
+    }
+    for (const values of movesByZoom.slice(1)) for (let i = 0; i < values.length; i++) {
+      assert.ok(Math.abs(values[i] - movesByZoom[0][i]) < .01, 'scope magnification preserves tiny screen-space adjustments');
+    }
+  }
+});
+
+test('fine joystick movement pans continuously across screen edges without a 24px view jump', async () => {
+  for (const [width, height] of [[390, 480], [1000, 600]]) for (const zoom of [1, 3]) {
+    const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, ...(zoom === 3 ? [{ x: 0, y: 1 }] : [])];
+    for (const direction of directions) {
+      const app = await appHarness({ version: 1, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
+      app.resize(width, height);app.api.enterEvent(1);await app.flush();
+      for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
+      const canvas = app.getElement('gameCanvas'), state = app.api.state;
+      const screenPoint = () => {
+        const shot = app.engine.launchArrow({ ...state.aim, bow: app.api.activeBow(), charge: 1, velocityBias: 0 });
+        return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
+      };
+      const camera = app.api.camera, current = screenPoint();
+      const x = direction.x < 0 ? 42.01 : direction.x > 0 ? width - 42.01 : current.x;
+      const y = direction.y < 0 ? 58.01 : direction.y > 0 ? height - 78.01 : current.y;
+      const yaw = Math.atan2(x - camera.cx, camera.focal);
+      const pitch = Math.atan((camera.horizon - y) / camera.focal * Math.cos(yaw));
+      canvas.emit('pointerdown');const origin = moveHeldAim(app, yaw, pitch);
+      const before = screenPoint(), cameraBefore = { ...app.api.camera };
+      canvas.emit('pointermove', { clientX: origin.clientX + direction.x * 12, clientY: origin.clientY + direction.y * 12 });
+      holdFor(app, 200);
+      const after = screenPoint(), cameraAfter = app.api.camera;
+      const pan = Math.hypot(cameraAfter.cx - cameraBefore.cx, cameraAfter.horizon - cameraBefore.horizon);
+      assert.ok(pan > 0 && pan < 2, `${width}px ${zoom}x ${JSON.stringify(direction)}: edge pans by just the tiny overflow (${pan}px)`);
+      assert.ok(Math.hypot(after.x - before.x, after.y - before.y) < .2, 'reticle stays at the edge while the view moves smoothly');
+      canvas.emit('pointermove', origin);const stopped = { ...app.api.camera };holdFor(app, 200);
+      assert.deepEqual({ ...app.api.camera }, stopped, 'edge panning stops immediately when the joystick returns to centre');
+      canvas.emit('pointercancel');assert.equal(state.used, 0);
+    }
+  }
 });
 
 test('release integrates the last held joystick velocity once without a final-coordinate jump and preserves sway through ammo authorization', async () => {
@@ -1477,7 +1558,7 @@ test('real-time deadline waits through 9.9 seconds, auto-fires once at ten and i
   pad.emit('pointerdown');
   const beforeYaw = app.api.state.aim.yaw, pointer = app.api.pointer;
   pad.emit('pointermove', { clientX: pointer.originX + 8, clientY: pointer.originY });
-  const rate = app.api.JOYSTICK_SPEED * ((8 - app.api.JOYSTICK_DEADZONE) / (app.api.JOYSTICK_RADIUS - app.api.JOYSTICK_DEADZONE)) ** 1.5;
+  const rate = app.api.JOYSTICK_SPEED * ((8 - app.api.JOYSTICK_DEADZONE) / (app.api.JOYSTICK_RADIUS - app.api.JOYSTICK_DEADZONE)) ** app.api.JOYSTICK_RESPONSE;
   assert.equal(app.getElement('aimJoystick').classList.contains('hidden'), false);
   app.advanceTo(9900);
   assert.ok(Math.abs(app.api.state.aim.yaw - beforeYaw - rate * 9.9) < 1e-10);
