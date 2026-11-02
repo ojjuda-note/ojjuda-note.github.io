@@ -93,7 +93,7 @@ test('genuine elastic and magnetic trajectories inform the cue instead of ordina
     assert.equal(predicted.nowScore, actual.result?.type === 'hit' ? actual.result.score : 0,
       'a fast prediction of the distant unguided prefix must retain the full magnetic trajectory and swept obstruction result');
   }
-  const narrow = {...low, radius: .1}, partialParams = {bow: 0, arrow: 12, charge: .4, yaw: 0, pitch: .094};
+  const narrow = {...low, radius: .1}, partialParams = {bow: 0, arrow: 12, charge: .4, yaw: 0, pitch: .06034};
   const partialShot = launchArrow(partialParams);stepArrow(partialShot, 8, narrow);
   assert.equal(partialShot.bounceCount, 1);assert.equal(partialShot.result.score, 10);
   const partial = evaluateCoachShot(partialParams, narrow, 0, {...timing, held: .4 * 1.25});

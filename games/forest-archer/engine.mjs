@@ -25,13 +25,16 @@ const bow = (id, name, tag, description, grip, elasticity, color) => {
     sway: bowSway(grip), speed: bowSpeed(elasticity)
   };
 };
-const arrow = (id, name, tag, description, tipMass, wingName, windArea, drag, stability, color) => ({
-  // Balance the shaft against the point: upgrades keep the same launch mass.
-  id, name, tag, description, tipMass, shaftMass: REFERENCE_ARROW_MASS - tipMass, color,
-  fletching: { name: wingName, windArea, drag, stability },
-  variance: 0.20 * (1 - stability / 100),
-  windFactor: windArea
-});
+// Component coefficients are game tuning, not measurements of commercial arrows.
+// Mass is explicit: changing a point must not silently change the shaft's mass.
+const point = (name, material, shape, drag, precision) => ({ name, material, shape, drag, precision });
+const shaft = (name, material, diameter, windArea, drag, precision) => ({ name, material, diameter, windArea, drag, precision });
+const fletch = (name, material, mass, windArea, drag, stability) => ({ name, material, mass, windArea, drag, stability });
+const arrow = (id, name, tag, description, tipMass, shaftMass, tip, shaft, fletching, color) => {
+  const item = { id, name, tag, description, tipMass, shaftMass, tip, shaft, fletching, color };
+  // Compatibility summaries; simulation helpers always read the actual components.
+  return { ...item, variance: getArrowVariance(item), windFactor: getWindResponse(item) };
+};
 const gun = (id, name, tag, description, price, grip, power, mass, windFactor, dragRate, color) => ({
   id, name, tag, description, price, grip, power, muzzleSpeed: 0, color, weaponType: 'gun',
   speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
@@ -86,7 +89,7 @@ export function sortEquipment(items, key = 'progression') {
     if (key === 'magazine') return -(item.magazineSize ?? 0);
     if (key === 'reload') return item.reloadSeconds ?? Infinity;
     if (key === 'wind') return getWindResponse(item);
-    if (key === 'stability') return -(item.fletching?.stability ?? 0);
+    if (key === 'stability') return -getArrowConsistency(item);
     if (key === 'tip-light') return item.tipMass ?? 0;
     if (key === 'tip-heavy') return -(item.tipMass ?? 0);
     return rank(item);
@@ -123,21 +126,49 @@ export const BOWS = equipmentCatalog([
 ], 'weapon');
 
 export const ARROWS = equipmentCatalog([
-  arrow(0, '나무 화살', '입문', '기본 촉과 넓은 깃. 바람과 발사 속도 편차를 익히는 첫 화살.', 4, '넓은 깃', 1.00, 0.140, 35, '#b28b64'),
-  arrow(1, '깃털 화살', '안정형', '긴깃 화살의 바람 저항을 유지하고 속도 편차를 줄였어요.', 8, '큰 안정깃', .85, .120, 55, '#8b9c78'),
-  arrow(2, '탄소 화살', '경량형', '비연 화살의 낮은 저항에 더 일정한 발사 속도를 더했어요.', 4, '좁은 날개', .55, .080, 75, '#71999b'),
-  arrow(3, '은빛 화살', '유선형', '금빛 화살의 안정성을 유지하고 바람과 감속을 더 줄였어요.', 10, '유선형 날개', .25, .040, 85, '#bfc8d0'),
-  arrow(4, '가벼운 연습 화살', '가벼운 촉', '가벼운 촉과 균형 잡힌 몸체. 기본 화살보다 속도가 일정해요.', 2, '작은 깃', 1.00, .140, 45, '#c3a474'),
-  arrow(5, '황동촉 화살', '황동촉', '철갑촉 화살의 바람 저항을 유지하고 속도를 더 일정하게 만들었어요.', 12, '직선 깃', .70, .100, 65, '#b99c52'),
-  arrow(6, '긴깃 화살', '저항형', '연습 화살의 안정성을 유지하고 바람과 공기 저항을 줄였어요.', 6, '긴 안정깃', .85, .120, 45, '#9a9c77'),
-  arrow(7, '돌풍 화살', '저항형', '탄소 화살의 안정성을 유지하며 바람과 감속을 더 줄였어요.', 5, '낮은 날개', .40, .060, 75, '#709ba0'),
-  arrow(8, '철갑촉 화살', '철갑촉', '무거운 촉에 가벼운 몸체를 맞췄어요. 깃털 화살보다 바람과 감속이 적어요.', 14, '삼각 깃', .70, .100, 55, '#89909b'),
-  arrow(9, '비연 화살', '저항형', '황동촉 화살의 안정성을 이어받고 바람과 공기 저항을 줄였어요.', 3, '초소형 날개', .55, .080, 65, '#93a8b3'),
-  arrow(10, '금빛 화살', '정밀형', '돌풍 화살의 낮은 저항에 더 정밀한 발사 속도를 더했어요.', 9, '곡면 날개', .40, .060, 85, '#ceb36c'),
-  arrow(11, '바람깃 화살', '정밀형', '은빛 화살의 낮은 바람 영향을 유지하고 속도를 가장 일정하게 만들었어요.', 7, '쐐기 날개', .25, .040, 95, '#82a7a5'),
-  {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '바람깃 화살과 같은 기본 성능. 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 8, '탄성 안정깃', .25, .040, 95, '#be9a69'),
+  arrow(0, '나무 화살', '입문', '강철 촉과 목재 몸통, 넓은 천연 깃으로 바람과 비행 편차를 익혀요.', 4, 19.4,
+    point('연습용 원뿔촉', '강철', '원뿔형', .018, 40), shaft('목재 몸통', '목재', 7.2, .70, .072, 30),
+    fletch('넓은 깃', '천연 깃', .60, .30, .050, 40), '#b28b64'),
+  arrow(1, '깃털 화살', '안정형', '큰 천연 깃이 자세를 잡아줘요. 더 정밀하고 가는 알루미늄 몸통이 깃의 저항을 보완해요.', 4, 18.1,
+    point('정렬 원뿔촉', '강철', '매끈한 원뿔형', .014, 52), shaft('정밀 알루미늄 몸통', '알루미늄', 6.3, .50, .044, 52),
+    fletch('큰 안정깃', '천연 깃', .70, .37, .061, 64), '#8b9c78'),
+  arrow(2, '탄소 화살', '경량형', '정밀하게 맞춘 카본 몸통과 좁은 합성 날개로 비연 화살보다 일정하게 날아요.', 3.8, 17.1,
+    point('정밀 유선촉', '강철', '유선형', .010, 82), shaft('정밀 카본 몸통', '카본', 5.8, .49, .043, 80),
+    fletch('좁은 날개', '합성 베인', .30, .20, .040, 62), '#71999b'),
+  arrow(3, '은빛 화살', '유선형', '카본·알루미늄 복합 몸통과 은빛 마감의 유선촉. 매끈한 연결부가 감속을 줄여요.', 4, 15.95,
+    point('은빛 유선촉', '은빛 마감 강철', '매끈한 유선형', .007, 95), shaft('가는 복합 몸통', '카본·알루미늄', 4.6, .36, .031, 92),
+    fletch('유선형 날개', '합성 베인', .25, .19, .037, 78), '#bfc8d0'),
+  arrow(4, '가벼운 연습 화살', '가벼운 촉', '가벼운 촉, 선별한 목재와 작은 천연 깃. 기본 화살보다 조금 가볍고 일정해요.', 3.5, 19.65,
+    point('경량 연습촉', '강철', '작은 원뿔형', .017, 42), shaft('선별 목재 몸통', '선별 목재', 7.1, .69, .070, 42),
+    fletch('작은 깃', '천연 깃', .45, .27, .046, 42), '#c3a474'),
+  arrow(5, '황동촉 화살', '황동촉', '작게 가공한 황동 촉과 정밀 알루미늄 몸통. 곧게 붙인 깃으로 비행 편차를 줄여요.', 4.6, 16.95,
+    point('소형 황동촉', '황동', '매끈한 원뿔형', .012, 70), shaft('정렬 알루미늄 몸통', '알루미늄', 6.1, .50, .045, 65),
+    fletch('직선 깃', '천연 깃', .45, .28, .048, 65), '#b99c52'),
+  arrow(6, '긴깃 화살', '자세 제어', '긴 천연 깃은 자세를 잘 잡지만 바람과 저항도 받아요. 가는 알루미늄 몸통으로 전체 저항을 낮췄어요.', 4, 18.5,
+    point('매끈한 연습촉', '강철', '원뿔형', .015, 46), shaft('가는 알루미늄 몸통', '알루미늄', 6.5, .55, .050, 44),
+    fletch('긴 안정깃', '천연 깃', .70, .36, .060, 58), '#9a9c77'),
+  arrow(7, '돌풍 화살', '바람 대응', '더 가는 카본 몸통과 낮은 합성 날개로 옆바람을 덜 받아요. 촉의 정렬도 개선했어요.', 4.1, 16.4,
+    point('정렬 유선촉', '강철', '유선형', .009, 86), shaft('가는 카본 몸통', '카본', 5.4, .45, .040, 82),
+    fletch('낮은 날개', '합성 베인', .30, .19, .038, 65), '#709ba0'),
+  arrow(8, '철갑촉 화살', '철갑촉', '묵직한 강철 촉을 가벼운 알루미늄 몸통에 맞췄어요. 작은 합성 깃으로 전체 무게와 저항을 줄였어요.', 4.8, 17.1,
+    point('소형 강철촉', '강철', '단단한 원뿔형', .013, 65), shaft('경량 알루미늄 몸통', '알루미늄', 6.2, .52, .046, 55),
+    fletch('삼각 깃', '합성 베인', .50, .30, .052, 62), '#89909b'),
+  arrow(9, '비연 화살', '저항형', '초소형 합성 날개는 저항이 작지만 자세 제어가 약해요. 균일한 카본 복합 몸통과 정렬된 촉이 보완해요.', 3.8, 17.55,
+    point('경량 유선촉', '강철', '유선형', .011, 76), shaft('경량 카본 복합 몸통', '카본 복합재', 6.0, .53, .048, 70),
+    fletch('초소형 날개', '합성 베인', .25, .20, .040, 55), '#93a8b3'),
+  arrow(10, '금빛 화살', '정밀형', '정밀 카본 몸통과 금빛 마감의 정렬 촉. 곡면 날개의 자세 제어를 더해 일정하게 날아요.', 4.1, 16,
+    point('금빛 정렬촉', '금빛 마감 강철', '유선형', .008, 90), shaft('고정밀 카본 몸통', '카본', 5.0, .39, .034, 90),
+    fletch('곡면 날개', '합성 베인', .30, .21, .039, 75), '#ceb36c'),
+  arrow(11, '바람깃 화살', '정밀형', '정밀 복합 몸통과 매끈한 촉, 자세를 잘 잡는 쐐기 날개. 일반 화살 중 가장 가볍고 일정해요.', 4, 15.75,
+    point('고정밀 유선촉', '강철', '매끈한 유선형', .006, 100), shaft('정밀 복합 몸통', '카본·알루미늄', 4.2, .32, .028, 96),
+    fletch('쐐기 날개', '합성 베인', .25, .18, .035, 90), '#82a7a5'),
+  {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '바람깃 화살과 같은 기본 성능. 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 4, 15.75,
+    point('탄성 유선촉', '강철·탄성 접합', '매끈한 유선형', .006, 100), shaft('정밀 복합 몸통', '카본·알루미늄', 4.2, .32, .028, 96),
+    fletch('탄성 안정깃', '합성 베인', .25, .18, .035, 90), '#be9a69'),
     ability:Object.freeze({type:'bounce',label:'한 번 튕김',description:'과녁 앞 지면에서 1회 튕김 · 전진 속도 75% · 수직 반발 55%',maxBounces:1,horizontalRetention:.75,restitution:.55})},
-  {...arrow(13, '자석 화살', '특수 · 근접 유도', '바람깃 화살과 같은 기본 성능. 실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 10, '유도 안정깃', .25, .040, 95, '#629d98'),
+  {...arrow(13, '자석 화살', '특수 · 근접 유도', '바람깃 화살과 같은 기본 성능. 실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 4, 15.75,
+    point('자성 유선촉', '자성 강철', '매끈한 유선형', .006, 100), shaft('정밀 복합 몸통', '카본·알루미늄', 4.2, .32, .028, 96),
+    fletch('유도 안정깃', '합성 베인', .25, .18, .035, 90), '#629d98'),
     ability:Object.freeze({type:'magnetic',label:'근접 유도',description:'실제 표적 5m 안에서 약하게 유도 · 최대 약 10° 보정 · 명중 보장 없음',radius:5,maxAcceleration:24,maxTurnRate:1,maxTurnAngle:.18,maxCorrectionSpeed:4})}
 ], 'arrow');
 
@@ -236,10 +267,10 @@ function stageDifficulty(template) {
   const radius = Math.sqrt(rx * ry), angularRadius = Math.atan2(radius, template.distance);
   const movementSpeed = animal ? 2 * (template.distance * 1.25 + template.radius * 3) / (template.passDuration || shape[2]) :
     2 / Math.PI * Math.hypot(template.motion.amplitudeX * template.motion.speed, template.motion.amplitudeY * template.motion.speed * 1.37);
-  const basicArrow = ARROWS[0], mass = basicArrow.shaftMass + basicArrow.tipMass;
-  const speed = BOWS[0].speed * Math.sqrt(REFERENCE_ARROW_MASS / mass), drag = basicArrow.fletching.drag * REFERENCE_ARROW_MASS / mass;
+  const basicArrow = ARROWS[0], mass = getArrowMass(basicArrow);
+  const speed = BOWS[0].speed * Math.sqrt(REFERENCE_ARROW_MASS / mass), drag = getArrowDragRate(basicArrow);
   const flightSeconds = -Math.log1p(-drag * template.distance / speed) / drag;
-  const windDriftPerUnit = WIND_RESPONSE * basicArrow.windFactor * (flightSeconds - template.distance / speed) / drag;
+  const windDriftPerUnit = WIND_RESPONSE * getWindResponse(basicArrow) * (flightSeconds - template.distance / speed) / drag;
   const cover = stageCover(template), pillars = template.obstacles.filter(obstacle => obstacle.type === 'pillar').length;
   const walls = template.obstacles.length - pillars, people = template.passers.length;
   const components = {
@@ -285,9 +316,11 @@ function lessonStages() {
     '과녁이 천천히 좌우로 움직여요. 화살이 도착할 앞쪽을 조금 겨눠보세요.',
     (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.03+(id-5)*.008),
       motion:motion(radius*(.60+index*.10),0,.24+index*.025)}),{legacyFirst:5,key:'tracking-intro'});
-  addChapter('가벼운 바람 읽기','멈춘 과녁으로 옆바람을 익혀요.',
-    '날리는 잎의 방향을 살펴보세요. 바람 반대쪽을 조금 겨누고 거리별 차이를 익혀요.',
-    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.045+index*.01)}),{key:'wind-intro'});
+  // A focused wind lesson needs perceptible drift, unlike the nearly calm
+  // tracking lessons around it. The same signed wind drives arrows and leaves.
+  addChapter('가벼운 바람 읽기','옆바람에 밀리는 화살을 읽어요.',
+    '잎이 흘러가는 쪽으로 화살도 밀려요. 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요.',
+    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,1+index*.1)}),{key:'wind-intro'});
   addChapter('높낮이 따라가기','위아래로 움직이는 과녁을 따라가요.',
     '옆으로는 움직이지 않아요. 올라가고 내려오는 속도를 보고 화살이 도착할 높이를 겨눠요.',
     (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.05+index*.01),height:radius+.85,
@@ -441,7 +474,7 @@ const EQUIPMENT_GOAL_CAPS = Object.freeze({
   52:18, 56:22, 72:26, // Small or fast animals at 50m.
   80:24, 84:23, 88:23, 92:23, // Long moving targets behind pillars or people.
   95:23, 96:21, 103:28, // Moving gaps and hidden targets.
-  110:30, 111:30, 112:24, 120:34 // Combined upper-grade obstacles.
+  110:30, 111:30, 112:24, 120:30 // Keep a margin with component-based arrows in the final crosswind.
 });
 
 function applyEquipmentLesson(template) {
@@ -492,7 +525,7 @@ export function createClayEvent(level = 1) {
 export const CLAY_EVENT = Object.freeze(createClayEvent(1));
 
 const getBow = bow => typeof bow === 'number' ? BOWS[bow] || BOWS[0] : bow || BOWS[0];
-const getArrow = arrow => typeof arrow === 'number' ? ARROWS[arrow] || ARROWS[0] : arrow || ARROWS[0];
+function getArrow(arrow) { return typeof arrow === 'number' ? ARROWS[arrow] || ARROWS[0] : arrow || ARROWS[0]; }
 
 // Evaluate the same launch formula only after both catalogs and their lookups
 // exist. Excluding guns avoids a circular dependency on their derived speed.
@@ -696,20 +729,42 @@ export function passersAt(stage, time = 0) {
 
 export function getArrowMass(arrow) {
   const a = getArrow(arrow);
-  return Math.max(1, (a.shaftMass ?? 20) + (a.tipMass ?? 4));
+  return Math.max(1, (a.shaftMass ?? 20) + (a.tipMass ?? 4) + (a.fletching?.mass ?? 0));
 }
 
-/** Relative side acceleration at the same wind, including wing area and mass. */
+/** Relative side acceleration from the shaft and fletching, divided by mass. */
 export function getWindResponse(arrow) {
   const a = getArrow(arrow);
-  return a.fletching ? Math.max(0, a.fletching.windArea) * REFERENCE_ARROW_MASS / getArrowMass(a) : a.windFactor ?? 1;
+  return a.fletching ? (Math.max(0, a.shaft?.windArea ?? 0) + Math.max(0, a.fletching.windArea)) *
+    REFERENCE_ARROW_MASS / getArrowMass(a) : a.windFactor ?? 1;
+}
+
+/** The point profile, shaft and fletching each contribute to linear game drag. */
+export function getArrowDragRate(arrow) {
+  const a = getArrow(arrow);
+  return (Math.max(0, a.tip?.drag ?? 0) + Math.max(0, a.shaft?.drag ?? 0) + Math.max(0, a.fletching?.drag ?? 0)) *
+    REFERENCE_ARROW_MASS / getArrowMass(a);
+}
+
+/** Manufacturing precision and flight control, combined as a game consistency rating.
+ * This is not FOC/spine simulation: the existing speed-spread model approximates
+ * shot-to-shot dispersion. Fletching never adds nominal launch energy.
+ */
+export function getArrowConsistency(arrow) {
+  const a = getArrow(arrow);
+  if (a.tip && a.shaft) return clamp(.5 * a.shaft.precision + .2 * a.tip.precision + .3 * a.fletching.stability, 0, 100);
+  return clamp(a.fletching?.stability ?? (1 - (a.variance ?? .2) / .2) * 100, 0, 100);
+}
+
+export function getArrowVariance(arrow) {
+  return .20 * (1 - getArrowConsistency(arrow) / 100);
 }
 
 export function getSpeed({ charge = 1, bow, arrow, velocityBias = 0 } = {}) {
   const b = getBow(bow), a = getArrow(arrow);
   if (b.weaponType === 'gun') return b.muzzleSpeed * (1 + clamp(velocityBias, -1, 1) * b.ammo.variance);
   const referenceSpeed = Number.isFinite(b.elasticity) ? bowSpeed(b.elasticity) * (b.launchBoost ?? 1) : b.speed;
-  const variance = a.fletching ? 0.20 * (1 - clamp(a.fletching.stability, 0, 100) / 100) : a.variance;
+  const variance = getArrowVariance(a);
   // Equal bow energy: adding point mass lowers launch speed, not gravity.
   return referenceSpeed * Math.sqrt(REFERENCE_ARROW_MASS / getArrowMass(a)) *
     (0.42 + 0.58 * clamp(charge, 0, 1)) * (1 + clamp(velocityBias, -1, 1) * variance);
@@ -726,7 +781,7 @@ export function launchArrow(params = {}) {
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
     speed, mass: bullet ? weapon.ammo.mass : getArrowMass(arrow), windFactor: bullet ? weapon.ammo.windFactor : getWindResponse(arrow),
     projectileType: bullet ? 'bullet' : 'arrow', shaftLength: bullet ? .12 : .85,
-    dragRate: bullet ? weapon.ammo.dragRate : (Math.max(0, getArrow(arrow).fletching?.drag ?? 0) + Math.max(0, weapon.extraDragRate ?? 0)) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
+    dragRate: bullet ? weapon.ammo.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
     bounceCount:0,bouncesRemaining:ability?.type === 'bounce' ? ability.maxBounces : 0,
     magnetActive:false,magnetSteered:false,magnetTurn:0,magnetCorrection:0,magnetTargetPassId:null,magnetLost:false

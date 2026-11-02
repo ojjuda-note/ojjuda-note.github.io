@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, prepareStage, targetAt, launchArrow, stepArrow } from '../games/forest-archer/engine.mjs';
+import { PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, prepareStage, targetAt, launchArrow, stepArrow, getArrowMass, getArrowConsistency, getArrowDragRate, getWindResponse } from '../games/forest-archer/engine.mjs';
 
 const distances = [10, 20, 30, 50];
 const animalKinds = ['rabbit', 'wildcat', 'deer', 'pigeon', 'eagle', 'cheetah'];
@@ -107,8 +107,10 @@ test('the first eight lessons retain the established starter physics and all fif
 
 test('beginners get large calm targets and learn slow tracking before obstacles or animals', () => {
   assert.ok(STAGES.slice(0, 4).every(stage => stage.wind === 0 && stage.radius >= 1.45 && stage.goal <= 16));
-  assert.ok(STAGES.slice(0, 16).every(stage => Math.abs(stage.wind) <= .08 && !stage.obstacles.length));
-  assert.ok(STAGES.slice(0, 48).every(stage => Math.abs(stage.wind) <= .32 && stage.kind === 'target'));
+  assert.ok(STAGES.slice(0, 16).every(stage => !stage.obstacles.length));
+  assert.ok(STAGES.slice(0, 16).filter(stage => stage.lessonKey !== 'wind-intro').every(stage => Math.abs(stage.wind) <= .08));
+  assert.ok(STAGES.slice(0, 48).every(stage => (stage.lessonKey === 'wind-intro' || Math.abs(stage.wind) <= .32) && stage.kind === 'target'));
+  assert.deepEqual(STAGES.filter(stage => stage.lessonKey === 'wind-intro').map(stage => stage.wind), [1, -1.1, -1.2, 1.3]);
   assert.ok(STAGES.every(stage => Math.abs(stage.wind) <= 1.3));
   for (const stage of STAGES.slice(4, 8)) {
     const prepared = prepareStage(stage, 31);
@@ -248,14 +250,14 @@ test('equipment lessons have four optional bands with exactly fifteen upper-grad
   for (const stage of STAGES) {
     const [minimum, maximum, wind] = limits[stage.gearTier];
     assert.ok(stage.goal >= minimum && stage.goal <= maximum);
-    assert.ok(Math.abs(stage.wind) <= wind);
+    assert.ok(Math.abs(stage.wind) <= (stage.lessonKey === 'wind-intro' ? 1.3 : wind));
   }
 });
 
 test('only fourteen measured difficult stages adjust goals while the other 106 retain their original goals', () => {
   const caps = new Map([
     [52,18], [56,22], [72,26], [80,24], [84,23], [88,23], [92,23],
-    [95,23], [96,21], [103,28], [110,30], [111,30], [112,24], [120,34]
+    [95,23], [96,21], [103,28], [110,30], [111,30], [112,24], [120,30]
   ]);
   const originalCurves = {lower:[17,48,18,26], middle:[49,105,26,30], upper:[106,120,32,36]};
   assert.deepEqual(STAGES.slice(0, 16).map(stage => stage.goal),
@@ -310,8 +312,9 @@ test('later optional reference grades keep the capabilities taught by earlier gr
         assert.ok(bow.grip >= previous.bow.grip && bow.elasticity >= previous.bow.elasticity, `${band.gearTier} guidance retains grip and elasticity`);
         assert.ok(bow.steadyDuration >= previous.bow.steadyDuration);
         assert.ok(arrow.shopRank >= previous.arrow.shopRank, 'later guidance never returns to a weaker arrow');
-        assert.ok(arrow.fletching.stability >= previous.arrow.fletching.stability);
-        assert.ok(arrow.fletching.windArea <= previous.arrow.fletching.windArea && arrow.fletching.drag <= previous.arrow.fletching.drag);
+        assert.ok(getArrowMass(arrow) <= getArrowMass(previous.arrow));
+        assert.ok(getArrowConsistency(arrow) >= getArrowConsistency(previous.arrow));
+        assert.ok(getWindResponse(arrow) <= getWindResponse(previous.arrow) && getArrowDragRate(arrow) <= getArrowDragRate(previous.arrow));
       }
       previous = { bow, arrow };
     }

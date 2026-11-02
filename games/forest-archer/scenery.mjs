@@ -878,8 +878,10 @@ const equipmentVariant=tier=>{
 const gunProfile=variant=>gunProfiles[Math.max(0,variant-bowProfiles.length)%gunProfiles.length];
 const burstGrade=(burstCount,grouping)=>equipmentValue(burstCount,1,1,3)>1?(equipmentValue(grouping,35,0,100)>=85?3:equipmentValue(grouping,35,0,100)>=50?2:1):0;
 
-function drawFletching(ctx,x,y,{name='',windArea=1,stability=35}={},accent='#ad895f',variant=0,scale=1) {
-  const area=equipmentValue(windArea,1,.16,1.4),stable=equipmentValue(stability,35,0,100);
+function drawFletching(ctx,x,y,{name='',windArea=.30,stability=35}={},accent='#ad895f',variant=0,scale=1) {
+  // Fletching now supplies only its own share of drag area; keep its visual
+  // size relative to the starter feather rather than the complete arrow.
+  const area=equipmentValue(windArea/.30,1,.16,1.4),stable=equipmentValue(stability,35,0,100);
   const height=(.025+area*.065)*scale;
   const length=(.10+Math.sqrt(area)*.085)*scale;
   const feather=/깃/.test(name)||!name,rounded=/곡면|유선/.test(name),wedge=/삼각|쐐기/.test(name);
