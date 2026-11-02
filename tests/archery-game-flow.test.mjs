@@ -413,8 +413,8 @@ test('release applies the last relative touch delta exactly once and preserves i
   const pending = state.pendingAmmoShot.shot, velocity = pending.velocity;
   assert.ok(Math.abs(after.x - before.x - 16) < 1e-9 && Math.abs(after.y - before.y + 10) < 1e-9,
     'the release includes exactly the final four right and four upward pixels');
-  assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - yaw - .012 * .85) < 1e-12);
-  assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - pitch + .009 * .85) < 1e-12);
+  assert.ok(Math.abs(Math.atan2(velocity.x, velocity.z) - yaw - .012 * .68) < 1e-12);
+  assert.ok(Math.abs(Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) - pitch + .009 * .68) < 1e-12);
   assert.equal(app.api.pointer, null);
   const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
   app.advanceTo(app.now + 500);app.ammo.reply(request);await app.flush();
@@ -1159,24 +1159,24 @@ test('one stabilizer can cover the remaining shots, cannot stack and expires on 
   assert.equal(app.snapshot().stabilizers, 1);assert.equal(app.snapshot().clayCredits, 3);
 });
 
-test('bows, crossbows and guns use 85 percent sway, stabilizers halve it again and steady windows remain exactly still', async () => {
+test('bows, crossbows and guns use 68 percent sway, stabilizers halve it again and steady windows remain exactly still', async () => {
   for (const id of [0, 10, 20]) {
     const app = await appHarness({ version: 1, ownedBows: [0, 10, 20], bow: id === 20 ? 0 : id, eventGun: 20, stabilizers: 1, sound: false });
     if (id === 20) { app.api.enterEvent();await app.flush(); }
     app.setRandom(() => .8);app.frames(3);
     const original = { ...app.api.state.sway };
     assert.ok(Math.hypot(original.x, original.y) > 0);
-    assert.equal(app.api.effectiveSway().x, original.x * .85);assert.equal(app.api.effectiveSway().y, original.y * .85);
-    assert.equal(app.firstPersonFrame.swayX, original.x * .85);assert.equal(app.firstPersonFrame.swayY, original.y * .85);
+    assert.equal(app.api.effectiveSway().x, original.x * .68);assert.equal(app.api.effectiveSway().y, original.y * .68);
+    assert.equal(app.firstPersonFrame.swayX, original.x * .68);assert.equal(app.firstPersonFrame.swayY, original.y * .68);
     app.api.showStabilizers();assert.equal(app.api.useStabilizer(), true);
     assert.equal(app.api.state.sway.x, original.x);assert.equal(app.api.state.sway.y, original.y, 'consumption must not mutate the underlying random-motion process');
-    assert.equal(app.api.effectiveSway().x, original.x * .425);assert.equal(app.api.effectiveSway().y, original.y * .425);
+    assert.equal(app.api.effectiveSway().x, original.x * .34);assert.equal(app.api.effectiveSway().y, original.y * .34);
     const pad = app.getElement('aimTouchpad'), sequence = [.5, 0];app.setRandom(() => sequence.length ? sequence.shift() : .8);
     pad.emit('pointerdown');
     const { state } = app.api, start = state.drawStarted + state.steadyStart * 1000, end = start + state.steadyDuration * 1000;
     app.advanceTo(state.drawStarted + 300);
     assert.equal(app.api.isSteady(), false);
-    assert.equal(app.firstPersonFrame.swayX, state.sway.x * .425);assert.equal(app.firstPersonFrame.swayY, state.sway.y * .425);
+    assert.equal(app.firstPersonFrame.swayX, state.sway.x * .34);assert.equal(app.firstPersonFrame.swayY, state.sway.y * .34);
     app.advanceTo(start + 1);
     assert.equal(app.api.isSteady(), true);assert.ok(Math.hypot(state.sway.x, state.sway.y) > 0);
     assert.equal(app.api.effectiveSway().x, 0);assert.equal(app.api.effectiveSway().y, 0);
@@ -1184,8 +1184,8 @@ test('bows, crossbows and guns use 85 percent sway, stabilizers halve it again a
     assert.equal(app.api.aimAngles().yaw, state.aim.yaw);assert.equal(app.api.aimAngles().pitch, state.aim.pitch);
     app.advanceTo(end + 1);
     assert.equal(app.api.isSteady(), false);
-    const expectedYaw = state.aim.yaw + state.sway.x * .425, expectedPitch = state.aim.pitch + state.sway.y * .425;
-    assert.equal(app.firstPersonFrame.swayX, state.sway.x * .425);assert.equal(app.firstPersonFrame.swayY, state.sway.y * .425);
+    const expectedYaw = state.aim.yaw + state.sway.x * .34, expectedPitch = state.aim.pitch + state.sway.y * .34;
+    assert.equal(app.firstPersonFrame.swayX, state.sway.x * .34);assert.equal(app.firstPersonFrame.swayY, state.sway.y * .34);
     assert.equal(app.api.aimAngles().yaw, expectedYaw);assert.equal(app.api.aimAngles().pitch, expectedPitch);
     pad.emit('pointerup');await app.flush();
     const velocity = state.shot.velocity;
