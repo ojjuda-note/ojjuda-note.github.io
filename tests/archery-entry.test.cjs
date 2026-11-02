@@ -72,7 +72,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.10.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.10.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -81,6 +81,11 @@ assert.ok(world.includes('/world-game-assets.js?v='+revision));
 const archeryRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
 assert.ok(archeryRevision,'the archery bridge has its own cache revision');
 assert.equal(bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1],archeryRevision);
+const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
+assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
+assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the latest draw and coach share the same burst rules');
+assert.equal(game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision);
+assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the coach must use the same rebalanced physics as actual shots');
 
 // A cold direct link must load against the initialized arcade route. Starting
 // before my() changes g.tab/place causes Al() to discard its own pending load.

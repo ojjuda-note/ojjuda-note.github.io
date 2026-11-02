@@ -134,7 +134,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
@@ -223,17 +223,13 @@ async function centeredShot(app) {
   await app.flush();
 }
 
-// Solve one ordinary damped shot at the current release time. This also gives
-// moving-target replay tests an actual centre hit without injecting a result.
-function preciseMainDraw(app, offset = { x: 0, y: 0 }, {missDuringHold = false} = {}) {
-  const { api, engine } = app, { state } = api, pad = app.getElement('aimTouchpad');
-  pad.emit('pointerdown');
-  if (missDuringHold) moveHeldAim(app, .4, .5);
-  holdFor(app, 1300);
-  const probe = engine.launchArrow({bow: api.activeBow(), arrow: api.activeArrow(), charge: 1, velocityBias: state.velocityBias});
-  const drag = probe.dragRate, wind = state.stage.wind * engine.WIND_RESPONSE * probe.windFactor;
+// Independent damped-trajectory interception. Both arrow replay and gun event
+// fixtures keep their intended target as equipment speeds change.
+function targetIntercept(engine, params, stage, worldTime, offset = {x: 0, y: 0}, passId) {
+  const probe = engine.launchArrow(params);
+  const drag = probe.dragRate, wind = stage.wind * engine.WIND_RESPONSE * probe.windFactor;
   const velocityForTime = time => {
-    const target = engine.targetAt(state.stage, state.time + time);
+    const target = engine.targetAt(stage, worldTime + time, passId);
     const a = drag ? -Math.expm1(-drag * time) / drag : time;
     const b = drag ? (time - a) / drag : time * time / 2;
     return {x: (target.x + offset.x * target.rx - engine.PLAYER.x - wind * b) / a,
@@ -246,8 +242,18 @@ function preciseMainDraw(app, offset = { x: 0, y: 0 }, {missDuringHold = false} 
     const mid = (lo + hi) / 2;
     if (Math.hypot(...Object.values(velocityForTime(mid))) > probe.speed) lo = mid;else hi = mid;
   }
-  const v = velocityForTime((lo + hi) / 2), sway = api.effectiveSway();
-  const coords = moveHeldAim(app, Math.atan2(v.x, v.z) - sway.x, Math.atan2(v.y, Math.hypot(v.x, v.z)) - sway.y);
+  const flightTime = (lo + hi) / 2, v = velocityForTime(flightTime);
+  return {...params, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z)), flightTime};
+}
+
+function preciseMainDraw(app, offset = { x: 0, y: 0 }, {missDuringHold = false} = {}) {
+  const { api, engine } = app, { state } = api, pad = app.getElement('aimTouchpad');
+  pad.emit('pointerdown');
+  if (missDuringHold) moveHeldAim(app, .4, .5);
+  holdFor(app, 1300);
+  const aim = targetIntercept(engine, {bow: api.activeBow(), arrow: api.activeArrow(), charge: 1, velocityBias: state.velocityBias}, state.stage, state.time, offset);
+  const sway = api.effectiveSway();
+  const coords = moveHeldAim(app, aim.yaw - sway.x, aim.pitch - sway.y);
   return {pad, coords};
 }
 
@@ -801,9 +807,9 @@ test('moving-target replay follows recorded time through resizing and preserves 
   assert.deepEqual(shotAccounting(app).slice(0, 5), [1, 10, 1, 1, 1]);
 });
 
-for (const fixture of [{id: 12, stage: 4, charge: .225, pitch: .558}, {id: 13, stage: 2, charge: 1, pitch: .066}]) {
+for (const fixture of [{id: 12, bow: 11, stage: 4, charge: 1, pitch: -.21}, {id: 13, bow: 0, stage: 2, charge: 1, pitch: .066}]) {
   test(`a genuine special-arrow ${fixture.id} bullseye replays its resolved path without repeating its ability`, async () => {
-    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false});
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedBows: fixture.bow ? [0, fixture.bow] : [0], bow: fixture.bow, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false});
     const {state} = app.api, pad = app.getElement('aimTouchpad');
     pad.emit('pointerdown');holdFor(app, fixture.charge * 1250);
     const sway = app.api.effectiveSway(), coords = moveHeldAim(app, -sway.x, fixture.pitch - sway.y);
@@ -1058,6 +1064,30 @@ test('coach evaluates up to sixteen times per second and remains absent when dis
   }
 });
 
+test('a rare-crossbow draw keeps its coaching spread seed through release and renews it on the next draw', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 19], bow: 19, coachEnabled: true, sound: false});
+  app.setRandom(() => .25);
+  const {state} = app.api, {pad, coords} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
+  const seed = state.burstSeed;
+  assert.equal(seed, 0x40000000);
+  app.setRandom(() => .875);
+  app.until(() => state.coachReady, 8);assertCoachCue(app, true);
+  const params = app.api.shotParams(app.now);
+  assert.equal(params.burstSeed, seed, 'the current coaching input retains the draw seed');
+  const expected = app.engine.launchVolley(params);
+  pad.emit('pointerup', coords);await app.flush();
+  assert.equal(state.mode, 'flight');assert.equal(state.burstSeed, seed);
+  for (const [index, shot] of state.volley.shots.entries()) {
+    assert.equal(shot.launchDelay, expected[index].launchDelay);
+    for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(shot.velocity[axis] - expected[index].velocity[axis]) < 1e-9,
+      'the released arrows use the same directions that the coach could forecast');
+  }
+  app.until(() => state.mode === 'ready');
+  pad.emit('pointerdown');
+  assert.equal(state.burstSeed, 0xe0000000);assert.notEqual(state.burstSeed, seed);
+  pad.emit('pointercancel');assert.equal(state.used, 1);
+});
+
 test('muted or speech-unavailable coaching still gives the speech bubble without firing', async () => {
   for (const options of [{sound: false, speechAvailable: true}, {sound: true, speechAvailable: false}]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: options.sound}, {speechAvailable: options.speechAvailable});
@@ -1098,7 +1128,7 @@ test('shop stat choices reorder actual cards while purchases still use stable eq
   assert.deepEqual(displayedIds().slice(0, 5), [19, 18, 17, 16, 15], 'only three-arrow bursts have a grouping comparison; single-shot internal values never outrank them');
   assert.ok(displayedIds().slice(5).every(id => app.engine.BOWS[id].burstCount === 1));
   sort('grip');
-  assert.equal(displayedIds()[0], 10);
+  assert.equal(displayedIds()[0], 19);
   assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main, 'grip'), item => item.id));
   assert.equal(app.api.progress.bow, 0, 'browsing a stat order does not equip or spend');
   assert.equal(app.api.progress.coins, 60000);
@@ -1124,28 +1154,28 @@ test('shop stat choices reorder actual cards while purchases still use stable eq
     assert.equal(app.api.progress.coins, afterBow);
   }
   sort('wind');
-  assert.equal(displayedIds()[0], 11);
-  clickBuy(11);
-  const afterArrow = afterBow - app.engine.ARROWS[11].price;
-  assert.equal(app.api.progress.arrow, 11);
+  assert.equal(displayedIds()[0], 3);
+  clickBuy(3);
+  const afterArrow = afterBow - app.engine.ARROWS[3].price;
+  assert.equal(app.api.progress.arrow, 3);
   assert.equal(app.api.progress.coins, afterArrow);
-  clickBuy(11);assert.equal(app.api.progress.coins, afterArrow, 're-equipping a bought arrow never charges again');
+  clickBuy(3);assert.equal(app.api.progress.coins, afterArrow, 're-equipping a bought arrow never charges again');
   app.api.showShop('bow');
   assert.deepEqual(displayedIds(), Array.from(app.engine.sortEquipment(main), item => item.id));
   const reloaded = await appHarness(app.snapshot());
-  assert.equal(reloaded.api.progress.bow, chosenBow);assert.equal(reloaded.api.progress.arrow, 11);
+  assert.equal(reloaded.api.progress.bow, chosenBow);assert.equal(reloaded.api.progress.arrow, 3);
   assert.equal(reloaded.api.progress.coins, afterArrow);
   app.api.closeModal();app.api.enterEvent(1);await app.flush();app.api.showShop('bow');sort('progression');
   assert.deepEqual(displayedIds(), [20, 21, 22, 23, 24], 'event guns follow the requested magazine and reload sequence');
   const gunHtml = app.getElement('modalContent').innerHTML;
   assert.doesNotMatch(gunHtml, /출력/);
   assert.doesNotMatch(gunHtml, /value="elasticity"/);
-  for (const label of ['2발 · 느림', '2발 · 빠름', '4발 · 느림', '4발 · 빠름', '10발 탄창']) assert.ok(gunHtml.includes(label), `${label} is visible on its functional tag`);
-  sort('magazine');assert.deepEqual(displayedIds(), [24, 22, 23, 20, 21]);
-  sort('reload');assert.deepEqual(displayedIds(), [21, 23, 24, 20, 22]);
-  sort('grip');assert.deepEqual(displayedIds(), [24, 22, 23, 20, 21]);
+  for (const label of ['2발 · 느림', '4발 · 보통', '6발 · 보통', '8발 · 빠름', '10발 탄창']) assert.ok(gunHtml.includes(label), `${label} is visible on its functional tag`);
+  sort('magazine');assert.deepEqual(displayedIds(), [24, 23, 22, 21, 20]);
+  sort('reload');assert.deepEqual(displayedIds(), [24, 23, 22, 21, 20]);
+  sort('grip');assert.deepEqual(displayedIds(), [24, 23, 22, 21, 20]);
   assert.equal(app.api.progress.eventGun, 20, 'sorting gun functions never changes the selected gun');
-  assert.equal(app.api.progress.bow, chosenBow);assert.equal(app.api.progress.arrow, 11);
+  assert.equal(app.api.progress.bow, chosenBow);assert.equal(app.api.progress.arrow, 3);
   assert.equal(app.api.progress.coins, afterArrow, 'all new filters and function sorts only change the shop view');
 });
 
@@ -1403,7 +1433,7 @@ test('results survive shop, menu and help visits and all dismissal paths without
   }
 });
 
-test('both equipment shops show independent traits and speeds for the currently equipped combination', async () => {
+test('both equipment shops show progressive traits and speeds for the currently equipped combination', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 0, ownedBows: [0, 1, 2, 11], ownedArrows: [0, 1, 2, 11], bow: 1, arrow: 0 });
   const clean = html => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const cards = html => Array.from(html.matchAll(/<article\b[\s\S]*?<\/article>/g), match => clean(match[0]));
@@ -1428,8 +1458,9 @@ test('both equipment shops show independent traits and speeds for the currently 
         assert.ok(card.includes(speed(item, app.api.activeArrow())), 'bow speed uses the equipped arrow mass');
       } else {
         assert.match(card, new RegExp(`촉\\s*무게\\s*${item.tipMass}\\s*g`));
+        assert.match(card, /총 무게\s*24\s*g/, 'every arrow shows the complete mass used for its launch speed');
         assert.ok(card.includes(item.fletching.name));
-        assert.ok(card.includes(`바람 영향 ${Math.round(app.engine.getWindResponse(item) * 100)}%`), 'wind comparison reflects both the point mass and wing resistance');
+        assert.ok(card.includes(`바람 영향 ${Math.round(app.engine.getWindResponse(item) * 100)}%`), 'wind comparison reflects the feather resistance at the common total mass');
         const nominal = app.engine.getSpeed({ bow: app.api.activeBow(), arrow: item, charge: 1, velocityBias: 0 });
         const high = app.engine.getSpeed({ bow: app.api.activeBow(), arrow: item, charge: 1, velocityBias: 1 });
         const variancePercent = Math.round((high / nominal - 1) * 1000) / 10;
@@ -1440,7 +1471,7 @@ test('both equipment shops show independent traits and speeds for the currently 
   }
   const firstSpeed = app.getElement('loadoutSpeed').textContent;
   app.api.equipItem(1);
-  assert.notEqual(app.getElement('loadoutSpeed').textContent, firstSpeed, 'changing the point mass changes the displayed combination speed');
+  assert.equal(app.getElement('loadoutSpeed').textContent, firstSpeed, 'changing arrow tips preserves the displayed speed because every complete arrow weighs 24g');
   assert.ok(app.getElement('loadoutSpeed').textContent.includes(speed(app.api.activeBow(), app.api.activeArrow())));
   assert.equal(app.getElement('bowStat').textContent, `그립감 ${app.api.activeBow().grip} · 탄성 ${app.api.activeBow().elasticity}`);
   assert.equal(app.getElement('arrowStat').textContent, `촉 ${app.api.activeArrow().tipMass}g · ${app.api.activeArrow().fletching.name}`);
@@ -1664,7 +1695,7 @@ test('the separate clay event keeps guns, bullets and records independent of the
   app.api.showShop('arrow');app.api.equipItem(11);
   assert.equal(app.api.progress.eventGun, top.id);assert.equal(app.api.progress.coins, afterPurchase);
   assert.deepEqual(Array.from(app.api.progress.ownedArrows), [0, 2]);assert.deepEqual(mainProgress(), before);
-  assert.equal(app.getElement('arrowStat').textContent, `탄창 ${top.magazineSize}발 · 장전 ${top.reloadSeconds}초`);
+  assert.equal(app.getElement('arrowStat').textContent, `탄창 ${top.magazineSize}발 · 장전 ${top.reloadSeconds.toFixed(1)}초`);
   app.api.closeModal();await app.flush();
   const state = app.api.state, pad = app.getElement('aimTouchpad');
   state.time = .2;pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
@@ -1681,7 +1712,7 @@ test('the separate clay event keeps guns, bullets and records independent of the
   // engine suite separately checks plate/UFO motion and swept hit detection.
   const hitKinds = new Set();
   for (let attempt = 0; attempt < 15; attempt++) {
-    if (attempt) { app.until(() => state.fireCooldown === 0 && state.reloadRemaining === 0);pad.emit('pointerdown');pad.emit('pointerup');await app.flush(); }
+    if (attempt) { app.until(() => state.fireCooldown === 0 && state.reloadRemaining === 0 && app.engine.eventTargetsAt(state.stage, state.time).length > 0);pad.emit('pointerdown');pad.emit('pointerup');await app.flush(); }
     const clay = app.engine.eventTargetsAt(state.stage, state.time)[0], shot = state.shot;
     assert.ok(clay?.active);hitKinds.add(clay.kind);
     const point = { x: clay.x, y: clay.y, z: clay.z };
@@ -1950,15 +1981,16 @@ test('all event guns hit promptly after authorization without slow motion or dup
     state.stage = engine.prepareStage(engine.createClayEvent(10), 42);state.time = 0;
     let planned;
     for (let fireTime = .2; fireTime <= 4; fireTime += .05) {
-      const target = engine.targetAt(state.stage, fireTime + state.stage.distance / gun.muzzleSpeed, 0);
-      const yaw = Math.atan2(target.x, target.z), pitch = Math.atan2(target.y - engine.PLAYER.y, Math.hypot(target.x, target.z));
-      if (target.active && Math.abs(yaw) < .48 && pitch > -.22 && pitch < .58) {
-        planned = { yaw, pitch, fireTime };break;
+      const aim = targetIntercept(engine, {bow: gun, charge: 1, velocityBias: 0}, state.stage, fireTime, undefined, 0);
+      const target = engine.targetAt(state.stage, fireTime + aim.flightTime, 0);
+      if (target.active && Math.abs(aim.yaw) < .48 && aim.pitch > -.22 && aim.pitch < .58) {
+        planned = {...aim, fireTime};break;
       }
     }
     assert.ok(planned, 'the moving UFO has a reachable interception window for relative touch aiming');
-    pad.emit('pointerdown');const coords = moveHeldAim(app, planned.yaw, planned.pitch);
+    pad.emit('pointerdown');
     holdFor(app, Math.max(0, planned.fireTime - state.time) * 1000);
+    const sway = app.api.effectiveSway(), coords = moveHeldAim(app, planned.yaw - sway.x, planned.pitch - sway.y);
     const releasedAtWorld = state.time;
     pad.emit('pointerup', coords);await app.flush();
     const request = app.ammo.requests.filter(item => item.action === 'spend').at(-1);
@@ -1970,11 +2002,12 @@ test('all event guns hit promptly after authorization without slow motion or dup
     assert.equal(shot.elapsed, 0);assert.equal(shot.position.z, 0);
     assert.equal(shot.speed, engine.MAX_MAIN_PROJECTILE_SPEED * 2);
     assert.equal(state.mode, 'ready');assert.equal(state.used, 1);assert.equal(state.magazine, gun.magazineSize - 1);
-    app.until(() => !shot.active, 12);
+    app.until(() => !shot.active, Math.ceil(planned.flightTime * 60) + 1);
     assert.equal(shot.result.type, 'hit');assert.equal(shot.result.targetCenter.passId, 0);
     assert.equal(shot.result.targetCenter.kind, 'ufo');assert.equal(state.score, 10);
     const shownFlightTime = (app.now - firedAt) / 1000;
-    assert.ok(shownFlightTime <= .2, `${gun.name} was shown flying for ${shownFlightTime}s`);
+    assert.ok(Math.abs(shot.elapsed - planned.flightTime) < 1e-8, 'the real bullet reaches the independently calculated intercept');
+    assert.ok(shownFlightTime <= planned.flightTime + 1 / 60 + 1e-9, `${gun.name} finishes within one frame of its physical arrival`);
     assert.ok(Math.abs(shownFlightTime - shot.elapsed) < 1 / 60 + 1e-9, 'event bullets use real time, without the archery slow-motion multiplier');
     app.ammo.reply(request, app.ammo.snapshot());pad.emit('pointerup');await app.flush();
     assert.equal(state.used, 1);assert.equal(app.ammo.account.remaining, 19);
@@ -1985,8 +2018,10 @@ test('all event guns hit promptly after authorization without slow motion or dup
     pad.emit('pointerdown');const missCoords = moveHeldAim(app, .48, .58);
     pad.emit('pointerup', missCoords);await app.flush();
     const missed = state.shot, missedAt = app.now;
-    app.until(() => !missed.active, 15);
-    assert.equal(missed.result.type, 'miss');assert.ok((app.now - missedAt) / 1000 <= .25);
+    const missFlightTime = -Math.log1p(-missed.dragRate * state.stage.distance / missed.velocity.z) / missed.dragRate;
+    app.until(() => !missed.active, Math.ceil(missFlightTime * 60) + 1);
+    assert.equal(missed.result.type, 'miss');assert.ok(Math.abs(missed.elapsed - missFlightTime) < 1e-8);
+    assert.ok((app.now - missedAt) / 1000 <= missFlightTime + 1 / 60 + 1e-9);
     assert.equal(state.stuck.length, 0, 'a missed bullet does not become a permanent mark floating at the target plane');
     assert.equal(state.used, 2);assert.equal(app.ammo.account.remaining, 18);assert.equal(state.hits, 1);
     assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 2);
@@ -1999,14 +2034,16 @@ test('concurrent event bullets resolve by arrival time and trajectory probes do 
     app.api.enterEvent(1);await app.flush();
     const state = app.api.state, engine = app.engine;
     state.stage = engine.prepareStage(engine.createClayEvent(1), 42);state.time = 1;
-    const slower = engine.launchArrow({ bow: engine.BOWS[20], charge: 1, velocityBias: 0, yaw: .16462808852539185, pitch: .08702375344862975 });
-    const faster = engine.launchArrow({ bow: engine.BOWS[24], charge: 1, velocityBias: 0, yaw: .1647624914719859, pitch: .08695233774951504 });
+    const slowAim = targetIntercept(engine, {bow: engine.BOWS[20], charge: 1, velocityBias: 0}, state.stage, .92, undefined, 0);
+    const fastAim = targetIntercept(engine, {bow: engine.BOWS[24], charge: 1, velocityBias: 0}, state.stage, .9205, undefined, 0);
+    assert.ok(.9205 + fastAim.flightTime < .92 + slowAim.flightTime, 'less drag lets the later shot arrive first');
+    const slower = engine.launchArrow(slowAim), faster = engine.launchArrow(fastAim);
     engine.stepArrow(slower, .08, state.stage, .92);engine.stepArrow(faster, .0795, state.stage, .9205);
     for (const shot of [slower, faster]) { assert.equal(shot.active, true);shot.startedAt = app.now - 1000;shot.handled = false;shot.launched = true; }
     state.eventShots = reverse ? [faster, slower] : [slower, faster];state.shot = faster;state.used = 2;
     app.advanceTo(app.now + 250);
     assert.equal(faster.result?.type, 'hit', 'the later bullet with less drag reaches this plate first');
-    assert.ok(Math.abs(faster.resolvedAt - 1.0848430054397302) < 1e-8);
+    assert.ok(Math.abs(faster.resolvedAt - (.9205 + fastAim.flightTime)) < 1e-8);
     assert.equal(slower.result.type, 'miss', 'the later arrival cannot also hit the already broken plate');
     assert.equal(slower.result.score, 0);
     assert.equal(state.score, 10);assert.equal(state.hits, 1);assert.equal(app.api.progress.coins, 10);
@@ -2016,7 +2053,7 @@ test('concurrent event bullets resolve by arrival time and trajectory probes do 
 });
 
 test('all five event guns consume their magazines, reload automatically and pause their clocks in the shop', async () => {
-  const capacities = [2, 2, 4, 4, 10], observedReloads = [];
+  const capacities = [2, 4, 6, 8, 10], observedReloads = [];
   for (let index = 0; index < capacities.length; index++) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20, 21, 22, 23, 24], eventGun: 20 + index, sound: false });
     const reload = app.getElement('gunReload'), progress = app.getElement('gunReloadProgress'), fill = app.getElement('gunReloadFill');

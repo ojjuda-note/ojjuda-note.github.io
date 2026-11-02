@@ -228,6 +228,8 @@ test('difficulty metadata describes the current lesson without overriding its te
 test('equipment lessons have four optional bands with exactly fifteen upper-grade stages', () => {
   assert.deepEqual(STAGE_GEAR_BANDS.map(band => [band.gearTier, band.first, band.last]),
     [['starter',1,16],['lower',17,48],['middle',49,105],['upper',106,120]]);
+  assert.deepEqual(STAGE_GEAR_BANDS.map(band => band.referenceLoadouts.map(({bow, arrow}) => [bow, arrow])),
+    [[[0,0]], [[6,5],[13,5]], [[8,2],[14,2]], [[3,11],[19,11]]]);
   assert.equal(STAGES.filter(stage => stage.gearTier === 'upper').length, 15);
   for (const band of STAGE_GEAR_BANDS) for (const stage of STAGES.slice(band.first - 1, band.last)) {
     assert.equal(stage.gearTier, band.gearTier);assert.equal(stage.gearLabel, band.gearLabel);
@@ -242,7 +244,7 @@ test('equipment lessons have four optional bands with exactly fifteen upper-grad
     assert.equal(stage.requiredWeapon, undefined, 'guidance must not turn into a weapon lock');
     assert.equal(stage.requiredGearTier, undefined);
   }
-  const limits = {starter:[10,18,.08],lower:[18,26,.32],middle:[26,30,.65],upper:[32,36,1.3]};
+  const limits = {starter:[10,18,.08],lower:[18,26,.32],middle:[18,30,.65],upper:[24,36,1.3]};
   for (const stage of STAGES) {
     const [minimum, maximum, wind] = limits[stage.gearTier];
     assert.ok(stage.goal >= minimum && stage.goal <= maximum);
@@ -250,7 +252,35 @@ test('equipment lessons have four optional bands with exactly fifteen upper-grad
   }
 });
 
+test('only fourteen measured difficult stages adjust goals while the other 106 retain their original goals', () => {
+  const caps = new Map([
+    [52,18], [56,22], [72,26], [80,24], [84,23], [88,23], [92,23],
+    [95,23], [96,21], [103,28], [110,30], [111,30], [112,24], [120,34]
+  ]);
+  const originalCurves = {lower:[17,48,18,26], middle:[49,105,26,30], upper:[106,120,32,36]};
+  assert.deepEqual(STAGES.slice(0, 16).map(stage => stage.goal),
+    [10,12,14,16,12,14,16,18,12,14,16,18,12,14,16,18], 'introductory goals remain unchanged');
+  const changed = [];
+  for (const stage of STAGES.slice(16)) {
+    const [first, last, start, end] = originalCurves[stage.gearTier];
+    const originalGoal = Math.round(start + (end - start) * (stage.id - first) / (last - first));
+    if (stage.goal !== originalGoal) changed.push(stage.id);
+    if (caps.has(stage.id)) {
+      assert.ok(['middle', 'upper'].includes(stage.gearTier));
+      assert.ok(caps.get(stage.id) < originalGoal, 'a calibrated cap addresses a previously excessive goal');
+      assert.equal(stage.goal, caps.get(stage.id), `${stage.id} keeps its measured goal`);
+    } else assert.equal(stage.goal, originalGoal, `${stage.id} retains the established score curve`);
+  }
+  assert.deepEqual(changed, [...caps.keys()], 'the calibration must not spread to unmeasured stages');
+});
+
 test('bow and crossbow grades are ranked within their own families', () => {
+  assert.deepEqual(STAGE_GEAR_BANDS.map(band => [band.gearTier, band.weaponIds.bow, band.weaponIds.crossbow]), [
+    ['starter', [0], []],
+    ['lower', [4, 5, 6], [13, 12, 10]],
+    ['middle', [1, 2, 8], [14, 11, 15, 16]],
+    ['upper', [7, 9, 3], [17, 18, 19]]
+  ], 'stat rebalancing must preserve the released weapon identities in each equipment grade');
   for (const family of ['bow','crossbow']) {
     const weapons = BOWS.filter(weapon => weapon.weaponType === family).sort((a,b) => a.familyRank - b.familyRank);
     assert.deepEqual(weapons.map(weapon => weapon.familyRank), [1,2,3,4,5,6,7,8,9,10]);
@@ -266,4 +296,24 @@ test('bow and crossbow grades are ranked within their own families', () => {
   assert.ok(BOWS.filter(weapon => weapon.weaponType === 'gun').every(weapon => !weapon.gearTier && !weapon.gearLabel));
   assert.equal(BOWS[4].price, 500, 'the first lower bow keeps its existing 500-coin price');
   assert.equal(BOWS[3].price, 8100);assert.equal(BOWS[19].price, 26600);
+});
+
+test('later optional reference grades keep the capabilities taught by earlier grades', () => {
+  for (const family of ['bow', 'crossbow']) {
+    let previous = null;
+    for (const band of STAGE_GEAR_BANDS) {
+      const reference = band.referenceLoadouts.find(loadout => loadout.family === family);
+      if (!reference) continue;
+      const bow = BOWS[reference.bow], arrow = ARROWS[reference.arrow];
+      if (previous) {
+        assert.ok(bow.familyRank > previous.bow.familyRank, `${family} guidance advances within its own family`);
+        assert.ok(bow.grip >= previous.bow.grip && bow.elasticity >= previous.bow.elasticity, `${band.gearTier} guidance retains grip and elasticity`);
+        assert.ok(bow.steadyDuration >= previous.bow.steadyDuration);
+        assert.ok(arrow.shopRank >= previous.arrow.shopRank, 'later guidance never returns to a weaker arrow');
+        assert.ok(arrow.fletching.stability >= previous.arrow.fletching.stability);
+        assert.ok(arrow.fletching.windArea <= previous.arrow.fletching.windArea && arrow.fletching.drag <= previous.arrow.fletching.drag);
+      }
+      previous = { bow, arrow };
+    }
+  }
 });
