@@ -19,9 +19,9 @@ async function open(query = '', options = {}) {
   const context = {
     location, URL, URLSearchParams, D: state,
     ui: /type=recovery/.test(location.hash) || location.searchParams.get('reset') === '1',
-    ga: false, Tr: false, em: null, $c: null,
+    ga: false, Tr: false, em: null, $c: null, ua: null, fi: null,
     worldParkNotes: { requested: location.searchParams.get('place') === 'park' },
-    xd() {}, yc() {}, clearWorldAdminView() {},
+    xd() {}, yc() {}, $d() {}, clearTimeout() {}, clearWorldAdminView() {},
     nr(mode) { calls.push('auth:' + mode); },
     enterWorldGuest(start) { state.online = false; state.parkGuest = true; state.user = null; calls.push('guest'); start(); },
     async Un(member) { state.user = member; state.online = true; state.parkGuest = false; context.Tr = true; calls.push('member'); },

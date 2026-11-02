@@ -288,7 +288,19 @@ function worldRewardCurrent(request){return request.owner===worldRewardOwner();}
 function validWorldRewardBalance(result){return Number.isSafeInteger(result?.coins)&&result.coins>=0;}
 // Failed reads never supersede a valid reward; only an adopted newer balance does.
 // RPC receipts still belong to their caller; only the current wallet may adopt a balance.
-function Ia(result,request){if(request.owner&&worldRewardCurrent(request)&&request.version>worldRewardBalanceVersion&&validWorldRewardBalance(result)){worldRewardBalanceVersion=request.version;$.coins=result.coins;qf();}return result;}var Yu=t=>!!t&&(t.code==="42703"||t.code==="42P01"||t.code==="PGRST204"||t.code==="PGRST205"||/column .* does not exist/i.test(t.message||""));async function s0(t){for(let e=0;e<3;e++){let o=await S.from("user_private").select("owned").eq("user_id",t).maybeSingle();if(!o.error)return D.walletReady=!0,D.walletLegacy=!1,!0;if(Yu(o.error))return D.walletReady=!1,D.walletLegacy=!0,!1;await new Promise(r=>setTimeout(r,800*(e+1)))}return D.walletReady=!0,D.walletLegacy=!1,!0}var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]]},adminAreaForTab=t=>t.startsWith("trash-")?"trash":["overview","visitors","users","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":t==="settings"?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
+function Ia(result,request){if(request.owner&&worldRewardCurrent(request)&&request.version>worldRewardBalanceVersion&&validWorldRewardBalance(result)){worldRewardBalanceVersion=request.version;$.coins=result.coins;qf();}return result;}var Yu=t=>!!t&&(t.code==="42703"||t.code==="42P01"||t.code==="PGRST204"||t.code==="PGRST205"||/column .* does not exist/i.test(t.message||""));async function s0(owner,current=()=>D.online&&D.user?.id===owner){
+ for(let attempt=0;attempt<3;attempt++){
+  if(!current())return false;
+  const result=await S.from("user_private").select("owned").eq("user_id",owner).maybeSingle();
+  if(!current())return false;
+  if(!result.error){D.walletReady=true;D.walletLegacy=false;return true;}
+  if(Yu(result.error)){D.walletReady=false;D.walletLegacy=true;return false;}
+  await new Promise(resolve=>setTimeout(resolve,800*(attempt+1)));
+ }
+ if(!current())return false;
+ D.walletReady=true;D.walletLegacy=false;return true;
+}
+var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]]},adminAreaForTab=t=>t.startsWith("trash-")?"trash":["overview","visitors","users","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":t==="settings"?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
 // Remember only navigation, never authorization or administrator data.
 var adminRetiredTabs={archive:"trash-cards",withdrawn:"trash-accounts","note-archive":"trash-cards",trash:"trash-all",events:"cards","note-events":"cards",chats:"messages",posts:"cards","house-content":"cards",review:"cards",quiz:"overview"};
 var worldAdminViewKey="ojjuda.world.admin-view",worldAdminViewReady=false;
@@ -409,7 +421,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  if(!adminCanLeave())return;js();L.risk=null;L.log=void 0;bt()
 },"adm-members"(t){L.area="account";L.tab="users";L.accountFilter=t.filter||"all";L.accountState=null;L.accountReset=true;bt()},"adm-report"(t,e){Wt(e,()=>U.setReport(+t.id,t.st),t.st==="actioned"?"조치함으로 옮겼어요":"확인함으로 옮겼어요")},"adm-del"(t){Tt("신고된 글을 지울까요? 되돌릴 수 없어요.","지우기",()=>Wt(null,async()=>{let e=await U.deleteContent(t.kind,t.tid,t.uid||null);M(e?`${e}개를 지웠어요`:"지울 글이 없어요 (이미 지워졌을 수 있어요)")}))},"adm-ban"(t){let e=+t.days;Tt(e?`${t.name||"이 사람"}님을 ${e}일 동안 정지할까요? 쪽지 보내기와 친구 신청이 제한돼요. 카드 작성 제한은 카드 이용 제한에서 관리해요.`:`${t.name||"이 사람"}님의 정지를 풀까요?`,e?"정지":"해제",()=>Wt(null,()=>U.ban(t.uid,e),e?`${e}일 정지했어요`:"정지를 풀었어요"))},"adm-fb"(t,e){Wt(e,()=>U.setFeedback(+t.id,t.st),t.st==="done"?"확인함으로 옮겼어요":"다시 열었어요")},"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.48.5-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.48.6-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
  const owner=D.online&&D.user?.id;
  if(!owner)return false;
  try{
@@ -1675,7 +1687,112 @@ function U1(t,e){let o=t.priv&&t.priv.data||{},r=new Set(t.likes||[]),a=Object.a
  const keys=["auth","next","reset","code","token","token_hash","type","access_token","refresh_token","error","error_code","error_description","admin","notice"];
  return ui||keys.some(key=>url.searchParams.has(key)||hash.has(key));
 }
-async function om(t,e){em=t;$c=e;const browse=!worldAccountEntry();if(browse&&worldParkNotes?.requested&&new URL(location.href).searchParams.get("guest")==="1"&&!ui){enterWorldGuest(t);return}if(!S){browse?enterWorldGuest(t):nr(ui?"forgot":"login");return}D.online=!0,xd(!1),yc(),S.auth.onAuthStateChange((a,i)=>{setTimeout(()=>{if(a==="PASSWORD_RECOVERY"){ui=!0,i&&i.user&&(D.user=i.user),Tr||nr("reset");return}if(a==="TOKEN_REFRESHED"&&Tr){worldResumePresence();return}if(a==="SIGNED_OUT"){clearWorldAdminView();Tr&&!D.leaving&&location.reload();return}ui||i&&i.user&&!Tr&&!ga&&(!D.user||D.user.id!==i.user.id||!Tr)&&Un(i.user)},0)});let o,r;try{({data:o,error:r}=await S.auth.getSession())}catch(error){r=error}if(r){if(ga||Tr||D.user)return;browse&&!ui?enterWorldGuest(t):nr(ui?"forgot":"login");return}o&&o.session?ui?(D.user=o.session.user,nr("reset")):await Un(o.session.user):!ga&&!Tr&&(browse&&!ui?(enterWorldGuest(t)):nr(ui?"forgot":"login"))}async function Un(t){if(!(ga||Tr)){ga=!0,D.user=t,D.online=!0,D.parkGuest=!1,yc();try{let e=await W1(t.id);if(!e.profile){ga=!1;let r=!!zi(),a=t.user_metadata&&t.user_metadata.nickname;if(J1(t,r),a&&!r){let i=document.getElementById("onboard-form");i&&am(i)}return}let o=Ao(!0);e.priv||await Z1(t.id,o),Fs(U1(e,o)),rm(t.id,e.priv)}catch(e){console.error(e),tm(e)}finally{ga=!1}}}async function rm(t,priv){if(priv&&Object.prototype.hasOwnProperty.call(priv,"owned")){D.walletReady=!0;D.walletLegacy=!1}else try{await s0(t)}catch{D.walletReady=!1}X1(t,$,{onNickTaken(e){$.me.nick=e,M("이미 쓰고 있는 닉네임이에요. 다른 닉네임을 골라주세요"),$c&&$c()}}),$d(hc),Tr=!0,em(),refreshWorldMatgoAccess()}async function Vb(t){let o=t.querySelector("#a-email").value.trim(),r=t.querySelector("#a-pw").value;if(!/^\S+@\S+\.\S+$/.test(o))return ge("이메일 주소를 확인해 주세요.");if(r.length<6)return ge("비밀번호는 6자 이상이에요.");document.getElementById("a-submit").disabled=!0;let{error:i}=await S.auth.signInWithPassword({email:o,password:r});if(i)return ge(zr(i))}async function am(t){let e=t.querySelector("#o-nick").value.trim();if(!e)return ge("닉네임을 적어주세요.");let o=t.querySelector("#o-import"),r=o&&o.checked?zi():null,a=r?Object.assign(Ao(!0),r,{guestbook:[],intros:[]}):Ao(!0);a.me=Object.assign({},a.me,{nick:e}),document.getElementById("a-submit").disabled=!0;let i=await Y1(D.user.id,a);if(i)return ge(i.code==="23505"?"이미 쓰고 있는 닉네임이에요. 다른 닉네임을 골라주세요.":zr(i));Fs(a),rm(D.user.id),M(e+"님, 오쭈다 아지트에 온 걸 환영해요!")}function Wb(){Tt("로그아웃할까요?","로그아웃",async()=>{try{await Wn()}catch{}await S.auth.signOut(),location.reload()})}var im={"auth-mode"(t){nr(t.v)},"auth-retry"(){D.user&&Un(D.user)},"logout-now"(){S.auth.signOut().then(()=>location.reload())},logout(){Wb()}};async function Ub(t){let e=t.querySelector("#f-email").value.trim();if(!/^\S+@\S+\.\S+$/.test(e))return ge("이메일 주소를 확인해 주세요.");document.getElementById("a-submit").disabled=!0;let o=(import.meta.env||{}).VITE_SITE_URL||(window.OJJUDA_CONFIG||{}).siteUrl,r=o?o.replace(/\/$/,"")+"/?reset=1":location.origin+location.pathname+"?reset=1",{error:a}=await S.auth.resetPasswordForEmail(e,{redirectTo:r});if(a&&/rate limit|too many/i.test(a.message||""))return ge(zr(a));xc(e),nr("sent-reset")}async function Yb(t){let e=t.querySelector("#r-pw1").value,o=t.querySelector("#r-pw2").value;if(e.length<6)return ge("비밀번호는 6자 이상이에요.");if(e!==o)return ge("두 비밀번호가 달라요. 다시 확인해 주세요.");document.getElementById("a-submit").disabled=!0;let{data:r,error:a}=await S.auth.updateUser({password:e});if(a)return ge(/session|expired|invalid|jwt/i.test(a.message||"")?"링크가 만료됐어요. 비밀번호 찾기를 다시 해주세요.":zr(a));ui=!1,history.replaceState(null,"",location.pathname),M("비밀번호를 바꿨어요"),Un(r&&r.user||D.user)}document.addEventListener("submit",t=>{let e=t.target;e.id==="forgot-form"&&(t.preventDefault(),Ub(e)),e.id==="reset-form"&&(t.preventDefault(),Yb(e)),e.id==="auth-form"&&(t.preventDefault(),Vb(e)),e.id==="onboard-form"&&(t.preventDefault(),am(e))});function Yn(t){return t.comments.length?t.comments.map(e=>`<div><b>${w(e.from)}</b> ${w(e.text)} <span class="note">${wo(e.at)}</span></div>`).join(""):'<div class="note">첫 댓글을 남겨보세요</div>'}
+var worldAuthEpoch=0,worldAuthEvent=0,worldAuthBinding=0,worldAuthSubscription=null,worldAuthRecoveryOwner=null;
+function worldAuthCurrent(owner,epoch){return epoch===worldAuthEpoch&&D.online&&D.user?.id===owner;}
+function invalidateWorldAuth(user=null){
+ worldAuthEpoch++;ga=false;D.user=user;D.online=false;D.walletReady=false;D.walletLegacy=false;D.isAdmin=false;
+ // Do not save the previous account's model while a new identity is loading.
+ ua=null;clearTimeout(fi);$d(null);
+}
+async function om(t,e){
+ em=t;$c=e;if(Tr)return;
+ const browse=!worldAccountEntry(),binding=++worldAuthBinding;
+ worldAuthSubscription?.unsubscribe();worldAuthSubscription=null;
+ worldAuthEvent++;invalidateWorldAuth();
+ if(browse&&worldParkNotes?.requested&&new URL(location.href).searchParams.get("guest")==="1"&&!ui){enterWorldGuest(t);return;}
+ if(!S){browse?enterWorldGuest(t):nr(ui?"forgot":"login");return;}
+ D.online=true;xd(false);yc();
+ const sessionEvent=worldAuthEvent,client=S;
+ worldAuthSubscription=client.auth.onAuthStateChange((event,session)=>{
+  if(binding!==worldAuthBinding||client!==S)return;
+  const sequence=++worldAuthEvent,user=session?.user||null,previousId=D.user?.id||null;
+  const changed=previousId!==(user?.id||null);
+  // Invalidate synchronously: a resolved profile promise may run before this
+  // callback's deferred UI work. Same-account refreshes keep a valid load alive.
+  if(changed||event==="SIGNED_OUT"||event==="PASSWORD_RECOVERY")invalidateWorldAuth(user);
+  if(event==="PASSWORD_RECOVERY"){ui=true;worldAuthRecoveryOwner=user?.id||null;}
+  else if(ui&&user){
+   if(worldAuthRecoveryOwner&&worldAuthRecoveryOwner!==user.id){ui=false;worldAuthRecoveryOwner=null;}
+   else worldAuthRecoveryOwner=user.id;
+  }
+  const epoch=worldAuthEpoch;
+  setTimeout(()=>{
+   if(sequence!==worldAuthEvent||binding!==worldAuthBinding)return;
+   if(!user){
+    if(event!=="SIGNED_OUT"&&event!=="INITIAL_SESSION")return;
+    clearWorldAdminView();
+    if(Tr){if(!D.leaving)location.reload();return;}
+    if(D.parkGuest&&bm)return;
+    browse&&!ui?enterWorldGuest(t):nr(ui?"forgot":"login");return;
+   }
+   if(ui){
+    if(Tr)location.assign("/?reset=1&next=world");else nr("reset");
+    return;
+   }
+   if(Tr){
+    if(!D.online){clearWorldAdminView();if(!D.leaving)location.reload();}
+    else if(event==="TOKEN_REFRESHED")worldResumePresence();
+    return;
+   }
+   void Un(user,epoch);
+  },0);
+ })?.data?.subscription||null;
+ let data,error;
+ try{({data,error}=await client.auth.getSession());}catch(cause){error=cause;}
+ if(binding!==worldAuthBinding||sessionEvent!==worldAuthEvent)return;
+ if(error){
+  if(ga||Tr||D.user)return;
+  browse&&!ui?enterWorldGuest(t):nr(ui?"forgot":"login");return;
+ }
+ if(data?.session?.user){
+  if(ui){D.user=data.session.user;worldAuthRecoveryOwner=D.user.id;nr("reset");}
+  else await Un(data.session.user,worldAuthEpoch);
+ }else if(!ga&&!Tr)browse&&!ui?enterWorldGuest(t):nr(ui?"forgot":"login");
+}
+async function Un(user,epoch=worldAuthEpoch){
+ if(!user?.id||ga||Tr||epoch!==worldAuthEpoch)return;
+ // The guest shell has already consumed my()'s one-time setup. Reload so the
+ // member's presence, subscriptions and polling are installed with its session.
+ if(D.parkGuest&&bm){D.online=false;location.reload();return;}
+ const owner=user.id,current=()=>worldAuthCurrent(owner,epoch);
+ ga=true;D.user=user;D.online=true;D.parkGuest=false;yc();
+ try{
+  const record=await W1(owner);if(!current())return;
+  if(!record.profile){
+   ga=false;const imported=!!zi(),nickname=user.user_metadata?.nickname;
+   J1(user,imported);
+   if(nickname&&!imported){const form=document.getElementById("onboard-form");if(form)await am(form);}
+   return;
+  }
+  const defaults=Ao(true);
+  if(!record.priv){await Z1(owner,defaults);if(!current())return;}
+  Fs(U1(record,defaults));await rm(owner,record.priv,epoch);
+ }catch(error){if(current()){console.error(error);tm(error);}}
+ finally{if(current())ga=false;}
+}
+async function rm(owner,priv,epoch=worldAuthEpoch){
+ const current=()=>worldAuthCurrent(owner,epoch);if(!current())return false;
+ if(priv&&Object.prototype.hasOwnProperty.call(priv,"owned")){D.walletReady=true;D.walletLegacy=false;}
+ else try{await s0(owner,current);}catch{if(current())D.walletReady=false;}
+ if(!current())return false;
+ X1(owner,$,{onNickTaken(nickname){if(!current())return;$.me.nick=nickname;M("이미 쓰고 있는 닉네임이에요. 다른 닉네임을 골라주세요");$c&&$c();}});
+ $d(hc);Tr=true;em();refreshWorldMatgoAccess();return true;
+}
+async function Vb(t){let o=t.querySelector("#a-email").value.trim(),r=t.querySelector("#a-pw").value;if(!/^\S+@\S+\.\S+$/.test(o))return ge("이메일 주소를 확인해 주세요.");if(r.length<6)return ge("비밀번호는 6자 이상이에요.");document.getElementById("a-submit").disabled=!0;let{error:i}=await S.auth.signInWithPassword({email:o,password:r});if(i)return ge(zr(i))}async function am(form){
+ const owner=D.user?.id,epoch=worldAuthEpoch,current=()=>worldAuthCurrent(owner,epoch);
+ if(!owner||!current()||ga)return;
+ const nickname=form.querySelector("#o-nick").value.trim();if(!nickname)return ge("닉네임을 적어주세요.");
+ const choice=form.querySelector("#o-import"),imported=choice?.checked?zi():null;
+ const model=imported?Object.assign(Ao(true),imported,{guestbook:[],intros:[]}):Ao(true);
+ model.me=Object.assign({},model.me,{nick:nickname});document.getElementById("a-submit").disabled=true;ga=true;
+ try{
+  const error=await Y1(owner,model);if(!current())return;
+  if(error)return ge(error.code==="23505"?"이미 쓰고 있는 닉네임이에요. 다른 닉네임을 골라주세요.":zr(error));
+  Fs(model);if(await rm(owner,undefined,epoch))M(nickname+"님, 오쭈다 아지트에 온 걸 환영해요!");
+ }catch(error){if(current())ge(zr(error));}
+ finally{if(current())ga=false;}
+}
+function Wb(){Tt("로그아웃할까요?","로그아웃",async()=>{try{await Wn()}catch{}await S.auth.signOut(),location.reload()})}var im={"auth-mode"(t){nr(t.v)},"auth-retry"(){D.user&&Un(D.user)},"logout-now"(){S.auth.signOut().then(()=>location.reload())},logout(){Wb()}};async function Ub(t){let e=t.querySelector("#f-email").value.trim();if(!/^\S+@\S+\.\S+$/.test(e))return ge("이메일 주소를 확인해 주세요.");document.getElementById("a-submit").disabled=!0;let o=(import.meta.env||{}).VITE_SITE_URL||(window.OJJUDA_CONFIG||{}).siteUrl,r=o?o.replace(/\/$/,"")+"/?reset=1":location.origin+location.pathname+"?reset=1",{error:a}=await S.auth.resetPasswordForEmail(e,{redirectTo:r});if(a&&/rate limit|too many/i.test(a.message||""))return ge(zr(a));xc(e),nr("sent-reset")}async function Yb(t){let e=t.querySelector("#r-pw1").value,o=t.querySelector("#r-pw2").value;if(e.length<6)return ge("비밀번호는 6자 이상이에요.");if(e!==o)return ge("두 비밀번호가 달라요. 다시 확인해 주세요.");document.getElementById("a-submit").disabled=!0;let{data:r,error:a}=await S.auth.updateUser({password:e});if(a)return ge(/session|expired|invalid|jwt/i.test(a.message||"")?"링크가 만료됐어요. 비밀번호 찾기를 다시 해주세요.":zr(a));ui=!1,history.replaceState(null,"",location.pathname),M("비밀번호를 바꿨어요"),Un(r&&r.user||D.user)}document.addEventListener("submit",t=>{let e=t.target;e.id==="forgot-form"&&(t.preventDefault(),Ub(e)),e.id==="reset-form"&&(t.preventDefault(),Yb(e)),e.id==="auth-form"&&(t.preventDefault(),Vb(e)),e.id==="onboard-form"&&(t.preventDefault(),am(e))});function Yn(t){return t.comments.length?t.comments.map(e=>`<div><b>${w(e.from)}</b> ${w(e.text)} <span class="note">${wo(e.at)}</span></div>`).join(""):'<div class="note">첫 댓글을 남겨보세요</div>'}
 function mediaCommentViewer(){
  const modal=z("#modal-root .modal"),comments=modal?.querySelector("#m-cms"),owner=D.user?.id||null;
  return {modal,comments,current:()=>!!modal&&!!comments&&modal.isConnected&&z("#modal-root .modal")===modal&&modal.querySelector("#m-cms")===comments&&(D.user?.id||null)===owner};

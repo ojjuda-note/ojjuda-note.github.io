@@ -23,7 +23,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
     });
     await context.addInitScript(() => {
       const user = { id: '00000000-0000-4000-8000-000000000001', email: 'fixture@example.invalid', user_metadata: { nickname: '테스터' } };
-      const fixture = window.portalFixture = { user: new URL(location.href).searchParams.get('signed') === '1' ? user : null, signups: [], logins: [] };
+      const fixture = window.portalFixture = { user: new URL(location.href).searchParams.get('signed') === '1' ? user : null, signups: [], logins: [], passwordUpdates: [] };
       const client = {
         auth: {
           onAuthStateChange() {},
@@ -31,6 +31,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
           async getUser() { return { data: { user: fixture.user } }; },
           async signInWithPassword(args) { fixture.logins.push(args); fixture.user = user; return { data: { session: { user } } }; },
           async signUp(args) { fixture.signups.push(args); return { data: { session: null } }; },
+          async updateUser(args) { fixture.passwordUpdates.push({ owner: fixture.user?.id, ...args }); return { data: { user: fixture.user } }; },
           async signOut() { fixture.user = null; return { error: null }; }
         },
         from() { return { select() { return this; }, eq() { return this; }, async maybeSingle() { return { data: null }; } }; },
@@ -86,6 +87,14 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
     await page.waitForURL(origin + '/world.html');
     await page.goto(origin + '/?next=note&card=' + cardId + '&signed=1');
     await page.waitForURL(url => url.pathname === '/world.html' && url.searchParams.get('place') === 'park' && url.searchParams.get('card') === cardId);
+    await page.goto(origin + '/?reset=1&next=world&signed=1');
+    await page.getByRole('heading', { name: '새 비밀번호 설정', exact: true }).waitFor();
+    assert.equal(new URL(page.url()).pathname, '/', 'a running World recovery handoff stays on the reset form');
+    await page.locator('#password').fill('replacement-password');
+    await page.locator('#password-confirm').fill('replacement-password');
+    await page.locator('#auth-submit').click();
+    await page.getByRole('heading', { name: '비밀번호가 바뀌었어요', exact: true }).waitFor();
+    assert.deepEqual(await page.evaluate(() => portalFixture.passwordUpdates), [{ owner: '00000000-0000-4000-8000-000000000001', password: 'replacement-password' }], 'the existing recovery session handles the reset');
     assert.deepEqual(errors, [], 'no controller or directory runtime failures');
     console.log('PASS: unified World entrance, header signup return, existing sessions and old Park/card links; three feature links and current guides and four responsive widths. No live accounts or messages.');
     await context.close();
