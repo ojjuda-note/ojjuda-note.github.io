@@ -59,16 +59,26 @@ async function until(test, message, timeout = 2600) {
     const buttonId = button => button.dataset.act === 'matgo-open' ? 'matgo' : button.dataset.v;
     const headings = host => [...host.querySelectorAll('h2')].map(heading => heading.textContent.trim());
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
+    const testIds = Object.entries(w._r).filter(([, game]) => game.test).map(([id]) => id);
+    const assertTestGamesLast = host => {
+      const testMenu = host.querySelector('[data-arcade-games=test]');
+      assert.ok(testMenu, 'test games remain available');
+      assert.equal(host.querySelector('.arcade-card').lastElementChild, testMenu, 'test games stay last across access changes');
+      assert.deepEqual([...testMenu.querySelectorAll('.gbtn')].map(buttonId), testIds, 'all test games retain their display order');
+      for (const id of testIds) assert.equal(host.querySelectorAll(`[data-arcade-games] [data-v="${id}"]`).length, 1, id + ' appears exactly once');
+    };
     const noAdultMenu = (host = panel) => {
       assert.equal(host.querySelector('[data-arcade-adult]'), null, 'access loss removes the complete adult section');
-      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이'], 'no orphan adult heading remains');
-      assert.deepEqual([...host.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi']);
+      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이', '테스트 게임'], 'no orphan adult heading remains');
+      assert.deepEqual([...host.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'test']);
       assert.equal([...host.querySelectorAll('.gbtn')].filter(button => adultIds.includes(buttonId(button))).length, 0, 'restricted games are absent from every category');
+      assertTestGamesLast(host);
     };
     const completeAdultMenu = () => {
       assert.equal(panel.querySelectorAll('[data-arcade-adult]').length, 1);
-      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이']);
-      assert.deepEqual([...panel.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'adult'], 'the adult section follows the multiplayer section');
+      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이', '테스트 게임']);
+      assert.deepEqual([...panel.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'adult', 'test'], 'restored adult games stay between multiplayer and test games');
+      assertTestGamesLast(panel);
       const section = adultSection();
       assert.equal(section.getAttribute('aria-label'), '어른들 플레이');
       assert.notEqual(w.getComputedStyle(section).display, 'none');
