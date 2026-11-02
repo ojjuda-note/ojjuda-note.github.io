@@ -96,6 +96,58 @@ test('server-owned archery ammunition, timed coach and wallet transactions', asy
       assert.deepEqual(ledger.result, legacyPurchase);
     });
 
+    await t.test('120-stage migration preserves existing runs, wallet, coach expiry, receipts and function privileges', async () => {
+      const user = await member(40);
+      const purchaseId = randomUUID();
+      const coachId = randomUUID();
+      const purchase = await buy(purchaseId);
+      const coach = await coachBuy(coachId);
+      await matureRound(50);
+      const oldStartId = randomUUID();
+      const oldRun = await start(50, oldStartId);
+      assert.equal((await start(51)).reason, 'invalid', 'the applied 50-stage release rejects the next stage');
+      const beforeAccount = await account();
+      const beforeWallet = (await admin('select coins from public.user_private where user_id=$1', [user])).rows[0];
+      const beforeReceipts = (await admin('select request_id,action,payload,result,created_at from ojjuda_archery_internal.receipts where user_id=$1 order by request_id', [user])).rows;
+      const beforeLedger = (await admin('select request_id,kind,coins,result from ojjuda_note_internal.spend_requests where user_id=$1 order by request_id', [user])).rows;
+      const beforeRuns = (await admin('select * from ojjuda_archery_internal.runs where user_id=$1 order by run_id', [user])).rows;
+      const functionMetadata = `select prosrc,prosecdef,proconfig,proowner,proacl::text
+        from pg_proc where oid='ojjuda_archery_internal.operate(text,uuid,uuid,integer)'::regprocedure`;
+      const beforeFunction = (await admin(functionMetadata)).rows[0];
+      const rangeFile = fs.readdirSync(folder).find(name => name.endsWith('_archery_120_stage_range.sql'));
+      assert(rangeFile, 'the CLI-generated 120-stage migration exists');
+      await db.exec('reset role');
+      await db.exec(fs.readFileSync(path.join(folder, rangeFile), 'utf8'));
+      await auth(user);
+
+      assert.deepEqual(await account(), beforeAccount);
+      assert.deepEqual((await admin('select coins from public.user_private where user_id=$1', [user])).rows[0], beforeWallet);
+      assert.deepEqual((await admin('select request_id,action,payload,result,created_at from ojjuda_archery_internal.receipts where user_id=$1 order by request_id', [user])).rows, beforeReceipts);
+      assert.deepEqual((await admin('select request_id,kind,coins,result from ojjuda_note_internal.spend_requests where user_id=$1 order by request_id', [user])).rows, beforeLedger);
+      assert.deepEqual((await admin('select * from ojjuda_archery_internal.runs where user_id=$1 order by run_id', [user])).rows, beforeRuns);
+      const afterFunction = (await admin(functionMetadata)).rows[0];
+      assert.deepEqual(afterFunction, {
+        ...beforeFunction,
+        prosrc: beforeFunction.prosrc.replace('p_stage not between 1 and 50', 'p_stage not between 1 and 120')
+      }, 'range expansion retains every economy branch, security setting, owner and grant');
+      assert.deepEqual((await receipt(purchaseId, 'buy')).receipt, purchase);
+      assert.deepEqual((await receipt(coachId, 'coach-buy')).receipt, coach);
+      const replayedCoach = await coachBuy(coachId);
+      assert.equal(replayedCoach.replayed, true);
+      assert.equal(replayedCoach.coach_active, true);
+      assert.equal(replayedCoach.coach_expires_at, coach.coach_expires_at);
+      assert.equal(replayedCoach.coins, beforeWallet.coins);
+      assert.equal((await start(50, oldStartId)).run_id, oldRun.run_id);
+      await age(oldRun.run_id);
+      const completed = await complete(oldRun.run_id, 50);
+      assert.equal(completed.ok, true);
+      assert.equal(completed.main_rounds, beforeAccount.main_rounds + 1);
+      await auth(legacyUser);
+      assert.deepEqual((await receipt(legacyRequest, 'buy')).receipt, legacyPurchase);
+      const legacyReplay = await buy(legacyRequest);
+      assert.deepEqual([legacyReplay.price, legacyReplay.ammo_added, legacyReplay.coins, legacyReplay.remaining], [1, 20, 29, 20]);
+    });
+
     await t.test('private tables and helpers stay inaccessible; public RPCs require an authenticated member', async () => {
       await db.exec('set role anon');
       await assert.rejects(status, /permission denied/);
@@ -174,15 +226,49 @@ test('server-owned archery ammunition, timed coach and wallet transactions', asy
       assert.equal(freshRequest.completed_now, false);
       assert.equal((await complete(second.run_id, 4)).reason, 'run_conflict');
       assert.equal((await start(0)).reason, 'invalid');
-      assert.equal((await start(51)).reason, 'invalid');
+      assert.equal((await start(121)).reason, 'invalid');
       const active = (await admin('select count(*)::int n from ojjuda_archery_internal.runs where user_id=$1 and abandoned_at is null and completed_at is null', [currentUser])).rows[0].n;
       assert.equal(active, 0);
     });
 
-    await t.test('first ten five-round milestones award exactly 20 each; replayed stages count but bonuses stop after 50', async () => {
+    await t.test('new stages 51 through 120 start and complete; 0 and 121 are rejected without altering an active run', async () => {
+      const user = await member();
+      for (const stage of [51, 105, 119]) {
+        const completed = await matureRound(stage);
+        assert.equal(completed.ok, true);
+        assert.equal(completed.stage, stage);
+      }
+      const startId = randomUUID();
+      const run = await start(120, startId);
+      assert.equal(run.ok, true);
+      assert.equal(run.stage, 120);
+      assert.equal((await start(120, startId)).run_id, run.run_id);
+      const before = await account();
+      for (const stage of [0, 121]) {
+        const request = randomUUID();
+        assert.equal((await start(stage, request)).reason, 'invalid');
+        assert.equal((await receipt(request, 'round-start')).found, false);
+        assert.equal((await complete(run.run_id, stage)).reason, 'invalid');
+      }
+      assert.deepEqual(await account(), before);
+      const active = (await admin('select stage,abandoned_at,completed_at from ojjuda_archery_internal.runs where run_id=$1', [run.run_id])).rows[0];
+      assert.deepEqual(active, { stage: 120, abandoned_at: null, completed_at: null });
+      for (const stage of [0, 121]) {
+        await assert.rejects(() => admin(`insert into ojjuda_archery_internal.runs(user_id,stage,started_at)
+          values($1,$2,clock_timestamp())`, [user, stage]), /runs_stage_check/);
+      }
+      await age(run.run_id);
+      const completed = await complete(run.run_id, 120);
+      assert.equal(completed.ok, true);
+      assert.equal(completed.stage, 120);
+      assert.equal(completed.main_rounds, 4);
+      assert.equal((await receipt(startId, 'round-start')).receipt.stage, 120);
+    });
+
+    await t.test('first ten five-round milestones award exactly 20 each, then stop through 120 completed rounds', async () => {
       await member();
-      for (let round = 1; round <= 55; round++) {
-        const result = await matureRound(round % 2 ? 50 : 1);
+      for (let round = 1; round <= 120; round++) {
+        const result = await matureRound(round % 2 ? 120 : 1);
         const milestone = round <= 50 && round % 5 === 0;
         assert.equal(result.main_rounds, round);
         assert.equal(result.milestone_grant, milestone ? 20 : 0);

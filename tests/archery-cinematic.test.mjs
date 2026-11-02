@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera,
   BULLSEYE_REPLAY_DISTANCE, BULLSEYE_FLIGHT_DURATION, BULLSEYE_HOLD_DURATION,
-  BULLSEYE_RETURN_DURATION, BULLSEYE_REDUCED_HOLD_DURATION} from '../games/forest-archer/cinematic.mjs';
+  BULLSEYE_RETURN_DURATION, BULLSEYE_REDUCED_HOLD_DURATION, BULLSEYE_ENTRY_DURATION} from '../games/forest-archer/cinematic.mjs';
 import {projectPoint} from '../games/forest-archer/view.mjs';
 
 const near = (actual, expected, tolerance = 1e-8) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
@@ -42,17 +42,18 @@ test('only recorded ten-point arrow hits on circular targets qualify for the rep
   }
 });
 
-test('creation copies the last six metres of recorded arc and the actual contact without mutating physics', () => {
+test('creation copies the last 3.4 metres of recorded arc and the actual contact without mutating physics', () => {
   const shot = shotFixture(), before = copy(shot), replay = createBullseyeCinematic(shot, 5.2);
   assert.equal(replay.shot, shot);
   assert.deepEqual(shot, before);
   const length = replay.frames.slice(1).reduce((sum, frame, i) => sum + Math.hypot(...['x', 'y', 'z'].map(axis => frame.point[axis] - replay.frames[i].point[axis])), 0);
+  near(BULLSEYE_REPLAY_DISTANCE, 3.4);
   near(length, BULLSEYE_REPLAY_DISTANCE);
   pointNear(replay.frames.at(-1).point, shot.result.point);
   pointNear(replay.frames.at(-1).velocity, shot.velocity);
   near(replay.impactTime, 5.2);
   assert.ok(replay.frames[0].time > shot.replayFrames[1].time);
-  assert.ok(replay.frames.some(frame => frame.point.x === .9), 'the real curved portion is retained');
+  assert.ok(replay.frames.some(frame => frame.point.x === .7), 'the real curved portion is retained');
   shot.replayFrames.at(-1).point.x = 999;
   shot.result.point.y = 999;shot.result.targetCenter.x = 999;shot.velocity.z = 999;
   pointNear(replay.impactPoint, before.result.point);
@@ -63,8 +64,10 @@ test('creation copies the last six metres of recorded arc and the actual contact
 
 test('flight samples interpolate recorded position, velocity and scene time, then hold the exact impact', () => {
   const shot = shotFixture(), before = copy(shot), replay = createBullseyeCinematic(shot, 5.2);
+  const flight = replay.flightDuration, impactEnd = flight + replay.holdDuration, end = impactEnd + replay.returnDuration;
   let previousTime = -Infinity;
-  for (const age of [0, .07, .19, .31, .49, .599]) {
+  for (const fraction of [0, .12, .32, .52, .82, .999]) {
+    const age = flight * fraction;
     const sample = sampleBullseyeCinematic(replay, age);
     assert.equal(sample.phase, 'flight');assert.ok(sample.time >= previousTime);previousTime = sample.time;
     const right = replay.frames.findIndex(frame => frame.time >= sample.time);
@@ -73,13 +76,21 @@ test('flight samples interpolate recorded position, velocity and scene time, the
     for (const field of ['point', 'velocity']) for (const axis of ['x', 'y', 'z']) near(sample[field][axis], a[field][axis] + (b[field][axis] - a[field][axis]) * t);
     assert.equal(sample.impactAge, 0);
   }
-  for (const [age, phase] of [[.6, 'impact'], [1.79, 'impact'], [1.81, 'return'], [2.49, 'return'], [2.5, 'done']]) {
+  for (const [age, phase] of [[flight, 'impact'], [impactEnd - .001, 'impact'], [impactEnd + .001, 'return'], [end - .001, 'return'], [end, 'done']]) {
     const sample = sampleBullseyeCinematic(replay, age);
     assert.equal(sample.phase, phase);near(sample.time, replay.impactTime);
     pointNear(sample.point, shot.result.point);pointNear(sample.velocity, shot.velocity);
   }
   assert.deepEqual(shot, before, 'sampling never changes the resolved projectile or result');
-  near(replay.flightDuration + replay.holdDuration + replay.returnDuration, 2.5);
+  const halfway = sampleBullseyeCinematic(replay, flight / 2);
+  near(halfway.progress, .5);near(halfway.phaseProgress, .5);
+  assert.ok(halfway.time < (replay.frames[0].time + replay.impactTime) / 2,
+    'the recorded approach accelerates into contact instead of replaying at one flat speed');
+  const entry = Array.from({length: 11}, (_, index) => sampleBullseyeCinematic(replay, BULLSEYE_ENTRY_DURATION * index / 10));
+  near(entry[0].entryMask, 1);near(entry.at(-1).entryMask, 0);
+  assert.ok(entry.every((frame, index) => frame.entryMask >= 0 && frame.entryMask <= 1 && (!index || frame.entryMask <= entry[index - 1].entryMask)));
+  assert.ok(entry.every(frame => frame.impactPulse === 0), 'the impact flash and camera pulse never start during approach');
+  near(replay.flightDuration + replay.holdDuration + replay.returnDuration, 1.9);
   assert.deepEqual([replay.flightDuration, replay.holdDuration, replay.returnDuration], [BULLSEYE_FLIGHT_DURATION, BULLSEYE_HOLD_DURATION, BULLSEYE_RETURN_DURATION]);
 });
 
@@ -96,9 +107,30 @@ test('malformed or reversed recordings cannot create a broken replay camera', ()
   }
 });
 
+test('the impact camera punches in and settles without a cut at either phase boundary', () => {
+  const replay = createBullseyeCinematic(shotFixture(), 5.2), contact = replay.flightDuration, returnAt = contact + replay.holdDuration;
+  for (const [w, h] of [[390, 640], [844, 290], [1000, 600]]) {
+    const base = {x: 0, y: 1.65, z: 0, cx: w / 2, horizon: h * .405, focal: Math.min(w * 1.08, h * 1.5)};
+    const cameraAt = age => desiredBullseyeCamera(sampleBullseyeCinematic(replay, age), base, {w, h});
+    for (const boundary of [contact, returnAt]) {
+      const before = cameraAt(boundary - 1e-6), after = cameraAt(boundary + 1e-6);
+      const a = projectPoint(replay.impactPoint, before), b = projectPoint(replay.impactPoint, after);
+      assert.ok(Math.hypot(a.x - b.x, a.y - b.y) < .01, 'the same contact point cannot teleport between camera phases');
+      assert.ok(Math.abs(a.scale - b.scale) < .01, 'impact and return begin at the preceding magnification');
+    }
+    const initial = projectPoint(replay.impactPoint, cameraAt(contact));
+    const samples = Array.from({length: 50}, (_, index) => projectPoint(replay.impactPoint, cameraAt(contact + replay.holdDuration * index / 50)));
+    assert.ok(Math.max(...samples.map(sample => sample.scale)) > initial.scale * 1.03, 'the brief impact push visibly enlarges the actual contact');
+    const last = cameraAt(returnAt), later = cameraAt(returnAt + replay.returnDuration * .8);
+    for (const field of ['x', 'y', 'z', 'cx', 'horizon', 'focal']) near(last[field], later[field], .01);
+    assert.ok(samples.every(sample => sample.visible && sample.x > 0 && sample.x < w && sample.y > 0 && sample.y < h));
+  }
+});
+
 test('the close camera keeps the complete arrow and ten-point ring visible across phone, landscape and desktop', () => {
   const replay = createBullseyeCinematic(shotFixture(), 5.2);
-  for (const [w, h] of [[390, 640], [844, 290], [1000, 600]]) for (const age of [0, .3, .59, .8, 1.7]) {
+  const ages = Array.from({length: 100}, (_, index) => (replay.flightDuration + replay.holdDuration) * index / 100);
+  for (const [w, h] of [[390, 640], [844, 290], [1000, 600]]) for (const age of ages) {
     const frame = sampleBullseyeCinematic(replay, age), base = {x: 0, y: 1.65, z: 0, cx: w / 2, horizon: h * .405, focal: Math.min(w * 1.08, h * 1.5)};
     const original = copy(frame), camera = desiredBullseyeCamera(frame, base, {w, h});
     assert.ok(Object.values(camera).every(Number.isFinite));
@@ -123,8 +155,10 @@ test('reduced motion skips replay flight and leaves the camera at the supplied v
   assert.equal(replay.flightDuration, 0);assert.equal(replay.holdDuration, BULLSEYE_REDUCED_HOLD_DURATION);
   const frame = sampleBullseyeCinematic(replay, 0);
   assert.equal(frame.phase, 'impact');assert.equal(frame.reducedMotion, true);
+  assert.equal(frame.entryMask, 0);assert.equal(frame.impactPulse, 0);
   pointNear(frame.point, replay.impactPoint);
   const base = {x: 0, y: 1.65, z: 0, cx: 200, horizon: 250, focal: 450};
   assert.deepEqual(desiredBullseyeCamera(frame, base, {w: 390, h: 640}), base);
+  near(replay.holdDuration + replay.returnDuration, 1);
   assert.equal(sampleBullseyeCinematic(replay, replay.holdDuration + replay.returnDuration + .01).phase, 'done');
 });

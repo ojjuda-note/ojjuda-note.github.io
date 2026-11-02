@@ -731,82 +731,112 @@ export function drawBullseyeImpact(ctx,w,h,{x,y,age,scale=1,reducedMotion=false}
   const duration=1.2;
   if(!ctx||![w,h,x,y,age].every(Number.isFinite)||w<=0||h<=0||w>32768||h>32768||age<0||age>=duration)return;
   const size=Math.max(.45,Math.min(2,Number.isFinite(scale)?scale:1));
-  const radius=Math.max(23,Math.min(64,Math.min(w,h)*.095))*size;
-  if(x<-radius*4||x>w+radius*4||y<-radius*4||y>h+radius*4)return;
-  const progress=age/duration,fade=Math.pow(1-progress,1.45);
+  const radius=Math.max(26,Math.min(74,Math.min(w,h)*.12))*size;
+  if(x<-radius*5||x>w+radius*5||y<-radius*5||y>h+radius*5)return;
+  const progress=age/duration,fade=Math.pow(1-progress,1.35);
   ctx.save();ctx.translate(x,y);ctx.lineCap='round';ctx.lineJoin='round';
   const opacity=Number.isFinite(ctx.globalAlpha)?ctx.globalAlpha:1;
   if(reducedMotion){
     // A fixed, restrained halo gives the same success feedback without travel.
-    const r=Math.max(10,Math.min(22,radius*.43));
+    const r=Math.max(10,Math.min(22,radius*.34));
     const glow=ctx.createRadialGradient(0,0,0,0,0,r);
-    glow.addColorStop(0,'rgba(245,206,103,.40)');glow.addColorStop(.38,'rgba(232,183,78,.20)');glow.addColorStop(1,'rgba(226,172,68,0)');
+    glow.addColorStop(0,'rgba(245,206,103,.36)');glow.addColorStop(.38,'rgba(232,183,78,.18)');glow.addColorStop(1,'rgba(226,172,68,0)');
     ctx.globalAlpha=opacity*fade;ellipse(ctx,0,0,r,r,glow);
     ctx.beginPath();ctx.arc(0,0,r*.48,0,TAU);ctx.strokeStyle='#eccb7e';ctx.lineWidth=1.1;ctx.stroke();
     ctx.restore();return;
   }
-  const haloRadius=radius*(1.1+progress*.65);
-  const glow=ctx.createRadialGradient(0,0,0,0,0,haloRadius);
-  glow.addColorStop(0,'rgba(250,211,113,.38)');glow.addColorStop(.22,'rgba(236,185,79,.22)');glow.addColorStop(.62,'rgba(220,158,52,.08)');glow.addColorStop(1,'rgba(220,158,52,0)');
-  ctx.globalAlpha=opacity*fade;ellipse(ctx,0,0,haloRadius,haloRadius,glow);
-  // Staggered, soft circular waves stay centred on the recorded impact.
-  for(let i=0;i<3;i++){
-    const elapsed=age-i*.085;if(elapsed<0)continue;
-    const t=Math.min(1,elapsed/(.74+i*.08)),r=radius*(.12+1.65*(1-Math.pow(1-t,2)));
-    ctx.globalAlpha=opacity*Math.pow(1-t,1.7)*(.25-i*.045);
-    ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.strokeStyle='#dca848';ctx.lineWidth=Math.max(2.5,radius*.095);ctx.stroke();
-    ctx.globalAlpha=opacity*Math.pow(1-t,1.7)*(.58-i*.11);
-    ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.strokeStyle=i%2?'#d6ae60':'#f3d88c';ctx.lineWidth=Math.max(.8,radius*.025);ctx.stroke();
+
+  // The warm bloom is local to the hit. Its dark-edged waves stay legible on a gold bullseye.
+  const bloom=radius*(.85+.90*(1-Math.exp(-age*8)));
+  const glow=ctx.createRadialGradient(0,0,0,0,0,bloom);
+  glow.addColorStop(0,'rgba(255,220,127,.58)');glow.addColorStop(.24,'rgba(245,190,69,.34)');
+  glow.addColorStop(.68,'rgba(226,153,43,.10)');glow.addColorStop(1,'rgba(226,153,43,0)');
+  ctx.globalAlpha=opacity*Math.exp(-age*3.4)*fade;ellipse(ctx,0,0,bloom,bloom,glow);
+  for(let i=0;i<2;i++){
+    const elapsed=age-i*.055,life=i?.58:.46;if(elapsed<0||elapsed>=life)continue;
+    const t=elapsed/life,travel=1-Math.pow(1-t,3),r=radius*(.14+(i?1.6:2.15)*travel);
+    const strength=Math.pow(1-t,1.15),width=Math.max(1.5,radius*(i?.032:.048));
+    ctx.beginPath();ctx.arc(0,0,r,0,TAU);
+    ctx.globalAlpha=opacity*strength*.72;ctx.strokeStyle='#6a562e';ctx.lineWidth=width+Math.max(1.4,radius*.045);ctx.stroke();
+    ctx.globalAlpha=opacity*strength*(i?.78:.96);ctx.strokeStyle=i?'#e6b755':'#ffe4a0';ctx.lineWidth=width;ctx.stroke();
   }
-  // Indexed particles are deterministic and never alter gameplay randomness.
-  const count=w<500?24:32;
-  for(let i=0;i<count;i++){
-    const angle=i*2.3999632297+.31,spread=(i*.6180339887)%1;
-    const life=.56+spread*.47;if(age>=life)continue;
-    const t=age/life,speed=radius*(1.20+spread*1.7);
-    const travel=speed*age*(1-.23*t),gravity=radius*.65*age*age;
-    const px=Math.cos(angle)*travel,py=Math.sin(angle)*travel+gravity;
-    const tail=Math.max(2,radius*(.08+spread*.11))*(1-t*.55);
-    ctx.globalAlpha=opacity*Math.pow(1-t,1.3)*(.65+spread*.30);
-    line(ctx,px-Math.cos(angle)*tail,py-Math.sin(angle)*tail,px,py,i%3?'#f5d384':'#c49344',Math.max(.7,radius*.022));
-    if(i%5===0){
-      const star=Math.max(1.4,radius*.052)*(1-t*.5);
-      line(ctx,px-star,py,px+star,py,'#f7e0a1',.9);
-      line(ctx,px,py-star,px,py+star,'#f7e0a1',.9);
+
+  // A single outward burst of tapered speed streaks makes the first quarter-second feel sharp.
+  if(age<.34){
+    const t=age/.34,travel=1-Math.pow(1-t,2),count=w<500?14:20;
+    for(let i=0;i<count;i++){
+      const spread=(i*.6180339887)%1,angle=i*TAU/count+.19+spread*.16;
+      const start=radius*(.30+travel*(1.55+spread*.60));
+      const length=radius*(.34+spread*.58)*(1-t*.62),half=Math.max(.8,radius*(.012+spread*.016));
+      const ux=Math.cos(angle),uy=Math.sin(angle),vx=-uy,vy=ux;
+      ctx.globalAlpha=opacity*Math.pow(1-t,1.2)*(.64+spread*.25);
+      shape(ctx,[{x:ux*start,y:uy*start},{x:ux*(start+length*.32)+vx*half,y:uy*(start+length*.32)+vy*half},
+        {x:ux*(start+length),y:uy*(start+length)},{x:ux*(start+length*.32)-vx*half,y:uy*(start+length*.32)-vy*half}],i%3?'#f8d785':'#c5903f');
     }
   }
-  for(let i=0;i<7;i++){
-    const life=.65+(i%3)*.12;if(age>=life)continue;
-    const angle=i*2.67+.9,t=age/life,speed=radius*(.70+(i%4)*.20);
-    const px=Math.cos(angle)*speed*age,py=Math.sin(angle)*speed*age+radius*.85*age*age;
-    const length=Math.max(2,radius*(.085+(i%3)*.02));
-    ctx.save();ctx.translate(px,py);ctx.rotate(angle+age*(i%2?3:-2.3));ctx.globalAlpha=opacity*(1-t)*.68;
-    shape(ctx,[{x:-length*.5,y:-length*.13},{x:length*.5,y:-length*.07},{x:length*.30,y:length*.17},{x:-length*.35,y:length*.11}],i%2?'#b89459':'#80603a');
+
+  // Indexed trajectories do not consume gameplay randomness. Tails follow the same drag/gravity curve as their heads.
+  const count=w<500?36:48,drag=1.65,gravity=radius*2.3;
+  for(let i=0;i<count;i++){
+    const spread=(i*.6180339887)%1,angle=i*2.3999632297+.31,life=.56+spread*.57;
+    if(age>=life)continue;
+    const t=age/life,speed=radius*(3.3+spread*3.2),back=Math.max(0,age-(.015+spread*.019));
+    const travel=speed*(1-Math.exp(-drag*age))/drag,oldTravel=speed*(1-Math.exp(-drag*back))/drag;
+    const ux=Math.cos(angle),uy=Math.sin(angle),px=ux*(radius*.045+travel),py=uy*(radius*.045+travel)+gravity*age*age;
+    const tx=ux*(radius*.045+oldTravel),ty=uy*(radius*.045+oldTravel)+gravity*back*back;
+    const width=Math.max(1.05,radius*(.022+spread*.018));
+    ctx.globalAlpha=opacity*Math.pow(1-t,.85)*(.78+spread*.20);
+    if(i%3===0)line(ctx,tx,ty,px,py,'#8c6534',width+1.2);
+    line(ctx,tx,ty,px,py,i%3?'#ffe2a0':'#e8b24c',width);
+    if(i%6===0){
+      const star=Math.max(1.7,radius*.055)*(1-t*.4);
+      line(ctx,px-star,py,px+star,py,'#fff0be',Math.max(.9,width*.56));
+      line(ctx,px,py-star,px,py+star,'#fff0be',Math.max(.9,width*.56));
+    }
+  }
+  const chips=w<500?12:18;
+  for(let i=0;i<chips;i++){
+    const spread=(i*.754877666)%1,life=.68+spread*.44;if(age>=life)continue;
+    const t=age/life,angle=-Math.PI+.20+spread*(Math.PI-.40),speed=radius*(1.8+spread*2.3);
+    const travel=speed*(1-Math.exp(-age*1.1))/1.1;
+    const px=Math.cos(angle)*(radius*.07+travel),py=Math.sin(angle)*(radius*.07+travel)+radius*2.8*age*age;
+    const length=Math.max(3.5,radius*(.12+spread*.13)),width=Math.max(1.7,length*.30);
+    ctx.save();ctx.translate(px,py);ctx.rotate(angle+age*(i%2?4.5+spread*3:-3.6-spread*2));
+    ctx.globalAlpha=opacity*Math.pow(1-t,.9)*.94;
+    shape(ctx,[{x:-length*.56,y:-width*.32},{x:length*.50,y:-width*.48},
+      {x:length*.29,y:width*.46},{x:-length*.43,y:width*.23}],i%3===0?'#a6773e':i%3===1?'#d2a15d':'#edc27f');
+    ctx.strokeStyle='#76532f';ctx.lineWidth=Math.max(.7,radius*.018);ctx.stroke();
+    line(ctx,-length*.32,-width*.03,length*.24,-width*.13,'#f0cf8c',Math.max(.55,radius*.012));
     ctx.restore();
   }
-  if(age<.26){
-    const t=age/.26,r=radius*(.10+.22*t);
-    ctx.globalAlpha=opacity*(1-t)*.72;
-    for(let i=0;i<4;i++){
-      const angle=i*Math.PI/4;
-      line(ctx,-Math.cos(angle)*r,-Math.sin(angle)*r,Math.cos(angle)*r,Math.sin(angle)*r,'#f6d78d',Math.max(.9,radius*.025));
-    }
+
+  // One brief, irregular star is an impact accent, not a full-screen flash or repeating pulse.
+  if(age<.19){
+    const t=age/.19,reach=radius*(.43+.67*Math.min(1,age/.045));
+    const points=Array.from({length:16},(_,i)=>{
+      const angle=i*TAU/16+.14,r=i%2?reach*.17:reach*(i%4?.72:1);
+      return {x:Math.cos(angle)*r,y:Math.sin(angle)*r};
+    });
+    ctx.globalAlpha=opacity*Math.pow(1-t,1.1)*.95;
+    shape(ctx,points,'#ffe8aa');ctx.strokeStyle='#ae7933';ctx.lineWidth=Math.max(1,radius*.027);ctx.stroke();
+    ellipse(ctx,0,0,Math.max(2.2,radius*.105),Math.max(2.2,radius*.105),'#fff1bf');
   }
   ctx.restore();
 }
 
-/** Restrained edge warmth during a bullseye replay; the central target stays clear. */
-export function drawBullseyeVignette(ctx,w,h,{age,duration=2.5,reducedMotion=false}={}) {
+/** Brief dark edge focus follows the actual hit; the target and reduced-motion view stay clear. */
+export function drawBullseyeVignette(ctx,w,h,{age,duration=1.9,impactAge=-1,entryMask=0,reducedMotion=false}={}) {
   if(reducedMotion||!ctx||![w,h,age,duration].every(Number.isFinite)||w<=0||h<=0||w>32768||h>32768||duration<=0||age<0||age>=duration)return;
-  const envelope=Math.min(1,age/.18,(duration-age)/.48);
-  if(envelope<=0)return;
-  const radius=Math.hypot(w,h)*.5;
-  ctx.save();
-  const glow=ctx.createRadialGradient(w*.5,h*.5,Math.min(w,h)*.28,w*.5,h*.5,radius);
-  glow.addColorStop(0,'rgba(187,140,58,0)');glow.addColorStop(.56,'rgba(187,140,58,0)');
-  glow.addColorStop(.82,`rgba(188,141,59,${(.055*envelope).toFixed(4)})`);
-  glow.addColorStop(1,`rgba(139,99,41,${(.15*envelope).toFixed(4)})`);
-  ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);ctx.restore();
+  const envelope=Math.max(0,Math.min(1,age/.10,(duration-age)/.36));
+  const pulse=Number.isFinite(impactAge)&&impactAge>=0&&impactAge<.48?Math.exp(-impactAge*8.5):0;
+  const entry=Number.isFinite(entryMask)?Math.max(0,Math.min(1,entryMask)):0;
+  if(envelope<=0&&pulse<=0&&entry<=0)return;
+  ctx.save();ctx.translate(w*.5,h*.5);ctx.scale(w*.5,h*.5);
+  const focus=ctx.createRadialGradient(0,0,.24,0,0,1.42);
+  focus.addColorStop(0,'rgba(26,43,31,0)');focus.addColorStop(.28,'rgba(26,43,31,0)');
+  focus.addColorStop(.66,`rgba(29,43,29,${(.075*envelope+.09*pulse+.075*entry).toFixed(4)})`);
+  focus.addColorStop(1,`rgba(30,35,23,${Math.min(.56,.27*envelope+.20*pulse+.18*entry).toFixed(4)})`);
+  ctx.fillStyle=focus;ctx.fillRect(-1,-1,2,2);ctx.restore();
 }
 
 // Equipment artwork follows the same independent attributes as the simulation.

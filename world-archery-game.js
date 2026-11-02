@@ -14,7 +14,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label','바람의 궁수 · 테스트게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-gentle1" allow="autoplay; fullscreen"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261102-archery-120-missions1" allow="autoplay; fullscreen"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null;
@@ -36,7 +36,7 @@
     if(!actions.has(message.action)||!uuid(message.requestId))return false;
     const allowed=new Set(['source','type','action','owner','sessionId','requestId']);
     if(message.action==='round-start'||message.action==='round-complete'){
-     allowed.add('stage');if(!Number.isInteger(message.stage)||message.stage<1||message.stage>50)return false;
+     allowed.add('stage');if(!Number.isInteger(message.stage)||message.stage<1||message.stage>120)return false;
     }
     if(message.action==='round-complete'){allowed.add('runId');if(!uuid(message.runId))return false;}
     if(message.action==='receipt'){

@@ -1,20 +1,21 @@
-import {PLAYER, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, getSpeed, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-gentle1';
-import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261102-archery-gentle1';
-import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, lerpCamera} from './view.mjs?v=20261102-archery-gentle1';
-import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261102-archery-gentle1';
-import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-gentle1';
-import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-archery-gentle1';
+import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, getSpeed, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261102-archery-120-missions1';
+import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261102-archery-120-missions1';
+import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, lerpCamera} from './view.mjs?v=20261102-archery-120-missions1';
+import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261102-archery-120-missions1';
+import {evaluateCoachShot} from './coach.mjs?v=20261102-archery-120-missions1';
+import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261102-archery-120-missions1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), touchpad = $('aimTouchpad');
-// The reordered test game starts a fresh journey; old saves cannot reappear.
+// Keep equipment and currency while moving old fifty-stage records to their matching missions.
 const SAVE_KEY = 'forest-archer-progress-v2';
+const STAGE_CATALOG = 'missions-120-v1';
 const DRAW_LIMIT = 10;
 const AIM_SWAY_SCALE = .68;
 const STABILIZER_COST = 5;
 const CONSUMABLE_LIMIT = 1e8;
-const defaults = () => ({version:1,coins:0,clayCredits:0,stabilizers:0,coachEnabled:true,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
+const defaults = () => ({version:1,stageCatalog:STAGE_CATALOG,coins:0,clayCredits:0,stabilizers:0,coachEnabled:true,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
 let persistence = true;
 function loadProgress(){
   try {
@@ -34,8 +35,14 @@ function loadProgress(){
     base.mainRounds=clamp(Math.floor(finite(raw.mainRounds)),0,1e7);
     for(let level=1;level<=10;level++)if(Number.isFinite(raw.eventBestByLevel?.[level]))base.eventBestByLevel[level]=clamp(Math.floor(raw.eventBestByLevel[level]),0,createClayEvent(level).maxScore);
     base.unlocked=STAGES.length;
-    base.lastStage=clamp(Math.floor(finite(raw.lastStage,1)),1,base.unlocked);
-    for(const s of STAGES) if(Number.isFinite(raw.best?.[s.id]))base.best[s.id]=clamp(Math.floor(raw.best[s.id]),0,50);
+    const legacyStages=raw.stageCatalog!==STAGE_CATALOG;
+    const savedStage=clamp(Math.floor(finite(raw.lastStage,1)),1,legacyStages?50:base.unlocked);
+    base.lastStage=legacyStages?(LEGACY_STAGE_MAP[savedStage]||1):savedStage;
+    for(const [key,score] of Object.entries(raw.best||{})){
+      const oldId=Number(key),id=legacyStages?LEGACY_STAGE_MAP[oldId]:oldId;
+      if(Number.isInteger(oldId)&&oldId>=1&&Number.isInteger(id)&&id>=1&&id<=STAGES.length&&Number.isFinite(score))
+        base.best[id]=clamp(Math.floor(score),0,50);
+    }
     base.sound=raw.sound!==false;base.shots=Math.max(0,finite(raw.shots));base.hits=Math.max(0,finite(raw.hits));
     return base;
   }catch{persistence=false;return defaults();}
@@ -263,8 +270,13 @@ function updateCamera(dt=0,immediate=false){
     const ease=value=>value*value*(3-2*value);
     if(replay.phase==='return')camera=lerpCamera(close,base,ease(replay.progress));
     else{
-      const enter=clamp(state.settle/.22,0,1);
+      const enter=clamp(state.settle/state.cinematic.entryDuration,0,1);
       camera=lerpCamera(state.cinematic.entryCamera||camera,close,ease(enter));
+      // Entry starts from the prior live follow view, but the replay shaft must
+      // stay in front of the near plane while that short transition completes.
+      const speed=Math.hypot(replay.velocity.x,replay.velocity.y,replay.velocity.z)||1;
+      const tailZ=replay.point.z-replay.velocity.z/speed*replay.shaftLength;
+      camera.z=Math.min(camera.z,tailZ-NEAR_PLANE-.25);
     }
     return;
   }
@@ -359,7 +371,7 @@ function updateRound(){
   $('roundProgress').textContent=state.isEvent?`${state.hits} / ${s.totalTargets}개 명중`:`${state.used} / ${shotLimit()}${shotUnit()}`;
   if(!state.isEvent){$('shotDots').innerHTML=Array.from({length:shotLimit()},(_,i)=>`<i class="arrow-dot ${i<state.used?'used':''}"></i>`).join('');$('shotCountLabel').textContent=`${Math.max(0,shotLimit()-state.used)}${shotUnit()} 남음${activeBow().burstCount>1?' · 3연발':''}`;}
   $('journeyCount').textContent=state.isEvent?`최고 ${(progress.eventBestByLevel[s.eventLevel]||0)/10}개`:`${s.id} / ${STAGES.length}`;
-  $('journeyCaption').textContent=state.isEvent?`이벤트 ${s.eventLevel}단계 · ${s.targetsPerWave}개씩 등장`:`50단계 자유 선택 · 이벤트까지 ${5-progress.mainRounds%5}판`;
+  $('journeyCaption').textContent=state.isEvent?`이벤트 ${s.eventLevel}단계 · ${s.targetsPerWave}개씩 등장`:`${STAGES.length}개 미션 자유 선택 · 이벤트까지 ${5-progress.mainRounds%5}판`;
   $('journeySteps').innerHTML=STAGES.map(s=>`<button class="journey-step ${s.id===state.stage.id?'active':''} ${progress.best[s.id]>=s.goal?'done':''}" data-stage="${s.id}" aria-label="${s.id}단계 ${s.name}"><strong>${String(s.id).padStart(2,'0')}</strong><small>${s.distance}m</small></button>`).join('');
   const journey=$('journeySteps');
   journey.classList.toggle('hidden',!!state.isEvent);
@@ -546,7 +558,7 @@ function onImpact(){
   if(state.cinematic)state.cinematic.entryCamera={...camera};
   for(const arrow of state.volley?.shots||[shot])recordImpact(arrow);
   moveAttachedArrows();
-  $('flightBadge').textContent=state.cinematic?'정중앙 10점 · 명중 다시 보기':'착지 확인 · 조준 화면으로 돌아가요';
+  $('flightBadge').textContent=state.cinematic?'명중 순간 · 화살을 따라':'착지 확인 · 조준 화면으로 돌아가요';
   const hit=r.type==='hit';state.score+=r.score;state.shotScores.push(r.score);
   if(hit)state.hits++;
   const reward=hit?Math.ceil(r.score*.8)+2:1;
@@ -554,7 +566,7 @@ function onImpact(){
   state.feedbackUntil=state.time+1.6;
   $('feedbackTitle').textContent=hit?`${state.volley?'3연발 최고점':r.score===10?'정중앙!':'명중!'} +${r.score}점`:r.zone;
   $('feedbackDetail').textContent=hit?`${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 사람이 지나간 틈을 노려보세요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
-  $('shotFeedback').className=`shot-feedback ${!hit?'miss':r.score===10?'gold':''}`;
+  $('shotFeedback').className=`shot-feedback ${!hit?'miss':r.score===10?'gold':''}${state.cinematic&&!state.cinematic.reducedMotion?' hidden':''}`;
   sound(state.cinematic?'cinematic':hit?(r.score===10?'bull':'hit'):'miss');if(hit&&!state.cinematic&&navigator.vibrate)navigator.vibrate(r.score===10?[15,30,15]:15);
   updateHeader();updateRound();
 }
@@ -742,7 +754,7 @@ async function retryAmmo(){
   if(result?.ok&&!state.isEvent&&!state.serverRunId&&!state.registering&&state.mode!=='finished'&&!ammo.pending){registerMainRound();await state.roundStart;}
   onAmmoChange();toast(state.ammoNotice);
 }
-function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없고, 이후에는 약한 바람부터 익혀요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 마지막에는 벽 뒤에 완전히 숨은 고정 과녁, 그다음 움직이는 과녁을 포물선으로 넘겨 맞혀요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 상점의 코치는 10쭈로 구매한 시점부터 24시간 동안 사용할 수 있어요. 접속하지 않은 시간도 포함되며 자동으로 연장되지 않아요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 상점에서 켜거나 끌 수 있어요. 1~8단계는 기본 활, 9~24단계는 하위 활·석궁, 25~35단계는 중간 활·석궁, 마지막 15판인 36~50단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 50단계에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈·코치 이용 기간은 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+function showHelp(){openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 멈춰요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 10초 안에 손을 떼지 않으면 자동발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 화살을 슬로모션으로 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 고정 과녁, 이동 과녁, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 네 단계는 바람이 없고, 이후에는 약한 바람부터 익혀요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 날리는 나뭇잎의 방향과 속도를 읽어보세요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 실제 포물선으로 넘길 수 있도록 30·35·40·50m에서 연습해요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 낮게 뛰고 사슴은 크게 달리며, 비둘기는 날갯짓하고 독수리는 완만하게 오르내려요. 살쾡이의 짧은 걸음과 치타의 빠른 질주도 구분돼요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉이 가벼우면 빠르게 출발하고, 무거우면 감속과 바람에 덜 밀려요. 넓은 날개는 바람을 더 받고, 좁은 날개는 덜 받아요. 활과 화살을 조합해 내 사격에 맞춰보세요. 화살은 일반 12종에 특수 2종이 있어요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 상점의 코치는 10쭈로 구매한 시점부터 24시간 동안 사용할 수 있어요. 접속하지 않은 시간도 포함되며 자동으로 연장되지 않아요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 상점에서 켜거나 끌 수 있어요. 1~16단계는 기본 활, 17~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 마지막 15판인 106~120단계는 상위 활·석궁을 기준으로 맞췄어요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 장비부터 상위 장비 순으로 배치돼 있고, 능력치별 정렬로 특성을 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 상위 장비에는 3배 조준경을 달 수 있어요. 한번 단 조준경은 그 장비에 귀속돼 옮길 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발은 발사 기회를 한 번 쓰고 세 발 중 최고 점수를 받아요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁은 빠르게 출발하지만 감속이 커 사거리가 짧아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 목표 점수와 관계없이 이전·현재·다음 단계를 자유롭게 선택할 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 이벤트가 자동으로 열려요. 이벤트가 끝나면 이전·지금·다음 활쏘기 단계 중에서 고를 수 있어요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 접시 점수 5개로 안정제 1개를 구매하고, 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈·코치 이용 기간은 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const statRow=(label,value)=>`<div class="item-stat"><span>${label}</span><strong>${value}</strong></div>`;
@@ -872,7 +884,7 @@ function showMenu(){
   const level=mainStageForChoices(),event=state.isEvent,finished=state.mode==='finished';
   const action=(name,symbol,title,detail)=>`<button class="menu-action" data-action="${name}">${icon(symbol)}<span><strong>${title}</strong><small>${detail}</small></span></button>`;
   const choices=!event||finished?stageChoiceMarkup('menu-stage-actions'):'';
-  const route=event?action('ammo-shop','coin','총알 충전',`보유 ${ammoRemaining()??'—'}발`):action('stages','grid','전체 단계','1~50단계에서 선택');
+  const route=event?action('ammo-shop','coin','총알 충전',`보유 ${ammoRemaining()??'—'}발`):action('stages','grid','전체 단계',`1~${STAGES.length}단계에서 선택`);
   const subtitle=event?`접시 사격 이벤트 ${state.stage.eventLevel}단계 · 활쏘기 5판마다 한 번`:`지금 ${level}단계 · 접시 사격 이벤트까지 ${5-progress.mainRounds%5}판`;
   openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${choices}<div class="menu-actions">${route}${action('stabilizers','tonic','안정제',`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`)}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${action('help','help','게임 방법','조준·장비·이벤트 안내')}</div>${event&&!finished?`<button class="button soft-button menu-return" data-action="leave-event" ${ammoLocked()?'disabled':''}>활쏘기로 돌아가기</button>`:''}<button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'게임 계속하기'}</button></div>`,true);
 }
@@ -885,8 +897,8 @@ function showStages(){
     if(previous?.chapterId===stage.chapterId)previous.last=stage.id;
     else chapters.push({chapterId:stage.chapterId,first:stage.id,last:stage.id,name:stage.chapterName});
   }
-  const ranges=[...chapters.filter(chapter=>chapter.chapterId<=2),{first:9,last:20,name:'보이는 면적 줄이기'},...chapters.filter(chapter=>chapter.chapterId===6),{first:25,last:48,name:'동물 움직임'},...chapters.filter(chapter=>chapter.chapterId===13)];
-  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}단계 · 고정 과녁부터 동물까지, 한 가지씩 익혀요. 유형마다 10·20·30·50m 순서로 연습하고 마지막에 복합 도전을 만나요. 모든 단계를 자유롭게 선택할 수 있어요.</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.name}">${range.first}–${range.last}</button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=false,best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-range-${s.id}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · ◇':''}</span><strong>${s.name}</strong><small>${s.gearLabel} 권장</small><small>${s.distance}m · 참고 목표 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
+  const ranges=STAGE_GEAR_BANDS.map((band,index)=>({...band,name:['기초','응용','심화','최종'][index]}));
+  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}개 미션 · 고정 과녁부터 이동·가림막·동물·복합 장애물까지 한 가지씩 익혀요. 마지막 15개는 상위 장비 권장 미션이에요. 모든 단계를 자유롭게 선택할 수 있어요.</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.gearLabel} 권장"><strong>${range.first}–${range.last}</strong><small>${range.name}</small></button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=false,best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-chapter-${s.chapterId}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" id="stage-range-${s.id}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · ◇':''}</span><strong>${s.name}</strong><small>${s.gearLabel} 권장</small><small>${s.distance}m · 참고 목표 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
 }
 document.addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn||btn.disabled)return;
@@ -1029,15 +1041,23 @@ function sceneItems(target){
     const length=Math.hypot(velocity.x,velocity.y,velocity.z)||1;
     const tail={x:tip.x-velocity.x/length*.85,y:tip.y-velocity.y/length*.85,z:tip.z-velocity.z/length*.85};
     addLine(tail,tip,'shaft',alpha);
-    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha});
-    items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying});
+    if(tail.z>camera.z+NEAR_PLANE)items.push({kind:'feather',z:surfaceDepth(tail),order:3,point:tail,tip,alpha,visualVelocity:velocity});
+    items.push({kind:'tip',z:surfaceDepth(tip),order:4,point:tip,tail,alpha,flying,visualVelocity:velocity});
   };
   for(const stuck of state.stuck)if((stuck.born??0)<=time+1e-9)addArrow(stuck,stuck.velocity||{x:0,y:-.5,z:1},.75,false,stuck.projectileType);
   // Keep every hit in target-local coordinates, including each animal pass.
-  // Full shafts remain at their original entry angle as the target moves.
+  // Only the celebrated shaft flexes around its fixed tip for 0.60 seconds.
+  // The saved entry velocity and all physical attachments remain untouched.
   for(const mark of state.targetMarks){
     if((mark.born??0)>time+1e-9||(replay?.phase==='flight'&&mark===state.cinematic.shot.targetMark))continue;
-    const subject=targets.get(mark.passId)||target;addArrow({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002},mark.velocity||{x:0,y:-.2,z:1},1,false,mark.projectileType);
+    let visualVelocity=mark.velocity||{x:0,y:-.2,z:1};
+    if(replay&&!replay.reducedMotion&&mark===state.cinematic.shot.targetMark&&replay.impactAge>=0&&replay.impactAge<.60){
+      const age=replay.impactAge,decay=(1-age/.60)**2;
+      const yaw=.085*Math.sin(age*Math.PI*22)*decay,pitch=.05*Math.sin(age*Math.PI*26)*decay;
+      const side=visualVelocity.x*Math.cos(yaw)+visualVelocity.z*Math.sin(yaw),forward=visualVelocity.z*Math.cos(yaw)-visualVelocity.x*Math.sin(yaw);
+      visualVelocity={x:side,y:visualVelocity.y*Math.cos(pitch)-forward*Math.sin(pitch),z:forward*Math.cos(pitch)+visualVelocity.y*Math.sin(pitch)};
+    }
+    const subject=targets.get(mark.passId)||target;addArrow({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002},visualVelocity,1,false,mark.projectileType);
   }
   if(replay?.phase==='flight'){
     const points=state.cinematic.frames.filter(frame=>frame.time<=replay.time).slice(-36).map(frame=>frame.point);
@@ -1083,7 +1103,9 @@ function drawSceneItem(item){
   }else if(item.kind==='effect'){
     const effect=item.effect,replay=cinematicFrame(),age=renderTime()-effect.born,q=project(effect);
     if(replay&&effect===state.cinematic.shot.impactEffect){
-      if(q.visible&&replay.phase!=='flight')drawBullseyeImpact(ctx,w,h,{x:q.x,y:q.y,age:replay.impactAge,scale:clamp(q.scale/85,.65,1.5),reducedMotion:state.cinematic.reducedMotion});
+      const mark=state.cinematic.shot.targetMark,subject=targetAt(state.stage,replay.time,mark?.passId);
+      const impact=mark?project({x:subject.x+mark.x,y:subject.y+mark.y,z:subject.z-.002}):q;
+      if(impact.visible&&replay.phase!=='flight')drawBullseyeImpact(ctx,w,h,{x:impact.x,y:impact.y,age:replay.impactAge,scale:clamp(impact.scale/85,.65,1.5),reducedMotion:state.cinematic.reducedMotion});
     }else if(q.visible&&age>=0&&age<1.5){
       ctx.globalAlpha=Math.max(0,1-age/1.5);
       if(effect.kind==='clay'||effect.kind==='ufo'){for(let i=0;i<10;i++){const angle=i/10*Math.PI*2,dist=5+age*(25+i*4),x=q.x+Math.cos(angle)*dist,y=q.y+Math.sin(angle)*dist+age*age*28,r=Math.max(1,4-age*2);poly([{x:x-r,y},{x:x+r,y:y-r},{x:x+r*.4,y:y+r}],effect.kind==='ufo'?(i%2?'#96c4c8':'#c9f6e3'):i%2?'#dd743e':'#f4b565');}}
@@ -1102,7 +1124,7 @@ function render(){
   drawGuide();
   if(state.mode==='ready'||state.mode==='drawing'){const sway=effectiveSway();drawFirstPersonBow(ctx,w,h,{charge:state.charge,swayX:sway.x,swayY:sway.y,color:activeBow().color,weaponType:activeBow().weaponType,scopeMounted:hasScope(),tier:activeBow().id,burstCount:activeBow().burstCount,grouping:activeBow().grouping,grip:activeBow().grip,elasticity:activeBow().elasticity,tipMass:activeArrow().tipMass,fletching:activeArrow().fletching,arrowColor:activeArrow().color,drawing:state.mode==='drawing'});}
   drawReticle();
-  if(replay)drawBullseyeVignette(ctx,w,h,{age:state.settle,duration:impactHold()+impactReturn(),reducedMotion:state.cinematic.reducedMotion});
+  if(replay)drawBullseyeVignette(ctx,w,h,{age:state.settle,duration:impactHold()+impactReturn(),impactAge:replay.phase==='flight'?-1:replay.impactAge,entryMask:replay.entryMask,reducedMotion:state.cinematic.reducedMotion});
   canvas.dataset.scope=hasScope()?((state.mode==='ready'||state.mode==='drawing')&&state.zoom===3?'active':'mounted'):'none';
   canvas.dataset.cinematic=replay?.phase??'none';
   canvas.dataset.camera=replay?(replay.phase==='return'?'return':`bullseye-${replay.phase}`):state.mode==='preview'?'preview':state.mode==='flight'?'follow':state.mode==='settling'?(state.settle>impactHold()?'return':'impact'):'aim';
@@ -1131,7 +1153,8 @@ function updateGunReload(reloading){
 function updatePower(){
   if(state.modal==='stabilizer')renderStabilizers();
   if(state.modal==='shop'&&shopTab==='coach')updateCoachShopStatus();
-  const reloading=state.isEvent&&state.reloadRemaining>0,drawing=state.mode==='drawing',steady=isSteady();
+  const reloading=state.isEvent&&state.reloadRemaining>0,drawing=state.mode==='drawing',steady=isSteady(),replay=cinematicFrame();
+  $('flightBadge').classList.toggle('bullseye',replay?.phase==='impact');
   updateGunReload(reloading);
   const steadySeconds=formatSeconds(drawing?state.steadyDuration:weaponSteadyDuration());
   const ammoWait=state.isEvent&&(state.ammoLoading||!!state.pendingAmmoShot||!!ammo?.pending||ammoRemaining()===null),empty=state.isEvent&&ammoRemaining()===0;
@@ -1151,8 +1174,7 @@ function updatePower(){
     const effect=state.shot.bounceCount>0?'1회 튕김 · ':state.shot.magnetActive?'근접 유도 · ':'';
     $('flightBadge').textContent=`${effect|| (state.volley?`3연발 ${state.volley.shots.filter(shot=>shot.launched).length}/3 · `:'슬로모션 · ')}${Math.max(0,Math.round(state.shot.position.z))} m 비행 중`;
   }else if(state.mode==='settling'&&state.cinematic){
-    const replay=cinematicFrame();
-    $('flightBadge').textContent=replay?.phase==='flight'?'정중앙 10점 · 명중 다시 보기':replay?.phase==='impact'?'정중앙! · 10점':'조준 화면으로 돌아가요';
+    $('flightBadge').textContent=replay?.phase==='flight'?'명중 순간 · 화살을 따라':replay?.phase==='impact'?'✦ 정중앙! 10점 ✦':'멋진 한 발 · 조준 화면으로';
   }
   $('previewBtn').textContent=state.mode==='preview'?'조준하기':'과녁 보기';
   $('previewBtn').disabled=state.mode==='flight'||state.mode==='settling'||state.mode==='finished';
@@ -1161,7 +1183,7 @@ function updatePower(){
   $('powerFill').style.background=reloading?'#829b9d':steady?'#5f9a70':fatigue?'#c58f66':'#a4b374';
   const coachCue=drawing&&coachRemaining()>0&&progress.coachEnabled&&performance.now()<state.coachCueUntil;
   $('powerLabel').classList.toggle('coach-cue',coachCue);
-  const mode=state.mode+activeBow().id+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
+  const mode=state.mode+activeBow().id+(replay?.phase??'')+(coachCue?'coach':'')+(state.roundSaving?'saving':preparing?'preparing':ammoWait?'ammo-wait':empty?'empty':reloading?'reload':steady?'steady':fatigue?'tired':'');
   canvas.dataset.mode=state.mode;
   if(mode===hudMode)return;hudMode=mode;
   touchpad.setAttribute('aria-label',`화면 아래 3분의 1 조준 영역. 손가락을 움직인 방향과 거리만큼 위쪽 조준점이 움직이며 손을 떼면 발사. 1초에서 10초 사이에 한 번 ${steadySeconds}초간 흔들림이 멈추고, 10초가 되면 자동발사합니다. 키보드는 화살표로 조준, 스페이스를 누른 후 떼어 발사.`);
@@ -1182,6 +1204,8 @@ function updatePower(){
     $('powerLabel').textContent='과녁 위치를 확인해요';$('controlTitle').textContent='장애물 너머 과녁을 기억하세요';$('controlHint').textContent='곧 사격 위치로 돌아가요 · 과녁 보기로 다시 확인할 수 있어요';
   }else if(state.mode==='flight'){
     $('powerLabel').textContent='슬로모션으로 날아가요';$('controlTitle').textContent='화살을 따라가고 있어요';$('controlHint').textContent='궤적과 떨어지는 위치를 보고 다음 한 발을 준비해요';
+  }else if(replay&&replay.phase!=='return'){
+    $('powerLabel').textContent=replay.phase==='flight'?'명중 순간을 따라가요':'정중앙! 완벽한 한 발';$('controlTitle').textContent=replay.phase==='flight'?'과녁을 향해, 마지막 순간':'정중앙에 꽂혔어요';$('controlHint').textContent=replay.phase==='flight'?'':'10점 · 멋진 한 발!';
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent='곧 다음 화살을 쏠 수 있어요';
   }else{
@@ -1238,7 +1262,7 @@ function tick(now){
       if(!state.cinematic)state.time+=dt*FLIGHT_TIME_SCALE;
       state.settle+=dt;
       if(state.cinematic&&!state.cinematic.soundPlayed&&state.settle>=state.cinematic.flightDuration){
-        state.cinematic.soundPlayed=true;sound('bull');if(navigator.vibrate)navigator.vibrate([18,35,28]);
+        state.cinematic.soundPlayed=true;$('shotFeedback').classList.remove('hidden');sound('bull');if(navigator.vibrate)navigator.vibrate([18,35,28]);
       }
       moveAttachedArrows();
       if(state.settle>=impactHold()+impactReturn()){

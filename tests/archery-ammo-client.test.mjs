@@ -57,19 +57,38 @@ test('handshake and callbacks are deferred and only the exact parent, origin, ow
   assert.ok(f.messages.every(item => item.origin === ORIGIN));f.client.dispose();
 });
 
-test('registration, refresh and receipt traffic serialize with the parent and starts use the supplied UUID', async () => {
+test('stage 120 registration, refresh and completion serialize with the parent and use the supplied UUID', async () => {
   const f = await fixture({ initialize: false });
-  const started = f.client.startRound(OTHER, 17);f.init();await f.flush();
+  const started = f.client.startRound(OTHER, 120);f.init();await f.flush();
   assert.equal(f.requests().length, 1, 'initial status and registration cannot race the single-request bridge');
   for (let i = 0; i < 2; i++) {
     const request = f.requests().at(-1);assert.ok(['status', 'round-start'].includes(request.action));
-    if (request.action === 'round-start') { assert.equal(request.requestId, OTHER);assert.equal(request.stage, 17);assert.equal('runId' in request, false); }
+    if (request.action === 'round-start') { assert.equal(request.requestId, OTHER);assert.equal(request.stage, 120);assert.equal('runId' in request, false); }
     f.reply(request, snapshot({ run_id: SESSION, revision: i + 1 }));await f.flush();
   }
   assert.equal((await started).run_id, SESSION);
-  const completion = f.client.completeRound(SESSION, 17);await f.flush();const request = f.requests().at(-1);
-  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 17);
+  const completion = f.client.completeRound(SESSION, 120);await f.flush();const request = f.requests().at(-1);
+  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 120);
   f.reply(request, snapshot({ main_rounds: 6, revision: 3 }));assert.equal((await completion).main_rounds, 6);f.client.dispose();
+});
+
+test('pending high-stage registration and completion survive reopening and recover their original receipts', async () => {
+  for (const [action, stage] of [['round-start', 51], ['round-complete', 120]]) {
+    const original = await fixture();
+    const operation = action === 'round-start' ? original.client.startRound(OTHER, stage) : original.client.completeRound(SESSION, stage);
+    await original.flush();const request = original.requests().at(-1);
+    original.reply(request, {ok: false, reason: 'pending'});assert.equal((await operation).reason, 'pending');
+    original.client.dispose();
+    const reopened = await fixture({store: original.store, sessionId: OTHER});await reopened.flush();
+    const lookup = reopened.requests().find(item => item.action === 'receipt');
+    assert.ok(lookup, `the persisted ${stage} mission remains valid after reopening`);
+    assert.equal(lookup.receiptId, request.requestId);assert.equal(lookup.originalAction, action);
+    assert.equal(reopened.client.pending.stage, stage);
+    reopened.reply(lookup, snapshot({found: true, receipt: {ok: true, run_id: SESSION}, revision: 2}));await reopened.flush();
+    assert.equal((await reopened.client.retryPending()).ok, true);assert.equal(reopened.client.pending, null);
+    assert.deepEqual(reopened.requests().map(item => item.action), ['status', 'receipt'], 'receipt recovery never registers or completes a second round');
+    reopened.client.dispose();
+  }
 });
 
 test('duplicate purchase clicks share one UUID and insufficient balances cannot change local ammunition', async () => {
@@ -159,7 +178,10 @@ test('invalid inputs and unavailable durable storage never submit a financial re
   assert.equal((await f.client.buy()).reason, 'storage_unavailable');
   assert.equal((await f.client.buyCoach()).reason, 'storage_unavailable');
   assert.equal((await f.client.startRound('bad', 1)).reason, 'invalid');
-  assert.equal((await f.client.startRound(OTHER, 51)).reason, 'invalid');
+  for (const stage of [0, 121, 120.5, '120']) {
+    assert.equal((await f.client.startRound(OTHER, stage)).reason, 'invalid');
+    assert.equal((await f.client.completeRound(OTHER, stage)).reason, 'invalid');
+  }
   assert.equal((await f.client.completeRound('bad', 1)).reason, 'invalid');
   assert.equal((await f.client.spend('')).reason, 'invalid');assert.equal(f.requests().length, count);
   assert.match(f.module.namespace.createRequestId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/);

@@ -87,7 +87,10 @@ test('genuine elastic and magnetic trajectories inform the cue instead of ordina
   assert.equal(evaluateCoachShot(withoutBounce, low, 0, timing).ready, false);
   const magnetic = {bow: 0, arrow: 13, charge: 1, yaw: 0, pitch: .066};
   assert.equal(evaluateCoachShot(magnetic, STAGES[1], 0, timing).ready, true);
-  for (const stage of [{...STAGES[3], wind: 3}, STAGES[23], STAGES[49]]) {
+  const distantPillars = STAGES.find(stage => stage.coverageMode === 'pillars' && stage.distance === 50);
+  const hiddenMoving = STAGES.find(stage => stage.visibleFraction === 0 && stage.motion.speed && stage.distance === 50);
+  assert.ok(distantPillars && hiddenMoving, 'the forecast still exercises distant pillars and a fully hidden moving target');
+  for (const stage of [{...STAGES[3], wind: 3}, distantPillars, hiddenMoving]) {
     const params = centreAim(stage, 1.3, 0, 13), actual = launchArrow(params);
     stepArrow(actual, 8, stage, 1.3);
     const predicted = evaluateCoachShot(params, stage, 1.3, timing);

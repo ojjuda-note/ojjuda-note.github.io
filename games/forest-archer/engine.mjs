@@ -265,28 +265,69 @@ function stageDifficulty(template) {
 const signedWind = (id, amount) => (id % 4 < 2 ? 1 : -1) * Number(amount.toFixed(3));
 function lessonStages() {
   const templates = [];
-  const chapters = [
-    ['고정 표적', '먼저 거리와 당기는 힘을 익혀요.', '바람 없는 과녁이에요. 충분히 당긴 뒤, 멀수록 조금 높이 겨눠보세요.'],
-    ['움직이는 표적', '천천히 움직이는 중심을 따라가요.', '과녁이 천천히 좌우로 움직여요. 화살이 도착할 앞쪽을 조금 겨눠보세요.'],
-    ['벽 사이 · 3/4 보임', '양옆이 조금 가려진 고정 과녁이에요.', '과녁의 3/4이 보여요. 가운데 넓게 열린 부분으로 쏴보세요.'],
-    ['벽 사이 · 1/2 보임', '열린 틈을 조금 좁혀볼까요?', '과녁의 절반이 보여요. 짧은 거리부터 좁아진 틈에 익숙해져 보세요.'],
-    ['벽 사이 · 1/3 보임', '작은 틈의 중심을 읽어요.', '과녁의 1/3이 보여요. 충분히 조준하고 열린 가운데 부분으로 쏴보세요.'],
-    ['기둥 뒤 표적', '기둥 사이로 움직임을 읽어요.', '과녁의 약 3/4이 보이도록 가는 기둥을 놓았어요. 움직이는 중심과 열린 틈을 함께 읽어보세요.']
-  ];
-  for (let chapter = 0; chapter < chapters.length; chapter++) for (const [index, distance] of learningDistances.entries()) {
-    const id = templates.length + 1, radius = targetRadii[index], [title, subtitle, hint] = chapters[chapter];
-    const extra = { chapterId: chapter + 1, chapterName: title, radius, height: radius + .5,
-      goal: 10 + chapter * 2 + index * 2, wind: chapter ? signedWind(id, .03 + (id - 5) * .008) : 0,
-      motion: chapter === 1 ? motion(radius * (.60 + index * .10), 0, .24 + index * .025) :
-        chapter === 5 ? motion(radius * .85, 0, .25 + index * .025) : motion() };
-    if (chapter >= 2) {
-      extra.coverageMode = chapter < 5 ? 'side-walls' : 'pillars';
-      extra.visibleFraction = chapter < 5 ? [.75, .5, 1 / 3][chapter - 2] : .75;
-      extra.coverMaterial = index % 2 ? 'timber' : 'stone';
-      extra.layoutJitter = distance * .055;
-      templates.push(coverStage(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
-    } else templates.push(stage(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
+  let chapterId = 0;
+  const addChapter = (title, subtitle, hint, build, {distances = learningDistances, legacyFirst, key} = {}) => {
+    chapterId++;
+    for (const [index, distance] of distances.entries()) {
+      const id = templates.length + 1, radius = targetRadii[index];
+      const extra = {chapterId,chapterName:title,lessonKey:key || title,radius,height:radius+.5,
+        ...(legacyFirst ? {legacyStageId:legacyFirst+index} : {}),...build(index,distance,radius,id)};
+      const make = extra.coverageMode ? coverStage : stage;
+      templates.push(make(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
+    }
+  };
+  const cover = (fraction,index,distance,extra = {}) => ({coverageMode:'side-walls',visibleFraction:fraction,
+    coverMaterial:index%2 ? 'timber' : 'stone',layoutJitter:distance*.055,...extra});
+  const pillars = (index,distance,radius,extra = {}) => ({coverageMode:'pillars',visibleFraction:.75,
+    coverMaterial:index%2 ? 'timber' : 'stone',layoutJitter:distance*.055,
+    motion:motion(radius*.85,0,.25+index*.025),...extra});
+  const people = (count,index,distance) => Array.from({length:count},(_,person) => ({
+    id:person,z:distance*(.94-person*.035),width:.68+index*.035,height:2.12,depth:.32,
+    passDuration:48+index*4+person*7,phase:count===1?.40:person===0?.34:.63
+  }));
+
+  // Preserve the original first eight missions, including goals, wind and pace.
+  addChapter('고정 표적','먼저 거리와 당기는 힘을 익혀요.',
+    '바람 없는 과녁이에요. 충분히 당긴 뒤, 멀수록 조금 높이 겨눠보세요.',
+    index => ({goal:10+index*2}),{legacyFirst:1,key:'fixed-intro'});
+  addChapter('움직이는 표적','천천히 움직이는 중심을 따라가요.',
+    '과녁이 천천히 좌우로 움직여요. 화살이 도착할 앞쪽을 조금 겨눠보세요.',
+    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.03+(id-5)*.008),
+      motion:motion(radius*(.60+index*.10),0,.24+index*.025)}),{legacyFirst:5,key:'tracking-intro'});
+  addChapter('가벼운 바람 읽기','멈춘 과녁으로 옆바람을 익혀요.',
+    '날리는 잎의 방향을 살펴보세요. 바람 반대쪽을 조금 겨누고 거리별 차이를 익혀요.',
+    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.045+index*.01)}),{key:'wind-intro'});
+  addChapter('높낮이 따라가기','위아래로 움직이는 과녁을 따라가요.',
+    '옆으로는 움직이지 않아요. 올라가고 내려오는 속도를 보고 화살이 도착할 높이를 겨눠요.',
+    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.05+index*.01),height:radius+.85,
+      motion:{...motion(0,radius*.22,.22+index*.02),irregular:false}}),{key:'vertical-intro'});
+
+  for (const [index,fraction] of [.75,.5,1/3].entries()) {
+    const label=['3/4','1/2','1/3'][index];
+    addChapter(`벽 사이 · ${label} 보임`,'양옆 벽 사이의 고정 과녁을 겨눠요.',
+      `과녁의 ${label}이 보여요. 짧은 거리에서 열린 틈의 중심을 익힌 뒤 멀리 쏴보세요.`,
+      (step,distance) => cover(fraction,step,distance),{legacyFirst:9+index*4,key:`fixed-gap-${label}`});
   }
+  addChapter('기둥 사이 · 일정한 속도','가는 기둥 뒤 과녁을 일정한 속도로 따라가요.',
+    '과녁의 약 3/4이 보여요. 기둥은 움직이지 않으니 과녁 중심이 열린 틈으로 나올 때 쏘세요.',
+    (index,distance,radius) => pillars(index,distance,radius,{motion:{...motion(radius*.85,0,.22+index*.025),irregular:false}}),
+    {key:'pillars-regular'});
+  addChapter('기둥 사이 · 불규칙한 속도','기둥 뒤 과녁이 빨라졌다 느려져요.',
+    '과녁의 약 3/4이 보여요. 일정한 박자 대신 지금의 이동 속도와 빈틈을 함께 읽어보세요.',
+    (index,distance,radius) => pillars(index,distance,radius),{legacyFirst:21,key:'pillars-irregular'});
+  addChapter('대각선 따라가기','좌우와 높낮이를 함께 읽어요.',
+    '과녁이 대각선으로 움직여요. 지금 위치보다 화살이 도착할 위치를 조금 앞서 겨눠요.',
+    (index,distance,radius) => ({height:radius+1,motion:{...motion(radius*.72,radius*.23,.25+index*.025),irregular:false}}),
+    {key:'diagonal-tracking'});
+  addChapter('높은 고정 과녁','높은 곳의 과녁으로 발사 각도를 익혀요.',
+    '과녁은 멈춰 있어요. 높은 위치와 거리에 맞춰 위쪽을 겨누되 너무 크게 올리지 마세요.',
+    (index,distance,radius) => ({height:radius+1.15+index*.12}),{key:'elevated-fixed'});
+  addChapter('낮은 담 너머','과녁의 아래쪽만 담에 가려져 있어요.',
+    '보이는 중심을 기준으로 낙하를 보정하세요. 너무 낮은 화살은 앞쪽 담에 닿아요.',
+    (index,distance,radius) => ({lowWall:true,obstacles:[wall(distance*.58,
+      PLAYER.y+(radius+.5-radius*.18-PLAYER.y)*.58,Math.max(5,radius*3.4),0,index%2?'timber':'stone')]}),
+    {key:'low-wall-arc'});
+
   const animals = [
     {kind:'rabbit',name:'토끼',radius:.85,height:.72,duration:16,bob:.16,pace:.55,hint:'낮게 통통 뛰는 토끼를 따라가요. 양쪽 중 어디에서 들어오는지 먼저 살펴보세요.'},
     {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:15,bob:.07,pace:.65,hint:'짧은 보폭으로 속도를 바꾸는 살쾡이를 따라가요. 이동 방향 앞쪽을 겨눠보세요.'},
@@ -295,32 +336,91 @@ function lessonStages() {
     {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:18,bob:.45,pace:.5,hint:'넓게 날개를 펴고 천천히 높이를 바꾸는 독수리를 따라가요.'},
     {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:12,bob:.12,pace:.8,hint:'가속했다가 숨을 고르는 치타를 따라가요. 빨라질 때는 조금 더 앞을 겨누세요.'}
   ];
-  for (const [animalIndex, animal] of animals.entries()) for (const [index, distance] of learningDistances.entries()) {
-    const id = templates.length + 1, scale = 1 + index * .09;
-    templates.push(stage(id, `${animal.name} 따라가기 · ${distance}m`, `${animal.name}의 움직임 익히기`, animal.hint, distance, {
-      kind: animal.kind, chapterId: animalIndex + 7, chapterName: `${animal.name} 따라가기`,
-      radius: animal.radius * scale, height: animal.height * scale,
-      motion: motion(0, animal.bob * scale, 0), passDuration: animal.duration - index * .4,
-      paceVariation: animal.pace, approachEase: .45,
-      wind: signedWind(id, .22 + (id - 25) * .025), goal: 18 + Math.floor((id - 25) / 4) + index
-    }));
+  for (const [animalIndex,animal] of animals.entries()) {
+    addChapter(`${animal.name} 따라가기`,`${animal.name}의 움직임 익히기`,animal.hint,
+      index => {
+        const scale=1+index*.09;
+        return {kind:animal.kind,radius:animal.radius*scale,height:animal.height*scale,
+          motion:motion(0,animal.bob*scale,0),passDuration:animal.duration-index*.4,
+          paceVariation:animal.pace,approachEase:.45};
+      },{legacyFirst:25+animalIndex*4,key:`animal-${animal.kind}`});
   }
-  // Full cover comes only after every visible-target and tracking lesson.
-  // The wall blocks the sightline but leaves a reachable parabolic path above it.
-  for (const moving of [false, true]) {
-    const id = moving ? 50 : 49;
-    templates.push(stage(id, moving ? '벽 뒤에서 움직이는 과녁' : '완전히 숨은 고정 과녁',
-      moving ? '미리 본 움직임을 이어서 읽어요.' : '미리 보고 포물선으로 넘겨요.',
-      moving ? '시작할 때 벽 뒤 과녁과 움직임을 먼저 보여줘요. 과녁 보기로 다시 살피고, 도착할 위치를 앞서 겨눠 벽 위로 쏘세요.' :
-        '시작할 때 벽 뒤 과녁을 먼저 보여줘요. 과녁 보기로 다시 살피고, 조금 높게 겨눠 벽 위로 쏘세요.', 50, {
-        chapterId:13,chapterName:'완전히 숨은 과녁',radius:2.1,height:2.6,visibleFraction:0,
-        motion:moving ? motion(1.8,0,.28) : motion(),
-        obstacles:[wall(25,3.35,9,0,moving ? 'timber' : 'stone')],
-        wind:moving ? -1 : .9,goal:moving ? 28 : 26
-      }));
-  }
+  addChapter('넓은 불규칙 이동','넓게 움직이는 과녁과 바람을 함께 읽어요.',
+    '방향이 바뀌는 끝부분에서는 속도가 줄어요. 움직임을 읽고 좋은 순간을 기다려 보세요.',
+    (index,distance,radius) => ({motion:motion(radius*(1.02+index*.08),radius*.07,.31+index*.025)}),
+    {key:'wide-irregular'});
+  addChapter('기둥 사이 높낮이','기둥 뒤에서 과녁의 높이도 바뀌어요.',
+    '가는 기둥 뒤 과녁이 대각선으로 움직여요. 중심의 높이와 가로 방향을 함께 따라가세요.',
+    (index,distance,radius) => pillars(index,distance,radius,{height:radius+.8,
+      motion:motion(radius*.85,radius*.16,.29+index*.02)}),{key:'pillars-diagonal'});
+  addChapter('한 사람 지나간 뒤','사람이 지나가는 틈으로 고정 과녁을 겨눠요.',
+    '사람은 표적이 아니에요. 사람이 과녁 앞을 지나가면 기다렸다가 빈틈에 쏘세요.',
+    (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(1,index,distance)}),{key:'one-passer'});
+  addChapter('두 사람 사이','다른 속도로 지나가는 두 사람의 틈을 읽어요.',
+    '서로 다른 거리와 속도로 사람들이 지나가요. 두 사람 모두 화살의 길에서 벗어나는 순간을 기다리세요.',
+    (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(2,index,distance)}),{key:'two-passers'});
+  addChapter('사람 사이 움직이는 과녁','움직이는 과녁과 사람의 간격을 함께 읽어요.',
+    '과녁이 도착할 곳을 앞서 겨누고 사람의 이동도 살펴보세요. 사람에게 닿으면 그 발사는 점수를 받지 못해요.',
+    (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(2,index,distance),
+      motion:motion(.58+index*.12,0,.23+index*.02)}),{key:'passers-tracking'});
+  addChapter('좁은 틈의 움직임','고정된 좁은 틈 뒤로 과녁이 움직여요.',
+    '과녁이 가운데에 오면 절반이 보여요. 움직이면 보이는 부분이 달라지니 빈틈을 통과할 때를 겨누세요.',
+    (index,distance,radius) => cover(.5,index,distance,{variableExposure:true,motion:motion(radius*.42,0,.28+index*.02)}),
+    {key:'moving-half-gap'});
+
+  // Short fully hidden ranges would require an unfairly tiny target for fast
+  // crossbows. These arc lessons therefore progress through 30/35/40/50 metres.
+  const hiddenDistances = [30,35,40,50];
+  const hidden = (index,distance,radius,profile,extra = {}) => ({
+    radius:[1.45,1.6,1.8,2.1][index],height:[2,2.15,2.3,2.6][index],visibleFraction:0,
+    fullCover:profile,...extra
+  });
+  addChapter('완전히 숨은 고정 과녁','미리 보고 포물선으로 넘겨요.',
+    '시작할 때 벽 뒤 과녁을 먼저 보여줘요. 과녁 보기로 다시 살피고, 조금 높게 겨눠 벽 위로 쏘세요.',
+    (index,distance,radius) => hidden(index,distance,radius,'single',index===3?{legacyStageId:49}:{}),
+    {distances:hiddenDistances,key:'hidden-fixed'});
+  addChapter('벽 뒤에서 움직이는 과녁','미리 본 움직임을 이어서 읽어요.',
+    '과녁 보기로 벽 뒤의 움직임을 살펴보세요. 화살이 도착할 위치를 앞서 겨누고 벽 위로 쏘세요.',
+    (index,distance,radius) => hidden(index,distance,radius,'single',{
+      motion:motion(index===3?1.8:.65+index*.22,0,index===3?.28:.20+index*.02),
+      ...(index===3?{legacyStageId:50}:{})}),{distances:hiddenDistances,key:'hidden-tracking'});
+  addChapter('벽 뒤 불규칙 이동','보이지 않는 동안에도 속도가 바뀌어요.',
+    '미리 보기를 자주 활용하세요. 벽 뒤에서 빨라졌다 느려지는 과녁의 다음 위치를 읽어보세요.',
+    (index,distance,radius) => hidden(index,distance,radius,'single',{
+      motion:motion(.95+index*.27,.08+index*.02,.29+index*.025)}),
+    {distances:hiddenDistances,key:'hidden-irregular'});
+  addChapter('기둥과 사람 사이','고정 기둥과 지나가는 사람을 함께 살펴요.',
+    '기둥 사이로 과녁이 움직이고 사람이 앞을 지나가요. 화살이 지날 길이 모두 열리는 순간을 기다리세요.',
+    (index,distance,radius) => pillars(index,distance,radius,{radius:1.15+index*.12,height:1.5,
+      motion:motion(.65+index*.12,0,.28+index*.02),passers:people(2,index,distance)}),{key:'pillars-passers'});
+  addChapter('바람 속 하늘 추적','새의 높낮이와 강한 옆바람을 함께 읽어요.',
+    '비둘기는 빠르게 높이를 바꾸고 독수리는 넓게 활공해요. 도착할 위치와 바람의 밀림을 함께 계산하세요.',
+    index => {
+      const animal=animals[index%2?4:3],scale=1+index*.09;
+      return {kind:animal.kind,radius:animal.radius*scale,height:(animal.height+.35)*scale,
+        motion:motion(0,animal.bob*1.4*scale,0),passDuration:animal.duration-index*.4-1.0,
+        paceVariation:Math.min(1,animal.pace+.15),approachEase:.35};
+    },{key:'sky-wind'});
+  addChapter('두 겹 벽 너머','두 벽을 넘겨 마지막 이동 과녁을 맞혀요.',
+    '미리 보기로 두 벽과 과녁 위치를 확인하세요. 첫 벽을 넘은 뒤에도 충분한 높이를 유지하도록 당기는 힘과 각도를 조절해요.',
+    (index,distance,radius) => hidden(index,distance,radius,'double',{
+      motion:motion(.72+index*.24,.07+index*.02,.25+index*.025)}),
+    {distances:hiddenDistances,key:'double-wall-finale'});
   return templates;
 }
+
+function hiddenCover(template) {
+  const {distance,radius,height,motion:movement} = template;
+  const positions=template.fullCover==='double'?[.34,.58]:[.5];
+  const halfWidth=Math.max(5,radius+Math.abs(movement.amplitudeX||0)+3.5);
+  return positions.map((fraction,index) => {
+    const z=distance*fraction,depth=.36,near=z-depth/2;
+    const top=height+radius+Math.abs(movement.amplitudeY||0);
+    const heightAtWall=PLAYER.y+(top-PLAYER.y)*near/distance+.035;
+    return {...wall(z,heightAtWall,halfWidth*2*fraction,0,index%2||template.motion.speed?'timber':'stone'),depth};
+  });
+}
+
 const gearBand = (gearTier, gearLabel, first, last, weaponIds, referenceLoadouts, balance) => Object.freeze({
   gearTier, gearLabel, first, last,
   weaponIds: Object.freeze({bow:Object.freeze(weaponIds.bow),crossbow:Object.freeze(weaponIds.crossbow)}),
@@ -330,15 +430,15 @@ const gearBand = (gearTier, gearLabel, first, last, weaponIds, referenceLoadouts
 
 /** Optional equipment guidance. Family ranks never lock a stage or a weapon. */
 export const STAGE_GEAR_BANDS = Object.freeze([
-  gearBand('starter','기본 활',1,8,{bow:[0],crossbow:[]},
+  gearBand('starter','기본 활',1,16,{bow:[0],crossbow:[]},
     [{family:'bow',bow:0,arrow:0}],{radiusScale:1,speedScale:1}),
-  gearBand('lower','하위 활·석궁',9,24,{bow:[4,5,6],crossbow:[13,12,10]},
+  gearBand('lower','하위 활·석궁',17,48,{bow:[4,5,6],crossbow:[13,12,10]},
     [{family:'bow',bow:4,arrow:6},{family:'crossbow',bow:13,arrow:6}],
     {radiusScale:1,speedScale:1,windStart:.10,windEnd:.32,goalStart:18,goalEnd:26}),
-  gearBand('middle','중간 활·석궁',25,35,{bow:[1,2,8],crossbow:[14,11,15,16]},
+  gearBand('middle','중간 활·석궁',49,105,{bow:[1,2,8],crossbow:[14,11,15,16]},
     [{family:'bow',bow:1,arrow:6},{family:'crossbow',bow:14,arrow:6}],
     {radiusScale:.94,speedScale:1.03,windStart:.35,windEnd:.65,goalStart:26,goalEnd:30}),
-  gearBand('upper','상위 활·석궁',36,50,{bow:[7,9,3],crossbow:[17,18,19]},
+  gearBand('upper','상위 활·석궁',106,120,{bow:[7,9,3],crossbow:[17,18,19]},
     [{family:'bow',bow:3,arrow:3},{family:'crossbow',bow:19,arrow:3}],
     {radiusScale:.82,speedScale:1.08,windStart:.75,windEnd:1.30,goalStart:32,goalEnd:36})
 ]);
@@ -356,11 +456,21 @@ function applyEquipmentLesson(template) {
   }
   // Keep promised circular face fractions after any balance change to size.
   if (adjusted.coverageMode) adjusted.obstacles = partialCover(adjusted);
+  if (adjusted.fullCover) adjusted.obstacles = hiddenCover(adjusted);
   return {...adjusted,difficulty:stageDifficulty(adjusted)};
 }
 export const STAGES = Object.freeze(lessonStages().map(applyEquipmentLesson));
+/** Migration only: old saved records move to their corresponding expanded lesson. */
+export const LEGACY_STAGE_MAP = Object.freeze(Object.fromEntries(STAGES
+  .filter(stage => Number.isInteger(stage.legacyStageId)).map(stage => [stage.legacyStageId,stage.id])));
+/** Shared chapter boundaries for navigation, documentation and curriculum checks. */
+export const MISSION_GROUPS = Object.freeze(Array.from(new Set(STAGES.map(stage => stage.chapterId)),chapterId => {
+  const missions=STAGES.filter(stage => stage.chapterId===chapterId);
+  return Object.freeze({chapterId,chapterName:missions[0].chapterName,first:missions[0].id,last:missions.at(-1).id,
+    distances:Object.freeze(missions.map(stage => stage.distance))});
+}));
 
-/** Separate timed gun event; the fifty main archery stages retain their own progress. */
+/** Separate timed gun event; the 120 main archery missions retain their own progress. */
 export function createClayEvent(level = 1) {
   const eventLevel = clamp(Math.floor(Number(level) || 1), 1, 10);
   const targetsPerWave = Math.min(10, eventLevel + 1), waveCount = 3;
