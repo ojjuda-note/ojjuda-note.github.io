@@ -64,8 +64,12 @@ const root=path.join(__dirname,'..');
   const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
   const rankSource=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
   const registrySource=world.slice(world.indexOf('var _r='),world.indexOf(',Z=360,he=540'))+';';
+  w.D={online:true,user:{id:A}};
   w.eval(registrySource+rankSource);w.OjjudaMatgoAccess={visible:()=>true};const catalog=w.worldRankGames();
-  for(const game of w.eval('Object.keys(_r)'))assert.ok(game==='screw'?catalog.screw_box&&catalog.screw_flat:catalog[game],game+' must be in board rankings');
+  for(const [game,entry] of w.eval('Object.entries(_r)')){
+   if(entry.test)assert.equal(catalog[game],undefined,game+' test scores stay out of board rankings');
+   else assert.ok(game==='screw'?catalog.screw_box&&catalog.screw_flat:catalog[game],game+' must be in board rankings');
+  }
   assert.equal(catalog.tank.unit,'연승');assert.ok(catalog.tour);
   w.eval(fs.readFileSync(path.join(root,'ttang-bridge.js'),'utf8'));
   const lifecycle=[],code='a'.repeat(24),roomId=randomUUID();
