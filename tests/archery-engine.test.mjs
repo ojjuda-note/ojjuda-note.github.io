@@ -539,7 +539,7 @@ test('double-speed event bullets finish misses at the target plane while arrows 
 });
 
 test('ten timed event levels progress from two to ten simultaneous targets in three finite waves', () => {
-  assert.equal(STAGES.length, 50); assert.ok(!STAGES.includes(CLAY_EVENT));
+  assert.ok(!STAGES.includes(CLAY_EVENT));
   assert.deepEqual(CLAY_EVENT, createClayEvent(1));
   assert.equal(CLAY_EVENT.shots, null); assert.equal(CLAY_EVENT.goal, 30);
   assert.equal(BOWS[20].price, 0, 'the first event gun is free');
@@ -789,8 +789,8 @@ test('seeded sway is continuous, irregular, bounded and reduced by upgraded bows
 });
 
 test('all main stages keep physically valid targets, cover and independent people blockers', () => {
-  assert.deepEqual(STAGES.map(stage => stage.id), Array.from({ length: 50 }, (_, index) => index + 1));
-  assert.equal(new Set(STAGES.map(stage => stage.name)).size, 50);
+  assert.deepEqual(STAGES.map(stage => stage.id), Array.from({ length: STAGES.length }, (_, index) => index + 1));
+  assert.equal(new Set(STAGES.map(stage => stage.name)).size, STAGES.length);
   for (const stage of STAGES) {
     const target = targetAt(stage, 0);
     assert.ok(target.z > 0 && target.rx > 0 && target.ry > 0);
@@ -911,7 +911,7 @@ test('continuous moving-person collision catches thin blockers and is independen
   }
 });
 
-test('all fifty stages remain reachable with starter equipment across seeded layouts and normal aiming limits', () => {
+test('every mission remains reachable with starter equipment across seeded layouts and normal aiming limits', () => {
   for (const seedValue of [0, 5, 19, 0xfffffffe]) for (const template of STAGES) {
     const stage = prepareStage(template, seedValue);
     let feasible = false;
@@ -929,7 +929,6 @@ test('all fifty stages remain reachable with starter equipment across seeded lay
 });
 
 test('every stage has a reachable bullseye with all twelve ordinary arrow types', () => {
-  assert.equal(STAGES.length, 50);
   for (const arrow of ARROWS.slice(0, 12)) for (const stage of STAGES) {
     let feasible = null;
     // Crossing animals and blockers do not promise a clear shot at exactly 2s.
@@ -969,7 +968,7 @@ test('every recommended bow and crossbow can complete its assigned stage with th
 test('reference grades retain usable five-shot score margins with sway, release timing and native arrow variance', () => {
   // Distance, narrow gaps, pillars, fast tracking and fully hidden final targets
   // exercise different failure modes without treating ideal aim as human play.
-  const examples = STAGES.filter(stage => [4, 8, 20, 24, 28, 40, 48, 49, 50].includes(stage.id));
+  const examples = STAGES.filter(stage => [4, 8, 28, 36, 52, 92, 100, 104, 108, 112, 116, 120].includes(stage.id));
   const sample = (stage, found) => {
     let normal = 0, steady = 0;
     for (let trial = 0; trial < 96; trial++) {
