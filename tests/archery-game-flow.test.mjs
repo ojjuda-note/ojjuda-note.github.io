@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-const SAVE_KEY = 'forest-archer-progress-v2';
+const SAVE_KEY = 'forest-archer-progress-v3';
+const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
 const STAGE_CATALOG = 'missions-120-v1';
 const STAGE_COUNT = 120;
 const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
@@ -306,6 +307,83 @@ test('the reordered game starts fresh once and never restores the previous journ
   assert.equal(resumed.api.progress.coins, 600 - upgrade.price);
   assert.equal(resumed.api.progress.bow, upgrade.id, 'only the release transition resets progress, not every visit');
   assert.deepEqual(JSON.parse(store.get('forest-archer-progress-v1')), old);
+});
+
+const preResetProgress = () => ({version: 1, stageCatalog: STAGE_CATALOG, coins: 7654,
+  clayCredits: 12, stabilizers: 3, coachEnabled: false, sound: false,
+  ownedBows: [0, 3, 19, 20, 24], ownedArrows: [0, 11, 12, 13],
+  bow: 19, arrow: 13, eventGun: 24, scopedBows: [3, 19, 24],
+  lastStage: 120, unlocked: 120, best: {1: 50, 50: 42, 120: 48},
+  eventBest: 280, eventBestByLevel: {2: 60, 10: 280}, eventPlays: 14,
+  mainRounds: 70, shots: 420, hits: 330});
+const retainedInventory = value => {
+  const plain = JSON.parse(JSON.stringify(value));
+  return Object.fromEntries(['coins', 'clayCredits', 'stabilizers', 'coachEnabled', 'sound',
+    'ownedBows', 'ownedArrows', 'bow', 'arrow', 'eventGun', 'scopedBows'].map(key => [key, plain[key]]));
+};
+
+test('v2 record reset preserves all inventory and options while clearing both old and expanded mission records', async () => {
+  for (const stageCatalog of [undefined, STAGE_CATALOG]) {
+    const old = {...preResetProgress(), stageCatalog, lastStage: stageCatalog ? 120 : 50};
+    const backup = JSON.stringify(old), pendingKey = 'forest-archer-ammo-pending-v2:other-account';
+    const recoveryKey = 'forest-archer-ammo-recovery-v2:11111111-1111-4111-8111-111111111111';
+    const store = new Map([[LEGACY_SAVE_KEY, backup], [pendingKey, 'pending-purchase'],
+      [recoveryKey, 'recovery-receipts'], ['another-game-progress', 'unrelated-record']]);
+    const app = await appHarness(null, {store, remaining: 55, coachActive: true});
+    const saved = app.snapshot();
+    assert.deepEqual(retainedInventory(saved), retainedInventory(old));
+    assert.deepEqual({lastStage: saved.lastStage, best: saved.best, eventBest: saved.eventBest,
+      eventBestByLevel: saved.eventBestByLevel, eventPlays: saved.eventPlays,
+      mainRounds: saved.mainRounds, shots: saved.shots, hits: saved.hits},
+    {lastStage: 1, best: {}, eventBest: 0, eventBestByLevel: {}, eventPlays: 0, mainRounds: 0, shots: 0, hits: 0});
+    assert.equal(app.api.state.stage.id, 1);
+    assert.equal(saved.stageCatalog, STAGE_CATALOG);assert.equal(saved.unlocked, STAGE_COUNT);
+    assert.equal(app.api.ammo.snapshot.remaining, 55, 'account ammunition is outside the local record reset');
+    assert.ok(app.api.coachRemaining() > 0, 'a paid coach rental remains active');
+    assert.equal(store.get(LEGACY_SAVE_KEY), backup, 'the previous journey remains an untouched backup');
+    assert.equal(store.get(pendingKey), 'pending-purchase');assert.equal(store.get(recoveryKey), 'recovery-receipts');
+    assert.equal(store.get('another-game-progress'), 'unrelated-record');
+  }
+});
+
+test('new shots, scores and selected stage survive the second visit after the one-time v2 reset', async () => {
+  const backup = JSON.stringify({version: 1, stageCatalog: STAGE_CATALOG, coins: 4500,
+    lastStage: 33, best: {1: 20, 33: 45}, mainRounds: 20, shots: 100, hits: 85, sound: false});
+  const store = new Map([[LEGACY_SAVE_KEY, backup]]), app = await appHarness(null, {store});
+  for (let shot = 0; shot < 5; shot++) await centeredShot(app);
+  app.api.startStage(2);await app.flush();
+  const saved = app.snapshot();
+  assert.deepEqual([saved.lastStage, saved.mainRounds, saved.shots, saved.hits], [2, 1, 5, 5]);
+  assert.deepEqual(saved.best, {1: 50});assert.equal(saved.coins, 4575);
+  const resumed = await appHarness(null, {store, server: app.ammo});
+  assert.deepEqual(resumed.snapshot(), saved, 'the new journey resumes without another record reset');
+  assert.equal(resumed.api.state.stage.id, 2);assert.equal(store.get(LEGACY_SAVE_KEY), backup);
+});
+
+test('writes from an old v2 tab cannot resurrect old records or erase the current v3 journey', async () => {
+  const store = new Map([[LEGACY_SAVE_KEY, JSON.stringify(preResetProgress())]]);
+  const app = await appHarness(null, {store});
+  app.api.startStage(8);await app.flush();
+  app.api.state.score = 42;app.api.finishRound();await app.flush();
+  const saved = app.snapshot();
+  assert.deepEqual(saved.best, {8: 42});assert.equal(saved.mainRounds, 1);
+  store.set(LEGACY_SAVE_KEY, JSON.stringify({...preResetProgress(), coins: 99999,
+    lastStage: 119, best: {119: 50}, mainRounds: 999, shots: 9999}));
+  const resumed = await appHarness(null, {store, server: app.ammo});
+  assert.deepEqual(resumed.snapshot(), saved, 'v3 always wins after its first successful save');
+  assert.equal(resumed.api.state.stage.id, 8);
+});
+
+test('a corrupt or incompatible current save never falls back to pre-reset records or inventory', async () => {
+  const backup = JSON.stringify(preResetProgress());
+  for (const corrupt of ['{broken', 'null', '', JSON.stringify({version: 99, coins: 123})]) {
+    const store = new Map([[SAVE_KEY, corrupt], [LEGACY_SAVE_KEY, backup]]);
+    const app = await appHarness(null, {store});
+    const saved = app.snapshot();
+    assert.deepEqual([saved.lastStage, saved.coins, saved.mainRounds, saved.shots, saved.hits], [1, 0, 0, 0, 0]);
+    assert.deepEqual(saved.best, {});assert.deepEqual(saved.ownedBows, [0, 20]);
+    assert.deepEqual(saved.ownedArrows, [0]);assert.equal(store.get(LEGACY_SAVE_KEY), backup);
+  }
 });
 
 test('pointer hold waits for release and pointer cancellation never consumes an arrow', async () => {
