@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, stepArrow} from './engine.mjs?v=20261102-archery-gentle1';
+import {BOWS, clamp, targetAt, launchArrow, stepArrow} from './engine.mjs?v=20261102-archery-120-missions1';
 
 export const COACH_PRICE = 10;
 export const COACH_DURATION_SECONDS = 86400;
