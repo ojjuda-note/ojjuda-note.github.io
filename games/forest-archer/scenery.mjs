@@ -726,6 +726,89 @@ export function drawAnimal(ctx,x,y,radius,kind,time=0,direction=1) {
   ctx.restore();
 }
 
+/** Gold impact at a projected hit point. Age is seconds after impact, not replay time. */
+export function drawBullseyeImpact(ctx,w,h,{x,y,age,scale=1,reducedMotion=false}={}) {
+  const duration=1.2;
+  if(!ctx||![w,h,x,y,age].every(Number.isFinite)||w<=0||h<=0||w>32768||h>32768||age<0||age>=duration)return;
+  const size=Math.max(.45,Math.min(2,Number.isFinite(scale)?scale:1));
+  const radius=Math.max(23,Math.min(64,Math.min(w,h)*.095))*size;
+  if(x<-radius*4||x>w+radius*4||y<-radius*4||y>h+radius*4)return;
+  const progress=age/duration,fade=Math.pow(1-progress,1.45);
+  ctx.save();ctx.translate(x,y);ctx.lineCap='round';ctx.lineJoin='round';
+  const opacity=Number.isFinite(ctx.globalAlpha)?ctx.globalAlpha:1;
+  if(reducedMotion){
+    // A fixed, restrained halo gives the same success feedback without travel.
+    const r=Math.max(10,Math.min(22,radius*.43));
+    const glow=ctx.createRadialGradient(0,0,0,0,0,r);
+    glow.addColorStop(0,'rgba(245,206,103,.40)');glow.addColorStop(.38,'rgba(232,183,78,.20)');glow.addColorStop(1,'rgba(226,172,68,0)');
+    ctx.globalAlpha=opacity*fade;ellipse(ctx,0,0,r,r,glow);
+    ctx.beginPath();ctx.arc(0,0,r*.48,0,TAU);ctx.strokeStyle='#eccb7e';ctx.lineWidth=1.1;ctx.stroke();
+    ctx.restore();return;
+  }
+  const haloRadius=radius*(1.1+progress*.65);
+  const glow=ctx.createRadialGradient(0,0,0,0,0,haloRadius);
+  glow.addColorStop(0,'rgba(250,211,113,.38)');glow.addColorStop(.22,'rgba(236,185,79,.22)');glow.addColorStop(.62,'rgba(220,158,52,.08)');glow.addColorStop(1,'rgba(220,158,52,0)');
+  ctx.globalAlpha=opacity*fade;ellipse(ctx,0,0,haloRadius,haloRadius,glow);
+  // Staggered, soft circular waves stay centred on the recorded impact.
+  for(let i=0;i<3;i++){
+    const elapsed=age-i*.085;if(elapsed<0)continue;
+    const t=Math.min(1,elapsed/(.74+i*.08)),r=radius*(.12+1.65*(1-Math.pow(1-t,2)));
+    ctx.globalAlpha=opacity*Math.pow(1-t,1.7)*(.25-i*.045);
+    ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.strokeStyle='#dca848';ctx.lineWidth=Math.max(2.5,radius*.095);ctx.stroke();
+    ctx.globalAlpha=opacity*Math.pow(1-t,1.7)*(.58-i*.11);
+    ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.strokeStyle=i%2?'#d6ae60':'#f3d88c';ctx.lineWidth=Math.max(.8,radius*.025);ctx.stroke();
+  }
+  // Indexed particles are deterministic and never alter gameplay randomness.
+  const count=w<500?24:32;
+  for(let i=0;i<count;i++){
+    const angle=i*2.3999632297+.31,spread=(i*.6180339887)%1;
+    const life=.56+spread*.47;if(age>=life)continue;
+    const t=age/life,speed=radius*(1.20+spread*1.7);
+    const travel=speed*age*(1-.23*t),gravity=radius*.65*age*age;
+    const px=Math.cos(angle)*travel,py=Math.sin(angle)*travel+gravity;
+    const tail=Math.max(2,radius*(.08+spread*.11))*(1-t*.55);
+    ctx.globalAlpha=opacity*Math.pow(1-t,1.3)*(.65+spread*.30);
+    line(ctx,px-Math.cos(angle)*tail,py-Math.sin(angle)*tail,px,py,i%3?'#f5d384':'#c49344',Math.max(.7,radius*.022));
+    if(i%5===0){
+      const star=Math.max(1.4,radius*.052)*(1-t*.5);
+      line(ctx,px-star,py,px+star,py,'#f7e0a1',.9);
+      line(ctx,px,py-star,px,py+star,'#f7e0a1',.9);
+    }
+  }
+  for(let i=0;i<7;i++){
+    const life=.65+(i%3)*.12;if(age>=life)continue;
+    const angle=i*2.67+.9,t=age/life,speed=radius*(.70+(i%4)*.20);
+    const px=Math.cos(angle)*speed*age,py=Math.sin(angle)*speed*age+radius*.85*age*age;
+    const length=Math.max(2,radius*(.085+(i%3)*.02));
+    ctx.save();ctx.translate(px,py);ctx.rotate(angle+age*(i%2?3:-2.3));ctx.globalAlpha=opacity*(1-t)*.68;
+    shape(ctx,[{x:-length*.5,y:-length*.13},{x:length*.5,y:-length*.07},{x:length*.30,y:length*.17},{x:-length*.35,y:length*.11}],i%2?'#b89459':'#80603a');
+    ctx.restore();
+  }
+  if(age<.26){
+    const t=age/.26,r=radius*(.10+.22*t);
+    ctx.globalAlpha=opacity*(1-t)*.72;
+    for(let i=0;i<4;i++){
+      const angle=i*Math.PI/4;
+      line(ctx,-Math.cos(angle)*r,-Math.sin(angle)*r,Math.cos(angle)*r,Math.sin(angle)*r,'#f6d78d',Math.max(.9,radius*.025));
+    }
+  }
+  ctx.restore();
+}
+
+/** Restrained edge warmth during a bullseye replay; the central target stays clear. */
+export function drawBullseyeVignette(ctx,w,h,{age,duration=2.5,reducedMotion=false}={}) {
+  if(reducedMotion||!ctx||![w,h,age,duration].every(Number.isFinite)||w<=0||h<=0||w>32768||h>32768||duration<=0||age<0||age>=duration)return;
+  const envelope=Math.min(1,age/.18,(duration-age)/.48);
+  if(envelope<=0)return;
+  const radius=Math.hypot(w,h)*.5;
+  ctx.save();
+  const glow=ctx.createRadialGradient(w*.5,h*.5,Math.min(w,h)*.28,w*.5,h*.5,radius);
+  glow.addColorStop(0,'rgba(187,140,58,0)');glow.addColorStop(.56,'rgba(187,140,58,0)');
+  glow.addColorStop(.82,`rgba(188,141,59,${(.055*envelope).toFixed(4)})`);
+  glow.addColorStop(1,`rgba(139,99,41,${(.15*envelope).toFixed(4)})`);
+  ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);ctx.restore();
+}
+
 // Equipment artwork follows the same independent attributes as the simulation.
 // Profiles are intentionally bounded: additional items never grow with their id.
 const bowProfiles = [
@@ -991,6 +1074,65 @@ function drawBulletIcon(ctx,accent='#b99b5f') {
   ctx.restore();
 }
 
+function drawCoachIcon(ctx,accent) {
+  const skin='#d7af82',shade='#be956d',light='#ebcca2';
+  ctx.save();
+  // A raised finger and a whistle read as coaching at small shop-card sizes.
+  ctx.beginPath();ctx.moveTo(-.28,.20);ctx.quadraticCurveTo(-.49,.23,-.55,.06);
+  ctx.strokeStyle='#426b51';ctx.lineWidth=.12;ctx.stroke();
+  line(ctx,-.55,.07,-.58,-.065,skin,.080);
+  ellipse(ctx,-.58,-.075,.055,.070,skin,-.12);
+  line(ctx,-.57,-.10,-.565,-.20,skin,.029);
+  line(ctx,-.605,-.105,-.61,-.035,shade,.014);
+  ctx.beginPath();ctx.moveTo(.28,.20);ctx.quadraticCurveTo(.54,.27,.38,.29);
+  ctx.strokeStyle='#426b51';ctx.lineWidth=.14;ctx.stroke();
+  shape(ctx,[{x:-.38,y:.43},{x:-.37,y:.23},{x:-.22,y:.13},{x:0,y:.17},{x:.22,y:.13},{x:.38,y:.24},{x:.39,y:.43}],accent);
+  shape(ctx,[{x:-.17,y:.14},{x:0,y:.20},{x:.16,y:.14},{x:.11,y:.43},{x:-.11,y:.43}],'#e5ddbb');
+  ellipse(ctx,0,.12,.065,.085,skin);
+  shape(ctx,[{x:-.16,y:.135},{x:-.025,y:.20},{x:-.12,y:.28},{x:-.22,y:.17}],'#8fa486');
+  shape(ctx,[{x:.16,y:.135},{x:.025,y:.20},{x:.12,y:.28},{x:.22,y:.17}],'#8fa486');
+  line(ctx,-.025,.21,-.025,.42,'#6e8263',.010);
+  for(const y of[.26,.34,.41])ellipse(ctx,.015,y,.012,.012,'#a39462');
+  ctx.beginPath();ctx.roundRect(-.28,.29,.12,.09,.012);ctx.fillStyle='#527552';ctx.fill();
+  line(ctx,-.28,.305,-.16,.305,'#a8b28b',.010);
+  ellipse(ctx,-.195,-.06,.043,.069,shade);ellipse(ctx,.195,-.06,.043,.069,shade);
+  ellipse(ctx,0,-.075,.195,.218,skin);
+  ellipse(ctx,.035,-.11,.14,.16,light,-.07);
+  ellipse(ctx,-.10,-.01,.032,.019,'#c99170');ellipse(ctx,.11,-.01,.032,.019,'#c99170');
+  for(const sign of[-1,1]){
+    const x=sign*.073;
+    ctx.beginPath();ctx.moveTo(x-.035,-.13);ctx.quadraticCurveTo(x,-.148,x+.034,-.13);
+    ctx.strokeStyle='#6c6146';ctx.lineWidth=.014;ctx.stroke();
+    ellipse(ctx,x,-.085,.016,.023,'#334735');ellipse(ctx,x+.004,-.093,.005,.006,'#f7efd6');
+  }
+  ctx.beginPath();ctx.moveTo(.005,-.06);ctx.quadraticCurveTo(-.015,-.01,.014,-.004);
+  ctx.strokeStyle='#b98f67';ctx.lineWidth=.010;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-.062,.030);ctx.quadraticCurveTo(.006,.087,.073,.026);
+  ctx.strokeStyle='#8a6950';ctx.lineWidth=.014;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-.048,.037);ctx.quadraticCurveTo(.007,.067,.056,.033);
+  ctx.strokeStyle='#f1dbb5';ctx.lineWidth=.011;ctx.stroke();
+  // Soft forest-green brim, with a small gold target badge on the crown.
+  ctx.beginPath();ctx.moveTo(-.22,-.26);ctx.quadraticCurveTo(-.22,-.47,-.04,-.47);
+  ctx.quadraticCurveTo(.20,-.48,.22,-.26);ctx.closePath();ctx.fillStyle='#375b46';ctx.fill();
+  ctx.beginPath();ctx.moveTo(-.185,-.28);ctx.quadraticCurveTo(.02,-.24,.19,-.285);
+  ctx.strokeStyle=accent;ctx.lineWidth=.047;ctx.stroke();
+  ellipse(ctx,0,-.25,.32,.055,'#426b50',-.025);
+  ctx.beginPath();ctx.ellipse(0,-.245,.29,.032,-.025,0,Math.PI);ctx.strokeStyle='#294d3c';ctx.lineWidth=.011;ctx.stroke();
+  ellipse(ctx,.015,-.36,.041,.041,'#c5ac68');
+  ctx.beginPath();ctx.arc(.015,-.36,.027,0,TAU);ctx.strokeStyle='#5b704b';ctx.lineWidth=.006;ctx.stroke();
+  ellipse(ctx,.015,-.36,.009,.009,'#536746');
+  // The gold cord and open whistle mouth remain separate from the smiling face.
+  ctx.beginPath();ctx.moveTo(-.06,.16);ctx.quadraticCurveTo(-.02,.34,.24,.285);
+  ctx.strokeStyle='#b5a16a';ctx.lineWidth=.009;ctx.stroke();
+  ellipse(ctx,.37,.285,.061,.047,skin,-.15);
+  ctx.beginPath();ctx.roundRect(.215,.252,.115,.068,.021);ctx.fillStyle='#c7b26c';ctx.fill();
+  ctx.beginPath();ctx.roundRect(.31,.265,.068,.030,.005);ctx.fillStyle='#dbc58b';ctx.fill();
+  ellipse(ctx,.253,.274,.024,.014,'#647154');
+  line(ctx,.224,.305,.309,.305,'#927f48',.009);
+  line(ctx,.318,.270,.367,.270,'#f3dca5',.006);
+  ctx.restore();
+}
+
 function drawAbilityArrowTip(ctx,ability,pointStart,pointWidth,accent) {
   if(ability==='bounce') {
     // A rounded resilient cap and a short compression collar show the rebound.
@@ -1031,7 +1173,9 @@ export function drawEquipmentIcon(ctx,w,h,{kind='bow',tier=0,color,grip=30,elast
   const s=Math.min(w,h);ctx.scale(s,s);
   ellipse(ctx,0,.39,.28,.024,'rgba(49,66,45,.1)');
   ctx.lineCap='round';ctx.lineJoin='round';
-  if(kind==='bullet') {
+  if(kind==='coach') {
+    ctx.save();ctx.scale(Math.min(1,w/h/1.55),1);drawCoachIcon(ctx,color||'#6f8e71');ctx.restore();
+  } else if(kind==='bullet') {
     drawBulletIcon(ctx,color||'#ae9060');
   } else if(kind!=='arrow'&&weaponType==='gun') {
     drawGunIcon(ctx,variant,accent,gripRatio,scopeMounted);
