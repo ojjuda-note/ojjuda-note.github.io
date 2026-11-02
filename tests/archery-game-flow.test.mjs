@@ -631,6 +631,7 @@ test('a real bullseye replays recorded flight once, holds impact, and restores a
   assert.equal(shot.result.score, 10);assert.ok(replay);
   assert.equal(replay.shot, shot);assert.ok(shot.replayFrames.length > 2);
   assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'flight');
+  assert.equal(app.getElement('shotFeedback').classList.contains('hidden'), true, 'the replay does not reveal its impact message before contact');
   assert.deepEqual(shotAccounting(app), [1, 10, 1, 1, 1, 110, 10000]);
   const accounting = shotAccounting(app), physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result});
   const worldTime = state.time;
@@ -647,9 +648,28 @@ test('a real bullseye replays recorded flight once, holds impact, and restores a
   assert.equal(tips[0].flying, true);
   for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(tips[0].point[axis] - sample.point[axis]) < 1e-9);
   assert.equal(app.sceneryFrame.time, sample.time, 'wind leaves and targets use the recorded scene time');
+  assert.equal(app.vignetteFrames.at(-1).at(-1).impactAge, -1);
   app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'impact');
   assert.equal(state.time, worldTime);assert.ok(app.bullseyeFrames.length > 0);
-  assertAttachedArrows(app, [{x: shot.attachment.x, y: shot.attachment.y}], [shot.velocity]);
+  assert.equal(app.getElement('shotFeedback').classList.contains('hidden'), false);
+  assert.match(app.getElement('flightBadge').textContent, /10점/);
+  assert.equal(app.vignetteFrames.at(-1).at(-1).impactAge, app.api.cinematicFrame().impactAge);
+  const offsets = [{x: shot.attachment.x, y: shot.attachment.y}], markVelocity = JSON.stringify(shot.targetMark.velocity);
+  assertAttachedArrows(app, offsets, [shot.velocity], .12);
+  let largestWobble = 0;
+  for (const age of [.04, .09, .17, .28, .43, .64]) {
+    app.until(() => app.api.cinematicFrame().impactAge >= age);
+    const target = app.engine.targetAt(state.stage, app.api.renderTime());
+    const tip = app.api.sceneItems(target).find(item => item.kind === 'tip');
+    const direction = ['x', 'y', 'z'].map(axis => (tip.point[axis] - tip.tail[axis]) / .85);
+    const speed = Math.hypot(shot.velocity.x, shot.velocity.y, shot.velocity.z);
+    const deviation = Math.hypot(...['x', 'y', 'z'].map((axis, index) => direction[index] - shot.velocity[axis] / speed));
+    largestWobble = Math.max(largestWobble, deviation);
+    assertAttachedArrows(app, offsets, [shot.velocity], age < .6 ? .12 : 0);
+    assert.equal(JSON.stringify(shot.targetMark.velocity), markVelocity, 'visual recoil never edits the saved attachment direction');
+    assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result}), physics);
+  }
+  assert.ok(largestWobble > .005, 'the shaft visibly vibrates around its fixed impact tip before settling');
   app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'return');
   app.until(() => state.mode === 'ready');
   assert.equal(state.cinematic, null);assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
@@ -696,7 +716,7 @@ test('moving-target replay follows recorded time through resizing and preserves 
   }
   app.until(() => app.getElement('gameCanvas').dataset.cinematic === 'impact');
   const offset = {x: shot.attachment.x, y: shot.attachment.y};
-  assertAttachedArrows(app, [offset], [shot.velocity]);
+  assertAttachedArrows(app, [offset], [shot.velocity], .12);
   app.until(() => state.mode === 'ready');app.frames(90);
   const moved = assertAttachedArrows(app, [offset], [shot.velocity]);
   assert.ok(Math.abs(moved.x - shot.result.targetCenter.x) > .01);
@@ -734,6 +754,7 @@ test('reduced-motion bullseyes skip replay flight and pass the preference to imp
   assert.ok(app.bullseyeFrames.length > 0);
   assert.ok(app.bullseyeFrames.every(frame => frame.at(-1).reducedMotion));
   assert.ok(app.vignetteFrames.every(frame => frame.at(-1).reducedMotion));
+  assertAttachedArrows(app, [{x: state.shot.attachment.x, y: state.shot.attachment.y}], [state.shot.velocity]);
   app.until(() => state.mode === 'ready');assert.deepEqual(shotAccounting(app), accounting);
 });
 
@@ -769,6 +790,15 @@ test('a moving-target burst starts one replay after the last arrival using the c
   assert.ok(Math.abs(time - shot.targetMark.born) < 1e-9);
   assert.ok(Math.abs(target.x - shot.result.targetCenter.x) < 1e-9);
   assert.ok(Math.abs(target.y - shot.result.targetCenter.y) < 1e-9);
+  const savedEffect = JSON.stringify(shot.impactEffect), savedMark = JSON.stringify(shot.targetMark);
+  app.until(() => app.api.cinematicFrame()?.phase === 'return' && app.api.cinematicFrame().progress >= .5);
+  const resumedTarget = app.engine.targetAt(state.stage, app.api.renderTime(), shot.targetMark.passId);
+  assert.ok(Math.abs(resumedTarget.x - shot.result.targetCenter.x) > 1e-5, 'the return blends toward the later completed-volley scene time');
+  const expectedGlow = app.api.project({x: resumedTarget.x + shot.targetMark.x, y: resumedTarget.y + shot.targetMark.y, z: resumedTarget.z - .002});
+  const glow = app.bullseyeFrames.at(-1).at(-1);
+  assert.ok(Math.abs(glow.x - expectedGlow.x) < 1e-9 && Math.abs(glow.y - expectedGlow.y) < 1e-9,
+    'the lingering impact light stays on the same moving-target attachment during return');
+  assert.equal(JSON.stringify(shot.impactEffect), savedEffect);assert.equal(JSON.stringify(shot.targetMark), savedMark);
   app.until(() => state.mode === 'ready');
   assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, 3);
 });
@@ -2450,7 +2480,7 @@ function resolveTestHit(app, offset, velocity = { x: 2, y: -3, z: 38 }, score = 
   return target;
 }
 
-function assertAttachedArrows(app, offsets, velocities) {
+function assertAttachedArrows(app, offsets, velocities, maximumVisualAngle = 0) {
   const { state } = app.api, target = app.engine.targetAt(state.stage, state.time);
   const items = app.api.sceneItems(target), tips = items.filter(item => item.kind === 'tip');
   assert.equal(tips.length, offsets.length, 'every previous hit remains rendered once');
@@ -2462,7 +2492,13 @@ function assertAttachedArrows(app, offsets, velocities) {
     assert.ok(shaft, 'the attached arrow keeps its complete shaft');
     const direction = { x: shaft.b.x - shaft.a.x, y: shaft.b.y - shaft.a.y, z: shaft.b.z - shaft.a.z };
     const speed = Math.hypot(...Object.values(velocities[index])), length = Math.hypot(...Object.values(direction));
-    for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(direction[axis] / length - velocities[index][axis] / speed) < 1e-9, 'the original entry angle is retained');
+    if (maximumVisualAngle) {
+      const dot = ['x', 'y', 'z'].reduce((sum, axis) => sum + direction[axis] / length * velocities[index][axis] / speed, 0);
+      assert.ok(Math.acos(Math.min(1, Math.max(-1, dot))) <= maximumVisualAngle, 'impact vibration stays close to the real entry angle');
+      assert.ok(Math.abs(length - .85) < 1e-9, 'visual vibration preserves the shaft length');
+    } else {
+      for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(direction[axis] / length - velocities[index][axis] / speed) < 1e-9, 'the original entry angle is retained');
+    }
     assert.ok(items.indexOf(tip) > items.findIndex(item => item.kind === 'target'), 'embedded arrow tips remain on the visible target face');
   });
   return target;
