@@ -1112,6 +1112,7 @@ function Al(t,options={}){
    onRoundComplete:(requestId,runId,stage)=>ammoCall('archery_round_complete',{p_request_id:requestId,p_run_id:runId,p_stage:stage}),
    onAmmoSpend:requestId=>ammoCall('archery_ammo_spend',{p_request_id:requestId}),
    onAmmoBuy:requestId=>ammoCall('archery_ammo_buy',{p_request_id:requestId}),
+   onCoachBuy:requestId=>ammoCall('archery_coach_buy',{p_request_id:requestId}),
    onAmmoReceipt:(requestId,action)=>ammoCall('archery_ammo_receipt',{p_request_id:requestId,p_action:action})
   });return;
  }
