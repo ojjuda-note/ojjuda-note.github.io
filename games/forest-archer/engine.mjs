@@ -1,4 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261103-archery-targets-events1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261103-archery-targets-events1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -49,7 +51,7 @@ const gun = (id, name, tag, description, price, grip, power, mass, windFactor, d
 // different price, equipment band, scope cost or steady-window duration.
 const EQUIPMENT_ORDER = Object.freeze({
   weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19]),
-  arrow: Object.freeze([0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13])
+  arrow: Object.freeze([0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13, 14, 15, 16, 17, 18])
 });
 function equipmentCatalog(items, kind) {
   const ranks = new Map(EQUIPMENT_ORDER[kind].map((id, rank) => [id, rank]));
@@ -159,7 +161,7 @@ export const ARROWS = equipmentCatalog([
   arrow(10, '금빛 화살', '정밀형', '정밀 카본 몸통과 금빛 마감의 정렬 촉. 곡면 날개의 자세 제어를 더해 일정하게 날아요.', 4.1, 16,
     point('금빛 정렬촉', '금빛 마감 강철', '유선형', .008, 90), shaft('고정밀 카본 몸통', '카본', 5.0, .39, .034, 90),
     fletch('곡면 날개', '합성 베인', .30, .21, .039, 75), '#ceb36c'),
-  arrow(11, '바람깃 화살', '정밀형', '정밀 복합 몸통과 매끈한 촉, 자세를 잘 잡는 쐐기 날개. 일반 화살 중 가장 가볍고 일정해요.', 4, 15.75,
+  arrow(11, '바람깃 화살', '정밀형', '정밀 복합 몸통과 매끈한 촉, 자세를 잘 잡는 쐐기 날개. 장거리 화살로 넘어가기 전의 20g 정밀 화살이에요.', 4, 15.75,
     point('고정밀 유선촉', '강철', '매끈한 유선형', .006, 100), shaft('정밀 복합 몸통', '카본·알루미늄', 4.2, .32, .028, 96),
     fletch('쐐기 날개', '합성 베인', .25, .18, .035, 90), '#82a7a5'),
   {...arrow(12, '탄성 화살', '특수 · 한 번 튕김', '바람깃 화살과 같은 기본 성능. 과녁 앞 땅에서 한 번 튕기며 속도가 줄어요. 벽에 닿거나 과녁을 지나친 뒤에는 튕기지 않아요.', 4, 15.75,
@@ -169,7 +171,22 @@ export const ARROWS = equipmentCatalog([
   {...arrow(13, '자석 화살', '특수 · 근접 유도', '바람깃 화살과 같은 기본 성능. 실제 과녁 5m 안에서 중심 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽을 통과하지 않아요.', 4, 15.75,
     point('자성 유선촉', '자성 강철', '매끈한 유선형', .006, 100), shaft('정밀 복합 몸통', '카본·알루미늄', 4.2, .32, .028, 96),
     fletch('유도 안정깃', '합성 베인', .25, .18, .035, 90), '#629d98'),
-    ability:Object.freeze({type:'magnetic',label:'근접 유도',description:'실제 표적 5m 안에서 약하게 유도 · 최대 약 10° 보정 · 명중 보장 없음',radius:5,maxAcceleration:24,maxTurnRate:1,maxTurnAngle:.18,maxCorrectionSpeed:4})}
+    ability:Object.freeze({type:'magnetic',label:'근접 유도',description:'실제 표적 5m 안에서 약하게 유도 · 최대 약 10° 보정 · 명중 보장 없음',radius:5,maxAcceleration:24,maxTurnRate:1,maxTurnAngle:.18,maxCorrectionSpeed:4})},
+  {...arrow(14, '경량 장거리 화살', '장거리 · 60m', '20g 정밀 화살에서 1g을 줄였어요. 가는 카본 복합 몸통과 낮은 날개로 더 빠르게 도착하고 덜 떨어져요.', 3.9, 14.88,
+    point('경량 정밀촉', '강철', '매끈한 유선형', .0058, 100), shaft('경량 카본 복합 몸통', '카본 복합재', 4.0, .28, .024, 97),
+    fletch('낮은 장거리 날개', '합성 베인', .22, .16, .031, 91), '#7babb4'),longRange:true,recommendedDistance:60},
+  {...arrow(15, '유선 장거리 화살', '장거리 · 80m', '18g으로 가볍게 맞춘 몸통과 얇은 날개. 촉과 몸통의 유선 연결부가 감속을 한 단계 더 줄여요.', 3.8, 13.99,
+    point('유선 연결촉', '강철', '좁은 유선형', .0055, 100), shaft('유선 카본 복합 몸통', '카본 복합재', 3.8, .24, .0206, 98),
+    fletch('얇은 유선 날개', '합성 베인', .21, .14, .027, 92), '#73a1bd'),longRange:true,recommendedDistance:80},
+  {...arrow(16, '저저항 장거리 화살', '장거리 · 100m', '17g의 가는 카본 몸통과 작게 정렬한 날개가 바람과 저항을 덜 받아요. 몸통의 정밀도도 함께 높였어요.', 3.7, 13.1,
+    point('저저항 정렬촉', '강철', '좁은 유선형', .0052, 100), shaft('고정밀 카본 몸통', '카본', 3.6, .20, .0177, 99),
+    fletch('미세 정렬 날개', '합성 베인', .20, .12, .023, 93), '#8d9dbf'),longRange:true,recommendedDistance:100},
+  {...arrow(17, '정밀 장거리 화살', '장거리 · 120m', '16g 경량 몸통과 균일하게 맞춘 날개. 같은 활에서도 초기 속도와 도착 속도가 조금씩 더 높아져요.', 3.6, 12.21,
+    point('정밀 소형 유선촉', '강철', '좁은 유선형', .005, 100), shaft('균일 정밀 카본 몸통', '카본', 3.4, .17, .0142, 100),
+    fletch('균일 정밀 날개', '합성 베인', .19, .10, .020, 94), '#aea1c2'),longRange:true,recommendedDistance:120},
+  {...arrow(18, '극세 장거리 화살', '장거리 · 150m', '15g 극세 카본 몸통과 가장 작은 저항의 날개. 긴 비행에서도 속도를 더 유지해 중력으로 떨어지는 거리를 줄여요.', 3.5, 11.32,
+    point('극세 연결 유선촉', '강철', '좁은 유선형', .0048, 100), shaft('극세 정밀 카본 몸통', '카본', 3.2, .14, .0112, 100),
+    fletch('극세 균형 날개', '합성 베인', .18, .08, .017, 96), '#c2b58a'),longRange:true,recommendedDistance:150}
 ], 'arrow');
 
 const motion = (amplitudeX = 0, amplitudeY = 0, speed = 0) => ({ amplitudeX, amplitudeY, speed, irregular: speed > 0 });
@@ -183,10 +200,18 @@ const stage = (id, name, subtitle, hint, distance, extra = {}) => ({
 // Distances repeat whenever a new skill is introduced. The teaching order is
 // intentional; a global difficulty sort would place unfamiliar mechanics early.
 const learningDistances = Object.freeze([10, 20, 30, 50]);
+export const LONG_RANGE_DISTANCES = Object.freeze([60, 80, 100, 120, 150]);
+export const LONG_RANGE_LESSONS = Object.freeze([
+  'fixed-intro','elevated-fixed','tracking-intro','wind-intro','vertical-intro',
+  'fixed-gap-3/4','fixed-gap-1/2','fixed-gap-1/3','pillars-regular','diagonal-tracking',
+  'low-wall-arc','animal-rabbit','animal-wildcat','animal-deer','animal-pigeon',
+  'animal-eagle','animal-cheetah','passers-tracking','hidden-tracking','double-wall-finale'
+]);
 const targetRadii = Object.freeze([1.45, 1.65, 1.85, 2.1]);
+const MAIN_TARGET_SPEED_SCALE = 1.15;
 const stageShapes = Object.freeze({
-  rabbit: [1.10, .72, 16], wildcat: [1.12, .66, 15], deer: [1.23, .73, 17],
-  pigeon: [1.18, .86, 15], eagle: [1.55, .95, 18], cheetah: [1.38, .62, 12],
+  rabbit: [1.10, .72, 16], wildcat: [1.12, .66, 12.5], deer: [1.23, .73, 7.6],
+  pigeon: [1.18, .86, 9.2], eagle: [1.55, .95, 5.65], cheetah: [1.38, .62, 5.8],
   bird: [1.38, .88, 8]
 });
 const flyingKinds = new Set(['bird', 'pigeon', 'eagle']);
@@ -292,8 +317,11 @@ function lessonStages() {
     chapterId++;
     for (const [index, distance] of distances.entries()) {
       const id = templates.length + 1, radius = targetRadii[index];
-      const extra = {chapterId,chapterName:title,lessonKey:key || title,radius,height:radius+.5,
-        ...(legacyFirst ? {legacyStageId:legacyFirst+index} : {}),...build(index,distance,radius,id)};
+      // Keep balance and saved records attached to the lesson when its display
+      // position changes. The elevated chapter moves from 41–44 to 5–8.
+      const catalogV1Id = id >= 5 && id <= 8 ? id + 36 : id >= 9 && id <= 44 ? id - 4 : id;
+      const extra = {chapterId,chapterName:title,lessonKey:key || title,catalogV1Id,radius,height:radius+.5,
+        ...(legacyFirst ? {legacyStageId:legacyFirst+index} : {}),...build(index,distance,radius,catalogV1Id)};
       const make = extra.coverageMode ? coverStage : stage;
       templates.push(make(id, `${title} · ${distance}m`, subtitle, hint, distance, extra));
     }
@@ -303,18 +331,40 @@ function lessonStages() {
   const pillars = (index,distance,radius,extra = {}) => ({coverageMode:'pillars',visibleFraction:.75,
     coverMaterial:index%2 ? 'timber' : 'stone',layoutJitter:distance*.055,
     motion:motion(radius*.85,0,.25+index*.025),...extra});
-  const people = (count,index,distance) => Array.from({length:count},(_,person) => ({
-    id:person,z:distance*(.94-person*.035),width:.68+index*.035,height:2.12,depth:.32,
-    passDuration:48+index*4+person*7,phase:count===1?.40:person===0?.34:.63
-  }));
+  const people = (count,index,distance,radius=1.10+index*.10,height=1.35) => {
+    const crowd=count>1,members=crowd?4+(index>=1?1:0)+(index>=3?1:0):1;
+    // The painted coat occupies roughly half of the full moving-limb box.
+    // Keep coats together in a crowd, not just their invisible box edges.
+    const width=radius*(crowd?.90:.95),spacing=width*.44;
+    const groupHalfWidth=((members-1)*spacing+width)/2;
+    const crossingSpan=crowd?groupHalfWidth+width*.30:radius*.85;
+    // Keep the quick central crossing, then turn farther beyond the rings.
+    // The extra clear interval accommodates the last arrow in a real burst.
+    const span=crossingSpan+width*(crowd?.20+index/15:.25);
+    const passDuration=(crowd?2.8-index*.12:1.5-index*.08)*span/crossingSpan;
+    return Array.from({length:members},(_,person)=>({
+      id:person,behavior:crowd?'crowd':'shuttle',
+      z:distance-Math.max(.45,Math.min(1.2,distance*.04))-person*.08,
+      width,height:Math.max(2.3,height+radius*.75),depth:.32,
+      // A crowd crosses as a compact line. At either turn its centre clears
+      // the scoring rings briefly; every path stays continuous on screen.
+      span,
+      laneOffset:(person-(members-1)/2)*spacing,
+      passDuration,phase:.5
+    }));
+  };
 
-  // Preserve the original first eight missions, including goals, wind and pace.
+  // Learn a stationary target's height before adding movement, wind or cover.
+  // The original fixed and tracking lessons retain their goals and wind.
   addChapter('고정 표적','먼저 거리와 당기는 힘을 익혀요.',
     '바람 없는 과녁이에요. 충분히 당긴 뒤, 멀수록 조금 높이 겨눠보세요.',
     index => ({goal:10+index*2}),{legacyFirst:1,key:'fixed-intro'});
+  addChapter('높은 고정 과녁','높은 곳의 과녁으로 발사 각도를 익혀요.',
+    '과녁은 멈춰 있어요. 높은 위치와 거리에 맞춰 위쪽을 겨누되 너무 크게 올리지 마세요.',
+    (index,distance,radius) => ({height:radius+1.15+index*.12,goal:12+index*2,wind:0}),{key:'elevated-fixed'});
   addChapter('움직이는 표적','천천히 움직이는 중심을 따라가요.',
     '과녁이 천천히 좌우로 움직여요. 화살이 도착할 앞쪽을 조금 겨눠보세요.',
-    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.03+(id-5)*.008),
+    (index,distance,radius,id) => ({goal:12+index*2,wind:signedWind(id,.03+index*.008),
       motion:motion(radius*(.60+index*.10),0,.24+index*.025)}),{legacyFirst:5,key:'tracking-intro'});
   // A focused wind lesson needs perceptible drift, unlike the nearly calm
   // tracking lessons around it. The same signed wind drives arrows and leaves.
@@ -343,9 +393,6 @@ function lessonStages() {
     '과녁이 대각선으로 움직여요. 지금 위치보다 화살이 도착할 위치를 조금 앞서 겨눠요.',
     (index,distance,radius) => ({height:radius+1,motion:{...motion(radius*.72,radius*.23,.25+index*.025),irregular:false}}),
     {key:'diagonal-tracking'});
-  addChapter('높은 고정 과녁','높은 곳의 과녁으로 발사 각도를 익혀요.',
-    '과녁은 멈춰 있어요. 높은 위치와 거리에 맞춰 위쪽을 겨누되 너무 크게 올리지 마세요.',
-    (index,distance,radius) => ({height:radius+1.15+index*.12}),{key:'elevated-fixed'});
   addChapter('낮은 담 너머','과녁의 아래쪽만 담에 가려져 있어요.',
     '보이는 중심을 기준으로 낙하를 보정하세요. 너무 낮은 화살은 앞쪽 담에 닿아요.',
     (index,distance,radius) => ({lowWall:true,obstacles:[wall(distance*.58,
@@ -353,12 +400,12 @@ function lessonStages() {
     {key:'low-wall-arc'});
 
   const animals = [
-    {kind:'rabbit',name:'토끼',radius:.85,height:.72,duration:16,bob:.16,pace:.55,hint:'낮게 통통 뛰는 토끼를 따라가요. 양쪽 중 어디에서 들어오는지 먼저 살펴보세요.'},
-    {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:15,bob:.07,pace:.65,hint:'짧은 보폭으로 속도를 바꾸는 살쾡이를 따라가요. 이동 방향 앞쪽을 겨눠보세요.'},
-    {kind:'deer',name:'사슴',radius:1.4,height:1.3,duration:17,bob:.23,pace:.5,hint:'긴 보폭으로 달리는 사슴이 떠오르고 내려오는 흐름을 읽어보세요.'},
-    {kind:'pigeon',name:'비둘기',radius:1.03,height:2.25,duration:15,bob:.28,pace:.6,hint:'짧게 위아래로 날갯짓하는 비둘기를 따라가요. 움직일 앞쪽과 높이를 함께 읽으세요.'},
-    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:18,bob:.45,pace:.5,hint:'넓게 날개를 펴고 천천히 높이를 바꾸는 독수리를 따라가요.'},
-    {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:12,bob:.12,pace:.8,hint:'가속했다가 숨을 고르는 치타를 따라가요. 빨라질 때는 조금 더 앞을 겨누세요.'}
+    {kind:'rabbit',name:'토끼',radius:.85,height:.72,duration:16,bob:.32,pace:.85,hint:'땅을 딛었다가 통통 뛰는 토끼를 따라가요. 다음에 뛰어오를 위치를 읽어보세요.'},
+    {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:12.5,bob:.09,pace:1,hint:'짧은 보폭으로 가속하고 감속하는 살쾡이를 따라가요. 지금 속도에 맞춰 앞을 겨누세요.'},
+    {kind:'deer',name:'사슴',radius:1.4,height:1.3,duration:7.6,bob:.66,pace:.95,hint:'큰 몸으로 빠르게 달리며 높이 도약하는 사슴의 도착 위치를 읽어보세요.'},
+    {kind:'pigeon',name:'비둘기',radius:1.03,height:2.25,duration:9.2,bob:.62,pace:1,hint:'빠르게 위아래로 오르내리는 비둘기를 따라가요. 움직일 앞쪽과 높이를 함께 읽으세요.'},
+    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:5.65,bob:.95,pace:1,hint:'큰 날개로 빠르게 지나가며 넓게 솟구치고 내려오는 독수리를 따라가요.'},
+    {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:5.8,bob:.18,pace:1,hint:'강하게 질주했다가 속도를 낮추는 치타를 따라가요. 가속 구간에서는 훨씬 앞을 겨누세요.'}
   ];
   for (const [animalIndex,animal] of animals.entries()) {
     addChapter(`${animal.name} 따라가기`,`${animal.name}의 움직임 익히기`,animal.hint,
@@ -366,7 +413,7 @@ function lessonStages() {
         const scale=1+index*.09;
         return {kind:animal.kind,radius:animal.radius*scale,height:animal.height*scale,
           motion:motion(0,animal.bob*scale,0),passDuration:animal.duration-index*.4,
-          paceVariation:animal.pace,approachEase:.45};
+          paceVariation:animal.pace,approachEase:animal.kind==='rabbit'?.2:.15};
       },{legacyFirst:25+animalIndex*4,key:`animal-${animal.kind}`});
   }
   addChapter('넓은 불규칙 이동','넓게 움직이는 과녁과 바람을 함께 읽어요.',
@@ -377,14 +424,14 @@ function lessonStages() {
     '가는 기둥 뒤 과녁이 대각선으로 움직여요. 중심의 높이와 가로 방향을 함께 따라가세요.',
     (index,distance,radius) => pillars(index,distance,radius,{height:radius+.8,
       motion:motion(radius*.85,radius*.16,.29+index*.02)}),{key:'pillars-diagonal'});
-  addChapter('한 사람 지나간 뒤','사람이 지나가는 틈으로 고정 과녁을 겨눠요.',
-    '사람은 표적이 아니에요. 사람이 과녁 앞을 지나가면 기다렸다가 빈틈에 쏘세요.',
+  addChapter('한 사람 왕복 피하기','과녁 바로 앞을 왕복하는 사람의 틈을 읽어요.',
+    '사람은 표적이 아니에요. 과녁 앞에서 방향을 바꾸는 박자를 보고 화살이 도착할 때 열리는 틈을 겨누세요.',
     (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(1,index,distance)}),{key:'one-passer'});
-  addChapter('두 사람 사이','다른 속도로 지나가는 두 사람의 틈을 읽어요.',
-    '서로 다른 거리와 속도로 사람들이 지나가요. 두 사람 모두 화살의 길에서 벗어나는 순간을 기다리세요.',
+  addChapter('사람 행렬의 틈','줄지어 오가는 사람들 사이로 잠깐 열린 과녁을 겨눠요.',
+    '사람들이 과녁 바로 앞을 이어서 가려요. 행렬 끝에서 중심이 열리는 짧은 틈에 맞춰 쏘세요.',
     (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(2,index,distance)}),{key:'two-passers'});
-  addChapter('사람 사이 움직이는 과녁','움직이는 과녁과 사람의 간격을 함께 읽어요.',
-    '과녁이 도착할 곳을 앞서 겨누고 사람의 이동도 살펴보세요. 사람에게 닿으면 그 발사는 점수를 받지 못해요.',
+  addChapter('행렬 사이 움직이는 과녁','움직이는 과녁과 빠르게 지나가는 행렬의 틈을 함께 읽어요.',
+    '화살이 도착할 과녁 위치와 행렬 끝이 열리는 순간을 함께 살펴보세요. 사람에게 닿으면 그 발사는 점수를 받지 못해요.',
     (index,distance) => ({radius:1.10+index*.10,height:1.35,passers:people(2,index,distance),
       motion:motion(.58+index*.12,0,.23+index*.02)}),{key:'passers-tracking'});
   addChapter('좁은 틈의 움직임','고정된 좁은 틈 뒤로 과녁이 움직여요.',
@@ -416,14 +463,15 @@ function lessonStages() {
   addChapter('기둥과 사람 사이','고정 기둥과 지나가는 사람을 함께 살펴요.',
     '기둥 사이로 과녁이 움직이고 사람이 앞을 지나가요. 화살이 지날 길이 모두 열리는 순간을 기다리세요.',
     (index,distance,radius) => pillars(index,distance,radius,{radius:1.15+index*.12,height:1.5,
-      motion:motion(.65+index*.12,0,.28+index*.02),passers:people(2,index,distance)}),{key:'pillars-passers'});
+      motion:motion(.65+index*.12,0,.28+index*.02),passers:people(2,index,distance,1.15+index*.12,1.5)}),{key:'pillars-passers'});
   addChapter('바람 속 하늘 추적','새의 높낮이와 강한 옆바람을 함께 읽어요.',
     '비둘기는 빠르게 높이를 바꾸고 독수리는 넓게 활공해요. 도착할 위치와 바람의 밀림을 함께 계산하세요.',
     index => {
       const animal=animals[index%2?4:3],scale=1+index*.09;
       return {kind:animal.kind,radius:animal.radius*scale,height:(animal.height+.35)*scale,
-        motion:motion(0,animal.bob*1.4*scale,0),passDuration:animal.duration-index*.4-1.0,
-        paceVariation:Math.min(1,animal.pace+.15),approachEase:.35};
+        // The 50m eagle needs time to lead a visible animal through real flight.
+        motion:motion(0,animal.bob*1.4*scale,0),passDuration:index===3?6.25:animal.duration-index*.4-1.0,
+        paceVariation:Math.min(1,animal.pace+.15),approachEase:.1};
     },{key:'sky-wind'});
   addChapter('두 겹 벽 너머','두 벽을 넘겨 마지막 이동 과녁을 맞혀요.',
     '미리 보기로 두 벽과 과녁 위치를 확인하세요. 첫 벽을 넘은 뒤에도 충분한 높이를 유지하도록 당기는 힘과 각도를 조절해요.',
@@ -454,47 +502,106 @@ const gearBand = (gearTier, gearLabel, first, last, weaponIds, referenceLoadouts
 
 /** Optional equipment guidance. Family ranks never lock a stage or a weapon. */
 export const STAGE_GEAR_BANDS = Object.freeze([
-  gearBand('starter','기본 활',1,16,{bow:[0],crossbow:[]},
+  gearBand('starter','기본 활',1,20,{bow:[0],crossbow:[]},
     [{family:'bow',bow:0,arrow:0}],{radiusScale:1,speedScale:1}),
-  gearBand('lower','하위 활·석궁',17,48,{bow:[4,5,6],crossbow:[13,12,10]},
+  gearBand('lower','하위 활·석궁',21,48,{bow:[4,5,6],crossbow:[13,12,10]},
     [{family:'bow',bow:6,arrow:5},{family:'crossbow',bow:13,arrow:5}],
-    {radiusScale:1,speedScale:1,windStart:.10,windEnd:.32,goalStart:18,goalEnd:26}),
+    {radiusScale:1,speedScale:1,curveFirst:17,curveLast:48,windStart:.10,windEnd:.32,goalStart:18,goalEnd:26}),
   gearBand('middle','중간 활·석궁',49,105,{bow:[1,2,8],crossbow:[14,11,15,16]},
     [{family:'bow',bow:8,arrow:2},{family:'crossbow',bow:14,arrow:2}],
-    {radiusScale:.94,speedScale:1.03,windStart:.35,windEnd:.65,goalStart:26,goalEnd:30}),
-  gearBand('upper','상위 활·석궁',106,120,{bow:[7,9,3],crossbow:[17,18,19]},
+    {radiusScale:.94,speedScale:1.03,curveFirst:49,curveLast:105,windStart:.35,windEnd:.65,goalStart:26,goalEnd:30}),
+  gearBand('upper','상위 활·석궁',106,220,{bow:[7,9,3],crossbow:[17,18,19]},
     [{family:'bow',bow:3,arrow:11},{family:'crossbow',bow:19,arrow:11}],
-    {radiusScale:.82,speedScale:1.08,windStart:.75,windEnd:1.30,goalStart:32,goalEnd:36})
+    {radiusScale:.82,speedScale:1.08,curveFirst:106,curveLast:120,windStart:.75,windEnd:1.30,goalStart:32,goalEnd:36})
 ]);
 
 // The old score curve assumed large early grip/stability jumps. Keep difficult
 // lanes achievable with the gradual ladder, using real sway, release timing,
 // arrow variance and person collisions. Other mission goals keep their curve.
 const EQUIPMENT_GOAL_CAPS = Object.freeze({
-  52:18, 56:22, 72:26, // Small or fast animals at 50m.
+  // True animal anatomy uses 10/8/5/3 points, with no hits in empty silhouette gaps.
+  // Reference bow and crossbow shots keep roughly one point of expected margin.
+  50:19, 51:13, 52:7, 54:23, 55:16, 56:8,
+  58:23, 59:18, 60:11, 62:19, 63:14, 64:7,
+  66:22, 67:15, 68:12, 70:16, 71:17, 72:5,
   80:24, 84:23, 88:23, 92:23, // Long moving targets behind pillars or people.
   95:23, 96:21, 103:28, // Moving gaps and hidden targets.
-  110:30, 111:30, 112:24, 120:30 // Keep a margin with component-based arrows in the final crosswind.
+  109:31, 110:30, 111:28, 112:21, // Time the real openings in the faster pedestrian groups.
+  113:28, 114:22, 115:16, 116:15, 120:30
 });
 
 function applyEquipmentLesson(template) {
   const band = STAGE_GEAR_BANDS.find(entry => template.id >= entry.first && template.id <= entry.last);
-  const fraction = (template.id - band.first) / Math.max(1, band.last - band.first), balance = band.balance;
+  const balance = band.balance, curveFirst = balance.curveFirst ?? band.first, curveLast = balance.curveLast ?? band.last;
+  const fraction = (template.catalogV1Id - curveFirst) / Math.max(1, curveLast - curveFirst);
   const adjusted = {...template,gearTier:band.gearTier,gearLabel:band.gearLabel,referenceLoadouts:band.referenceLoadouts,
+    targetSpeedScale:MAIN_TARGET_SPEED_SCALE,
     radius:template.radius * balance.radiusScale,
-    motion:{...template.motion,speed:template.motion.speed * balance.speedScale},
-    ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale} : {})};
+    motion:{...template.motion,speed:template.motion.speed * balance.speedScale * MAIN_TARGET_SPEED_SCALE},
+    ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale / MAIN_TARGET_SPEED_SCALE} : {})};
   if (band.gearTier !== 'starter') {
-    adjusted.wind = signedWind(template.id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
+    adjusted.wind = signedWind(template.catalogV1Id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
     const baseGoal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
-    adjusted.goal = Math.min(baseGoal,EQUIPMENT_GOAL_CAPS[template.id] ?? baseGoal);
+    adjusted.goal = Math.min(baseGoal,EQUIPMENT_GOAL_CAPS[template.catalogV1Id] ?? baseGoal);
   }
   // Keep promised circular face fractions after any balance change to size.
   if (adjusted.coverageMode) adjusted.obstacles = partialCover(adjusted);
   if (adjusted.fullCover) adjusted.obstacles = hiddenCover(adjusted);
   return {...adjusted,difficulty:stageDifficulty(adjusted)};
 }
-export const STAGES = Object.freeze(lessonStages().map(applyEquipmentLesson));
+// Actual silhouette scores and distance-matched arrows set a reachable bonus
+// target for both families. Longer distances never raise an animal's quota.
+const LONG_RANGE_GOALS = Object.freeze({
+  'animal-rabbit':[11,10,10,10,10],
+  'animal-wildcat':[14,13,11,11,11],
+  'animal-deer':[13,13,13,13,13],
+  'animal-pigeon':[10,10,10,10,10],
+  'animal-eagle':[19,16,15,13,13],
+  'animal-cheetah':[12,12,11,11,11],
+  'passers-tracking':[23,23,23,23,20]
+});
+function longRangeStages(baseStages) {
+  const upper=STAGE_GEAR_BANDS.find(band=>band.gearTier==='upper');
+  return LONG_RANGE_LESSONS.flatMap((key,chapterIndex)=>{
+    const source=baseStages.find(stage=>stage.lessonKey===key&&stage.distance===50);
+    return LONG_RANGE_DISTANCES.map((distance,index)=>{
+      const id=121+chapterIndex*5+index,rangeScale=distance/source.distance,sizeScale=Math.sqrt(rangeScale);
+      const {catalogV1Id,legacyStageId,difficulty,...settings}=source;
+      const radius=source.radius*sizeScale;
+      const expanded={...settings,id,longRange:true,sourceLessonKey:key,lessonKey:`long-${key}`,
+        chapterId:31+chapterIndex,chapterName:`${source.chapterName} · 장거리`,
+        name:`${source.chapterName} · ${distance}m`,distance,radius,height:source.height*sizeScale,
+        subtitle:`${distance}m 장거리 · 상위 활·석궁 권장`,
+        hint:`${source.hint} 먼 거리에서는 충분히 당기고 낙하와 바람을 더 보정해요.${source.kind==='cheetah'?' 확대를 낮추면 달리는 치타와 앞쪽 겨냥점을 함께 보기 좋아요.':''}`,
+        gearTier:upper.gearTier,gearLabel:upper.gearLabel,recommendedArrow:14+index,
+        referenceLoadouts:upper.referenceLoadouts.map(loadout=>({...loadout,arrow:14+index})),
+        goal:LONG_RANGE_GOALS[key]?.[index]??20+Math.floor(chapterIndex/5),
+        motion:{...source.motion,amplitudeX:source.motion.amplitudeX*sizeScale,amplitudeY:source.motion.amplitudeY*sizeScale},
+        ...(Number.isFinite(source.passDuration)?{passDuration:source.passDuration*rangeScale}:{}),
+        ...(Number.isFinite(source.layoutJitter)?{layoutJitter:source.layoutJitter*rangeScale}:{}),
+        passers:source.passers.map(person=>({...person,
+          z:distance-(source.distance-person.z)*sizeScale,
+          width:person.width*sizeScale,height:person.height*sizeScale,depth:person.depth*sizeScale,
+          ...(Number.isFinite(person.span)?{span:person.span*sizeScale}:{}),
+          ...(Number.isFinite(person.laneOffset)?{laneOffset:person.laneOffset*sizeScale}:{})})),
+        obstacles:source.obstacles.map(obstacle=>({...obstacle,z:obstacle.z*rangeScale,x:obstacle.x*sizeScale,width:obstacle.width*sizeScale,height:obstacle.height*sizeScale}))};
+      if(expanded.coverageMode)expanded.obstacles=partialCover(expanded);
+      if(expanded.fullCover)expanded.obstacles=hiddenCover(expanded);
+      if(expanded.lowWall)expanded.obstacles=expanded.obstacles.map(obstacle=>({...obstacle,
+        height:PLAYER.y+(expanded.height-expanded.radius*.18-PLAYER.y)*(obstacle.z/expanded.distance)}));
+      return {...expanded,difficulty:stageDifficulty(expanded)};
+    });
+  });
+}
+const introductoryStages=lessonStages().map(applyEquipmentLesson);
+// These fast crossings need a readable middle before the arrow arrives. Keep
+// their total crossing time and vertical motion; the entry/exit stays fast.
+// Apply after long-range expansion so a repair never spreads to other ranges.
+const animalApproachEase=Object.freeze({68:.35,72:.25,196:.30});
+export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)].map(template=>
+  Object.hasOwn(animalApproachEase,template.id)?{...template,approachEase:animalApproachEase[template.id]}:template));
+/** The first 120-mission catalog keeps its records after the teaching reorder. */
+export const CATALOG_V1_STAGE_MAP = Object.freeze(Object.fromEntries(introductoryStages.map(stage => [stage.catalogV1Id,stage.id])));
 /** Migration only: old saved records move to their corresponding expanded lesson. */
 export const LEGACY_STAGE_MAP = Object.freeze(Object.fromEntries(STAGES
   .filter(stage => Number.isInteger(stage.legacyStageId)).map(stage => [stage.legacyStageId,stage.id])));
@@ -505,7 +612,7 @@ export const MISSION_GROUPS = Object.freeze(Array.from(new Set(STAGES.map(stage 
     distances:Object.freeze(missions.map(stage => stage.distance))});
 }));
 
-/** Separate timed gun event; the 120 main archery missions retain their own progress. */
+/** Separate timed gun event; the main archery missions retain their own progress. */
 export function createClayEvent(level = 1) {
   const eventLevel = clamp(Math.floor(Number(level) || 1), 1, 10);
   const targetsPerWave = Math.min(10, eventLevel + 1), waveCount = 3;
@@ -537,11 +644,24 @@ for (const weapon of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
 }
 
 const animalPassDuration = Object.freeze(Object.fromEntries(Object.entries(stageShapes).map(([kind, shape]) => [kind, shape[2]])));
+export const ANIMAL_HEALTH = Object.freeze({rabbit:5,wildcat:8,deer:10,pigeon:12,eagle:15,cheetah:18,bird:12});
+// Integer beat counts integrate to a full crossing, with several pace changes
+// inside the visible middle of a pass. Large cats have the strongest bursts.
+const animalPace = Object.freeze({
+  rabbit:{a:.14,b:.06,beats:2,secondBeats:3},wildcat:{a:.50,b:.14,beats:2,secondBeats:4},
+  deer:{a:.23,b:.09,beats:2,secondBeats:3},pigeon:{a:.30,b:.10,beats:3,secondBeats:5},
+  eagle:{a:.34,b:.12,beats:2,secondBeats:3},cheetah:{a:.58,b:.13,beats:3,secondBeats:6},
+  bird:{a:.30,b:.10,beats:3,secondBeats:5}
+});
 function hashUnit(value) {
   value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
   value = Math.imul(value ^ (value >>> 15), 0x846ca68b);
   return ((value ^ (value >>> 16)) >>> 0) / 4294967296;
 }
+// Reordering lessons must not reroll their walls or irregular motion. Events
+// and standalone range fixtures still use their own id when no catalog exists.
+const stageSeedId = stage => stage.catalogV1Id ?? stage.id;
+const targetTimeScale = stage => Number.isFinite(stage.targetSpeedScale) && stage.targetSpeedScale > 0 ? stage.targetSpeedScale : 1;
 /** Fresh round layout; rerolling an already-prepared stage never compounds offsets. */
 export function prepareStage(stage, seed = 0) {
   const encounterSeed = (Number.isFinite(seed) ? Math.floor(seed) : 0) >>> 0;
@@ -549,10 +669,11 @@ export function prepareStage(stage, seed = 0) {
     ...stage, motion: { ...stage.motion },
     obstacles: (stage.obstacles || []).map(obstacle => ({ ...obstacle })),
     passers: (stage.passers || []).map(person => ({ ...person })), encounterSeed,
+    ...(isAnimalKind(stage.kind) ? {animalState:{}} : {}),
     ...(stage.kind === 'clay' ? { brokenPasses: [] } : {})
   };
   if (stage.coverageMode === 'side-walls' || stage.coverageMode === 'pillars') {
-    const mixed = encounterSeed ^ Math.imul(stage.id || 1, 0x9e3779b1);
+    const mixed = encounterSeed ^ Math.imul(stageSeedId(stage) || 1, 0x9e3779b1);
     const slot = Math.min(2, Math.floor(hashUnit(mixed ^ 0x6a09e667) * 3));
     const extent = stage.layoutJitter || stage.distance * .055;
     const jitter = (hashUnit(mixed ^ 0xbb67ae85) * 2 - 1) * extent * .12;
@@ -570,7 +691,7 @@ export function prepareStage(stage, seed = 0) {
   const center = (left + right) / 2;
   const margin = (stage.radius || 1.25) + Math.abs(stage.motion?.amplitudeX || 0) + .25;
   const available = Math.max(0, (right - left) / 2 - margin);
-  const mixed = encounterSeed ^ Math.imul(stage.id || 1, 0x9e3779b1);
+  const mixed = encounterSeed ^ Math.imul(stageSeedId(stage) || 1, 0x9e3779b1);
   const slot = Math.min(2, Math.floor(hashUnit(mixed ^ 0x6a09e667) * 3));
   const jitter = (hashUnit(mixed ^ 0xbb67ae85) * 2 - 1) * available * .12;
   prepared.targetX = center + (slot - 1) * available * .65 + jitter;
@@ -578,55 +699,84 @@ export function prepareStage(stage, seed = 0) {
   return prepared;
 }
 
+/** Apply one already-resolved physical arrow to this round's independent pass. */
+export function applyAnimalHit(stage,target,score,worldTime=target?.poseTime??0) {
+  const maxHealth=ANIMAL_HEALTH[target?.kind]||0,passId=target?.passId;
+  const existing=stage?.animalState?.[passId],damage=existing?.damage||0;
+  const status=(applied=false,justKilled=false)=>({applied,damage:existing?.damage||0,
+    health:Math.max(0,maxHealth-(existing?.damage||0)),maxHealth,killed:!!existing?.killed,justKilled});
+  if(!maxHealth||stage?.kind!==target?.kind||!stage.animalState||!Number.isInteger(passId)||passId<0||
+      ![3,5,8,10].includes(score)||!Number.isFinite(worldTime)||target.active===false||target.dead||existing?.killed||
+      !['x','y','z'].every(key=>Number.isFinite(target[key])))return status();
+  const total=damage+score,killed=total>=maxHealth;
+  const entry={damage:total,killed,hits:[...(existing?.hits||[]),{time:worldTime,score}]};
+  if(killed){
+    entry.deathTime=worldTime;
+    entry.frozen={x:target.x,y:target.y,z:target.z,direction:target.direction,
+      poseTime:Number.isFinite(target.poseTime)?target.poseTime:worldTime};
+  }
+  stage.animalState[passId]=entry;
+  return{applied:true,damage:total,health:Math.max(0,maxHealth-total),maxHealth,killed,justKilled:killed};
+}
+
 function motionClock(stage, time, irregular) {
   if (!irregular) return { time, rate: 1 };
-  const mixed = (stage.encounterSeed ?? stage.id ?? 1) ^ Math.imul(stage.id || 1, 0x9e3779b1);
+  const mixed = (stage.encounterSeed ?? stageSeedId(stage) ?? 1) ^ Math.imul(stageSeedId(stage) || 1, 0x9e3779b1);
   const random = salt => hashUnit(mixed ^ salt), tau = Math.PI * 2;
   const phase = random(0x6a09e667) * tau, secondPhase = random(0xbb67ae85) * tau;
   const a = .28 + random(0x3c6ef372) * .10, b = .08 + random(0xa54ff53a) * .08;
   const w = .65 + random(0x510e527f) * .4, secondW = 1.6 + random(0x9b05688c) * .6;
+  const scale = targetTimeScale(stage);
+  const elapsed = time * scale;
   // Positive clock rate gives continuous, uneven pace without introducing jumps.
+  // Compress its irregular beats with the main target speed as well, so the
+  // complete path is exactly the original path played 15% faster.
   return {
-    time: time + a / w * (Math.sin(w * time + phase) - Math.sin(phase)) +
-      b / secondW * (Math.sin(secondW * time + secondPhase) - Math.sin(secondPhase)),
-    rate: 1 + a * Math.cos(w * time + phase) + b * Math.cos(secondW * time + secondPhase)
+    time: time + a / (w * scale) * (Math.sin(w * elapsed + phase) - Math.sin(phase)) +
+      b / (secondW * scale) * (Math.sin(secondW * elapsed + secondPhase) - Math.sin(secondPhase)),
+    rate: 1 + a * Math.cos(w * elapsed + phase) + b * Math.cos(secondW * elapsed + secondPhase)
   };
 }
 
 function animalMotion(stage, time, forcedPassId) {
-  const duration = Math.max(3, stage.passDuration || animalPassDuration[stage.kind]);
+  const timeScale=targetTimeScale(stage);
+  const duration = Math.max(3/timeScale, stage.passDuration || animalPassDuration[stage.kind]/timeScale);
   const t = Math.max(0, Number.isFinite(time) ? time : 0);
   // Snap nanosecond rounding at a crossing boundary equally for large/small steps.
   const currentPass = Math.floor((t + 1e-9) / duration);
   const passId = Number.isInteger(forcedPassId) && forcedPassId >= 0 ? forcedPassId : currentPass;
-  const seedValue = Number.isFinite(stage.encounterSeed) ? stage.encounterSeed : stage.id || 1;
+  const seedValue = Number.isFinite(stage.encounterSeed) ? stage.encounterSeed : stageSeedId(stage) || 1;
   const seed = (Number.isInteger(seedValue) ? seedValue : Math.floor(seedValue * 0xffffffff)) >>> 0;
-  const passSeed = seed ^ Math.imul(passId + 1, 0x9e3779b1) ^ Math.imul(stage.id || 1, 0x85ebca6b);
+  const passSeed = seed ^ Math.imul(passId + 1, 0x9e3779b1) ^ Math.imul(stageSeedId(stage) || 1, 0x85ebca6b);
   const random = salt => hashUnit(passSeed ^ salt);
   const direction = random(0x243f6a88) < .5 ? -1 : 1;
   const phase = random(0xb7e15162) * Math.PI * 2, secondPhase = random(0x8aed2a6b) * Math.PI * 2;
   const variation = clamp(stage.paceVariation ?? 1, .2, 1);
-  const a = (.18 + random(0x9e3779b9) * .18) * variation, b = (.06 + random(0x3c6ef372) * .10) * variation;
-  const approach = clamp(stage.approachEase || 0, 0, .45);
+  const profile=animalPace[stage.kind],a=profile.a*(.9+random(0x9e3779b9)*.1)*variation,
+    b=profile.b*(.9+random(0x3c6ef372)*.1)*variation;
+  const approach = clamp(stage.approachEase || 0, 0, Math.min(.45,.94-a-b));
   const u = (t - passId * duration) / duration, tau = Math.PI * 2;
   // Integral of a positive varying velocity. Each pass crosses once, never reverses.
-  const progress = u + approach / tau * Math.sin(tau * u) + a / tau * (Math.sin(tau * u + phase) - Math.sin(phase)) +
-    b / (tau * 2) * (Math.sin(tau * 2 * u + secondPhase) - Math.sin(secondPhase));
-  const rate = 1 + approach * Math.cos(tau * u) + a * Math.cos(tau * u + phase) + b * Math.cos(tau * 2 * u + secondPhase);
+  const progress = u + approach / tau * Math.sin(tau * u) +
+    a/(tau*profile.beats)*(Math.sin(tau*profile.beats*u+phase)-Math.sin(phase))+
+    b/(tau*profile.secondBeats)*(Math.sin(tau*profile.secondBeats*u+secondPhase)-Math.sin(secondPhase));
+  const rate = 1 + approach * Math.cos(tau*u) + a*Math.cos(tau*profile.beats*u+phase)+b*Math.cos(tau*profile.secondBeats*u+secondPhase);
   const span = stage.distance * 1.25 + (stage.radius || 1.25) * 3;
   const x = (stage.targetX || 0) + direction * span * (2 * progress - 1);
   let y = stage.height ?? (flyingKinds.has(stage.kind) ? 4.8 : stage.kind === 'rabbit' ? .7 : 1.65);
   if (flyingKinds.has(stage.kind)) {
     const amplitude = stage.motion?.amplitudeY || .7;
-    const cycles = stage.kind === 'pigeon' ? 3.6 + random(0xa54ff53a) * 1.2 :
-      stage.kind === 'eagle' ? .8 + random(0xa54ff53a) * .6 : 1.2 + random(0xa54ff53a) * 1.2;
+    const cycles = stage.kind === 'pigeon' ? 4.8 + random(0xa54ff53a) :
+      stage.kind === 'eagle' ? 1.8 + random(0xa54ff53a) * .7 : 2.4 + random(0xa54ff53a);
     y += amplitude * (.72 * Math.sin(tau * cycles * u + phase) + .28 * Math.sin(tau * (cycles + .8) * u + secondPhase));
   } else {
     const amplitude = stage.motion?.amplitudeY || 0;
-    const frequency = stage.kind === 'rabbit' ? 2.0 : stage.kind === 'wildcat' ? 2.8 : stage.kind === 'deer' ? 1.35 : 3.1;
+    const leaps=stage.kind==='rabbit'||stage.kind==='deer';
+    const frequency = stage.kind==='rabbit'?1.8:stage.kind==='wildcat'?2.8:stage.kind==='deer'?.85:3.5;
     // Root movement follows the animal while the drawing only animates limbs.
     // Positive smooth hops keep the body above its ground-level baseline.
-    const stride = Math.sin(t * Math.PI * frequency + phase);
+    const wave=Math.sin(t*timeScale*Math.PI*frequency*(leaps?2:1)+phase);
+    const stride=leaps?Math.max(0,wave):wave;
     y += amplitude * stride * stride;
   }
   return { x, y, passId, direction, passDuration: duration, velocityX: direction * span * 2 / duration * rate, active: true };
@@ -696,22 +846,50 @@ export function targetAt(stage, time = 0, forcedPassId) {
     velocityX: (m.amplitudeX || 0) * Math.cos(phase) * (m.speed || 0) * clock.rate,
     active: true
   };
-  return {
+  const result = {
     ...position, z: stage.distance, radius: r,
     rx: r * (stageShapes[kind]?.[0] || 1),
     ry: r * (stageShapes[kind]?.[1] || 1),
-    kind
+    kind,...(animal?{poseTime:Number.isFinite(time)?time:0}:{})
   };
+  if(!animal)return result;
+  const maxHealth=ANIMAL_HEALTH[kind],entry=stage.animalState?.[position.passId];
+  const damage=(entry?.hits||[]).reduce((total,hit)=>total+(hit.time<=time+1e-9?hit.score:0),0);
+  if(entry?.killed&&entry.deathTime<=time+1e-9){
+    const corpse={...result,...entry.frozen,velocityX:0,active:true,dead:true,
+      damage:entry.damage,health:0,maxHealth,deathTime:entry.deathTime,deathAge:Math.max(0,time-entry.deathTime)};
+    // Keep the horizontal impact spot; birds and jumping animals actually fall.
+    // The shared drawn pose supplies ground support, so bodies and stuck arrows
+    // settle together without either clipping into the floor or hovering above it.
+    const ground=Math.min(entry.frozen.y,getAnimalGroundHeight(corpse));
+    corpse.y=Math.max(ground,entry.frozen.y-GRAVITY*corpse.deathAge*corpse.deathAge/2);
+    return corpse;
+  }
+  return{...result,dead:false,damage,health:Math.max(0,maxHealth-damage),maxHealth};
 }
 
 function passerAt(stage, config, time) {
   const id = config.id ?? 0, z = config.z ?? stage.distance * .88;
   const width = config.width ?? .95, height = config.height ?? 2, depth = config.depth ?? .42;
+  if(config.behavior==='shuttle'||config.behavior==='crowd'){
+    const duration=Math.max(.2,config.passDuration||1.5),phase=((config.phase||0)%1+1)%1;
+    const elapsed=Math.max(0,Number.isFinite(time)?time:0),passId=Math.floor((elapsed+phase*duration+1e-9)/duration);
+    const passStart=passId*duration-phase*duration,span=Math.max(width*.55,config.span||width*1.2);
+    const mixed=(stage.encounterSeed??stageSeedId(stage)??1)^Math.imul(stageSeedId(stage)||1,0x85ebca6b);
+    const initialDirection=hashUnit(mixed^0x243f6a88)<.5?-1:1;
+    const direction=initialDirection*(passId%2?-1:1),speed=span*2/duration;
+    const center=(stage.targetX||0)+(config.centerX||0)+initialDirection*(config.laneOffset||0);
+    return{id,passId,type:'person',x:center+direction*(-span+speed*(elapsed-passStart)),
+      y:config.y??0,z,width,height,depth,direction,speed,velocityX:direction*speed,
+      // Continuous collision splits at this exact turn, then uses the new
+      // linear velocity. No rendered-frame approximation enters the hit test.
+      passStart,passEnd:passStart+duration,passDuration:duration};
+  }
   const duration = Math.max(2, config.passDuration || 32);
   const phase = ((config.phase || 0) % 1 + 1) % 1;
   const passId = Math.floor((Math.max(0, time) + phase * duration + 1e-9) / duration);
   const passStart = passId * duration - phase * duration;
-  const mixed = (stage.encounterSeed ?? stage.id ?? 1) ^ Math.imul(id + 1, 0x85ebca6b) ^ Math.imul(passId + 1, 0x9e3779b1);
+  const mixed = (stage.encounterSeed ?? stageSeedId(stage) ?? 1) ^ Math.imul(id + 1, 0x85ebca6b) ^ Math.imul(passId + 1, 0x9e3779b1);
   const direction = hashUnit(mixed ^ 0x243f6a88) < .5 ? -1 : 1;
   const span = (z * 1.25 + width * 2) * (1 + hashUnit(mixed ^ 0xb7e15162) * .25);
   const speed = span * 2 / duration, velocityX = direction * speed;
@@ -722,7 +900,7 @@ function passerAt(stage, config, time) {
   };
 }
 
-/** Harmless moving blockers. Each linear pass is continuous and starts off screen. */
+/** Harmless moving blockers. Each linear leg is continuous through its next turn. */
 export function passersAt(stage, time = 0) {
   return (stage.passers || []).map(config => passerAt(stage, config, time));
 }
@@ -918,11 +1096,12 @@ function personCollision(position, velocity, acceleration, stage, worldTime, dt,
 }
 
 function scoreAt(point, target) {
-  if (target.active === false) return null;
+  if (target.active === false || target.dead) return null;
+  if (isAnimalKind(target.kind)) return scoreAnimalPoint(point,target);
   const ratio = Math.hypot((point.x - target.x) / target.rx, (point.y - target.y) / target.ry);
   if (ratio > 1 + 1e-9) return null;
   if (target.kind === 'clay' || target.kind === 'ufo') return { score: 10, zone: target.kind === 'ufo' ? 'UFO 명중' : '접시 명중' };
-  if (target.kind !== 'target') return { score: ratio <= 0.38 ? 10 : 8, zone: ratio <= 0.38 ? '정확한 명중' : '명중' };
+  if (target.kind !== 'target') return null;
   const ring = Math.min(4, Math.floor(clamp(ratio, 0, 0.999999) * 5));
   return { score: [10, 8, 6, 4, 2][ring], zone: ['정중앙', '빨간 원', '파란 원', '검은 원', '흰 원'][ring] };
 }
@@ -1007,7 +1186,7 @@ const MAGNET_STEP = 1 / 240;
 const noSteering = Object.freeze({x:0,y:0,z:0,turnRate:0});
 function currentMagnetTarget(shot, stage, worldTime) {
   const targets = stage.kind === 'clay' ? eventTargetsAt(stage,worldTime) : [targetAt(stage,worldTime)];
-  const active = targets.filter(target => target.active !== false);
+  const active = targets.filter(target => target.active !== false && !target.dead);
   if (shot._magnetTargetKey !== undefined) {
     const same = active.find(target => `${target.kind}:${target.passId ?? 'fixed'}` === shot._magnetTargetKey);
     if (!same) {shot.magnetLost = true;shot.magnetActive = false;return null;}

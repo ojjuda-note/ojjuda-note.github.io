@@ -72,7 +72,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.10.5');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.11.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -86,6 +86,13 @@ assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^
 assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the latest draw and coach share the same burst rules');
 assert.equal(game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision);
 assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the coach must use the same rebalanced physics as actual shots');
+for(const file of ['engine.mjs','scenery.mjs']) {
+ const source=read('games/forest-archer/'+file);
+ assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'painted anatomy and collision shapes load the same release');
+}
+for(const file of ['scenery','ammo-client'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],archeryRevision,'updated scene and stage-range client bypass stale caches');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'event preparation and result styles load with their markup');
+
 assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the game loads the wall-aware follow camera');
 assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the replay receives the same camera release');
 assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'ordinary and ten-point views share the same camera module');
