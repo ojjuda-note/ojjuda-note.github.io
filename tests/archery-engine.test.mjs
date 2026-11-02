@@ -169,7 +169,7 @@ function feasibleAim(stage,bow,arrow) {
       candidates.push({params,time,margin:wallClearance(params,stage),reading});
       if(!animal&&!timedPeople) {
         const found=candidates.pop();if(!volleyResult(params,stage,time,-1).hit)continue;
-        fallback??=found;if(found.margin>=.35)return found;
+        fallback??=found;if(found.margin>=(stage.fullCover?.08:.35))return found;
       }
     }
     candidates.sort((a,b)=>a.reading-b.reading||a.time-b.time);
@@ -1340,7 +1340,8 @@ test('all reference goals retain real five-shot margins with sway, timing, varia
   // The full curriculum catches narrow moving gaps and shorter combined
   // obstacles that a few long-distance examples would miss.
   const adjustedGoals = new Set([52, 56, 72, 80, 84, 88, 92, 95, 96, 103, 110, 111, 112, 120]);
-  // Retain the established +10-point comparison at 50m. Near targets can
+  // Retain the established +10-point comparison on each chapter's final range.
+  // Hidden targets have moved back to 80m. Near targets can
   // already give the starter over 40 points, leaving less than 10 to improve.
   const upgradeComparisons = new Set([108, 112, 116, 120]);
   const sample = (stage, found) => {
@@ -1358,7 +1359,7 @@ test('all reference goals retain real five-shot margins with sway, timing, varia
     const stage = prepareStage(template, 19);
     let baseline = null, minimumMargin = Infinity;
     if (upgradeComparisons.has(stage.id)) {
-      assert.equal(stage.gearTier, 'upper'); assert.equal(stage.distance, 50);
+      assert.equal(stage.gearTier, 'upper'); assert.equal(stage.distance, stage.fullCover?80:50);
       const basic = feasibleAim(stage, BOWS[0], ARROWS[0]);
       assert.ok(basic, 'equipment recommendations must not impose an artificial purchase lock');
       baseline = sample(stage, basic);
