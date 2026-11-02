@@ -70,15 +70,15 @@ test('initialization reveals no auth client and only the live same-origin owner/
 test('only allowlisted argument shapes reach callbacks, with no client price/count or arbitrary RPC',async()=>{
  const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();},onCoachBuy:async(...args)=>{calls.push(['coach-buy',...args]);return snapshot();}});
  try{
-  for(const [action,fields]of [['round-start',{stage:0}],['round-start',{stage:121}],['round-start',{stage:120.5}],['round-start',{stage:'120'}],['round-complete',{stage:121,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
+  for(const [action,fields]of [['round-start',{stage:0}],['round-start',{stage:221}],['round-start',{stage:220.5}],['round-start',{stage:'220'}],['round-complete',{stage:221,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
    await f.request(action,fields);assert.equal(f.responses().at(-1).result.reason,'invalid');
   }
   assert.equal(calls.length,0);
-  const start=await f.request('round-start',{stage:120});
-  const complete=await f.request('round-complete',{stage:120,runId:owner});
+  const start=await f.request('round-start',{stage:220});
+  const complete=await f.request('round-complete',{stage:220,runId:owner});
   const buy=await f.request('buy');
   const coach=await f.request('coach-buy');
-  assert.deepEqual(calls,[['start',start.requestId,120],['complete',complete.requestId,owner,120],['buy',buy.requestId],['coach-buy',coach.requestId]]);
+  assert.deepEqual(calls,[['start',start.requestId,220],['complete',complete.requestId,owner,220],['buy',buy.requestId],['coach-buy',coach.requestId]]);
  }finally{f.close();}
 });
 

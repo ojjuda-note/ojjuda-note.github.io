@@ -9,6 +9,11 @@ import {
 import {ARROWS, BOWS, STAGES, prepareStage, targetAt, launchArrow, stepArrow} from '../games/forest-archer/engine.mjs';
 
 const near = (actual, expected, epsilon = 1e-9) => assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`);
+const mission = (lessonKey, distance) => {
+  const matches = STAGES.filter(stage => stage.lessonKey === lessonKey && stage.distance === distance);
+  assert.equal(matches.length, 1, `${lessonKey} has one ${distance}m lesson`);
+  return matches[0];
+};
 const length = (a, b) => Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
 const base = (w = 1000, h = 600) => ({x: 0, y: 1.65, z: 0, cx: w / 2, horizon: h * .405, focal: Math.min(w * 1.08, h * 1.5)});
 // Keep the solid-wall projection regression independent of the gentler lesson catalog.
@@ -68,8 +73,8 @@ function wallBlocks(camera, point, wall) {
 
 test('a solid wall hides and reveals a crossing bird in either direction without projection leaks', () => {
   for (const {seed, hiddenAt, aboveAt, direction} of [
-    {seed: 2, hiddenAt: 3.84, aboveAt: 5.76, direction: -1},
-    {seed: 3, hiddenAt: 16.56, aboveAt: 17.8, direction: 1}
+    {seed: 2, hiddenAt: 7.02, aboveAt: 7.48, direction: -1},
+    {seed: 3, hiddenAt: 6.2, aboveAt: 6.7, direction: 1}
   ]) {
     const stage = prepareStage(coveredBird, seed), obstacle = stage.obstacles[0];
     for (const {w, h} of [{w: 1000, h: 600}, {w: 390, h: 410}, {w: 844, h: 280}]) {
@@ -92,8 +97,8 @@ test('a solid wall hides and reveals a crossing bird in either direction without
 test('starter equipment clears a solid wall to hit an exposed bird, while a low shot strikes masonry', () => {
   // These are normal full-charge aiming inputs, with gravity, drag and stage wind enabled.
   for (const {seed, time, yaw, pitch, direction} of [
-    {seed: 0, time: 5.36, yaw: -.106966, pitch: .259706, direction: -1},
-    {seed: 0, time: 17, yaw: -.181823, pitch: .286257, direction: 1}
+    {seed: 2, time: 4.12, yaw: .073118, pitch: .239681, direction: -1},
+    {seed: 5, time: 5.92, yaw: .172276, pitch: .254677, direction: 1}
   ]) {
     const stage = prepareStage(coveredBird, seed);
     const shot = launchArrow({bow: BOWS[0], arrow: ARROWS[0], charge: 1, yaw, pitch});
@@ -198,8 +203,12 @@ test('follow view trails the arrow through rising, falling, and ground positions
 
 test('post-shot camera reveals ordinary off-centre impacts through partial cover on every viewport', () => {
   let hiddenContacts = 0;
-  for (const id of [17, 19, 21, 23, 25, 26, 94]) for (const seed of [19, 123, 0x80000000]) {
-    const stage = prepareStage(STAGES[id - 1], seed);
+  for (const [lessonKey, distance] of [
+    ['fixed-gap-3/4', 10], ['fixed-gap-3/4', 30],
+    ['fixed-gap-1/2', 10], ['fixed-gap-1/2', 30],
+    ['fixed-gap-1/3', 10], ['fixed-gap-1/3', 20], ['moving-half-gap', 20]
+  ]) for (const seed of [19, 123, 0x80000000]) {
+    const stage = prepareStage(mission(lessonKey, distance), seed);
     for (const time of [0, 9.3]) for (const [offsetX, offsetY] of [[-.3, 0], [0, .3], [.3, 0]]) {
       const target = targetAt(stage, time), shot = {
         position: {x: target.x + target.rx * offsetX, y: target.y + target.ry * offsetY, z: target.z - .002},
@@ -214,10 +223,10 @@ test('post-shot camera reveals ordinary off-centre impacts through partial cover
         if (hidden) hiddenContacts++;
         for (const point of points) {
           assert.ok(stage.obstacles.every(wall => !wallBlocks(camera, point, wall)),
-            `stage ${id}: real tip and tail clear the wall on ${w}×${h}`);
+            `stage ${stage.id}: real tip and tail clear the wall on ${w}×${h}`);
           const projected = projectPoint(point, camera);
           assert.ok(projected.visible && projected.x > 0 && projected.x < w && projected.y > 0 && projected.y < h,
-            `stage ${id}: visible shaft fits the canvas`);
+            `stage ${stage.id}: visible shaft fits the canvas`);
         }
         assert.ok(camera.z <= original.z && shaftTail(shot).z - camera.z >= NEAR_PLANE,
           'the camera cannot overtake the shaft to fake visibility');
