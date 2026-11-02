@@ -11,6 +11,7 @@
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
   function save(){return write(KEY,state);}
   function count(){return state.grid.flat().filter(v=>v!==E.EMPTY).length;}
+  function completedRound(){return state.finishedMs!=null&&count()===0;}
   function ms(){return state.startedAt?Math.max(0,Date.now()-state.startedAt)+(state.penaltyMs||0):0;}
   function time(value){const n=Math.floor(value/10),m=Math.floor(n/6000),s=Math.floor(n/100)%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(n%100).padStart(2,'0')}`;}
   function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2800);}
@@ -91,7 +92,7 @@
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;locked=false;customSize=null;overview=true;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage,Math.random,boardColumns(stage)).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
@@ -111,8 +112,9 @@
     state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;
     if(willFinish)finish(finishDuration,false);else{save();updateStats();$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';}
     clearTimeout(moveTimer);
-    const timer=setTimeout(()=>{
+    const runId=state.runId,timer=setTimeout(()=>{
       removalTimers.delete(timer);
+      if(state.runId!==runId)return;
       // Keep the other tiles in place instead of rebuilding the whole board.
       for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
       if($('connection').firstElementChild===line)$('connection').replaceChildren();
@@ -121,9 +123,10 @@
     },REMOVE_MS);
     removalTimers.add(timer);
     // Visual effects never block the next pair. Check for a dead end after them.
-    if(!willFinish)moveTimer=setTimeout(()=>{if(!state.pendingPurchase)ensureMove();},REMOVE_MS);
+    if(!willFinish)moveTimer=setTimeout(()=>{if(state.runId===runId&&!state.pendingPurchase)ensureMove();},REMOVE_MS);
   }
   function finish(duration,present=true){
+    if(state.finishedMs!=null||count()!==0)return;
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
@@ -132,6 +135,7 @@
     if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
   }
   function showCompletion(rank){
+    if(!completedRound())return;
     locked=true;const final=state.stage===E.MAX_STAGE;
     $('win-title').textContent=final?'15개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
     $('win-desc').innerHTML=`<strong class="win-time">${time(state.finishedMs)}</strong><span class="win-rank">이 기기 ${state.stage}단계 ${rank}위${rank===1?' · 최고 기록!':''}</span>${final?'15단계까지, 멋진 도전이었어요.':`다음은 ${state.stage+1}단계 정원이에요.`}`;
@@ -144,11 +148,11 @@
   }
   function chooseCompletedLevel(offset){
     const stage=state.stage+offset;
-    if($('completion').hidden||state.pendingPurchase||stage<1||stage>E.MAX_STAGE)return;
+    if(![-1,0,1].includes(offset)||$('completion').hidden||!completedRound()||state.pendingPurchase||stage<1||stage>E.MAX_STAGE)return;
     newStage(stage);$('board-scroll').focus({preventScroll:true});
   }
   function showModal(html){if($('options').open)$('options').close();$('modal-content').innerHTML=html;$('modal').showModal();}
-  function confirmChange(title,message,action){showModal(`<div class="eyebrow">새로운 시작</div><h2 id="modal-title">${title}</h2><p>${message}</p><div class="modal-buttons"><button class="action-button" id="cancel-action">계속하기</button><button class="next-button" id="confirm-action">새로 시작</button></div>`);$('cancel-action').onclick=()=>$('modal').close();$('confirm-action').onclick=()=>{$('modal').close();action();};}
+  function confirmChange(title,message,action){const runId=state.runId;showModal(`<div class="eyebrow">새로운 시작</div><h2 id="modal-title">${title}</h2><p>${message}</p><div class="modal-buttons"><button class="action-button" id="cancel-action">계속하기</button><button class="next-button" id="confirm-action">새로 시작</button></div>`);$('cancel-action').onclick=()=>$('modal').close();$('confirm-action').onclick=()=>{if(state.runId!==runId||state.pendingPurchase)return;$('modal').close();action();};}
   function openRanking(stage=state.stage){
     rankingStage=stage;
     const stages=[...new Set([state.stage,...Object.keys(records).map(Number)])].sort((a,b)=>a-b);

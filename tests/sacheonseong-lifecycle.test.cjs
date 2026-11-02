@@ -19,7 +19,7 @@ function fixture({stage=2,grid=null,saved=null,records={},seed=null}={}){
  };}
  w.eval(read('games/sacheonseong/app.js'));
  if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
- return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
+ return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},pending:delay=>[...timers.values()].filter(timer=>timer.delay===delay).map(timer=>timer.fn),run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
 for(const stage of [2,7])test(`stage ${stage} saves and queues its last pair completion before the screen can close`,()=>{
  const f=fixture({stage});try{
@@ -31,6 +31,35 @@ for(const stage of [2,7])test(`stage ${stage} saves and queues its last pair com
 });
 test('switching stages immediately after the last pair keeps the completed record',()=>{
  const f=fixture();try{f.match();f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();f.run(120);assert.equal(f.state().stage,3);assert.equal(f.records()[2]?.length,1);assert.equal(f.sent.length,1);assert.equal(f.d.getElementById('completion').hidden,true);}finally{f.close();}
+});
+test('a late completion callback cannot mark a newer board complete or enable its Next button',()=>{
+ const f=fixture();try{
+  f.match();const queued=f.pending(120);assert.equal(queued.length,1);
+  f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();const fresh=f.state();
+  queued[0]();assert.deepEqual(f.state(),fresh);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('next').disabled,true);
+  // A detached or stale result handler must check the round, not its visibility.
+  f.d.getElementById('completion').hidden=false;f.d.getElementById('next').onclick();assert.deepEqual(f.state(),fresh);
+  assert.equal(f.sent.length,1);assert.equal(f.records()[2].length,1);
+ }finally{f.close();}
+});
+test('history and unlocked levels do not allow Next on a fresh or partially solved attempt',()=>{
+ const records={2:[{id:'old-clear',duration:12000,at:1700000000000,rulesVersion:3}]};
+ const f=fixture({saved:{stage:2,unlocked:3},records});try{
+  const before=f.state();assert.equal(f.d.getElementById('next').disabled,true);
+  f.d.getElementById('completion').hidden=false;f.d.getElementById('next').onclick();assert.deepEqual(f.state(),before);
+  f.d.getElementById('completion').hidden=true;f.d.querySelector('.tile:not(:disabled)').click();f.advance(1000);
+  const playing=f.state();f.d.getElementById('next').onclick();assert.deepEqual(f.state(),playing);assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
+  f.d.getElementById('all-stages').click();const locked=f.d.querySelector('[data-stage="4"]');assert.equal(locked.disabled,true);locked.dispatchEvent(new f.w.MouseEvent('click',{bubbles:true}));assert.equal(f.state().stage,2,'a forced locked menu event cannot open a new level');
+  f.d.querySelector('[data-stage="3"]').click();f.d.getElementById('confirm-action').click();assert.equal(f.state().stage,3,'explicit selection of an already unlocked level remains available');
+ }finally{f.close();}
+});
+test('a detached stage-change confirmation cannot affect a later attempt',()=>{
+ const f=fixture({saved:{stage:2,unlocked:3}});try{
+  f.d.querySelector('.tile:not(:disabled)').click();f.d.getElementById('all-stages').click();f.d.querySelector('[data-stage="3"]').click();
+  const queued=f.d.getElementById('confirm-action').onclick;f.d.getElementById('cancel-action').click();
+  f.d.getElementById('restart').click();f.d.getElementById('confirm-action').click();const fresh=f.state();
+  queued();assert.deepEqual(f.state(),fresh,'the old selection cannot jump from the restarted round to stage 3');assert.equal(f.sent.length,0);
+ }finally{f.close();}
 });
 for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its best time without recording twice`,()=>{
  let f=fixture({stage}),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}

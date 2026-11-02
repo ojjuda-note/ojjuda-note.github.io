@@ -29,9 +29,14 @@ for(const reason of ['won','time','hearts'])for(const offset of [-1,0,1]){
   const prefix=reason==='won'?'celebration':'retry',names=['previous','current','next'],completed=f.state().current;
   assert.equal(f.round().status,reason==='won'?'won':'lost');
   assert.deepEqual(names.map(name=>f.$(prefix+'-'+name).querySelector('span').textContent),['이전 그림','지금 그림','다음 그림']);
-  assert.deepEqual(names.map(name=>f.$(prefix+'-'+name).querySelector('small').textContent),['48 / 82 · 보통','49 / 82 · 어려움','50 / 82 · 어려움']);
+  assert.deepEqual(names.map(name=>f.$(prefix+'-'+name).querySelector('small').textContent),['48 / 82 · 보통','49 / 82 · 어려움',reason==='won'?'50 / 82 · 어려움':'이번 그림 완료 후']);
   if(reason!=='won')assert.equal(f.$('start').hidden,true,'failure exposes direct choices without a second Start confirmation');
   f.advance(6000);assert.equal(f.state().current,completed,'result waits without automatically advancing');
+  if(reason!=='won'&&offset===1){
+   const button=f.$('retry-next'),before=f.state();assert.equal(button.disabled,true);
+   button.click();button.onclick();assert.deepEqual(f.state(),before,'failure cannot advance even when a queued handler bypasses the disabled button');
+   assert.deepEqual(f.scores,[]);assert.deepEqual(f.charges,[]);continue;
+  }
   const oldOnload=f.$('original').onload;f.$(prefix+'-'+names[offset+1]).click();
   assert.equal(f.state().current,f.order[f.position+offset],'one click enters the adjacent difficulty-ordered picture');assert.equal(f.round().status,'ready');assert.equal(f.round().hearts,3);assert.equal(f.$('found-count').textContent,'0');assert.equal(f.$('celebration').open,false);
   f.advance(15000);oldOnload();assert.equal(f.round().status,'ready','old image callbacks cannot start the chosen level');assert.equal(f.$('time-left').textContent,'60','loading never consumes play time');
@@ -54,4 +59,29 @@ const f=fixture();try{
  f.advance(61000);f.$('extend').click();assert.equal(f.round().status,'payment');assert.equal(f.$('retry-level-choice').hidden,true,'unresolved payment hides level choices');
  const current=f.state().current;f.$('celebration-next').click();assert.equal(f.state().current,current);assert.equal(f.charges.length,1,'an unresolved payment cannot be discarded by level selection');
 }finally{f.w.close();}
-console.log('PASS: direct win, timeout and hearts choices; previous/current/next in difficulty order; no automatic navigation; first/last boundaries; repeat current; load-safe timer, completed history and purchase safeguards.');
+for(const id of ['next','continue','celebration-next','retry-next']){
+ const f=fixture();try{
+  const current=f.state().current,invoke=()=>f.$(id).onclick();
+  invoke();assert.equal(f.state().current,current,`${id} cannot skip a ready round`);
+  f.load();f.$('start').click();invoke();assert.equal(f.state().current,current,`${id} cannot skip an active round`);
+  f.advance(61000);invoke();assert.equal(f.state().current,current,`${id} cannot skip a timed-out round`);
+  assert.equal(f.$('next').disabled,true);assert.equal(f.$('continue').disabled,true);assert.equal(f.$('retry-next').disabled,true);
+ }finally{f.w.close();}
+}
+for(const id of ['next','continue','celebration-next']){
+ const f=fixture();try{
+  f.end('won');const handler=f.$(id).onclick;handler();
+  assert.equal(f.state().current,f.order[f.position+1],`${id} advances a genuinely cleared round`);
+  const after=f.state();handler();assert.deepEqual(f.state(),after,'a queued second Next cannot skip the fresh destination');
+  f.load();handler();assert.equal(f.state().current,f.order[f.position+1]);assert.equal(f.scores.length,1);
+ }finally{f.w.close();}
+}
+const replay=fixture();try{
+ replay.end('won');const completed=replay.state().current;replay.$('celebration-current').click();replay.load();replay.end('hearts');
+ assert.equal(replay.state().completed.includes(replay.puzzles[completed].id),true);
+ for(const id of ['next','continue','retry-next']){assert.equal(replay.$(id).disabled,true);replay.$(id).onclick();assert.equal(replay.state().current,completed,'historical completion cannot unlock Next after a failed replay');}
+ const choice=replay.order[replay.position+3];replay.$('stage-picker').value=choice;replay.$('stage-picker').dispatchEvent(new replay.w.Event('change'));
+ assert.equal(replay.state().current,choice,'explicit picture selection keeps the existing free-selection policy');
+ assert.equal(Object.hasOwn(replay.state(),'unlockedStage'),false,'Next gating introduces no new progress or unlock field');
+}finally{replay.w.close();}
+console.log('PASS: Next requires the current clear from every handler; failure allows previous/current; historical clears and stale clicks cannot skip; explicit selection, timer, scores and purchases retain their behavior.');

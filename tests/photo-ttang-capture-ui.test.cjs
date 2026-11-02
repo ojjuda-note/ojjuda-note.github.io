@@ -92,7 +92,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   assert.equal(result.equal,true,'batched territory, shadows and photo mask preserve every pixel');
   assert.ok(result.calls<5000,'a large capture must not submit hundreds of thousands of canvas operations');
   await frame.waitForFunction(t=>world.time>t+.2,result.time);
-  await frame.evaluate(()=>{win();toMenu();});
+  await frame.evaluate(()=>{over=false;mySil=silTotal*GOAL;win();toMenu();});
   await frame.waitForTimeout(3200);
   assert.equal(await frame.locator('.overlay:not(#menu)').count(),0,'leaving the completed round cancels its pending result panel');
   assert.deepEqual(errors,[]);console.log('PASS: large photo capture, exact layer pixels, bounded canvas work, continued animation');
