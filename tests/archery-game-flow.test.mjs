@@ -1778,6 +1778,9 @@ test('the separate clay event keeps guns, bullets and records independent of the
   assert.equal(state.mode, 'finished');assert.equal(state.score, 150);
   assert.equal(app.api.progress.eventBest, 150);assert.equal(app.api.progress.eventBestByLevel[10], 150);assert.equal(app.api.progress.eventPlays, 1);
   assert.equal(Number(app.getElement('scoreCount').textContent), 15);assert.equal(app.getElement('scoreUnit').textContent, '개');
+  assert.equal(state.modal, 'stabilizer');assert.equal(app.api.progress.clayCredits, 15);assert.equal(app.api.progress.stabilizers, 0);
+  assert.match(app.getElement('modalContent').innerHTML, /data-action="close">다음으로/);
+  modalAction(app, 'close');assert.equal(state.modal, 'result');
   assert.match(app.getElement('modalContent').innerHTML, /표적 15개 격파/);
   assert.equal(app.api.progress.coins, afterPurchase + 150, 'events award ten coins per hit with no goal-dependent completion bonus');assert.deepEqual(mainProgress(), before);
   app.api.exitEvent();await app.flush();
@@ -1813,6 +1816,168 @@ test('resolved clay and UFO hits each save one stabilizer credit without replay,
   assert.equal(app.api.progress.clayCredits, 2, 'completion and repeated callbacks cannot mint the credits again');
   const reloaded = await appHarness(app.snapshot());
   assert.equal(reloaded.api.progress.clayCredits, 2);assert.equal(reloaded.api.progress.stabilizers, 0);
+});
+
+test('finished clay events offer an exchange only for enough accumulated credits and available inventory', async () => {
+  const cap = 1e8;
+  for (const [credits, inventory, exchange] of [[0, 0, false], [4, 0, false], [5, 0, true], [12, 0, true], [5, cap, false], [12, cap - 1, true]]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: 17, mainRounds: 5,
+      eventPlays: 2, coins: 375, clayCredits: credits, stabilizers: inventory, sound: false }, { remaining: 17, coins: 23 });
+    const state = app.api.state;
+    app.api.enterEvent(3);await app.flush();
+    assert.equal(state.modal, null, 'saved credits do not interrupt a running event');
+    state.time = state.stage.eventDuration - .001;app.frames();
+    assert.equal(state.mode, 'finished');assert.equal(state.hits, 0);
+    assert.equal(state.modal, exchange ? 'stabilizer' : 'result', `${credits} credits and ${inventory} items`);
+    assert.ok(state.resultSummary, 'the completed result is retained before the exchange opens');
+    const html = app.getElement('modalContent').innerHTML;
+    if (exchange) {
+      assert.match(html, /id="modalTitle">안정제 교환/);
+      assert.match(html, /data-action="buy-stabilizer"[^>]*>안정제 1개 교환 · 접시 점수 5개/);
+      assert.match(html, /data-action="close">다음으로/);
+      assert.doesNotMatch(html, /data-action="use-stabilizer"/, 'a finished event offers an exchange, not use in the expired round');
+      assert.equal(app.api.useStabilizer(), false);assert.equal(state.stabilizerActive, false);
+    } else {
+      assert.match(html, /표적 0개 격파/);
+      assert.deepEqual(Array.from(html.matchAll(/data-action="(previous-stage|retry|next-stage)"/g), match => match[1]), ['previous-stage', 'retry', 'next-stage']);
+      app.getElement('stabilizerBtn').emit('click');
+      assert.equal(state.modal, 'result', 'an unavailable exchange never traps a finished event in a disabled purchase screen');
+    }
+    for (let callback = 0; callback < 3; callback++) app.api.finishRound();
+    app.frames(3);
+    assert.equal(state.modal, exchange ? 'stabilizer' : 'result');
+    assert.equal(app.api.progress.eventPlays, 3);assert.equal(app.snapshot().eventPlays, 3);
+    assert.equal(app.api.progress.clayCredits, credits);assert.equal(app.snapshot().clayCredits, credits);
+    assert.equal(app.api.progress.stabilizers, inventory);assert.equal(app.snapshot().stabilizers, inventory);
+    assert.equal(app.api.progress.coins, 375);assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
+    assert.equal(app.ammo.requests.filter(request => ['buy', 'spend', 'round-complete'].includes(request.action)).length, 0,
+      'showing or skipping the exchange never purchases, spends ammunition or completes another main round');
+  }
+});
+
+test('the final in-flight event hit reaches the exchange threshold after the event timer expires', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 375, clayCredits: 4, stabilizers: 0, sound: false }, { remaining: 17, coins: 23 });
+  app.api.enterEvent(10);await app.flush();
+  const state = app.api.state, pad = app.getElement('aimTouchpad');
+  state.time = .2;
+  const target = app.engine.eventTargetsAt(state.stage, state.time).find(item => item.kind === 'clay');
+  assert.ok(target?.active);
+  pad.emit('pointerdown');pad.emit('pointerup');await app.flush();
+  const shot = state.shot;
+  assert.equal(shot.projectileType, 'bullet');assert.equal(shot.active, true);
+  state.time = state.stage.eventDuration - .001;app.frames();
+  assert.ok(state.time >= state.stage.eventDuration);
+  assert.equal(shot.active, true);assert.notEqual(state.mode, 'finished');assert.equal(state.modal, null);
+  assert.equal(app.api.progress.clayCredits, 4, 'the live last bullet must resolve before the exchange threshold is evaluated');
+  const point = { x: target.x, y: target.y, z: target.z };
+  shot.position = point;shot.active = false;
+  shot.result = { type: 'hit', point, targetCenter: target, score: 10, flightTime: shot.elapsed, zone: '접시 명중' };
+  app.api.onEventImpact(shot);app.api.onEventImpact(shot);app.frames();
+  assert.equal(state.mode, 'finished');assert.equal(state.modal, 'stabilizer');
+  assert.equal(state.used, 1);assert.equal(state.hits, 1);assert.equal(state.score, 10);
+  assert.equal(app.api.progress.clayCredits, 5);assert.equal(app.snapshot().clayCredits, 5);
+  assert.equal(app.api.progress.stabilizers, 0);assert.equal(app.api.progress.eventPlays, 1);
+  assert.equal(app.api.progress.coins, 385);assert.equal(app.ammo.account.remaining, 16);assert.equal(app.ammo.account.coins, 23);
+  app.api.finishRound();app.api.onEventImpact(shot);
+  assert.equal(app.api.progress.clayCredits, 5);assert.equal(app.api.progress.eventPlays, 1);assert.equal(app.api.progress.coins, 385);
+});
+
+test('automatic exchanges stay open while affordable and return to stage choices on insufficient credits or inventory cap', async () => {
+  const cap = 1e8;
+  for (const [credits, inventory, purchases] of [[5, 0, 1], [12, 0, 2], [12, cap - 1, 1]]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: 2, mainRounds: 5,
+      coins: 375, clayCredits: credits, stabilizers: inventory, sound: false }, { remaining: 17, coins: 23 });
+    const state = app.api.state;
+    app.api.enterEvent(3);await app.flush();state.time = state.stage.eventDuration - .001;app.frames();
+    assert.equal(state.modal, 'stabilizer');
+    for (let purchase = 1; purchase <= purchases; purchase++) {
+      modalAction(app, 'buy-stabilizer');
+      assert.equal(app.api.progress.clayCredits, credits - 5 * purchase);assert.equal(app.snapshot().clayCredits, credits - 5 * purchase);
+      assert.equal(app.api.progress.stabilizers, inventory + purchase);assert.equal(app.snapshot().stabilizers, inventory + purchase);
+      assert.equal(state.modal, purchase < purchases ? 'stabilizer' : 'result');
+      assert.equal(state.stabilizerActive, false, 'exchanging an item never uses it automatically');
+    }
+    assert.match(app.getElement('modalContent').innerHTML, /표적 0개 격파/);
+    assert.deepEqual(Array.from(app.getElement('modalContent').innerHTML.matchAll(/data-action="(previous-stage|retry|next-stage)"/g), match => match[1]), ['previous-stage', 'retry', 'next-stage']);
+    modalAction(app, 'buy-stabilizer');assert.equal(app.api.buyStabilizer(), false);
+    assert.equal(app.api.progress.clayCredits, credits - 5 * purchases);assert.equal(app.api.progress.stabilizers, inventory + purchases);
+    assert.equal(app.api.progress.eventPlays, 1);assert.equal(app.api.progress.mainRounds, 5);
+    assert.equal(app.api.progress.coins, 375);assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
+    const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
+    modalAction(app, 'next-stage');modalAction(app, 'next-stage');await app.flush();
+    assert.equal(state.isEvent, false);assert.equal(state.stage.id, 3);assert.equal(state.modal, null);
+    assert.equal(state.stabilizerActive, false);assert.equal(app.api.progress.stabilizers, inventory + purchases);
+    assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts + 1);
+    if (credits === 12 && inventory === 0) {
+      app.getElement('stabilizerBtn').emit('click');
+      assert.match(app.getElement('modalContent').innerHTML, /data-action="use-stabilizer"/);
+      assert.match(app.getElement('modalContent').innerHTML, /data-action="close">게임으로 돌아가기/);
+      modalAction(app, 'use-stabilizer');
+      assert.equal(state.stabilizerActive, true);assert.equal(state.modal, null);
+      assert.equal(app.api.progress.stabilizers, 1);assert.equal(app.api.progress.clayCredits, 2);
+    }
+  }
+});
+
+test('skipping or dismissing the automatic exchange preserves the result through shop visits without reopening or settling twice', async () => {
+  const dismissals = [
+    ['next', app => modalAction(app, 'close')],
+    ['close button', app => app.getElement('modalClose').emit('click')],
+    ['escape', app => app.document.emit('keydown', { code: 'Escape' })],
+    ['backdrop', app => app.getElement('modalBackdrop').emit('click')],
+    ['shop visit', app => {
+      const button = app.getElement('visibleWeaponShop');button.tagName = 'BUTTON';button.classList.add('shop-open');
+      app.document.emit('click', { target: button });assert.equal(app.api.state.modal, 'shop');
+      app.getElement('modalClose').emit('click');
+    }]
+  ];
+  for (const [name, dismiss] of dismissals) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: 17, mainRounds: 5,
+      eventPlays: 3, coins: 375, clayCredits: 12, stabilizers: 1, sound: false }, { remaining: 17, coins: 23 });
+    const state = app.api.state;
+    app.api.enterEvent(3);await app.flush();state.time = state.stage.eventDuration - .001;app.frames();
+    assert.equal(state.modal, 'stabilizer');
+    const saved = app.snapshot(), summary = { ...state.resultSummary }, epoch = state.roundEpoch;
+    const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
+    const unchanged = () => {
+      assert.equal(state.mode, 'finished', name);assert.equal(state.modal, 'result', name);
+      assert.equal(state.roundEpoch, epoch);assert.deepEqual({ ...state.resultSummary }, summary);
+      assert.deepEqual(app.snapshot(), saved);assert.equal(app.api.progress.clayCredits, 12);assert.equal(app.api.progress.stabilizers, 1);
+      assert.equal(app.api.progress.eventPlays, 4);assert.equal(app.api.progress.coins, 375);
+      assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
+      assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
+      assert.deepEqual(Array.from(app.getElement('modalContent').innerHTML.matchAll(/data-action="(previous-stage|retry|next-stage)"/g), match => match[1]), ['previous-stage', 'retry', 'next-stage']);
+    };
+    dismiss(app);app.api.finishRound();app.frames(3);unchanged();
+    modalAction(app, 'result-shop');assert.equal(state.modal, 'shop');
+    app.document.emit('keydown', { code: 'Escape' });app.api.finishRound();unchanged();
+    app.getElement('menuBtn').emit('click');assert.equal(state.modal, 'menu');
+    modalAction(app, 'help');assert.equal(state.modal, 'help');
+    app.getElement('modalBackdrop').emit('click');app.frames(3);unchanged();
+    app.api.enterEvent(3);await app.flush();state.time = state.stage.eventDuration - .001;app.frames();
+    assert.equal(state.modal, 'stabilizer', 'a later completed event may offer the still-affordable exchange once again');
+    assert.equal(app.api.progress.eventPlays, 5);assert.equal(app.api.progress.clayCredits, 12);assert.equal(app.api.progress.stabilizers, 1);
+  }
+});
+
+test('a failed automatic exchange keeps its balances and modal until one successful retry returns to the result', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, clayCredits: 5, stabilizers: 1, coins: 400, sound: false }, { remaining: 17, coins: 23 });
+  app.api.enterEvent(3);await app.flush();
+  const state = app.api.state;
+  state.time = state.stage.eventDuration - .001;app.frames();
+  assert.equal(state.modal, 'stabilizer');
+  const saved = app.snapshot(), write = app.store.set.bind(app.store);let fail = true;
+  app.store.set = (key, value) => { if (fail && key === SAVE_KEY) throw new Error('storage unavailable');return write(key, value); };
+  modalAction(app, 'buy-stabilizer');
+  assert.equal(state.modal, 'stabilizer');assert.equal(app.api.progress.clayCredits, 5);assert.equal(app.api.progress.stabilizers, 1);
+  assert.deepEqual(app.snapshot(), saved);assert.match(app.getElement('modalContent').innerHTML, /차감되지 않았어요/);
+  app.api.finishRound();assert.equal(app.api.progress.eventPlays, 1);
+  fail = false;modalAction(app, 'buy-stabilizer');
+  assert.equal(state.modal, 'result');assert.equal(app.api.progress.clayCredits, 0);assert.equal(app.api.progress.stabilizers, 2);
+  assert.equal(app.snapshot().clayCredits, 0);assert.equal(app.snapshot().stabilizers, 2);assert.equal(app.snapshot().eventPlays, 1);
+  modalAction(app, 'buy-stabilizer');app.api.finishRound();
+  assert.equal(app.api.progress.clayCredits, 0);assert.equal(app.api.progress.stabilizers, 2);assert.equal(app.api.progress.eventPlays, 1);
+  assert.equal(app.api.progress.coins, 400);assert.equal(app.ammo.account.remaining, 17);assert.equal(app.ammo.account.coins, 23);
 });
 
 test('stabilizers cost exactly five saved clay credits and leave game coins, 쭈 and bullets unchanged', async () => {
