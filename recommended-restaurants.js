@@ -287,7 +287,8 @@
     }
     function picture(session, view, path, alt, { local = false, retry = true, className = '' } = {}) {
       const frame = node('div', 'rr-picture ' + className), img = node('img');
-      img.alt = alt; img.decoding = 'async'; img.loading = 'lazy';
+      // Lazy loading can wait for visibility, but this image stays hidden until load.
+      img.alt = alt; img.decoding = 'async'; img.loading = 'eager';
       const status = node('span', 'rr-picture-status', '사진을 불러오는 중…');
       frame.append(img, status); img.hidden = true;
       let attempt = 0;
