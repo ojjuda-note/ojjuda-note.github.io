@@ -54,7 +54,7 @@ async function assertMapListLayout(page, width) {
     assert.ok(layout.map.bottom <= layout.list.top + 1, 'the phone list follows the map without overlap');
     assert.ok(Math.abs(layout.map.left - layout.list.left) <= 1 && Math.abs(layout.map.width - layout.list.width) <= 1, 'phone map and list share the same content edges');
     const mapHeightWithoutPager = layout.map.height - (layout.pager.visible ? layout.pager.height : 0);
-    assert.ok(mapHeightWithoutPager >= 220 && mapHeightWithoutPager <= 261, 'the phone map keeps its original height after subtracting the visible pager');
+    assert.ok(mapHeightWithoutPager >= 220 && mapHeightWithoutPager <= 261, 'the phone map keeps its original height after subtracting the visible pager: ' + JSON.stringify({ width, panel: layout.map.height, canvas: layout.mapCanvas.height, pager: layout.pager.height, pagerVisible: layout.pager.visible }));
     assert.ok(layout.mapCanvas.height >= 218 && layout.mapCanvas.height <= 261 && Math.abs(mapHeightWithoutPager - layout.mapCanvas.height) <= 2, 'the actual phone map canvas retains approximately 220–260px, allowing for its panel border');
     assert.ok(layout.map.height <= (layout.pager.visible ? 311 : 261), 'the phone map and its optional pager leave room for the restaurant list');
     const rows = new Map();
