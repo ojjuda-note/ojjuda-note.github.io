@@ -208,6 +208,25 @@ function baseAimScreen(app, angles = app.api.state.aim) {
   return app.api.project({ x: shot.velocity.x, y: app.engine.PLAYER.y + shot.velocity.y, z: shot.velocity.z });
 }
 
+function assertRenderedLaserAt(app, expected, message = 'the laser is drawn at the requested visible point') {
+  app.canvasArcs.length = 0;app.advanceTo(app.now);
+  const frame = app.api.laserFrame(), canvas = app.getElement('gameCanvas');
+  assert.ok(frame, message);
+  const point = app.api.project(frame.point), {width, height} = app.viewport;
+  assert.ok(point.visible && point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height,
+    message + '; point=' + JSON.stringify(point) + ', mode=' + app.api.state.mode);
+  assert.ok(Math.hypot(point.x - expected.x, point.y - expected.y) < 1e-8,
+    message + '; expected=' + JSON.stringify(expected) + ', point=' + JSON.stringify(point) + ', zoom=' + app.api.state.zoom);
+  assert.equal(canvas.dataset.laser, 'drawing');
+  assert.ok(Math.abs(Number(canvas.dataset.laserScreenX) - point.x) < 1e-8);
+  assert.ok(Math.abs(Number(canvas.dataset.laserScreenY) - point.y) < 1e-8);
+  for (const radius of [4, 1.4, 7]) {
+    assert.ok(app.canvasArcs.some(arc => arc.radius === radius && Math.hypot(arc.x - expected.x, arc.y - expected.y) < 1e-8),
+      'the renderer paints the red spot, light core and halo inside the canvas instead of only publishing offscreen coordinates');
+  }
+  return point;
+}
+
 function moveHeldAim(app, yaw, pitch) {
   const { state, pointer } = app.api;
   assert.ok(pointer && state.mode === 'drawing', 'an actual held lower-area touch is required');
@@ -2310,6 +2329,164 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
   assert.deepEqual({ ...reloaded.api.activeLaser() }, { enabled: true, horizontalClicks: 16, verticalClicks: 70 });
 });
 
+test('setting a forty-five-degree zero through the gears starts each new laser touch at the visible canvas centre', async () => {
+  for (const adminTrial of [false, true]) for (const [width, height] of [[390, 480], [844, 235]]) for (const zoom of [1, 8]) for (const horizontalClicks of [0, 300]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 19], bow: 19, scopeLoadouts: {19: {owned: [8], equipped: 8}},
+      laserLoadouts: {19: {enabled: true}}}, {adminTrial});
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();await app.flush();
+    }
+    const origin = {left: 17, top: 83};
+    app.resize(width, height, origin);assert.equal(app.api.setAimZoom(zoom), true);app.advanceTo(app.now);
+    const state = app.api.state, pad = app.getElement('aimTouchpad'), aimBeforeZero = {...state.aim};
+    const adjust = app.getElement('laserAdjustBtn'), close = app.getElement('laserCloseBtn'), step = app.getElement('laserStep10Btn');
+    for (const button of [adjust, close, step]) button.tagName = 'BUTTON';
+    adjust.dataset.laserAction = 'open';close.dataset.laserAction = 'close';step.dataset.laserStep = '10';
+    app.document.emit('click', {target: adjust});
+    assert.equal(state.laserAdjustOpen, true, 'the calibration button opens before real gear input: ' + JSON.stringify({adminTrial, width, zoom, mode: state.mode, modal: state.modal, disabled: adjust.disabled}));
+    app.document.emit('click', {target: step});assert.equal(state.laserStep, 10);
+    for (let turn = 0; turn < 90; turn++) app.getElement('laserVerticalGear').emit('keydown', {code: 'ArrowUp'});
+    for (let turn = 0; turn < horizontalClicks / 10; turn++) app.getElement('laserHorizontalGear').emit('keydown', {code: 'ArrowRight'});
+    assert.equal(app.api.activeLaser().verticalClicks, 900);
+    assert.equal(app.api.activeLaser().horizontalClicks, horizontalClicks);
+    assert.equal(app.getElement('laserVerticalValue').dataset.degrees, '45.00');
+    assert.deepEqual({...state.aim}, aimBeforeZero, 'setting the sight never secretly raises the physical weapon');
+    assert.equal(state.mode, 'ready');assert.equal(state.used, 0);assert.equal(state.shot, null);
+    const beforeTouch = app.api.project(app.api.laserFrame().point);
+    assert.ok(beforeTouch.y > height, 'this reproduces the reported zero-change sequence without preparing a matching physical aim');
+    app.document.emit('click', {target: close});assert.equal(state.laserAdjustOpen, false);
+    const beforeZoom = {...app.api.camera}, distance = state.stage.distance;
+    const centreWorld = {x: (width / 2 - beforeZoom.cx) * distance / beforeZoom.focal,
+      y: app.engine.PLAYER.y + (beforeZoom.horizon - height / 2) * distance / beforeZoom.focal, z: distance};
+    for (const nextZoom of [zoom === 1 ? 8 : 1, zoom]) {
+      app.getElement('zoomBtn').emit('click');assert.equal(state.zoom, nextZoom);
+      const centre = app.api.project(centreWorld);
+      assert.ok(Math.hypot(centre.x - width / 2, centre.y - height / 2) < 1e-8,
+        'zooming with an offscreen 45-degree sight stays anchored to the visible field centre');
+      assert.deepEqual({...state.aim}, aimBeforeZero, 'zooming never supplies a new firing angle');
+      assert.equal(app.api.activeLaser().verticalClicks, 900);
+    }
+    const camera = {...app.api.camera}, pan = [state.panX, state.panY], settings = {...app.api.activeLaser()};
+    const saved = app.snapshot(), operations = app.storageOperations.length, requests = app.ammo.requests.length;
+    const down = {clientX: origin.left + width * .23, clientY: origin.top + height * .87};
+    app.canvasArcs.length = 0;
+    pad.emit('pointerdown', down);
+    assert.equal(state.mode, 'drawing');assert.ok(pad.hasPointerCapture(1));
+    assert.equal(app.getElement('gameCanvas').dataset.laser, 'drawing', 'the initial press paints immediately before another animation frame');
+    assert.ok(app.canvasArcs.some(arc => arc.radius === 4 && Math.hypot(arc.x - width / 2, arc.y - height / 2) < 1e-8),
+      'the initial press immediately paints the actual red centre spot');
+    assertRenderedLaserAt(app, {x: width / 2, y: height / 2}, 'the first press after selecting 45 degrees shows the red laser in the canvas centre');
+    assert.deepEqual({...app.api.camera}, camera);assert.deepEqual([state.panX, state.panY], pan);assert.equal(state.zoom, zoom);
+    assert.deepEqual({...app.api.activeLaser()}, settings);assert.equal(state.used, 0);assert.equal(state.shot, null);
+    const moved = {clientX: down.clientX + 19, clientY: down.clientY + 13};
+    pad.emit('pointermove', moved);
+    assertRenderedLaserAt(app, {x: width / 2 + 19, y: height / 2 + 13}, 'dragging after the centred start follows the finger pixel for pixel');
+    const heldAim = {...state.aim};
+    pad.emit('pointerdown', {pointerId: 2, isPrimary: false, clientX: origin.left + width * .8, clientY: down.clientY});
+    assert.deepEqual({...state.aim}, heldAim, 'another finger cannot recenter an active shot');
+    pad.emit('pointercancel');assert.equal(state.mode, 'ready');assert.equal(state.used, 0);
+    for (const row of [.12, .5, .87]) {
+      pad.emit('pointerdown', {clientX: origin.left + width * .76, clientY: origin.top + height * row});
+      assertRenderedLaserAt(app, {x: width / 2, y: height / 2}, 'upper, middle and lower laser touches all start the new sight in the centre');
+      pad.emit('pointercancel');
+    }
+    assert.deepEqual({...app.api.camera}, camera);assert.deepEqual([state.panX, state.panY], pan);
+    assert.deepEqual(app.snapshot(), saved);assert.equal(app.storageOperations.length, operations);
+    assert.equal(app.ammo.requests.length, requests, 'centering and cancellation do not spend ammunition or register another round');
+    if (adminTrial) assert.deepEqual(app.storageOperations, []);
+  }
+});
+
+test('zero- and sixty-degree laser touches clear old sway and recenter within the current zoomed and horizontally panned view', async () => {
+  for (const adminTrial of [false, true]) for (const verticalClicks of [0, 1200]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 19], bow: 19, scopeLoadouts: {19: {owned: [8], equipped: 8}},
+      laserLoadouts: {19: {enabled: true, horizontalClicks: 100, verticalClicks}}}, {adminTrial});
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();await app.flush();
+      assert.equal(app.api.setLaserSettings({horizontalClicks: 100, verticalClicks}), true);
+    }
+    app.resize(390, 480);assert.equal(app.api.setAimZoom(8), true);app.getElement('recenterBtn').emit('click');
+    const state = app.api.state, pad = app.getElement('aimTouchpad'), centre = {x: 195, y: 240};
+    Object.assign(state.sway, {x: .08, y: -.07, vx: .04, vy: -.05});
+    const settings = {...app.api.activeLaser()}, before = {...app.api.camera}, panY = state.panY;
+    pad.emit('pointerdown');assert.equal(state.mode, 'drawing', 'the allowed zero can start a shot: ' + verticalClicks + ', admin=' + adminTrial);
+    assertRenderedLaserAt(app, centre, 'old idle or cancelled-shot sway cannot put the new laser off centre');
+    assert.deepEqual({...app.api.effectiveSway()}, {x: 0, y: 0});
+    assert.deepEqual({...app.api.camera}, before);assert.equal(state.panY, panY);assert.equal(state.zoom, 8);
+    const move = {clientX: app.api.pointer.x + 240, clientY: app.api.pointer.y};
+    pad.emit('pointermove', move);
+    assert.notEqual(state.panX, 0, 'the first drag establishes a real horizontal camera offset');
+    pad.emit('pointercancel');
+    const panned = {...app.api.camera}, pan = [state.panX, state.panY], saved = app.snapshot();
+    Object.assign(state.sway, {x: -.06, y: .05, vx: -.03, vy: .02});
+    pad.emit('pointerdown');
+    assertRenderedLaserAt(app, centre, 'centering uses the existing panned camera instead of moving the scene back');
+    assert.deepEqual({...app.api.camera}, panned);assert.deepEqual([state.panX, state.panY], pan);
+    assert.deepEqual({...app.api.activeLaser()}, settings);assert.deepEqual(app.snapshot(), saved);
+    assert.equal(state.used, 0);assert.equal(state.shot, null);pad.emit('pointercancel');
+  }
+});
+
+test('an impossible laser centre or a blocked draw never changes aim, view, calibration or shot state', async () => {
+  const snapshot = app => ({aim: {...app.api.state.aim}, sway: {...app.api.state.sway}, camera: {...app.api.camera},
+    pan: [app.api.state.panX, app.api.state.panY], settings: {...app.api.activeLaser()}, used: app.api.state.used,
+    mode: app.api.state.mode, shot: app.api.state.shot, popup: app.api.state.laserAdjustOpen, saved: app.snapshot()});
+  for (const settings of [{horizontalClicks: 0, verticalClicks: -1200}, {horizontalClicks: 1200, verticalClicks: 900}]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 19], bow: 19, laserLoadouts: {19: {enabled: true}}});
+    app.resize(390, 480);assert.equal(app.api.setAimZoom(1), true);
+    assert.equal(app.api.openLaserAdjustments(), true);assert.equal(app.api.setLaserSettings(settings), true);
+    Object.assign(app.api.state.sway, {x: .05, y: -.03, vx: .01, vy: .02});
+    const before = snapshot(app), requests = app.ammo.requests.length, operations = app.storageOperations.length;
+    app.getElement('aimTouchpad').emit('pointerdown');
+    assert.equal(app.api.pointer, null);assert.deepEqual(snapshot(app), before, 'a physically unreachable centre rejects the draw without clamping to an invisible point');
+    assert.equal(app.ammo.requests.length, requests);assert.equal(app.storageOperations.length, operations);
+  }
+  for (const blocked of ['modal', 'hidden', 'finished', 'flight', 'invalid-touch', 'secondary-touch']) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 19], bow: 19, laserLoadouts: {19: {enabled: true, verticalClicks: 900}}});
+    if (blocked === 'modal') app.getElement('menuBtn').emit('click');
+    if (blocked === 'hidden') app.document.hidden = true;
+    if (blocked === 'finished' || blocked === 'flight') app.api.state.mode = blocked;
+    const before = snapshot(app);
+    app.getElement('aimTouchpad').emit('pointerdown', blocked === 'invalid-touch' ? {clientY: -1} : blocked === 'secondary-touch' ? {isPrimary: false} : {});
+    assert.equal(app.api.pointer, null);assert.deepEqual(snapshot(app), before, blocked + ' cannot trigger the centering action');
+  }
+});
+
+test('centred laser starts still require release to fire and leave ordinary aiming untouched', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+    ownedBows: [0, 19], bow: 19, laserLoadouts: {19: {enabled: true, verticalClicks: 900}}});
+  app.resize(390, 480);assert.equal(app.api.setAimZoom(1), true);
+  const pad = app.getElement('aimTouchpad'), state = app.api.state, saved = app.snapshot();
+  pad.emit('pointerdown');assertRenderedLaserAt(app, {x: 195, y: 240});
+  const initial = {...state.aim};holdFor(app, 11000);await app.flush();
+  assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);assert.equal(state.shot, null);
+  assert.deepEqual({...state.aim}, initial);assert.deepEqual(app.snapshot(), saved);
+  const aim = app.api.shotParams();pad.emit('pointerup');await app.flush();
+  assert.equal(state.mode, 'flight');assert.equal(state.used, 1);assert.equal(state.volley.shots.length, 3);
+  const v = state.shot.velocity;
+  assert.ok(Math.abs(Math.atan2(v.y, Math.hypot(v.x, v.z)) - aim.pitch) < 1e-12, 'release uses the actual manually steered elevation');
+  pad.emit('pointerup');assert.equal(state.used, 1);
+  for (const bow of [0, 19]) {
+    const ordinary = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 19], bow, laserLoadouts: {19: {enabled: false, verticalClicks: 900}}});
+    ordinary.api.state.aim = {yaw: .12, pitch: .18};
+    Object.assign(ordinary.api.state.sway, {x: .02, y: -.01});
+    const before = {aim: {...ordinary.api.state.aim}, sway: {...ordinary.api.state.sway}, camera: {...ordinary.api.camera}};
+    ordinary.getElement('aimTouchpad').emit('pointerdown', {clientY: ordinary.viewport.height * .1});
+    assert.equal(ordinary.api.state.mode, 'ready', 'ordinary and laser-off aiming still ignores the upper view');
+    assert.equal(ordinary.api.pointer, null);
+    ordinary.getElement('aimTouchpad').emit('pointerdown');
+    assert.equal(ordinary.api.state.mode, 'drawing');
+    assert.deepEqual({aim: {...ordinary.api.state.aim}, sway: {...ordinary.api.state.sway}, camera: {...ordinary.api.camera}}, before,
+      'ordinary bows and a switched-off laser retain their existing manual direction on touch');
+    ordinary.getElement('aimTouchpad').emit('pointercancel');
+  }
+});
+
 test('laser degree readouts preserve saved clicks and never confuse sight correction with actual launch elevation', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
     ownedBows: [0, 19], bow: 19, laserLoadouts: { 19: { enabled: true, horizontalClicks: -6, verticalClicks: 150 } } });
@@ -2589,7 +2766,7 @@ test('laser cancellation, lost capture, blur and hidden-page recovery never rele
 test('incorrect laser zeroing moves only the sight and leaves the real arrow trajectory and score unchanged', async () => {
   const fixture = { version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, sound: false };
   const ordinary = await appHarness(fixture), laser = await appHarness({ ...fixture,
-    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true, horizontalClicks: 600, verticalClicks: 80 } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true, horizontalClicks: 400, verticalClicks: 80 } } });
   const shots = [];
   for (const app of [ordinary, laser]) {
     const { pad, coords } = preciseMainDraw(app), { state } = app.api;

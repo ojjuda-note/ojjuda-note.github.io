@@ -178,6 +178,7 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 /* An invisible input surface reserves the lower third for the aiming hand. */
 .field canvas{cursor:default}
 .aim-touchpad{position:absolute;left:0;right:0;bottom:0;height:calc(100% / 3);background:transparent;border:0;box-shadow:none;touch-action:none;pointer-events:auto;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;cursor:crosshair;z-index:1}
+.aim-touchpad[data-laser="true"]{height:100%}
 .aim-touchpad:focus:not(:focus-visible){outline:none}
 .aim-touchpad:focus-visible{outline:none}
 #gameCanvas.drawing+.aim-touchpad{cursor:grabbing}

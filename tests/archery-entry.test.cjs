@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.5');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.6');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -99,7 +99,7 @@ assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^
 // Refresh the changed angle and flight modules while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,revision,'high-arc shots load the updated engine');
+assert.equal(moduleRevision,'20261104-archery-launch-angle1','touch centering retains the verified high-arc engine');
 assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
 assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the latest draw and coach share the same burst rules');
