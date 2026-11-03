@@ -1232,7 +1232,7 @@ function El(){
  worldGameAssetRequest++;
  if(worldClosingGames)return worldClosingGames;
  const results=[];
- for(const bridge of [window.OjjudaRestaurantGuide,window.OjjudaArcheryGame,window.OjjudaBangGame,window.OjjudaRouletteBridge,window.OjjudaPokerGame,window.OjjudaTankGame,window.OjjudaMinesGame,window.OjjudaSacheonseongGame,window.OjjudaSaetbyeolGame,window.OjjudaTourGame,window.OjjudaTtangBridge,window.OjjudaPhotoTtangBridge]){
+ for(const bridge of [window.OjjudaArcheryGame,window.OjjudaRestaurantGuide,window.OjjudaBangGame,window.OjjudaRouletteBridge,window.OjjudaPokerGame,window.OjjudaTankGame,window.OjjudaMinesGame,window.OjjudaSacheonseongGame,window.OjjudaSaetbyeolGame,window.OjjudaTourGame,window.OjjudaTtangBridge,window.OjjudaPhotoTtangBridge]){
   if(typeof bridge?.close==='function')results.push(bridge.close());
  }
  if(document.getElementById('bd-root'))results.push(closeWorldGameModal());
