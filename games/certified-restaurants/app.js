@@ -7,10 +7,11 @@
   const PROVIDERS = { michelin: '미쉐린', 'blue-ribbon': '블루리본', 'post-office': '우체국' };
   const STORAGE_KEY = 'ojjuda-certified-restaurants-saved-v1';
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
+  const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
   const LIST_PAGE_SIZE = 50, MAP_POINT_LIMIT = 300;
-  const mobile = window.matchMedia('(max-width: 700px)');
+  const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'list', loading: true, loadError: false };
+  const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
   let map = null, backgroundLayer = null, backgroundController = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
@@ -53,6 +54,10 @@
   function writeSaved() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.saved])); }
     catch { if (!storageWarned) { storageWarned = true; announce('저장 공간을 사용할 수 없어, 저장한 곳은 이 화면을 보는 동안만 유지돼요.'); } }
+  }
+  function readView() {
+    try { const value = localStorage.getItem(VIEW_KEY); if (value === 'list' || value === 'map') return value; } catch {}
+    return 'map';
   }
   function badge(guide, includeYear = true) {
     const year = includeYear && guide.year ? ' · ' + guide.year : '';
@@ -99,10 +104,18 @@
   }
   function updateResultCount() {
     if (state.loading || state.loadError) return;
+    const total = state.visible.length, located = state.visible.filter(hasCoordinates).length;
+    const mapped = state.visible.filter(item => markers.has(item.id)).length;
     const shown = el('span', 'result-shown', '현재 ' + state.renderedCount + '곳 표시');
     shown.hidden = state.view !== 'list';
-    $('result-count').dataset.total = String(state.visible.length);
-    $('result-count').replaceChildren(document.createTextNode('전체 '), el('strong', '', String(state.visible.length)), document.createTextNode('곳'), shown);
+    $('result-count').dataset.total = String(total);
+    $('result-count').replaceChildren(document.createTextNode('등록 '), el('strong', '', String(total)), document.createTextNode('곳'), shown);
+    const coverage = state.view === 'map'
+      ? '지도 표시 ' + mapped + (located > mapped ? ' / ' + located : '') + '곳'
+      : '지도 가능 ' + located + '곳';
+    $('result-coverage').textContent = coverage + (total > located ? ' · 위치 확인 중 ' + (total - located) + '곳' : '');
+    $('result-coverage').title = state.view === 'map' ? '위치 확인 ' + located + '곳 중 지도 ' + mapped + '곳 표시' : '위치가 확인되어 지도에 표시할 수 있는 식당 ' + located + '곳';
+    $('result-coverage').hidden = false;
   }
   function renderCards(append = false) {
     const container = $('cards');
@@ -117,12 +130,12 @@
     const firstUnknown = state.position ? state.visible.findIndex(item => !hasCoordinates(item)) : -1;
     state.visible.slice(start, end).forEach((item, offset) => {
       if (start + offset === firstUnknown) fragment.append(el('h2', 'list-section-title', '거리 정보 없는 식당 · 전국 목록'));
-      const card = el('article', 'restaurant-card'); card.dataset.restaurantId = item.id; card.classList.toggle('is-selected', state.selected === item.id);
+      const card = el('article', 'restaurant-card'); card.dataset.restaurantId = item.id; card.dataset.cuisine = item.category; card.classList.toggle('is-selected', state.selected === item.id);
       const main = el('button', 'card-main'); main.type = 'button'; main.setAttribute('aria-label', item.name + ' 상세 정보');
-      const kicker = el('p', 'card-kicker'); kicker.append(el('span', '', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
+      const kicker = el('p', 'card-kicker'); kicker.append(el('span', 'card-category', item.category), el('span', '', [item.region, item.district].filter(Boolean).join(' · ')));
       const distance = distanceKm(item); if (distance !== null) kicker.append(el('span', 'distance', '직선 ' + distanceLabel(distance)));
       else if (state.position) kicker.append(el('span', 'distance-unknown', '거리 미확인'));
-      main.append(el('h2', 'card-name', item.name), kicker);
+      main.append(kicker, el('h2', 'card-name', item.name));
       if (item.menu.length) main.append(el('p', 'card-menu', item.menu.slice(0, 2).join(' · ')));
       const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false))); main.append(badges);
       main.addEventListener('click', () => selectRestaurant(item.id, true)); card.append(main, saveButton(item)); fragment.append(card);
@@ -139,7 +152,8 @@
     $('saved-only').setAttribute('aria-pressed', String(state.savedOnly));
     const active = [state.region, state.guide === 'both' ? '미쉐린·블루리본 모두' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : ''].filter(Boolean);
     $('filter-summary').textContent = active.join(' · '); $('filter-summary').hidden = !active.length;
-    $('filter-label').textContent = '필터' + (active.length ? ' ' + active.length : '');
+    $('filter-label').textContent = '가이드' + (state.guide ? ' 1' : '');
+    $('list-label').textContent = state.position ? '내 위치에서 가까운 순' : '가게 이름순';
   }
   function renderCollections() {
     const section = $('collections'), sources = $('collection-sources');
@@ -194,7 +208,8 @@
     return true;
   }
   function syncMap(fit) {
-    if (!mapIsVisible() || !ensureMap()) return;
+    if (!mapIsVisible()) return;
+    if (!ensureMap()) { updateResultCount(); return; }
     const allLocated = state.visible.filter(hasCoordinates), located = allLocated.slice(0, MAP_POINT_LIMIT);
     const selected = allLocated.find(item => item.id === state.selected);
     if (selected && !located.some(item => item.id === selected.id)) located.splice(-1, 1, selected);
@@ -217,6 +232,7 @@
     if (located.length) summary.push('위치 확인 ' + allLocated.length + '곳' + (allLocated.length > located.length ? ' 중 ' + located.length + '곳' : '') + ' 표시');
     if (missing) summary.push('위치 미확인 ' + missing + '곳은 목록에서 확인');
     $('map-caption-text').textContent = state.visible.length ? summary.join(' · ') : '조건에 맞는 위치가 없어요.';
+    updateResultCount();
     requestAnimationFrame(() => {
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
@@ -239,12 +255,15 @@
   }
   function showDetail(item) {
     const content = $('detail-content'); content.replaceChildren();
-    content.append(el('p', 'detail-kicker', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
-    const titleRow = el('div', 'detail-title-row'), title = el('h2', '', item.name); title.id = 'detail-title'; titleRow.append(title, saveButton(item, true)); content.append(titleRow);
-    if (item.menu.length) content.append(el('p', 'detail-menu', item.menu.join(' · ')));
-    const address = el('div', 'detail-address'); address.append(el('span', 'detail-address-label', '주소'), document.createTextNode(item.address || '출처에서 주소를 확인해 주세요.')); content.append(address);
-    if (!hasCoordinates(item)) content.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
-    content.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
+    const cover = el('div', 'detail-cover'), body = el('div', 'detail-body');
+    cover.append(el('p', 'detail-kicker', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
+    const titleRow = el('div', 'detail-title-row'), title = el('h2', '', item.name); title.id = 'detail-title'; titleRow.append(title, saveButton(item, true)); cover.append(titleRow);
+    const facts = el('dl', 'detail-facts');
+    facts.append(el('dt', '', '주소'), el('dd', 'detail-address', item.address || '출처에서 주소를 확인해 주세요.'));
+    if (item.menu.length) facts.append(el('dt', '', '대표 메뉴'), el('dd', 'detail-menu', item.menu.join(' · ')));
+    body.append(facts);
+    if (!hasCoordinates(item)) body.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
+    body.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
     const sources = el('ul', 'source-list');
     item.guides.forEach(guide => {
       const yearType = guide.yearType || (guide.provider === 'post-office' ? 'publication' : guide.provider === 'blue-ribbon' ? 'edition' : 'selection');
@@ -259,19 +278,21 @@
       coordinateRow.append(link('위치 출처: ' + item.coordinateSource.name + ' ↗', item.coordinateSource.url, 'coordinate-source-link'));
       sources.append(coordinateRow);
     }
-    content.append(sources, el('p', 'detail-note', '선정·추천 당시와 현재 영업 상태는 다를 수 있어요. 메뉴·가격·영업시간은 방문 전 가게에서 확인해 주세요.'));
+    body.append(sources, el('p', 'detail-note', '선정·추천 당시와 현재 영업 상태는 다를 수 있어요. 메뉴·가격·영업시간은 방문 전 가게에서 확인해 주세요.'));
     const query = encodeURIComponent([item.name, item.address].filter(Boolean).join(' ')), links = el('div', 'detail-links');
     links.append(link('네이버지도 ↗', 'https://map.naver.com/p/search/' + query), link('카카오맵 ↗', 'https://map.kakao.com/link/search/' + query));
     const route = hasCoordinates(item) ? 'https://map.kakao.com/link/to/' + encodeURIComponent(item.name) + ',' + item.lat + ',' + item.lng : 'https://map.kakao.com/link/search/' + query;
-    links.append(link(hasCoordinates(item) ? '길찾기 ↗' : '주소로 길찾기 검색 ↗', route, 'route-link')); content.append(links);
+    links.append(link(hasCoordinates(item) ? '길찾기 ↗' : '주소로 길찾기 검색 ↗', route, 'route-link')); body.append(links);
+    content.append(cover, body);
     if (!$('detail').open) $('detail').showModal();
     $('close-detail').focus({ preventScroll: true });
   }
-  function setView(view) {
+  function setView(view, persist = false) {
     state.view = view; $('workspace').dataset.view = view;
     $('show-map').setAttribute('aria-pressed', String(view === 'map')); $('show-list').setAttribute('aria-pressed', String(view === 'list'));
+    if (persist) { try { localStorage.setItem(VIEW_KEY, view); } catch {} }
     updateResultCount();
-    if (view === 'map') syncMap(true);
+    if (view === 'map' && !state.loading && !state.loadError) syncMap(true);
   }
   function resetFilters() {
     clearTimeout(searchTimer); state.category = ''; state.guide = ''; state.region = ''; state.query = ''; state.savedOnly = false; state.selected = '';
@@ -283,10 +304,11 @@
     const controller = loadController; state.loading = true; state.loadError = false;
     $('load-more').hidden = true;
     $('result-count').textContent = '맛집을 불러오는 중…';
+    $('result-coverage').hidden = true;
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./restaurants.json?v=20261103-restaurants-coverage2', { signal: controller.signal, cache: 'no-cache' });
+      const response = await fetch('./restaurants.json?v=20261103-restaurants-map-photos1', { signal: controller.signal, cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json(); if (!data || !Array.isArray(data.restaurants)) throw new Error('Invalid dataset');
       const ids = new Set(); state.restaurants = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));
@@ -361,7 +383,7 @@
     else setLocationStatus('전국 목록을 보고 있어요. 내 주변을 누르면 위치를 다시 확인해요.');
   }
 
-  readSaved();
+  readSaved(); setView(readView());
   const entryParams = new URLSearchParams(location.search);
   const embedded = entryParams.get('embedded') === '1';
   if (embedded) $('back-link').hidden = true;
@@ -374,7 +396,7 @@
       } catch { /* The canonical top-level link remains available if messaging fails. */ }
     });
   }
-  document.querySelector('.skip-link').addEventListener('click', () => setView('list'));
+  document.querySelector('.skip-link').addEventListener('click', () => setView('list', true));
   $('search-form').addEventListener('submit', event => { event.preventDefault(); clearTimeout(searchTimer); state.query = $('search').value; render(true); });
   $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.query = $('search').value; render(true); }, 130); });
   $('region').addEventListener('change', () => { state.region = $('region').value; render(true); });
@@ -382,10 +404,10 @@
   $('guides').addEventListener('click', event => { const button = event.target.closest('[data-guide]'); if (!button) return; state.guide = button.dataset.guide; render(true); });
   $('saved-only').addEventListener('click', () => { state.savedOnly = !state.savedOnly; render(true); });
   $('filter-toggle').addEventListener('click', () => { const open = $('filter-options').hidden; $('filter-options').hidden = !open; $('filter-toggle').setAttribute('aria-expanded', String(open)); });
-  $('choose-region').addEventListener('click', () => { $('filter-options').hidden = false; $('filter-toggle').setAttribute('aria-expanded', 'true'); $('region').focus({ preventScroll: false }); });
+  $('choose-region').addEventListener('click', () => $('region').focus({ preventScroll: false }));
   $('load-more').addEventListener('click', () => renderCards(true));
   $('reset').addEventListener('click', resetFilters); $('nearby').addEventListener('click', requestLocation);
-  $('show-map').addEventListener('click', () => setView('map')); $('show-list').addEventListener('click', () => setView('list'));
+  $('show-map').addEventListener('click', () => setView('map', true)); $('show-list').addEventListener('click', () => setView('list', true));
   $('close-detail').addEventListener('click', () => $('detail').close());
   $('detail').addEventListener('click', event => { if (event.target === $('detail')) { const rect = $('detail').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('detail').close(); } });
   $('retry-map').addEventListener('click', () => { $('map-message').hidden = true; if (map) void loadMapBackground(); else location.reload(); });

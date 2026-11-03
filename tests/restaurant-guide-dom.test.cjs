@@ -12,6 +12,7 @@ const dataset = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.jso
 const geography = JSON.parse(fs.readFileSync(path.join(directory, 'korea-provinces.json'), 'utf8'));
 const savedKey = 'ojjuda-certified-restaurants-saved-v1';
 const locationKey = 'ojjuda-certified-restaurants-location-v1';
+const viewKey = 'ojjuda-certified-restaurants-view-v1';
 const ids = values => values.map(value => value.id).sort();
 const coordinates = item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng);
 const pause = () => new Promise(resolve => setTimeout(resolve, 5));
@@ -41,6 +42,9 @@ function fixture(options = {}) {
   Object.defineProperty(window.navigator, 'geolocation', { value: { getCurrentPosition(success, failure) { calls.location++; queueMicrotask(() => options.position ? success({ coords: { latitude: options.position.lat, longitude: options.position.lng } }) : failure({ code: options.locationError || 1 })); } } });
   if (options.storage) window.localStorage.setItem(savedKey, options.storage);
   if (options.locationChoice) window.localStorage.setItem(locationKey, options.locationChoice);
+  // Data-behavior cases explicitly prefer the full list; default-map behavior is exercised below.
+  const initialView = Object.hasOwn(options, 'view') ? options.view : 'list';
+  if (initialView !== null) window.localStorage.setItem(viewKey, initialView);
   if (options.blockStorage) {
     window.Storage.prototype.getItem = () => { throw new Error('storage disabled'); };
     window.Storage.prototype.setItem = () => { throw new Error('storage disabled'); };
@@ -57,12 +61,61 @@ function fixture(options = {}) {
       return marker;
     }
   };
+  if (options.noMap) delete window.L;
   window.eval(code);
   const $ = selector => document.querySelector(selector);
   return { dom, window, document, $, calls, errors, records: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId).sort(), order: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId), all() { let page = 0; while (!$('#load-more').hidden && page++ < 1000) $('#load-more').click(); }, click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); }, filters() { if ($('#filter-options').hidden) $('#filter-toggle').click(); }, change(selector, value) { $(selector).value = value; $(selector).dispatchEvent(new window.Event('change', { bubbles: true })); }, search(value) { $('#search').value = value; $('#search-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); } };
 }
 
 (async () => {
+  const initialMap = fixture({ view: null });
+  await ready(initialMap, dataset.restaurants.length, false);
+  await until(() => initialMap.calls.geoLayers === 1, 'a first visit loads the map and local geography');
+  assert.equal(initialMap.$('#workspace').dataset.view, 'map', 'the first visit matches the festival map-and-list view');
+  assert.equal(initialMap.$('#show-map').getAttribute('aria-pressed'), 'true');
+  assert.equal(initialMap.$('#results').hidden, false, 'the list remains available beside the map');
+  assert.equal(initialMap.records().length, 50, 'the first map view also provides a bounded batch of restaurant cards');
+  assert.equal(initialMap.document.querySelectorAll('[data-category]').length, 8, 'category controls stay unambiguous when cards are visible beside the map');
+  assert.equal(initialMap.$('#load-more').hidden, false, 'map-and-list browsing retains progressive loading');
+  assert.equal(initialMap.window.localStorage.getItem(viewKey), null, 'the default view does not create an explicit preference');
+  initialMap.click('#show-list');
+  assert.equal(initialMap.window.localStorage.getItem(viewKey), 'list', 'explicit list selection is persisted');
+  const explicitList = initialMap.window.localStorage.getItem(viewKey);
+  initialMap.click('#show-map');
+  assert.equal(initialMap.window.localStorage.getItem(viewKey), 'map', 'explicit map selection is persisted');
+  const explicitMap = initialMap.window.localStorage.getItem(viewKey);
+  initialMap.click('[data-category="한식"]'); initialMap.click('#reset');
+  assert.equal(initialMap.window.localStorage.getItem(viewKey), explicitMap, 'search conditions never overwrite the chosen view');
+  assert.equal(initialMap.calls.maps, 1, 'view changes reuse the map');
+  assert.deepEqual(initialMap.errors, []); initialMap.dom.window.close();
+  const restoredList = fixture({ view: explicitList });
+  await ready(restoredList, dataset.restaurants.length, false);
+  assert.equal(restoredList.$('#workspace').dataset.view, 'list');
+  assert.equal(restoredList.calls.maps, 0, 'a saved list choice avoids loading an unused map');
+  restoredList.dom.window.close();
+  for (const view of [explicitMap, 'unsupported-view']) {
+    const restoredView = fixture({ view });
+    await ready(restoredView, dataset.restaurants.length, false);
+    await until(() => restoredView.calls.geoLayers === 1, 'map preference or invalid-preference fallback loads its map');
+    assert.equal(restoredView.$('#workspace').dataset.view, 'map', view === explicitMap ? 'a saved map choice is restored' : 'invalid saved values use the default map');
+    assert.deepEqual(restoredView.errors, []); restoredView.dom.window.close();
+  }
+  const sourceRow = dataset.restaurants.find(coordinates);
+  const mobileDefault = fixture({ view: null, mobile: true, dataset: { restaurants: [
+    { ...structuredClone(sourceRow), id: 'mobile-located', name: '위치 확인 식당', region: '서울' },
+    { ...structuredClone(sourceRow), id: 'mobile-pending', name: '위치 확인 중 식당', region: '제주', lat: null, lng: null }
+  ] } });
+  await ready(mobileDefault, 2);
+  await until(() => mobileDefault.calls.geoLayers === 1, 'mobile first visit loads the map above its list');
+  assert.equal(mobileDefault.$('#workspace').dataset.view, 'map');
+  mobileDefault.click('#show-map'); mobileDefault.change('#region', '제주');
+  assert.equal(mobileDefault.$('#workspace').dataset.view, 'list', 'a mobile filter without locations still leads to its usable list');
+  assert.equal(mobileDefault.window.localStorage.getItem(viewKey), 'map', 'the automatic no-location fallback preserves the explicit preference for the next visit');
+  mobileDefault.click('#choose-region');
+  assert.equal(mobileDefault.document.activeElement.id, 'region', 'the region shortcut focuses the visible joined search control');
+  assert.equal(mobileDefault.$('#filter-options').hidden, true, 'region selection does not open unrelated guide filters');
+  assert.deepEqual(mobileDefault.errors, []); mobileDefault.dom.window.close();
+
   const actual = fixture();
   await ready(actual, dataset.restaurants.length, false);
   assert.equal(actual.records().length, Math.min(50, dataset.restaurants.length), 'the first batch keeps the DOM bounded');
@@ -73,7 +126,7 @@ function fixture(options = {}) {
   assert.equal(actual.$('#back-link').hidden, true);
   assert.equal(actual.calls.location, 0, 'a denied permission is not requested repeatedly');
   assert.equal(actual.$('#filter-options').contains(actual.$('#nearby')), false, 'the nearby control is available without opening filters');
-  assert.equal(actual.$('#workspace').dataset.view, 'list', 'the first view is the complete restaurant list');
+  assert.equal(actual.$('#workspace').dataset.view, 'list', 'the explicitly saved list view is restored');
   assert.equal(actual.$('#filter-options').hidden, true, 'secondary filters start collapsed');
   assert.equal(actual.$('#filter-toggle').getAttribute('aria-expanded'), 'false');
   assert.equal(actual.calls.maps, 0, 'list browsing does not create a map');
@@ -130,7 +183,7 @@ function fixture(options = {}) {
   actual.click('#close-detail'); assert.equal(actual.$('#detail').open, false);
   actual.click('#nearby'); await until(() => !actual.$('#nearby').disabled, 'denied location resolves');
   actual.all(); assert.equal(actual.calls.location, 1); assert.match(actual.$('#location-status').textContent, /허용되지/); assert.equal(actual.records().length, dataset.restaurants.length);
-  actual.click('#choose-region'); assert.equal(actual.$('#filter-options').hidden, false); assert.equal(actual.document.activeElement.id, 'region', 'denial provides a direct region-selection path');
+  actual.click('#choose-region'); assert.equal(actual.document.activeElement.id, 'region', 'denial provides a direct region-selection path');
   assert.deepEqual(actual.errors, []); actual.dom.window.close();
 
   const restored = fixture({ storage: persisted });
@@ -245,7 +298,7 @@ function fixture(options = {}) {
   assert.match(granted.$('[data-restaurant-id="unknown"] .distance-unknown').textContent, /미확인/);
   assert.match(granted.$('.list-section-title').textContent, /전국 목록/);
   assert.equal(granted.window.localStorage.getItem(locationKey), 'enabled');
-  assert.equal(granted.window.localStorage.length, 1, 'only the preference is persisted, not coordinates');
+  assert.deepEqual(Object.keys(granted.window.localStorage).sort(), [locationKey, viewKey].sort(), 'only the location and view choices are persisted, not coordinates');
   granted.click('[data-restaurant-id="near"] .card-main');
   assert.equal(granted.$('.coordinate-source-link').href, near.coordinateSource.url); assert.match(granted.$('.coordinate-source-link').textContent, /위치 출처: 관광공사 공개 위치/);
   assert.equal(granted.$('.source-list').lastElementChild.className, 'coordinate-source', 'location evidence is one final detail line');
@@ -272,12 +325,37 @@ function fixture(options = {}) {
   await ready(permissionFallback, 3); assert.equal(permissionFallback.calls.location, 1, 'previously enabled nearby works without the Permissions API');
   assert.deepEqual(permissionFallback.order(), ['near', 'far', 'unknown']); permissionFallback.dom.window.close();
 
+  // The display-count contract is independent of future additions to the live data.
+  const coverageRows = Array.from({ length: 12 }, (_, index) => ({ ...structuredClone(near), id: 'coverage-' + index, name: '등록확인' + index, region: '대전', category: index < 6 ? '한식' : '양식', lat: index % 6 < 2 ? 36.35 + index / 1000 : null, lng: index % 6 < 2 ? 127.38 : null, guides: [{ provider: 'blue-ribbon', sourceUrl: 'https://fixture.test/selection', label: '선정 이력' }] }));
+  const coverageData = { restaurants: [...coverageRows, { ...structuredClone(coverageRows[0]), id: 'coverage-other', name: '다른 지역', region: '서울', lat: null, lng: null, guides: [{ provider: 'michelin', sourceUrl: 'https://fixture.test/other-selection', label: '선정 이력' }] }] };
+  const coverage = fixture({ dataset: coverageData });
+  await ready(coverage, 13, false); coverage.filters(); coverage.change('#region', '대전'); coverage.click('[data-guide="blue-ribbon"]');
+  assert.match(coverage.$('#result-count').textContent, /^등록 12곳/);
+  assert.equal(coverage.$('#result-coverage').textContent, '지도 가능 4곳 · 위치 확인 중 8곳');
+  assert.equal(coverage.calls.maps, 0, 'list coverage does not initialize the optional map');
+  coverage.click('#show-map'); await until(() => coverage.calls.geoLayers === 1, 'the coverage map loads');
+  assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 4곳 · 위치 확인 중 8곳'); assert.equal(coverage.calls.markers.size, 4);
+  coverage.click('[data-category="한식"]');
+  assert.equal(coverage.$('#result-count').dataset.total, '6'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 2곳 · 위치 확인 중 4곳');
+  coverage.change('#region', '서울');
+  assert.equal(coverage.$('#result-count').dataset.total, '0'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 0곳'); assert.equal(coverage.calls.markers.size, 0);
+  coverage.click('[data-guide="michelin"]');
+  assert.equal(coverage.$('#result-count').dataset.total, '1'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 0곳 · 위치 확인 중 1곳');
+  coverage.click('#show-list'); assert.equal(coverage.$('#result-coverage').textContent, '지도 가능 0곳 · 위치 확인 중 1곳');
+  assert.deepEqual(coverage.errors, []); coverage.dom.window.close();
+  const unavailableMap = fixture({ dataset: { restaurants: coverageRows }, noMap: true });
+  await ready(unavailableMap, 12, false); unavailableMap.click('#show-map');
+  assert.equal(unavailableMap.$('#result-coverage').textContent, '지도 표시 0 / 4곳 · 위치 확인 중 8곳', 'an unavailable map never claims that eligible locations are actually displayed');
+  assert.equal(unavailableMap.calls.markers.size, 0); assert.equal(unavailableMap.$('#map-message').hidden, false);
+  assert.deepEqual(unavailableMap.errors, []); unavailableMap.dom.window.close();
+
   const many = Array.from({ length: 800 }, (_, index) => ({ ...structuredClone(near), id: 'many-' + index, name: '성능확인' + String(index).padStart(4, '0'), lat: 37.5665 + index / 10000, lng: 126.978 }));
   const performance = fixture({ dataset: { restaurants: many }, permission: 'granted', position: { lat: 37.5665, lng: 126.978 } });
   await ready(performance, many.length, false);
   await until(() => performance.$('#nearby').getAttribute('aria-pressed') === 'true', 'performance sample location resolves');
   assert.equal(performance.records().length, 50); assert.equal(performance.$('#result-count').dataset.total, '800');
   assert.equal(performance.$('.result-shown').textContent, '현재 50곳 표시');
+  assert.equal(performance.$('#result-coverage').textContent, '지도 가능 800곳');
   assert.equal(performance.calls.maps, 0, 'location-based entry still leaves the optional map unloaded');
   const firstCard = performance.$('.restaurant-card'); performance.click('#load-more');
   assert.equal(performance.records().length, 100); assert.equal(performance.$('.restaurant-card'), firstCard, 'more results append without recreating earlier cards');
@@ -291,6 +369,7 @@ function fixture(options = {}) {
   assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the map limit');
   performance.click('#show-map'); await until(() => performance.calls.geoLayers === 1, 'the performance sample map loads locally');
   assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 300, 'large maps cap the visible markers');
+  assert.equal(performance.$('#result-coverage').textContent, '지도 표시 300 / 800곳');
   assert.match(performance.$('#map-caption-text').textContent, /800곳 중 300곳/);
   assert.deepEqual([...performance.document.querySelectorAll('.restaurant-pin')].map(pin => pin.title), many.slice(0, 300).map(item => item.name), 'location mode initially maps the nearest 300 restaurants');
   performance.click('#show-list'); performance.click('[data-restaurant-id="many-650"] .card-main');
@@ -313,14 +392,17 @@ function fixture(options = {}) {
 
   const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
   const mixedMap = fixture({ dataset: { restaurants: mixedRows } });
-  await ready(mixedMap, mixedRows.length, false); mixedMap.click('#show-map');
+  await ready(mixedMap, mixedRows.length, false);
+  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 가능 305곳 · 위치 확인 중 7곳'); mixedMap.click('#show-map');
   await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
   assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 300);
+  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 300 / 305곳 · 위치 확인 중 7곳');
   assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인', 'the pin cap and missing coordinates are independent facts');
   mixedMap.search('지도미확인');
   assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 미확인 7곳은 목록에서 확인');
   assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 0);
+  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 0곳 · 위치 확인 중 7곳', 'search refreshes registered and mapped counts together');
   assert.deepEqual(mixedMap.errors, []); mixedMap.dom.window.close();
 
-  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, 300-pin cap with out-of-cap selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
+  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, 300-pin cap with out-of-cap selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

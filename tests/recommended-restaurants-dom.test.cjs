@@ -163,51 +163,58 @@ test('edit and delete controls belong only to the current member, including afte
   assert.equal(f.rpc('delete_restaurant_recommendation').length, 0);
 });
 
-test('photo selection is cumulative, deletion updates the count, and two photos cannot save', async t => {
+test('zero photos cannot save, removing the only photo restores that guard, and one photo saves', async t => {
   const f = fixture(t);
   await f.open(); await f.compose(); f.validFields();
-  f.choose(2); await f.photos(2); f.clickRR('submit'); await f.settle();
+  assert.match(f.$('.rr-photo-help').textContent, /1~12장/);
+  assert.equal(f.rr('submit').disabled, true);
+  f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
   assert.equal(f.calls('upload').length, 0);
   assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
-  f.choose(1); await f.photos(3);
-  f.clickRR('photo-remove'); await f.photos(2);
-  f.clickRR('submit'); await f.settle();
+  assert.match(f.rr('form-status').textContent, /1~12장/);
+  f.choose(1); await f.photos(1); assert.equal(f.rr('submit').disabled, false);
+  f.clickRR('photo-remove'); await f.photos(0);
+  assert.equal(f.rr('submit').disabled, true);
+  assert.match(f.rr('form-status').textContent, /1장 이상/);
+  f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
   assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
-  f.choose(1); await f.photos(3); f.clickRR('submit');
-  await until(() => f.state.rows.length === 1, 'three photos can be saved');
-  assert.equal(f.state.rows[0].photos.length, 3);
+  assert.equal(f.calls('upload').length, 0);
+  f.choose(1); await f.photos(1); f.clickRR('submit');
+  await until(() => f.state.rows.length === 1, 'one photo can be saved');
+  assert.equal(f.state.rows[0].photos.length, 1);
   assert.equal(f.rpc('save_restaurant_recommendation').length, 1);
+  assert.equal(f.calls('upload').length, 1);
   assert.ok(f.calls('upload').every(call => call.mime === 'image/jpeg' && call.settings?.upsert === false));
   assert.ok(f.state.rows[0].photos.every(photo => photo.startsWith(f.state.member + '/' + f.state.rows[0].id + '/')));
 });
 
-test('nine photos save and a tenth cumulative selection cannot exceed the limit', async t => {
+test('twelve photos save and a thirteenth cumulative selection cannot exceed the limit', async t => {
   const f = fixture(t);
   await f.open(); await f.compose(); f.validFields();
-  f.choose(3); await f.photos(3); f.choose(6); await f.photos(9);
+  f.choose(3); await f.photos(3); f.choose(9); await f.photos(12);
   f.choose(1); await f.settle();
-  assert.equal(f.photoCount(), 9);
-  assert.match(f.rr('editor').textContent, /9/);
+  assert.equal(f.photoCount(), 12);
+  assert.match(f.rr('form-status').textContent, /최대 12장/);
   assert.equal(f.calls('upload').length, 0, 'selection alone never uploads');
-  f.clickRR('submit'); await until(() => f.state.rows.length === 1, 'nine-photo post is saved');
-  assert.equal(f.state.rows[0].photos.length, 9);
-  assert.equal(f.calls('upload').length, 9);
+  f.clickRR('submit'); await until(() => f.state.rows.length === 1, 'twelve-photo post is saved');
+  assert.equal(f.state.rows[0].photos.length, 12);
+  assert.equal(f.calls('upload').length, 12);
 });
 
-test('a ten-file picker batch keeps at most nine valid photos and reports the limit', async t => {
+test('a thirteen-file picker batch keeps at most twelve valid photos and reports the limit', async t => {
   const f = fixture(t);
-  await f.open(); await f.compose(); f.validFields(); f.choose(10); await f.photos(9);
-  assert.match(f.rr('editor').textContent, /9/);
+  await f.open(); await f.compose(); f.validFields(); f.choose(13); await f.photos(12);
+  assert.match(f.rr('form-status').textContent, /최대 12장/);
   f.clickRR('submit'); await until(() => f.state.rows.length === 1, 'the bounded picker batch saves');
-  assert.equal(f.state.rows[0].photos.length, 9);
-  assert.equal(f.calls('upload').length, 9);
+  assert.equal(f.state.rows[0].photos.length, 12);
+  assert.equal(f.calls('upload').length, 12);
 });
 
 test('editing counts retained photos together with additions and removes only omitted photos', async t => {
   const item = recommendation(), f = fixture(t, { rows: [item] });
   await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'edit opens');
   await f.photos(3); f.clickRR('photo-remove'); f.clickRR('photo-remove'); await f.photos(1);
-  f.clickRR('submit'); await f.settle(); assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.rr('submit').disabled, false, 'one retained photo satisfies the minimum');
   f.choose(2); await f.photos(3); f.clickRR('submit');
   await until(() => f.rpc('save_restaurant_recommendation').length === 1 && f.state.rows[0].updated_at !== item.updated_at, 'retained plus added photos save as one edit');
   const request = f.rpc('save_restaurant_recommendation')[0].parameters;
@@ -221,15 +228,36 @@ test('editing counts retained photos together with additions and removes only om
   assert.ok(!removed.includes(item.photos[2]));
 });
 
-test('editing an eight-photo post accepts only one additional photograph', async t => {
+test('editing an eleven-photo post accepts only one additional photograph', async t => {
   const item = recommendation();
-  item.photos = Array.from({ length: 8 }, (_, index) => item.owner_id + '/' + item.id + '/50000000-0000-4000-8000-' + String(index + 1).padStart(12, '0') + '.jpg');
+  item.photos = Array.from({ length: 11 }, (_, index) => item.owner_id + '/' + item.id + '/50000000-0000-4000-8000-' + String(index + 1).padStart(12, '0') + '.jpg');
   const f = fixture(t, { rows: [item] });
   await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'edit opens');
-  await f.photos(8); f.choose(2); await f.photos(9); f.clickRR('submit');
-  await until(() => f.state.rows[0].updated_at !== item.updated_at, 'nine total photos save');
-  assert.equal(f.state.rows[0].photos.length, 9);
+  await f.photos(11); f.choose(2); await f.photos(12);
+  assert.match(f.rr('form-status').textContent, /최대 12장/);
+  f.clickRR('submit');
+  await until(() => f.state.rows[0].updated_at !== item.updated_at, 'twelve total photos save');
+  assert.equal(f.state.rows[0].photos.length, 12);
   assert.equal(f.calls('upload').length, 1);
+});
+
+test('editing a one-photo post rejects zero photos and saves a replacement before cleaning up the original', async t => {
+  const item = recommendation(); item.photos = item.photos.slice(0, 1);
+  const f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'edit opens');
+  await f.photos(1); assert.equal(f.rr('submit').disabled, false);
+  f.clickRR('photo-remove'); await f.photos(0); assert.equal(f.rr('submit').disabled, true);
+  f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
+  assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.calls('remove').length, 0, 'the saved original survives an unsaved empty draft');
+  assert.ok(f.state.files.has(item.photos[0]));
+  f.choose(1); await f.photos(1); f.clickRR('submit');
+  await until(() => f.state.rows[0].updated_at !== item.updated_at, 'one replacement photo saves');
+  assert.equal(f.state.rows[0].photos.length, 1);
+  assert.equal(f.calls('upload').length, 1);
+  assert.notEqual(f.state.rows[0].photos[0], item.photos[0]);
+  await until(() => !f.state.files.has(item.photos[0]), 'the original is cleaned up only after replacement saves');
+  assert.ok(f.state.files.has(f.state.rows[0].photos[0]));
 });
 
 test('an upload failure keeps a retryable draft and does not create a partial post', async t => {

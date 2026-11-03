@@ -22,7 +22,7 @@
    dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
-   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurant-nesting1&embedded=1'+(hasMemberMenu?'&member-menu=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-map-photos1&embedded=1'+(hasMemberMenu?'&member-menu=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();

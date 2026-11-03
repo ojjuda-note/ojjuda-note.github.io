@@ -4,7 +4,7 @@
 
   const CATEGORIES = ['한식', '중식', '일식', '양식', '분식', '디저트', '기타'];
   const REGIONS = ['서울', '경기', '인천', '강원', '충북', '충남', '세종', '대전', '전북', '전남', '광주', '경북', '경남', '대구', '울산', '부산', '제주'];
-  const MIN_PHOTOS = 3, MAX_PHOTOS = 9, PAGE_SIZE = 24;
+  const MIN_PHOTOS = 1, MAX_PHOTOS = 12, PAGE_SIZE = 24;
   const SOURCE_LIMIT = 20 * 1024 * 1024, OUTPUT_LIMIT = 4 * 1024 * 1024, PHOTO_EDGE = 1600;
   const MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -444,7 +444,7 @@
           if (photo.path && photo.uploaded && !editor.originalPaths.includes(photo.path)) { queueCleanup(session, [photo.path]); void flushCleanup(session); }
           if (photo.localUrl) URL.revokeObjectURL(photo.localUrl);
           editor.dirty = true; photoGrid(session, editor); editorControls(session, editor);
-          formMessage(editor, editor.photos.length < MIN_PHOTOS ? '사진을 3장 이상 골라 주세요.' : '');
+          formMessage(editor, editor.photos.length < MIN_PHOTOS ? '사진을 ' + MIN_PHOTOS + '장 이상 골라 주세요.' : '');
         };
         tile.append(remove);
         if (index > 0) {
@@ -458,9 +458,9 @@
     async function addPhotos(session, editor, files) {
       if (!active(session) || session.editor !== editor || editor.processing || editor.saving || editor.uncertain) return;
       const capacity = MAX_PHOTOS - editor.photos.length;
-      if (capacity <= 0) { formMessage(editor, '사진은 최대 9장까지 올릴 수 있어요.', true); return; }
+      if (capacity <= 0) { formMessage(editor, '사진은 최대 ' + MAX_PHOTOS + '장까지 올릴 수 있어요.', true); return; }
       const list = Array.from(files), selected = list.slice(0, capacity), errors = [];
-      if (list.length > capacity) errors.push('사진은 최대 9장까지 올릴 수 있어요.');
+      if (list.length > capacity) errors.push('사진은 최대 ' + MAX_PHOTOS + '장까지 올릴 수 있어요.');
       editor.processing = true; editorControls(session, editor);
       for (let i = 0; i < selected.length; i += 1) {
         if (!active(session) || session.editor !== editor) break;
@@ -477,7 +477,7 @@
       editor.processing = false;
       if (active(session) && session.editor === editor) {
         editorControls(session, editor);
-        formMessage(editor, [...new Set(errors)].join(' ') || (editor.photos.length < MIN_PHOTOS ? '사진을 3장 이상 골라 주세요.' : '사진 준비가 끝났어요.'), errors.length > 0);
+        formMessage(editor, [...new Set(errors)].join(' ') || (editor.photos.length < MIN_PHOTOS ? '사진을 ' + MIN_PHOTOS + '장 이상 골라 주세요.' : '사진 준비가 끝났어요.'), errors.length > 0);
       }
     }
     function showEditor(session, row = null) {
@@ -505,7 +505,7 @@
       form.append(name.wrap, pair, address.wrap, location, menu.wrap, reason.wrap);
       const photos = node('section', 'rr-photo-section'), photoHeading = node('div', 'rr-photo-heading');
       editor.count = hook(node('span', 'rr-photo-count'), 'photo-count'); photoHeading.append(node('h3', '', '맛집 사진'), editor.count);
-      photos.append(photoHeading, node('p', 'rr-photo-help', '3~9장, 첫 사진이 대표 사진이에요'), node('p', 'rr-photo-types', 'JPG·PNG·WEBP · 한 장당 20MB 이하'));
+      photos.append(photoHeading, node('p', 'rr-photo-help', MIN_PHOTOS + '~' + MAX_PHOTOS + '장, 첫 사진이 대표 사진이에요'), node('p', 'rr-photo-types', 'JPG·PNG·WEBP · 한 장당 20MB 이하'));
       editor.photoGrid = node('div', 'rr-edit-photos'); editor.add = button('+ 사진 추가', 'rr-button rr-photo-add', 'photo-add');
       const input = hook(node('input'), 'photo-input'); input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp'; input.multiple = true; input.hidden = true; input.setAttribute('aria-label', '맛집 사진 선택');
       editor.add.onclick = () => input.click(); input.onchange = () => { const files = Array.from(input.files || []); input.value = ''; if (files.length) void addPhotos(session, editor, files); };
@@ -615,7 +615,7 @@
         control.setCustomValidity(control.value.trim().length < min ? (min === 1 ? '내용을 적어 주세요.' : '5자 이상 적어 주세요.') : '');
       }
       if (!editor.form.reportValidity()) return;
-      if (editor.photos.length < MIN_PHOTOS || editor.photos.length > MAX_PHOTOS) { formMessage(editor, '사진을 3~9장 골라 주세요.', true); return; }
+      if (editor.photos.length < MIN_PHOTOS || editor.photos.length > MAX_PHOTOS) { formMessage(editor, '사진을 ' + MIN_PHOTOS + '~' + MAX_PHOTOS + '장 골라 주세요.', true); return; }
       formMessage(editor, '저장 준비 중이에요…');
       await persistEditor(session, editor);
     }
@@ -626,7 +626,7 @@
     }
     function validationMessage(error) {
       const message = String(error?.message || '');
-      if (/photos_required/.test(message)) return '사진은 3~9장 필요해요. 선택한 사진을 확인해 주세요.';
+      if (/photos_required/.test(message)) return '사진은 ' + MIN_PHOTOS + '~' + MAX_PHOTOS + '장 필요해요. 선택한 사진을 확인해 주세요.';
       if (/photo_invalid/.test(message)) return '사진 저장을 확인하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
       if (/invalid_input/.test(message)) return '가게 정보와 추천 이유를 다시 확인해 주세요.';
       if (/not_found/.test(message)) return '이 추천 글을 찾을 수 없어요. 목록에서 다시 확인해 주세요.';

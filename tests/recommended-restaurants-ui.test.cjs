@@ -68,15 +68,18 @@ async function fixture(t, options = {}) {
   };
 }
 
-test('370px member composer decodes real images, enforces photo counts and stays scrollable and closable', { timeout: 90000 }, async t => {
+test('370px member composer decodes real images, enforces one to twelve photos and stays scrollable and closable', { timeout: 90000 }, async t => {
   const f = await fixture(t), { page, rr } = f;
   await page.locator('#world-entry').click(); await rr('list').waitFor(); await rr('compose').first().click(); await rr('editor').waitFor();
   const maliciousName = '<img src=x onerror="window.memberRestaurantInjected=1">';
   const maliciousReason = '<script>window.memberRestaurantInjected=1</script> 실제 후기';
   await f.fields({ name: maliciousName, reason: maliciousReason });
-  await f.choose(2); await f.photos(2);
-  assert.equal(await rr('submit').isEnabled(), false, 'two real decoded photos cannot be submitted');
-  await f.choose(1); await f.photos(3); assert.equal(await rr('submit').isEnabled(), true);
+  assert.match(await page.locator('.rr-photo-help').textContent(), /1~12장/);
+  assert.equal(await rr('submit').isEnabled(), false, 'zero photos cannot be submitted');
+  await f.choose(1); await f.photos(1); assert.equal(await rr('submit').isEnabled(), true);
+  await rr('photo-remove').click(); await f.photos(0);
+  assert.equal(await rr('submit').isEnabled(), false, 'removing the only photo disables submission');
+  await f.choose(1); await f.photos(1); assert.equal(await rr('submit').isEnabled(), true);
   await f.fits(); await rr('submit').scrollIntoViewIfNeeded();
   assert.ok(await rr('editor').evaluate(body => body.scrollTop > 0), 'the editor scrolls to the submit control');
   assert.equal(await page.evaluate(() => scrollY), 0, 'the World behind the modal does not scroll');
@@ -97,28 +100,29 @@ test('370px member composer decodes real images, enforces photo counts and stays
     }
     return { row, sizes, uploads: rrFixture.calls.filter(call => call.type === 'upload') };
   });
-  assert.equal(saved.row.photos.length, 3); assert.equal(saved.uploads.length, 3);
+  assert.equal(saved.row.photos.length, 1); assert.equal(saved.uploads.length, 1);
   assert.ok(saved.row.photos.every(photo => !photo.includes('사용자원본사진') && photo.endsWith('.jpg')));
   for (const size of saved.sizes) { assert.equal(size.width, 1600); assert.equal(size.height, 800); assert.equal(size.mime, 'image/jpeg'); assert.ok(size.bytes > 0 && size.bytes <= 4 * 1024 * 1024); }
-  await rr('gallery-next').click(); assert.equal(await page.locator('.rr-gallery-counter').textContent(), '2 / 3');
+  assert.equal(await page.locator('.rr-gallery-counter').textContent(), '1 / 1');
+  assert.equal(await rr('gallery-next').isEnabled(), false);
   await f.fits();
   await page.keyboard.press('Escape'); await rr('list').waitFor();
-  await rr('card').click(); await rr('edit').waitFor(); await rr('edit').click(); await rr('editor').waitFor(); await f.photos(3);
-  await f.choose(7); await f.photos(9);
-  assert.match(await rr('form-status').textContent(), /9/);
+  await rr('card').click(); await rr('edit').waitFor(); await rr('edit').click(); await rr('editor').waitFor(); await f.photos(1);
+  await f.choose(12); await f.photos(12);
+  assert.match(await rr('form-status').textContent(), /최대 12장/);
   await page.setViewportSize({ width: 370, height: 540 }); await f.fits(); await rr('submit').scrollIntoViewIfNeeded();
   assert.ok(await rr('editor').evaluate(body => body.scrollTop > 0));
   assert.equal(await rr('submit').isVisible(), true); assert.equal(await rr('close').isVisible(), true);
-  if (proof) await page.screenshot({ path: path.join(proof, 'member-nine-photos-short-viewport.png') });
+  if (proof) await page.screenshot({ path: path.join(proof, 'member-twelve-photos-short-viewport.png') });
   await rr('close').click(); await rr('confirm-dialog').waitFor(); await page.keyboard.press('Escape');
   await rr('confirm-dialog').waitFor({ state: 'detached' });
-  assert.equal(await rr('editor').isVisible(), true); assert.equal(await rr('photo-remove').count(), 9, 'native cancel preserves the draft');
+  assert.equal(await rr('editor').isVisible(), true); assert.equal(await rr('photo-remove').count(), 12, 'native cancel preserves the draft');
   await rr('close').click(); await rr('confirm-accept').click(); await rr('dialog').waitFor({ state: 'detached' });
   assert.equal(await page.evaluate(() => rrObjectURLs.size), 0);
   assert.equal(await page.evaluate(() => getComputedStyle(document.body).overflow), 'auto');
   assert.equal(await page.evaluate(() => document.body.classList.contains('gaming')), false);
   assert.equal(await page.evaluate(() => document.activeElement.id), 'world-entry');
-  assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.type === 'upload').length), 3, 'discarded new edit photos never upload');
+  assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.type === 'upload').length), 1, 'discarded new edit photos never upload');
 });
 
 test('native account change clears private image URLs and the guest prompt never fetches member records', { timeout: 60000 }, async t => {
