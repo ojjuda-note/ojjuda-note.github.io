@@ -1,0 +1,89 @@
+name: Sync reviewed shared game release
+
+on:
+  push:
+    branches: ['codex/spot70-slightly-hard-20261103']
+    paths: ['.github/workflows/spot70-sync-release.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/codex/spot70-slightly-hard-20261103'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 10
+          persist-credentials: true
+      - name: Merge fixed main commit and resolve the three reviewed release files
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          repository = 'ojjuda-note/ojjuda-note.github.io'
+          branch = 'codex/spot70-slightly-hard-20261103'
+          main = 'ac965c179084297b326d83b6c226c2a5bc0f440f'
+          previous = 'f1b8ee11b85d481a6fe16ad23f70d234bee4556c'
+          base = 'd6dd62b802b1b2bc1c01fa96c1d687f9d150254f'
+          assert os.environ['GITHUB_REPOSITORY'] == repository
+          assert os.environ['GITHUB_REF'] == 'refs/heads/' + branch
+          assert os.environ['GITHUB_EVENT_NAME'] == 'push'
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          initial = os.environ['GITHUB_SHA']
+          assert git('rev-parse', 'HEAD') == initial
+          assert git('rev-parse', 'HEAD^') == previous
+          assert not git('status', '--porcelain')
+          assert git('ls-remote', '--exit-code', 'origin', 'refs/heads/' + branch).split()[0] == initial
+          subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+          subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=10', 'origin', main], check=True)
+          assert git('merge-base', initial, main) == base
+          merge = subprocess.run(['git', 'merge', '--no-commit', '--no-ff', main])
+          assert merge.returncode == 1, 'Expected the three reviewed release conflicts'
+          from pathlib import Path
+          import json
+          import subprocess
+
+          main = 'ac965c179084297b326d83b6c226c2a5bc0f440f'
+          revision = '20261103-spot70-slightly-hard1'
+          paths = {'game-release.json', 'world-game-assets.js', 'world.html'}
+          conflicts = set(subprocess.check_output(['git', 'diff', '--name-only', '--diff-filter=U'], text=True).splitlines())
+          assert conflicts == paths, conflicts
+
+          def replace_once(text, old, new):
+              assert text.count(old) == 1, old
+              return text.replace(old, new)
+
+          html = subprocess.check_output(['git', 'show', main + ':world.html'], text=True)
+          html = replace_once(html, 'world-game-assets.js?v=20261103-festival-schedule1', 'world-game-assets.js?v=' + revision)
+          loader = subprocess.check_output(['git', 'show', main + ':world-game-assets.js'], text=True)
+          loader = replace_once(loader, "const revision='20261103-festival-schedule1'", "const revision='" + revision + "'")
+          loader = replace_once(loader, "spot:'1.8.1'", "spot:'1.9.0'")
+          loader = replace_once(loader, '/world-spot-game.js?v=20261103-stage-clear-gates1', '/world-spot-game.js?v=' + revision)
+          assert "festival:'1.0.0'" in loader and '/world-festival-schedule.js?v=20261103-festival-schedule1' in loader
+          Path('world.html').write_text(html)
+          Path('world-game-assets.js').write_text(loader)
+          Path('game-release.json').write_text(json.dumps({'revision': revision}, separators=(',', ':')) + '\n')
+          subprocess.run(['git', 'add', '--', *sorted(paths)], check=True)
+          assert not subprocess.check_output(['git', 'diff', '--name-only', '--diff-filter=U']).strip()
+          subprocess.run(['git', 'diff', '--cached', '--check', main], check=True)
+          print('Resolved exactly three shared release files; preserved festival and spot changes')
+          expected = {
+           'world.html': '7976e0a72b44dd43ffb8c7e3b15dc93ceb8c3b1c',
+           'world-game-assets.js': '324d23f0a60f7f4e5687e5a27c03bc7bd1beae7c',
+           'game-release.json': '4626b423ae06c1508591cb7e0a261e1b56b39576'
+          }
+          for path, sha in expected.items():
+              assert git('hash-object', path) == sha, path
+          assert git('rev-parse', 'HEAD') == initial
+          assert git('ls-remote', '--exit-code', 'origin', 'refs/heads/' + branch).split()[0] == initial
+          subprocess.run(['git', 'commit', '-m', 'Preserve the current festival release alongside new spot puzzles'], check=True)
+          assert git('rev-parse', 'HEAD^2') == main
+          subprocess.run(['git', 'push', 'origin', 'HEAD:refs/heads/' + branch], check=True)
+          print('Verified release merge:', git('rev-parse', 'HEAD'))
+          PY
