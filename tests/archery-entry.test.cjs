@@ -72,7 +72,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.11.2');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.12.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -83,19 +83,22 @@ assert.ok(archeryRevision,'the archery bridge has its own cache revision');
 assert.equal(bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1],archeryRevision);
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
-assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the latest draw and coach share the same burst rules');
-assert.equal(game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision);
-assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the coach must use the same rebalanced physics as actual shots');
+// Result UI releases refresh entry files while unchanged internal modules keep
+// their existing cache revision. Their shared physics must still stay aligned.
+const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
+assert.ok(moduleRevision,'the engine import has its own cache revision');
+assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the latest draw and coach share the same burst rules');
+assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the coach must use the same rebalanced physics as actual shots');
 for(const file of ['engine.mjs','scenery.mjs']) {
  const source=read('games/forest-archer/'+file);
- assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'painted anatomy and collision shapes load the same release');
+ assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'painted anatomy and collision shapes load the same release');
 }
-for(const file of ['scenery','ammo-client'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],archeryRevision,'updated scene and stage-range client bypass stale caches');
+for(const file of ['scenery','ammo-client'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene and stage-range client retain their matching module revision');
 assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'event preparation and result styles load with their markup');
 
-assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the game loads the wall-aware follow camera');
-assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the replay receives the same camera release');
-assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'ordinary and ten-point views share the same camera module');
+assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the game loads the wall-aware follow camera');
+assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the replay receives the same camera release');
+assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'ordinary and ten-point views share the same camera module');
 
 // A cold direct link must load against the initialized arcade route. Starting
 // before my() changes g.tab/place causes Al() to discard its own pending load.
@@ -108,7 +111,7 @@ assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mj
   worldGameAssetRequest:0,worldEntryRouted:false,worldGameEntryGate:()=>true,M:()=>{},
   py:()=>{},H:()=>{rendered++;},sr:{tab:({tab})=>{boot.g.tab='place';boot.g.place={id:tab};}},
   worldParkNotes:null,resolveWorldProfilePhoto:()=>{},m1:()=>{},x1:()=>Promise.resolve(),bm:true});
- const start=world.indexOf('function my(){');
+ const start=world.indexOf('function openWorldGameLink(');
  vm.runInContext(world.slice(start,world.indexOf('// Member rooms use their own account;',start)),boot);
  vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),boot);
  boot.my();

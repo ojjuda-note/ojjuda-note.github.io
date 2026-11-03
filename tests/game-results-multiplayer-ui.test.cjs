@@ -13,7 +13,7 @@ const fixtures = [
   { game: 'mines', file: 'games/mines/index.html', body: '<div id="result" class="on"><div id="minesResultCard" data-result-host></div></div>', metric: '고급 · 123초' },
   { game: 'tour', file: 'games/ojjuda-tour/index.html', body: '<div id="sheet2" class="sheet result-view"><div class="sheet-card panel"><div class="sheet-head"></div><div id="s2Body"></div><div id="s2Btns" data-result-host></div></div></div>', extra: '<p id="tourRecordStatus">기록 저장 완료</p>' },
   { game: 'matgo', file: 'games/matgo.html', body: '<div class="modal"><div class="card result-card" data-result-host></div></div>', metric: '+400 G', extra: '<p>7점</p>' },
-  { game: 'matgo', file: 'games/matgo-online.html', body: '<div class="dialog"><div class="card result-card" data-result-host></div></div>', metric: '+400 G', extra: '<p>7점</p>' },
+  { game: 'matgo', file: 'games/matgo-online.html', body: '<div class="dialog"><section class="card result-card" data-result-host></section></div>', metric: '+400 G', extra: '<p>7점</p>' },
   { game: 'ttang', file: 'games/ttang.html', body: '<div class="overlay"><div class="panel" data-result-host></div></div>', metric: '내 땅 50.1% · 120초' },
   { game: 'photo_ttang', file: 'games/photo-ttang.html', body: '<div class="overlay"><div class="panel" data-result-host></div></div>', metric: '9단계 · 사진 공개', extra: '<img class="fullimg" alt="공개된 사진" style="width:100%;object-fit:contain;border-radius:16px" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect width=%22300%22 height=%22400%22 fill=%22%23e8eee2%22/%3E%3C/svg%3E"><button id="report">사진 신고</button>' },
   { game: 'roulette', file: 'games/roulette/index.html', body: '', native: true, outcome: 'gold-gain', metric: '+1,000 G', extra: '<p>당첨 번호 12</p>' }
@@ -46,13 +46,14 @@ test('game styles preserve readable results and reachable share/replay controls 
   await page.route('**/*', route => route.request().url().startsWith('http://127.0.0.1:') || route.request().url().startsWith('data:') ? route.continue() : route.abort());
   const origin = 'http://127.0.0.1:' + server.address().port;
   for (const fixture of fixtures) {
-    for (const [width, height] of [[320, 568], [390, 844], [844, 390]]) {
+    for (const [width, height] of [[320, 568], [390, 844], [844, 390], ...(fixture.game === 'matgo' ? [[568, 320]] : [])]) {
       await t.test(fixture.file + ' at ' + width + '×' + height, async () => {
         await page.setViewportSize({ width, height });
         await page.goto(origin + '/' + fixture.file + '?result-fixture', { waitUntil: 'load' });
         await page.evaluate(fixture => {
           window.shareCalls = 0;
           navigator.share = async () => { window.shareCalls++; };
+          if (fixture.game === 'matgo' && innerHeight === 320) document.documentElement.style.setProperty('--matgo-safe-bottom', '34px');
           const options = { game: fixture.game, outcome: fixture.outcome || 'success', metric: fixture.metric || '게임 종료', extra: fixture.extra || '', key: fixture.file };
           if (fixture.native) OjjudaGameResults.show({ ...options, actions: [{ label: '다음 판', onClick: () => false }] });
           else document.querySelector('[data-result-host]').innerHTML = OjjudaGameResults.markup({ ...options, actions: (['photo_ttang', 'poker'].includes(fixture.game) ? '<button id="next">다음 판</button>' : '') + '<button id="play">다시 하기</button><button id="inspect">결과 보기</button>' });
@@ -78,7 +79,8 @@ test('game styles preserve readable results and reachable share/replay controls 
         assert.ok(layout.left >= -1 && layout.right <= width + 1, JSON.stringify(layout));
         assert.ok(layout.metricSize >= 16, JSON.stringify(layout));
         assert.equal(layout.metricColor, 'rgb(64, 87, 74)', JSON.stringify(layout));
-        assert.ok(layout.buttons.every(button => button.height >= 44 && button.reachable && button.top >= 0 && button.bottom <= height), JSON.stringify(layout));
+        const usableHeight = height - (fixture.game === 'matgo' && height === 320 ? 34 : 0);
+        assert.ok(layout.buttons.every(button => button.height >= 44 && button.reachable && button.top >= 0 && button.bottom <= usableHeight + 1), JSON.stringify(layout));
         await page.getByRole('button', { name: '공유하기', exact: true }).click();
         assert.equal(await page.evaluate(() => window.shareCalls), 1);
       });

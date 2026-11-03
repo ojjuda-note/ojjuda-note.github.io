@@ -14,6 +14,8 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
       await context.addInitScript(({ member, identityError, identity }) => {
         window.fixtureUser = member;
         window.fixtureIdentityError = identityError; window.fixtureIdentity = identity; window.fixtureReads = 0;
+        window.fixtureShares = [];
+        Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { fixtureShares.push(data); } });
       }, { member, identityError, identity });
       await context.route('**/*', route => {
         const url = new URL(route.request().url());
@@ -65,10 +67,18 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
     await winningFrame.evaluate(() => { startWait = 0; world.own.fill(me.id); world.step = () => {}; mobs = []; silTotal = 1000; mySil = 900; paused = false; });
     await winningFrame.locator('.fullimg').waitFor();
     assert.equal(await winningFrame.locator('.fullimg').evaluate(el => getComputedStyle(el).filter), 'none');
-    const login = winningFrame.getByRole('link', { name: '로그인하고 계속하기', exact: true });
+    const result = winningFrame.locator('[data-game-result-card]');
+    assert.equal(await result.getAttribute('data-result-outcome'), 'success');
+    const login = winningFrame.getByRole('link', { name: '로그인', exact: true });
     assert.equal(await login.getAttribute('href'), '/?auth=login&next=photo');
     assert.equal(await login.getAttribute('target'), '_top');
     assert.equal(await winningFrame.getByRole('button', { name: '다음 사진', exact: true }).count(), 0);
+    assert.equal(await winningFrame.locator('[data-game-result-play]').count(), 0, 'a finished demo offers no replay');
+    await result.getByRole('button', { name: '공유하기', exact: true }).click();
+    assert.equal(await winningFrame.evaluate(() => fixtureShares.length), 1);
+    assert.equal(await winningFrame.evaluate(() => fixtureShares[0].url), 'https://ojjuda.kr/world.html?game=photo_ttang');
+    assert.equal(await result.isVisible(), true, 'sharing preserves the finished demo');
+    assert.equal(win.page.url(), 'https://fixture.test/photo-ttang.html');
     assert.equal(await winningFrame.evaluate(() => startStage(0)), false);
     assert.equal(await winningFrame.evaluate(() => over && paused), true);
     await win.page.reload();
@@ -95,8 +105,12 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
         await game.getByRole('button', { name: '사진 목록', exact: true }).click();
       }
       if (outcome !== 'leave') {
-        await game.getByRole('link', { name: '로그인하고 계속하기', exact: true }).waitFor();
-        assert.equal(await game.getByRole('button', { name: '다시 도전', exact: true }).count(), 0);
+        await game.getByRole('link', { name: '로그인', exact: true }).waitFor();
+        assert.equal(await game.locator('[data-game-result-card]').getAttribute('data-result-outcome'), 'failure');
+        assert.equal(await game.getByRole('button', { name: /^(다시 도전|다시 하기|다음 사진)$/ }).count(), 0);
+        await game.getByRole('button', { name: '공유하기', exact: true }).click();
+        assert.equal(await game.evaluate(() => fixtureShares.length), 1);
+        assert.equal(await game.locator('[data-game-result-card]').isVisible(), true);
       }
       await f.page.reload();
       await f.page.getByRole('link', { name: '로그인하고 계속하기', exact: true }).waitFor();
