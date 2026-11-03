@@ -97,13 +97,20 @@
       return a.name.localeCompare(b.name, 'ko');
     });
   }
+  function updateResultCount() {
+    if (state.loading || state.loadError) return;
+    const shown = el('span', 'result-shown', '현재 ' + state.renderedCount + '곳 표시');
+    shown.hidden = state.view !== 'list';
+    $('result-count').dataset.total = String(state.visible.length);
+    $('result-count').replaceChildren(document.createTextNode('전체 '), el('strong', '', String(state.visible.length)), document.createTextNode('곳'), shown);
+  }
   function renderCards(append = false) {
     const container = $('cards');
     if (!append) { container.replaceChildren(); state.renderedCount = 0; }
     $('load-more').hidden = true;
     if (!state.visible.length) {
       const empty = el('div', 'empty-state'); empty.append(el('div', 'empty-symbol', '⌕'), el('h2', '', state.savedOnly ? '저장한 맛집이 없어요' : '조건에 맞는 맛집이 없어요'), el('p', '', state.savedOnly ? '가게의 책갈피를 눌러 모아보세요.' : '다른 음식 종류나 지역으로 찾아보세요.'));
-      const reset = el('button', '', '필터 초기화'); reset.type = 'button'; reset.addEventListener('click', resetFilters); empty.append(reset); container.append(empty); return;
+      const reset = el('button', '', '필터 초기화'); reset.type = 'button'; reset.addEventListener('click', resetFilters); empty.append(reset); container.append(empty); updateResultCount(); return;
     }
     const fragment = document.createDocumentFragment();
     const start = state.renderedCount, end = Math.min(start + LIST_PAGE_SIZE, state.visible.length);
@@ -124,6 +131,7 @@
     state.renderedCount = end;
     $('load-more').hidden = end >= state.visible.length;
     $('load-more').textContent = '더 보기 · ' + end + ' / ' + state.visible.length + '곳';
+    updateResultCount();
   }
   function syncPressed() {
     $('categories').querySelectorAll('[data-category]').forEach(button => { const active = button.dataset.category === state.category; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
@@ -147,8 +155,6 @@
     state.visible = filteredRestaurants();
     if (state.selected && !state.visible.some(item => item.id === state.selected)) state.selected = '';
     const locatedCount = state.visible.filter(hasCoordinates).length;
-    $('result-count').dataset.total = String(state.visible.length);
-    $('result-count').replaceChildren(el('strong', '', String(state.visible.length)), document.createTextNode('곳'));
     if (state.position) setLocationStatus(locatedCount ? '가까운 순 · 거리 미확인 식당은 뒤에 표시' : '이 조건의 식당은 거리 정보가 없어 전국 목록으로 표시해요.', false);
     if (mobile.matches && !state.visible.some(hasCoordinates)) setView('list');
     syncPressed(); renderCollections(); renderCards(); syncMap(fit);
@@ -207,7 +213,10 @@
       else userMarker.setLatLng([state.position.lat, state.position.lng]);
     }
     const missing = state.visible.length - allLocated.length;
-    $('map-caption-text').textContent = located.length ? '지역 개요도 · ' + (allLocated.length > located.length ? allLocated.length + '곳 중 ' : '') + located.length + '곳 표시' + (allLocated.length > located.length ? ' · 필터로 범위를 좁혀 주세요' : missing ? ' · ' + missing + '곳은 가게별 지도 링크' : '') : (state.visible.length ? '위치 정보는 목록의 지도 링크에서 확인하세요.' : '조건에 맞는 위치가 없어요.');
+    const summary = ['지역 개요도'];
+    if (located.length) summary.push('위치 확인 ' + allLocated.length + '곳' + (allLocated.length > located.length ? ' 중 ' + located.length + '곳' : '') + ' 표시');
+    if (missing) summary.push('위치 미확인 ' + missing + '곳은 목록에서 확인');
+    $('map-caption-text').textContent = state.visible.length ? summary.join(' · ') : '조건에 맞는 위치가 없어요.';
     requestAnimationFrame(() => {
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
@@ -261,6 +270,7 @@
   function setView(view) {
     state.view = view; $('workspace').dataset.view = view;
     $('show-map').setAttribute('aria-pressed', String(view === 'map')); $('show-list').setAttribute('aria-pressed', String(view === 'list'));
+    updateResultCount();
     if (view === 'map') syncMap(true);
   }
   function resetFilters() {
@@ -276,7 +286,7 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./restaurants.json?v=20261103-restaurants-blue3-complete1', { signal: controller.signal, cache: 'no-cache' });
+      const response = await fetch('./restaurants.json?v=20261103-restaurants-audit1', { signal: controller.signal, cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json(); if (!data || !Array.isArray(data.restaurants)) throw new Error('Invalid dataset');
       const ids = new Set(); state.restaurants = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));
