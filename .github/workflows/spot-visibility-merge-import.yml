@@ -1,0 +1,131 @@
+name: Merge reviewed current main with spot visibility fixes
+
+on:
+  push:
+    branches: ['codex/spot-status-outside-20261103']
+    paths: ['.github/workflows/spot-visibility-merge-import.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: spot-visibility-merge-file-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/codex/spot-status-outside-20261103'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: true
+      - name: Verify fixed archive and import only reviewed files
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, io, os, pathlib, stat, subprocess, tempfile, urllib.request, zipfile
+
+          repository = "ojjuda-note/ojjuda-note.github.io"
+          branch = "codex/spot-status-outside-20261103"
+          base = "576e18f378975ab26a2db7d2df5cb59b138c5f6e"
+          url = "https://d2ol7oe51mr4n9.cloudfront.net/user_3IxANoqRL1uMNs5GRgxqpniGdas/0ac3f838-8b0d-43e5-9caf-ca550043f97e.zip"
+          expected_sha256 = "7ec161fe779672132302e64e1c3e0e042526f9f2b574d4d93a9afea52c3da1f7"
+          expected_bytes = 176150
+          expected_uncompressed_bytes = 508671
+          allowed = set(['game-release.json', 'world-game-assets.js', 'world.html'])
+          expected_tree = '8e2c3cd9a273409e47a601af90dff547cfa9a373'
+          workflow_path = ".github/workflows/spot-visibility-merge-import.yml"
+          transforms = []
+          assert len(allowed) == 3
+          assert os.environ["GITHUB_REPOSITORY"] == repository
+          assert os.environ["GITHUB_REF"] == "refs/heads/" + branch
+          assert os.environ["GITHUB_EVENT_NAME"] == "push"
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          initial = os.environ["GITHUB_SHA"]
+          assert git("rev-parse", "HEAD") == initial
+          assert git("rev-parse", "HEAD^") == base, "Bootstrap parent changed"
+          assert not git("status", "--porcelain"), "Checkout must be clean"
+          assert git("ls-remote", "--exit-code", "origin", "refs/heads/" + branch).split()[0] == initial
+
+          merge_parent = "620710169a7761ad51000b453d8c09465b68fdef"
+          merge_base = "a0d286e12430e578041f6acd0258e319713c50d4"
+          expected_staged_paths = ['games/certified-restaurants/app.js', 'games/certified-restaurants/index.html', 'games/certified-restaurants/style.css', 'recommended-restaurants.css', 'recommended-restaurants.js', 'tests/game-results-arcade.test.cjs', 'tests/package.json', 'tests/recommended-restaurants-entry.test.cjs', 'tests/restaurant-recommendations-navigation-ui.test.cjs', 'tests/world-design-ui.test.cjs', 'tests/world-game-back-ui.test.cjs', 'tests/world-three-menus.test.cjs', 'world-game-assets.js', 'world-restaurant-guide.css', 'world-restaurant-guide.js', 'world.html']
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "fetch", "--no-tags", "--deepen=16", "origin", "refs/heads/" + branch, "refs/heads/main"], check=True)
+          assert git("merge-base", initial, merge_parent) == merge_base
+          merge = subprocess.run(["git", "merge", "--no-commit", "--no-ff", merge_parent])
+          assert merge.returncode == 1, "Expected only the three reviewed cache conflicts"
+          assert set(git("diff", "--name-only", "--diff-filter=U").splitlines()) == allowed
+          assert git("rev-parse", "MERGE_HEAD") == merge_parent
+
+          with urllib.request.urlopen(url, timeout=60) as response:
+              assert response.status == 200
+              data = response.read(expected_bytes + 1)
+          assert len(data) == expected_bytes
+          assert hashlib.sha256(data).hexdigest() == expected_sha256
+
+          checkout = pathlib.Path.cwd().resolve()
+          prepared = {}
+          with zipfile.ZipFile(io.BytesIO(data)) as archive:
+              entries = archive.infolist()
+              assert len(entries) == len(allowed)
+              assert {entry.filename for entry in entries} == allowed
+              assert sum(entry.file_size for entry in entries) == expected_uncompressed_bytes
+              for entry in entries:
+                  name = entry.filename
+                  assert not entry.is_dir() and not (entry.flag_bits & 1)
+                  assert stat.S_ISREG(entry.external_attr >> 16)
+                  assert entry.file_size <= 2_000_000
+                  path = pathlib.PurePosixPath(name)
+                  assert not path.is_absolute() and ".." not in path.parts
+                  target = checkout.joinpath(*path.parts)
+                  assert target.resolve().is_relative_to(checkout)
+                  assert not target.is_symlink()
+                  for parent in target.parents:
+                      if parent == checkout:
+                          break
+                      assert not parent.is_symlink()
+                  prepared[name] = archive.read(entry)
+              assert archive.testzip() is None
+
+          for name, content in prepared.items():
+              target = checkout / name
+              target.parent.mkdir(parents=True, exist_ok=True)
+              with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as handle:
+                  handle.write(content)
+                  temporary = pathlib.Path(handle.name)
+              temporary.chmod(0o644)
+              temporary.replace(target)
+
+          for transform in transforms:
+              assert transform["path"] in allowed
+              target = checkout / transform["path"]
+              text = target.read_text()
+              for old, new in transform["replacements"]:
+                  assert text.count(old) == 1, "Exact reviewed transform anchor changed"
+                  text = text.replace(old, new)
+              target.write_text(text)
+              assert hashlib.sha256(target.read_bytes()).hexdigest() == transform["sha256"]
+
+          (checkout / workflow_path).unlink()
+          subprocess.run(["git", "add", "--", *sorted(allowed), workflow_path], check=True)
+          staged = subprocess.check_output(["git", "diff", "--cached", "--name-only", "-z"]).decode().strip("\0").split("\0")
+          assert set(staged) == set(expected_staged_paths) | {workflow_path} and len(staged) == len(expected_staged_paths) + 1
+          assert git("write-tree") == expected_tree, "Imported tree differs from reviewed files"
+          subprocess.run(["git", "diff", "--cached", "--check"], check=True)
+          assert git("rev-parse", "HEAD") == initial
+          assert git("ls-remote", "--exit-code", "origin", "refs/heads/" + branch).split()[0] == initial
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "commit", "-m", "Merge current restaurant navigation while preserving reviewed spot fixes"], check=True)
+          subprocess.run(["git", "push", "origin", "HEAD:refs/heads/" + branch], check=True)
+          print("Imported", len(allowed), "verified files; commit", git("rev-parse", "HEAD"))
+          PY
