@@ -4,7 +4,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
   const gameUrl='https://fixture.test/games/spot-difference/index.html';
-  async function fixture(viewport={width:390,height:844}){
+  async function fixture(viewport={width:390,height:844},initialIndex=null){
    const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[],imageGates=[];
    function holdImages(matches=()=>true){
     let release,seen;const waiting=new Promise(resolve=>release=resolve),started=new Promise(resolve=>seen=resolve);
@@ -14,7 +14,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     imageGates.push(gate);return gate;
    }
    page.on('pageerror',e=>errors.push(e.message));
-   await page.addInitScript(()=>{window.spotScores=[];window.JjudaWallet={getState:()=>({ready:true,userId:'member-a',coins:0}),subscribe:fn=>fn({ready:true,userId:'member-a',coins:0}),recordClear:async(owner,stage)=>{spotScores.push({owner,stage});return {ok:true}},refresh:async()=>{},buy:()=>{throw Error('unexpected payment')}};});
+   await page.addInitScript(initialIndex=>{if(initialIndex!==null&&!localStorage.getItem('jjuda-spot-six-v1'))localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:initialIndex}));window.spotScores=[];window.JjudaWallet={getState:()=>({ready:true,userId:'member-a',coins:0}),subscribe:fn=>fn({ready:true,userId:'member-a',coins:0}),recordClear:async(owner,stage)=>{spotScores.push({owner,stage});return {ok:true}},refresh:async()=>{},buy:()=>{throw Error('unexpected payment')}};},initialIndex);
    await page.route('**/*',async route=>{
     const url=new URL(route.request().url());
     if(url.origin!=='https://fixture.test'||/\/(wallet|supabase)\.js$/.test(url.pathname))return route.fulfill({body:'',contentType:'text/javascript'});
@@ -116,6 +116,77 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    const popup=page.locator(prefix==='celebration'?'#celebration':'#spot-failure');
    assert.equal(await popup.locator('.game-result-share').isVisible(),true,'sharing is on the same result page');
    if(prefix==='celebration')assert.equal(await container.locator('select').count(),0);
+  }
+  const zoomGeometry=page=>page.evaluate(()=>({level:document.querySelector('#zoom-level').value,
+   panes:[...document.querySelectorAll('.zoom-scroll')].map(el=>[el.scrollLeft,el.scrollTop,el.clientWidth,el.clientHeight]),
+   pictures:[...document.querySelectorAll('.zoom-picture')].map(el=>[el.getBoundingClientRect().width,el.getBoundingClientRect().height])}));
+  async function noticeOutsidePictures(page,label){
+   const layout=await page.evaluate(()=>{
+    const rect=el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};
+    const hint=document.querySelector('#zoom-hint'),text=document.createRange();text.selectNodeContents(hint);
+    return {notice:rect(document.querySelector('#zoom-status')),panes:[...document.querySelectorAll('.zoom-scroll')].map(rect),
+     toolbar:rect(document.querySelector('#zoom-dialog .zoom-toolbar')),width:innerWidth,height:innerHeight,
+     compact:matchMedia('(max-width:900px),(max-width:1100px) and (max-height:600px)').matches,hint:rect(hint),hintLines:[...text.getClientRects()].map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}))};
+   });
+   const n=layout.notice;
+   assert.ok(n.height>=36&&n.x>=0&&n.y>=0&&n.x+n.width<=layout.width+1&&n.y+n.height<=layout.height+1,label+': two readable notice lines stay on screen');
+   for(const pane of layout.panes){
+    const overlapX=Math.min(n.x+n.width,pane.x+pane.width)-Math.max(n.x,pane.x),overlapY=Math.min(n.y+n.height,pane.y+pane.height)-Math.max(n.y,pane.y);
+    assert.ok(overlapX<=0||overlapY<=0,label+': notice does not cover either visible picture '+JSON.stringify(layout));
+   }
+   assert.ok(n.y+n.height<=layout.toolbar.y+1,label+': notice remains above the separate controls');
+   if(layout.compact)assert.equal(layout.hint.height,44,label+': purchase text does not enlarge the fixed touch target');
+   for(const line of layout.hintLines)assert.ok(line.x>=layout.hint.x-1&&line.y>=layout.hint.y-1&&line.x+line.width<=layout.hint.x+layout.hint.width+1&&line.y+line.height<=layout.hint.y+layout.hint.height+1,label+': the entire purchase label stays inside its button');
+  }
+  // Observe a real partial result: solving everything at once used to miss the
+  // temporary notice covering B. Compare the clipped panes, not oversized images.
+  for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
+   const notice=await fixture(viewport,82),page=notice.page,label=`zoom notice ${viewport.width}x${viewport.height}`;
+   try{
+    // System color emoji can be wider than a local missing-glyph fallback.
+    // Keep that real font-width risk in the 320px payment/error regression.
+    await page.addStyleTag({content:'#zoom-dialog #zoom-hint::before{width:24px;flex-basis:24px}'});
+    await page.clock.install();page.on('dialog',dialog=>dialog.accept());
+    assert.equal((await current(page)).id,83,'the notice check opens a real ten-answer picture');
+    await page.locator('#start').click();await page.locator('#zoom').click();
+    if(await page.locator('#zoom-more').isVisible())await page.locator('#zoom-more').click();
+    await page.locator('#zoom-level').selectOption('2');await page.clock.runFor(100);
+    await page.locator('#zoom-scroll-a').evaluate(el=>{el.scrollLeft=123;el.scrollTop=80;});await page.clock.runFor(100);
+    await page.waitForFunction(()=>{const [a,b]=document.querySelectorAll('.zoom-scroll');return a.scrollLeft===b.scrollLeft&&a.scrollTop===b.scrollTop;});
+    const geometry=await zoomGeometry(page);await noticeOutsidePictures(page,label+' before a message');
+    const six=await page.evaluate(()=>JJUDA_PUZZLES[Number(document.querySelector('#stage-picker').value)].spots.slice(0,6));
+    await pointClicks(page,six,'#zoom-original');
+    assert.equal(await page.locator('#zoom-status').innerText(),'6 / 10 · 맞았어요!');
+    await noticeOutsidePictures(page,label+' at 6/10');assert.deepEqual(await zoomGeometry(page),geometry,label+': answer feedback does not resize or pan either picture');
+    await page.clock.runFor(7000);assert.equal(await page.locator('#zoom-status').innerText(),'6 / 10 · 맞았어요!');
+    await noticeOutsidePictures(page,label+' after the former toast timeout');
+    if(viewport.width===390)await page.screenshot({path:'/tmp/spot-zoom-status-mobile.png'});
+    await page.evaluate(()=>{
+     JjudaWallet.getState=()=>({ready:true,userId:'member-a',coins:100});window.noticePurchases=[];
+     JjudaWallet.buy=(request,stage)=>new Promise((resolve,reject)=>{
+      noticePurchases.push({...request,stage});
+      window.failNoticePurchase=()=>reject(Error('연결이 끊겼어요. 구매 결과를 다시 확인해 주세요. 같은 구매는 한 번만 차감돼요. '.repeat(12)));
+      window.finishNoticePurchase=()=>resolve({ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:30000});
+     });
+    });
+    await page.locator('#zoom-hint').click();
+    assert.match(await page.locator('#zoom-status').innerText(),/ZU 사용을 확인/);await noticeOutsidePictures(page,label+' while payment waits');
+    assert.deepEqual(await zoomGeometry(page),geometry,label+': waiting for payment keeps picture geometry');
+    await page.evaluate(()=>failNoticePurchase());await page.waitForFunction(()=>document.querySelector('#zoom-status').textContent.includes('연결이 끊겼어요'));
+    assert.equal(await page.locator('#zoom-hint').innerText(),'다시 확인');assert.equal(await page.locator('#zoom-hint').getAttribute('aria-label'),'구매 다시 확인');assert.equal(await page.locator('#hint').textContent(),'구매 다시 확인');
+    await noticeOutsidePictures(page,label+' after payment error');assert.deepEqual(await zoomGeometry(page),geometry,label+': long error text keeps picture geometry');
+    const scrolling=await page.locator('#zoom-status').evaluate(el=>({scrollHeight:el.scrollHeight,height:el.clientHeight}));
+    assert.ok(scrolling.scrollHeight>scrolling.height,label+': the long error stays within its reserved notice area');
+    await page.locator('#zoom-status').hover();await page.mouse.wheel(0,180);await page.clock.runFor(250);
+    await page.waitForFunction(()=>document.querySelector('#zoom-status').scrollTop>0);
+    assert.deepEqual(await zoomGeometry(page),geometry,label+': scrolling the error text does not move either picture');
+    await page.locator('#zoom-hint').click();assert.equal(await page.locator('#zoom-status').evaluate(el=>el.scrollTop),0,'a new notice starts at its first line');
+    assert.equal(await page.evaluate(()=>noticePurchases[0].requestId===noticePurchases[1].requestId),true,'retry retains the original purchase receipt');
+    await page.evaluate(()=>finishNoticePurchase());await page.waitForFunction(()=>{const s=JSON.parse(localStorage.getItem('jjuda-spot-six-v1'));return s.rounds[83].assisted&&!s.rounds[83].pending;});
+    assert.match(await page.locator('#zoom-status').innerText(),/1 ZU를 사용했어요\. 힌트:/);await noticeOutsidePictures(page,label+' after payment succeeds');
+    assert.deepEqual(await zoomGeometry(page),geometry,label+': receipt recovery keeps scale, panes and pan');
+    assert.deepEqual(notice.errors,[]);
+   }finally{await notice.context.close();}
   }
   // Existing artwork assets and hit targets retain their original data IDs.
   const photos=await fixture(),totalStages=await photos.page.evaluate(()=>JJUDA_PUZZLES.length);
@@ -278,6 +349,8 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    assert.deepEqual(await page.evaluate(()=>purchases),[kind]);
    assert.equal(await page.locator('#zoom-dialog').evaluate(d=>d.open),true,'paying keeps the enlarged view open');
    assert.deepEqual(await zoomState(),beforePayment,'payment preserves zoom scale, picture dimensions and pan');
+   await noticeOutsidePictures(page,kind+' purchase confirmation');
+   if(kind==='time')assert.match(await page.locator('#zoom-status').innerText(),/1 ZU를 사용하고 60초를 더 받았어요/,'successful time purchases retain their price and added duration');
    if(kind==='hint'){
     assert.equal(await page.locator('.hint-mark').count(),4,'paid hint automatically appears in both views');
     await page.waitForTimeout(3800);assert.equal(await page.locator('.hint-mark').count(),4,'hint ring persists beyond the old expiry');

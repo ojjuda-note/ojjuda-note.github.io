@@ -71,7 +71,7 @@ for (const puzzle of added) {
   assert.equal(puzzle.hitMode, 'target-bounds');
   assert.equal(puzzle.original, puzzle.difference, 'both pictures share the exact base image');
   assert.equal(puzzle.differenceMode, undefined, 'review-only overlay mode is not a native game field');
-  assert.equal(puzzle.layers.length, 1);
+  assert.ok(puzzle.layers.length >= 1);
   const regions = puzzle.layers.flatMap(layer => layer.regions).sort((a, b) => a.spotIndex - b.spotIndex);
   assert.deepEqual(regions.map(r => r.spotIndex), Array.from({length: 10}, (_, i) => i));
   for (let i = 0; i < puzzle.spots.length; i++) {
@@ -99,12 +99,24 @@ for (const puzzle of added) {
   assert.ok(entry);
   assert.equal(entry.number, puzzle.id - 82);
   assert.equal(entry.category, puzzle.category);
-  assert.deepEqual(Object.keys(entry.files).sort(), ['changes', 'original']);
+  assert.ok(entry.files.original && entry.files.changes);
   assert.equal(entry.files.original.path, puzzle.original);
   assert.equal(entry.files.changes.path, puzzle.layers[0].image);
+  assert.deepEqual(Object.values(entry.files).map(file => file.path).sort(),
+    [...new Set([puzzle.original, ...puzzle.layers.map(layer => layer.image)])].sort(),
+    'every image used by the renderer has verified bytes');
+  for (const layer of puzzle.layers.slice(1)) {
+    const b = layer.imageBounds;
+    assert.ok(b && [b.left, b.top, b.right, b.bottom].every(Number.isFinite));
+    assert.ok(b.left >= 0 && b.top >= 0 && b.right <= 100 && b.bottom <= 100 && b.left < b.right && b.top < b.bottom);
+    for (const region of layer.regions) {
+      assert.ok(region.x - region.rx >= b.left && region.x + region.rx <= b.right);
+      assert.ok(region.y - region.ry >= b.top && region.y + region.ry <= b.bottom);
+    }
+  }
   const metadata = {};
   for (const [role, file] of Object.entries(entry.files)) {
-    assert.match(file.path, /^assets\/fairytale-pets\/\d{2}-(?:original|changes)\.webp$/);
+    assert.match(file.path, /^assets\/fairytale-pets\/\d{2}-(?:original|changes|detail-\d{2}-v\d+)\.webp$/);
     assert.equal(path.posix.normalize(file.path), file.path, 'relative asset path cannot escape the game');
     assert.ok(!references.has(file.path), 'each puzzle owns its image pair');
     references.add(file.path);
@@ -117,7 +129,7 @@ for (const puzzle of added) {
     assert.equal(info.height, file.height);
     assert.ok(info.width >= 800 && info.height >= 800, 'zoom details retain source resolution');
     if (role === 'changes') assert.ok(info.alpha, 'the changes image retains transparency');
-    else originalHashes.add(sha256);
+    if (role === 'original') originalHashes.add(sha256);
     metadata[role] = info;
     assetBytes += bytes.length;
   }
@@ -125,8 +137,12 @@ for (const puzzle of added) {
   assert.equal(metadata.original.height, metadata.changes.height);
   assert.equal(puzzle.aspectRatio, metadata.original.width / metadata.original.height);
 }
-assert.equal(references.size, 140);
+assert.equal(references.size, 149);
 assert.equal(originalHashes.size, 70, 'seventy distinct original pictures');
+assert.equal(added.flatMap(p => p.spots).filter(spot => spot.kind === 'color').length, 2,
+  'color changes remain limited; missing objects, shapes and counts are preserved');
+assert.equal(manifest.visibilityReview.reviewedTargets, 700);
+assert.equal(manifest.visibilityReview.updatedImageTargets, 9);
 
 const order = core.difficultyOrder(puzzles);
 assert.deepEqual(order.map(i => puzzles[i].id), [
