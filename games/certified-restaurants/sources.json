@@ -1,0 +1,66 @@
+{
+  "checkedAt": "2026-11-03",
+  "postalGuide": {
+    "publisher": "부산지방우정청",
+    "title": "2026년 우체국 추천 맛집가이드",
+    "editionYear": 2026,
+    "sourceAsOf": "2026-06",
+    "sourceCheckedAt": "2026-11-03",
+    "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do",
+    "sourceAnnouncementUrl": "https://www.koreapost.go.kr/user/bbs/442c/98/2802/bbsDataView/100099515.do?bbsDataCategory=&column=&page=17&search=&searchEDate=&searchSDate=",
+    "sourceSha256": "7bc41e9519d98acd99f3d8df0267d3bf7d2ff24e48180192c9c8efdcda2da30f",
+    "sourceDocumentPages": 88,
+    "officialMapUrl": "https://kko.to/zH7DKi6NU",
+    "officialMapFolderId": "22749712",
+    "recordCount": 240,
+    "postOfficeCount": 37,
+    "regionalCounts": {
+      "부산": 92,
+      "울산": 18,
+      "경남": 130
+    },
+    "categoryCounts": {
+      "양식": 3,
+      "한식": 183,
+      "분식": 3,
+      "디저트": 34,
+      "일식": 5,
+      "중식": 10,
+      "기타": 2
+    },
+    "categoryBasis": "원문 대표메뉴를 기준으로 편집 분류한 값이며 발행기관의 공식 분류가 아님",
+    "verification": {
+      "allRecordsHave2026Badge": true,
+      "duplicateNameAndAddressCount": 0,
+      "officeNumberSequencesComplete": true,
+      "currentOperatingStatusCheckedCount": 0,
+      "verifiedCoordinateCount": 0,
+      "contactNumbersMaskedInSourceCount": 9,
+      "layoutCorrections": [
+        "PDF13쪽 LAB 이흥용과자점 두실점 제목의 겹친 두 텍스트 레이어를 원문 이미지와 대조해 단일 상호로 정리",
+        "페이지 옆 권역 탭의 글자는 주소·메뉴·영업시간에서 제외"
+      ],
+      "notes": [
+        "240개는 2026년6월 발행 자료의 추천 이력이며 현재 영업 여부는 개별 확인하지 않음",
+        "원문에는 위도·경도 없음. 카카오 공개폴더 주소는 확인했지만 장소좌표는 조회하지 못하여 null 유지",
+        "집배원 개인 이름이나 연락처는 수집하지 않음. phoneText는 가게 카드에 공개된 업소 연락처만 포함"
+      ]
+    },
+    "notes": [
+      "Only restaurant identification facts and basic menu names are reproduced; no guide photography or editorial descriptions.",
+      "Postal records are a June 2026 publication snapshot, not verification of current operating status.",
+      "Coordinates not stated in a verified source remain null. The publisher supplies a separate Kakao Map folder.",
+      "Cuisine categories are editorial classifications based on representative dishes."
+    ]
+  },
+  "michelin": {
+    "selectionUrl": "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants",
+    "coverage": "12 individually checked restaurant pages; not the complete selection",
+    "editionYearPolicy": "Only explicitly dated annual announcements are assigned an edition year. Current listings without a stated year have null year."
+  },
+  "blueRibbon": {
+    "coverage": "6 source-verified entries including historical selections; not the complete selection",
+    "seoulEditionSource": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+    "editionYear": 2027
+  }
+}
