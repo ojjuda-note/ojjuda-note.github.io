@@ -8,10 +8,10 @@
   const STORAGE_KEY = 'ojjuda-certified-restaurants-saved-v1';
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
   const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
-  const LIST_PAGE_SIZE = 50, MAP_POINT_LIMIT = 300;
+  const LIST_PAGE_SIZE = 50, MAP_PAGE_SIZE = 50;
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
+  const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
   let map = null, backgroundLayer = null, backgroundController = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
@@ -166,6 +166,7 @@
   }
   function render(fit = true) {
     if (state.loading || state.loadError) return;
+    if (fit) state.mapPage = 0;
     state.visible = filteredRestaurants();
     if (state.selected && !state.visible.some(item => item.id === state.selected)) state.selected = '';
     const locatedCount = state.visible.filter(hasCoordinates).length;
@@ -207,12 +208,32 @@
     void loadMapBackground();
     return true;
   }
+  function currentMapPage() {
+    const allLocated = state.visible.filter(hasCoordinates);
+    state.mapPage = Math.max(0, Math.min(state.mapPage, Math.ceil(allLocated.length / MAP_PAGE_SIZE) - 1));
+    const start = state.mapPage * MAP_PAGE_SIZE, end = Math.min(start + MAP_PAGE_SIZE, allLocated.length);
+    return { allLocated, start, end, located: allLocated.slice(start, end) };
+  }
+  function changeMapPage(direction) {
+    if (state.loading || state.loadError || !mapIsVisible()) return;
+    const { allLocated } = currentMapPage();
+    const next = Math.max(0, Math.min(state.mapPage + direction, Math.ceil(allLocated.length / MAP_PAGE_SIZE) - 1));
+    if (next === state.mapPage) return;
+    state.mapPage = next;
+    state.selected = '';
+    document.querySelectorAll('[data-restaurant-id].is-selected').forEach(card => card.classList.remove('is-selected'));
+    syncMap(true);
+  }
   function syncMap(fit) {
     if (!mapIsVisible()) return;
-    if (!ensureMap()) { updateResultCount(); return; }
-    const allLocated = state.visible.filter(hasCoordinates), located = allLocated.slice(0, MAP_POINT_LIMIT);
-    const selected = allLocated.find(item => item.id === state.selected);
-    if (selected && !located.some(item => item.id === selected.id)) located.splice(-1, 1, selected);
+    if (!ensureMap()) { $('map-pagination').hidden = true; $('map-panel').classList.remove('has-map-pages'); updateResultCount(); return; }
+    const { allLocated, start, end, located } = currentMapPage();
+    $('map-pagination').hidden = allLocated.length <= MAP_PAGE_SIZE;
+    $('map-panel').classList.toggle('has-map-pages', allLocated.length > MAP_PAGE_SIZE);
+    $('map-prev').disabled = start === 0;
+    $('map-next').disabled = end >= allLocated.length;
+    $('map-next').textContent = end < allLocated.length ? '더 보기 · ' + Math.min(MAP_PAGE_SIZE, allLocated.length - end) + '곳' : '마지막';
+    $('map-page-status').textContent = located.length ? (start + 1) + '–' + end + ' / ' + allLocated.length + '곳' : '0곳';
     const ids = new Set(located.map(item => item.id));
     markers.forEach((marker, id) => { if (!ids.has(id)) { marker.remove(); markers.delete(id); } });
     located.forEach((item, index) => {
@@ -222,6 +243,7 @@
         const tooltip = el('span', '', item.name); marker.bindTooltip(tooltip, { direction: 'top' });
         marker.on('click', () => selectRestaurant(item.id, true)); marker.addTo(map); markers.set(item.id, marker);
       } else marker.setIcon(pinIcon(index + 1, state.selected === item.id));
+      marker.setZIndexOffset(state.selected === item.id ? 1000 : 0);
     });
     if (state.position) {
       if (!userMarker) userMarker = window.L.marker([state.position.lat, state.position.lng], { icon: window.L.divIcon({ className: 'user-pin', html: '<span></span>', iconSize: [18, 18], iconAnchor: [9, 9] }), title: '내 위치', alt: '내 위치' }).bindTooltip('내 위치').addTo(map);
@@ -229,7 +251,7 @@
     }
     const missing = state.visible.length - allLocated.length;
     const summary = ['지역 개요도'];
-    if (located.length) summary.push('위치 확인 ' + allLocated.length + '곳' + (allLocated.length > located.length ? ' 중 ' + located.length + '곳' : '') + ' 표시');
+    if (located.length) summary.push((state.position ? '가까운 순 · ' : '') + '위치 확인 ' + allLocated.length + '곳 중 ' + (start + 1) + '–' + end + '번째 표시');
     if (missing) summary.push('위치 미확인 ' + missing + '곳은 목록에서 확인');
     $('map-caption-text').textContent = state.visible.length ? summary.join(' · ') : '조건에 맞는 위치가 없어요.';
     updateResultCount();
@@ -237,9 +259,7 @@
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
       if (!fit) return;
-      if (state.position && located.length) {
-        map.fitBounds([[state.position.lat, state.position.lng], [located[0].lat, located[0].lng]], { padding: [65, 65], maxZoom: 10, animate: false });
-      } else if (located.length === 1) map.setView([located[0].lat, located[0].lng], 10, { animate: false });
+      if (located.length === 1) map.setView([located[0].lat, located[0].lng], 10, { animate: false });
       else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 60], paddingBottomRight: [35, 35], maxZoom: 10, animate: false });
     });
   }
@@ -247,8 +267,10 @@
     const item = state.restaurants.find(r => r.id === id); if (!item) return;
     state.selected = id;
     document.querySelectorAll('[data-restaurant-id]').forEach(card => card.classList.toggle('is-selected', card.dataset.restaurantId === id));
-    if (mapIsVisible() && hasCoordinates(item) && !markers.has(id)) syncMap(false);
-    const located = state.visible.filter(hasCoordinates);
+    const locatedIndex = state.visible.filter(hasCoordinates).findIndex(restaurant => restaurant.id === id);
+    if (locatedIndex >= 0) state.mapPage = Math.floor(locatedIndex / MAP_PAGE_SIZE);
+    if (mapIsVisible() && hasCoordinates(item)) syncMap(false);
+    const { located } = currentMapPage();
     located.forEach((restaurant, index) => { const marker = markers.get(restaurant.id); if (marker) { marker.setIcon(pinIcon(index + 1, restaurant.id === id)); marker.setZIndexOffset(restaurant.id === id ? 1000 : 0); } });
     if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 10), { animate: !reducedMotion.matches }); }
     if (openDetail) showDetail(item);
@@ -406,6 +428,8 @@
   $('filter-toggle').addEventListener('click', () => { const open = $('filter-options').hidden; $('filter-options').hidden = !open; $('filter-toggle').setAttribute('aria-expanded', String(open)); });
   $('choose-region').addEventListener('click', () => $('region').focus({ preventScroll: false }));
   $('load-more').addEventListener('click', () => renderCards(true));
+  $('map-prev').addEventListener('click', () => changeMapPage(-1));
+  $('map-next').addEventListener('click', () => changeMapPage(1));
   $('reset').addEventListener('click', resetFilters); $('nearby').addEventListener('click', requestLocation);
   $('show-map').addEventListener('click', () => setView('map', true)); $('show-list').addEventListener('click', () => setView('list', true));
   $('close-detail').addEventListener('click', () => $('detail').close());
