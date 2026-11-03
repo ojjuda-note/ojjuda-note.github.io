@@ -1,6 +1,6 @@
 // Procedural artwork for 바람의 궁수. All coordinates are CSS pixels.
 // Distant art and tree sprites are cached; world scenery follows the camera.
-import {drawAnimalModel} from './animal-zones.mjs?v=20261104-archery-burst-sum1';
+import {drawAnimalModel} from './animal-zones.mjs?v=20261104-archery-target-speed2x1';
 const layers = new Map();
 const TAU = Math.PI * 2;
 

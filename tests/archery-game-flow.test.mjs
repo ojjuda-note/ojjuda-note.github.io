@@ -856,7 +856,7 @@ for (const fixture of [
   assert.equal(state.used, 1);assert.equal(state.score, 0);assert.equal(state.stuck.length, 0);
   assert.equal(app.api.progress.shots, 0);assert.equal(app.api.progress.coins, 100);
   assert.match(app.getElement('flightBadge').textContent, new RegExp(fixture.effect));
-  assert.ok(app.api.camera.z > 0, 'the slow-motion camera keeps following the actual arrow');
+  assert.ok(app.api.camera.z > 0, 'the camera keeps following the actual arrow');
   if (fixture.id === 12) {
     assert.ok(shot.trail.some(point => Math.abs(point.y) < 1e-9 && Math.abs(point.z - shot.bouncePoint.z) < 1e-9), 'the visible trail includes the actual ground contact');
     assert.ok(shot.velocity.y > 0);
@@ -2624,7 +2624,7 @@ test('all event guns hit promptly after authorization without slow motion or dup
     const shownFlightTime = (app.now - firedAt) / 1000;
     assert.ok(Math.abs(shot.elapsed - planned.flightTime) < 1e-8, 'the real bullet reaches the independently calculated intercept');
     assert.ok(shownFlightTime <= planned.flightTime + 1 / 60 + 1e-9, `${gun.name} finishes within one frame of its physical arrival`);
-    assert.ok(Math.abs(shownFlightTime - shot.elapsed) < 1 / 60 + 1e-9, 'event bullets use real time, without the archery slow-motion multiplier');
+    assert.ok(Math.abs(shownFlightTime - shot.elapsed) < 1 / 60 + 1e-9, 'event bullets use real time throughout their flight');
     app.ammo.reply(request, app.ammo.snapshot());pad.emit('pointerup');await app.flush();
     assert.equal(state.used, 1);assert.equal(app.ammo.account.remaining, 19);
     assert.equal(app.ammo.requests.filter(item => item.action === 'spend').length, 1);
@@ -3019,8 +3019,8 @@ test('frame fallback uses elapsed time when timer delivery is delayed', async ()
   assert.equal(app.api.state.shot.elapsed, 0, 'a new shot cannot simulate time before it was fired');
   const sceneAtRelease = app.api.state.time;
   app.advanceTo(10100);
-  assert.ok(Math.abs(app.api.state.shot.elapsed - 0.032) < 1e-12, 'the first auto-shot frame is already at 0.32 speed');
-  assert.ok(Math.abs(app.api.state.time - sceneAtRelease - 0.032) < 1e-12, 'moving scenery shares the first slowed frame');
+  assert.ok(Math.abs(app.api.state.shot.elapsed - 0.1) < 1e-12, 'the first auto-shot frame advances at real-time speed');
+  assert.ok(Math.abs(app.api.state.time - sceneAtRelease - 0.1) < 1e-12, 'moving scenery shares the first real-time frame');
   pad.emit('pointerup');await app.flush();
   assert.equal(app.api.state.used, 1);
 });
@@ -3159,7 +3159,7 @@ test('cancel, blur and a hidden document clear the ten-second deadline safely', 
   }
 });
 
-test('every stage shares 0.32-speed arrow, target and scenery time from the first flight frame', async () => {
+test('every stage shares real-time arrow, target and scenery time from the first flight frame', async () => {
   const first = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false });
   for (const stage of first.engine.STAGES) {
     // Each fixture starts independently; real navigation now waits for a shot to land.
@@ -3170,15 +3170,71 @@ test('every stage shares 0.32-speed arrow, target and scenery time from the firs
     const before = app.api.state.time, realStart = app.now;
     app.advanceTo(realStart + 100);
     assert.equal(app.api.state.mode, 'flight', `stage ${stage.id} must still be in flight`);
-    assert.ok(Math.abs(app.api.state.shot.elapsed - .032) < 1e-10, `stage ${stage.id} arrow speed`);
-    assert.ok(Math.abs(app.api.state.time - before - .032) < 1e-10, `stage ${stage.id} scene speed`);
-    assert.ok(Math.abs(app.sceneryFrame.time - before - .032) < 1e-10, `stage ${stage.id} leaves receive the same clock`);
+    assert.ok(Math.abs(app.api.state.shot.elapsed - .1) < 1e-10, `stage ${stage.id} arrow speed`);
+    assert.ok(Math.abs(app.api.state.time - before - .1) < 1e-10, `stage ${stage.id} scene speed`);
+    assert.ok(Math.abs(app.sceneryFrame.time - before - .1) < 1e-10, `stage ${stage.id} leaves receive the same clock`);
     assert.equal(app.getElement('flightBadge').classList.contains('hidden'), false, 'early stages also show the full-screen flight state');
     const movingTarget = app.api.sceneItems(app.engine.targetAt(stage, app.api.state.time)).find(item => item.kind === 'target').target;
-    const expected = app.engine.targetAt(stage, before + .032);
+    const expected = app.engine.targetAt(stage, before + .1);
     assert.ok(Math.abs(movingTarget.x - expected.x) < 1e-10);
     assert.ok(Math.abs(movingTarget.y - expected.y) < 1e-10);
   }
+});
+
+for (const bow of [0, 19]) test(`live ${bow === 0 ? 'single-arrow' : 'three-arrow'} flight keeps the moving target and painted scene on real time`, async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100,
+    ownedBows: [...new Set([0, bow])], bow, lastStage: lessonStageId('tracking-intro', 10), sound: false });
+  const { state } = app.api, { pad, coords } = preciseMainDraw(app);
+  const sceneAtRelease = state.time, releasedAt = app.now;
+  const targetAtRelease = app.engine.targetAt(state.stage, sceneAtRelease);
+  pad.emit('pointerup', coords);await app.flush();
+  const shots = Array.from(state.volley?.shots || [state.shot]);
+  assert.equal(shots.length, bow === 0 ? 1 : 3);
+  assert.doesNotMatch(app.getElement('flightBadge').textContent, /슬로모션/);
+  let frames = 0, moved = false;
+  while (state.mode === 'flight' && frames < 90) {
+    const frameMs = [17, 31, 13, 23][frames % 4], before = state.time, firstArc = app.canvasArcs.length;
+    app.advanceTo(app.now + frameMs);frames++;
+    const delta = state.time - before;
+    assert.ok(delta > 0 && delta <= frameMs / 1000 + 1e-10, 'the final collision frame consumes only the time before impact');
+    if (state.mode !== 'flight') break;
+    assert.ok(Math.abs(delta - frameMs / 1000) < 1e-10, 'a live frame never slows or freezes the scene clock');
+    assert.ok(Math.abs(state.time - sceneAtRelease - (app.now - releasedAt) / 1000) < 1e-10);
+    assert.equal(app.sceneryFrame.time, state.time);
+    for (const shot of shots.filter(candidate => candidate.active)) {
+      const elapsed = Math.max(0, state.time - sceneAtRelease - (shot.launchDelay || 0));
+      assert.ok(Math.abs(shot.elapsed - elapsed) < 1e-10, 'each delayed arrow advances on the same clock as its target');
+    }
+    const target = app.engine.targetAt(state.stage, state.time), painted = app.api.project(target);
+    const arcs = app.canvasArcs.slice(firstArc), radius = target.radius * painted.scale * 1.055;
+    assert.ok(arcs.some(arc => Math.abs(arc.x - painted.x) < 1e-9 && Math.abs(arc.y - painted.y) < 1e-9 && Math.abs(arc.radius - radius) < 1e-9),
+      'the actual canvas target rim is drawn at its current world position');
+    const distance = Math.hypot(target.x - targetAtRelease.x, target.y - targetAtRelease.y);
+    if (distance > .01) {
+      moved = true;
+      const old = app.api.project(targetAtRelease);
+      assert.ok(Math.hypot(painted.x - old.x, painted.y - old.y) > .01, 'the drawing does not retain the release-position snapshot');
+    }
+  }
+  assert.equal(state.mode, 'settling');assert.ok(moved);assert.ok(frames > 2);
+  const finalElapsed = Math.max(...shots.map(shot => (shot.launchDelay || 0) + shot.elapsed));
+  assert.ok(Math.abs(state.time - sceneAtRelease - finalElapsed) < 1e-9, 'the last impact, including burst delays, fixes the exact completed scene time');
+  assert.equal(shots[0].result.type, 'hit');assert.equal(shots[0].result.score, 10);
+  for (const shot of shots.filter(candidate => candidate.result.type === 'hit')) {
+    const impactTime = sceneAtRelease + (shot.launchDelay || 0) + shot.result.flightTime;
+    const current = app.engine.targetAt(state.stage, impactTime), actual = shot.result.targetCenter;
+    for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(actual[axis] - current[axis]) < 1e-9, 'collision uses the current target at exact arrival');
+  }
+  assert.ok(Math.hypot(shots[0].result.targetCenter.x - targetAtRelease.x, shots[0].result.targetCenter.y - targetAtRelease.y) > .01);
+  const worldTime = state.time, accounting = shotAccounting(app), replay = state.cinematic;
+  const physics = JSON.stringify(shots.map(shot => shot.result));
+  assert.ok(replay, 'a resolved ten-point hit still starts its separate replay');
+  app.frames(12);
+  assert.equal(app.api.cinematicFrame().phase, 'flight');assert.equal(state.time, worldTime);
+  app.until(() => app.api.cinematicFrame()?.phase === 'impact', 30);
+  assert.equal(app.api.renderTime(), replay.impactTime);
+  assert.equal(JSON.stringify(shots.map(shot => shot.result)), physics);
+  assert.deepEqual(shotAccounting(app), accounting);
 });
 
 function startHighMiss(app) {
@@ -3549,7 +3605,7 @@ for (const outcome of ['hit', 'ground']) {
     const shot = app.api.state.shot;
     assert.equal(shot.result.type, outcome);
     if (outcome === 'hit') assert.equal(shot.result.score, 8, 'ordinary impact-camera behavior is separate from the bullseye replay');
-    assert.ok(Math.abs((app.now - releaseTime) / 1000 - shot.elapsed / .32) < .02, 'slow motion changes presentation time, not the ballistic flight duration');
+    assert.ok(Math.abs((app.now - releaseTime) / 1000 - shot.elapsed) < .02, 'live presentation and ballistic flight use the same real-time duration');
     if (outcome === 'ground') {
       assert.ok(shot.position.z > app.api.state.stage.distance + 20, 'a long miss keeps flying well beyond the target');
       assert.ok(app.api.camera.z > app.api.state.stage.distance, 'the view follows the miss beyond the target until it lands');

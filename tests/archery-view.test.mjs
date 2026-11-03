@@ -324,7 +324,7 @@ test('launch begins in the saved aiming view and interpolation restores it exact
   assert.deepEqual(lerpCamera(chase, aiming, -1), chase);
   const halfway = lerpCamera(chase, aiming, .5);
   for (const key of Object.keys(aiming)) near(halfway[key], (chase[key] + aiming[key]) / 2);
-  assert.equal(FLIGHT_TIME_SCALE, .32);
+  assert.equal(FLIGHT_TIME_SCALE, 1);
   assert.equal(IMPACT_HOLD, .65);
   assert.equal(RETURN_DURATION, .7);
 });

@@ -1,6 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-burst-sum1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-burst-sum1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-target-speed2x1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-target-speed2x1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -209,6 +209,8 @@ export const LONG_RANGE_LESSONS = Object.freeze([
 ]);
 const targetRadii = Object.freeze([1.45, 1.65, 1.85, 2.1]);
 const MAIN_TARGET_SPEED_SCALE = 1.15;
+// Double circular target movement relative to the previous release.
+const CIRCULAR_TARGET_SPEED_SCALE = MAIN_TARGET_SPEED_SCALE * 2;
 const stageShapes = Object.freeze({
   rabbit: [1.10, .72, 16], wildcat: [1.12, .66, 12.5], deer: [1.23, .73, 7.6],
   pigeon: [1.18, .86, 9.2], eagle: [1.55, .95, 5.65], cheetah: [1.38, .62, 5.8],
@@ -536,11 +538,12 @@ function applyEquipmentLesson(template) {
   const band = STAGE_GEAR_BANDS.find(entry => template.id >= entry.first && template.id <= entry.last);
   const balance = band.balance, curveFirst = balance.curveFirst ?? band.first, curveLast = balance.curveLast ?? band.last;
   const fraction = (template.catalogV1Id - curveFirst) / Math.max(1, curveLast - curveFirst);
+  const targetSpeedScale = (template.kind || 'target') === 'target' ? CIRCULAR_TARGET_SPEED_SCALE : MAIN_TARGET_SPEED_SCALE;
   const adjusted = {...template,gearTier:band.gearTier,gearLabel:band.gearLabel,referenceLoadouts:band.referenceLoadouts,
-    targetSpeedScale:MAIN_TARGET_SPEED_SCALE,
+    targetSpeedScale,
     radius:template.radius * balance.radiusScale,
-    motion:{...template.motion,speed:template.motion.speed * balance.speedScale * MAIN_TARGET_SPEED_SCALE},
-    ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale / MAIN_TARGET_SPEED_SCALE} : {})};
+    motion:{...template.motion,speed:template.motion.speed * balance.speedScale * targetSpeedScale},
+    ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale / targetSpeedScale} : {})};
   if (band.gearTier !== 'starter') {
     adjusted.wind = signedWind(template.catalogV1Id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
     const baseGoal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
@@ -743,7 +746,7 @@ function motionClock(stage, time, irregular) {
   const elapsed = time * scale;
   // Positive clock rate gives continuous, uneven pace without introducing jumps.
   // Compress its irregular beats with the main target speed as well, so the
-  // complete path is exactly the original path played 15% faster.
+  // complete path follows the same target-speed multiplier without shifting it.
   return {
     time: time + a / (w * scale) * (Math.sin(w * elapsed + phase) - Math.sin(phase)) +
       b / (secondW * scale) * (Math.sin(secondW * elapsed + secondPhase) - Math.sin(secondPhase)),

@@ -155,7 +155,7 @@ test('original fixed and tracking lessons retain geometry, goals and wind while 
     assert.equal(stage.goal, (index < 4 ? 10 : 12) + lesson * 2);
     assert.equal(stage.kind, 'target');assert.equal(stage.shots, 5);assert.deepEqual(stage.obstacles, []);
     close(stage.wind, [0, 0, 0, 0, .03, -.038, -.046, .054][index]);
-    close(stage.motion.speed, index < 4 ? 0 : (.24 + lesson * .025) * 1.15);
+    close(stage.motion.speed, index < 4 ? 0 : (.24 + lesson * .025) * 2.30);
     close(stage.motion.amplitudeX, index < 4 ? 0 : radii[lesson] * (.6 + lesson * .1));
     assert.equal(stage.motion.amplitudeY, 0);assert.equal(stage.motion.irregular, index >= 4);
   }
@@ -202,26 +202,32 @@ test('display order does not reroll a lesson’s walls, irregular motion or peop
   }
 });
 
-test('main moving targets replay their complete paths exactly 15 percent faster without accelerating people or events', () => {
-  let moving = 0, stationary = 0;
+test('moving circular targets replay their complete paths exactly twice as fast without accelerating animals, people or events', () => {
+  let moving = 0, stationary = 0, unchangedAnimals = 0;
   for (const template of STAGES) {
-    assert.equal(template.targetSpeedScale, 1.15);
-    const earlier = {...template, targetSpeedScale: 1,
-      motion: {...template.motion, speed: template.motion.speed / 1.15},
-      ...(Number.isFinite(template.passDuration) ? {passDuration: template.passDuration * 1.15} : {})};
+    const factor = template.kind === 'target' ? 2 : 1;
+    assert.equal(template.targetSpeedScale, 1.15 * factor);
+    const earlier = {...template, targetSpeedScale: 1.15,
+      motion: {...template.motion, speed: template.motion.speed / factor},
+      ...(Number.isFinite(template.passDuration) ? {passDuration: template.passDuration * factor} : {})};
     const isMoving = template.motion.speed > 0 || animalKinds.includes(template.kind);
-    if (isMoving) moving++; else stationary++;
+    if (animalKinds.includes(template.kind)) unchangedAnimals++;
+    else if (isMoving) moving++; else stationary++;
     for (const seed of [0, 19]) {
       const current = prepareStage(template, seed), original = prepareStage(earlier, seed);
       assert.deepEqual(current.obstacles, original.obstacles);
       assert.equal(current.targetX, original.targetX);
+      if (factor === 1) {
+        assert.deepEqual(current.motion, original.motion);
+        assert.equal(current.passDuration, original.passDuration);
+      }
       for (const time of [0, .25, 1.3, 4.7, 11, 23]) {
-        const actual = targetAt(current, time), expected = targetAt(original, time * 1.15);
+        const actual = targetAt(current, time), expected = targetAt(original, time * factor);
         for (const key of ['x', 'y', 'z', 'radius', 'rx', 'ry']) close(actual[key], expected[key], 1e-8);
-        close(actual.velocityX, expected.velocityX * 1.15, 1e-8);
+        close(actual.velocityX, expected.velocityX * factor, 1e-8);
         if (animalKinds.includes(template.kind)) {
           assert.equal(actual.passId, expected.passId); assert.equal(actual.direction, expected.direction);
-          close(actual.passDuration * 1.15, expected.passDuration);
+          assert.deepEqual(actual, targetAt(original, time), 'animals retain their complete previous-release motion and pass duration');
         }
         if (!isMoving) {
           const unchanged = targetAt(original, time);
@@ -231,12 +237,12 @@ test('main moving targets replay their complete paths exactly 15 percent faster 
       }
     }
   }
-  assert.ok(moving > 0 && stationary > 0);
+  assert.ok(moving > 0 && stationary > 0 && unchangedAnimals > 0);
   for (const level of [1, 8, 10]) {
     const event = prepareStage(createClayEvent(level), 19);
     assert.equal(event.targetSpeedScale, undefined, 'the main curriculum multiplier is not assigned to the separate gun event');
     for (const time of [0, .7, 2.4, 5.3]) {
-      assert.deepEqual(eventTargetsAt(event, time), eventTargetsAt({...event, targetSpeedScale: 1.15}, time),
+      assert.deepEqual(eventTargetsAt(event, time), eventTargetsAt({...event, targetSpeedScale: 2.30}, time),
         'plates and UFOs use their own unchanged trajectories');
     }
   }
@@ -271,8 +277,8 @@ test('beginners get large calm targets and learn slow tracking before obstacles 
   assert.ok(STAGES.every(stage => Math.abs(stage.wind) <= 1.3));
   for (const stage of STAGES.filter(stage => stage.lessonKey === 'tracking-intro')) {
     const prepared = prepareStage(stage, 31);
-    for (let time = 0; time < 40; time += .1) assert.ok(Math.abs(targetAt(prepared, time).velocityX) < 1.15,
-      'early tracking retains the previous beginner speed limit scaled by 15 percent');
+    for (let time = 0; time < 40; time += .1) assert.ok(Math.abs(targetAt(prepared, time).velocityX) < 2.30,
+      'early tracking stays within twice the previous release’s beginner speed limit');
   }
   const first = STAGES[0], target = targetAt(first, 0);
   for (const velocityBias of [-1, 0, 1]) {
