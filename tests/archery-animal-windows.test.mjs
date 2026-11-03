@@ -97,7 +97,7 @@ test('stage 72 remains reachable with the starter bow and arrow in its difficult
     'the introductory equipment can lead the actual visible cheetah without shooting at a future offscreen pass');
 });
 
-test('local approach easing preserves adjusted crossing times, vertical paths and average species speed',()=>{
+test('local approach easing preserves adjusted crossing times, non-eagle vertical paths and average species speed',()=>{
   const durations={68:4.45/1.03/1.15*2,72:4.6/1.03/1.15,196:4.45/1.03/1.15*1.2*2};
   for(const id of[68,72,196])for(const seed of seeds){
     const stage=prepareStage(STAGES[id-1],seed),previous={...stage,approachEase:.15};
@@ -107,7 +107,10 @@ test('local approach easing preserves adjusted crossing times, vertical paths an
     let oldMean=0,newMean=0,last=start;
     for(let sample=0;sample<240;sample++){
       const time=duration*(sample+.5)/240,now=targetAt(stage,time),before=targetAt(previous,time),h=1e-5;
-      close(now.y,before.y);assert.equal(now.passId,before.passId);assert.equal(now.direction,before.direction);
+      // Eagle swoops now follow horizontal position so their ground contact
+      // stays inside the view when local approach speed changes.
+      if(stage.kind!=='eagle')close(now.y,before.y);
+      assert.equal(now.passId,before.passId);assert.equal(now.direction,before.direction);
       assert.ok((now.x-last.x)*now.direction>0,'the animal never reverses or jumps within a pass');last=now;
       close(now.velocityX,(targetAt(stage,time+h).x-targetAt(stage,time-h).x)/(2*h),1e-6);
       oldMean+=Math.abs(before.velocityX)/before.rx;newMean+=Math.abs(now.velocityX)/now.rx;

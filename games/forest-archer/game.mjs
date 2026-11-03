@@ -1,10 +1,10 @@
-import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-eagle-layout1';
-import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-eagle-layout1';
-import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-layout1';
-import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-layout1';
-import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-eagle-layout1';
+import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-eagle-dive1';
+import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-eagle-dive1';
+import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
+import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
+import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-eagle-dive1';
 import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261104-archery-eagle-layout1';
-import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-eagle-layout1';
+import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-eagle-dive1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;

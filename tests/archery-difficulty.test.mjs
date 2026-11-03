@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, LONG_RANGE_DISTANCES, LONG_RANGE_LESSONS, prepareStage, targetAt, passersAt, createClayEvent, eventTargetsAt, launchArrow, stepArrow, getArrowMass, getArrowConsistency, getArrowDragRate, getWindResponse } from '../games/forest-archer/engine.mjs';
+import { getAnimalGroundHeight } from '../games/forest-archer/animal-zones.mjs';
 
 const distances = [10, 20, 30, 50];
 const originalStages = STAGES.slice(0,120), longStages = STAGES.slice(120);
@@ -367,7 +368,8 @@ test('each animal keeps its own body shape and characteristic motion without rev
       const current = targetAt(stage, start.passDuration * sample / 160);
       assert.ok((current.x - previous.x) * start.direction > 0);
       assert.equal(current.passId, start.passId);assert.equal(current.direction, start.direction);
-      assert.ok(current.y - current.ry > 0, 'the hit envelope stays above the ground');
+      if(kind==='eagle')assert.ok(current.y>=getAnimalGroundHeight(current)-1e-9,'the swooping eagle keeps its painted body above the ground');
+      else assert.ok(current.y - current.ry > 0, 'the hit envelope stays above the ground');
       heights.push(current.y); velocities.push(Math.abs(current.velocityX));previous = current;
     }
     assert.ok(Math.max(...velocities) > Math.min(...velocities) * 1.3);
