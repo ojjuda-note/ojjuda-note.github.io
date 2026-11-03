@@ -53,7 +53,7 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
         if (previous && previous.request_id === parameters.p_request_id) return response({ item: view(previous, owner), removed_paths: [] });
         if (previous && parameters.p_expected_updated_at !== previous.updated_at) return failure('recommendation_conflict');
         const photos = parameters.p_photos || [];
-        if (photos.length < 3 || photos.length > 9) return failure('recommendation_photos_required');
+        if (photos.length < 1 || photos.length > 12) return failure('recommendation_photos_required');
         if (photos.some(photo => !photo.startsWith(owner + '/' + parameters.p_id + '/') || !state.files.has(photo))) return failure('recommendation_photo_invalid');
         const stamp = new Date(Date.UTC(2026, 10, 3, 8, 0, ++state.clock)).toISOString();
         const row = {

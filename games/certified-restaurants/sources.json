@@ -110,7 +110,7 @@
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
     "recordCount": 453,
-    "coordinatesCount": 212,
+    "coordinatesCount": 220,
     "buildCounts": {
       "existingRecords": 6,
       "highestMatchedMichelin": 32,
@@ -173,10 +173,13 @@
       }
     ],
     "officialFullBrowse": {
-      "url": "https://app.catchtable.co.kr/ct/map/search-map?exhibitionFilterKeys=261008_blueribbon_all",
+      "url": "https://litt.ly/blueribbonsurvey",
       "linkedFrom": "https://litt.ly/blueribbonsurvey",
-      "purpose": "공식 제휴 전국 전체 탐색",
-      "localImportComplete": false
+      "purpose": "블루리본 공식 안내의 제휴지도 링크와 검색 필터로 추가 탐색",
+      "localImportComplete": false,
+      "previousMapUrl": "https://app.catchtable.co.kr/ct/map/search-map?exhibitionFilterKeys=261008_blueribbon_all",
+      "checkedAt": "2026-11-03",
+      "note": "이전 261008_blueribbon_all 링크에서 블루리본 필터가 자동 선택되지 않아 공식 안내 주소로 연결. 지역 선택 오류로 대전 9곳의 개별 명단은 확정하지 못함."
     },
     "coverageLimit": "최신 서울2027·전국2026 도서 수록 합계 5373곳 중 공개적으로 이름·주소와 선정/수록 근거를 확인한 일부만 수집. 사이트/제휴지도 전체 데이터는 확보하지 못함. bluer.co.kr과 Catchtable 공개 페이지 JS에서 관찰한 검색 요청이403을 반환하여 해당 경로를 중단. 인증·유료·봇 제한 우회 없음.",
     "yearSemantics": {
@@ -359,8 +362,8 @@
       "blue-ribbon": 453,
       "post-office": 240
     },
-    "coordinatesAvailable": 395,
-    "coordinatesMissing": 486,
+    "coordinatesAvailable": 403,
+    "coordinatesMissing": 478,
     "regionalCounts": {
       "강원": 6,
       "경기": 10,
@@ -4028,5 +4031,241 @@
     ],
     "preservedData": "기존 식당의 ID·상호·주소·좌표와 미쉐린237곳·우체국240곳을 유지. 동일 식당의 추가 출처만 병합.",
     "yearPolicy": "공동선정·도서판본·선정 이력과 확인일을 구분하며 출처에 없는 리본 수나 개별 선정 연도를 추정하지 않음."
+  },
+  "latestMapCoverageAudit": {
+    "id": "2026-11-03-daejeon-map-coverage",
+    "checkedAt": "2026-11-03",
+    "baseCommit": "81c6026b905a586a70344b3c9e44c487c0a2bfe7",
+    "scope": "대전 등록 12곳과 지도 표시 4곳의 차이를 조사하고 위치 없는 기존 8곳의 좌표 보강",
+    "previousCoverage": {
+      "uniqueRestaurants": 881,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 453,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 395,
+      "coordinatesMissing": 486,
+      "regionalCounts": {
+        "강원": 6,
+        "경기": 10,
+        "경남": 133,
+        "경북": 2,
+        "광주": 22,
+        "대구": 3,
+        "대전": 12,
+        "부산": 287,
+        "서울": 222,
+        "세종": 100,
+        "울산": 18,
+        "인천": 5,
+        "전남": 1,
+        "전북": 4,
+        "제주": 52,
+        "충남": 1,
+        "충북": 3
+      },
+      "categoryCounts": {
+        "한식": 458,
+        "중식": 64,
+        "일식": 78,
+        "기타": 30,
+        "양식": 148,
+        "분식": 5,
+        "디저트": 98
+      }
+    },
+    "currentCoverage": {
+      "uniqueRestaurants": 881,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 453,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 403,
+      "coordinatesMissing": 478,
+      "regionalCounts": {
+        "강원": 6,
+        "경기": 10,
+        "경남": 133,
+        "경북": 2,
+        "광주": 22,
+        "대구": 3,
+        "대전": 12,
+        "부산": 287,
+        "서울": 222,
+        "세종": 100,
+        "울산": 18,
+        "인천": 5,
+        "전남": 1,
+        "전북": 4,
+        "제주": 52,
+        "충남": 1,
+        "충북": 3
+      },
+      "categoryCounts": {
+        "한식": 458,
+        "중식": 64,
+        "일식": 78,
+        "기타": 30,
+        "양식": 148,
+        "분식": 5,
+        "디저트": 98
+      }
+    },
+    "newRestaurantCount": 0,
+    "newRestaurantIds": [],
+    "previousDaejeon": {
+      "registered": 12,
+      "coordinatesAvailable": 4,
+      "coordinatesMissing": 8
+    },
+    "currentDaejeon": {
+      "registered": 12,
+      "coordinatesAvailable": 12,
+      "coordinatesMissing": 0
+    },
+    "newCoordinatesCount": 8,
+    "coordinateAdditions": [
+      {
+        "id": "blue-daejeon-tavolata",
+        "name": "타볼라타",
+        "lat": 36.376345567722296,
+        "lng": 127.39046214113553,
+        "address": "대전광역시 유성구 엑스포로97번길 40 골프존대전사옥 2층",
+        "coordinateSource": {
+          "name": "타볼라타 운영사 채용 공고의 사업장 지도",
+          "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49974035?Oem_Code=C1&listno=652&logpath=1&sc=630&stext=%EC%B9%B4%ED%8E%98+%EB%A7%A4%EB%8B%88%EC%A0%80",
+          "method": "운영사 공고의 현재 매장 주소와 연결된 네이버 지도 lat/lng",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799",
+        "previousAddress": "대전광역시 유성구 죽동로279번길 70",
+        "addressChangeType": "current_address_correction",
+        "note": "대전시 2025-06-23 기준 목록과 운영사 2026-09-11 공고에서 현재 주소 일치. 이전 시점은 추정하지 않음."
+      },
+      {
+        "id": "blue-daejeon-pizzeria-da-ali",
+        "name": "피제리아다알리",
+        "lat": 36.38768,
+        "lng": 127.31678,
+        "address": "대전광역시 유성구 지족로349번길 40-5",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/food/35084714",
+          "method": "공개 장소 정보의 위도·경도; 공식 상호·도로명 주소와 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+      },
+      {
+        "id": "blue-daejeon-yeonghwa-banjeom",
+        "name": "영화반점",
+        "lat": 36.44983,
+        "lng": 127.43154,
+        "address": "대전광역시 대덕구 신탄진동로23번길 46",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/food/16074686",
+          "method": "공개 장소 정보의 위도·경도; 공식 상호·도로명 주소와 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://www.daejeon.go.kr/its/ItsdjNormalboardView.do?boardGubun=itsdj01&boardSeq=2866"
+      },
+      {
+        "id": "illjung-daejeon",
+        "name": "일정",
+        "lat": 36.36839,
+        "lng": 127.38083,
+        "address": "대전 서구 만년로67번길 18-9, 2층",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/food/13047774",
+          "method": "공개 장소 정보의 위도·경도; 운영사 상호·도로명 주소와 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://illjung.co.kr/index"
+      },
+      {
+        "id": "blue-daejeon-harehare-dunsan",
+        "name": "하레하레 둔산점",
+        "lat": 36.35146,
+        "lng": 127.39497,
+        "address": "대전광역시 서구 둔산로 155 크로바아파트 제상가동 1층",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/cafe/37883270",
+          "method": "공개 장소 정보의 위도·경도; 공식 관광 안내의 지점·주소와 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://daejeontour.co.kr/month_djt/3"
+      },
+      {
+        "id": "blue-daejeon-madeleine-gwajajeom",
+        "name": "마들렌과자점",
+        "lat": 36.3742,
+        "lng": 127.32018,
+        "address": "대전광역시 유성구 은구비서로23번길 9",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/cafe/10965816",
+          "method": "공개 장소 정보의 위도·경도; 공식 관광 안내의 상호·주소와 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://daejeontour.co.kr/subway_djt/12"
+      },
+      {
+        "id": "blue-daejeon-jeongingu-patppang-yucheon",
+        "name": "정인구팥빵 유천점",
+        "lat": 36.3192808907686,
+        "lng": 127.399787117187,
+        "address": "대전광역시 중구 계백로 1619 벽산프라자 1층",
+        "coordinateSource": {
+          "name": "정인구팥빵 공식 매장 지도",
+          "url": "https://xn--2e0b263ayxg6ras65b.com/map",
+          "method": "공식 지도 스크립트의 B.유천점 마커; 지점명·주소 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://xn--2e0b263ayxg6ras65b.com/map",
+        "coordinateDataUrl": "https://xn--2e0b263ayxg6ras65b.com/js/dmap.js"
+      },
+      {
+        "id": "blue-daejeon-slowbread-jeonmin",
+        "name": "슬로우브레드 전민본점",
+        "lat": 36.39941,
+        "lng": 127.40197,
+        "address": "대전광역시 유성구 유성대로 1734-1, 1층",
+        "coordinateSource": {
+          "name": "대전한콕 · 네이버 공개정보 정리",
+          "url": "https://daejeon.ferrorium.com/p/cafe/15988264",
+          "method": "공개 장소 정보의 위도·경도; 동일 지점·전화번호·지번/도로명 주소 대조",
+          "checkedAt": "2026-11-03"
+        },
+        "addressSourceUrl": "https://bread.ipsitalk.net/b/31378/%EC%8A%AC%EB%A1%9C%EC%9A%B0%EB%B8%8C%EB%A0%88%EB%93%9C",
+        "previousAddress": "대전광역시 유성구 전민동 304-6 1층",
+        "addressChangeType": "equivalent_road_address",
+        "note": "전민동 304-6과 유성대로1734-1의 동일 건물 대응을 확인한 도로명 표기 변경. 이전으로 취급하지 않음.",
+        "addressCrossCheckUrl": "https://jusoga.com/b/3020014100103040006004746/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C-%EC%9C%A0%EC%84%B1%EA%B5%AC-%EC%9C%A0%EC%84%B1%EB%8C%80%EB%A1%9C-1734-1-%EC%A0%84%EB%AF%BC%EB%8F%99"
+      }
+    ],
+    "coordinatePolicy": "운영사 공개 지도 2곳 및 장소정보 재정리 출처 6곳. 상호·지점과 공식 주소를 대조하고 출처 유형을 표시. 주소 중심점이나 임의 좌표를 사용하지 않았으며 기존 좌표 4곳은 유지.",
+    "excludedCoordinateSources": [
+      {
+        "id": "blue-daejeon-pizzeria-da-ali",
+        "source": "AVPN 공식 소개의 내장 지도",
+        "reason": "내장 지도 대상이 식당과 다른 장대동 장소로 표시되어 제외"
+      }
+    ],
+    "completeNationalBlueRibbonList": false,
+    "officialListComparison": {
+      "url": "https://litt.ly/blueribbonsurvey",
+      "previousMapUrl": "https://app.catchtable.co.kr/ct/map/search-map?exhibitionFilterKeys=261008_blueribbon_all",
+      "reportedDaejeonCount": 9,
+      "matchingNamesVerified": false,
+      "status": "대전 9곳의 개별 목록 미확정",
+      "reason": "공식 안내 링크와 블루리본 필터를 확인했으나 제휴지도 지역 선택에서 화면 오류 발생. 등록 12곳은 과거 선정·수록 이력을 포함하므로 동일 시점의 공식 전체 명단으로 취급하지 않음."
+    },
+    "preservedData": "식당 881곳의 ID, 분류와 가이드 선정·수록 이력을 유지. 대전 기존 8곳의 좌표와 2곳의 주소 표기만 보강.",
+    "yearPolicy": "위치 확인을 최신판 선정 확인으로 취급하지 않음. 원문에 없는 리본 수·선정 연도를 추가하지 않음."
   }
 }

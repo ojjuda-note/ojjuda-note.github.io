@@ -8,6 +8,10 @@ const migrations = fs.readdirSync(path.join(root, 'supabase/migrations'))
   .filter(name => name.endsWith('_member_restaurant_recommendations.sql'));
 assert.equal(migrations.length, 1, 'exactly one member restaurant migration must exist');
 const migration = path.join('supabase/migrations', migrations[0]);
+const photoLimitMigrations = fs.readdirSync(path.join(root, 'supabase/migrations'))
+  .filter(name => name.endsWith('_member_restaurant_photo_limits.sql'));
+assert.equal(photoLimitMigrations.length, 1, 'exactly one member restaurant photo-limit migration must exist');
+const photoLimitMigration = path.join('supabase/migrations', photoLimitMigrations[0]);
 const sql = file => fs.readFileSync(path.join(root, file), 'utf8');
 const bucket = 'restaurant-recommendations';
 const uid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -62,6 +66,27 @@ async function setup() {
   await db.query('update auth.users set deleted_at=now() where id=$1', [gone]);
   await db.query("update auth.users set banned_until=now()+interval '1 day' where id=$1", [banned]);
   await db.query("insert into public.user_private values($1,now()+interval '1 day')", [restricted]);
+
+  // Upgrade an already-published nine-photo post without rewriting its content,
+  // timestamps, ownership or the privileges of the existing functions.
+  const legacy = payload(a, post(90), [1,2,3,4,5,6,7,8,9], 900);
+  await upload(db, a, legacy.id, [1,2,3,4,5,6,7,8,9]);
+  await asUser(db, a);
+  const legacySaved = await save(db, legacy);
+  await db.exec('reset role');
+  const functionSecurity = () => db.query(`select p.proname,p.proacl::text,p.prosecdef,p.provolatile,p.proconfig
+    from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='ojjuda_restaurants_internal' order by p.proname`);
+  const beforeLimits = (await functionSecurity()).rows;
+  await db.exec(sql(photoLimitMigration));
+  assert.deepEqual((await functionSecurity()).rows, beforeLimits,
+    'photo-limit upgrade preserves function grants, security mode, volatility and search paths');
+  await asUser(db, a);
+  assert.deepEqual(await detail(db, legacy.id), legacySaved.item, 'existing nine-photo posts survive the upgrade unchanged');
+  await admin(db, async () => {
+    await db.query('delete from ojjuda_restaurants_internal.recommendations where id=$1', [legacy.id]);
+    await db.query('delete from storage.objects where bucket_id=$1 and name=any($2)', [bucket, legacy.photos]);
+  });
   return db;
 }
 
@@ -133,7 +158,7 @@ async function readable(db, names) {
     assert.deepEqual(await readable(db, p.photos), [], 'bucket listing is not a member gallery');
 
     await asUser(db, a);
-    for (const photos of [[], p.photos.slice(0, 2), Array(10).fill(p.photos[0])]) {
+    for (const photos of [null, [], Array.from({ length: 13 }, (_, i) => photo(a, p.id, i + 1))]) {
       await assert.rejects(() => save(db, { ...p, photos }), /recommendation_photos_required/);
     }
     for (const photos of [[p.photos[0], p.photos[0], p.photos[1]], [null, ...p.photos.slice(1)],
@@ -207,7 +232,7 @@ async function readable(db, names) {
     await upload(db, a, p.id, [4]);
     await asUser(db, a);
     const updatedPayload = { ...p, request_id: request(3), photos: [p.photos[1], p.photos[2], photo(a, p.id, 4)], expected_updated_at: created.item.updated_at };
-    await assert.rejects(() => save(db, { ...updatedPayload, photos: updatedPayload.photos.slice(0, 2) }), /recommendation_photos_required/);
+    await assert.rejects(() => save(db, { ...updatedPayload, photos: [] }), /recommendation_photos_required/);
     assert.deepEqual((await detail(db, p.id)).photos, p.photos);
     const updated = await save(db, updatedPayload);
     assert.deepEqual(updated.removed_paths, [p.photos[0]]);
@@ -218,10 +243,26 @@ async function readable(db, names) {
     await asUser(db, a, 'object.delete');
     assert.deepEqual((await db.query('delete from storage.objects where bucket_id=$1 and name=$2 returning name', [bucket, p.photos[0]])).rows, [{ name: p.photos[0] }]);
 
-    const other = { ...payload(b, post(3), [1, 2, 3], 30), name: '바다카페', category: '디저트', region: '부산', address: '부산광역시 중구 바다로 123', menu: '케이크' };
-    await upload(db, b, other.id, [1, 2, 3]); await asUser(db, b); await save(db, other);
-    const maximum = payload(b, post(4), [1,2,3,4,5,6,7,8,9], 40);
-    await upload(db, b, maximum.id, [1,2,3,4,5,6,7,8,9]); await asUser(db, b); await save(db, maximum);
+    const other = { ...payload(b, post(3), [1], 30), name: '바다카페', category: '디저트', region: '부산', address: '부산광역시 중구 바다로 123', menu: '케이크' };
+    await upload(db, b, other.id, [1]); await asUser(db, b);
+    const minimumSaved = await save(db, other);
+    assert.deepEqual(minimumSaved.item.photos, other.photos, 'one actual owned JPEG can publish');
+    await asUser(db, b, 'object.delete');
+    assert.equal((await db.query('delete from storage.objects where bucket_id=$1 and name=$2 returning name', [bucket, other.photos[0]])).rows.length, 0,
+      'the only published photo cannot be removed through Storage');
+    await asUser(db, b);
+    await assert.rejects(() => save(db, { ...other, request_id: request(31), expected_updated_at: minimumSaved.item.updated_at, photos: [] }), /recommendation_photos_required/);
+    assert.deepEqual((await detail(db, other.id)).photos, other.photos, 'zero-photo edit leaves the one-photo post intact');
+    const maximum = payload(b, post(4), Array.from({ length: 12 }, (_, i) => i + 1), 40);
+    await upload(db, b, maximum.id, Array.from({ length: 13 }, (_, i) => i + 1)); await asUser(db, b);
+    await assert.rejects(() => save(db, { ...maximum, photos: [...maximum.photos, photo(b, maximum.id, 13)] }), /recommendation_photos_required/);
+    assert.equal(await detail(db, maximum.id), null, 'thirteen valid uploaded JPEGs still cannot publish');
+    const maximumSaved = await save(db, maximum);
+    assert.deepEqual(maximumSaved.item.photos, maximum.photos, 'twelve actual owned JPEGs publish in their requested order');
+    await asUser(db, b, 'object.delete');
+    assert.equal((await db.query('delete from storage.objects where bucket_id=$1 and name=$2 returning name', [bucket, photo(b, maximum.id, 13)])).rows.length, 1,
+      'the extra unpublished photo remains removable');
+    await asUser(db, b);
     const page = await list(db, { limit: 1 }); assert.equal(page.rows.length, 1); assert.equal(page.total, 4);
     assert.equal((await list(db, { mine: true })).total, 2);
     assert.equal((await list(db, { category: '디저트', region: '부산', q: '케이크' })).rows[0].id, other.id);
@@ -260,11 +301,11 @@ async function readable(db, names) {
     await admin(db, async () => {
       assert.equal((await db.query('select * from ojjuda_restaurants_internal.recommendations where owner_id=$1', [a])).rows.length, 0);
       assert.equal((await db.query('select * from ojjuda_restaurants_internal.deleted_recommendations where owner_id=$1', [a])).rows.length, 0);
-      assert.equal((await db.query('select count(*)::int n from storage.objects where bucket_id=$1', [bucket])).rows[0].n, 12);
+      assert.equal((await db.query('select count(*)::int n from storage.objects where bucket_id=$1', [bucket])).rows[0].n, other.photos.length + maximum.photos.length);
       const paths = await db.query(`select proname,provolatile,proconfig from pg_proc p join pg_namespace n on n.oid=p.pronamespace
         where n.nspname='ojjuda_restaurants_internal' and proname in ('save_item','delete_item','photo_delete_allowed')`);
       assert.ok(paths.rows.every(r => r.provolatile === 'v' && r.proconfig.includes('search_path=pg_catalog')));
     });
-    console.log('PASS: member-only RPCs; strict 3–9 owned Storage JPEGs; atomic publication/replacement; input bounds; ownership; idempotency/version conflicts; private draft/session-only photo access; immutable referenced files; filters/pagination; account-withdrawal cleanup/cascades; restrictive guards against broad legacy policies.');
+    console.log('PASS: photo-limit upgrade preserves existing posts and grants; member-only RPCs; strict 1–12 owned Storage JPEGs (0/13 rejected, 1/12 accepted); atomic publication/replacement; input bounds; ownership; idempotency/version conflicts; private draft/session-only photo access; immutable referenced files; filters/pagination; account-withdrawal cleanup/cascades; restrictive guards against broad legacy policies.');
   } finally { await db.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
