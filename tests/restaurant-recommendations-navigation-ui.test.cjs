@@ -58,11 +58,11 @@ test('370px nested member view preserves the actual directory filters, list, scr
   const before=await snapshot();assert.ok(Number(before.total)>0);assert.ok(before.scroll>0,'the preserved position is a scrolled directory');
   await page.evaluate(()=>{nestingFixture.frame=document.querySelector('.restaurant-guide-dialog iframe');});
   await directory.locator('#recommendations-link').evaluate(link=>link.click());
-  await page.locator('[data-rr=compose]').waitFor();
+  await page.getByRole('button',{name:'+ 맛집 추천하기',exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>nestingFixture.calls[0].owner),owner,'the nested view uses the same authenticated member');
   assert.equal(await page.locator('[data-rr=close]').innerText(),'← 인증맛집');
   assert.equal(await page.locator('.rr-header').evaluate(header=>{const r=header.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&header.scrollWidth<=header.clientWidth+1;}),true,'the member return control fits a 370px screen');
-  await page.locator('[data-rr=compose]').click();await page.locator('[data-rr=field-name]').fill('보존할 추천 초안');
+  await page.getByRole('button',{name:'+ 맛집 추천하기',exact:true}).click();await page.locator('[data-rr=field-name]').fill('보존할 추천 초안');
   const pending=await page.evaluate(()=>{const first=nestingFixture.guide.close(),second=nestingFixture.guide.close();nestingFixture.pending=first;return{async:!!first?.then,same:first===second};});
   assert.deepEqual(pending,{async:true,same:true},'repeated parent close shares one actual dirty-child decision');
   await page.locator('[data-rr=confirm-dialog]').waitFor();await page.keyboard.press('Escape');
@@ -75,7 +75,7 @@ test('370px nested member view preserves the actual directory filters, list, scr
   assert.deepEqual(await snapshot(),before,'return preserves the actual search, category, region, expanded filters, list and scroll');
   assert.equal(directoryLoads,1,'opening and closing the member view does not reload the directory');
   assert.equal(await page.evaluate(()=>document.body.classList.contains('gaming')),true);
-  await directory.locator('#recommendations-link').evaluate(link=>link.click());await page.locator('[data-rr=compose]').waitFor();
+  await directory.locator('#recommendations-link').evaluate(link=>link.click());await page.getByRole('button',{name:'+ 맛집 추천하기',exact:true}).waitFor();
   await page.evaluate(()=>nestingFixture.guide.back());await page.locator('[data-rr=dialog]').waitFor({state:'detached'});
   assert.equal(await page.locator('.restaurant-guide-dialog').isVisible(),true);
   await page.evaluate(()=>nestingFixture.guide.back());await page.locator('.restaurant-guide-dialog').waitFor({state:'detached'});
