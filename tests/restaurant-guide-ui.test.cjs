@@ -193,7 +193,8 @@ async function fixture(browser, options = {}) {
     assert.equal(await page.locator('.restaurant-pin').count(), Math.min(50, dataset.restaurants.filter(hasCoordinates).length));
     assert.equal(await page.locator('.result-shown').isVisible(), false, 'list-only counts do not compete with map coverage');
     const missingActual = dataset.restaurants.filter(item => !hasCoordinates(item)).length;
-    if (missingActual) assert.ok((await page.locator('#map-caption-text').textContent()).includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'));
+    assert.equal(await page.locator('.map-caption').count(), 0, 'the map has no obstructing summary caption');
+    if (missingActual) assert.ok((await page.locator('#result-coverage').textContent()).includes('위치 확인 중 ' + missingActual + '곳'));
     await page.locator('#show-list').click(); await page.locator('#show-map').click();
     assert.equal(regular.network.geography, 1, 'view changes reuse the existing local map');
     assert.equal(await page.locator('#map.leaflet-container').count(), 1);
@@ -378,7 +379,7 @@ async function fixture(browser, options = {}) {
     await mapFailure.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(mapFailure.network.geography, 2, 'retry retrieves the local geography again');
     assert.equal(await mapFailure.page.locator('#map-message').isVisible(), false);
-    assert.match(await mapFailure.page.locator('#map-caption-text').textContent(), /개요도/);
+    assert.equal(await mapFailure.page.locator('.map-caption').count(), 0, 'retry does not restore an obstructing map caption');
     assert.deepEqual(mapFailure.errors, []);
     await mapFailure.context.close();
 
@@ -539,10 +540,10 @@ async function fixture(browser, options = {}) {
     await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 50);
     assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
-    assert.match(await mixedMap.page.locator('#map-caption-text').textContent(), /위치 미확인 7곳은 목록에서 확인/);
+    assert.equal(await mixedMap.page.locator('.map-caption').count(), 0, 'pagination coverage does not add a caption over the map');
     await mixedMap.page.setViewportSize({ width: 320, height: 844 });
     assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'the shown count and missing locations remain separate in one compact phone line');
-    assert.equal(await mixedMap.page.locator('.map-caption').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1; }), true, 'the combined map coverage message wraps inside the phone viewport');
+    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => node.getBoundingClientRect().bottom <= document.getElementById('map').getBoundingClientRect().top), true, 'coverage stays above the map without covering pins on a 320px phone viewport');
     assert.equal(await mixedMap.page.locator('#map-pagination').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1; }), true, 'the map pager fits a 320px phone viewport');
     for (let group = 1; group <= 6; group++) await mixedMap.page.locator('#map-next').click();
     assert.deepEqual(await mapNames(mixedMap.page), names(many.slice(300, 305)), 'the final group contains only five remaining located restaurants');
