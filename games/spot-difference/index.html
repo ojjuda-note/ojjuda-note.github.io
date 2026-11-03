@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#425bea">
-  <meta name="description" content="쭈다의 일상, 도시와 사계절 산, 세계 명화에서 다른 곳을 찾아보세요. 기존 그림은 6곳, 세계 명화는 10곳! 두 그림을 누르고, 확대하고, 힌트를 보며 즐기는 틀린그림 찾기.">
+  <meta name="description" content="쭈다의 일상, 귀여운 동화와 고양이·강아지 사진, 도시와 사계절 산, 세계 명화까지 152장. 보통부터 조금 어려움·어려움·매우 어려움 순서로 다른 곳을 찾고 확대해서 비교해 보세요.">
   <title>쭈다 틀린그림 찾기</title>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
 <meta property="og:type" content="website">
@@ -27,10 +27,11 @@
   <script src="puzzles.js?v=20261003-hint1" defer></script>
   <script src="photo-puzzles.js?v=20261024-photo-car2" defer></script>
   <script src="masterpiece-puzzles.js?v=20261102-spot-visibility1" defer></script>
-  <script src="game-core.js?v=20261102-spot-sequence1" defer></script>
+  <script src="fairytale-pets-puzzles.js?v=20261103-spot70-slightly-hard1" defer></script>
+  <script src="game-core.js?v=20261103-spot70-slightly-hard1" defer></script>
   <script src="vendor/supabase.js" defer></script>
-  <script src="wallet.js?v=20261101-masterpieces1" defer></script>
-  <script src="app.js?v=20261103-stage-clear-gates1" defer></script>
+  <script src="wallet.js?v=20261103-spot70-slightly-hard1" defer></script>
+  <script src="app.js?v=20261103-spot70-slightly-hard1" defer></script>
 <link rel="stylesheet" href="/mobile-viewport.css?v=20261003-safe2">
 <script src="/mobile-viewport.js?v=20261003-safe2" defer></script>
 <link rel="stylesheet" href="/ju-coins.css?v=20261006-zu1">
@@ -41,12 +42,12 @@
 <body>
   <header class="topbar">
     <a id="game-home" class="brand" href="/world.html?tab=arcade" aria-label="오쭈다 아지트 홈으로 가기"><span class="brand-icon" aria-hidden="true">⌂</span><span>아지트 홈</span></a>
-    <span class="collection"><strong id="solved-total">0</strong> / <span id="stage-total">62</span> 완료</span>
+    <span class="collection"><strong id="solved-total">0</strong> / <span id="stage-total">152</span> 완료</span>
   </header>
   <main>
     <div class="game-heading">
     <section class="game-top" aria-labelledby="scene-title">
-      <div class="scene-info"><span class="eyebrow" id="stage-label">장면 01 / 62</span><h1 id="scene-title">쭈다의 일상 속, 다른 곳 여섯 개</h1><p id="scene-instructions">1분 안에 여섯 곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.</p></div>
+      <div class="scene-info"><span class="eyebrow" id="stage-label">그림 01 / 152</span><h1 id="scene-title">쭈다의 일상 속, 다른 곳 여섯 개</h1><p id="scene-instructions">1분 안에 여섯 곳을 찾아보세요. 찾은 곳은 붉은 원으로 표시돼요.</p></div>
       <div class="score" aria-label="찾은 정답"><strong id="found-count">0</strong><span>/ <span id="found-total">6</span> <small>찾았어요</small></span><div class="dots" id="dots" aria-hidden="true"></div></div>
     </section>
     <section class="round-status" aria-label="게임 상태"><div class="hearts" id="hearts" role="img" aria-label="남은 하트 3개">♥ ♥ ♥</div><span class="rule-copy">오답이면 하트 −1</span><div class="wallet"><span id="wallet-balance">계정 연결 중</span><button id="hint" class="soft-button ju-paid-action">힌트 · 1 ZU</button><details id="wallet-menu" class="wallet-menu"><summary aria-label="게임 메뉴" title="게임 메뉴">⋯</summary><div class="wallet-menu-panel">
@@ -56,7 +57,7 @@
       <details class="found-list" id="found-details" hidden><summary>찾은 곳 확인하기 <span id="found-summary"></span></summary><ol id="answers"></ol></details>
       <button id="wallet-login" class="text-button">로그인</button><button id="wallet-refresh" class="text-button" hidden>잔액 확인</button><button id="wallet-logout" class="text-button" hidden>로그아웃</button>
       <p class="menu-note">힌트나 시간 연장을 써도 점수가 순위에 반영돼요.</p>
-      <p class="menu-note" id="storage-note">보통 → 어려움 → 매우 어려움 순서예요. 마지막 그림을 기억하고, 다시 열면 새 판으로 시작해요.</p>
+      <p class="menu-note" id="storage-note">보통 → 조금 어려움 → 어려움 → 매우 어려움 순서예요. 마지막 그림을 기억하고, 다시 열면 새 판으로 시작해요.</p>
     </div></details></div></section>
     <p class="wallet-note" id="wallet-note">힌트 1개 1 ZU · 30초 연장 1 ZU</p>
     </div>

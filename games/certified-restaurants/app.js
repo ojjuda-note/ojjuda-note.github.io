@@ -8,8 +8,8 @@
   const STORAGE_KEY = 'ojjuda-certified-restaurants-saved-v1';
   const mobile = window.matchMedia('(max-width: 700px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { restaurants: [], collections: [], visible: [], category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
-  let map = null, tiles = null, markers = new Map(), userMarker = null, tileErrors = 0, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
+  const state = { restaurants: [], collections: [], visible: [], category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'list', loading: true, loadError: false };
+  let map = null, backgroundLayer = null, backgroundController = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
   function el(tag, className, text) {
@@ -103,13 +103,11 @@
     state.visible.forEach((item, index) => {
       const card = el('article', 'restaurant-card'); card.dataset.restaurantId = item.id; card.classList.toggle('is-selected', state.selected === item.id);
       const main = el('button', 'card-main'); main.type = 'button'; main.setAttribute('aria-label', item.name + ' 상세 정보');
-      const kicker = el('p', 'card-kicker'); kicker.append(el('span', '', [item.category, item.region, item.district].filter(Boolean).join(' · ')));
+      const kicker = el('p', 'card-kicker'); kicker.append(el('span', '', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
       const distance = distanceKm(item); if (distance !== null) kicker.append(el('span', 'distance', '직선 ' + distanceLabel(distance)));
-      main.append(kicker, el('h2', 'card-name', item.name));
-      if (item.menu.length) main.append(el('p', 'card-menu', item.menu.join(' · ')));
-      const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g))); main.append(badges);
-      main.append(el('p', 'card-address', item.address || '주소는 선정 출처에서 확인해 주세요.'));
-      if (!hasCoordinates(item)) main.append(el('span', 'coord-note', '네이버·카카오맵에서 위치 확인'));
+      main.append(el('h2', 'card-name', item.name), kicker);
+      if (item.menu.length) main.append(el('p', 'card-menu', item.menu.slice(0, 2).join(' · ')));
+      const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false))); main.append(badges);
       main.addEventListener('click', () => selectRestaurant(item.id, true)); card.append(main, saveButton(item)); fragment.append(card);
     });
     container.append(fragment);
@@ -118,49 +116,59 @@
     $('categories').querySelectorAll('[data-category]').forEach(button => { const active = button.dataset.category === state.category; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
     $('guides').querySelectorAll('[data-guide]').forEach(button => { const active = button.dataset.guide === state.guide; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
     $('saved-only').setAttribute('aria-pressed', String(state.savedOnly));
+    const active = [state.region, state.guide === 'both' ? '미쉐린·블루리본 모두' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : '', state.position ? '가까운 순' : ''].filter(Boolean);
+    $('filter-summary').textContent = active.join(' · '); $('filter-summary').hidden = !active.length;
+    $('filter-label').textContent = '필터' + (active.length ? ' ' + active.length : '');
   }
   function renderCollections() {
-    const section = $('collections');
-    section.replaceChildren();
+    const section = $('collections'), sources = $('collection-sources');
+    section.replaceChildren(); sources.replaceChildren();
     const relevant = state.collections.filter(collection => !state.guide || collection.provider === state.guide);
     section.hidden = !relevant.length;
     section.classList.toggle('is-featured', !!state.guide);
-    relevant.forEach(collection => {
-      const row = el('div', 'collection-row'), copy = el('div', 'collection-copy');
-      copy.append(link(collection.title + ' ↗', collection.url, 'collection-title'));
-      if (state.guide) {
-        if (collection.note) copy.append(el('p', 'collection-note', collection.note));
-        copy.append(el('p', 'collection-hint', '식당 핀은 공식 전체 지도에서, 개별 정보는 아래 목록에서 확인하세요.'));
-      }
-      row.append(copy);
-      if (collection.sourceUrl) row.append(link('자료 출처 ↗', collection.sourceUrl, 'collection-source'));
-      section.append(row);
-    });
+    relevant.forEach(collection => section.append(link(collection.title + ' ↗', collection.url, 'collection-title')));
+    state.collections.forEach(collection => { if (collection.sourceUrl) sources.append(link('우체국 추천 자료 출처 ↗', collection.sourceUrl, 'collection-source')); });
   }
   function render(fit = true) {
     if (state.loading || state.loadError) return;
     state.visible = filteredRestaurants();
     if (state.selected && !state.visible.some(item => item.id === state.selected)) state.selected = '';
-    $('result-count').replaceChildren(el('strong', '', String(state.visible.length)), document.createTextNode('곳' + (state.position ? ' · 가까운 순' : ' · 가나다순')));
+    $('result-count').replaceChildren(el('strong', '', String(state.visible.length)), document.createTextNode('곳' + (state.position ? ' · 가까운 순' : '')));
     if (mobile.matches && !state.visible.some(hasCoordinates)) setView('list');
     syncPressed(); renderCollections(); renderCards(); syncMap(fit);
   }
   function pinIcon(number, selected) {
     return window.L.divIcon({ className: 'restaurant-pin' + (selected ? ' is-selected' : ''), html: '<div class="pin-core"><span>' + String(number) + '</span></div>', iconSize: [30, 37], iconAnchor: [15, 34], tooltipAnchor: [0, -30] });
   }
-  function mapIsVisible() { return !mobile.matches || state.view === 'map'; }
+  function mapIsVisible() { return state.view === 'map'; }
   function showMapMessage(message, retry = true) { $('map-message-text').textContent = message; $('map-message').hidden = false; $('retry-map').hidden = !retry; }
+  async function loadMapBackground() {
+    if (backgroundController) backgroundController.abort();
+    const controller = new AbortController(); backgroundController = controller;
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    try {
+      const response = await fetch('./korea-provinces.json', { signal: controller.signal, cache: 'force-cache' });
+      if (!response.ok) throw new Error('Map background unavailable');
+      const data = await response.json();
+      if (controller !== backgroundController) return;
+      if (data.type !== 'FeatureCollection' || !Array.isArray(data.features) || !data.features.length) throw new Error('Invalid map background');
+      if (backgroundLayer) backgroundLayer.remove();
+      backgroundLayer = window.L.geoJSON(data, { interactive: false, style: { color: '#c3d0c7', weight: 1, fillColor: '#f8faf5', fillOpacity: 1 } }).addTo(map);
+      backgroundLayer.bringToBack();
+      $('map-message').hidden = true;
+    } catch (error) {
+      if (controller === backgroundController) showMapMessage('지역 지도를 불러오지 못했어요. 가게 정보의 지도 링크를 이용해 주세요.');
+    } finally { clearTimeout(timeout); }
+  }
   function ensureMap() {
     if (map) return true;
     if (!mapIsVisible()) return false;
-    if (!window.L) { $('map').replaceChildren(el('div', 'map-loading', '지도를 불러오지 못했어요. 가게 정보와 지도 검색은 목록에서 볼 수 있어요.')); showMapMessage('지도 연결을 확인하고 다시 시도해 주세요.'); return false; }
+    if (!window.L) { $('map').replaceChildren(el('div', 'map-loading', '가게 정보에서 네이버·카카오맵을 열 수 있어요.')); showMapMessage('지도를 불러오지 못했어요.'); return false; }
     $('map').replaceChildren();
-    map = window.L.map('map', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, maxBounds: [[15, 100], [50, 150]], minZoom: 4, maxZoom: 19, preferCanvas: true }).setView([36.2, 127.8], 7);
+    map = window.L.map('map', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, maxBounds: [[30, 120], [41, 136]], minZoom: 5, maxZoom: 12, preferCanvas: true }).setView([36.2, 127.8], 7);
     window.L.control.zoom({ position: 'topright' }).addTo(map);
-    tiles = window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, minZoom: 4, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors', updateWhenIdle: true, updateWhenZooming: false, keepBuffer: 1 });
-    tiles.on('tileerror', () => { tileErrors++; if (tileErrors >= 2) showMapMessage('배경 지도가 잠시 연결되지 않아요. 목록과 가게 정보는 볼 수 있어요.'); });
-    tiles.on('tileload', () => { if (tileErrors) { tileErrors = 0; $('map-message').hidden = true; } });
-    tiles.addTo(map);
+    map.attributionControl?.addAttribution('<a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">KOSTAT · 2018 경계</a>');
+    void loadMapBackground();
     return true;
   }
   function syncMap(fit) {
@@ -180,15 +188,15 @@
       else userMarker.setLatLng([state.position.lat, state.position.lng]);
     }
     const missing = state.visible.length - located.length;
-    $('map-caption-text').textContent = located.length ? '위치 ' + located.length + '곳' + (missing ? ' · ' + missing + '곳은 목록에서 확인' : ' · 핀을 눌러 가게 보기') : (state.visible.length ? '위치 정보는 목록의 지도 링크에서 확인하세요.' : '조건에 맞는 위치가 없어요.');
+    $('map-caption-text').textContent = located.length ? '지역 개요도 · ' + located.length + '곳 표시' + (missing ? ' · ' + missing + '곳은 가게별 지도 링크' : '') : (state.visible.length ? '위치 정보는 목록의 지도 링크에서 확인하세요.' : '조건에 맞는 위치가 없어요.');
     requestAnimationFrame(() => {
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
       if (!fit) return;
       if (state.position && located.length) {
-        map.fitBounds([[state.position.lat, state.position.lng], [located[0].lat, located[0].lng]], { padding: [65, 65], maxZoom: 14, animate: false });
-      } else if (located.length === 1) map.setView([located[0].lat, located[0].lng], 14, { animate: false });
-      else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 60], paddingBottomRight: [35, 35], maxZoom: 15, animate: false });
+        map.fitBounds([[state.position.lat, state.position.lng], [located[0].lat, located[0].lng]], { padding: [65, 65], maxZoom: 10, animate: false });
+      } else if (located.length === 1) map.setView([located[0].lat, located[0].lng], 10, { animate: false });
+      else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 60], paddingBottomRight: [35, 35], maxZoom: 10, animate: false });
     });
   }
   function selectRestaurant(id, openDetail) {
@@ -197,15 +205,16 @@
     document.querySelectorAll('[data-restaurant-id]').forEach(card => card.classList.toggle('is-selected', card.dataset.restaurantId === id));
     const located = state.visible.filter(hasCoordinates);
     located.forEach((restaurant, index) => { const marker = markers.get(restaurant.id); if (marker) { marker.setIcon(pinIcon(index + 1, restaurant.id === id)); marker.setZIndexOffset(restaurant.id === id ? 1000 : 0); } });
-    if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 14), { animate: !reducedMotion.matches }); }
+    if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 10), { animate: !reducedMotion.matches }); }
     if (openDetail) showDetail(item);
   }
   function showDetail(item) {
     const content = $('detail-content'); content.replaceChildren();
-    content.append(el('p', 'detail-kicker', [item.category, item.region, item.district].filter(Boolean).join(' · ')));
+    content.append(el('p', 'detail-kicker', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
     const titleRow = el('div', 'detail-title-row'), title = el('h2', '', item.name); title.id = 'detail-title'; titleRow.append(title, saveButton(item, true)); content.append(titleRow);
     if (item.menu.length) content.append(el('p', 'detail-menu', item.menu.join(' · ')));
     const address = el('div', 'detail-address'); address.append(el('span', 'detail-address-label', '주소'), document.createTextNode(item.address || '출처에서 주소를 확인해 주세요.')); content.append(address);
+    if (!hasCoordinates(item)) content.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
     content.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
     const sources = el('ul', 'source-list');
     item.guides.forEach(guide => {
@@ -285,14 +294,15 @@
   $('categories').addEventListener('click', event => { const button = event.target.closest('[data-category]'); if (!button) return; state.category = button.dataset.category; render(true); });
   $('guides').addEventListener('click', event => { const button = event.target.closest('[data-guide]'); if (!button) return; state.guide = button.dataset.guide; render(true); });
   $('saved-only').addEventListener('click', () => { state.savedOnly = !state.savedOnly; render(true); });
+  $('filter-toggle').addEventListener('click', () => { const open = $('filter-options').hidden; $('filter-options').hidden = !open; $('filter-toggle').setAttribute('aria-expanded', String(open)); });
   $('reset').addEventListener('click', resetFilters); $('nearby').addEventListener('click', requestLocation);
   $('show-map').addEventListener('click', () => setView('map')); $('show-list').addEventListener('click', () => setView('list'));
   $('close-detail').addEventListener('click', () => $('detail').close());
   $('detail').addEventListener('click', event => { if (event.target === $('detail')) { const rect = $('detail').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('detail').close(); } });
-  $('retry-map').addEventListener('click', () => { tileErrors = 0; $('map-message').hidden = true; if (tiles) tiles.redraw(); else location.reload(); });
+  $('retry-map').addEventListener('click', () => { $('map-message').hidden = true; if (map) void loadMapBackground(); else location.reload(); });
   const resize = () => { if (mapIsVisible()) syncMap(false); };
   if (mobile.addEventListener) mobile.addEventListener('change', resize); else mobile.addListener(resize);
   window.addEventListener('storage', event => { if (event.key === STORAGE_KEY) { readSaved(); render(false); if ($('detail').open && state.selected) { const item = state.restaurants.find(r => r.id === state.selected); if (item) document.querySelectorAll('[data-save-id]').forEach(button => { if (button.dataset.saveId === item.id) updateSaveButton(button, item); }); } } });
-  window.addEventListener('pagehide', () => { clearTimeout(searchTimer); });
-  ensureMap(); loadData();
+  window.addEventListener('pagehide', () => { clearTimeout(searchTimer); if (backgroundController) backgroundController.abort(); });
+  loadData();
 })();

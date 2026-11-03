@@ -306,8 +306,11 @@ jobs:
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
-      - name: Check restaurant guide filters, maps and mobile layouts
-        run: npm --prefix tests run test:restaurants
+      - name: Check restaurant guide and arcade navigation
+        run: |
+          npm --prefix tests run test:restaurants
+          node tests/world-design-ui.test.cjs
+          node tests/world-game-back-ui.test.cjs
       - name: Check purchased coupon messages and recipient privacy
         run: node --test tests/reward-coupon-ui.test.cjs
       - name: Check account, card, administrator and RPC regressions

@@ -62,5 +62,14 @@
     "coverage": "6 source-verified entries including historical selections; not the complete selection",
     "seoulEditionSource": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
     "editionYear": 2027
+  },
+  "mapBackground": {
+    "provider": "KOSTAT",
+    "sourceUrl": "https://github.com/southkorea/southkorea-maps",
+    "boundaryYear": 2018,
+    "localFile": "korea-provinces.json",
+    "sha256": "ea600815c81b9b0f95777e6ac0715d34753998e0876a7f223142ed2d5d1b40f6",
+    "attributionFile": "map-attribution.txt",
+    "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   }
 }

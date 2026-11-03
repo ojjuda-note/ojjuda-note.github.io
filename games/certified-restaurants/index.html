@@ -7,23 +7,21 @@
   <meta name="description" content="미쉐린·블루리본 가이드 선정 식당과 우체국 추천 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants1">
+  <link rel="stylesheet" href="./style.css?v=20261103-restaurants2">
   <script src="./vendor/leaflet.js" defer></script>
-  <script src="./app.js?v=20261103-restaurants1" defer></script>
+  <script src="./app.js?v=20261103-restaurants2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
   <main class="app">
     <header class="page-header">
-      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="12" stroke="currentColor" stroke-width="1.8"/><circle cx="20" cy="20" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M4 7v9m3-9v9m-6-9v9q0 4 3 4v13M35 7v26m0-26q-5 5-4 14h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-      <div class="heading-copy"><p class="eyebrow">오쭈다 · 테스트</p><h1>인증맛집<span class="title-dot" aria-hidden="true">.</span></h1><p class="subtitle">가이드 선정·우체국 추천 맛집</p></div>
+      <div class="heading-copy"><h1>인증맛집</h1><p class="subtitle">미쉐린 · 블루리본 · 우체국 추천</p></div>
       <a id="back-link" class="back-link" href="/world.html?tab=arcade">← 오락실</a>
     </header>
 
     <section class="search-area" aria-label="맛집 검색과 필터">
       <form id="search-form" class="search-row" role="search">
-        <label class="search-box"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="sr-only">가게 이름, 주소, 음식 검색</span><input id="search" type="search" placeholder="가게 이름, 동네, 먹고 싶은 음식" autocomplete="off" maxlength="160"></label>
-        <label class="region-box"><span class="sr-only">지역</span><select id="region"><option value="">전국</option></select><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></label>
+        <label class="search-box"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="sr-only">가게 이름, 주소, 음식 검색</span><input id="search" type="search" placeholder="가게 이름, 지역, 음식 검색" autocomplete="off" maxlength="160"></label>
       </form>
       <div id="categories" class="category-row" role="group" aria-label="음식 종류">
         <button type="button" class="category is-active" data-category="" aria-pressed="true">전체</button>
@@ -35,41 +33,44 @@
         <button type="button" class="category" data-category="디저트" aria-pressed="false">디저트</button>
         <button type="button" class="category" data-category="기타" aria-pressed="false">기타</button>
       </div>
-      <div class="guide-line">
-        <div id="guides" class="guide-filters" role="group" aria-label="선정 가이드">
+    </section>
+
+    <div class="results-toolbar">
+      <p id="result-count" class="result-count" aria-live="polite">맛집을 불러오는 중…</p>
+      <button id="filter-toggle" class="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-options"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="5" r="2" fill="currentColor"/><circle cx="13" cy="10" r="2" fill="currentColor"/><circle cx="8" cy="15" r="2" fill="currentColor"/></svg><span id="filter-label">필터</span></button>
+      <div class="view-switch" role="group" aria-label="보기 방식"><button id="show-list" type="button" aria-pressed="true">목록</button><button id="show-map" type="button" aria-pressed="false">지도</button></div>
+    </div>
+    <p id="filter-summary" class="filter-summary" hidden></p>
+
+    <section id="filter-options" class="filter-options" aria-label="상세 검색 조건" hidden>
+      <div class="filter-heading"><label class="region-box"><span>지역</span><select id="region"><option value="">전국</option></select></label><button id="reset" class="text-button" type="button">초기화</button></div>
+      <div id="guides" class="guide-filters" role="group" aria-label="선정 가이드">
           <button type="button" class="guide-filter is-active" data-guide="" aria-pressed="true">전체 가이드</button>
           <button type="button" class="guide-filter" data-guide="michelin" aria-pressed="false"><span class="guide-dot michelin-dot" aria-hidden="true"></span>미쉐린</button>
           <button type="button" class="guide-filter" data-guide="blue-ribbon" aria-pressed="false"><span class="guide-dot ribbon-dot" aria-hidden="true"></span>블루리본</button>
           <button type="button" class="guide-filter" data-guide="post-office" aria-pressed="false"><span class="guide-dot post-office-dot" aria-hidden="true"></span>우체국 추천</button>
           <button type="button" class="guide-filter" data-guide="both" aria-pressed="false">미쉐린·블루리본 모두</button>
-        </div>
-        <button id="reset" class="text-button" type="button">초기화</button>
       </div>
-    </section>
-
-    <div class="results-toolbar">
-      <p id="result-count" class="result-count" aria-live="polite">맛집을 불러오는 중…</p>
       <div class="toolbar-actions">
         <button id="saved-only" class="utility-button" type="button" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>저장한 곳</button>
         <button id="nearby" class="utility-button" type="button"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>내 주변</button>
       </div>
-      <div class="view-switch" role="group" aria-label="보기 방식"><button id="show-map" type="button" aria-pressed="true">지도</button><button id="show-list" type="button" aria-pressed="false">목록</button></div>
-    </div>
+    </section>
 
     <section id="collections" class="collection-links" aria-label="공식 전체 지도" hidden></section>
     <p id="status" class="status" role="status" hidden></p>
-    <section id="workspace" class="workspace" data-view="map" aria-label="맛집 지도와 목록">
+    <section id="workspace" class="workspace" data-view="list" aria-label="맛집 지도와 목록">
       <div id="map-panel" class="map-panel">
-        <div id="map" role="region" aria-label="선정 식당 위치 지도"><div class="map-loading">지도를 준비하고 있어요.</div></div>
+        <div id="map" role="region" aria-label="선정 식당 지역 지도"><div class="map-loading">지도를 준비하고 있어요.</div></div>
         <div id="map-message" class="map-message" hidden><span id="map-message-text"></span><button id="retry-map" type="button">다시 불러오기</button></div>
-        <div class="map-caption"><span class="map-caption-dot" aria-hidden="true"></span><span id="map-caption-text">표시된 위치를 누르면 가게 정보가 열려요.</span></div>
+        <div class="map-caption"><span id="map-caption-text">지역 지도 · 자세한 위치는 가게 정보에서 확인</span></div>
       </div>
       <div id="results" class="results-panel" tabindex="-1" aria-label="선정 식당 목록">
         <div id="cards" class="cards"><div class="loading-state"><span class="loading-ring" aria-hidden="true"></span><p>확인된 맛집을 불러오고 있어요.</p></div></div>
       </div>
     </section>
 
-    <footer class="page-footer"><p id="coverage">공식 출처로 확인한 일부 식당부터 제공합니다.</p><p>가이드 선정·우체국 추천 정보예요. 출처와 선정·발행 연도를 확인해 주세요. <span id="updated"></span></p></footer>
+    <footer class="page-footer"><details><summary>자료 안내</summary><p id="coverage">공식 출처로 확인한 일부 식당부터 제공합니다.</p><p><span id="updated"></span> · 선정·발행 연도와 출처는 가게 정보에서 확인할 수 있어요.</p><div id="collection-sources"></div><p>지역 지도: KOSTAT 2018 시도 경계 · <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">지도 출처</a></p></details></footer>
   </main>
 
   <dialog id="detail" class="detail-dialog" aria-labelledby="detail-title"><div class="detail-shell"><button id="close-detail" class="close-detail" type="button" aria-label="가게 정보 닫기">×</button><div id="detail-content"></div></div></dialog>

@@ -163,7 +163,7 @@ async function checkRenderedCircles(){
   await page.route('**/*',async route=>{
    const url=new URL(route.request().url());
    if(url.pathname.endsWith('/puzzles.js'))return route.fulfill({contentType:'text/javascript',body:`window.JJUDA_PUZZLES=${JSON.stringify(fixtures)};`});
-   if(url.origin!=='https://fixture.test'||/\/(photo-puzzles|masterpiece-puzzles|wallet|supabase)\.js$/.test(url.pathname))return route.fulfill({body:'',contentType:'text/javascript'});
+   if(url.origin!=='https://fixture.test'||/\/(photo-puzzles|masterpiece-puzzles|fairytale-pets-puzzles|wallet|supabase)\.js$/.test(url.pathname))return route.fulfill({body:'',contentType:'text/javascript'});
    if(['/portrait.svg','/landscape.svg'].includes(url.pathname)){
     const [width,height]=url.pathname==='/portrait.svg'?[800,1200]:[1500,1000];
     return route.fulfill({contentType:'image/svg+xml',body:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#e7ecef"/></svg>`});

@@ -15,18 +15,26 @@ const puzzles=[
  {id:63,title:'첫 명화',difficulty:'very-hard',spots}
 ].map(p=>({...p,original:'/fixture.svg',difference:'/fixture.svg'}));
 const expectedOrder=[3,1,4,2,5,0],flush=()=>new Promise(resolve=>setImmediate(resolve));
+const catalogFiles=['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','fairytale-pets-puzzles.js'];
+function readCatalog(){const context=vm.createContext({window:{}});for(const file of catalogFiles)vm.runInContext(read(file),context);return JSON.parse(JSON.stringify(context.window.JJUDA_PUZZLES));}
 
-test('Spot orders the original 82 IDs by normal/hard/very-hard and numeric ID without mutating content',()=>{
+test('Spot inserts the 70 slightly-hard pictures in display order without changing the original 82 IDs or saved indices',()=>{
  const context=vm.createContext({window:{}});
- for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js'])vm.runInContext(read(file),context);
+ for(const file of catalogFiles.slice(0,3))vm.runInContext(read(file),context);
+ const legacy=JSON.parse(JSON.stringify(context.window.JJUDA_PUZZLES));
+ vm.runInContext(read('fairytale-pets-puzzles.js'),context);
  const actual=JSON.parse(JSON.stringify(context.window.JJUDA_PUZZLES)),before=JSON.stringify(actual);
- assert.deepEqual(['normal','hard','very-hard'].map(d=>actual.filter(p=>core.puzzleDifficulty(p)===d).length),[48,14,20]);
- assert.deepEqual(core.difficultyOrder(actual),Array.from({length:82},(_,i)=>i));
+ const order=[...Array.from({length:48},(_,i)=>i),...Array.from({length:70},(_,i)=>i+82),...Array.from({length:34},(_,i)=>i+48)];
+ assert.deepEqual(actual.slice(0,82),legacy,'new data only appends, preserving every original image and answer');
+ assert.deepEqual(['normal','slightly-hard','hard','very-hard'].map(d=>actual.filter(p=>core.puzzleDifficulty(p)===d).length),[48,70,14,20]);
+ assert.deepEqual(core.difficultyOrder(actual),order);
+ assert.deepEqual(order.slice(48,118).map(i=>actual[i].id),Array.from({length:70},(_,i)=>i+83),'new IDs 83–152 occupy display positions 49–118');
  assert.deepEqual(core.difficultyOrder(puzzles),expectedOrder,'difficulty precedes ID even if the underlying array is interleaved');
  assert.equal(JSON.stringify(actual),before,'ordering never changes puzzle IDs, artwork, answer coordinates or array positions');
- const migrated=core.cleanProgress({version:2,current:48,order:actual.map((_,i)=>i).reverse()},actual);
+ const migrated=core.cleanProgress({version:2,current:48,order:legacy.map((_,i)=>i).reverse()},actual);
  assert.equal(actual[migrated.current].id,49,'a saved index still refers to the same original picture');
- assert.deepEqual(migrated.order,Array.from({length:82},(_,i)=>i));
+ assert.equal(migrated.order.indexOf(migrated.current),118,'old ID 49 now displays as picture 119');
+ assert.deepEqual(migrated.order,order);
 });
 
 test('old shuffled progress migrates deterministically, keeping valid current identity and completed IDs',()=>{
@@ -46,7 +54,7 @@ test('old shuffled progress migrates deterministically, keeping valid current id
  }
 });
 
-function fixture(t,stored){
+function fixture(t,stored,fixturePuzzles=puzzles){
  const dom=new JSDOM(read('index.html'),{url:'https://fixture.test/games/spot-difference/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,$=id=>d.getElementById(id);t.after(()=>w.close());
  let now=100000,account={userId:owner,coins:100},subscriber,uuidCalls=0;const ticks=[],charges=[],records=[],registered=[];
  w.Date.now=()=>now;w.setInterval=fn=>ticks.push(fn);w.scrollTo=()=>{};w.confirm=()=>true;
@@ -54,16 +62,49 @@ function fixture(t,stored){
  w.crypto.randomUUID=()=>{uuidCalls++;return 'cccccccc-cccc-4ccc-8ccc-'+String(uuidCalls).padStart(12,'0');};
  d.modelContext={registerTool:tool=>registered.push(tool)};
  w.JjudaWallet={getState:()=>account,subscribe:fn=>{subscriber=fn;fn(account);},refresh:async()=>{},buy:async(request,stage)=>{charges.push({...request,stage});return {ok:true,kind:request.kind,stage,spot:request.spot,price:1,extend_ms:60000};},recordClear:async(recordOwner,stage)=>{records.push({owner:recordOwner,stage});return {ok:true};}};
- w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(puzzles));w.eval(read('game-core.js'));
+ w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixturePuzzles));w.eval(read('game-core.js'));
  if(stored)w.localStorage.setItem(key,JSON.stringify(stored));w.eval(read('app.js'));
- const state=()=>JSON.parse(w.localStorage.getItem(key)),round=()=>state().rounds[puzzles[state().current].id];
+ const state=()=>JSON.parse(w.localStorage.getItem(key)),round=()=>state().rounds[fixturePuzzles[state().current].id];
  const load=()=>{for(const image of d.querySelectorAll('img'))if(image.onload)image.onload();};
  function select(index){$('stage-picker').value=index;$('stage-picker').dispatchEvent(new w.Event('change'));load();}
  function tap(x,y){const surface=$('original').parentElement;surface.getBoundingClientRect=()=>({left:0,top:0,width:1000,height:800});const init={bubbles:true,clientX:x*10,clientY:y*8};surface.dispatchEvent(new w.MouseEvent('pointerdown',init));surface.dispatchEvent(new w.MouseEvent('click',init));}
- function solve(){for(const s of puzzles[state().current].spots)tap(s.x,s.y);}
+ function solve(){for(const s of fixturePuzzles[state().current].spots)tap(s.x,s.y);}
  function advance(ms){now+=ms;for(const tick of ticks)tick();}
  load();return {w,d,$,state,round,load,select,tap,solve,advance,charges,records,registered,uuidCalls:()=>uuidCalls,account:id=>{account={...account,userId:id};subscriber(account);}};
 }
+
+test('adding the real 70-picture catalog resumes old ID 49 at display 119 and preserves completed history',t=>{
+ const catalog=readCatalog(),f=fixture(t,{version:2,current:48,order:Array.from({length:82},(_,i)=>i),completed:[7,49,82],found:{49:[0,1]},rounds:{49:{...core.freshRound(),status:'playing',deadline:999999}}},catalog);
+ assert.equal(f.state().current,48);assert.equal(catalog[f.state().current].id,49);
+ assert.match(f.$('stage-label').textContent,/119 \/ 152.*어려움$/);assert.equal(f.$('stage-picker').value,'48');
+ assert.deepEqual(f.state().completed,[7,49,82]);assert.deepEqual(f.state().found[49],[]);assert.equal(f.round().status,'ready');
+ assert.deepEqual(Array.from(f.$('stage-picker').children,g=>g.children.length),[48,70,14,20]);
+ assert.deepEqual(f.records,[]);assert.deepEqual(f.charges,[],'resuming an existing picture does not create purchases');
+});
+
+test('new ID 83 clears only on its tenth answer and each Next handler requires the current picture to be won',async t=>{
+ const catalog=readCatalog(),f=fixture(t,{version:2,current:82},catalog);
+ assert.match(f.$('stage-label').textContent,/49 \/ 152.*조금 어려움$/);assert.equal(f.$('found-total').textContent,'10');
+ const tryNext=()=>{for(const id of ['next','continue','celebration-next','retry-next'])f.$(id).onclick();};
+ tryNext();assert.equal(f.state().current,82,'a ready picture cannot be skipped by result or menu handlers');
+ f.$('start').click();for(const s of catalog[82].spots.slice(0,9))f.tap(s.x,s.y);
+ assert.equal(f.state().found[83].length,9);assert.equal(f.round().status,'playing');assert.equal(f.$('next').disabled,true);assert.deepEqual(f.records,[]);
+ tryNext();assert.equal(f.state().current,82,'nine answers cannot unlock the next picture');
+ const tenth=catalog[82].spots[9];f.tap(tenth.x,tenth.y);await flush();
+ assert.equal(f.round().status,'won');assert.deepEqual(f.records,[{owner,stage:83}],'score uses stable ID 83, not display position 49');assert.deepEqual(f.state().completed,[83]);
+ f.$('celebration-next').onclick();f.load();assert.equal(f.state().current,83);assert.equal(catalog[f.state().current].id,84);assert.equal(f.round().status,'playing');
+ tryNext();assert.equal(f.state().current,83,'repeated Next clicks cannot skip the fresh next picture');
+});
+
+test('the last slightly-hard picture advances from ID 152 to old ID 49 and reentry keeps that identity',async t=>{
+ const catalog=readCatalog(),f=fixture(t,{version:2,current:151},catalog);
+ assert.match(f.$('stage-label').textContent,/118 \/ 152.*조금 어려움$/);
+ f.$('next').onclick();assert.equal(f.state().current,151,'the difficulty boundary stays locked before clearing');
+ f.$('start').click();f.solve();await flush();assert.equal(f.round().status,'won');assert.deepEqual(f.records,[{owner,stage:152}]);
+ f.$('celebration-next').onclick();f.load();assert.equal(f.state().current,48);assert.equal(catalog[f.state().current].id,49);assert.match(f.$('stage-label').textContent,/119 \/ 152.*어려움$/);
+ f.$('next').onclick();f.$('celebration-next').onclick();assert.equal(f.state().current,48,'old ID 49 must also be cleared before advancing');
+ const again=fixture(t,f.state(),catalog);assert.equal(again.state().current,48);assert.equal(again.round().status,'ready');assert.deepEqual(again.state().completed,[152]);assert.deepEqual(again.records,[]);
+});
 
 test('reentry remembers the last picture and history, while confirmed hints and time stay round consumables',async t=>{
  const stored={version:2,current:0,order:[0,5,4,2,1,3],completed:[61],found:{7:[0,1,2,3,4,5],82:[0,1,2]},rounds:{82:{...core.freshRound(),status:'playing',hearts:1,deadline:999999,remainingMs:9000,totalMs:120000,paid:[8],hintIndex:8,timeBought:true,assisted:true,rankOwner:other}}};
