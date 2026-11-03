@@ -297,18 +297,13 @@
       if (!userMarker) userMarker = window.L.marker([state.position.lat, state.position.lng], { icon: window.L.divIcon({ className: 'user-pin', html: '<span></span>', iconSize: [18, 18], iconAnchor: [9, 9] }), title: '내 위치', alt: '내 위치' }).bindTooltip('내 위치').addTo(map);
       else userMarker.setLatLng([state.position.lat, state.position.lng]);
     }
-    const missing = state.visible.length - allLocated.length;
-    const summary = ['지역 개요도'];
-    if (located.length) summary.push((state.position ? '가까운 순 · ' : '') + '위치 확인 ' + allLocated.length + '곳 중 ' + (start + 1) + '–' + end + '번째 표시');
-    if (missing) summary.push('위치 미확인 ' + missing + '곳은 목록에서 확인');
-    $('map-caption-text').textContent = state.visible.length ? summary.join(' · ') : '조건에 맞는 위치가 없어요.';
     updateResultCount();
     requestAnimationFrame(() => {
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
       if (!fit) return;
       if (located.length === 1) map.setView([located[0].lat, located[0].lng], 10, { animate: false });
-      else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 60], paddingBottomRight: [35, 35], maxZoom: 10, animate: false });
+      else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 35], paddingBottomRight: [35, 35], maxZoom: 10, animate: false });
     });
   }
   function selectRestaurant(id, openDetail) {

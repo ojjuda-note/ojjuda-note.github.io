@@ -137,7 +137,8 @@ function fixture(options = {}) {
   assert.equal(actual.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'only sourced coordinates receive pins, within one map page');
   assert.equal(actual.$('.result-shown').hidden, true, 'list pagination counts are hidden in map mode');
   const missingActual = dataset.restaurants.filter(item => !coordinates(item)).length;
-  if (missingActual) assert.ok(actual.$('#map-caption-text').textContent.includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'), 'coordinate gaps remain explained even when the pin limit applies');
+  assert.equal(actual.$('.map-caption'), null, 'the map has no obstructing summary caption');
+  if (missingActual) assert.ok(actual.$('#result-coverage').textContent.includes('위치 확인 중 ' + missingActual + '곳'), 'coordinate gaps remain explained above the map even when the pin limit applies');
   actual.click('#show-list'); actual.click('#show-map');
   assert.equal(actual.calls.maps, 1, 'map switching reuses the existing map');
   assert.equal(actual.calls.geography, 1, 'map switching reuses the local geometry');
@@ -279,7 +280,7 @@ function fixture(options = {}) {
   await until(() => mapFailure.calls.geoLayers === 1, 'retry loads the local regional geography');
   assert.equal(mapFailure.calls.geography, 2, 'retry makes one new local geometry request');
   assert.equal(mapFailure.$('#map-message').hidden, true, 'the retry clears the regional background error');
-  assert.match(mapFailure.$('#map-caption-text').textContent, /개요도/, 'the overview does not pretend to be a street map');
+  assert.equal(mapFailure.$('.map-caption'), null, 'retry does not restore an obstructing map caption');
   assert.deepEqual(mapFailure.errors, []); mapFailure.dom.window.close();
 
   const temporary = fixture({ blockStorage: true });
@@ -428,7 +429,7 @@ function fixture(options = {}) {
   await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
   assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(0, 50)), 'without location, map groups follow the existing name ordering');
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
-  assert.match(mixedMap.$('#map-caption-text').textContent, /위치 미확인 7곳은 목록에서 확인/, 'missing-coordinate records remain explained independently of pagination');
+  assert.equal(mixedMap.$('#result-coverage').closest('#map-panel'), null, 'location coverage remains outside the map panel');
   const visitedNames = [...pinNames(mixedMap)];
   for (let page = 1; page <= 6; page++) {
     mixedMap.click('#map-next');
@@ -443,7 +444,7 @@ function fixture(options = {}) {
   mixedMap.click('#map-next'); assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 5, 'a disabled final next button cannot produce an empty page');
   mixedMap.click('#map-prev'); assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(250, 300)), 'previous works from a partial last page');
   mixedMap.search('지도미확인');
-  assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 미확인 7곳은 목록에서 확인');
+  assert.equal(mixedMap.$('.map-caption'), null, 'filtering to unlocated restaurants does not restore a map caption');
   assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 0);
   assert.equal(mixedMap.$('#map-pagination').hidden, true, 'no-location results hide the map pager');
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 0곳 · 위치 확인 중 7곳', 'search refreshes registered and mapped counts together');
