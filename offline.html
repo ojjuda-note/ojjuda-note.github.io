@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#245A48">
+  <title>연결 확인 | 오쭈다 아지트</title>
+  <style>
+    :root { color-scheme: light dark; font-family: "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; background: #f7f8f4; color: #253d31; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+    main { width: 100%; max-width: 420px; padding: 36px 24px 24px; border: 1px solid #dce6dc; border-radius: 28px; background: #fff; text-align: center; }
+    .brand { margin: 0 0 30px; color: #245a48; font-size: 15px; font-weight: 750; letter-spacing: -.02em; }
+    .symbol { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 22px; border-radius: 22px; background: #edf4ec; color: #245a48; }
+    .symbol svg { width: 32px; height: 32px; }
+    h1 { margin: 0 0 14px; font-size: clamp(22px, 5vw, 27px); line-height: 1.45; letter-spacing: -.045em; word-break: keep-all; }
+    .description { margin: 0; color: #617166; font-size: 14px; line-height: 1.85; word-break: keep-all; }
+    button { display: block; width: 100%; min-height: 48px; margin: 28px 0 0; padding: 12px 20px; border: 0; border-radius: 14px; background: #245a48; color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+    button:hover { background: #1c493a; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #6cae89; outline-offset: 4px; }
+    .status { min-height: 2.9em; margin: 14px 0 0; color: #617166; font-size: 12px; line-height: 1.45; }
+    a { color: inherit; }
+    @media (prefers-color-scheme: dark) {
+      :root { background: #141e19; color: #e5eee7; }
+      main { background: #1d2c23; border-color: #344d3e; }
+      .brand, .symbol { color: #abd4b8; }
+      .symbol { background: #2b4435; }
+      .description, .status { color: #b3c6b8; }
+      button { background: #acd7bb; color: #193d2a; }
+      button:hover { background: #c1e4cd; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="brand">오쭈다 아지트</p>
+    <div class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M5 11c6-5 16-5 22 0M9 16c4-3 10-3 14 0M13 21c2-1 4-1 6 0M16 26h.01M5 4l22 24"/>
+      </svg>
+    </div>
+    <h1>인터넷 연결을<br>확인해 주세요</h1>
+    <p class="description">게임과 공원은 인터넷 연결이 필요해요.<br>Wi-Fi나 데이터를 켠 뒤 다시 시도해 주세요.</p>
+    <button type="button" id="retry">다시 시도</button>
+    <p class="status" id="connection-status" role="status" aria-live="polite"></p>
+    <noscript><p><a href="/world.html">아지트 다시 열기</a></p></noscript>
+  </main>
+  <script>
+    document.getElementById('retry').addEventListener('click', function () {
+      location.reload();
+    });
+    window.addEventListener('online', function () {
+      document.getElementById('connection-status').textContent = '인터넷이 연결됐어요. 다시 시도를 눌러 주세요.';
+    });
+  </script>
+</body>
+</html>

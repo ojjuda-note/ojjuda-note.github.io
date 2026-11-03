@@ -1,0 +1,46 @@
+name: PWA install checks
+
+on:
+  pull_request:
+    paths:
+      - 'pwa-install.*'
+      - 'sw.js'
+      - 'offline.html'
+      - 'manifest.webmanifest'
+      - 'world.html'
+      - 'index.html'
+      - 'version.json'
+      - 'tests/pwa-*.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/pwa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'pwa-install.*'
+      - 'sw.js'
+      - 'offline.html'
+      - 'manifest.webmanifest'
+      - 'world.html'
+      - 'index.html'
+      - 'version.json'
+      - 'tests/pwa-*.test.cjs'
+      - 'tests/package*.json'
+      - '.github/workflows/pwa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  install-and-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: npm --prefix tests run test:pwa
+      - run: node tests/inline-scripts.test.cjs
