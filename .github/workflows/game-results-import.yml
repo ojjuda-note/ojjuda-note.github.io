@@ -1,0 +1,112 @@
+name: Import reviewed game result changes
+
+on:
+  push:
+    branches: ['codex/shared-game-results-20261103']
+    paths: ['.github/workflows/game-results-import.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: game-results-file-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io' && github.ref == 'refs/heads/codex/shared-game-results-20261103'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: true
+      - name: Verify fixed archive and import only reviewed files
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, io, os, pathlib, stat, subprocess, tempfile, urllib.request, zipfile
+
+          repository = "ojjuda-note/ojjuda-note.github.io"
+          branch = "codex/shared-game-results-20261103"
+          base = "199d60fbca79fbcd82fb1e8d9278e7bc7c074280"
+          url = "https://d2ol7oe51mr4n9.cloudfront.net/user_3IxANoqRL1uMNs5GRgxqpniGdas/fb521f7a-cbc8-401f-b968-a8112905e114.zip"
+          expected_sha256 = "b933b808843a9cfff9efc7b34029bbf0bd16e7eb01fd33f5921f1ea3c9531997"
+          expected_bytes = 1112392
+          expected_uncompressed_bytes = 3174433
+          allowed = set(['game-challenges.js', 'game-release.json', 'game-results.css', 'game-results.js', 'games/bang/app.js', 'games/bang/index.html', 'games/forest-archer/game.mjs', 'games/forest-archer/index.html', 'games/forest-archer/style.css', 'games/matgo-online.html', 'games/matgo-online.mjs', 'games/matgo.html', 'games/mines/entry.js', 'games/mines/index.html', 'games/ojjuda-tour/index.html', 'games/ojjuda-tour/marble-online.js', 'games/ojjuda-tour/tour-entry.js', 'games/photo-ttang.html', 'games/poker/app.mjs', 'games/poker/index.html', 'games/roulette/app.js', 'games/roulette/index.html', 'games/sacheonseong/app.js', 'games/sacheonseong/index.html', 'games/sacheonseong/server.js', 'games/sacheonseong/style.css', 'games/spot-difference/app.js', 'games/spot-difference/index.html', 'games/spot-difference/style.css', 'games/tank/index.html', 'games/tank/online.mjs', 'games/ttang.html', 'matgo-bridge.js', 'photo-ttang-bridge.js', 'photo-ttang-page.js', 'photo-ttang.html', 'screw-flat.js', 'screw-loader.js', 'screw3d.js', 'supabase/migrations/20261103053820_matgo_result_receipts.sql', 'tests/archery-ammo-bridge.test.cjs', 'tests/archery-game-flow.test.mjs', 'tests/bang-solo-ui.test.cjs', 'tests/game-results-arcade.test.cjs', 'tests/game-results-fixture.cjs', 'tests/game-results-multiplayer-ui.test.cjs', 'tests/game-results-multiplayer.test.cjs', 'tests/game-results-stages.test.cjs', 'tests/game-results-ui.test.cjs', 'tests/game-results.test.cjs', 'tests/guest-access-ui.test.cjs', 'tests/matgo-rendering.test.cjs', 'tests/matgo-result-receipt-db.test.cjs', 'tests/mines-dom.test.cjs', 'tests/multiplayer-ranking-bridges.test.cjs', 'tests/ojjuda-tour-dom.test.cjs', 'tests/package.json', 'tests/photo-ttang-progression.test.cjs', 'tests/poker-dom.test.cjs', 'tests/poker-ui-fixture.cjs', 'tests/roulette-multiplayer-ui.test.cjs', 'tests/roulette-refill-ui.test.cjs', 'tests/sacheonseong-result-ranking.test.cjs', 'tests/screw-modes-ui.test.cjs', 'tests/screw-ranking.test.cjs', 'tests/screw3d-ui.test.cjs', 'tests/spot-celebration-ui.test.cjs', 'tests/tank-client.test.cjs', 'tests/world-game-challenges.test.cjs', 'ttang-bridge.js', 'world-archery-game.js', 'world-bang-game.js', 'world-game-assets.js', 'world-mines-game.js', 'world-poker-game.js', 'world-roulette-game.js', 'world-sacheonseong-game.js', 'world-spot-game.js', 'world-tank-game.js', 'world-tour-game.js', 'world.html'])
+          assert 50 <= len(allowed) <= 110
+          assert os.environ["GITHUB_REPOSITORY"] == repository
+          assert os.environ["GITHUB_REF"] == "refs/heads/" + branch
+          assert os.environ["GITHUB_EVENT_NAME"] == "push"
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          initial = os.environ["GITHUB_SHA"]
+          assert git("rev-parse", "HEAD") == initial
+          assert git("rev-parse", "HEAD^") == base, "Bootstrap parent changed"
+          assert not git("status", "--porcelain"), "Checkout must be clean"
+          assert git("ls-remote", "--exit-code", "origin", "refs/heads/" + branch).split()[0] == initial
+
+          with urllib.request.urlopen(url, timeout=60) as response:
+              assert response.status == 200
+              data = response.read(expected_bytes + 1)
+          assert len(data) == expected_bytes
+          assert hashlib.sha256(data).hexdigest() == expected_sha256
+
+          checkout = pathlib.Path.cwd().resolve()
+          prepared = {}
+          with zipfile.ZipFile(io.BytesIO(data)) as archive:
+              entries = archive.infolist()
+              assert len(entries) == len(allowed)
+              assert {entry.filename for entry in entries} == allowed
+              assert sum(entry.file_size for entry in entries) == expected_uncompressed_bytes
+              for entry in entries:
+                  name = entry.filename
+                  assert not entry.is_dir() and not (entry.flag_bits & 1)
+                  assert stat.S_ISREG(entry.external_attr >> 16)
+                  assert entry.file_size <= 2_000_000
+                  path = pathlib.PurePosixPath(name)
+                  assert not path.is_absolute() and ".." not in path.parts
+                  target = checkout.joinpath(*path.parts)
+                  assert target.resolve().is_relative_to(checkout)
+                  assert not target.is_symlink()
+                  for parent in target.parents:
+                      if parent == checkout:
+                          break
+                      assert not parent.is_symlink()
+                  prepared[name] = archive.read(entry)
+              assert archive.testzip() is None
+
+
+          # One reviewed assertion now allows the explicit replay-gate attribute.
+          test_path = 'tests/archery-game-flow.test.mjs'
+          before = b'/data-action="next-stage" disabled/'
+          after = b'/data-action="next-stage"[^>]*\\bdisabled\\b/'
+          assert prepared[test_path].count(before) == 1
+          prepared[test_path] = prepared[test_path].replace(before, after)
+          assert hashlib.sha256(prepared[test_path]).hexdigest() == '69b20b0062e16b005c8fd261d5d5ae6a4345abf6780aa608b5e7654f9791f89a'
+          for name, content in prepared.items():
+              target = checkout / name
+              target.parent.mkdir(parents=True, exist_ok=True)
+              with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as handle:
+                  handle.write(content)
+                  temporary = pathlib.Path(handle.name)
+              temporary.chmod(0o644)
+              temporary.replace(target)
+
+          subprocess.run(["git", "add", "--", *sorted(allowed)], check=True)
+          staged = subprocess.check_output(["git", "diff", "--cached", "--name-only", "-z"]).decode().strip("\0").split("\0")
+          assert set(staged) == allowed and len(staged) == len(allowed)
+          subprocess.run(["git", "diff", "--cached", "--check"], check=True)
+          assert git("rev-parse", "HEAD") == initial
+          assert git("ls-remote", "--exit-code", "origin", "refs/heads/" + branch).split()[0] == initial
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "commit", "-m", "Unify game results, sharing, effects and verified same-level records"], check=True)
+          subprocess.run(["git", "push", "origin", "HEAD:refs/heads/" + branch], check=True)
+          print("Imported", len(allowed), "verified files; commit", git("rev-parse", "HEAD"))
+          PY
