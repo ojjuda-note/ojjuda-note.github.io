@@ -9,7 +9,6 @@ const directory = path.join(root, 'games/certified-restaurants');
 const html = fs.readFileSync(path.join(directory, 'index.html'), 'utf8');
 const code = fs.readFileSync(path.join(directory, 'app.js'), 'utf8');
 const dataset = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.json'), 'utf8'));
-const geography = JSON.parse(fs.readFileSync(path.join(directory, 'korea-provinces.json'), 'utf8'));
 const savedKey = 'ojjuda-certified-restaurants-saved-v1';
 const locationKey = 'ojjuda-certified-restaurants-location-v1';
 const viewKey = 'ojjuda-certified-restaurants-view-v1';
@@ -24,18 +23,24 @@ function fixture(options = {}) {
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(html, { url: 'https://fixture.test/games/certified-restaurants/index.html?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole });
   const { window } = dom, document = window.document;
-  const calls = { data: 0, geography: 0, geoLayers: 0, location: 0, maps: 0, tiles: 0, fits: [], markers: new Set() };
+  const calls = { data: 0, location: 0, maps: 0, tiles: 0, tileLoads: 0, tileBatches: 0, tileRedraws: 0, tileRemoves: 0, tileLayers: [], fits: [], markers: new Set() };
+  let tileFailures = options.tileFailures || 'none', tilesStalled = !!options.stallTiles;
+  const backgroundDeadlines = new Map();
+  if (options.controlTimeouts) {
+    const nativeSetTimeout = window.setTimeout.bind(window), nativeClearTimeout = window.clearTimeout.bind(window); let nextDeadline = -1;
+    window.setTimeout = (handler, milliseconds, ...args) => {
+      if (milliseconds !== 18000) return nativeSetTimeout(handler, milliseconds, ...args);
+      const id = nextDeadline--; backgroundDeadlines.set(id, () => handler(...args)); return id;
+    };
+    window.clearTimeout = id => { if (!backgroundDeadlines.delete(id)) nativeClearTimeout(id); };
+  }
   window.matchMedia = query => ({ matches: query.includes('max-width') ? !!options.mobile : false, media: query, addEventListener() {}, addListener() {}, removeEventListener() {} });
   window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
   window.HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   window.fetch = async requested => {
     const url = new URL(requested, window.location.href);
-    assert.equal(url.origin, window.location.origin, 'all background requests stay local');
-    if (url.pathname.endsWith('/korea-provinces.json')) {
-      calls.geography++;
-      return { ok: !(options.failGeoOnce && calls.geography === 1), status: options.failGeoOnce && calls.geography === 1 ? 503 : 200, json: async () => structuredClone(geography) };
-    }
-    assert.ok(url.pathname.endsWith('/restaurants.json'), 'the app only fetches the restaurant dataset or local regional map'); calls.data++;
+    assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
+    assert.ok(url.pathname.endsWith('/restaurants.json'), 'the app only fetches restaurant data; map images belong to Leaflet'); calls.data++;
     return { ok: !(options.failOnce && calls.data === 1), status: options.failOnce && calls.data === 1 ? 503 : 200, json: async () => structuredClone(options.dataset || dataset) };
   };
   if (!options.noPermissionApi) Object.defineProperty(window.navigator, 'permissions', { value: { query: async () => ({ state: options.permission || 'denied' }) } });
@@ -50,11 +55,39 @@ function fixture(options = {}) {
     window.Storage.prototype.setItem = () => { throw new Error('storage disabled'); };
   }
   window.L = {
-    map(id) { calls.maps++; const map = { element: document.getElementById(id), zoom: 7, attributionControl: { addAttribution() {}, setPrefix() {} }, setView(point, zoom) { this.zoom = zoom; this.point = point; return this; }, getZoom() { return this.zoom; }, fitBounds(bounds) { calls.fits.push(bounds); return this; }, invalidateSize() { return this; }, removeLayer(layer) { layer.remove(); return this; } }; return map; },
+    map(id, settings) { calls.maps++; const map = { element: document.getElementById(id), options: settings, layers: new Set(), zoom: 7, attributionControl: { addAttribution() {}, setPrefix() {} }, setView(point, zoom) { this.zoom = zoom; this.point = point; return this; }, getZoom() { return this.zoom; }, fitBounds(bounds) { calls.fits.push(bounds); return this; }, invalidateSize() { return this; }, hasLayer(layer) { return this.layers.has(layer); }, removeLayer(layer) { layer.remove(); return this; } }; calls.map = map; return map; },
     control: { zoom() { return { addTo() {} }; } },
     divIcon(options) { return options; },
-    tileLayer() { calls.tiles++; assert.fail('the directory must not request external map tiles'); },
-    geoJSON(data) { calls.geoLayers++; assert.equal(data.type, 'FeatureCollection'); assert.equal(data.features.length, geography.features.length, 'the local overview includes every regional feature'); const node = document.createElement('div'); node.className = 'fixture-region-layer'; return { addTo(map) { map.element.append(node); return this; }, remove() { node.remove(); }, getBounds() { return { isValid: () => true }; }, setStyle() { return this; }, bringToBack() { return this; } }; },
+    tileLayer(url, settings) {
+      calls.tiles++;
+      const handlers = new Map(), node = document.createElement('div'); node.className = 'fixture-tile-layer';
+      let attached = null, batch = 0;
+      const layer = {
+        url, options: settings, currentTiles: [],
+        on(name, handler) { if (typeof name === 'object') Object.entries(name).forEach(([event, listener]) => handlers.set(event, listener)); else handlers.set(name, handler); return this; },
+        fire(name, event = {}) { handlers.get(name)?.({ target: this, ...event }); return this; },
+        addTo(map) { attached = map; map.layers.add(this); map.element.append(node); this.request(); return this; },
+        request() {
+          if (!attached) return this;
+          const current = ++batch; calls.tileBatches++;
+          this.currentTiles.forEach(tile => this.fire('tileunload', { tile }));
+          this.currentTiles = Array.from({ length: 3 }, () => document.createElement('img'));
+          if (!options.silentTileLoading) this.fire('loading');
+          this.currentTiles.forEach(tile => this.fire('tileloadstart', { tile }));
+          if (tilesStalled) return this;
+          const failed = tileFailures;
+          window.setTimeout(() => {
+            if (!attached || current !== batch) return;
+            this.currentTiles.forEach((tile, index) => this.fire(failed === 'all' || failed === 'mixed' && index === 0 ? 'tileerror' : 'tileload', { tile }));
+            calls.tileLoads++; this.fire('load');
+          }, 0);
+          return this;
+        },
+        redraw() { calls.tileRedraws++; return this.request(); },
+        remove() { if (!attached) return this; batch++; this.currentTiles.forEach(tile => this.fire('tileunload', { tile })); this.currentTiles = []; attached.layers.delete(this); attached = null; node.remove(); calls.tileRemoves++; this.fire('remove'); return this; }
+      };
+      calls.tileLayers.push(layer); return layer;
+    },
     marker(point, settings) {
       const node = document.createElement('div'); node.className = settings.icon.className; node.innerHTML = settings.icon.html; node.title = settings.title; let click;
       const marker = { point, node, bindTooltip() { return this; }, on(name, handler) { if (name === 'click') click = handler; return this; }, addTo(map) { map.element.append(node); calls.markers.add(marker); node.addEventListener('click', () => click && click()); return this; }, remove() { node.remove(); calls.markers.delete(marker); return this; }, setIcon(icon) { node.className = icon.className; node.innerHTML = icon.html; return this; }, setLatLng(next) { marker.point = next; return this; }, setZIndexOffset() {} };
@@ -64,13 +97,20 @@ function fixture(options = {}) {
   if (options.noMap) delete window.L;
   window.eval(code);
   const $ = selector => document.querySelector(selector);
-  return { dom, window, document, $, calls, errors, records: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId).sort(), order: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId), all() { let page = 0; while (!$('#load-more').hidden && page++ < 1000) $('#load-more').click(); }, click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); }, filters() { if ($('#filter-options').hidden) $('#filter-toggle').click(); }, change(selector, value) { $(selector).value = value; $(selector).dispatchEvent(new window.Event('change', { bubbles: true })); }, search(value) { $('#search').value = value; $('#search-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); } };
+  return { dom, window, document, $, calls, errors, backgroundDeadlines, expireMapTimeout() { assert.equal(backgroundDeadlines.size, 1, 'exactly one map deadline is active'); const [id, handler] = backgroundDeadlines.entries().next().value; backgroundDeadlines.delete(id); handler(); }, recoverTiles() { tileFailures = 'none'; tilesStalled = false; }, records: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId).sort(), order: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId), all() { let page = 0; while (!$('#load-more').hidden && page++ < 1000) $('#load-more').click(); }, click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); }, filters() { if ($('#filter-options').hidden) $('#filter-toggle').click(); }, change(selector, value) { $(selector).value = value; $(selector).dispatchEvent(new window.Event('change', { bubbles: true })); }, search(value) { $('#search').value = value; $('#search-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); } };
 }
 
 (async () => {
   const initialMap = fixture({ view: null });
   await ready(initialMap, dataset.restaurants.length, false);
-  await until(() => initialMap.calls.geoLayers === 1, 'a first visit loads the map and local geography');
+  await until(() => initialMap.calls.tileLoads === 1, 'a first visit loads the street map tiles');
+  const initialTiles = initialMap.calls.tileLayers[0];
+  assert.equal(initialTiles.url, 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', 'OSM uses its keyless HTTPS tile endpoint without query credentials');
+  assert.equal(initialTiles.options.maxZoom, 19); assert.equal(initialTiles.options.noWrap, true);
+  assert.equal(initialTiles.options.keepBuffer, 1); assert.equal(initialTiles.options.updateWhenIdle, true); assert.equal(initialTiles.options.updateWhenZooming, false);
+  assert.equal(initialTiles.options.referrerPolicy, 'strict-origin-when-cross-origin', 'tile requests keep the site referrer');
+  assert.match(initialTiles.options.attribution, /openstreetmap\.org\/copyright/); assert.match(initialTiles.options.attribution, /OpenStreetMap/);
+  assert.equal(initialMap.calls.map.options.maxZoom, 19, 'street details remain available at higher zoom');
   assert.equal(initialMap.$('#workspace').dataset.view, 'map', 'the first visit matches the festival map-and-list view');
   assert.equal(initialMap.$('#show-map').getAttribute('aria-pressed'), 'true');
   assert.equal(initialMap.$('#results').hidden, false, 'the list remains available beside the map');
@@ -79,9 +119,12 @@ function fixture(options = {}) {
   assert.equal(initialMap.$('#load-more').hidden, false, 'map-and-list browsing retains progressive loading');
   assert.equal(initialMap.window.localStorage.getItem(viewKey), null, 'the default view does not create an explicit preference');
   initialMap.click('#show-list');
+  assert.equal(initialMap.calls.map.hasLayer(initialTiles), false, 'list view detaches the tile layer');
   assert.equal(initialMap.window.localStorage.getItem(viewKey), 'list', 'explicit list selection is persisted');
   const explicitList = initialMap.window.localStorage.getItem(viewKey);
   initialMap.click('#show-map');
+  await until(() => initialMap.calls.map.hasLayer(initialTiles), 'returning to map reuses the same tile layer');
+  assert.equal(initialMap.calls.tiles, 1);
   assert.equal(initialMap.window.localStorage.getItem(viewKey), 'map', 'explicit map selection is persisted');
   const explicitMap = initialMap.window.localStorage.getItem(viewKey);
   initialMap.click('[data-category="한식"]'); initialMap.click('#reset');
@@ -96,7 +139,7 @@ function fixture(options = {}) {
   for (const view of [explicitMap, 'unsupported-view']) {
     const restoredView = fixture({ view });
     await ready(restoredView, dataset.restaurants.length, false);
-    await until(() => restoredView.calls.geoLayers === 1, 'map preference or invalid-preference fallback loads its map');
+    await until(() => restoredView.calls.tileLoads === 1, 'map preference or invalid-preference fallback loads its map');
     assert.equal(restoredView.$('#workspace').dataset.view, 'map', view === explicitMap ? 'a saved map choice is restored' : 'invalid saved values use the default map');
     assert.deepEqual(restoredView.errors, []); restoredView.dom.window.close();
   }
@@ -106,7 +149,7 @@ function fixture(options = {}) {
     { ...structuredClone(sourceRow), id: 'mobile-pending', name: '위치 확인 중 식당', region: '제주', lat: null, lng: null }
   ] } });
   await ready(mobileDefault, 2);
-  await until(() => mobileDefault.calls.geoLayers === 1, 'mobile first visit loads the map above its list');
+  await until(() => mobileDefault.calls.tileLoads === 1, 'mobile first visit loads the map above its list');
   assert.equal(mobileDefault.$('#workspace').dataset.view, 'map');
   mobileDefault.click('#show-map'); mobileDefault.change('#region', '제주');
   assert.equal(mobileDefault.$('#workspace').dataset.view, 'list', 'a mobile filter without locations still leads to its usable list');
@@ -130,9 +173,9 @@ function fixture(options = {}) {
   assert.equal(actual.$('#filter-options').hidden, true, 'secondary filters start collapsed');
   assert.equal(actual.$('#filter-toggle').getAttribute('aria-expanded'), 'false');
   assert.equal(actual.calls.maps, 0, 'list browsing does not create a map');
-  assert.equal(actual.calls.geography, 0, 'list browsing does not fetch map geometry');
+  assert.equal(actual.calls.tiles, 0, 'list browsing does not request map tiles');
   actual.click('#show-map');
-  await until(() => actual.calls.geoLayers === 1, 'map entry loads the local regional overview');
+  await until(() => actual.calls.tileLoads === 1, 'map entry loads the street map');
   assert.equal(actual.calls.maps, 1, 'the first map entry creates the map');
   assert.equal(actual.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'only sourced coordinates receive pins, within one map page');
   assert.equal(actual.$('.result-shown').hidden, true, 'list pagination counts are hidden in map mode');
@@ -141,7 +184,7 @@ function fixture(options = {}) {
   if (missingActual) assert.ok(actual.$('#result-coverage').textContent.includes('위치 확인 중 ' + missingActual + '곳'), 'coordinate gaps remain explained above the map even when the pin limit applies');
   actual.click('#show-list'); actual.click('#show-map');
   assert.equal(actual.calls.maps, 1, 'map switching reuses the existing map');
-  assert.equal(actual.calls.geography, 1, 'map switching reuses the local geometry');
+  assert.equal(actual.calls.tiles, 1, 'map switching reuses the tile layer');
   actual.click('#show-list');
   assert.equal(actual.$('.result-shown').hidden, false);
   actual.filters(); assert.equal(actual.$('#filter-options').hidden, false); assert.equal(actual.$('#filter-toggle').getAttribute('aria-expanded'), 'true');
@@ -282,7 +325,7 @@ function fixture(options = {}) {
   await ready(hostile, dataset.restaurants.length + 1);
   assert.equal(hostile.$('[data-restaurant-id="fixture-no-valid-source"]'), null, 'unsupported source scheme is rejected');
   hostile.click('#show-map');
-  await until(() => hostile.calls.geoLayers === 1, 'hostile fixture local background finishes before teardown');
+  await until(() => hostile.calls.tileLoads === 1, 'hostile fixture tile loading finishes before teardown');
   assert.equal(hostile.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'null coordinates do not become 0,0 markers');
   hostile.click('#show-list'); hostile.filters();
   assert.equal(hostile.$('[data-restaurant-id="fixture-unsafe-text"] img'), null);
@@ -305,7 +348,7 @@ function fixture(options = {}) {
   assert.equal(mobilePostal.document.querySelectorAll('.collection-title').length, 1, 'unsafe collection URLs are rejected');
   const postalRows = dataset.restaurants.filter(item => item.guides.some(guide => guide.provider === 'post-office'));
   mobilePostal.click('#show-map');
-  await until(() => mobilePostal.calls.geoLayers === 1, 'mobile fixture local background finishes before teardown');
+  await until(() => mobilePostal.calls.tileLoads === 1, 'mobile fixture tile loading finishes before teardown');
   mobilePostal.filters();
   mobilePostal.click('[data-guide="post-office"]');
   mobilePostal.all(); assert.deepEqual(mobilePostal.records(), ids(postalRows));
@@ -327,19 +370,52 @@ function fixture(options = {}) {
   await ready(failure, dataset.restaurants.length);
   assert.equal(failure.calls.data, 2); assert.deepEqual(failure.errors, []); failure.dom.window.close();
 
-  const mapFailure = fixture({ failGeoOnce: true });
+  const mapFailure = fixture({ tileFailures: 'mixed' });
   await ready(mapFailure, dataset.restaurants.length);
   mapFailure.click('#show-map');
-  await until(() => mapFailure.$('#map-message').hidden === false && mapFailure.$('#retry-map').hidden === false, 'failed local geometry exposes a retry');
+  await until(() => mapFailure.$('#map-message').hidden === false && mapFailure.$('#retry-map').hidden === false, 'mixed failed and successful tiles expose a retry');
   assert.equal(mapFailure.$('#map-message').hidden, false);
+  assert.equal(mapFailure.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'tile failures keep restaurant pins available');
+  const failedBatches = mapFailure.calls.tileBatches;
+  await pause(); await pause();
+  assert.equal(mapFailure.calls.tileBatches, failedBatches, 'failed tiles do not start an automatic retry loop');
+  mapFailure.calls.tileLayers[0].fire('tileabort', { tile: mapFailure.calls.tileLayers[0].currentTiles[0] }).fire('load');
+  assert.equal(mapFailure.$('#map-message').hidden, true, 'an aborted failed tile no longer leaves a stale warning');
   mapFailure.click('#show-list');
   mapFailure.click('.card-main'); assert.equal(mapFailure.$('#detail').open, true, 'map error leaves details usable');
-  mapFailure.click('#close-detail'); mapFailure.click('#show-map'); mapFailure.click('#retry-map');
-  await until(() => mapFailure.calls.geoLayers === 1, 'retry loads the local regional geography');
-  assert.equal(mapFailure.calls.geography, 2, 'retry makes one new local geometry request');
-  assert.equal(mapFailure.$('#map-message').hidden, true, 'the retry clears the regional background error');
+  mapFailure.click('#close-detail'); mapFailure.click('#show-map');
+  await until(() => mapFailure.calls.tileLoads === 2, 'returning to map finishes the failed tile batch');
+  const oldTile = mapFailure.calls.tileLayers[0].currentTiles[0];
+  mapFailure.recoverTiles(); mapFailure.click('#retry-map');
+  await until(() => mapFailure.calls.tileLoads === 3, 'retry reloads the street map tiles');
+  assert.equal(mapFailure.calls.tiles, 1, 'retry reuses the configured OSM layer');
+  assert.equal(mapFailure.calls.tileRedraws, 1, 'only the retry button redraws failed tiles');
+  assert.equal(mapFailure.$('#map-message').hidden, true, 'the retry clears the tile error');
+  mapFailure.calls.tileLayers[0].fire('tileerror', { tile: oldTile }).fire('load');
+  assert.equal(mapFailure.$('#map-message').hidden, true, 'a late error from an unloaded tile cannot restore the warning');
   assert.equal(mapFailure.$('.map-caption'), null, 'retry does not restore an obstructing map caption');
   assert.deepEqual(mapFailure.errors, []); mapFailure.dom.window.close();
+
+  const stalledMap = fixture({ stallTiles: true, silentTileLoading: true, controlTimeouts: true });
+  await ready(stalledMap, dataset.restaurants.length, false); stalledMap.click('#show-map');
+  await until(() => stalledMap.calls.tileBatches === 1, 'the stalled tile layer is attached');
+  stalledMap.expireMapTimeout();
+  assert.equal(stalledMap.$('#map-message').hidden, false, 'a map timeout offers retry even without a loading event');
+  stalledMap.click('#retry-map');
+  assert.equal(stalledMap.calls.tileBatches, 2, 'manual retry starts a fresh tile batch');
+  stalledMap.expireMapTimeout();
+  assert.equal(stalledMap.$('#map-message').hidden, false, 'a repeated stalled redraw receives its own timeout');
+  stalledMap.click('#show-list');
+  assert.equal(stalledMap.backgroundDeadlines.size, 0, 'leaving the map cancels its timeout');
+  stalledMap.click('#show-map');
+  await until(() => stalledMap.calls.tileBatches === 3, 'returning reattaches the stalled layer');
+  stalledMap.expireMapTimeout();
+  assert.equal(stalledMap.$('#map-message').hidden, false, 'reattaching a stalled layer also receives a timeout');
+  stalledMap.recoverTiles(); stalledMap.click('#retry-map');
+  await until(() => stalledMap.calls.tileLoads === 1, 'the stalled map recovers after manual retry');
+  assert.equal(stalledMap.$('#map-message').hidden, true); assert.equal(stalledMap.backgroundDeadlines.size, 0, 'successful loading clears the timeout');
+  assert.equal(stalledMap.calls.tiles, 1, 'timeouts do not create additional tile layers');
+  assert.deepEqual(stalledMap.errors, []); stalledMap.dom.window.close();
 
   const temporary = fixture({ blockStorage: true });
   await ready(temporary, dataset.restaurants.length);
@@ -395,7 +471,7 @@ function fixture(options = {}) {
   assert.match(coverage.$('#result-count').textContent, /^등록 12곳/);
   assert.equal(coverage.$('#result-coverage').textContent, '지도 가능 4곳 · 위치 확인 중 8곳');
   assert.equal(coverage.calls.maps, 0, 'list coverage does not initialize the optional map');
-  coverage.click('#show-map'); await until(() => coverage.calls.geoLayers === 1, 'the coverage map loads');
+  coverage.click('#show-map'); await until(() => coverage.calls.tileLoads === 1, 'the coverage map loads');
   assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 4곳 · 위치 확인 중 8곳'); assert.equal(coverage.calls.markers.size, 4);
   coverage.click('[data-category="한식"]');
   assert.equal(coverage.$('#result-count').dataset.total, '6'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 2곳 · 위치 확인 중 4곳');
@@ -430,7 +506,7 @@ function fixture(options = {}) {
   assert.equal(performance.$('.result-shown').textContent, '현재 50곳 표시');
   while (performance.records().length < 700) performance.click('#load-more');
   assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the current map page');
-  performance.click('#show-map'); await until(() => performance.calls.geoLayers === 1, 'the performance sample map loads locally');
+  performance.click('#show-map'); await until(() => performance.calls.tileLoads === 1, 'the performance sample map loads');
   const pinNames = sample => [...sample.document.querySelectorAll('.restaurant-pin')].map(pin => pin.title).sort();
   const expectedNames = rows => rows.map(item => item.name).sort();
   assert.deepEqual(pinNames(performance), expectedNames(many.slice(0, 50)), 'location mode initially maps the nearest 50 restaurants');
@@ -477,14 +553,14 @@ function fixture(options = {}) {
   performance.click('#map-next');
   assert.deepEqual(pinNames(performance), expectedNames(many.slice(700, 750)), 'an exact full final page still contains 50');
   assert.equal(performance.$('#map-next').disabled, true, 'an exact multiple does not expose an empty extra page');
-  assert.equal(performance.calls.maps, 1); assert.equal(performance.calls.geography, 1, 'page and location changes reuse the existing map and geography');
+  assert.equal(performance.calls.maps, 1); assert.equal(performance.calls.tiles, 1, 'page and location changes reuse the existing map and tile layer');
   assert.deepEqual(performance.errors, []); performance.dom.window.close();
 
   const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
   const mixedMap = fixture({ dataset: { restaurants: mixedRows } });
   await ready(mixedMap, mixedRows.length, false);
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 가능 305곳 · 위치 확인 중 7곳'); mixedMap.click('#show-map');
-  await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
+  await until(() => mixedMap.calls.tileLoads === 1, 'mixed-coordinate fixture map loads');
   assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(0, 50)), 'without location, map groups follow the existing name ordering');
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
   assert.equal(mixedMap.$('#result-coverage').closest('#map-panel'), null, 'location coverage remains outside the map panel');
@@ -516,7 +592,7 @@ function fixture(options = {}) {
   for (const count of [50, 51]) {
     const boundary = fixture({ view: 'map', dataset: { restaurants: many.slice(0, count) } });
     await ready(boundary, count, false);
-    await until(() => boundary.calls.geoLayers === 1, 'the page-size boundary map loads');
+    await until(() => boundary.calls.tileLoads === 1, 'the page-size boundary map loads');
     assert.equal(boundary.document.querySelectorAll('.restaurant-pin').length, 50);
     assert.equal(boundary.$('#map-pagination').hidden, count === 50, 'pagination appears only when there is another map group');
     if (count === 51) {
@@ -526,5 +602,5 @@ function fixture(options = {}) {
     assert.deepEqual(boundary.errors, []); boundary.dom.window.close();
   }
 
-  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, non-cumulative 50-pin map pages, boundary/partial pages, filter/location resets and whole-page selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
+  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, non-cumulative 50-pin map pages, boundary/partial pages, filter/location resets and whole-page selection, folded filters, keyless OSM tile settings and attribution, mixed tile failures, manual retry and stale-error recovery, saved state, exact sources, edition/selection/publication/source/listing years and safe text/URLs. Browser layout and screenshots require Chromium/CUA.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

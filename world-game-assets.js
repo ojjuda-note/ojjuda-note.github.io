@@ -6,9 +6,9 @@
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   festival:'1.1.0',
-  restaurants:'1.5.0',
+  restaurants:'1.6.0',
   recommendations:'1.3.0',
-  archery:'2.0.0',
+  archery:'2.0.1',
   roulette:'1.8.0',
   bang:'1.9.0',
   poker:'1.5.0',

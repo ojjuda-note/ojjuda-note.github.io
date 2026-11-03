@@ -9,6 +9,7 @@
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
   const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
   const LIST_PAGE_SIZE = 50, MAP_PAGE_SIZE = 50;
+  const MAP_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   const entryParams = new URLSearchParams(location.search);
   const embedded = entryParams.get('embedded') === '1';
   const ratingUI = window.OjjudaRestaurantRatings;
@@ -18,7 +19,7 @@
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
-  let map = null, backgroundLayer = null, backgroundController = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
+  let map = null, backgroundLayer = null, backgroundTimer = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
   function el(tag, className, text) {
@@ -228,33 +229,53 @@
   }
   function mapIsVisible() { return state.view === 'map'; }
   function showMapMessage(message, retry = true) { $('map-message-text').textContent = message; $('map-message').hidden = false; $('retry-map').hidden = !retry; }
-  async function loadMapBackground() {
-    if (backgroundController) backgroundController.abort();
-    const controller = new AbortController(); backgroundController = controller;
-    const timeout = setTimeout(() => controller.abort(), 18000);
-    try {
-      const response = await fetch('./korea-provinces.json', { signal: controller.signal, cache: 'no-cache' });
-      if (!response.ok) throw new Error('Map background unavailable: ' + response.status);
-      const data = await response.json();
-      if (controller !== backgroundController) return;
-      if (data.type !== 'FeatureCollection' || !Array.isArray(data.features) || !data.features.length) throw new Error('Invalid map background');
-      if (backgroundLayer) backgroundLayer.remove();
-      backgroundLayer = window.L.geoJSON(data, { interactive: false, style: { color: '#c3d0c7', weight: 1, fillColor: '#f8faf5', fillOpacity: 1 } }).addTo(map);
-      backgroundLayer.bringToBack();
-      $('map-message').hidden = true;
-    } catch (error) {
-      if (controller === backgroundController) showMapMessage('지역 지도를 불러오지 못했어요. 가게 정보의 지도 링크를 이용해 주세요.');
-    } finally { clearTimeout(timeout); }
+  function startMapBackgroundTimer() {
+    clearTimeout(backgroundTimer);
+    backgroundTimer = setTimeout(() => {
+      if (mapIsVisible() && backgroundLayer && map.hasLayer(backgroundLayer)) showMapMessage('지도 연결이 지연되고 있어요.');
+    }, 18000);
+  }
+  function loadMapBackground(retry = false) {
+    if (backgroundLayer) {
+      if (!map.hasLayer(backgroundLayer)) { startMapBackgroundTimer(); backgroundLayer.addTo(map); }
+      else if (retry) { startMapBackgroundTimer(); backgroundLayer.redraw(); }
+      return;
+    }
+    const activeTiles = new Set(), failedTiles = new Set();
+    const forgetTile = ({ tile }) => {
+      activeTiles.delete(tile);
+      if (failedTiles.delete(tile) && !failedTiles.size) $('map-message').hidden = true;
+    };
+    const layer = window.L.tileLayer(MAP_TILE_URL, {
+      maxZoom: 19, noWrap: true, keepBuffer: 1,
+      updateWhenIdle: true, updateWhenZooming: false,
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+    });
+    backgroundLayer = layer;
+    startMapBackgroundTimer();
+    layer.on({
+      loading: startMapBackgroundTimer,
+      tileloadstart({ tile }) { activeTiles.add(tile); },
+      tileload({ tile }) { failedTiles.delete(tile); },
+      tileerror({ tile }) { if (activeTiles.has(tile)) failedTiles.add(tile); },
+      tileunload: forgetTile,
+      tileabort: forgetTile,
+      load() {
+        clearTimeout(backgroundTimer);
+        if (failedTiles.size) showMapMessage('지도 일부를 불러오지 못했어요.');
+        else $('map-message').hidden = true;
+      },
+      remove() { clearTimeout(backgroundTimer); activeTiles.clear(); failedTiles.clear(); }
+    }).addTo(map);
   }
   function ensureMap() {
     if (map) return true;
     if (!mapIsVisible()) return false;
     if (!window.L) { $('map').replaceChildren(el('div', 'map-loading', '가게 정보에서 네이버·카카오맵을 열 수 있어요.')); showMapMessage('지도를 불러오지 못했어요.'); return false; }
     $('map').replaceChildren();
-    map = window.L.map('map', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, maxBounds: [[30, 120], [41, 136]], minZoom: 5, maxZoom: 12, preferCanvas: true }).setView([36.2, 127.8], 7);
+    map = window.L.map('map', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, maxBounds: [[30, 120], [41, 136]], minZoom: 5, maxZoom: 19, preferCanvas: true }).setView([36.2, 127.8], 7);
     window.L.control.zoom({ position: 'topright' }).addTo(map);
-    map.attributionControl?.addAttribution('<a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">KOSTAT · 2018 경계</a>');
-    void loadMapBackground();
     return true;
   }
   function currentMapPage() {
@@ -301,9 +322,11 @@
     requestAnimationFrame(() => {
       if (!mapIsVisible()) return;
       map.invalidateSize({ animate: false });
-      if (!fit) return;
-      if (located.length === 1) map.setView([located[0].lat, located[0].lng], 10, { animate: false });
-      else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 35], paddingBottomRight: [35, 35], maxZoom: 10, animate: false });
+      if (fit) {
+        if (located.length === 1) map.setView([located[0].lat, located[0].lng], 16, { animate: false });
+        else if (located.length > 1) map.fitBounds(located.map(item => [item.lat, item.lng]), { paddingTopLeft: [35, 35], paddingBottomRight: [35, 35], maxZoom: 16, animate: false });
+      }
+      loadMapBackground();
     });
   }
   function selectRestaurant(id, openDetail) {
@@ -315,7 +338,7 @@
     if (mapIsVisible() && hasCoordinates(item)) syncMap(false);
     const { located } = currentMapPage();
     located.forEach((restaurant, index) => { const marker = markers.get(restaurant.id); if (marker) { marker.setIcon(pinIcon(index + 1, restaurant.id === id)); marker.setZIndexOffset(restaurant.id === id ? 1000 : 0); } });
-    if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 10), { animate: !reducedMotion.matches }); }
+    if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 16), { animate: !reducedMotion.matches }); }
     if (openDetail) showDetail(item);
   }
   function showDetail(item) {
@@ -377,6 +400,7 @@
   }
   function setView(view, persist = false) {
     state.view = view; $('workspace').dataset.view = view;
+    if (view === 'list' && backgroundLayer) backgroundLayer.remove();
     $('show-map').setAttribute('aria-pressed', String(view === 'map')); $('show-list').setAttribute('aria-pressed', String(view === 'list'));
     if (persist) { try { localStorage.setItem(VIEW_KEY, view); } catch {} }
     updateResultCount();
@@ -514,10 +538,10 @@
   $('show-map').addEventListener('click', () => setView('map', true)); $('show-list').addEventListener('click', () => setView('list', true));
   $('close-detail').addEventListener('click', () => $('detail').close());
   $('detail').addEventListener('click', event => { if (event.target === $('detail')) { const rect = $('detail').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('detail').close(); } });
-  $('retry-map').addEventListener('click', () => { $('map-message').hidden = true; if (map) void loadMapBackground(); else location.reload(); });
+  $('retry-map').addEventListener('click', () => { $('map-message').hidden = true; if (map) loadMapBackground(true); else location.reload(); });
   const resize = () => { if (mapIsVisible()) syncMap(false); };
   if (mobile.addEventListener) mobile.addEventListener('change', resize); else mobile.addListener(resize);
   window.addEventListener('storage', event => { if (event.key === STORAGE_KEY) { readSaved(); render(false); if ($('detail').open && state.selected) { const item = state.restaurants.find(r => r.id === state.selected); if (item) document.querySelectorAll('[data-save-id]').forEach(button => { if (button.dataset.saveId === item.id) updateSaveButton(button, item); }); } } });
-  window.addEventListener('pagehide', () => { locationRequest++; clearTimeout(searchTimer); if (backgroundController) backgroundController.abort(); });
+  window.addEventListener('pagehide', () => { locationRequest++; clearTimeout(searchTimer); clearTimeout(backgroundTimer); });
   loadData(); void locateOnEntry();
 })();
