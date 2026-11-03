@@ -8,7 +8,7 @@
   const message = document.getElementById('star-access-message');
   const actions = document.getElementById('star-access-actions');
   const retry = document.getElementById('star-access-retry');
-  const release = '20261104-star-members1';
+  const release = '20261104-star-reliability1';
   const helper = 'https://hanusan-booking-helper.mj830417686850.chatgpt.site';
   const params = new URLSearchParams(location.search);
   // The account page validates the booking values again before returning here.
