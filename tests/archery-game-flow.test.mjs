@@ -3315,7 +3315,7 @@ for (const fixture of [
   { lessonKey: 'fixed-gap-1/2', distance: 10, bow: 6, arrow: 5, resize: true },
   { lessonKey: 'fixed-gap-1/2', distance: 30, bow: 6, arrow: 5 },
   { lessonKey: 'fixed-gap-1/3', distance: 10, bow: 6, arrow: 5, offset: { x: -.1, y: .3 }, resize: true },
-  { lessonKey: 'moving-half-gap', distance: 20, bow: 8, arrow: 2, time: 8, resize: true },
+  { lessonKey: 'moving-half-gap', distance: 20, bow: 8, arrow: 2, time: 3.2, resize: true },
   { lessonKey: 'fixed-gap-1/2', distance: 30, bow: 19, arrow: 2 }
 ]) test(`a real eight-point ${fixture.bow === 19 ? 'burst' : 'hit'} on ${fixture.lessonKey} at ${fixture.distance}m stays visible through approach and impact without changing its award`, async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100,
@@ -3428,12 +3428,15 @@ test('near-target walkers and crowds visibly cover the real target while preserv
     const stage = engine.prepareStage(template, seed), crowd = stage.passers.length > 1;
     assert.ok(crowd ? stage.passers.length >= 4 && stage.passers.length <= 6 : stage.passers.length === 1);
     let blocked = 0, painted = 0, face = 0, openRun = 0, longestOpen = 0;
-    const step = .025, samples = 800;
+    // People keep their own speed, so a fixed 20-second window can bias the
+    // coverage ratio against the doubled target pace. Measure more relative
+    // phases while still requiring a usable shooting gap in the first 20 seconds.
+    const step = .025, openingSamples = 800, samples = openingSamples * 6;
     for (let index = 0; index < samples; index++) {
       const time = index * step, target = engine.targetAt(stage, time), people = engine.passersAt(stage, time);
       const covered = people.some(person => boxBlocks(person, target));
       blocked += covered;
-      if (covered) openRun = 0;else { openRun += step;longestOpen = Math.max(longestOpen, openRun); }
+      if (covered) openRun = 0;else { openRun += step;if (index < openingSamples) longestOpen = Math.max(longestOpen, openRun); }
       painted += people.some(person => paintedPersonBlocks(person, target, time, engine.PLAYER));
       if (index % 8 === 0) for (const [x, y] of [[-.25, 0], [.25, 0], [0, -.25], [0, .25]]) {
         const point = { ...target, x: target.x + x * target.rx, y: target.y + y * target.ry };
@@ -3563,8 +3566,8 @@ test('the close pillar crowd leaves a real opening through the last burst arrow 
 });
 
 test('real wall and person collisions keep the ordinary failure camera and never reveal or award a target hit', async () => {
-  for (const fixture of [{ lessonKey: 'moving-half-gap', distance: 30, result: 'obstacle' },
-    { lessonKey: 'pillars-passers', distance: 20, time: 5, result: 'person' }]) {
+  for (const fixture of [{ lessonKey: 'moving-half-gap', distance: 30, time: 0, result: 'obstacle' },
+    { lessonKey: 'pillars-passers', distance: 20, time: 2, result: 'person' }]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, lastStage: lessonStageId(fixture.lessonKey, fixture.distance),
       ownedBows: [0, 8], bow: 8, ownedArrows: [0, 2], arrow: 2, sound: false });
     const { state } = app.api;
@@ -3768,9 +3771,16 @@ function assertAttachedArrows(app, offsets, velocities, maximumVisualAngle = 0) 
   const items = app.api.sceneItems(target), tips = items.filter(item => item.kind === 'tip');
   assert.equal(tips.length, offsets.length, 'every previous hit remains rendered once');
   offsets.forEach((offset, index) => {
-    const tip = tips.find(item => Math.abs(item.point.x - target.x - offset.x) < 1e-9 && Math.abs(item.point.y - target.y - offset.y) < 1e-9);
+    const mark = state.targetMarks.find(value => Math.abs(value.x - offset.x) < 1e-9 && Math.abs(value.y - offset.y) < 1e-9);
+    assert.ok(mark, 'the expected impact mark is retained');
+    const subject = app.engine.targetAt(state.stage, state.time, mark.passId);
+    const tip = tips.find(item => Math.abs(item.point.x - subject.x - offset.x) < 1e-9 && Math.abs(item.point.y - subject.y - offset.y) < 1e-9);
     assert.ok(tip, `arrow ${index + 1} keeps its own target-local impact point`);
-    assert.ok(Math.abs(tip.point.z - target.z) < .01);
+    assert.ok(Math.abs(tip.point.z - subject.z) < .01);
+    if (Number.isInteger(mark.passId) && mark.passId !== target.passId) {
+      assert.ok(items.some(item => item.kind === 'target' && item.target.passId === mark.passId), 'the original animal is still rendered');
+      assert.ok(Math.hypot(tip.point.x - target.x - offset.x, tip.point.y - target.y - offset.y) > .1, 'the next animal does not inherit an old arrow');
+    }
     const shaft = items.find(item => item.kind === 'shaft' && Math.abs(item.b.x - tip.point.x) < 1e-9 && Math.abs(item.b.y - tip.point.y) < 1e-9 && Math.abs(item.b.z - tip.point.z) < 1e-9);
     assert.ok(shaft, 'the attached arrow keeps its complete shaft');
     const direction = { x: shaft.b.x - shaft.a.x, y: shaft.b.y - shaft.a.y, z: shaft.b.z - shaft.a.z };

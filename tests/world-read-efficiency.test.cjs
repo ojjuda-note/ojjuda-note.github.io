@@ -14,6 +14,7 @@ const accountSource = between('async function W1(', 'function U1(');
 const pollSource = between(html.includes('var worldNewsPending=') ? 'var worldNewsPending=' : 'async function kc(', 'function fy(');
 const friendCountSource = between('async function wd(', 'function syncWorldFriendOwner(');
 const subscriptionSource = between('function fy(', 'var bm=');
+const entrySource = between('function my(){', '// Member rooms use their own account');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 
@@ -59,6 +60,25 @@ test('successful login reads only the two live account records', async t => {
   const f = fixture(); await f.context.W1('member-a');
   t.diagnostic('Account reads: ' + f.reads.length);
   assert.deepEqual(f.reads, ['profiles', 'user_private']);
+});
+
+test('entering each current menu skips retired media and folder reads but keeps profile and park routing', async () => {
+  for (const tab of ['arcade','park','my']) {
+    const reads=[], rendered=[], calls={profile:0,park:0};
+    const context=vm.createContext({
+      URL, location:{href:'https://ojjuda.test/world.html?tab='+tab},
+      worldEntryRouted:false, bm:true, D:{online:true,user:{id:'member-a'}},
+      g:{tab:null}, window:{}, py(){},
+      sr:{tab({tab:next}){rendered.push(next);}},
+      resolveWorldProfilePhoto(){calls.profile++;}, worldParkNotes:{route(){calls.park++;}},
+      m1(){reads.push('media');}, x1:async()=>{reads.push('media_folders');}, st(){},
+      console
+    });
+    vm.runInContext(entrySource,context); context.my(); await tick();
+    assert.deepEqual(rendered,[tab]);
+    assert.deepEqual(reads,[],tab+': no full photo library or schema probes on entry');
+    assert.deepEqual(calls,{profile:1,park:1},tab+': current feature initialization remains available');
+  }
 });
 
 test('login loads the two live account records without waiting on four retired tables', async () => {

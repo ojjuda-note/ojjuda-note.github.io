@@ -1,31 +1,31 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261104-archery-target-speed2x1';
+ const revision='20261104-agit-stability1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   star:'1.1.0',
-  festival:'1.1.0',
-  restaurants:'1.8.1',
-  recommendations:'1.5.1',
-  archery:'2.1.2',
-  roulette:'1.8.1',
-  bang:'1.9.2',
-  poker:'1.5.1',
-  tank:'1.4.2',
-  mines:'1.3.2',
-  sacheonseong:'1.9.2',
-  saetbyeol:'1.2.5',
-  tour:'1.4.2',
-  ttang:'1.4.2',
-  photo_ttang:'1.3.2',
-  mole:'1.4.2',
-  runner:'1.3.2',
-  stacker:'1.4.2',
-  breakout:'1.5.2',
-  spot:'1.10.3',
-  screw:'1.5.2',
+  festival:'1.1.1',
+  restaurants:'1.8.2',
+  recommendations:'1.5.2',
+  archery:'2.1.3',
+  roulette:'1.8.2',
+  bang:'1.9.3',
+  poker:'1.5.2',
+  tank:'1.4.3',
+  mines:'1.3.3',
+  sacheonseong:'1.9.3',
+  saetbyeol:'1.2.6',
+  tour:'1.4.3',
+  ttang:'1.4.3',
+  photo_ttang:'1.3.3',
+  mole:'1.4.3',
+  runner:'1.3.3',
+  stacker:'1.4.3',
+  breakout:'1.5.3',
+  spot:'1.10.4',
+  screw:'1.5.3',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
@@ -33,6 +33,7 @@
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
+ const minesRules='/games/mines/rules.js?v=20261022-ranks1';
  const restaurantRatings=['/restaurant-ratings.css?v=20261103-restaurants-ratings1','/restaurant-ratings.js?v=20261103-restaurants-ratings1'];
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
@@ -45,7 +46,7 @@
   sacheonseong:['/world-sacheonseong-game.css?v=20261104-game-fullscreen1','/world-sacheonseong-game.js?v=20261104-game-fullscreen1'],
   poker:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261104-game-fullscreen1'],
   tank:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261104-game-fullscreen1'],
-  mines:['/world-tour-game.css?v=20261104-game-fullscreen1','/games/mines/rules.js?v=20261022-ranks1','/world-mines-game.js?v=20261104-game-fullscreen1'],
+  mines:['/world-tour-game.css?v=20261104-game-fullscreen1',minesRules,'/world-mines-game.js?v=20261104-game-fullscreen1'],
   saetbyeol:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-saetbyeol-game.js?v=20261104-game-fullscreen1'],
   tour:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tour-game.js?v=20261104-game-fullscreen1'],
   spot:['/world-spot-game.css?v=20261104-game-fullscreen1','/world-spot-game.js?v=20261104-game-fullscreen1'],
@@ -75,7 +76,11 @@
   })().finally(()=>{releaseCheck=null;});
   return releaseCheck;
  }
+ function resourceReady(url){
+  return complete.has(url)||(url===minesRules&&typeof window.OjjudaMinesRules?.record==='function');
+ }
  function loadResource(url){
+  if(resourceReady(url))return Promise.resolve();
   if(requests.has(url))return requests.get(url);
   const promise=new Promise((resolve,reject)=>{
    const style=url.split('?')[0].endsWith('.css'),node=document.createElement(style?'link':'script');
@@ -86,10 +91,18 @@
   });
   requests.set(url,promise);return promise;
  }
+ function waitForAssets(work){
+  return new Promise((resolve,reject)=>{
+   // Keep the original script and its shared request alive: removing a pending
+   // script cannot guarantee that it will not execute after a retry is inserted.
+   const timer=setTimeout(()=>reject(Error('game_asset_timeout')),15000);
+   work.then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+  });
+ }
  window.OjjudaGameAssets={
   revision,updateRevision,
   version:id=>versions[id]||'',
-  ready:id=>(groups[id]||[]).every(url=>complete.has(url)),
-  load:id=>Promise.all((groups[id]||[]).map(loadResource))
+  ready:id=>(groups[id]||[]).every(resourceReady),
+  load:id=>waitForAssets(Promise.all((groups[id]||[]).map(loadResource)))
  };
 })();

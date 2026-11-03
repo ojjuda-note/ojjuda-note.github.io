@@ -140,6 +140,22 @@ const flush = async () => { for (let i=0;i<12;i++) await Promise.resolve(); };
     assert.equal(label.textContent,'접속자 인증 확인 중','old room cannot overwrite current status');
     f.context.worldPresenceChanged(room,'connected'); assert.equal(label.textContent,'지금 1명');
   }
+  // A legacy animation tick must preserve connection status, and do no work in a hidden tab.
+  {
+    const f=fixture(), room=place('arcade'), label={textContent:''};
+    room.bubbles=[]; room.count=3; room.presenceStatus='auth'; f.context.g.place=room;
+    let moves=0, paints=0;
+    f.context.Pt={arcade:{}}; f.context.z=selector=>selector==='#pcount'?label:null;
+    f.context.Ff=()=>{moves++;}; f.context.Sr=()=>{paints++;}; f.context.eo=()=>{};
+    vm.runInContext(section('function pg(){','function Cf('),f.context);
+    for (const [status,text] of [['auth','접속자 인증 확인 중'],['reconnecting','접속자 다시 연결 중'],['connected','지금 3명']]) {
+      room.presenceStatus=status; label.textContent=text;
+      f.context.pg(); assert.equal(label.textContent,text,'animation cannot hide '+status);
+    }
+    f.context.document.hidden=true; room.presenceStatus='auth';
+    const before={moves,paints,text:label.textContent}; f.context.pg();
+    assert.deepEqual({moves,paints,text:label.textContent},before,'hidden tabs do not animate or repaint presence');
+  }
   // Concurrent lobby startup produces one private channel, scoped to the account that started it.
   {
     const f=fixture(); f.context.Ze=null; f.auth.pending=deferred();

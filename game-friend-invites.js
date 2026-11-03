@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   let options, owner, channel, timer, chooser, popup, authSubscription, generation=0, refreshSequence=0;
+  let refreshRequest=null, refreshAgain=false;
   let expiryTimer, countdownTimer, mountObserver, incoming=[], responses=[];
   const deadlines=new Map(), handled=new Set();
   const names={matgo:'맞고',ttang:'월드땅따먹기',marble:'마블',tank:'탱크게임',roulette:'룰렛'};
@@ -17,8 +18,9 @@
   const current=()=>owner&&options?.user()===owner;
   async function rpc(args) {
     if (!current()) throw Error('not_signed_in');
-    const actor=owner,{data,error}=await options.client.rpc('arcade_friend_invite',args);
-    if (actor!==owner||!current()) throw Error('not_signed_in');
+    const actor=owner,client=options.client,version=generation;
+    const {data,error}=await client.rpc('arcade_friend_invite',args);
+    if (version!==generation||client!==options?.client||actor!==owner||!current()) throw Error('not_signed_in');
     if (error||!data?.ok) throw error||Error('unavailable');
     return data;
   }
@@ -37,6 +39,7 @@
   }
   function stop() {
     generation++;refreshSequence++;clearInterval(timer);timer=null;
+    refreshRequest=null;refreshAgain=false;
     if(channel)options?.client.removeChannel(channel);channel=null;
     authSubscription?.unsubscribe();authSubscription=null;
     mountObserver?.disconnect();mountObserver=null;
@@ -84,12 +87,12 @@
     }
     const expire=()=>{
       if(popup!==node||node._accepted||(node._busy&&!node._accepting))return;
-      closePopup();render();void refresh();
+      closePopup();render();void refresh({changed:true});
     };
     node.onclick=async event=>{
       const button=event.target.closest('[data-answer]');if(!button||!current()||popup!==node)return;
       if((node._accepted||node._accepting)&&button.dataset.answer==='decline'){
-        handled.add(item.id);refreshSequence++;closePopup();render();void refresh();return;
+        handled.add(item.id);refreshSequence++;closePopup();render();void refresh({changed:true});return;
       }
       if(node._busy)return;
       if(invite&&!node._accepted&&deadlines.get(item.id)<=Date.now()){expire();return;}
@@ -115,11 +118,11 @@
           node._joinController=null;
         }
         if(popup===node)closePopup();
-        render();void refresh();
+        render();void refresh({changed:true});
       } catch(error) {
         if(version!==generation||popup!==node||node._joinController?.signal.aborted)return;
         if(/invite_expired|invite_unavailable|room_unavailable/.test(String(error?.message||error))){
-          handled.add(item.id);if(popup===node)closePopup();render();void refresh();
+          handled.add(item.id);if(popup===node)closePopup();render();void refresh({changed:true});
           options.notice?.(message(error));
         } else {
           const status=node.querySelector('[data-invite-status]');status.hidden=false;status.textContent=message(error);
@@ -142,22 +145,36 @@
       tick();
     }
   }
-  async function refresh() {
+  function refresh({changed=false}={}) {
     if (!current()) { stop();return; }
-    const version=generation,sequence=++refreshSequence,started=Date.now();
-    try {
-      const data=await rpc({p_action:'list'});
-      if(version!==generation||sequence!==refreshSequence)return;
-      const now=Date.now(),serverNow=Date.parse(data.server_now);
-      incoming=data.invites||[];responses=data.responses||[];
-      for(const invite of incoming){
-        const expires=Date.parse(invite.expires_at);
-        const remaining=expires-(Number.isFinite(serverNow)?serverNow+(now-started):now);
-        const deadline=now+Math.max(0,Math.min(60000,remaining));
-        deadlines.set(invite.id,Math.min(deadlines.get(invite.id)??Infinity,deadline));
+    if(changed)refreshAgain=true;
+    if(document.hidden)return refreshRequest?.promise;
+    // Polling shares a slow read. Changes received during it need only one follow-up.
+    if(refreshRequest)return refreshRequest.promise;
+    const request={version:generation,sequence:++refreshSequence,started:Date.now(),promise:null};
+    refreshRequest=request;refreshAgain=false;
+    request.promise=(async()=>{
+      try {
+        const data=await rpc({p_action:'list'});
+        if(refreshRequest!==request||request.version!==generation||request.sequence!==refreshSequence)return;
+        const now=Date.now(),serverNow=Date.parse(data.server_now);
+        incoming=data.invites||[];responses=data.responses||[];
+        for(const invite of incoming){
+          const expires=Date.parse(invite.expires_at);
+          const remaining=expires-(Number.isFinite(serverNow)?serverNow+(now-request.started):now);
+          const deadline=now+Math.max(0,Math.min(60000,remaining));
+          deadlines.set(invite.id,Math.min(deadlines.get(invite.id)??Infinity,deadline));
+        }
+        if(!document.hidden)render();
+      } catch { /* Reconnect and visibility refresh retry without interrupting a game. */ }
+      finally {
+        if(refreshRequest===request){
+          refreshRequest=null;
+          if(refreshAgain&&!document.hidden&&current())void refresh();
+        }
       }
-      render();
-    } catch { /* Reconnect and visibility refresh retry without interrupting a game. */ }
+    })();
+    return request.promise;
   }
   async function pick({kind,prepare,onSent,container=document.body,signal}={}) {
     if(!names[kind]||typeof prepare!=='function'||!current()||signal?.aborted)return false;
@@ -194,19 +211,20 @@
   function install(config) {
     const uid=config.user();if(uid===owner&&options?.client===config.client)return;
     stop();options=config;if(!uid)return;owner=uid;
+    const version=generation,active=()=>version===generation&&owner===uid&&options?.client===config.client;
     authSubscription=config.client.auth?.onAuthStateChange?.((_event,session)=>{
-      if(owner&&session?.user?.id!==owner)stop();
+      if(active()&&session?.user?.id!==uid)stop();
     })?.data?.subscription;
     channel=config.client.channel('arcade-friend-invites:'+uid)
-      .on('postgres_changes',{event:'*',schema:'public',table:'arcade_friend_invites',filter:'recipient_id=eq.'+uid},()=>void refresh())
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'arcade_friend_invites',filter:'sender_id=eq.'+uid},()=>void refresh())
-      .subscribe(status=>{if(status==='SUBSCRIBED')void refresh();});
+      .on('postgres_changes',{event:'*',schema:'public',table:'arcade_friend_invites',filter:'recipient_id=eq.'+uid},()=>{if(active())void refresh({changed:true});})
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'arcade_friend_invites',filter:'sender_id=eq.'+uid},()=>{if(active())void refresh({changed:true});})
+      .subscribe(status=>{if(active()&&status==='SUBSCRIBED')void refresh();});
     mountObserver=new MutationObserver(mountIncoming);
     mountObserver.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-    timer=setInterval(()=>{if(!current())stop();else if(!document.hidden)void refresh();},10000);
+    timer=setInterval(()=>{if(!active())return;if(!current())stop();else if(!document.hidden)void refresh();},10000);
     void refresh();
   }
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&owner)void refresh();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&owner)void refresh({changed:true});});
   document.addEventListener('keydown',event=>{
     if(popup?.dataset.type==='response'){
       if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();popup.querySelector('[data-answer=decline],[data-answer=ack]')?.click();}

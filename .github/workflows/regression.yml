@@ -370,7 +370,52 @@ jobs:
       - name: Check purchased coupon messages and recipient privacy
         run: node --test tests/reward-coupon-ui.test.cjs
       - name: Check account, card, administrator and RPC regressions
-        run: npm --prefix tests test
+        run: npm --prefix tests run test:unit
+
+  regression_ui:
+    name: UI regression (${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/3', '2/3', '3/3']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check the complete UI suite in independent shards
+        env:
+          NODE_OPTIONS: --test-shard=${{ matrix.shard }}
+        run: npm --prefix tests run test:ui
+
+  regression_screw:
+    name: Screw regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install the test browser
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check screw rules, purchases and game screens
+        run: npm --prefix tests run test:screw
+
   recovery:
     name: Encrypted recovery regression
     runs-on: ubuntu-latest

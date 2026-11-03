@@ -57,7 +57,17 @@ vm.runInContext(registrySource,ctx);
 assert.equal(ctx._r.archery.name,'바람의 궁수');assert.equal(ctx._r.archery.test,undefined);assert.equal(ctx._r.archery.rankingBasis,'stage_score');
 const solo=Object.entries(ctx._r).filter(([id,game])=>!['bang','ttang'].includes(id)&&!(game.age>=19)&&!game.test);
 assert.ok(solo.some(([id])=>id==='archery'));assert.ok(fs.existsSync(path.join(root,'assets/design/games/archery.svg')));
-assert.ok(world.includes('r.test?\'<small class="game-test-badge">\''),'test badges stay conditional, so released archery has none');
+ctx.g.place={id:'arcade'};ctx.Pt={arcade:{chat:true,arcade:true}};
+ctx.worldArcadeAdultMarkup=()=>'';ctx.worldPlacePresenceText=()=>'';
+vm.runInContext(world.slice(world.indexOf('function Df(){'),world.indexOf('function eo(){')),ctx);
+const arcadeMarkup=ctx.Df();
+const gameButton=id=>{
+ const match=arcadeMarkup.match(new RegExp('<button\\b[^>]*data-v="'+id+'"[^>]*>([\\s\\S]*?)</button>'));
+ assert.ok(match,'the production catalog renders '+id);return match[1];
+};
+assert.doesNotMatch(gameButton('archery'),/game-test-badge/,'released archery has no trial badge');
+assert.match(gameButton('star'),/<small class="game-test-badge">회원 전용<\/small>/);
+assert.match(gameButton('festival'),/<small class="game-test-badge">테스트<\/small>/);
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
@@ -72,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.1.2');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.1.3');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);

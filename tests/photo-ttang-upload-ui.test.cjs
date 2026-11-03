@@ -108,11 +108,23 @@ window.ojjudaSupabase={auth:{getUser:async()=>({data:{user:{id:'11111111-1111-41
   // registration screen without choosing the photo or agreeing a second time.
   await tryPhoto();await page.click('#pause');await page.click('#go');await page.click('#pause');await returnToSave();
   await tryPhoto();await page.evaluate(()=>{paused=true;sound=false;timeUp();});
-  await page.getByRole('button',{name:'다시 도전',exact:true}).click();
+  const result=page.getByRole('dialog',{name:'게임 결과',exact:true}).locator('[data-game-result-card][data-result-game="photo_ttang"]');
+  await result.getByRole('heading',{name:'실패',exact:true}).waitFor();
+  assert.equal(await result.getAttribute('data-result-outcome'),'failure');
+  assert.match(await result.locator('.game-result-metric').textContent(),/^시간 종료 · 실루엣 \d+%$/);
+  assert.equal(await result.getByRole('button',{name:'다음 사진',exact:true}).count(),0,'a failed draft has no next photo');
+  await result.getByRole('button',{name:'다시 하기',exact:true}).click();
+  await page.waitForFunction(()=>mode==='play'&&!over&&!roundCleared&&me?.alive);
   await page.evaluate(()=>{paused=true;lives=1;world.time=10;me.shieldT=0;world.kill(me,0,'mob');handleEvents();});
-  await page.getByText('아쉬워요!',{exact:true}).waitFor();await returnToSave();
+  await result.getByRole('heading',{name:'실패',exact:true}).waitFor();
+  assert.match(await result.locator('.game-result-metric').textContent(),/^실루엣 \d+%$/);
+  await returnToSave();
   await tryPhoto();await page.evaluate(()=>{paused=true;mySil=silTotal*GOAL;win();});
-  await page.getByText('🎉 사진 공개!',{exact:true}).waitFor();await returnToSave();
+  await result.getByRole('heading',{name:'성공',exact:true}).waitFor();
+  assert.equal(await result.getAttribute('data-result-outcome'),'success');
+  assert.match(await result.locator('.game-result-metric').textContent(),/사진 공개$/);
+  assert.equal(await result.getByRole('button',{name:'다음 사진',exact:true}).count(),0,'a cleared draft returns to saving instead of another stage');
+  await returnToSave();
   assert.equal(await page.evaluate(()=>savedPhotos.length),1,'playing did not register the draft');
   await page.click('#send');await page.getByText('등록했어요!',{exact:true}).waitFor();
   const shared=await page.evaluate(()=>savedPhotos[1]);assert.equal(shared.visibility,'public');assert.equal(shared.status,'pending');
