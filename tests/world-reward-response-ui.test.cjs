@@ -1,11 +1,13 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.join(__dirname,'..');
 // The shipped World module runs against delayed in-memory reads/RPCs only.
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+const gameResults=fs.readFileSync(path.join(root,'game-results.js'),'utf8');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/\bsrc=["']\/game-results\.js(?:\?|["'])/.test(tag)?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardCalls=[];let rewardJobId=0,screwApi;const rewardNotices=[];addEventListener('ojjuda:game-record-saved',event=>rewardNotices.push(event.detail.owner));
 const rewardRequest=(kind,owner,args)=>{const id=++rewardJobId;rewardCalls.push({kind,owner,args});return new Promise((resolve,reject)=>rewardJobs.set(id,{kind,owner,resolve,reject}));};
+const settleRewardJob=async(id,data,failure)=>{const job=rewardJobs.get(id);if(!job)throw Error('Missing request '+id);rewardJobs.delete(id);if(failure==='reject')job.reject(Error('fixture failure'));else job.resolve({data,error:failure?Error('fixture query error'):null});await new Promise(resolve=>setTimeout(resolve,0));};
 S={rpc(kind,args){return rewardRequest(kind,D.user?.id,args);},from(table){if(table!=='user_private')throw Error('Unexpected table');let owner;const query={select(){return query;},eq(key,value){owner=value;return query;},maybeSingle(){return rewardRequest('quiz',owner);}};return query;}};
 const fakeGame=()=>({controls:'',draw(){},update(){},destroy(){}});
 G2.mole=fakeGame;window.OjjudaScrewLoader={menuHTML:()=>'<p>나사게임</p>',load:async()=>api=>{screwApi=api;return fakeGame();}};
@@ -14,18 +16,23 @@ const rewardWrites={save:0,render:0,wallet:0},rewardToasts=[],originalSave=I,ori
 I=()=>{rewardWrites.save++;originalSave();};H=()=>{rewardWrites.render++;originalRender();};qf=()=>{rewardWrites.wallet++;originalWallet();};M=text=>rewardToasts.push(text);
 window.rewardTest={
  async prepare(kind){if(['screw','screw_flat','screw_box'].includes(kind)){Al('screw');R.screwMode=kind==='screw_flat'?'flat':'box';await _2();}else if(kind==='result'){Al('mole');await _2();}},
- async start(kind){let task;if(kind==='quiz')task=kg();else if(kind==='daily')task=sr.checkin({},document.createElement('button'));else if(kind==='score')task=tf('mole',150);else if(kind==='screw')task=screwApi.buyScrew('flat_moves','fixture-request',1,false);else if(kind==='result')task=S2(150);else throw Error('Unexpected test action');await Promise.resolve();const id=rewardJobId;rewardTasks.set(id,Promise.resolve(task).then(value=>{rewardResults.set(id,value);},error=>{rewardResults.set(id,{error:error.message});}));return id;},
- async finish(id,data,failure){const job=rewardJobs.get(id);if(!job)throw Error('Missing request '+id);if(failure==='reject')job.reject(Error('fixture failure'));else job.resolve({data,error:failure?Error('fixture query error'):null});await rewardTasks.get(id);await new Promise(resolve=>setTimeout(resolve,0));rewardJobs.delete(id);return rewardResults.get(id);},
+ async start(kind,score=150){let task;if(kind==='quiz')task=kg();else if(kind==='daily')task=sr.checkin({},document.createElement('button'));else if(kind==='score')task=tf('mole',150);else if(kind==='screw')task=screwApi.buyScrew('flat_moves','fixture-request',1,false);else if(kind==='result')task=S2(score);else throw Error('Unexpected test action');await Promise.resolve();const id=rewardJobId;rewardTasks.set(id,Promise.resolve(task).then(value=>{rewardResults.set(id,value);},error=>{rewardResults.set(id,{error:error.message});}));return id;},
+ async finish(id,data,failure){await settleRewardJob(id,data,failure);await rewardTasks.get(id);return rewardResults.get(id);},
+ settle:settleRewardJob,
+ async done(id){if(!rewardTasks.has(id))throw Error('Missing action '+id);await rewardTasks.get(id);const result=rewardResults.get(id);if(result?.error)throw Error(result.error);return result;},
  switchAccount(owner,coins,online=true){D.user=owner?{id:owner}:null;D.online=online;$.coins=coins;$.lastCheckin=null;originalRender();},
  restart(){R.running=false;return _2();},close:El,
  pending(){return [...rewardJobs].map(([id,{kind,owner}])=>({id,kind,owner}));},
- snapshot(){return{user:D.user?.id||null,online:D.online,coins:$.coins,lastCheckin:$.lastCheckin,visible:document.querySelector('.coinpill').textContent,toasts:[...rewardToasts],result:document.querySelector('#gres')?.textContent||null,rank:document.querySelector('#grank')?.textContent||null,...rewardWrites};},
+ snapshot(){const card=document.querySelector('[data-game-result-card]');return{user:D.user?.id||null,online:D.online,coins:$.coins,lastCheckin:$.lastCheckin,visible:document.querySelector('.coinpill').textContent,toasts:[...rewardToasts],result:document.querySelector('#gres')?.textContent||null,metric:card?.querySelector('.game-result-metric')?.textContent||null,outcome:card?.dataset.resultOutcome||null,game:card?.dataset.resultGame||null,...rewardWrites};},
  calls(){return rewardCalls;},notices(){return [...rewardNotices];},setWalletReady(value){D.walletReady=value;}
 };
 `+world.slice(world.indexOf('</script>',boot));
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});try{
- async function fixture(kind){const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',route=>new URL(route.request().url()).pathname==='/world.html'?route.fulfill({contentType:'text/html',body:world}):route.abort());await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.rewardTest);if(kind)await page.evaluate(kind=>rewardTest.prepare(kind),kind);return{page,errors,start:kind=>page.evaluate(kind=>rewardTest.start(kind),kind),finish:(id,data,failure)=>page.evaluate(args=>rewardTest.finish(...args),[id,data,failure]),snapshot:()=>page.evaluate(()=>rewardTest.snapshot()),switchAccount:(owner,coins,online=true)=>page.evaluate(args=>rewardTest.switchAccount(...args),[owner,coins,online]),close:async()=>{assert.deepEqual(errors,[]);await page.close();}};}
+ async function fixture(kind){const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});if(url.pathname==='/game-results.js')return route.fulfill({contentType:'text/javascript',body:gameResults});return route.abort();});await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.rewardTest&&window.OjjudaGameResults);if(kind)await page.evaluate(kind=>rewardTest.prepare(kind),kind);return{page,errors,start:(kind,score)=>page.evaluate(args=>rewardTest.start(...args),[kind,score]),finish:(id,data,failure)=>page.evaluate(args=>rewardTest.finish(...args),[id,data,failure]),settle:(id,data,failure)=>page.evaluate(args=>rewardTest.settle(...args),[id,data,failure]),done:id=>page.evaluate(id=>rewardTest.done(id),id),pending:()=>page.evaluate(()=>rewardTest.pending()),snapshot:()=>page.evaluate(()=>rewardTest.snapshot()),switchAccount:(owner,coins,online=true)=>page.evaluate(args=>rewardTest.switchAccount(...args),[owner,coins,online]),close:async()=>{assert.deepEqual(errors,[]);await page.close();}};}
  const receipt={ok:true,coins:7,reward:1,best:150,rank:2,stage:1,count:3,extra_moves:9,price:1};
+ // A score result awaits a monthly leader before saving, then another after saving.
+ // Release each RPC separately; waiting for S2 while its next RPC is held deadlocks.
+ async function startResult(f,score=150){const task=await f.start('result',score),before=(await f.pending()).find(job=>job.id===task);assert.equal(before.kind,'community_game_monthly_ranking');assert.equal(before.owner,'owner-a');await f.settle(before.id,[{score:100,me:false}]);const submit=(await f.pending()).find(job=>job.id>task&&job.kind==='submit_score');assert.ok(submit,'the pre-save leader lookup continues to the score submission');assert.equal(submit.owner,'owner-a');return{task,submit:submit.id};}
  for(const kind of ['quiz','daily','score','screw'])for(const mode of ['switch','logout','reject','query']){
   const f=await fixture(kind),id=await f.start(kind);assert.equal((await f.page.evaluate(()=>rewardTest.pending()))[0].owner,'owner-a');await f.switchAccount(mode==='logout'?null:'owner-b',900,mode!=='logout');const before=await f.snapshot(),result=await f.finish(id,receipt,['reject','query'].includes(mode)?mode:undefined);assert.deepEqual(await f.snapshot(),before,kind+' stale '+mode+' response never changes the new model, controls or notices');
   assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),[],'stale scores never announce a refresh for the new account');
@@ -54,14 +61,31 @@ window.rewardTest={
   assert.deepEqual(applied.toasts,[earlier==='daily'?'출석 체크 완료! 1 ZU를 받았어요':'정답! 1 ZU를 받았어요']);
   if(earlier==='daily')assert.ok(applied.lastCheckin);await f.close();
  }
+ // A delayed pre-save lookup cannot submit under a replacement account.
+ {
+  const f=await fixture('result'),task=await f.start('result');assert.equal((await f.pending())[0].kind,'community_game_monthly_ranking');
+  await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
+  await f.settle(task,[{score:100,me:false}]);await f.done(task);
+  assert.deepEqual(await f.snapshot(),before);assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'an account change during the first ranking read never submits the old score');await f.close();
+ }
  // Real score-result continuation must not paint/requery for a different account.
  for(const failure of [undefined,'reject']){
-  const f=await fixture('result'),id=await f.start('result');await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());await f.finish(id,receipt,failure);assert.deepEqual(await f.snapshot(),before);assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'no ranking RPC starts under account B for account A’s completed game');await f.close();
+  const f=await fixture('result'),{task,submit}=await startResult(f);await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());await f.settle(submit,receipt,failure);await f.done(task);assert.deepEqual(await f.snapshot(),before);assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'no ranking RPC starts under account B for account A’s completed game');await f.close();
  }
  {
-  const f=await fixture('result'),old=await f.start('result');await f.page.evaluate(()=>rewardTest.restart());const latest=await f.start('result');await f.finish(latest,{...receipt,coins:800,best:999});const before=await f.snapshot();assert.match(before.result,/999/);await f.finish(old,{...receipt,best:1});assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result or request ranking again');const ranking=(await f.page.evaluate(()=>rewardTest.pending())).filter(j=>j.kind==='community_game_ranking').at(-1);assert.ok(ranking);await f.switchAccount('owner-b',900);const switched=await f.snapshot();await f.finish(ranking.id,[{nick:'A 계정 랭킹',score:999,me:true}]);assert.deepEqual(await f.snapshot(),switched,'a late ranking response cannot enter the new account view');await f.close();
+  const f=await fixture('result'),old=await startResult(f);await f.page.evaluate(()=>rewardTest.restart());const latest=await startResult(f,999);
+  await f.settle(latest.submit,{...receipt,coins:800,best:999});const ranking=(await f.pending()).find(job=>job.id>latest.submit&&job.kind==='community_game_monthly_ranking');assert.ok(ranking);
+  await f.settle(ranking.id,[{score:999,me:true}]);await f.done(latest.task);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
+  assert.equal(before.metric,'999점 · 이번 달 1등');assert.equal(before.outcome,'record');assert.equal(before.coins,800);
+  await f.settle(old.submit,{...receipt,best:1});await f.done(old.task);assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'the stale result never requests ranking again');await f.close();
  }
- // Preserve current score storage and the separate screw-mode ranking keys.
+ {
+  const f=await fixture('result'),{task,submit}=await startResult(f);await f.settle(submit,receipt);
+  const ranking=(await f.pending()).find(job=>job.id>submit&&job.kind==='community_game_monthly_ranking');assert.ok(ranking);
+  await f.switchAccount('owner-b',900);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
+  await f.settle(ranking.id,[{score:150,me:true}]);await f.done(task);assert.deepEqual(await f.snapshot(),before,'a late monthly ranking response cannot enter the new account view');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore);await f.close();
+ }
+ // Preserve current score storage and the separate screw-mode result keys.
  for(const key of ['screw_box','screw_flat']){
   const f=await fixture(key);await f.page.evaluate(()=>rewardTest.setWalletReady(false));
   const id=await f.start('result');
@@ -69,9 +93,10 @@ window.rewardTest={
   assert.deepEqual(submitted,{kind:'submit_score',owner:'owner-a',args:{p_game:key,p_score:150}},'score saving remains available before wallet readiness');
   await f.finish(id,receipt);
   assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),['owner-a'],'a current successful score still announces a refresh');
-  const ranked=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='community_game_ranking').at(-1);
-  assert.equal(ranked.args.p_game,key,'box and flat keep separate ranking keys');
+  assert.equal((await f.snapshot()).game,key,'box and flat keep separate result and score keys');
+  const ranked=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind.includes('ranking'));
+  assert.deepEqual(ranked,[],'stage-based screw results do not compare unrelated stages through a score-only leaderboard');
   await f.close();
  }
- console.log('PASS: reward account isolation, quiz/daily/game/purchase continuations, shared response order, valid balances, preserved RPC receipts, restart and ranking guards, current score notifications, wallet-independent saves and separate screw ranking keys.');
+ console.log('PASS: reward account isolation, quiz/daily/game/purchase continuations, shared response order, valid balances, preserved RPC receipts, restart and monthly ranking guards, current score notifications, wallet-independent saves and separate screw result keys.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
