@@ -134,7 +134,7 @@ function fixture(options = {}) {
   actual.click('#show-map');
   await until(() => actual.calls.geoLayers === 1, 'map entry loads the local regional overview');
   assert.equal(actual.calls.maps, 1, 'the first map entry creates the map');
-  assert.equal(actual.calls.markers.size, Math.min(300, dataset.restaurants.filter(coordinates).length), 'only sourced coordinates receive pins, within the rendering limit');
+  assert.equal(actual.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'only sourced coordinates receive pins, within one map page');
   assert.equal(actual.$('.result-shown').hidden, true, 'list pagination counts are hidden in map mode');
   const missingActual = dataset.restaurants.filter(item => !coordinates(item)).length;
   if (missingActual) assert.ok(actual.$('#map-caption-text').textContent.includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'), 'coordinate gaps remain explained even when the pin limit applies');
@@ -221,7 +221,7 @@ function fixture(options = {}) {
   assert.equal(hostile.$('[data-restaurant-id="fixture-no-valid-source"]'), null, 'unsupported source scheme is rejected');
   hostile.click('#show-map');
   await until(() => hostile.calls.geoLayers === 1, 'hostile fixture local background finishes before teardown');
-  assert.equal(hostile.calls.markers.size, Math.min(300, dataset.restaurants.filter(coordinates).length), 'null coordinates do not become 0,0 markers');
+  assert.equal(hostile.calls.markers.size, Math.min(50, dataset.restaurants.filter(coordinates).length), 'null coordinates do not become 0,0 markers');
   hostile.click('#show-list'); hostile.filters();
   assert.equal(hostile.$('[data-restaurant-id="fixture-unsafe-text"] img'), null);
   hostile.click('[data-guide="post-office"]');
@@ -350,7 +350,8 @@ function fixture(options = {}) {
   assert.deepEqual(unavailableMap.errors, []); unavailableMap.dom.window.close();
 
   const many = Array.from({ length: 800 }, (_, index) => ({ ...structuredClone(near), id: 'many-' + index, name: '성능확인' + String(index).padStart(4, '0'), lat: 37.5665 + index / 10000, lng: 126.978 }));
-  const performance = fixture({ dataset: { restaurants: many }, permission: 'granted', position: { lat: 37.5665, lng: 126.978 } });
+  const performanceOptions = { dataset: { restaurants: many }, permission: 'granted', position: { lat: 37.5665, lng: 126.978 } };
+  const performance = fixture(performanceOptions);
   await ready(performance, many.length, false);
   await until(() => performance.$('#nearby').getAttribute('aria-pressed') === 'true', 'performance sample location resolves');
   assert.equal(performance.records().length, 50); assert.equal(performance.$('#result-count').dataset.total, '800');
@@ -366,28 +367,55 @@ function fixture(options = {}) {
   performance.click('#reset'); assert.equal(performance.records().length, 50, 'changed filters reset the displayed batch');
   assert.equal(performance.$('.result-shown').textContent, '현재 50곳 표시');
   while (performance.records().length < 700) performance.click('#load-more');
-  assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the map limit');
+  assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the current map page');
   performance.click('#show-map'); await until(() => performance.calls.geoLayers === 1, 'the performance sample map loads locally');
-  assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 300, 'large maps cap the visible markers');
-  assert.equal(performance.$('#result-coverage').textContent, '지도 표시 300 / 800곳');
-  assert.match(performance.$('#map-caption-text').textContent, /800곳 중 300곳/);
-  assert.deepEqual([...performance.document.querySelectorAll('.restaurant-pin')].map(pin => pin.title), many.slice(0, 300).map(item => item.name), 'location mode initially maps the nearest 300 restaurants');
+  const pinNames = sample => [...sample.document.querySelectorAll('.restaurant-pin')].map(pin => pin.title).sort();
+  const expectedNames = rows => rows.map(item => item.name).sort();
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(0, 50)), 'location mode initially maps the nearest 50 restaurants');
+  assert.equal(performance.$('#result-coverage').textContent, '지도 표시 50 / 800곳');
+  assert.equal(performance.$('#map-pagination').hidden, false);
+  assert.equal(performance.$('#map-prev').disabled, true);
+  assert.equal(performance.$('#map-next').disabled, false);
+  assert.ok(performance.$('#map-page-status').textContent, 'the map pager describes the current group');
+  const firstPagePins = [...performance.document.querySelectorAll('.restaurant-pin')];
+  performance.click('#map-next');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(50, 100)), 'next replaces the map with the next nearest 50');
+  assert.ok(firstPagePins.every(pin => !pin.isConnected), 'previous-page pins are removed rather than accumulated');
+  assert.equal(performance.calls.markers.size, 51, 'only 50 restaurant pins and the separate user-location pin remain registered');
+  assert.equal(performance.records().length, 700, 'map pagination does not discard or append restaurant cards');
+  assert.equal(performance.$('#map-prev').disabled, false);
+  performance.click('#map-prev');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(0, 50)), 'previous returns to the original 50');
+  assert.equal(performance.$('#map-prev').disabled, true);
   performance.click('#show-list'); performance.click('[data-restaurant-id="many-650"] .card-main');
   assert.equal(performance.$('#detail-title').textContent, many[650].name); performance.click('#close-detail'); performance.click('#show-map');
-  assert.equal(performance.$('.restaurant-pin.is-selected').title, many[650].name, 'a loaded card beyond the cap remains selected when opening the map');
-  assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 300);
-  assert.equal(performance.$('.restaurant-pin[title="' + many[699].name + '"]'), null);
-  // Dispatch on the retained card while the map is active to cover an unregistered selection.
+  assert.equal(performance.$('.restaurant-pin.is-selected').title, many[650].name, 'a loaded card remains selected when opening its map page');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(650, 700)), 'a selected list item opens its whole page, not a mixed group');
+  // Dispatch on retained cards while the map is active to cover selections both within and outside its page.
   performance.click('[data-restaurant-id="many-699"] .card-main');
   assert.equal(performance.$('#workspace').dataset.view, 'map');
   assert.equal(performance.$('#detail-title').textContent, many[699].name);
-  assert.equal(performance.$('.restaurant-pin.is-selected').title, many[699].name, 'selection immediately registers an out-of-cap pin on the active map');
+  assert.equal(performance.$('.restaurant-pin.is-selected').title, many[699].name);
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(650, 700)), 'selecting another item on the same page retains its neighbors');
+  performance.click('#close-detail'); performance.click('[data-restaurant-id="many-99"] .card-main');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(50, 100)), 'selecting a card on another page replaces the entire group');
   assert.equal(performance.document.querySelectorAll('.restaurant-pin.is-selected').length, 1);
-  assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 300, 'adding the selected pin evicts a prior pin instead of exceeding the limit');
-  assert.equal(performance.$('.restaurant-pin[title="' + many[650].name + '"]'), null, 'the previous out-of-cap selection is removed');
+  assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 50, 'selection never adds a 51st restaurant pin');
+  assert.equal(performance.$('.restaurant-pin[title="' + many[650].name + '"]'), null, 'the previous page selection is removed');
   const selectedMarker = [...performance.calls.markers].find(marker => marker.node.classList.contains('is-selected'));
-  assert.deepEqual(Array.from(selectedMarker.point), [many[699].lat, many[699].lng], 'the selected pin uses the selected restaurant coordinates');
-  assert.equal(performance.calls.maps, 1); assert.equal(performance.calls.geography, 1, 'out-of-cap selection reuses the existing map and geography');
+  assert.deepEqual(Array.from(selectedMarker.point), [many[99].lat, many[99].lng], 'the selected pin uses the selected restaurant coordinates');
+  performance.click('#close-detail');
+  performanceOptions.position = { lat: many[799].lat, lng: many[799].lng };
+  performance.click('#nearby'); await until(() => !performance.$('#nearby').disabled, 'a new location resolves');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(750, 800)), 'a changed location resets to its nearest first page');
+  assert.equal(performance.$('#map-prev').disabled, true, 'a previous selection cannot retain an old page after location changes');
+  performance.click('#map-next'); performance.search('성능확인07');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(750, 800)), 'search resets pagination while preserving nearest-first ordering');
+  assert.equal(performance.$('#map-prev').disabled, true);
+  performance.click('#map-next');
+  assert.deepEqual(pinNames(performance), expectedNames(many.slice(700, 750)), 'an exact full final page still contains 50');
+  assert.equal(performance.$('#map-next').disabled, true, 'an exact multiple does not expose an empty extra page');
+  assert.equal(performance.calls.maps, 1); assert.equal(performance.calls.geography, 1, 'page and location changes reuse the existing map and geography');
   assert.deepEqual(performance.errors, []); performance.dom.window.close();
 
   const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
@@ -395,14 +423,46 @@ function fixture(options = {}) {
   await ready(mixedMap, mixedRows.length, false);
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 가능 305곳 · 위치 확인 중 7곳'); mixedMap.click('#show-map');
   await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
-  assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 300);
-  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 300 / 305곳 · 위치 확인 중 7곳');
-  assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인', 'the pin cap and missing coordinates are independent facts');
+  assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(0, 50)), 'without location, map groups follow the existing name ordering');
+  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
+  assert.match(mixedMap.$('#map-caption-text').textContent, /위치 미확인 7곳은 목록에서 확인/, 'missing-coordinate records remain explained independently of pagination');
+  const visitedNames = [...pinNames(mixedMap)];
+  for (let page = 1; page <= 6; page++) {
+    mixedMap.click('#map-next');
+    const names = pinNames(mixedMap);
+    assert.deepEqual(names, expectedNames(many.slice(page * 50, Math.min((page + 1) * 50, 305))), 'every map group contains only its own located restaurants');
+    assert.ok(names.every(name => !visitedNames.includes(name)), 'successive pages have no overlap');
+    visitedNames.push(...names);
+  }
+  assert.equal(visitedNames.length, 305, 'all located restaurants remain reachable across pages');
+  assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 5, 'the final partial page contains only remaining restaurants');
+  assert.equal(mixedMap.$('#map-next').disabled, true);
+  mixedMap.click('#map-next'); assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 5, 'a disabled final next button cannot produce an empty page');
+  mixedMap.click('#map-prev'); assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(250, 300)), 'previous works from a partial last page');
   mixedMap.search('지도미확인');
   assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 미확인 7곳은 목록에서 확인');
   assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 0);
+  assert.equal(mixedMap.$('#map-pagination').hidden, true, 'no-location results hide the map pager');
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 0곳 · 위치 확인 중 7곳', 'search refreshes registered and mapped counts together');
+  mixedMap.click('#reset'); assert.deepEqual(pinNames(mixedMap), expectedNames(many.slice(0, 50)), 'clearing a filter returns to the first map group');
+  assert.equal(mixedMap.$('#map-prev').disabled, true);
+  mixedMap.search('성능확인000');
+  assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 10);
+  assert.equal(mixedMap.$('#map-pagination').hidden, true, 'a filter with fewer than 50 locations hides unnecessary pagination');
   assert.deepEqual(mixedMap.errors, []); mixedMap.dom.window.close();
 
-  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, 300-pin cap with out-of-cap selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
+  for (const count of [50, 51]) {
+    const boundary = fixture({ view: 'map', dataset: { restaurants: many.slice(0, count) } });
+    await ready(boundary, count, false);
+    await until(() => boundary.calls.geoLayers === 1, 'the page-size boundary map loads');
+    assert.equal(boundary.document.querySelectorAll('.restaurant-pin').length, 50);
+    assert.equal(boundary.$('#map-pagination').hidden, count === 50, 'pagination appears only when there is another map group');
+    if (count === 51) {
+      boundary.click('#map-next'); assert.deepEqual(pinNames(boundary), expectedNames(many.slice(50, 51)));
+      assert.equal(boundary.$('#map-next').disabled, true);
+    }
+    assert.deepEqual(boundary.errors, []); boundary.dom.window.close();
+  }
+
+  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, non-cumulative 50-pin map pages, boundary/partial pages, filter/location resets and whole-page selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

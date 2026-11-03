@@ -15,6 +15,8 @@ const viewKey = 'ojjuda-certified-restaurants-view-v1';
 const hasCoordinates = item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng);
 const ids = items => items.map(item => item.id).sort();
 const visibleIds = page => page.locator('#cards [data-restaurant-id]').evaluateAll(cards => cards.map(card => card.dataset.restaurantId).sort());
+const mapNames = page => page.locator('.restaurant-pin').evaluateAll(pins => pins.map(pin => pin.title).sort());
+const names = rows => rows.map(item => item.name).sort();
 const waitForTotal = (page, count) => page.waitForFunction(expected => Number(document.querySelector('#result-count').dataset.total) === expected, count);
 async function waitForCount(page, count) { await waitForTotal(page, count); while (await page.locator('#cards [data-restaurant-id]').count() < count) await page.locator('#load-more').click(); }
 async function openFilters(page) { if (await page.locator('#filter-toggle').getAttribute('aria-expanded') !== 'true') await page.locator('#filter-toggle').click(); }
@@ -176,7 +178,7 @@ async function fixture(browser, options = {}) {
     await page.locator('#show-map').click();
     await page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(regular.network.geography, 1);
-    assert.equal(await page.locator('.restaurant-pin').count(), Math.min(300, dataset.restaurants.filter(hasCoordinates).length));
+    assert.equal(await page.locator('.restaurant-pin').count(), Math.min(50, dataset.restaurants.filter(hasCoordinates).length));
     assert.equal(await page.locator('.result-shown').isVisible(), false, 'list-only counts do not compete with map coverage');
     const missingActual = dataset.restaurants.filter(item => !hasCoordinates(item)).length;
     if (missingActual) assert.ok((await page.locator('#map-caption-text').textContent()).includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'));
@@ -283,7 +285,7 @@ async function fixture(browser, options = {}) {
       } else {
         assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'map', 'postal results with coordinates preserve the chosen map view');
         assert.equal(await page.locator('#map-panel').isVisible(), true);
-        assert.equal(await page.locator('.restaurant-pin').count(), Math.min(300, locatedPostal.length), 'the map shows only located postal recommendations within the pin limit');
+        assert.equal(await page.locator('.restaurant-pin').count(), Math.min(50, locatedPostal.length), 'the map shows only one page of located postal recommendations');
       }
       assert.equal(await page.locator('#collections').isVisible(), true);
       assert.equal(await page.locator('#collections').evaluate(section => section.classList.contains('is-featured')), true);
@@ -316,7 +318,7 @@ async function fixture(browser, options = {}) {
     await waitForCount(hostile.page, dataset.restaurants.length + 1);
     assert.equal(await hostile.page.locator('[data-restaurant-id="fixture-unsafe-only"]').count(), 0, 'records without an accepted source are not represented as verified');
     await hostile.page.locator('#show-map').click();
-    assert.equal(await hostile.page.locator('.restaurant-pin').count(), Math.min(300, dataset.restaurants.filter(hasCoordinates).length), 'null coordinates never create an invented map pin');
+    assert.equal(await hostile.page.locator('.restaurant-pin').count(), Math.min(50, dataset.restaurants.filter(hasCoordinates).length), 'null coordinates never create an invented map pin');
     await hostile.page.locator('#show-list').click();
     const hostileCard = hostile.page.locator('[data-restaurant-id="fixture-no-coordinates"]');
     assert.equal(await hostileCard.locator('img,script').count(), 0, 'card fields stay plain text');
@@ -475,28 +477,33 @@ async function fixture(browser, options = {}) {
     await resetFilters(performance.page); assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
     assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 50곳 표시');
     while (await performance.page.locator('.restaurant-card').count() < 700) await performance.page.locator('#load-more').click();
-    assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'successive batches expose cards beyond the map limit');
+    assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'successive batches expose cards beyond the current map page');
     await performance.page.locator('#show-map').click();
     await performance.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
-    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300);
-    assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 표시 300 / 800곳');
-    assert.match(await performance.page.locator('#map-caption-text').textContent(), /800곳 중 300곳/);
-    assert.deepEqual(await performance.page.locator('.restaurant-pin').evaluateAll(pins => pins.map(pin => pin.title)), many.slice(0, 300).map(item => item.name), 'nearby maps the nearest 300 first');
+    assert.equal(await performance.page.locator('.restaurant-pin').count(), 50);
+    assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 표시 50 / 800곳');
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(0, 50)), 'nearby maps the nearest 50 first');
+    assert.equal(await performance.page.locator('#map-pagination').isVisible(), true);
+    assert.equal(await performance.page.locator('#map-prev').isDisabled(), true);
+    await performance.page.locator('#map-next').click();
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(50, 100)), 'the next button replaces the first group with the next 50');
+    assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'map pages do not change the accumulated list cards');
+    await performance.page.locator('#map-prev').click();
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(0, 50)), 'previous returns to the first group');
     await performance.page.locator('#show-list').click(); await performance.page.locator('[data-restaurant-id="many-650"] .card-main').click();
     assert.equal(await performance.page.locator('#detail-title').textContent(), many[650].name);
     await performance.page.locator('#close-detail').click(); await performance.page.locator('#show-map').click();
-    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[650].name, 'list selection outside the cap receives a pin when the map opens');
-    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300);
-    assert.equal(await performance.page.locator('.restaurant-pin[title="' + many[699].name + '"]').count(), 0);
-    // The map's visible companion list must support real pointer selection beyond the pin cap.
+    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[650].name, 'a list selection is marked when its map page opens');
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(650, 700)), 'list selection opens a complete group of 50');
+    // The map's visible companion list supports real pointer selection within and across pages.
     assert.equal(await performance.page.locator('#results').isVisible(), true);
     await performance.page.locator('[data-restaurant-id="many-699"] .card-main').click();
     assert.equal(await performance.page.locator('#workspace').getAttribute('data-view'), 'map');
     assert.equal(await performance.page.locator('#detail-title').textContent(), many[699].name);
-    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[699].name, 'an unregistered selection creates its pin immediately');
+    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[699].name);
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(650, 700)), 'selecting a neighbor preserves the whole page');
     assert.equal(await performance.page.locator('.restaurant-pin.is-selected').count(), 1);
-    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300, 'selection replaces a pin while preserving the rendering limit');
-    assert.equal(await performance.page.locator('.restaurant-pin[title="' + many[650].name + '"]').count(), 0);
+    assert.equal(await performance.page.locator('.restaurant-pin').count(), 50, 'selection stays within a group of 50');
     await performance.page.locator('#close-detail').click();
     await performance.page.waitForFunction(name => {
       const pin = document.querySelector('.restaurant-pin.is-selected');
@@ -505,6 +512,9 @@ async function fixture(browser, options = {}) {
       const x = marker.left + marker.width / 2, y = marker.top + marker.height / 2;
       return x >= map.left && x <= map.right && y >= map.top && y <= map.bottom;
     }, many[699].name);
+    await performance.page.locator('[data-restaurant-id="many-99"] .card-main').click();
+    assert.deepEqual(await mapNames(performance.page), names(many.slice(50, 100)), 'another-page selection replaces all pins without a 51st marker');
+    await performance.page.locator('#close-detail').click();
     assert.equal(performance.network.geography, 1, 'selection reuses the local background');
     assert.deepEqual(performance.network.escaped, []); assert.deepEqual(performance.errors, []); await performance.context.close();
 
@@ -514,14 +524,20 @@ async function fixture(browser, options = {}) {
     assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 가능 305곳 · 위치 확인 중 7곳');
     await mixedMap.page.locator('#show-map').click();
     await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
-    assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 300);
-    assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 300 / 305곳 · 위치 확인 중 7곳');
-    assert.equal(await mixedMap.page.locator('#map-caption-text').textContent(), '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인');
+    assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 50);
+    assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
+    assert.match(await mixedMap.page.locator('#map-caption-text').textContent(), /위치 미확인 7곳은 목록에서 확인/);
     await mixedMap.page.setViewportSize({ width: 320, height: 844 });
-    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'the cap and missing locations remain separate in one compact phone line');
+    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'the shown count and missing locations remain separate in one compact phone line');
     assert.equal(await mixedMap.page.locator('.map-caption').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1; }), true, 'the combined map coverage message wraps inside the phone viewport');
+    assert.equal(await mixedMap.page.locator('#map-pagination').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1; }), true, 'the map pager fits a 320px phone viewport');
+    for (let group = 1; group <= 6; group++) await mixedMap.page.locator('#map-next').click();
+    assert.deepEqual(await mapNames(mixedMap.page), names(many.slice(300, 305)), 'the final group contains only five remaining located restaurants');
+    assert.equal(await mixedMap.page.locator('#map-next').isDisabled(), true);
+    await mixedMap.page.locator('#map-prev').click();
+    assert.deepEqual(await mapNames(mixedMap.page), names(many.slice(250, 300)), 'previous works on a phone after the final partial page');
     assert.deepEqual(mixedMap.network.escaped, []); assert.deepEqual(mixedMap.errors, []); await mixedMap.context.close();
 
-    console.log('PASS: first-visit map with a visible list, explicit view persistence, festival-style desktop split and 320–1280px phone layout, location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, 300-pin cap with visible out-of-cap selection and map focus, real data filters, saved state, exact sources, edition/selection/publication/source/listing labels, safe rendering and recovery; no real location permission or external map requests.');
+    console.log('PASS: first-visit map with a visible list, explicit view persistence, festival-style desktop split and 320–1280px phone layout, location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, non-cumulative 50-pin map pages with whole-page selection and map focus, partial-page navigation and phone pager layout, real data filters, saved state, exact sources, edition/selection/publication/source/listing labels, safe rendering and recovery; no real location permission or external map requests.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
