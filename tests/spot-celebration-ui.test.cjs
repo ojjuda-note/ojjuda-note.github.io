@@ -123,8 +123,10 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   async function noticeOutsidePictures(page,label){
    const layout=await page.evaluate(()=>{
     const rect=el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};
+    const hint=document.querySelector('#zoom-hint'),text=document.createRange();text.selectNodeContents(hint);
     return {notice:rect(document.querySelector('#zoom-status')),panes:[...document.querySelectorAll('.zoom-scroll')].map(rect),
-     toolbar:rect(document.querySelector('#zoom-dialog .zoom-toolbar')),width:innerWidth,height:innerHeight};
+     toolbar:rect(document.querySelector('#zoom-dialog .zoom-toolbar')),width:innerWidth,height:innerHeight,
+     compact:matchMedia('(max-width:900px),(max-width:1100px) and (max-height:600px)').matches,hint:rect(hint),hintLines:[...text.getClientRects()].map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}))};
    });
    const n=layout.notice;
    assert.ok(n.height>=36&&n.x>=0&&n.y>=0&&n.x+n.width<=layout.width+1&&n.y+n.height<=layout.height+1,label+': two readable notice lines stay on screen');
@@ -133,12 +135,17 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     assert.ok(overlapX<=0||overlapY<=0,label+': notice does not cover either visible picture '+JSON.stringify(layout));
    }
    assert.ok(n.y+n.height<=layout.toolbar.y+1,label+': notice remains above the separate controls');
+   if(layout.compact)assert.equal(layout.hint.height,44,label+': purchase text does not enlarge the fixed touch target');
+   for(const line of layout.hintLines)assert.ok(line.x>=layout.hint.x-1&&line.y>=layout.hint.y-1&&line.x+line.width<=layout.hint.x+layout.hint.width+1&&line.y+line.height<=layout.hint.y+layout.hint.height+1,label+': the entire purchase label stays inside its button');
   }
   // Observe a real partial result: solving everything at once used to miss the
   // temporary notice covering B. Compare the clipped panes, not oversized images.
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1280,height:900}]){
    const notice=await fixture(viewport,82),page=notice.page,label=`zoom notice ${viewport.width}x${viewport.height}`;
    try{
+    // System color emoji can be wider than a local missing-glyph fallback.
+    // Keep that real font-width risk in the 320px payment/error regression.
+    await page.addStyleTag({content:'#zoom-dialog #zoom-hint::before{width:24px;flex-basis:24px}'});
     await page.clock.install();page.on('dialog',dialog=>dialog.accept());
     assert.equal((await current(page)).id,83,'the notice check opens a real ten-answer picture');
     await page.locator('#start').click();await page.locator('#zoom').click();
@@ -166,6 +173,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     assert.match(await page.locator('#zoom-status').innerText(),/ZU 사용을 확인/);await noticeOutsidePictures(page,label+' while payment waits');
     assert.deepEqual(await zoomGeometry(page),geometry,label+': waiting for payment keeps picture geometry');
     await page.evaluate(()=>failNoticePurchase());await page.waitForFunction(()=>document.querySelector('#zoom-status').textContent.includes('연결이 끊겼어요'));
+    assert.equal(await page.locator('#zoom-hint').innerText(),'다시 확인');assert.equal(await page.locator('#zoom-hint').getAttribute('aria-label'),'구매 다시 확인');assert.equal(await page.locator('#hint').textContent(),'구매 다시 확인');
     await noticeOutsidePictures(page,label+' after payment error');assert.deepEqual(await zoomGeometry(page),geometry,label+': long error text keeps picture geometry');
     const scrolling=await page.locator('#zoom-status').evaluate(el=>({scrollHeight:el.scrollHeight,height:el.clientHeight}));
     assert.ok(scrolling.scrollHeight>scrolling.height,label+': the long error stays within its reserved notice area');

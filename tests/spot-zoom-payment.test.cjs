@@ -36,7 +36,7 @@ function fixture(){
  for(const kind of ['hint','time']){
   const f=fixture();try{
    f.$('zoom-'+(kind==='hint'?'hint':'extend')).click();f.fail();await flush();f.preserved();
-   assert.equal(f.round().status,'payment');assert.equal(f.$('zoom-hint').disabled,false);assert.equal(f.$('zoom-hint').textContent,'구매 다시 확인');
+   assert.equal(f.round().status,'payment');assert.equal(f.$('zoom-hint').disabled,false);assert.equal(f.$('zoom-hint').textContent,'다시 확인');assert.equal(f.$('zoom-hint').getAttribute('aria-label'),'구매 다시 확인');assert.equal(f.$('hint').textContent,'구매 다시 확인');
    f.$('zoom-hint').click();assert.equal(f.requests.length,2);assert.equal(f.requests[1].requestId,f.requests[0].requestId,'retry reuses receipt to prevent another charge');assert.equal(f.requests[1].kind,kind);
    f.succeed();await flush();f.preserved();assert.equal(f.round().pending,null);
   }finally{f.w.close();}

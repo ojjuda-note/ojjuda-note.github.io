@@ -96,7 +96,9 @@ const root=path.join(__dirname,'..');
   assert.equal(last.get(A).status,'finished');assert.equal(last.get(B).status,'finished');
   assert.deepEqual(last.get(A).gold,last.get(B).gold);assert.equal(last.get(A).gold.reduce((x,y)=>x+y,0),10000);
   await a.page.locator('#rematch').waitFor();
-  await a.page.locator('.result-details').evaluate(el=>{el.insertAdjacentHTML('beforeend','<p>추가 정산 내역</p>'.repeat(15));});
+  const resultExtra=a.page.locator('.game-result-card[data-result-game="matgo"] .game-result-extra');
+  assert.equal(await resultExtra.count(),1,'the shared online result has one settlement details area');
+  await resultExtra.evaluate(el=>{el.insertAdjacentHTML('beforeend','<p>추가 정산 내역</p>'.repeat(15));});
   for(const [width,height] of [[320,568],[568,320]]){
     await a.page.setViewportSize({width,height});await a.page.waitForTimeout(40);
     const box=await a.page.locator('#result-exit').boundingBox();assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=width&&box.y+box.height<=height-34,'online result exit stays above phone navigation');

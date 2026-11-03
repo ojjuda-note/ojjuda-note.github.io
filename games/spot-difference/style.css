@@ -107,14 +107,14 @@ body.embedded .topbar{display:none}body.embedded main{padding-top:18px}
   #zoom-dialog .zoom-scroll::-webkit-scrollbar{display:none}
   #zoom-dialog .zoom-picture-timer{margin:0;width:100%;height:4px}
   #zoom-dialog .zoom-picture-timer .time-progress{height:4px;border:0;border-radius:0}
-  #zoom-dialog .zoom-toolbar{display:grid;grid-template-columns:64px minmax(54px,.9fr) minmax(80px,1.2fr) 44px 44px;gap:4px;padding:4px max(4px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));border-top:0}
+  #zoom-dialog .zoom-toolbar{display:grid;grid-auto-rows:44px;grid-template-columns:64px minmax(54px,.9fr) minmax(80px,1.2fr) 44px 44px;gap:4px;padding:4px max(4px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));border-top:0}
   #zoom-dialog .zoom-vitals{display:flex;flex-direction:column;justify-content:center;gap:2px;margin:0;min-width:0}
   #zoom-dialog .zoom-vitals .hearts{font-size:14px;line-height:16px;letter-spacing:1px}
   #zoom-dialog .zoom-vitals .clock{min-width:0;gap:3px;line-height:20px}
   #zoom-dialog .zoom-vitals .clock-icon{width:21px;height:21px;font-size:20px}
   #zoom-dialog .zoom-vitals .clock strong{font-size:18px;min-width:21px;line-height:21px}
   #zoom-dialog .zoom-vitals .clock small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  #zoom-dialog .zoom-toolbar button{min-width:0;min-height:44px;margin:0;padding:4px;border-radius:9px;font-size:14px;line-height:17px}
+  #zoom-dialog .zoom-toolbar button{min-width:0;height:44px;min-height:44px;margin:0;padding:4px;border-radius:9px;font-size:14px;line-height:17px}
   #zoom-dialog #zoom-hint{white-space:normal;word-break:keep-all}
   #zoom-dialog .zoom-toolbar .extend-button{grid-column:auto;grid-row:auto;min-width:0;min-height:44px;padding:3px 4px;gap:1px;box-shadow:none}
   #zoom-dialog .zoom-toolbar .extend-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}

@@ -110,7 +110,8 @@
     for(const id of ['hint','zoom-hint']){
       const label=pending?(paymentBusy?'확인 중…':'구매 다시 확인'):hintLabel;
       $(id).disabled=(!playing&&!pending)||paymentBusy||!!answerReview;
-      $(id).textContent=pending?label:showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';
+      // Keep the narrow zoom control within two lines; aria-label retains the full purchase action.
+      $(id).textContent=pending?(id==='zoom-hint'&&!paymentBusy?'다시 확인':label):showPreviousHint||!unpaidHint?'힌트 보기':'힌트 · 1 ZU';
       $(id).setAttribute('aria-label',label);$(id).classList.toggle('ju-paid-action',!pending&&!showPreviousHint&&unpaidHint);
     }
     const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
