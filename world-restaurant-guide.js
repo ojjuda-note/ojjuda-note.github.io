@@ -10,7 +10,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='restaurant-guide-dialog';
    dialog.setAttribute('aria-label','인증맛집 · 테스트');
-   dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" src="/games/certified-restaurants/index.html?v=20261103-restaurants-blue3-complete1&amp;embedded=1" allow="geolocation"></iframe>';
+   dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" src="/games/certified-restaurants/index.html?v=20261103-restaurants-audit1&amp;embedded=1" allow="geolocation"></iframe>';
    const frame=dialog.querySelector('iframe');
    const current=()=>active?.dialog===dialog&&authorized();
    function close(){

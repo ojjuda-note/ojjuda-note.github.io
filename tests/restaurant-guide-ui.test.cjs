@@ -63,7 +63,9 @@ async function fixture(browser, options = {}) {
     const { page } = regular;
     await waitForTotal(page, dataset.restaurants.length);
     assert.equal(await page.locator('#cards [data-restaurant-id]').count(), Math.min(50, dataset.restaurants.length), 'first render is a bounded batch');
+    assert.equal(await page.locator('.result-shown').textContent(), '현재 ' + Math.min(50, dataset.restaurants.length) + '곳 표시');
     await waitForCount(page, dataset.restaurants.length);
+    assert.equal(await page.locator('.result-shown').textContent(), '현재 ' + dataset.restaurants.length + '곳 표시', 'toolbar count follows visible pagination');
     assert.deepEqual(await visibleIds(page), ids(dataset.restaurants), 'every real dataset record appears once');
     assert.equal(await page.locator('#back-link').isVisible(), false, 'the embedded page leaves navigation to the arcade shell');
     assert.deepEqual(await page.locator('#categories [data-category]').evaluateAll(nodes => nodes.map(node => node.dataset.category)), ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
@@ -82,10 +84,14 @@ async function fixture(browser, options = {}) {
     await page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(regular.network.geography, 1);
     assert.equal(await page.locator('.restaurant-pin').count(), Math.min(300, dataset.restaurants.filter(hasCoordinates).length));
+    assert.equal(await page.locator('.result-shown').isVisible(), false, 'list-only counts do not compete with map coverage');
+    const missingActual = dataset.restaurants.filter(item => !hasCoordinates(item)).length;
+    if (missingActual) assert.ok((await page.locator('#map-caption-text').textContent()).includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'));
     await page.locator('#show-list').click(); await page.locator('#show-map').click();
     assert.equal(regular.network.geography, 1, 'view changes reuse the existing local map');
     assert.equal(await page.locator('#map.leaflet-container').count(), 1);
     await page.locator('#show-list').click();
+    assert.equal(await page.locator('.result-shown').isVisible(), true);
 
     // Match multiple real data fields together, then prove an incompatible query clears the result.
     const combined = dataset.restaurants.find(item => item.guides.some(guide => guide.provider === 'michelin') && item.guides.some(guide => guide.provider === 'blue-ribbon'));
@@ -112,6 +118,7 @@ async function fixture(browser, options = {}) {
     await page.locator('#search').fill('존재하지않는식당검색fixture');
     await page.locator('#search').press('Enter');
     await page.locator('.empty-state').waitFor();
+    assert.equal(await page.locator('.result-shown').textContent(), '현재 0곳 표시');
     assert.equal(await page.locator('.restaurant-pin:visible').count(), 0, 'empty searches display no unrelated pins');
     await resetFilters(page);
     await waitForCount(page, dataset.restaurants.length);
@@ -337,15 +344,19 @@ async function fixture(browser, options = {}) {
     await waitForTotal(performance.page, many.length);
     await performance.page.waitForFunction(() => document.querySelector('#nearby').getAttribute('aria-pressed') === 'true');
     assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
+    assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 50곳 표시');
     assert.equal(performance.network.geography, 0, 'nearby entry does not force map loading');
     await performance.page.evaluate(() => { window.fixtureFirstCard = document.querySelector('.restaurant-card'); });
     await performance.page.locator('#load-more').click();
     assert.equal(await performance.page.locator('.restaurant-card').count(), 100);
+    assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 100곳 표시');
     assert.equal(await performance.page.evaluate(() => window.fixtureFirstCard === document.querySelector('.restaurant-card')), true, 'more results append instead of rebuilding previous rows');
     await performance.page.locator('#search').fill('성능확인000'); await performance.page.locator('#search').press('Enter');
     await waitForTotal(performance.page, 10); assert.equal(await performance.page.locator('.restaurant-card').count(), 10);
+    assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 10곳 표시');
     assert.equal(await performance.page.locator('#load-more').isVisible(), false);
     await resetFilters(performance.page); assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
+    assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 50곳 표시');
     while (await performance.page.locator('.restaurant-card').count() < 700) await performance.page.locator('#load-more').click();
     assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'successive batches expose cards beyond the map limit');
     await performance.page.locator('#show-map').click();
@@ -369,6 +380,17 @@ async function fixture(browser, options = {}) {
     assert.equal(await performance.page.locator('.restaurant-pin[title="' + many[650].name + '"]').count(), 0);
     assert.equal(performance.network.geography, 1, 'selection reuses the local background');
     assert.deepEqual(performance.network.escaped, []); assert.deepEqual(performance.errors, []); await performance.context.close();
+
+    const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
+    const mixedMap = await fixture(browser, { dataset: { restaurants: mixedRows } });
+    await waitForTotal(mixedMap.page, mixedRows.length);
+    await mixedMap.page.locator('#show-map').click();
+    await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
+    assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 300);
+    assert.equal(await mixedMap.page.locator('#map-caption-text').textContent(), '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인');
+    await mixedMap.page.setViewportSize({ width: 320, height: 844 });
+    assert.equal(await mixedMap.page.locator('.map-caption').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1; }), true, 'the combined map coverage message wraps inside the phone viewport');
+    assert.deepEqual(mixedMap.network.escaped, []); assert.deepEqual(mixedMap.errors, []); await mixedMap.context.close();
 
     console.log('PASS: location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, 300-pin cap with out-of-cap selection, real data filters, saved state, exact sources, 320–1280px layout, edition/selection/publication/source/listing labels, safe rendering and recovery; no real location permission or external map requests.');
   } finally { await browser.close(); }

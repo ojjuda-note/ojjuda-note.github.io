@@ -66,8 +66,10 @@ function fixture(options = {}) {
   const actual = fixture();
   await ready(actual, dataset.restaurants.length, false);
   assert.equal(actual.records().length, Math.min(50, dataset.restaurants.length), 'the first batch keeps the DOM bounded');
+  assert.equal(actual.$('.result-shown').textContent, '현재 ' + Math.min(50, dataset.restaurants.length) + '곳 표시', 'the toolbar distinguishes displayed rows from the full result count');
   actual.all();
   assert.deepEqual(actual.records(), ids(dataset.restaurants));
+  assert.equal(actual.$('.result-shown').textContent, '현재 ' + dataset.restaurants.length + '곳 표시');
   assert.equal(actual.$('#back-link').hidden, true);
   assert.equal(actual.calls.location, 0, 'a denied permission is not requested repeatedly');
   assert.equal(actual.$('#filter-options').contains(actual.$('#nearby')), false, 'the nearby control is available without opening filters');
@@ -80,10 +82,14 @@ function fixture(options = {}) {
   await until(() => actual.calls.geoLayers === 1, 'map entry loads the local regional overview');
   assert.equal(actual.calls.maps, 1, 'the first map entry creates the map');
   assert.equal(actual.calls.markers.size, Math.min(300, dataset.restaurants.filter(coordinates).length), 'only sourced coordinates receive pins, within the rendering limit');
+  assert.equal(actual.$('.result-shown').hidden, true, 'list pagination counts are hidden in map mode');
+  const missingActual = dataset.restaurants.filter(item => !coordinates(item)).length;
+  if (missingActual) assert.ok(actual.$('#map-caption-text').textContent.includes('위치 미확인 ' + missingActual + '곳은 목록에서 확인'), 'coordinate gaps remain explained even when the pin limit applies');
   actual.click('#show-list'); actual.click('#show-map');
   assert.equal(actual.calls.maps, 1, 'map switching reuses the existing map');
   assert.equal(actual.calls.geography, 1, 'map switching reuses the local geometry');
   actual.click('#show-list');
+  assert.equal(actual.$('.result-shown').hidden, false);
   actual.filters(); assert.equal(actual.$('#filter-options').hidden, false); assert.equal(actual.$('#filter-toggle').getAttribute('aria-expanded'), 'true');
   if (dataset.collections?.length) assert.deepEqual([...actual.document.querySelectorAll('.collection-title')].map(link => link.href), dataset.collections.map(collection => new URL(collection.url).href), 'default browse exposes the exact official collection map');
   const combined = dataset.restaurants.find(item => item.guides.some(g => g.provider === 'michelin') && item.guides.some(g => g.provider === 'blue-ribbon'));
@@ -103,6 +109,7 @@ function fixture(options = {}) {
   assert.ok(actual.records().every(id => intersection.some(item => item.id === id)), 'search cannot escape the other filters');
   actual.search('존재하지않는fixture식당');
   assert.deepEqual(actual.records(), []); assert.ok(actual.$('.empty-state'));
+  assert.equal(actual.$('.result-shown').textContent, '현재 0곳 표시');
   actual.click('#show-map'); assert.equal(actual.calls.markers.size, 0, 'opening the map after a zero-result filter clears old markers');
   actual.click('#reset'); actual.all(); assert.equal(actual.records().length, dataset.restaurants.length); assert.equal(actual.calls.maps, 1, 'filter resets reuse the same map');
   actual.click('#show-list');
@@ -270,12 +277,16 @@ function fixture(options = {}) {
   await ready(performance, many.length, false);
   await until(() => performance.$('#nearby').getAttribute('aria-pressed') === 'true', 'performance sample location resolves');
   assert.equal(performance.records().length, 50); assert.equal(performance.$('#result-count').dataset.total, '800');
+  assert.equal(performance.$('.result-shown').textContent, '현재 50곳 표시');
   assert.equal(performance.calls.maps, 0, 'location-based entry still leaves the optional map unloaded');
   const firstCard = performance.$('.restaurant-card'); performance.click('#load-more');
   assert.equal(performance.records().length, 100); assert.equal(performance.$('.restaurant-card'), firstCard, 'more results append without recreating earlier cards');
   assert.equal(new Set(performance.records()).size, 100);
+  assert.equal(performance.$('.result-shown').textContent, '현재 100곳 표시', 'appending a batch updates the toolbar count');
   performance.search('성능확인000'); assert.equal(performance.records().length, 10); assert.equal(performance.$('#result-count').dataset.total, '10'); assert.equal(performance.$('#load-more').hidden, true);
+  assert.equal(performance.$('.result-shown').textContent, '현재 10곳 표시');
   performance.click('#reset'); assert.equal(performance.records().length, 50, 'changed filters reset the displayed batch');
+  assert.equal(performance.$('.result-shown').textContent, '현재 50곳 표시');
   while (performance.records().length < 700) performance.click('#load-more');
   assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the map limit');
   performance.click('#show-map'); await until(() => performance.calls.geoLayers === 1, 'the performance sample map loads locally');
@@ -299,6 +310,17 @@ function fixture(options = {}) {
   assert.deepEqual(Array.from(selectedMarker.point), [many[699].lat, many[699].lng], 'the selected pin uses the selected restaurant coordinates');
   assert.equal(performance.calls.maps, 1); assert.equal(performance.calls.geography, 1, 'out-of-cap selection reuses the existing map and geography');
   assert.deepEqual(performance.errors, []); performance.dom.window.close();
+
+  const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
+  const mixedMap = fixture({ dataset: { restaurants: mixedRows } });
+  await ready(mixedMap, mixedRows.length, false); mixedMap.click('#show-map');
+  await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
+  assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 300);
+  assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인', 'the pin cap and missing coordinates are independent facts');
+  mixedMap.search('지도미확인');
+  assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 미확인 7곳은 목록에서 확인');
+  assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 0);
+  assert.deepEqual(mixedMap.errors, []); mixedMap.dom.window.close();
 
   console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, 300-pin cap with out-of-cap selection, folded filters, local map, saved state, exact sources, edition/selection/publication/source/listing years, safe text/URLs and recovery. Browser layout and screenshots require Chromium/CUA.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

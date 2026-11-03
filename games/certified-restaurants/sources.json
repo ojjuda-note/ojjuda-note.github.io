@@ -91,7 +91,7 @@
     "annualYearVerifiedCount": 54,
     "addressVerifiedCount": 237,
     "coordinatesVerifiedCount": 13,
-    "coordinatesMissingCount": 224,
+    "coordinatesMissingCount": 186,
     "coordinateMethod": "기존 공식 미쉐린 지도 링크에서 확인한 12곳 좌표를 주소 일치 확인 후 보존하고 유 유안 1곳을 추가. Google embed q의 공개 좌표만 이용하며 API 키를 저장하거나 재사용하지 않음.",
     "coordinateAddressMismatch": [],
     "categoryPolicy": "7개 음식 구분은 공식 요리분류와 공식 식당 소개를 바탕으로 편집 매핑한 값. 원문 요리분류는 cuisines에 보존.",
@@ -103,12 +103,14 @@
       "원문 식당명 중 본 앤 브레드는 서울과 부산 두 지점이 있어 URL과 주소로 구분함.",
       "직접 HTTP의 기존 차단 및 Google 403을 우회하거나 대량 반복하지 않음. 공개 검색 도구의 정상 페이지를 사용.",
       "배경 사진·가이드 소개 원문·로고를 복제하지 않음. 사실 항목과 출처 URL만 수록."
-    ]
+    ],
+    "coordinatesAvailableCount": 51,
+    "coordinatesVerifiedCountBasis": "공식 미쉐린 지도에서 직접 확인한 좌표 수. 공개 주소 일치 자료로 보강한 좌표를 포함한 수는 coordinatesAvailableCount."
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 114,
-    "coordinatesCount": 48,
+    "recordCount": 367,
+    "coordinatesCount": 191,
     "buildCounts": {
       "existingRecords": 6,
       "highestMatchedMichelin": 32,
@@ -182,15 +184,16 @@
       "selection": "공식 소개문에 명시된 선정/수록 연도. 연속 기간만 있는 경우 임의로 최근 연도 계산하지 않음",
       "source": "기사/자료 발행 시점은 sourceAsOf로 보존. 수상 연도로 추정하지 않음"
     },
-    "coordinatesPolicy": "확인한 공식 페이지의 mapX/mapY 또는 미쉐린 지도 좌표만 사용. 좌표를 추정하거나 구/동 중심으로 대체하지 않음.",
+    "coordinatesPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 315,
+    "recordCountIncludingCollaborations": 367,
     "displayLabels": {
       "3리본": 46,
-      "선정 이력": 35,
+      "공동선정": 211,
+      "선정 이력": 39,
       "수록 이력": 62,
-      "공동선정": 172
+      "주목할 만한 새 맛집": 9
     },
     "busanCollaboration": {
       "title": "부산의 노포, 부산의 식문화",
@@ -265,8 +268,6 @@
       },
       "articleRouting": "관광공사 여행기사는 rem_detail.do, 음식점 개별정보는 ms_detail.do로 출처URL분리",
       "unknownCoordinatesPolicy": "행정구역 중심/임의지도추정/주소의 대략 위치를 채우지 않음",
-      "notIncludedHighest": [],
-      "notIncludedHighestReason": "기존 미등록 정규 3리본 네 식당의 상호·주소를 확인해 모두 등록. 블루리본 1·2리본 및 도서 수록 식당은 여전히 일부만 수록.",
       "redRibbonPublicLinks": {
         "officialSource": "https://www.coca-cola.com/kr/ko/brands/coca-cola/coke-and-meal",
         "overview": "https://linktr.ee/cocacolaredribbon",
@@ -275,7 +276,9 @@
         "localImported": 0,
         "accessResult": "관측된공개링크로 네이버/카카오지도를열었으나접근실패. API추측/차단우회없이종료."
       },
-      "highestVerifiedAt": "2026-11-03"
+      "highestVerifiedAt": "2026-11-03",
+      "previouslyMissingHighest": [],
+      "highestAddressGapResolvedAt": "2026-11-03"
     },
     "sejongCollaboration": {
       "publisher": "세종시문화관광재단",
@@ -335,7 +338,8 @@
         "선정연도와현재정보확인일을분리. 개인위치를사이트에전송하지않았음.",
         "메뉴목록은별도공개사실로확인된2종만기록하고, 그외98곳은빈배열. 소개문·사진·공개페이지키를복제하지않음."
       ]
-    }
+    },
+    "initialCollectionRecordCount": 114
   },
   "mapBackground": {
     "provider": "KOSTAT",
@@ -347,38 +351,38 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 753,
+    "uniqueRestaurants": 800,
     "providerCounts": {
       "michelin": 237,
-      "blue-ribbon": 315,
+      "blue-ribbon": 367,
       "post-office": 240
     },
-    "coordinatesAvailable": 369,
-    "coordinatesMissing": 384,
+    "coordinatesAvailable": 378,
+    "coordinatesMissing": 422,
     "regionalCounts": {
       "강원": 6,
       "경기": 9,
       "경남": 133,
       "대구": 3,
-      "부산": 221,
-      "서울": 202,
+      "부산": 255,
+      "서울": 211,
       "세종": 100,
       "울산": 18,
-      "인천": 2,
+      "인천": 4,
       "전남": 1,
-      "전북": 2,
+      "전북": 4,
       "제주": 52,
       "충남": 1,
       "충북": 3
     },
     "categoryCounts": {
-      "한식": 413,
-      "중식": 53,
-      "일식": 67,
-      "기타": 24,
-      "양식": 119,
+      "한식": 426,
+      "중식": 57,
+      "일식": 71,
+      "기타": 27,
+      "양식": 127,
       "분식": 5,
-      "디저트": 72
+      "디저트": 87
     }
   },
   "coordinateEnrichment": {
@@ -419,6 +423,973 @@
           }
         ]
       }
+    ]
+  },
+  "latestCoverageAudit": {
+    "checkedAt": "2026-11-03",
+    "previousCoverage": {
+      "uniqueRestaurants": 753,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 315,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 369,
+      "coordinatesMissing": 384,
+      "regionalCounts": {
+        "강원": 6,
+        "경기": 9,
+        "경남": 133,
+        "대구": 3,
+        "부산": 221,
+        "서울": 202,
+        "세종": 100,
+        "울산": 18,
+        "인천": 2,
+        "전남": 1,
+        "전북": 2,
+        "제주": 52,
+        "충남": 1,
+        "충북": 3
+      },
+      "categoryCounts": {
+        "한식": 413,
+        "중식": 53,
+        "일식": 67,
+        "기타": 24,
+        "양식": 119,
+        "분식": 5,
+        "디저트": 72
+      }
+    },
+    "currentCoverage": {
+      "uniqueRestaurants": 800,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 367,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 378,
+      "coordinatesMissing": 422,
+      "regionalCounts": {
+        "강원": 6,
+        "경기": 9,
+        "경남": 133,
+        "대구": 3,
+        "부산": 255,
+        "서울": 211,
+        "세종": 100,
+        "울산": 18,
+        "인천": 4,
+        "전남": 1,
+        "전북": 4,
+        "제주": 52,
+        "충남": 1,
+        "충북": 3
+      },
+      "categoryCounts": {
+        "한식": 426,
+        "중식": 57,
+        "일식": 71,
+        "기타": 27,
+        "양식": 127,
+        "분식": 5,
+        "디저트": 87
+      }
+    },
+    "newRestaurantCount": 47,
+    "newRestaurantIds": [
+      "blue-busan100-2023-dcaa684545",
+      "blue-busan100-2023-8118aea774",
+      "blue-busan100-2023-9abd078aae",
+      "blue-busan100-2023-ca15c591ea",
+      "blue-busan100-2023-4bded0fb75",
+      "blue-busan100-2023-1779c31777",
+      "blue-busan100-2023-a6000ca4af",
+      "blue-busan100-2023-fef5cfa05d",
+      "blue-busan100-2023-d2e85a39c9",
+      "blue-busan100-2023-ca9e7b0edf",
+      "blue-busan100-2023-1a1fc07fc1",
+      "blue-busan100-2023-9f420e0820",
+      "blue-busan100-2023-26bed8ac6a",
+      "blue-busan100-2023-f2ef781d16",
+      "blue-busan100-2023-3010808c3c",
+      "blue-busan100-2023-7935c11e46",
+      "blue-busan100-2023-7290d64afd",
+      "blue-busan100-2023-d1dc79f1ee",
+      "blue-busan100-2023-aa18c51390",
+      "blue-busan100-2023-a9bfefcbe7",
+      "blue-busan100-2023-7125f946dd",
+      "blue-busan100-2023-1d668308e4",
+      "blue-busan100-2023-2a7d46996f",
+      "blue-busan100-2023-a69d9aef35",
+      "blue-busan100-2023-bd31053869",
+      "blue-busan100-2023-b196830430",
+      "blue-busan100-2023-ed7728cd20",
+      "blue-busan100-2023-1f673d9cb9",
+      "blue-busan100-2023-0b3a52b771",
+      "blue-busan100-2023-380ba85e4b",
+      "blue-busan100-2023-fd06187496",
+      "blue-busan100-2023-775cae757a",
+      "blue-busan100-2023-fd2fecd579",
+      "blue-busan100-2023-91281f3e19",
+      "notre",
+      "baccarat-bar-seoul",
+      "butchers-pier-samseong",
+      "sapid-seoul",
+      "unpage",
+      "congdu-50",
+      "gaon-gaok",
+      "nuwa",
+      "bundle",
+      "blue-gap-dorfmuseum-cheongna",
+      "blue-gap-nongga-table",
+      "blue-jeonju-hasukyoung-gamasot-bibimbap",
+      "blue-jeonju-baeksong-hoegwan"
+    ],
+    "matchedExistingRecordCount": 27,
+    "inputCounts": {
+      "blue-ribbon-gap-additions.json": 16,
+      "blue-ribbon-gap-additions-regional.json": 45,
+      "blue-newcomers-2027-additions.json": 9,
+      "blue-incheon-gap-additions.json": 2,
+      "blue-jeonju-gap-additions.json": 2
+    },
+    "officialListComparison": {
+      "michelin": {
+        "officialCount": 237,
+        "registeredCount": 237,
+        "missingCount": 0,
+        "comparison": "공식 한국 공개 목록 5페이지의 이름·도시를 전수 대조"
+      },
+      "postOffice2026": {
+        "officialCount": 240,
+        "registeredCount": 240,
+        "missingCount": 0,
+        "comparison": "공식 공지 240곳 및 기존 확보 공식 PDF 88쪽의 상호·주소 전수 대조. 원격 PDF의 최신 바이트 재비교는 수행하지 못함"
+      },
+      "blueRibbon": {
+        "complete": false,
+        "comparison": "도서 출판사 공개 소개와 지자체·관광공사 공동선정 목록에서 주소까지 확인된 누락을 보충"
+      }
+    },
+    "batches": [
+      {
+        "verifiedAt": "2026-11-03",
+        "scope": "새 요청에 대한 확정 추가분. 전국 전체 수록 또는 부산100선 전체 수집을 뜻하지 않음.",
+        "count": 16,
+        "highestRibbonAdditions": 4,
+        "regionalCollaborationAdditions": 12,
+        "coordinatesVerified": 1,
+        "existingData": "ojjuda-restaurants-nearby/games/certified-restaurants/restaurants.json; 749개 기준",
+        "sources": [
+          {
+            "url": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+            "type": "publisher_description",
+            "confirmed": [
+              "다이닝마",
+              "도원S"
+            ],
+            "editionYear": 2027,
+            "publicationDate": "2026-10-13"
+          },
+          {
+            "url": "https://www.ypbooks.co.kr/books/202605181049540708",
+            "type": "publisher_description",
+            "confirmed": [
+              "오공공구일일",
+              "화이트크리스마스"
+            ],
+            "editionYear": 2026,
+            "publicationDate": "2026-05-15"
+          },
+          {
+            "url": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "type": "official_tourism_partner_listing",
+            "confirmedNames": [
+              "톤쇼우",
+              "쥬가정효",
+              "히떼로스터리",
+              "블랙업커피",
+              "베르크로스터스",
+              "모모스커피",
+              "옵스",
+              "브리앙",
+              "브레드365",
+              "보느파티쓰리",
+              "무슈뱅상",
+              "머그디저트랩"
+            ],
+            "totalAdvertised": 100,
+            "collected": 12,
+            "note": "공식 웹검색 색인의 첫12개 이름·주소·음식종류. 상세 및 페이지넘김은 HTTP502/503으로 접근 실패. 공동선정이며 정규 리본 개수 미확인."
+          },
+          {
+            "url": "https://www.gijang.go.kr/tour/index.gijang?menuCd=DOM_000000308002005000",
+            "type": "official_local_government",
+            "confirmed": "부산×블루리본 맛집100선2023 사업명 확인"
+          },
+          {
+            "url": "https://www.visitbusan.net/archive/dataSearch/view.nm?dataSid=METADATA006986&menuCd=36",
+            "type": "official_archive",
+            "confirmed": "2023 부산의 맛집100 PDF, BR미디어 발행,36.136MB",
+            "downloadStatus": "HTML 원문은 검색 도구로 확인. 일반 HTTP503으로 PDF 미확보."
+          },
+          {
+            "url": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=27b105aa-bfbe-4e62-b9c3-60dbdb735b4b",
+            "type": "official_tourism_coordinates",
+            "confirmed": "모모스커피 본점 부산광역시 금정구 오시게로20",
+            "lat": 35.21923319279942,
+            "lng": 129.08646730849253
+          },
+          {
+            "url": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=1816",
+            "type": "official_tourism_venue_address",
+            "confirmed": "브리앙은 봉식당1층에 자리한 별도프랑스과자점, 부산동래구온천장로119번길26 1층. 봉식당과동일건물별도매장."
+          }
+        ],
+        "addressNotes": [
+          {
+            "name": "다이닝마",
+            "sourceUrl": "https://www.jobkorea.co.kr/recruit/co_read/c/diningma",
+            "sourceType": "운영기업 공개 프로필·NICE 기업정보"
+          },
+          {
+            "name": "도원S",
+            "sourceUrl": "https://www.theplazadining.com/membership",
+            "sourceType": "운영사 공식 홈페이지"
+          },
+          {
+            "name": "오공공구일일",
+            "sourceUrl": "https://www.jobkorea.co.kr/Recruit/Co_Read/C/37706234",
+            "sourceType": "운영기업 공개 프로필"
+          },
+          {
+            "name": "화이트크리스마스",
+            "sourceUrl": "https://www.tripadvisor.co.kr/Restaurant_Review-g946499-d15116987-Reviews-White_Christmas-Cheongju_Chungcheongbuk_do.html",
+            "sourceType": "시설 담당자가 관리한다고 표시된 매장 프로필"
+          },
+          {
+            "name": "톤쇼우",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "쥬가정효",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "히떼로스터리",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "블랙업커피",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "베르크로스터스",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "모모스커피",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "옵스",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "브리앙",
+            "sourceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=1816",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "브레드365",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "보느파티쓰리",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "무슈뱅상",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          },
+          {
+            "name": "머그디저트랩",
+            "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+            "sourceType": "official_partner_listing"
+          }
+        ],
+        "limitations": [
+          "모모스커피 본점1곳은 동일도로명주소의 한국관광공사 공식 좌표를 확인했으며 나머지15곳은null.",
+          "오공공구일일은 층수 출처가1층/지하1층으로 상이해 일치하는 도로명 건물주소까지만 수록.",
+          "다이닝마 공식사이트는 SiteUnavailable로 반환되어 기업 주소 공개 프로필과 NICE정보 출처로 교차확인.",
+          "화이트크리스마스 주소는 담당자가 직접 관리한다고 표시된 공개 프로필.",
+          "부산100선의12곳은 현재 영업상태나 정규 리본등급을 확인하지 않음."
+        ]
+      },
+      {
+        "verifiedAt": "2026-11-03",
+        "scope": "부산100선 중 검색색인에서 이름과 정확한 도로명 주소가 확인된62개 범위만 대조. 전국전체·부산100전체 수집을 뜻하지 않음.",
+        "officialAdvertisedCount": 100,
+        "regionalUniqueNamesConfirmed": 62,
+        "regionalUncollectedCount": 38,
+        "firstBatchRegionalCount": 12,
+        "followupRows": 45,
+        "followupNewPlaces": 22,
+        "followupExistingMerges": 23,
+        "existingIdMatches": [
+          {
+            "sourceName": "새진주식당",
+            "existingId": "blue-busan-2025-61",
+            "name": "새진주식당",
+            "sourceAddress": "부산광역시 중구 흑교로 60",
+            "existingAddress": "부산 중구 흑교로 60 (보수동1가)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "부산명물횟집",
+            "existingId": "blue-busan-2025-42",
+            "name": "부산명물횟집",
+            "sourceAddress": "부산 중구 자갈치해안로 55",
+            "existingAddress": "부산 중구 자갈치해안로 55 (남포동4가)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "박옥희할매집원조복국",
+            "existingId": "blue-busan-2025-16",
+            "name": "박옥희할매집원조복국",
+            "sourceAddress": "부산 해운대구 달맞이길62번길 28",
+            "existingAddress": "부산 해운대구 달맞이길62번길 28 (중동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "물꽁식당",
+            "existingId": "blue-busan-2025-66",
+            "name": "물꽁식당",
+            "sourceAddress": "부산 중구 흑교로59번길 3",
+            "existingAddress": "부산 중구 흑교로59번길 3 (보수동2가)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "동래할매파전",
+            "existingId": "blue-busan-2025-56",
+            "name": "동래할매파전",
+            "sourceAddress": "부산 동래구 명륜로94번길 43-10",
+            "existingAddress": "부산 동래구 명륜로94번길 43-10 (복천동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "기장곰장어",
+            "existingId": "blue-busan-2025-35",
+            "name": "대한명인기장곰장어",
+            "sourceAddress": "부산 기장군 기장읍 기장해안로 70",
+            "existingAddress": "부산 기장군 기장읍 기장해안로 70 (기장읍)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "금용",
+            "existingId": "post-2026-22-0-1",
+            "name": "금용만두",
+            "sourceAddress": "부산 북구 구포만세길 75",
+            "existingAddress": "부산광역시 북구 구포만세길 75",
+            "hadBlue": false
+          },
+          {
+            "sourceName": "금수복국",
+            "existingId": "kumsu-bokguk",
+            "name": "금수복국",
+            "sourceAddress": "부산광역시 해운대구 중동1로43번길 23",
+            "existingAddress": "부산 해운대구 중동1로 43번길 23",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "구포촌국수",
+            "existingId": "blue-busan-2025-53",
+            "name": "구포촌국수",
+            "sourceAddress": "부산 금정구 금샘로 490",
+            "existingAddress": "부산 금정구 금샘로 490 (남산동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "60년전통할매국밥",
+            "existingId": "blue-busan-2025-04",
+            "name": "60년전통할매국밥",
+            "sourceAddress": "부산 동구 중앙대로533번길 4",
+            "existingAddress": "부산 동구 중앙대로533번길 4 (범일동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "할매재첩국",
+            "existingId": "blue-busan-2025-68",
+            "name": "할매재첩국",
+            "sourceAddress": "부산 사상구 낙동대로1530번길 20-15",
+            "existingAddress": "부산 사상구 낙동대로1530번길 20-15 (삼락동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "평산옥",
+            "existingId": "pyeongsanok",
+            "name": "평산옥",
+            "sourceAddress": "부산 동구 초량중로 26",
+            "existingAddress": "부산 동구 초량중로 26",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "초원복국",
+            "existingId": "blue-busan-2025-15",
+            "name": "초원복국",
+            "sourceAddress": "부산 남구 황령대로492번길 30",
+            "existingAddress": "부산 남구 황령대로492번길 30 (대연동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "옛날오막집",
+            "existingId": "blue-busan-2025-62",
+            "name": "옛날오막집",
+            "sourceAddress": "부산 서구 구덕로274번길 14",
+            "existingAddress": "부산 서구 구덕로274번길 14 (동대신동1가)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "신흥관",
+            "existingId": "blue-busan-2025-33",
+            "name": "신흥관",
+            "sourceAddress": "부산 해운대구 중동1로 31-1",
+            "existingAddress": "부산 해운대구 중동1로 31-1 (중동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "신발원",
+            "existingId": "blue-busan-2025-28",
+            "name": "신발원",
+            "sourceAddress": "부산 동구 대영로243번길 62",
+            "existingAddress": "부산 동구 대영로243번길 62 (초량동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "송정3대국밥",
+            "existingId": "blue-busan-2025-02",
+            "name": "송정3대국밥",
+            "sourceAddress": "부산 부산진구 서면로68번길 33",
+            "existingAddress": "부산 부산진구 서면로68번길 33 (부전동)",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "팔레트",
+            "existingId": "palate",
+            "name": "팔레트",
+            "sourceAddress": "부산 해운대구 달맞이길65번길 154 3층",
+            "existingAddress": "부산 해운대구 달맞이길65번길 154, 3층",
+            "hadBlue": true
+          },
+          {
+            "sourceName": "차오란",
+            "existingId": "chaoran",
+            "name": "차오란",
+            "sourceAddress": "부산 해운대구 달맞이길 30",
+            "existingAddress": "부산 해운대구 달맞이길 30, 시그니엘 부산 5층",
+            "hadBlue": false
+          },
+          {
+            "sourceName": "율링",
+            "existingId": "yulling",
+            "name": "율링",
+            "sourceAddress": "부산 해운대구 달맞이길62번길 28",
+            "existingAddress": "부산 해운대구 달맞이길62번길 28, 2층",
+            "hadBlue": false
+          },
+          {
+            "sourceName": "동경밥상",
+            "existingId": "tokyo-babsang",
+            "name": "동경밥상",
+            "sourceAddress": "부산 수영구 남천바다로 34-6",
+            "existingAddress": "부산 수영구 남천바다로 34-6",
+            "hadBlue": false
+          },
+          {
+            "sourceName": "합천국밥집",
+            "existingId": "hapcheon-gukbapjip",
+            "name": "합천국밥집",
+            "sourceAddress": "부산 남구 용호로 235",
+            "existingAddress": "부산 남구 용호로 235",
+            "hadBlue": false
+          },
+          {
+            "sourceName": "무진장횟집",
+            "existingId": "blue-busan-2025-45",
+            "name": "무진장횟집",
+            "sourceAddress": "부산 기장군 기장읍 연화1길 137",
+            "existingAddress": "부산 기장군 기장읍 연화1길 137 (기장읍)",
+            "hadBlue": true
+          }
+        ],
+        "excludedAddressConflicts": [
+          {
+            "name": "개금밀면",
+            "sourceAddress": "부산 부산진구 가야대로482번길 9-4",
+            "sourceUrl": "https://www.visitbusan.net/index.do?bundle_cntnts_yn=&cate1_nm=&cate2_month=&cate2_nm=&charger_nm=&charger_positn=&charger_tel=&distance=0.0&exclude_uc_seq=&favoriteThis=N&file_name=&gugun_nm=&hash_tag=&lat=&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&lng=&main_img_ucmf_seq=&main_title=&menuCd=DOM_000000201002002000&middle_size_rm2=&middle_size_rm3=&myFavoriteUserId=&not_uc_seq_list=&num_room=&order_type=NEW&page_no=4&pet_allow_yn=&place=&rprsntv_menu=&search_keyword=&sel_visit_place=N&sort_num=&subtitl=&title=&tripadvisor_id=&ub_seq=&ucMtmItemUcSeq=&ucMtmUcSeq=&uc_seqs=&ucc1_list=&ucc1_seq=29&ucc1_use_yn=&ucc2_seq=&ucdpp_seqs=&ucg_seq=&ucl_seq=7&ucl_use_yn=Y&ucogl_seq=&uct_seqs=&ucum_seq=&ucum_seqs=&ulg_seq=&usage_amount=&use_yn=Y&user_id=",
+            "existing": [
+              {
+                "id": "blue-busan-2025-11",
+                "name": "개금밀면",
+                "address": "부산 부산진구 가야공원로14번길 88-8 (개금동)"
+              }
+            ],
+            "reason": "동일 이름의 현행 자료 주소와 달라 신규 매장으로 추가하지 않음. 이전·지점 차이 미확인."
+          },
+          {
+            "name": "해운대소문난암소갈비집",
+            "sourceAddress": "부산 해운대구 중동2로10번길 32-10",
+            "sourceUrl": "https://www.visitbusan.net/index.do?bundle_cntnts_yn=&cate1_nm=&cate2_month=&cate2_nm=&charger_nm=&charger_positn=&charger_tel=&distance=0.0&exclude_uc_seq=&favoriteThis=N&file_name=&gugun_nm=&hash_tag=&lat=&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&lng=&main_img_ucmf_seq=&main_title=&menuCd=DOM_000000201002002000&middle_size_rm2=&middle_size_rm3=&myFavoriteUserId=&not_uc_seq_list=&num_room=&order_type=NEW&page_no=2&pet_allow_yn=&place=&rprsntv_menu=&search_keyword=&sel_visit_place=N&sort_num=&subtitl=&title=&tripadvisor_id=&ub_seq=&ucMtmItemUcSeq=&ucMtmUcSeq=&uc_seqs=&ucc1_list=&ucc1_seq=29&ucc1_use_yn=&ucc2_seq=&ucdpp_seqs=&ucg_seq=&ucl_seq=7&ucl_use_yn=Y&ucogl_seq=&uct_seqs=&ucum_seq=&ucum_seqs=&ulg_seq=&usage_amount=&use_yn=Y&user_id=",
+            "existing": [
+              {
+                "id": "haeundae-rib-barbecue-restaurant",
+                "name": "해운대 암소갈비집",
+                "address": "부산 해운대구 해운대해변로 333"
+              }
+            ],
+            "reason": "동일 이름의 현행 자료 주소와 달라 신규 매장으로 추가하지 않음. 이전·지점 차이 미확인."
+          },
+          {
+            "name": "신창국밥",
+            "sourceAddress": "부산 중구 광복로39번길 30-1",
+            "sourceUrl": "https://www.visitbusan.net/index.do?bundle_cntnts_yn=&cate1_nm=&cate2_month=&cate2_nm=&charger_nm=&charger_positn=&charger_tel=&distance=0.0&exclude_uc_seq=&favoriteThis=N&file_name=&gugun_nm=&hash_tag=&lat=&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&lng=&main_img_ucmf_seq=&main_title=&menuCd=DOM_000000201002002000&middle_size_rm2=&middle_size_rm3=&myFavoriteUserId=&not_uc_seq_list=&num_room=&order_type=NEW&page_no=2&pet_allow_yn=&place=&rprsntv_menu=&search_keyword=&sel_visit_place=N&sort_num=&subtitl=&title=&tripadvisor_id=&ub_seq=&ucMtmItemUcSeq=&ucMtmUcSeq=&uc_seqs=&ucc1_list=&ucc1_seq=29&ucc1_use_yn=&ucc2_seq=&ucdpp_seqs=&ucg_seq=&ucl_seq=7&ucl_use_yn=Y&ucogl_seq=&uct_seqs=&ucum_seq=&ucum_seqs=&ulg_seq=&usage_amount=&use_yn=Y&user_id=",
+            "existing": [
+              {
+                "id": "blue-busan-2025-05",
+                "name": "신창국밥",
+                "address": "부산 서구 보수대로 53 (토성동1가)"
+              }
+            ],
+            "reason": "동일 이름의 현행 자료 주소와 달라 신규 매장으로 추가하지 않음. 이전·지점 차이 미확인."
+          },
+          {
+            "name": "서울깍두기",
+            "sourceAddress": "부산 중구 남포길 33",
+            "sourceUrl": "https://www.visitbusan.net/index.do?bundle_cntnts_yn=&cate1_nm=&cate2_month=&cate2_nm=&charger_nm=&charger_positn=&charger_tel=&distance=0.0&exclude_uc_seq=&favoriteThis=N&file_name=&gugun_nm=&hash_tag=&lat=&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&lng=&main_img_ucmf_seq=&main_title=&menuCd=DOM_000000201002002000&middle_size_rm2=&middle_size_rm3=&myFavoriteUserId=&not_uc_seq_list=&num_room=&order_type=NEW&page_no=2&pet_allow_yn=&place=&rprsntv_menu=&search_keyword=&sel_visit_place=N&sort_num=&subtitl=&title=&tripadvisor_id=&ub_seq=&ucMtmItemUcSeq=&ucMtmUcSeq=&uc_seqs=&ucc1_list=&ucc1_seq=29&ucc1_use_yn=&ucc2_seq=&ucdpp_seqs=&ucg_seq=&ucl_seq=7&ucl_use_yn=Y&ucogl_seq=&uct_seqs=&ucum_seq=&ucum_seqs=&ulg_seq=&usage_amount=&use_yn=Y&user_id=",
+            "existing": [
+              {
+                "id": "blue-busan-2025-57",
+                "name": "서울깍두기",
+                "address": "부산 중구 구덕로34번길 8 (남포동2가)"
+              }
+            ],
+            "reason": "동일 이름의 현행 자료 주소와 달라 신규 매장으로 추가하지 않음. 이전·지점 차이 미확인."
+          },
+          {
+            "name": "모리",
+            "sourceAddress": "부산 해운대구 해운대해변로298번길 24",
+            "sourceUrl": "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=7&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y",
+            "existing": [
+              {
+                "id": "mori",
+                "name": "모리",
+                "address": "부산 해운대구 구남로 21, 경동리인뷰 2차 상가 3층 311호"
+              }
+            ],
+            "reason": "동일 이름의 현행 자료 주소와 달라 신규 매장으로 추가하지 않음. 이전·지점 차이 미확인."
+          }
+        ],
+        "sourceSnapshotFiles": [
+          "blue-gap-busan-search-pages3-6.json",
+          "blue-gap-busan-search-pages7-9.json"
+        ],
+        "sourcePages": {
+          "newSort1": "12/12 confirmed via official search",
+          "newSort2": "12/12 confirmed via official search",
+          "newSort3": "12/12 confirmed via official search",
+          "newSort4": "3/12 available in retrieved excerpt",
+          "newSort5to9": "not fully collected",
+          "otherViewSortAndDistrictFilters": "26 overlapping/exclusive records recovered; union count above"
+        },
+        "limitations": [
+          "부산100선 원본PDF는 공개 존재를 확인했으나 HTTP503으로 미확보.",
+          "정규 리본 수는 추정하지 않고 공동선정만 표시.",
+          "동일 상호의 달라진 주소5곳은 이전/지점 구분이 안 되어 신규로 추가하지 않음.",
+          "톤쇼우 KTO 좌표는 금정구 매장이라 수영구 광안리 자료에 전용하지 않음.",
+          "모모스커피만 한국관광공사 동일도로명주소 좌표가 확인되어 첫파일에 반영."
+        ],
+        "notes": "기존 식당 병합은 existingRestaurantId와 동일 id를 사용. 기존 좌표는 기존 출처 필드 그대로 유지했으며 새로 추정하지 않음."
+      },
+      {
+        "checkedAt": "2026-11-03",
+        "status": "complete_for_current_source_scope",
+        "bookSourceUrl": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+        "bookEdition": 2027,
+        "bookPublishedAt": "2026-10-13",
+        "namedNewcomerCount": 19,
+        "confirmedAddressCount": 9,
+        "recognitionPolicy": "출판사 명시 주목할 만한 새 맛집 소개 이력. 리본 수는 추정하지 않음.",
+        "coordinatePolicy": "공식 좌표는 미확인, 모두 null.",
+        "records": [
+          {
+            "id": "notre",
+            "name": "노뜨르",
+            "category": "양식",
+            "district": "강남구",
+            "address": "서울 강남구 선릉로155길 13, 2층",
+            "url": "https://notre.co.kr/",
+            "sourceName": "노뜨르 공식 홈페이지",
+            "cuisine": "프렌치비스트로"
+          },
+          {
+            "id": "baccarat-bar-seoul",
+            "name": "바카라바서울",
+            "category": "기타",
+            "district": "강남구",
+            "address": "서울 강남구 도산대로 313, 2층",
+            "url": "https://www.baccarat.com/ko_kr/baccarat-bar-seoul.html",
+            "sourceName": "Baccarat 공식 바카라 바 서울 안내",
+            "cuisine": "위스키바"
+          },
+          {
+            "id": "butchers-pier-samseong",
+            "name": "붓처스피어 삼성점",
+            "category": "양식",
+            "district": "강남구",
+            "address": "서울 강남구 테헤란로87길 17, 지하1층",
+            "url": "https://sgdinehill.co.kr/restaurant/butchers-cut/",
+            "sourceName": "다인힐 공식 매장 안내",
+            "cuisine": "스테이크"
+          },
+          {
+            "id": "sapid-seoul",
+            "name": "사피드서울",
+            "category": "양식",
+            "district": "용산구",
+            "address": "서울 용산구 이태원로27길 34-1",
+            "url": "https://www.ducasse-paris.com/en/addresses/sapid-seoul/",
+            "sourceName": "운영사 Ducasse Paris 공식 레스토랑 안내",
+            "cuisine": "컨템포러리"
+          },
+          {
+            "id": "unpage",
+            "name": "언페이지",
+            "category": "디저트",
+            "district": "용산구",
+            "address": "서울 용산구 한남대로27가길 13, 2층",
+            "url": "https://hiring.unspecialty.com/barista",
+            "sourceName": "운영사 언스페셜티 공식 매장 채용 안내",
+            "cuisine": "커피전문점"
+          },
+          {
+            "id": "congdu-50",
+            "name": "콩두50",
+            "category": "한식",
+            "district": "영등포구",
+            "address": "서울 영등포구 여의대로 24, FKI타워 50층",
+            "url": "https://congdu.co.kr/congdu50/",
+            "sourceName": "콩두 공식 CONGDU50 매장 안내",
+            "cuisine": "모던한식"
+          },
+          {
+            "id": "gaon-gaok",
+            "name": "가온가옥",
+            "category": "한식",
+            "district": "서초구",
+            "address": "서울 서초구 남부순환로325길 1, 화요빌딩 1층",
+            "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/50276024",
+            "sourceName": "매장 운영자 직접 게시 채용공고 · 잡코리아",
+            "sourceType": "운영자 게시 채용공고의 매장 근무지",
+            "cuisine": "모던한식",
+            "evidence": "공고상 고용주 가온가옥 서초점; 근무지주소 및 기업위치에 동일 주소."
+          },
+          {
+            "id": "nuwa",
+            "name": "누와",
+            "category": "중식",
+            "district": "강남구",
+            "address": "서울 강남구 강남대로 652, 신사스퀘어 2층",
+            "url": "https://www.jobkorea.co.kr/Recruit/GI_Read/50196925",
+            "sourceName": "매장 운영사 직접 게시 채용공고 · 잡코리아",
+            "sourceType": "운영자 게시 채용공고의 매장 근무지",
+            "cuisine": "일반중식",
+            "evidence": "공고 제목에 누와 식당과 박은영 셰프 명시, 근무지주소에 2층 누와 명시. 기업 본사 주소와 혼동하지 않음."
+          },
+          {
+            "id": "bundle",
+            "name": "번들",
+            "category": "양식",
+            "district": "강남구",
+            "address": "서울 강남구 논현로135길 3, 1층",
+            "url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49905506?sc=640",
+            "sourceName": "매장 운영자 직접 게시 채용공고 · 잡코리아",
+            "sourceType": "운영자 게시 채용공고의 매장 근무지",
+            "cuisine": "우드파이어그릴",
+            "evidence": "검색 추출문에 근무지 주소 명시. 재오픈 본문은 채용공고 불러오는 중 안내만 반환하므로 근거 강도 차이를 보존."
+          }
+        ],
+        "policy": "주소는 매장/운영사 공식 홈페이지 또는 운영자가 게시한 채용공고에서 해당 상호/지점의 매장 근무지로 명시된 주소만 사용. 회사 본사 주소만 있는 경우 제외. 채용공고 기반 3곳은 addressSourceType에 별도 구분.",
+        "categoryPolicy": "KOBIC 출판사 제공 요리 유형을 7개 편집 분류로 매핑. 프렌치비스트로/스테이크/컨템포러리/우드파이어그릴→양식, 모던한식→한식, 일반중식→중식, 커피전문점→디저트, 위스키바→기타.",
+        "menuPolicy": "메뉴는 이번 주소 확인 범위 밖이므로 빈 배열. 원문 요리 유형은 cuisines로 보존.",
+        "excluded": [
+          {
+            "name": "베수비오",
+            "reason": "서울 중구 다산로24길 28, 2층을 제3자 맛집 페이지에서 찾았으나 허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 중구 다산로24길 28, 2층",
+            "secondarySourceUrl": "https://www.diningcode.com/profile.php?rid=Io88aVf03oHb"
+          },
+          {
+            "name": "보타르가비노",
+            "reason": "허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 강남구 도산대로66길 19, 4층",
+            "secondarySourceUrl": "https://www.diningcode.com/profile.php?rid=SvtodE0FulMA"
+          },
+          {
+            "name": "스이",
+            "reason": "동명이점 주의. 연남동 퓨전양식 매장 주소를 찾았으나 허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 마포구 연남로3길 70, 부호빌딩 1층",
+            "secondarySourceUrl": "https://polle.com/place/1UKT78/%EC%8A%A4%EC%9D%B4"
+          },
+          {
+            "name": "아라유",
+            "reason": "허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 강남구 선릉로146길 33, 4층",
+            "secondarySourceUrl": "https://www.gangnamfinds.com/ko/place/arayu-arayu",
+            "officialBookingUrl": "https://app.catchtable.co.kr/ct/shop/arayu?from=share&type=DINING"
+          },
+          {
+            "name": "아사달",
+            "reason": "운영사 hanwhafoodtech.com/kr가 검색도구 접근불가. 언론 및 제3자 매장정보의 소재지는 일치하나 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 종로구 세종대로 178, KT광화문빌딩WEST 15층",
+            "secondarySourceUrl": "https://www.diningcode.com/profile.php?rid=94BDg1HywC44"
+          },
+          {
+            "name": "오프레",
+            "reason": "2026 재개점 주소와 과거 서초구 주소가 검색에 공존. 회사정보에는 신당동 주소 있으나 허용한 공식 매장주소 근거 확보 못함.",
+            "candidateAddress": "서울 중구 다산로 97, 1층",
+            "secondarySourceUrl": "https://www.jobkorea.co.kr/Recruit/Co_Read/C/uta128"
+          },
+          {
+            "name": "컴플레",
+            "reason": "허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 중구 퇴계로 411",
+            "secondarySourceUrl": "https://polle.com/derwent"
+          },
+          {
+            "name": "텐쇼2018",
+            "reason": "허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 강남구 논현로139길 3, 1층",
+            "secondarySourceUrl": "https://gangnamfinds.com/ko/place/tensyo2018",
+            "officialBookingUrl": "https://app.catchtable.co.kr/ct/shop/tenshou2018"
+          },
+          {
+            "name": "티티그릴",
+            "reason": "허용한 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 강남구 논현로152길 37, 한서빌딩 1층",
+            "secondarySourceUrl": "https://www.diningcode.com/profile.php?rid=BFNtmhjHH199"
+          },
+          {
+            "name": "파블로그릴앤바",
+            "reason": "운영사 hanwhafoodtech.com/kr가 검색도구 접근불가. 언론 및 제3자 매장정보의 소재지는 일치하나 공식 주소 근거 확보 못함.",
+            "candidateAddress": "서울 종로구 세종대로 178, KT광화문빌딩WEST 15층",
+            "secondarySourceUrl": "https://www.diningcode.com/profile.php?rid=TsDzsqeCMyXe"
+          }
+        ],
+        "excludedCount": 10,
+        "recordCount": 9,
+        "employerProvidedAddressRecords": [
+          {
+            "id": "gaon-gaok",
+            "name": "가온가옥",
+            "category": "한식",
+            "region": "서울",
+            "district": "서초구",
+            "address": "서울 서초구 남부순환로325길 1, 화요빌딩 1층",
+            "addressSourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50276024",
+            "addressSourceName": "매장 운영자 직접 게시 채용공고 · 잡코리아",
+            "sourcePublishedAt": "2026-10-30",
+            "cuisine": "모던한식",
+            "evidence": "공고상 고용주 가온가옥 서초점; 근무지주소 및 기업위치에 동일 주소."
+          },
+          {
+            "id": "nuwa",
+            "name": "누와",
+            "category": "중식",
+            "region": "서울",
+            "district": "강남구",
+            "address": "서울 강남구 강남대로 652, 신사스퀘어 2층",
+            "addressSourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50196925",
+            "addressSourceName": "매장 운영사 직접 게시 채용공고 · 잡코리아",
+            "sourcePublishedAt": "2026-10-19",
+            "cuisine": "일반중식",
+            "evidence": "공고 제목에 누와 식당과 박은영 셰프 명시, 근무지주소에 2층 누와 명시. 기업 본사 주소와 혼동하지 않음."
+          },
+          {
+            "id": "bundle",
+            "name": "번들",
+            "category": "양식",
+            "region": "서울",
+            "district": "강남구",
+            "address": "서울 강남구 논현로135길 3, 1층",
+            "addressSourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49905506?sc=640",
+            "addressSourceName": "매장 운영자 직접 게시 채용공고 · 잡코리아",
+            "cuisine": "우드파이어그릴",
+            "evidence": "검색 추출문에 근무지 주소 명시. 재오픈 본문은 채용공고 불러오는 중 안내만 반환하므로 근거 강도 차이를 보존."
+          }
+        ],
+        "employerProvidedAddressNote": "가온가옥·누와는 검색도구에서 공고 본문의 근무지 주소를 직접 확인. 번들은 검색결과의 고용주 공고 근무지 명시를 확인했고 재열람 본문은 JS 안내, 데스크톱 공개경로는 접근불가였음. 검색 추출문 이외의 주소를 추정하지 않음.",
+        "limitations": [
+          "리본 개수는 공개 근거에 없어 저장하지 않음.",
+          "좌표 및 현재 영업 상태는 개별 검증하지 않았음.",
+          "19개 공식 소개 식당 중 10곳은 이번 검토 범위에서 허용한 주소 근거를 확보하지 못해 제외.",
+          "추가 항목 출처에는 원문 소개글·사진을 포함하지 않음."
+        ]
+      },
+      {
+        "checkedAt": "2026-11-03",
+        "recordCount": 2,
+        "scope": "전주시 공식 관광 페이지에서 블루리본 선정 이력 문구와 식당별 정확한 도로명 주소를 확인한 두 곳",
+        "recognitionSource": {
+          "publisher": "전주시 VISIT JEONJU",
+          "url": "https://tour.jeonju.go.kr/index.jeonju?menuCd=DOM_000000104003000000",
+          "title": "음식·숙박·쇼핑 > 전주의 맛 > 전주비빔밥",
+          "retrieval": "정상 공개 web open 응답에서 직접 확인",
+          "sourceAsOf": null,
+          "sourceAsOfReason": "페이지에 발행일 또는 수정일이 명시되지 않아 null. 조회일을 자료 발행일로 대체하지 않음.",
+          "priorUrl": "https://tour.jeonju.go.kr/index.jeonju?menuCd=DOM_000000104003006000",
+          "priorUrlResult": "web open에서 400 Redirect loop detected. 반복하거나 제한을 우회하지 않고 공식 검색 결과의 다른 정상 공개 메뉴 URL을 확인."
+        },
+        "records": [
+          {
+            "id": "blue-jeonju-hasukyoung-gamasot-bibimbap",
+            "name": "하숙영가마솥비빔밥",
+            "recognitionEvidence": {
+              "sourceUrl": "https://tour.jeonju.go.kr/index.jeonju?menuCd=DOM_000000104003000000",
+              "sourceLineNumbers": [
+                351,
+                353
+              ],
+              "shortExactExcerpt": "5년 연속 블루리본 서베이 인증",
+              "consecutiveYearsMentioned": 5,
+              "classification": "선정 이력",
+              "selectionYear": null,
+              "ribbonCount": null
+            },
+            "addressEvidence": {
+              "sourceUrl": "https://tour.jeonju.go.kr/board/view.jeonju?boardId=BBS_0000038&dataSid=14262&menuCd=DOM_000000112010000000&menuCd=DOM_000000112011000000&paging=ok&startPage=1",
+              "sourceName": "비짓전주 · 비빔밥도 MZ세대~ 하숙영가마솥비빔밥",
+              "sourcePublishedAt": "2024-10-16",
+              "sourceLineNumbers": [
+                217,
+                220,
+                261
+              ],
+              "exactAddress": "전주시 완산구 전라감영5길 19-3",
+              "retrieval": "정상 공개 web open 응답에서 식당명·주소·기사 작성일 직접 확인"
+            }
+          },
+          {
+            "id": "blue-jeonju-baeksong-hoegwan",
+            "name": "백송회관",
+            "recognitionEvidence": {
+              "sourceUrl": "https://tour.jeonju.go.kr/index.jeonju?menuCd=DOM_000000104003000000",
+              "sourceLineNumbers": [
+                399,
+                400
+              ],
+              "shortExactExcerpt": "7년 연속 블루리본 서베이 인증을 받은 맛집",
+              "consecutiveYearsMentioned": 7,
+              "classification": "선정 이력",
+              "selectionYear": null,
+              "ribbonCount": null
+            },
+            "addressEvidence": {
+              "sourceUrl": "https://tour.jeonju.go.kr/board/view.jeonju?boardId=BBS_0000038&dataSid=13411&paging=ok&startPage=2",
+              "sourceName": "비짓전주 · 한우와 비빔밥을 동시에! 백송회관",
+              "sourcePublishedAt": "2024-04-22",
+              "sourceLineNumbers": [
+                0,
+                3,
+                39
+              ],
+              "exactAddress": "전주시 완산구 기린대로 177",
+              "retrieval": "정상 공개 web open 응답에서 식당명·주소·기사 작성일 직접 확인"
+            }
+          }
+        ],
+        "policies": [
+          "연속 선정 횟수로 개별 선정 연도나 최근 선정 연도를 계산하지 않았다.",
+          "주소 기사의 작성일은 주소 출처의 sourceAsOf에만 저장했고 블루리본 선정 연도 또는 선정 출처의 자료일로 사용하지 않았다.",
+          "리본 개수는 원문 미표기로 null. 두 레코드는 최신 등급이 아닌 선정 이력으로 분류했다.",
+          "위도와 경도는 확인하지 않아 모두 null. 좌표 추정 및 지오코딩 없음.",
+          "확인한 최소 식별 사실과 짧은 증거 구절만 저장. 소개문·이미지·가격·운영시간은 저장하지 않음.",
+          "앱 파일과 운영 restaurants.json을 수정하지 않은 병합 후보 자료다."
+        ],
+        "duplicateCheck": {
+          "dataset": "/workspace/scratch/e2833676c841/ojjuda-restaurants-audit/games/certified-restaurants/restaurants.json",
+          "checkedNameMatches": 0
+        }
+      }
+    ],
+    "incheonSources": [
+      "https://itour.incheon.go.kr/thmtour/thmtour/detail.do?cotId=ITA26030419510421890",
+      "https://itour.incheon.go.kr/thmtour/rcmdtour/detail.do?cotId=ITA26051311042107180"
+    ],
+    "coordinateAdditions": [
+      {
+        "id": "blue-busan100-2023-ca9e7b0edf",
+        "name": "보느파티쓰리",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=2354&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-1a1fc07fc1",
+        "name": "무슈뱅상",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1831&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-3010808c3c",
+        "name": "배종관동래삼계탕",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1813&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-7935c11e46",
+        "name": "하레마",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1851&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-ed7728cd20",
+        "name": "부우사안",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1485&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-775cae757a",
+        "name": "동백섬횟집",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=154&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-busan100-2023-fd2fecd579",
+        "name": "오륙도가원",
+        "source": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=890&lang_cd=ko",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      },
+      {
+        "id": "blue-jeonju-hasukyoung-gamasot-bibimbap",
+        "name": "하숙영가마솥비빔밥",
+        "source": "https://github.com/jk-ayaan/food_trip/blob/e4d1d8ee35475576de6e52b24daa66518c237601/data/jeonbuk/food.json",
+        "method": "exact-name-and-road-address; public-tourism-data"
+      }
+    ],
+    "displayChanges": [
+      "전체 검색 결과 수와 현재 펼친 목록 수를 구분",
+      "지도 핀 300개 제한과 좌표 없는 식당 수를 함께 안내"
     ]
   }
 }
