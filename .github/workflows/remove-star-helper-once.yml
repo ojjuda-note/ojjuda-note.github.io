@@ -1,0 +1,76 @@
+name: Apply verified Star helper removal
+on:
+  push:
+    branches: [remove-star-helper-20261104]
+    paths:
+      - '.github/workflows/remove-star-helper-once.yml'
+permissions:
+  contents: write
+concurrency:
+  group: remove-star-helper-once
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /world.html
+            /portal.js
+            /index.html
+            /world-game-assets.js
+            /game-release.json
+            /star/sw.js
+            /tests/portal-auth-entry.test.cjs
+            /tests/world-three-menus.test.cjs
+            /tests/world-design-ui.test.cjs
+            /tests/package.json
+            /star/browser-guide.css
+            /star/browser-guide.js
+            /star/index.html
+            /star/manifest.webmanifest
+            /star/member-access.css
+            /star/member-access.js
+            /assets/design/games/star.svg
+            /tests/star-member-access.test.cjs
+            /ops/remove-star-helper-once.json
+      - name: Apply hash-verified removal and push to the isolated branch
+        shell: bash
+        run: |
+          python - <<'PYTHON'
+          import hashlib,json,os,pathlib,subprocess
+          plan=json.loads(pathlib.Path('ops/remove-star-helper-once.json').read_text())
+          assert os.environ['GITHUB_REF_NAME'] == plan['branch']
+          def sha(data): return hashlib.sha256(data).hexdigest()
+          for entry in plan['changed']:
+              path=pathlib.Path(entry['path']); data=path.read_bytes()
+              assert sha(data)==entry['base_sha256'], 'Base changed: '+str(path)
+          for entry in plan['deleted']:
+              path=pathlib.Path(entry['path'])
+              assert sha(path.read_bytes())==entry['base_sha256'], 'Deletion source changed: '+str(path)
+          for entry in plan['changed']:
+              path=pathlib.Path(entry['path']); text=path.read_text(encoding='utf-8')
+              for edit in reversed(entry['edits']):
+                  assert 0 <= edit['start'] <= edit['end'] <= len(text)
+                  text=text[:edit['start']]+edit['text']+text[edit['end']:]
+              data=text.encode('utf-8')
+              assert sha(data)==entry['result_sha256'], 'Output mismatch: '+str(path)
+              path.write_bytes(data)
+              print('Verified',str(path),len(data),sha(data))
+          for entry in plan['deleted']:
+              pathlib.Path(entry['path']).unlink()
+              print('Removed',entry['path'])
+          subprocess.run(['git','diff','--check'],check=True)
+          for path in ['portal.js','world-game-assets.js','star/sw.js']:
+              subprocess.run(['node','--check',path],check=True)
+          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
+          subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+          paths=[entry['path'] for entry in plan['changed']+plan['deleted']]
+          subprocess.run(['git','add','--',*paths],check=True)
+          subprocess.run(['git','commit','-m','Remove Star reservation helper from Ojjuda'],check=True)
+          subprocess.run(['git','push','origin','HEAD:'+plan['branch']],check=True)
+          PYTHON
