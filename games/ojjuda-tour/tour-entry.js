@@ -45,7 +45,7 @@ function tourShowError() {
     const status = document.getElementById('tourRecordStatus');
     if (!status || !pendingResult || !G?.over || G.runId !== pendingResult.runId) return;
     clearTimeout(recordTimer);
-    status.textContent = ok ? '게임 순위에 기록했어요. 이번 달 최고 연승이 표시돼요.' : '순위 기록을 저장하지 못했어요. ';
+    status.textContent = ok ? '기록 저장 완료' : '저장 실패 · ';
     if (!ok) {
       const retry = document.createElement('button');
       retry.type = 'button'; retry.className = 'btn sec'; retry.textContent = '다시 저장';
@@ -55,7 +55,7 @@ function tourShowError() {
   function sendResult() {
     const status = document.getElementById('tourRecordStatus');
     if (!status || !pendingResult) return;
-    status.textContent = '게임 순위에 기록하는 중이에요…';
+    status.textContent = '기록 저장 중';
     clearTimeout(recordTimer);
     recordTimer = setTimeout(() => recordStatus(false), 25000);
     ojjudaPost(pendingResult);
@@ -65,8 +65,8 @@ function tourShowError() {
     clearTimeout(recordTimer);
     const status = document.getElementById('tourRecordStatus');
     if (!status) return;
-    if (!result.myRank) { status.textContent = '사람 참가자가 있을 때 순위에 기록돼요.'; return; }
-    if (!embedded || !initialized) { status.textContent = '오쭈다 게임 목록에서 시작하면 게임 순위에 기록돼요.'; return; }
+    if (!result.myRank) { status.textContent = '순위 제외'; return; }
+    if (!embedded || !initialized) { status.textContent = '연습 결과'; return; }
     sendResult();
   };
   window.addEventListener('message', event => {

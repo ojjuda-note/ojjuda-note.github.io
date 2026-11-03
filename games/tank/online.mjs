@@ -2,7 +2,7 @@ import {createEngine,WEAPONS} from './engine.mjs?v=20261019-quake-half1';
 const $=id=>document.getElementById(id),view=window.TankView;
 const pending=new Map(),origin=location.origin;
 let ready=false,available=false,current=null,engine=null,busy=false,uncertain=false,animation=false,moves=[],timer=0,polling=false,offset=0,coins=0,noticeTimer=0,epoch=0,selectedMode='solo',cpuTimer=0,cpuVersion='';
-let restoreCheck=true,resumeOnEntry=false;
+let restoreCheck=true,resumeOnEntry=false,eliminationRoom=null,eliminationPopup=null;
 const SOLO_SPEEDS=[1,2,4,8];
 let soloSpeed=1;
 try{const saved=Number(localStorage.getItem('ojjuda.tank.solo.speed'));if(SOLO_SPEEDS.includes(saved))soloSpeed=saved;}catch{}
@@ -77,7 +77,7 @@ function flightLabel(){
  return `${weapon?.name||'포탄'} 비행 중`;
 }
 function render(){
- if(!current?.game||resumeOnEntry){lobby();return;}
+ if(!current?.game||resumeOnEntry){eliminationPopup?.close();eliminationPopup=null;lobby();return;}
  document.body.classList.add('in-match');$('menu').classList.add('hidden');$('netHud').hidden=false;
  $('netCoins').textContent=`보유 ${coins}쭈`;
  const solo=current.mode==='solo',local=current.mode==='local',privateMatch=solo||local;
@@ -88,8 +88,16 @@ function render(){
  $('surrender').textContent=privateMatch?'그만하기':'항복';$('surrender').hidden=!alive||current.status!=='active';$('surrender').disabled=busy||animation;
  $('bAgain').textContent=privateMatch?'다시 하기':'대기실로';$('bMenu').textContent=privateMatch?'처음 화면으로':'게임 목록';
  if(current.status==='finished'&&!animation&&!view.hasEffects()){
-  const winner=current.game.tanks.find(t=>t.hp>0);$('winTxt').textContent=solo&&!alive?'내 탱크가 파괴됐어요':winner?winner.name+' 승리':'무승부';$('winSub').textContent=solo&&!alive?'컴퓨터와 다시 도전해 보세요.':winner?'남은 체력 '+winner.hp:'모든 탱크가 파괴됐어요.';$('over').classList.remove('hidden');
- }else $('over').classList.add('hidden');
+  eliminationPopup?.close();eliminationPopup=null;
+  const winner=current.game.tanks.find(t=>t.hp>0),outcome=!winner?'draw':local?'success':alive?'success':'failure';
+  window.showTankResult(outcome,winner?`남은 체력 ${winner.hp}`:'동시 탈락',`tank:${current.id}`);
+ }else{
+  $('over').classList.add('hidden');
+  if(!local&&!alive&&current.status==='active'&&!animation&&!view.hasEffects()&&eliminationRoom!==current.id){
+   eliminationRoom=current.id;
+   eliminationPopup=window.OjjudaGameResults.show({game:'tank',outcome:'failure',key:`tank-out:${current.id}`,metric:'내 탱크 탈락',dismissible:true,actions:[{label:'관전하기',onClick:()=>{eliminationPopup=null;}}]});
+  }
+ }
  view.refresh();queueComputer();
 }
 function queueComputer(){

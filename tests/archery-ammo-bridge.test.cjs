@@ -14,7 +14,7 @@ const snapshot=(extra={})=>({ok:true,remaining:20,free_remaining:20,paid_remaini
 
 // Only the bridge and parent callback wiring run here. There is no network client.
 function fixture(options={},fakeTimers=false){
- const listeners=new Map(),nodes=[],classes=new Set(),timers=new Map();let authorized=true,timerId=0;
+ const listeners=new Map(),nodes=[],classes=new Set(),timers=new Map(),finishes=[];let authorized=true,timerId=0;
  class Element extends EventTarget{
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.sent=[];if(tag==='iframe')this.contentWindow={postMessage:(data,targetOrigin)=>this.sent.push({data:JSON.parse(JSON.stringify(data)),targetOrigin})};}
   setAttribute(){}
@@ -27,7 +27,7 @@ function fixture(options={},fakeTimers=false){
  }
  const previous=new Element('button');previous.isConnected=true;
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
- const window={addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
+ const window={OjjudaGuestAccess:{finished:options=>finishes.push(JSON.parse(JSON.stringify(options)))},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
  vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
  const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onCoachBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
  const api={
@@ -38,6 +38,12 @@ function fixture(options={},fakeTimers=false){
   get dialog(){return nodes.at(-1);},
   emit(data,{frame=nodes.at(-1).frame,source=frame.contentWindow,messageOrigin=origin}={}){for(const receive of [...(listeners.get('message')||[])])receive({data,source,origin:messageOrigin});},
   ready(frame=nodes.at(-1).frame){api.emit({source:'ojjuda-archery-game',type:'ready'},{frame});return frame.sent.at(-1)?.data;},
+  finishes,
+  finish(fields={},overrides={}){
+   const frame=overrides.frame||nodes.at(-1).frame,init=frame.sent.find(entry=>entry.data.type==='init')?.data;
+   const data={source:'ojjuda-archery-game',type:'round-finished',kind:'main',owner:init?.owner,sessionId:init?.sessionId,runId:randomUUID(),stage:1,...fields};
+   api.emit(data,{frame,...overrides});return data;
+  },
   async request(action,fields={},overrides={}){
    const frame=overrides.frame||nodes.at(-1).frame,init=frame.sent.find(entry=>entry.data.type==='init')?.data;
    const data={source:'ojjuda-archery-game',type:'ammo-request',owner:init?.owner,sessionId:init?.sessionId,requestId:randomUUID(),action,...fields};
@@ -47,6 +53,31 @@ function fixture(options={},fakeTimers=false){
  };
  api.open();api.ready();return api;
 }
+
+test('a completed guest main round consumes one trial and retains the result while event and stale messages do not',()=>{
+ const f=fixture({owner:null});
+ try{
+  for(const fields of [{kind:'event'},{stage:0},{stage:221},{stage:'1'},{runId:'invalid'},{owner},{sessionId:randomUUID()},{source:'another-game'},{score:9999}])f.finish(fields);
+  f.finish({}, {messageOrigin:'https://other.test'});f.finish({}, {source:{}});
+  assert.equal(f.finishes.length,0,'only a real same-origin, same-session main result can consume the guest trial');
+  const completed=f.finish();assert.deepEqual(f.finishes,[{retainResult:true}]);
+  assert.equal(f.dialog.open,true);assert.equal(f.dialog.isConnected,true,'sharing stays available in the open result');
+  f.finish(completed);f.finish();assert.equal(f.finishes.length,1,'duplicate completion and replay messages cannot consume twice');
+  const oldFrame=f.dialog.frame;f.close();f.open({owner:null});f.ready();
+  f.finish(completed);f.finish({}, {frame:oldFrame});assert.equal(f.finishes.length,1,'a closed iframe and its old nonce cannot finish the new session');
+  f.setAuthorized(false);f.finish();assert.equal(f.finishes.length,1);assert.equal(f.dialog.isConnected,false);
+ }finally{f.close();}
+});
+
+test('member and account-changed archery sessions cannot consume a guest trial',()=>{
+ const f=fixture();
+ try{
+  const member=f.finish();f.finish({owner:null});assert.equal(f.finishes.length,0);
+  const oldFrame=f.dialog.frame;f.close();f.open({owner:null});f.ready();
+  f.finish(member);f.finish(member,{frame:oldFrame});assert.equal(f.finishes.length,0);
+  f.finish();assert.deepEqual(f.finishes,[{retainResult:true}]);
+ }finally{f.close();}
+});
 
 test('initialization reveals no auth client and only the live same-origin owner/session can request ammo',async()=>{
  let calls=0;const f=fixture({onAmmoStatus:async()=>{calls++;return snapshot();}});

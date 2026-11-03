@@ -14,10 +14,10 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label','바람의 궁수 · 테스트게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261103-stage-clear-gates1" allow="autoplay; fullscreen"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261103-game-results1" allow="autoplay; fullscreen; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
-   let inFlight=null;
+   let inFlight=null,finished=false;
    const current=()=>active?.dialog===dialog&&authorized();
    const callbacks={
     status:()=>onAmmoStatus?.(),
@@ -74,7 +74,14 @@
     if(!current()){if(active?.dialog===dialog)close();return;}
     const message=event.data;
     if(message.type==='ready'){initialize();return;}
-    if(message.type!=='ammo-request'||message.owner!==owner||message.sessionId!==sessionId)return;
+    if(message.owner!==owner||message.sessionId!==sessionId)return;
+    if(message.type==='round-finished'){
+     if(finished||owner!==null||message.kind!=='main'||!uuid(message.runId)||!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return;
+     const allowed=new Set(['source','type','kind','owner','sessionId','runId','stage']);
+     if(!Object.keys(message).every(key=>allowed.has(key)))return;
+     finished=true;window.OjjudaGuestAccess?.finished({retainResult:true});return;
+    }
+    if(message.type!=='ammo-request')return;
     void request(message);
    }
    function close(){

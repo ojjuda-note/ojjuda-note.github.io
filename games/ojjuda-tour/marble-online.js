@@ -14,7 +14,7 @@
   };
   let selected = false, room = null, busy = false, polling = false, animating = false, connected = true, pending = null;
   let epoch = 0, timer = 0, offset = 0, controlsKey = '', resultKey = '', activeId = null;
-  let inviting = false, inviteConsumed = false;
+  let inviting = false, inviteConsumed = false, eliminationKey = '', eliminationPopup = null;
   const requests = new Map();
   const access = () => window.ojjudaMarbleAccess;
   const available = () => access()?.available === true && access()?.owner && access().owner !== 'guest';
@@ -109,12 +109,14 @@
   }
   function showResult() {
     const key = room.id+':'+room.version; if (resultKey === key) return; resultKey = key;
-    const winner = room.game.players[room.game.winner];
-    $('#sheet').classList.add('hidden'); $('#s2Title').textContent = winner ? winner.name+' 우승!' : '게임 종료';
-    $('#s2Bust').innerHTML = winner ? ga(winner,{bust:true,expr:'happy'}) : '';
-    $('#s2Body').innerHTML = `<p>${escape(room.game.reason)} · 최종 자산 순위</p>${rankingHTML()}<p role="status">${room.rankExcluded?.length?'컴퓨터 대행 없이 끝까지 참여한 회원의 기록을 게임 순위에 저장했어요.':'참가자 모두의 기록을 게임 순위에 저장했어요.'}</p>`;
-    $('#s2Btns').innerHTML = '<button class="btn" type="button" data-marble-lobby>온라인 로비로</button>';
-    $('#sheet2').classList.remove('hidden'); sfx('win');
+    eliminationPopup?.close(); eliminationPopup = null;
+    const winner = room.game.players[room.game.winner], me = room.game.players[room.seat];
+    const rank = [...room.game.players].sort((a,b)=>(b===winner)-(a===winner)||(a.bankrupt-b.bankrupt)||assets(b)-assets(a)).indexOf(me)+1;
+    $('#sheet').classList.add('hidden'); $('#s2Title').textContent = '게임 결과';
+    $('#s2Bust').innerHTML = ''; $('#s2Body').innerHTML = '';
+    $('#sheet2').classList.add('result-view');
+    $('#s2Btns').innerHTML = window.OjjudaGameResults.markup({game:'tour',outcome:!winner?'draw':room.game.winner===room.seat?'success':'failure',key:`tour:${room.id}`,metric:`${rank}위 · 자산 ${fmt(me.bankrupt?0:assets(me))}`,actions:'<button type="button" data-marble-lobby>대기실</button>'});
+    $('#sheet2').classList.remove('hidden'); if(room.game.winner===room.seat)sfx('win');
   }
   async function accept(next,at=epoch) {
     if (!selected || at !== epoch) return;
@@ -124,7 +126,7 @@
     const previous = room; room = next; controlsKey = ''; connected = true;
     if (previous?.id !== next?.id) $('#marbleInviteStatus').textContent = '';
     remember(room?.id); issue('');
-    if (!room?.game) { activeId = null; $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderLobby(); return; }
+    if (!room?.game) { eliminationPopup?.close(); eliminationPopup=null; activeId = null; $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderLobby(); return; }
     const first = activeId !== room.id;
     animating = true; controls();
     try {
@@ -145,6 +147,10 @@
       render(); placePieces(); setFace(cur());
       $('#log').innerHTML = G.log.map(text => `<li>${escape(text)}</li>`).join('');
       if (room.status === 'finished') showResult();
+      else if(room.game.players[room.seat]?.bankrupt&&eliminationKey!==room.id){
+        eliminationKey=room.id;
+        eliminationPopup=window.OjjudaGameResults.show({game:'tour',outcome:'failure',key:`tour-out:${room.id}`,metric:'파산 · 관전으로 전환',dismissible:true,actions:[{label:'관전하기',onClick:()=>{eliminationPopup=null;}}]});
+      }
     } catch(e) { if (e !== STALE) { G = JSON.parse(JSON.stringify(room.game)); render(); } }
     finally { if (at === epoch) { animating = false; controlsKey = ''; controls(); } }
   }
@@ -196,7 +202,7 @@
     selected = false; epoch++; GEN++; clearTimeout(timer); timer = 0; pending = null; busy = false; activeId = null;
     if (room?.game) G = null; room = null; rollResolve = null; pickResolve = null; R.pickSet = null; R.diceReady = false;
     $('#tourLocal').hidden = false; $('#marbleLobby').hidden = true; $('#marbleGameBar').hidden = true; $('#marbleControls').hidden = true;
-    $('#quitBtn').textContent = '끝내기'; $('#sheet2').classList.add('hidden'); issue('');
+    $('#quitBtn').textContent = '끝내기'; $('#sheet2').classList.add('hidden'); $('#sheet2').classList.remove('result-view'); issue('');
   }
   $('#marbleCreate').onsubmit = event => {
     event.preventDefault(); const form = event.currentTarget;

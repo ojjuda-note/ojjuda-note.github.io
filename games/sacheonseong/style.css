@@ -83,3 +83,8 @@ dialog{max-height:calc(100dvh - 24px);overflow:auto}
 .game-actions>.action-button span{display:grid;gap:1px;line-height:1.25;text-align:center}
 .game-actions>.action-button small{font-size:10px;font-weight:500;opacity:.8}
 @media(max-width:380px){.game-actions>.action-button{flex-basis:78px;gap:4px;padding-inline:5px}.game-actions>.action-button .icon{width:15px;height:15px}}
+/* The completion overlay keeps the board lifecycle; the shared card owns its contents. */
+.completion-card:has(.game-result-card){max-width:430px;padding:0;border:0;background:transparent;box-shadow:none}
+.completion .game-result-card p{margin:0;line-height:1.5;color:inherit}
+.completion .game-result-card .win-time{font-size:inherit;display:inline}
+.completion .game-result-card small{margin-top:4px}

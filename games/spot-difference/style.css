@@ -210,7 +210,7 @@ dialog.spot-celebration::backdrop{background:#30234c66;backdrop-filter:blur(4px)
 .end-picture-choice:disabled{opacity:.45;cursor:default}
 .end-picture-choice:focus-visible{outline:3px solid #7e8ed1;outline-offset:2px}
 /* A finished attempt keeps the picture choices and optional time extension together. */
-.board-shell.round-ended .pair{display:none}
+.board-shell.round-ended .pair{display:grid}
 .board-shell.round-ended .board-curtain{position:relative;inset:auto;display:flex;align-items:center;justify-content:center;padding:8px}
 .board-shell.round-ended .game-entry{padding:12px;max-width:420px}
 .board-shell.round-ended .ge-icon,.board-shell.round-ended .ge-kicker{display:none}
@@ -229,3 +229,6 @@ dialog.spot-celebration::backdrop{background:#30234c66;backdrop-filter:blur(4px)
 }
 
 .artwork-credit{margin:8px 0 12px;color:var(--muted);font-size:12px;line-height:1.6;overflow-wrap:anywhere}.artwork-credit strong{font-weight:600}.artwork-credit a{color:var(--blue);text-underline-offset:3px}
+#retry-tools:has(#retry-extend[hidden]) #retry-status:empty{display:none}
+#retry-status:empty{display:none}
+#retry-status{margin:8px 0 0;font-size:12px;line-height:1.5}

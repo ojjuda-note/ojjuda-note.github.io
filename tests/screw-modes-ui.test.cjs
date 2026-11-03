@@ -4,7 +4,7 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
-world=world.replace('<script type="module">','<script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script type="module">');
+world=world.replace('<script type="module">','<script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
 // Advanced physics fixtures choose a stage explicitly. Normal entry uses saved progress.
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
@@ -137,7 +137,10 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.complete),true,'touch relocation removes every plate and reveals the picture');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-revealed.png')});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(OjjudaFlatPictures.COLLECTION_KEY))),['puppy-beach'],'a real puzzle completion earns its picture');
-  await touch({x:311,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true);
+  assert.equal(await page.locator('.game-result-card[data-result-outcome=success]').count(),1);
+  assert.equal(await page.locator('[data-g=screw-stage]').count(),3,'previous/current/next share one result popup');
+  assert.equal(await page.locator('.game-result-share').count(),1);
+  await page.locator('[data-g=screw-view]').click();await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true);
   const lockedNames=await page.evaluate(()=>OjjudaFlatPictures.PICTURES.filter(p=>!screwWorld.current().game.state.collection.has(p.id)).map(p=>p.name));
   const albumLabels=await drawnText();for(const name of lockedNames)assert.equal(albumLabels.includes(name),false,'the locked album does not spoil picture subjects');
   await touch({x:240,y:130});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null,'locked pictures cannot be previewed');
@@ -147,7 +150,8 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   await page.keyboard.press('Escape');assert.equal(await page.locator('#gov').count(),1,'Escape returns from artwork without closing the game');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),null);
   await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),false);
-  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5);
+  await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),4,'the picture button returns to the result without auto-advancing');
+  await page.locator('[data-g=screw-stage][data-stage="5"]').click();await page.waitForFunction(()=>screwWorld.current().game.state.L===5);
   await page.evaluate(()=>{delete window.screwFixtureStage;});
   await page.locator('[data-g=screw-modes]').click();await page.locator('[data-mode=flat]').click();
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),5,'reopening resumes the last flat level entered');

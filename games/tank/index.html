@@ -139,6 +139,9 @@ body:not(.in-match) #controls{display:none}
 <link rel="stylesheet" href="./entry.css?v=20261018-tank8">
 <link rel="stylesheet" href="/multiplayer-entry.css?v=20261031-tank-visibility1">
 <script src="/multiplayer-entry.js?v=20261029-arcade-entry1" defer></script>
+<link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
+<script src="/game-results.js?v=20261103-game-results1"></script>
+<style>#over .game-result-card{margin:auto}#over .game-result-card h2{margin:0;text-shadow:none}#tankResult{width:min(430px,100%)}#over .game-result-share-status{color:#697c6c;font-size:12px}#over .game-result-actions button{width:auto;min-width:0}</style>
 </head>
 <body>
 <div id="stage"><canvas id="cv" aria-label="게임 화면"></canvas></div>
@@ -201,10 +204,11 @@ body:not(.in-match) #controls{display:none}
  </section>
 </main>
 <div id="netNotice" role="status"></div>
-<div id="over" class="ov hidden">
+<div id="over" class="ov hidden" role="dialog" aria-modal="true" aria-label="탱크 게임 결과"><div id="tankResult">
   <h2 id="winTxt"></h2>
   <p id="winSub"></p>
-  <div class="row"><button id="bAgain" class="go">대기실로</button><button id="bMenu" class="go alt">게임 목록</button></div>
+  <div class="row"><button id="bAgain" class="go" data-game-result-play>대기실로</button><button id="bMenu" class="go alt">게임 목록</button></div>
+</div>
 </div>
 <div id="picker" class="ov hidden">
   <div class="sheet"><div class="wgrid" id="wgrid"></div><button id="pClose" class="btn">닫기</button></div>
@@ -212,6 +216,15 @@ body:not(.in-match) #controls{display:none}
 
 <script>
 const $=id=>document.getElementById(id);
+function showTankResult(outcome,metric,key){
+ const card=$('tankResult');
+ for(const button of [$('bAgain'),$('bMenu')])button.className='';
+ if(card.dataset.resultKey!==key){
+  window.OjjudaGameResults.decorate(card,{game:'tank',outcome,metric,key,actions:[$('bAgain'),$('bMenu')]});
+  card.dataset.resultKey=key;
+ }
+ $('over').classList.remove('hidden');
+}
 const stage=$('stage'),cv=$('cv'),ctx=cv.getContext('2d'),prot=$('prot'),pctx=prot.getContext('2d');
 const fireB=$('fire'),wpnB=$('wpn'),lB=$('mvL'),rB=$('mvR'),powerSlider=$('power'),banner=$('banner');
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -504,9 +517,8 @@ function resolve(){
   if(alive.length>1){state='wait';syncUI();setTimeout(()=>startTurn(nextIdx()),800);return;}
   state='end';syncUI();
   setTimeout(()=>{
-    $('winTxt').textContent=alive.length?alive[0].name+' 승리':'무승부';
-    $('winSub').textContent=alive.length?(alive[0].cpu?'컴퓨터가 끝까지 살아남았어요.':'남은 체력 '+alive[0].hp):'마지막 탱크들이 동시에 무너졌어요.';
-    $('over').classList.remove('hidden');
+    const winner=alive[0];
+    showTankResult(!winner?'draw':winner.cpu?'failure':'success',winner?`남은 체력 ${winner.hp}`:'동시 탈락',`tank-local:${Date.now()}`);
   },1100);
 }
 
@@ -980,6 +992,6 @@ function loop(ts){
 }
 requestAnimationFrame(loop);
 </script>
-<script type="module" src="./online.mjs?v=20261031-performance1"></script>
+<script type="module" src="./online.mjs?v=20261103-game-results1"></script>
 </body>
 </html>

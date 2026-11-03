@@ -14,6 +14,7 @@ function fixture(t){
   w.setTimeout=(fn,ms)=>{timers.set(++nextTimer,{fn,ms});return nextTimer;};
   w.clearTimeout=id=>timers.delete(id);
   w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({createImageData:(x,y)=>({data:new Uint8ClampedArray(x*y*4)}),measureText:()=>({width:10})},{get:(object,key)=>object[key]||noop});
+  require('./game-results-fixture.cjs')(w);
   w.eval(fs.readFileSync(path.join(root,'assets/photo-ttang/men-stages-v2.js'),'utf8'));
   for(const match of html.matchAll(/<script>([\s\S]*?)<\/script>/g))vm.runInContext(match[1],dom.getInternalVMContext());
   w.eval('sound=false;');

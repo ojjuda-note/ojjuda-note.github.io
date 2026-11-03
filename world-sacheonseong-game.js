@@ -2,6 +2,7 @@
 (()=>{
  'use strict';
  let active=null;
+ const monthKey=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
  function close(){active?.close();}
  function open({owner=null,onScore=null,onRanking=null,onBuy=null,authorized=()=>true}={}){
   if(active){active.dialog.focus();return;}
@@ -45,7 +46,7 @@
   function onMessage(event){
    if(!frame||event.origin!==location.origin||event.source!==frame.contentWindow)return;
    if(event.data?.type==='ojjuda:sacheonseong-home')session.close();
-   if(event.data?.type==='ojjuda:sacheonseong-finished'&&!finished){finished=true;window.OjjudaGuestAccess?.finished();}
+   if(event.data?.type==='ojjuda:sacheonseong-finished'&&!finished){finished=true;window.OjjudaGuestAccess?.finished({retainResult:true});}
    if(!current()||event.data?.source!=='ojjuda-sacheonseong-game')return;
    const message=event.data,rules=window.OjjudaSacheonseongRanking;
    if(message.type==='ready')initialize();
@@ -55,16 +56,17 @@
     let pending=records.get(message.id);
     if(pending&&(pending.key!==key||pending.score!==score))return;
     if(!pending){pending={key,score,promise:Promise.resolve().then(()=>current()&&onScore?onScore(message.stage,score,message.id):{ok:false}).catch(()=>({ok:false}))};records.set(message.id,pending);}
-    void pending.promise.then(result=>{if(!result?.ok)records.delete(message.id);else if(records.size>100)records.delete(records.keys().next().value);send({type:'record',id:message.id,ok:result?.ok===true});});
+    void pending.promise.then(result=>{if(!result?.ok)records.delete(message.id);else if(records.size>100)records.delete(records.keys().next().value);send({type:'record',id:message.id,ok:result?.ok===true,owner:owner||'guest',period:monthKey()});});
    }
    if(message.type==='ranking'&&(message.stage===0||rules.game(message.stage))&&typeof message.id==='string'){
-    Promise.resolve().then(()=>current()&&onRanking?onRanking(message.stage):Promise.reject(Error('unavailable'))).then(rows=>send({type:'ranking',id:message.id,stage:message.stage,rows:Array.isArray(rows)?rows.slice(0,10):[]})).catch(()=>send({type:'ranking',id:message.id,error:true}));
+    const period=monthKey();
+    Promise.resolve().then(()=>current()&&onRanking?onRanking(message.stage):Promise.reject(Error('unavailable'))).then(rows=>send({type:'ranking',id:message.id,stage:message.stage,owner:owner||'guest',period,error:period!==monthKey(),rows:Array.isArray(rows)?rows.slice(0,10):[]})).catch(()=>send({type:'ranking',id:message.id,error:true}));
    }
   }
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
-   frame=document.createElement('iframe');frame.title='사천성 게임판';
-   frame.src='/games/sacheonseong/index.html?v=20261103-stage-clear-gates1';
+   frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
+   frame.src='/games/sacheonseong/index.html?v=20261103-game-results1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();

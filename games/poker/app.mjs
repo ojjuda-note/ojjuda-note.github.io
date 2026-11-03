@@ -138,14 +138,14 @@ function renderResumeLobby(){
  app.innerHTML=waitingTable(`<span class="start-kicker">SEVEN POKER · 19+</span><h1 id="table-start-title">세븐포커</h1><p>${solo?'컴퓨터와 하던 게임이 저장되어 있어요.':'참여 중인 온라인 대전이 있어요.'}</p><button class="primary table-start-button" data-action="resume">${finished?'게임 결과 보기':'이어서 하기'}</button><small class="start-cost">${finished?'이번 판 결과를 확인하세요.':solo?'추가 참가비 없이 이어서 진행해요.':'온라인 대전의 차례 시간은 계속 흘러가요.'}</small><button class="small-button" data-action="online-leave">${solo?'게임 끝내기':'방 나가기'}</button>`);
 }
 function startPopup(content){
- return `<section class="table-start-overlay" role="dialog" aria-labelledby="table-start-title"><div class="table-start-card">${content}<p class="online-connection" role="status">${esc(onlineError)}</p></div></section>`;
+ return `<section class="table-start-overlay" role="dialog" ${content.includes('game-result-card')?'aria-label="게임 결과"':'aria-labelledby="table-start-title"'}><div class="table-start-card">${content}<p class="online-connection" role="status">${esc(onlineError)}</p></div></section>`;
 }
 function waitingTable(content){return entryCard(`<div class="mp-waiting">${content}</div>`,{waiting:true});}
 
 const roundKey=()=>game?`${game._roomId}:${game._round}`:null;
 function nextHandPopup(){
  const r=online.room,waiting=r.ready[r.seat],departed=r.departed.some(Boolean),net=game.result.net[0];
- return startPopup(`<span class="start-kicker">HAND COMPLETE</span><h2 id="table-start-title">${waiting?'준비 완료':'다음 판도 함께해요'}</h2><p class="start-result">이번 판 손익 <strong>${net>0?'+':''}${fmt(net)} G</strong></p>${refillButton()}<button class="primary table-start-button" data-action="online-ready" ${waiting||departed||wallet?.gold<50?'disabled':''}>${departed?'새 방에서 시작해 주세요':waiting?'다른 사람을 기다리고 있어요':'다음 판 시작'}</button><button class="small-button" data-action="inspect-result">패와 결과 다시 보기</button>`);
+ return startPopup(window.OjjudaGameResults.markup({game:'poker',outcome:net>0?'gold-gain':net<0?'gold-loss':'gold-even',key:`poker:${roundKey()}`,metric:`${net>0?'+':''}${fmt(net)} G`,extra:refillButton(),actions:`<button data-action="online-ready" ${waiting||departed||wallet?.gold<50?'disabled':''}>${departed?'새 방 필요':waiting?'상대 준비 중':'다음 판'}</button><button data-action="inspect-result">패 보기</button><button data-action="online-leave">나가기</button>`}));
 }
 function refillButton(){
  if(!canRefill())return '';
@@ -305,12 +305,8 @@ function renderTable(animateDeal=true){
   const myCards=splitHand?handGroup(privateCards,'private',done?'비공개였던 카드':'나만 보는 카드')+handGroup(publicCards,'public',pendingOpen?'공개할 카드':'공개 카드')+handGroup(finalCards,'final','마지막 비공개 카드'):ownCards.map(ownCard).join('');
   let result='';
   if(done){
-    const pots=game.result.pots.filter(p=>!p.refund),won=winning.has(0),names=[...winning].map(i=>game.players[i].name).join(' · '),net=game.result.net[0];
-    // Receiving a side pot (or an unmatched-bet refund) is not a win for the whole hand.
-    const partial=won&&(net<0||pots.some(p=>!p.winners.includes(0))),victory=won&&!partial&&net>0;
-    const title=partial?'일부 판돈 획득':won?(net===0?'손익 없음':'승리했습니다'):esc(names)+' 승리';
-    const received=game.result.payouts?.[0]??me.total+net;
-    result=`<section class="result-banner${victory?' result-win':''}${same&&visual.finished?'':' result-enter'}" aria-label="이번 판 결과"><div class="result-seal" aria-hidden="true">${victory?'♠':'◇'}</div><div class="result-copy"><small>${victory?'WINNING HAND':'HAND COMPLETE'}</small><b>${title}</b><p>${game.result.uncontested?(won?'상대 전원 다이':'다이로 종료'):[...winning].map(i=>`${esc(game.players[i].name)} · ${bestHand(game.players[i].cards).name}`).join(' / ')}${pots.length>1?' · 사이드팟 정산':''}</p></div><strong class="${net>=0?'profit':'loss'}"><small class="result-net-label">최종 손익</small>${net>0?'+':''}${fmt(net)}<small class="result-unit">G</small></strong><dl class="result-breakdown"><div><dt>건 골드</dt><dd>${fmt(me.total)} G</dd></div><div><dt>받은 골드</dt><dd>${fmt(received)} G</dd></div></dl></section>`;
+    const net=game.result.net[0],title=net>0?'골드 획득':net<0?'골드 손실':'골드 변동 없음';
+    result=`<section class="result-banner${net>0?' result-win':''}" aria-label="이번 판 결과"><div class="result-copy"><b>${title}</b></div><strong class="${net>=0?'profit':'loss'}">${net>0?'+':''}${fmt(net)}<small class="result-unit">G</small></strong></section>`;
   }
   const seats=game.players.slice(1).map((p,j)=>{
     const position=game.players.length===2?'north':game.players.length===3?['west','east'][j]:['west','north','east'][j];

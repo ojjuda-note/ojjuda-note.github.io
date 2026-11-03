@@ -780,10 +780,10 @@ function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L));
 function screw3d(api,startStage=loadResumeStage()) {
   const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?startStage:1, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
-  let buying = false;
+  let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
   const walletUser = api.getUserId?.() || null;
-  const sameWallet = () => walletUser && api.getUserId?.() === walletUser;
+  const sameWallet = () => !destroyed && walletUser && api.getUserId?.() === walletUser;
   const purchaseKey = L => walletUser ? `${PURCHASE_KEY}:${walletUser}:${L}` : null;
   const uuid = s => typeof s === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s);
   function loadPurchases(L) {
@@ -808,7 +808,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   if (typeof window !== 'undefined') { window.__ojjScrew3d = st; window.__ojjS3d = { rayHit, pose, F, sepFront, LENS_R }; }   // 시험용
   const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
   function say(m, t) { st.msg = m; st.msgT = t; }
-  function start(L) { st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
+  function start(L) { ended = false; st.over = 0; st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
   }
@@ -941,6 +941,20 @@ function screw3d(api,startStage=loadResumeStage()) {
   function headPoint(s, V) { const E = s.thru; let p = s.p; if (E.hinge) p = add(E.hinge.p, mv(axisRot(E.hinge.a, E.hinge.th), sub(s.p, E.hinge.p))); return project(add(p, mul(curAxis(s), HEAD_H)), V); }
   start(st.L);
   return {
+    get stage() { return st.L; },
+    get levels() { return STAGES; },
+    get stageCleared() { return !!st.next; },
+    get stageFailed() { return ended && !st.next; },
+    async prepareStageChoice() {
+      if (destroyed || buying || (walletUser && !sameWallet())) return false;
+      if (restoreBlocked || Object.keys(st.purchases.pending).length) await verifyPurchases(true);
+      return !destroyed && !buying && !restoreBlocked && !(walletUser && !sameWallet()) && !Object.keys(st.purchases.pending).length;
+    },
+    continueStage(next) {
+      if (destroyed || buying || restoreBlocked || (walletUser && !sameWallet()) || Object.keys(st.purchases.pending).length || !st.next || next !== st.L + 1 || next > STAGES) return false;
+      saveStage(next); start(next); return true;
+    },
+    destroy() { destroyed = true; st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
     onDown(x, y, id = 0) {
       st.ptrs.set(id, { x, y });
       if (st.ptrs.size >= 2) { const [a, b] = [...st.ptrs.values()]; st.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, zm0: st.zm, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], pan0: st.pan.slice() }; st.drag = null; st.lensHold = false; st.lens = null; return; }   // 두 손가락: 벌려서 확대, 끌어서 이동
@@ -964,11 +978,11 @@ function screw3d(api,startStage=loadResumeStage()) {
     },
     onWheel(dy, x, y) { zoomAt(Math.exp(-dy * 0.0015), x, y); st.touched = true; },
     update(dt) {
-      if (buying) return;
+      if (destroyed || ended || buying || st.next) return;
       if (walletUser && !sameWallet()) { restoreBlocked = true; say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 3); return; }
       if (restoreBlocked) { if (Date.now() >= retryAt) void verifyPurchases(false); return; }
       st.t += dt; if (st.msgT > 0) st.msgT -= dt; if (st.shake && (st.shake.t -= dt) <= 0) st.shake = null;
-      if (st.over) { st.over -= dt; if (st.over <= 0) api.end(st.score); return; }
+      if (st.over) { st.over -= dt; if (st.over <= 0) { ended = true; api.end(st.score, {outcome:'failure'}); } return; }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
       const g = mv(tr(view()), [0, -1, 0]);   // 화면 아래(중력)를 물건 쪽 방향으로
@@ -1004,11 +1018,9 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
         const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); api.saveScore?.(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
-        st.next = 2; say(ok ? `다 분해했어요! 미션 성공 +${st.L * 10 + st.ms.bonus}` : `다 분해했어요! +${st.L * 10} (미션은 아쉬워요)`, 2);
-      }
-      if (st.next && (st.next -= dt) <= 0) {
-        if (Object.keys(st.purchases.pending).length) { st.next = 0.1; if (Date.now() >= retryAt) void verifyPurchases(true); }
-        else { const nL = Math.min(STAGES, st.L + 1); saveStage(nL); start(nL); if (st.L === STAGES && nL === STAGES) say(`${STAGES}단계 · 마지막 단계예요!`, 1.6); }
+        st.next = 1; saveStage(Math.min(STAGES, st.L + 1));
+        api.stageClear?.(st.score);
+        return;
       }
       if (!st.touched) st.yaw += dt * 0.25;   // 처음엔 천천히 돌며 보여 줘요
     },

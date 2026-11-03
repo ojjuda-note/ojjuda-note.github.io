@@ -4,6 +4,7 @@
   const prefix = 'ojjuda.mines.save.v1:';
   const rules = window.OjjudaMinesRules;
   let game, owner, ready = false, pending = null, flight = null, timeout;
+  const comparisons=new Map();
   function post(message) { parent.postMessage({source:'ojjuda-mines', ...message}, location.origin); }
   function status(text, retry = false) {
     $('#minesRecordText').textContent = text; $('#minesRetry').hidden = !retry;
@@ -62,6 +63,11 @@
     if (m.type === 'ojjuda-mines-record' && flight?.runId === m.runId) {
       clearTimeout(timeout);
       if (m.ok === true) {
+        if(m.comparison&&['success','record'].includes(m.comparison.outcome)&&typeof m.comparison.encouragement==='string'){
+          comparisons.set(m.runId,{outcome:m.comparison.outcome,encouragement:m.comparison.encouragement.slice(0,100)});
+          if(comparisons.size>40)comparisons.delete(comparisons.keys().next().value);
+          dispatchEvent(new CustomEvent('ojjuda-mines-result-comparison',{detail:{runId:m.runId}}));
+        }
         status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 게임순위 등록 완료`);
         flight = null;
         if (pending) setTimeout(flush, 5500);
@@ -86,6 +92,8 @@
   }
   window.OjjudaMinesEntry = {
     save, completed, requestExit,
+    started(runId,difficulty){if(ready&&difficulty<8)post({type:'ojjuda-game-start',runId,difficulty});},
+    comparison(runId){return comparisons.get(runId)||null;},
     ended(runId) { if (ready) post({type:'ojjuda-game-finished', runId}); },
     connect(controller) {
       game = controller;

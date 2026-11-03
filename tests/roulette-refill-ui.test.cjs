@@ -47,6 +47,7 @@ async function fixture(t,options={}){
   const parent={postMessage(message){if(message.type!=='rpc')return;Promise.resolve().then(()=>server(message.body)).then(data=>reply(message.id,data),error=>reply(message.id,null,error.message))}};
   Object.defineProperty(w,'parent',{value:parent});
   function reply(id,data,error=null){if(!closed)w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',type:'roulette-rpc',id,data,error}}))}
+  require('./game-results-fixture.cjs')(w);
   w.eval(read('games/roulette/app.js').replace(/^import .*;\n/gm,'')+'\nwindow.__refillTest={state,poll};');
   w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',type:'roulette-init',owner:me}}));
   await flush();t.after(()=>{closed=true;w.close()});

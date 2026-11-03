@@ -114,6 +114,10 @@ button:active:not(:disabled){transform:translateY(3px)}
 <script src="/game-entry.js?v=20261009-entry1" defer></script>
 <link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-arcade-entry1">
 <script src="/multiplayer-entry.js?v=20261029-arcade-entry1" defer></script>
+<link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
+<script src="/game-results.js?v=20261103-game-results1"></script>
+<style>.overlay>.panel:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
+<style>#toast.life-lost{animation:ttang-life-lost .65s ease both}@keyframes ttang-life-lost{0%{translate:0 -5px;rotate:0deg}35%{translate:0 4px;rotate:-2deg}70%{rotate:2deg}100%{translate:0 0;rotate:0deg}}@media(prefers-reduced-motion:reduce){#toast.life-lost{animation:none}}</style>
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -357,7 +361,7 @@ let lastSent=0, pendingAng=null;
 function steerMe(a){ if(!me) return; if(mode==='net'&&role==='guest'){ me.target=a; pendingAng=a; const t=performance.now(); if(t-lastSent>50){ lastSent=t; Net.send({t:'in',a:+a.toFixed(3)}); pendingAng=null; } } else world.steer(me,a); }
 // ---------- 효과 ----------
 function burst(x,y,col,n=26,sp=7){ for(let i=0;i<n;i++){ const a=Math.random()*TAU, v=sp*(.3+Math.random()); parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,col,r:.1+Math.random()*.18}); } }
-function toast(t,col){ const e=$('toast'); e.textContent=t; e.style.color=col||'#fff'; e.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>e.classList.remove('show'),1000); }
+function toast(t,col){ const e=$('toast');e.classList.remove('life-lost'); e.textContent=t; e.style.color=col||'#fff'; e.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>e.classList.remove('show'),1000); }
 let wallBeep=0;
 function wallWarn(dt){ if(!me||!me.alive||!me.wallT) return; wallBeep-=dt; if(wallBeep<=0){ const t=me.wallT/WALL_T; tone(500+t*500,.06,'square',.04); wallBeep=.22-.14*t; try{ navigator.vibrate&&navigator.vibrate(12); }catch{} } }
 const isHuman=p=>p===me||p===p2&&!p.bot;
@@ -373,7 +377,7 @@ function handleEvents(){ for(const ev of world.events){
     if(p===me){ shake=.5; sfx.death(); try{ navigator.vibrate&&navigator.vibrate([60,40,60]); }catch{} }
     const k=ev.by&&ev.by!==p.id?world.players[ev.by-1]:null; if(k&&k===me){ sfx.kill(); toast(`${p.name} 처치!`,PAL[k.color].c); }
     if(mode==='solo'&&p===me&&!over){ over=true; setTimeout(()=>showEnd(),900); }
-    if(mode==='net'&&p===me&&ev.why!=='wall') toast('탈락! 2초 뒤 다시',PAL[p.color].d); }
+    if(mode==='net'&&p===me){toast('탈락 · 2초 뒤 부활',PAL[p.color].d);const notice=$('toast');notice.classList.remove('life-lost');void notice.offsetWidth;notice.classList.add('life-lost');} }
   } world.events.length=0; }
 // ---------- 그리기 ----------
 function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
@@ -472,7 +476,7 @@ function hud(){ if(mode==='attract') return; const list=world.players.slice().so
     $('duoA').textContent='나 '+(a/world.N*100).toFixed(1)+'%'; $('duoB').textContent=(p2.bot?'컴퓨터 ':'친구 ')+(b/world.N*100).toFixed(1)+'%';
     const left=Math.max(0,endAt-world.time); $('timer').textContent=`${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,'0')}`; $('timer').style.background=left<10?'#EC6D6D':'#2E2748d9'; } }
 // ---------- 끝 ----------
-function panel(html,btns){ const o=document.createElement('div'); o.className='overlay'; o.innerHTML=`<div class="panel">${html}</div>`; document.body.appendChild(o); for(const id in btns){ const b=o.querySelector('#'+id); if(b) b.onclick=()=>{ o.remove(); btns[id](o); }; } return o; }
+function panel(html,btns){ const o=document.createElement('div'); o.className='overlay';if(html.includes('game-result-card')){o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','게임 결과');} o.innerHTML=`<div class="panel">${html}</div>`; document.body.appendChild(o); for(const id in btns){ const b=o.querySelector('#'+id); if(b) b.onclick=()=>{ o.remove(); btns[id](o); }; } return o; }
 function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.id!=='menu') o.remove(); }); }
 let roundId=null,roundReported=false,roundEligible=true,roundOutcome=null;
 function beginRound(kind,id=newRoundId()){roundId=id;roundReported=false;roundEligible=true;roundOutcome=null;if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId,mode:kind},location.origin);}
@@ -480,12 +484,12 @@ function excludeRound(){if(!roundId||roundReported)return;roundEligible=false;ro
 function abandonRound(){if(mode==='net'){excludeRound();return;}if(mode==='solo'&&roundId&&!roundReported)sendResult({mode:'solo',win:false,abandoned:true});}
 function sendResult(r){ if(roundReported||!roundEligible||!roundId)return;roundReported=true;const msg=Object.assign({type:'ojjuda:ttang:result',round:roundId},r);roundOutcome=msg; try{ if(window.parent!==window) window.parent.postMessage(msg,location.origin); }catch{} try{ window.OjjudaTtang&&window.OjjudaTtang.onResult&&window.OjjudaTtang.onResult(msg); }catch{} }
 function showEnd(){ sendResult({mode:'solo',win:false,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)});
-  panel(`<h2>탈락!</h2><p>${me.kills?`${me.kills}명을 처치했어요. `:''}다시 도전해 볼까요?</p><div class="stats"><div><b>${me.best.toFixed(1)}%</b><span>최고 땅</span></div><div><b>${me.kills}</b><span>처치</span></div><div><b>${Math.floor(world.time)}초</b><span>버틴 시간</span></div></div><button class="big a" id="again">다시 하기</button><button class="big g" id="home">처음으로</button>`,{again:()=>startSolo(),home:()=>toMenu()}); }
+  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'failure',key:roundId,metric:`최고 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<button id="again" data-game-result-play>다시 하기</button><button id="home">처음으로</button>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
 function showNetEnd(a,b){ if(parent!==window)parent.postMessage({type:'ojjuda:ttang:network-end'},location.origin);const win=a===b?0:(a>b?1:-1);
   sendResult({mode:'duo',win:win>0,me:+(a/world.N*100).toFixed(1),friend:+(b/world.N*100).toFixed(1)});
-  panel(`<h2>${win>0?'🎉 내가 이겼어요!':win<0?(p2.bot?'컴퓨터가 이겼어요':'친구가 이겼어요'):'무승부!'}</h2><div class="stats" style="grid-template-columns:1fr 1fr"><div style="background:${PAL[me.color].l}"><b>${(a/world.N*100).toFixed(1)}%</b><span>나 · 처치 ${me.kills}</span></div><div style="background:${PAL[p2.color].l}"><b>${(b/world.N*100).toFixed(1)}%</b><span>${p2.bot?'컴퓨터':'친구'} · 처치 ${p2.kills}</span></div></div><button class="big g" id="home">처음으로</button>`,{home:()=>{ Net.close(); toMenu(); }}); }
+  panel(window.OjjudaGameResults.markup({game:'ttang',outcome:win>0?'success':win<0?'failure':'draw',key:roundId,metric:`내 땅 ${(a/world.N*100).toFixed(1)}% · 상대 ${(b/world.N*100).toFixed(1)}%`,actions:'<button id="home">처음으로</button>'}),{home:()=>{ Net.close(); toMenu(); }}); }
 function newRoundId(){if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(n=>n.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
-function startSolo(){ abandonRound();Net.close();beginRound('solo'); $('menu').style.display='none'; closePanels(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
+function startSolo(){ if(window.OjjudaGameResults?.canPlay?.()===false)return;abandonRound();Net.close();beginRound('solo'); $('menu').style.display='none'; closePanels(); newSolo('solo'); paused=false; $('pause').textContent='멈춤'; }
 function toMenu(){ abandonRound();if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin);if(friendInviteId){friendInvites()?.cancel(friendInviteId);friendInviteId=null;}Net.close(); closePanels(); newSolo('attract'); $('menu').style.display='flex'; }
 // ================= 친구와 대결 (각자 폰) =================
 // 연결: 오쭈다 아지트 안에서는 Supabase 실시간 채널, 그 밖에서는 같은 기기의 다른 창끼리(시험용)
@@ -612,7 +616,7 @@ async function hostRoom(inviteCode,{publicRoom=false}={}){ Net.close();const att
     else if(m.t==='ping'&&mode==='net'){Net.lastRx=performance.now();if(p2.bot)Net.send({t:'retired',round:roundId,seat:p2.id});}
     else if(m.t==='sync'&&m.round===roundId&&mode==='net')Net.send(snapshot(true));
     else if(m.t==='bye'&&(!m.round||m.round===roundId))continueWithComputer(); }); return code; }
-function startHost(){ $('menu').style.display='none'; closePanels(); mode='net'; role='host';beginRound('duo');
+function startHost(){ if(window.OjjudaGameResults?.canPlay?.()===false)return;$('menu').style.display='none'; closePanels(); mode='net'; role='host';beginRound('duo');
   world=new World(48,'duo'); world.netDirty=new Set();
   me=world.addPlayer({name:'나',color:0,speed:6.6,turn:5.2}); p2=world.addPlayer({name:'친구',color:1,speed:6.6,turn:5.2}); makeBots(3);
   endAt=world.time+120; setupUI(); world.netDirty.clear(); Net.lastRx=performance.now();
@@ -624,7 +628,7 @@ async function joinRoom(code){ Net.close();const attempt=Net.generation;let done
     else if(m.t==='end'&&mode==='net'&&role==='guest'&&!over&&(!m.s?.round||m.s.round===roundId)){ over=true; applySnapshot(m.s); showNetEnd(m.b,m.a); }
     else if(m.t==='bye'&&(!m.round||m.round===roundId))continueWithComputer(m.s); });
   const t0=performance.now(); while(!done&&!cancelled&&attempt===Net.generation){ Net.send({t:'join'}); await new Promise(r=>setTimeout(r,800));if(cancelled||attempt!==Net.generation)return; if(performance.now()-t0>15000&&!done){if(parent!==window)parent.postMessage({type:'ojjuda:ttang:menu'},location.origin); w.remove(); Net.close(); panel(`<h2>방을 찾지 못했어요</h2><p>방 번호 ${code}가 맞는지, 친구가 방을 만들어 두었는지 확인해 주세요.</p><button class="big g" id="ok">확인</button>`,{ok:()=>lobby()}); return; } } }
-function startGuest(m){ $('menu').style.display='none'; closePanels(); mode='net'; role='guest';beginRound('duo',/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(m.round||'')?m.round:newRoundId());
+function startGuest(m){ if(window.OjjudaGameResults?.canPlay?.()===false)return;$('menu').style.display='none'; closePanels(); mode='net'; role='guest';beginRound('duo',/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(m.round||'')?m.round:newRoundId());
   world=new World(m.U,'duo'); world.itemsOn=false;
   m.players.forEach(pp=>world.addPlayer(Object.assign({},pp,{noSpawn:true,bot:pp.bot})));
   for(const p of world.players){ p.alive=false; p.pts=[]; } p2=world.players[0]; me=world.players[1]; p2.name='친구'; me.name='나';
@@ -669,7 +673,7 @@ function loop(now){ const elapsed=now-last,dt=Math.min(.05,elapsed/1000); last=n
     if(mode==='net'&&role==='host'&&!over){ netAcc+=dt; if(netAcc>=.08){ netAcc=0; Net.send(snapshot()); }
       if(world.time>=endAt){ over=true; const s=snapshot(); const a=world.counts[me.id], b=world.counts[p2.id]; Net.send({t:'end',a,b,s}); showNetEnd(a,b); }
       if(now-Net.lastRx>10000&&!over&&!p2.bot)continueWithComputer(); }
-    if(mode==='solo'&&!over&&me.alive&&world.counts[me.id]/world.N>=.5){ over=true; sendResult({mode:'solo',win:true,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)}); panel(`<h2>👑 땅의 절반을 차지했어요!</h2><div class="stats"><div><b>${me.best.toFixed(1)}%</b><span>땅</span></div><div><b>${me.kills}</b><span>처치</span></div><div><b>${Math.floor(world.time)}초</b><span>걸린 시간</span></div></div><button class="big a" id="again">다시 하기</button><button class="big g" id="home">처음으로</button>`,{again:()=>startSolo(),home:()=>toMenu()}); }
+    if(mode==='solo'&&!over&&me.alive&&world.counts[me.id]/world.N>=.5){ over=true; sendResult({mode:'solo',win:true,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)}); panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'success',key:roundId,metric:`내 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<button id="again" data-game-result-play>다시 하기</button><button id="home">처음으로</button>'}),{again:()=>startSolo(),home:()=>toMenu()}); }
   }
   if(world){ draw(paused?0:dt); if(now-lastHud>200){ lastHud=now; hud(); } }
   requestAnimationFrame(loop); }

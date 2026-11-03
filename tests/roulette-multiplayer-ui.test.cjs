@@ -94,6 +94,7 @@ async function fixture(t,initial=roomFixture(),options={}){
  Object.defineProperty(w,'parent',{value:parent});
  function reply(id,data,error=null){if(closed)return;w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',type:'roulette-rpc',id,data,error}}))}
  const source=read('games/roulette/app.js').replace(/^import .*;\n/gm,'')+'\nwindow.__roulette={state,applySnapshot,getRoom:()=>room,readyId:()=>resultReadyId,hasExit:()=>exitRequested};';
+ require('./game-results-fixture.cjs')(w);
  w.eval(source);
  const message=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-world',...data}}));
  message({type:'roulette-init',owner:options.owner??me,joinCode:options.joinCode});await tick();await tick();

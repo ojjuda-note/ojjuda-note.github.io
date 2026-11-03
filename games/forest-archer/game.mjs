@@ -72,6 +72,26 @@ state.cinematic=null;
 state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;
 let w=1,h=1,dpr=1,camera={},pointer=null,lastFrame=performance.now(),audio=null,toastTimer=0,drawTimer=0,keys=new Set();
 let ammo=null,roundRegistration=Promise.resolve();
+const resultUUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+let resultBridge=null,finishedMainRound=null;
+function reportFinishedMainRound(){
+  if(!resultBridge||!finishedMainRound||finishedMainRound.sent||window.parent===window)return;
+  try{
+    window.parent.postMessage({source:'ojjuda-archery-game',type:'round-finished',kind:'main',
+      owner:resultBridge.owner,sessionId:resultBridge.sessionId,runId:finishedMainRound.runId,stage:finishedMainRound.stage},window.location.origin);
+    finishedMainRound.sent=true;
+  }catch{}
+}
+window.addEventListener('message',event=>{
+  if(window.parent===window||event.source!==window.parent||event.origin!==window.location.origin)return;
+  const message=event.data;
+  if(message?.source!=='ojjuda-archery-world'||message.type!=='init'||!resultUUID.test(message.sessionId||''))return;
+  if(message.owner!==null&&(typeof message.owner!=='string'||!message.owner))return;
+  // Keep completion tied to this iframe's first account/session handshake.
+  // A late finish must not consume the trial of a different signed-in owner.
+  if(!resultBridge)resultBridge={owner:message.owner,sessionId:message.sessionId};
+  reportFinishedMainRound();
+});
 const ammoRemaining=()=>Number.isInteger(ammo?.snapshot?.remaining)?ammo.snapshot.remaining:null;
 const ammoOffer=()=>Number.isSafeInteger(ammo?.snapshot?.pack_ammo)&&ammo.snapshot.pack_ammo>0&&Number.isSafeInteger(ammo?.snapshot?.pack_price)&&ammo.snapshot.pack_price>0?{amount:ammo.snapshot.pack_ammo,price:ammo.snapshot.pack_price}:null;
 async function refreshAmmoStatus(){
@@ -409,6 +429,7 @@ function resetRound(stage=state.stage){
   if(!state.isEvent){state.eventReturnStage=null;state.eventMainResult=null;}
   state.eventStarted=!state.isEvent;
   state.resultSummary=null;
+  state.pendingEventLevel=null;
   state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=false;state.ammoNotice='';state.ammoLoading=false;
   cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.earned=0;state.shotScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
   state.stabilizerActive=false;state.stabilizerNotice='';
@@ -424,12 +445,14 @@ function resetRound(stage=state.stage){
 }
 function startStage(id){
   if(guardAmmoAction())return;
+  if(window.OjjudaGameResults?.canPlay?.()===false)return;
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 발사가 끝나면 사격장을 바꿀 수 있어요.');return;}
   if(!Number.isInteger(id)||id<1||id>STAGES.length)return;
   progress.lastStage=id;save();dismissModal();resetRound(STAGES[id-1]);
 }
 function enterEvent(level=Math.max(1,Math.min(10,Math.floor(progress.mainRounds/5)))){
   if(guardAmmoAction())return;
+  if(window.OjjudaGameResults?.canPlay?.()===false)return;
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 발사가 끝나면 이벤트로 이동할 수 있어요.');return;}
   if(!state.isEvent){
     state.eventReturnStage=state.stage.id;
@@ -636,7 +659,9 @@ function finishMainScreen(record, counted){
   if(state.roundEpoch!==record.epoch)return;
   if(counted&&progress.mainRounds>0&&progress.mainRounds%5===0){
     progress.lastStage=record.stage;save();
-    enterEvent(Math.min(10,progress.mainRounds/5));toast(`${progress.mainRounds}판 완료! 접시 사격 이벤트 ${state.stage.eventLevel}단계`);return;
+    // The completed main round remains visible until the player chooses the event.
+    // Entering it still captures this round's real clear and uses the same ammo flow.
+    state.pendingEventLevel=Math.min(10,progress.mainRounds/5);
   }
   save();updateHeader();updateRound();showResult(record.passed,record.bonus);
 }
@@ -677,6 +702,8 @@ function finishRound(){
     save();updateHeader();updateRound();showResult(passed,0);
     return;
   }
+  finishedMainRound={runId:state.runId,stage:state.stage.id,sent:false};
+  reportFinishedMainRound();
   progress.best[state.stage.id]=Math.max(previous,state.score);
   let bonus=0;
   if(passed){bonus=previous<state.stage.goal?25:12;progress.coins+=bonus;state.earned+=bonus;sound('clear');}
@@ -687,6 +714,7 @@ function finishRound(){
 function openModal(type,html,narrow=false){
   cancelDraw();if(!state.modal)state.lastFocus=document.activeElement;state.modal=type;
   $('modalContent').innerHTML=html;$('modal').classList.toggle('narrow',narrow);$('modal').dataset.view=type;
+  $('modal').setAttribute('aria-labelledby','modalTitle');
   $('modalClose').classList.toggle('hidden',type==='result'||type==='event-ready');$('menuBtn').setAttribute('aria-expanded',type==='menu'?'true':'false');
   $('modalBackdrop').classList.remove('hidden');document.body.style.overflow='hidden';
   if(type==='result'||type==='event-ready'){
@@ -947,11 +975,10 @@ function starsFor(score,goal){return score<goal?0:score>=44?3:score>=34?2:1;}
 function stageChoiceMarkup(className){
   const level=mainStageForChoices(),busy=ammoLocked()||state.mode==='flight'||state.mode==='settling';
   const next=canAdvanceStage(),nextHint=level>=STAGES.length?'마지막 단계':next?`${level+1}단계`:'이번 판 통과 후';
-  return `<div class="${className}" aria-label="이어 할 활쏘기 단계 선택"><button class="button stage-choice" data-action="previous-stage" ${level<=1||busy?'disabled':''}><strong>이전 단계</strong><small>${level<=1?'첫 단계':`${level-1}단계`}</small></button><button class="button stage-choice" data-action="retry" ${busy?'disabled':''}><strong>지금 단계</strong><small>${level}단계 다시</small></button><button class="button stage-choice primary-button" data-action="next-stage" ${!next||busy?'disabled':''}><strong>다음 단계</strong><small>${nextHint}</small></button></div>`;
+  return `<div class="${className}" aria-label="이어 할 활쏘기 단계 선택"><button class="button stage-choice" data-action="previous-stage" data-game-result-play ${level<=1||busy?'disabled':''}><strong>이전 단계</strong><small>${level<=1?'첫 단계':`${level-1}단계`}</small></button><button class="button stage-choice" data-action="retry" data-game-result-play ${busy?'disabled':''}><strong>지금 단계</strong><small>${level}단계 다시</small></button><button class="button stage-choice primary-button" data-action="next-stage" data-game-result-play ${!next||busy?'disabled':''}><strong>다음 단계</strong><small>${nextHint}</small></button></div>`;
 }
 function eventRewardsMarkup(){
-  const reason=progress.stabilizers>=CONSUMABLE_LIMIT?'안정제 보유 한도에 도달했어요.':progress.clayCredits<STABILIZER_COST?`교환하려면 접시 점수 ${STABILIZER_COST-progress.clayCredits}개가 더 필요해요.`:'';
-  return `<section class="event-rewards" aria-labelledby="eventRewardTitle"><h3 id="eventRewardTitle">다음 사격 준비</h3><p>접시 점수 <strong>${progress.clayCredits.toLocaleString('ko-KR')}개</strong> · 안정제 <strong>${progress.stabilizers.toLocaleString('ko-KR')}개</strong> · 보유 <strong>${formatCoins(progress.coins)} 코인</strong></p><div class="event-reward-actions"><button class="button primary-button" data-action="buy-stabilizer" ${canExchangeStabilizer()?'':'disabled'}>${icon('tonic')}안정제 1개 교환 · 접시 점수 5개</button><button class="button soft-button" data-action="result-shop">${icon('bag')}총기 구매·장착</button></div><p class="stabilizer-message" role="status">${state.stabilizerNotice||reason||'교환한 안정제는 사용할 판에서 직접 사용해 주세요.'}</p></section>`;
+  return `<section class="event-rewards" aria-label="이벤트 보상"><p>접시 점수 ${progress.clayCredits.toLocaleString('ko-KR')}개 · 안정제 ${progress.stabilizers.toLocaleString('ko-KR')}개 · ${formatCoins(progress.coins)}코인</p><div class="event-reward-actions"><button class="button primary-button" data-action="buy-stabilizer" ${canExchangeStabilizer()?'':'disabled'}>${icon('tonic')}안정제 · 접시 5개</button><button class="button soft-button" data-action="result-shop">${icon('bag')}총기 상점</button></div>${state.stabilizerNotice?`<p class="stabilizer-message" role="status">${state.stabilizerNotice}</p>`:''}</section>`;
 }
 function showResult(passed,bonus){
   state.resultSummary={passed,bonus};
@@ -963,7 +990,14 @@ function showResult(passed,bonus){
     cleared?'목표를 달성했어요. 이어 할 단계를 골라주세요.':`목표 ${state.stage.goal}점에 도달하지 못했어요. 지금 단계에 다시 도전해 보세요.`;
   const metrics=event?`<div><small>깨뜨린 표적</small><strong>${state.hits}</strong><em>개</em></div><div><small>발사한 탄환</small><strong>${state.used}</strong><em>발</em></div>`:`<div><small>이번 점수</small><strong>${state.score}</strong><em>/ 50</em></div><div><small>명중</small><strong>${state.hits}</strong><em>/ 5${shotUnit()}</em></div>`;
   const note=event?`이번 이벤트 최고 ${bestCount}개 · 다음은 활쏘기 차례예요.`:bonus?`목표 달성 보너스 ${bonus}코인이 포함되어 있어요.`:'이번에 얻은 코인은 그대로 남아 있어요.';
-  openModal('result',`<div class="result-content ${event?'event-result':''}"><div class="result-emblem">${icon(event||passed?'target':'wind')}</div><p class="eyebrow">${event?'YOUR EVENT RECORD':'YOUR NEXT SHOT'}</p><h2 id="modalTitle">${title}</h2><p>${description}</p>${event?'':`<div class="result-stars" aria-label="별 ${stars}개">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`}<div class="result-metrics">${metrics}<div><small>획득 코인</small><strong>+${state.earned}</strong></div></div>${event?eventRewardsMarkup():''}${stageChoiceMarkup('result-actions stage-result-actions')}<p class="result-note">${note}</p>${ammo?.pending?'<button class="button soft-button" data-action="retry-ammo">이전 처리 다시 확인</button>':''}${event?'':`<button class="button soft-button result-shop-button" data-action="result-shop">${icon('bag')}무기 상점</button>`}<button class="text-button" data-action="menu">메뉴</button></div>`,true);
+  openModal('result',`<div class="result-content ${event?'event-result':''}"><div class="result-emblem">${icon(event||passed?'target':'wind')}</div><p class="eyebrow">${event?'YOUR EVENT RECORD':'YOUR NEXT SHOT'}</p><h2 id="modalTitle">${title}</h2><p>${description}</p>${event?'':`<div class="result-stars" aria-label="별 ${stars}개">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`}<div class="result-metrics">${metrics}<div><small>획득 코인</small><strong>+${state.earned}</strong></div></div>${event?eventRewardsMarkup():''}${stageChoiceMarkup('result-actions stage-result-actions')}<p class="result-note">${note}</p>${ammo?.pending?'<button class="button soft-button" data-action="retry-ammo">이전 처리 다시 확인</button>':''}${event?'':`<button class="button soft-button result-shop-button" data-action="result-shop">${icon('bag')}무기 상점</button>`}${!event&&state.pendingEventLevel?'<button class="button primary-button" data-action="continue-event" data-game-result-play>접시 사격</button>':''}<button class="text-button" data-action="menu">메뉴</button></div>`,true);
+  const content=window.OjjudaGameResults&&$('modalContent').querySelector?.('.result-content');
+  if(window.OjjudaGameResults&&content){
+    const extra=[...content.querySelectorAll('.event-rewards,[data-action="retry-ammo"],[data-action="continue-event"]')].filter(element=>!element.parentElement.closest('.event-rewards'));
+    window.OjjudaGameResults.decorate(content,{game:'archery',outcome:event?'complete':cleared?'success':'failure',metric:event?`표적 ${state.hits}개 · ${state.used}발`:`${level}단계 · ${state.score} / ${state.stage.goal}점`,score:state.score,key:state.runId,actions:[content.querySelector('.stage-result-actions')],extra});
+    const heading=content.querySelector('h2');if(heading)$('modal').setAttribute('aria-labelledby',heading.id);
+    content.querySelector('[data-action="retry"]')?.focus();
+  }
 }
 function showMenu(){
   const level=mainStageForChoices(),event=state.isEvent,finished=state.mode==='finished';
@@ -997,6 +1031,7 @@ document.addEventListener('click',e=>{
   if(btn.dataset.stage){if(state.mode==='flight'||state.mode==='settling'){toast('이번 화살이 도착하면 이동할 수 있어요.');return;}startStage(+btn.dataset.stage);}
   const act=btn.dataset.action;
   if(act==='start-event')startEvent();
+  if(act==='continue-event'&&state.modal==='result'&&!state.isEvent&&state.mode==='finished'&&state.pendingEventLevel)enterEvent(state.pendingEventLevel);
   if(act==='ammo-shop')showAmmoShop();
   if(act==='buy-ammo')buyAmmo();
   if(act==='buy-stabilizer')buyStabilizer();

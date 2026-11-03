@@ -111,8 +111,10 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     assert.ok(rect.x>=-1&&rect.y>=-1&&rect.x+rect.width<=viewport.width+1&&rect.y+rect.height<=viewport.height+1,`${prefix}-${choices[i]} stays inside the viewport: ${JSON.stringify(rect)}`);
    }
    assert.ok(rects[0].x+rects[0].width<=rects[1].x+1&&rects[1].x+rects[1].width<=rects[2].x+1,'previous/current/next remain ordered side by side');
-   const container=page.locator(prefix==='celebration'?'#celebration':'#retry-level-choice');
+   const container=page.locator(prefix==='celebration'?'#celebration .end-picture-choices':'#retry-level-choice');
    assert.equal(await container.locator('button').count(),3,'a result contains exactly three immediate picture actions');
+   const popup=page.locator(prefix==='celebration'?'#celebration':'#spot-failure');
+   assert.equal(await popup.locator('.game-result-share').isVisible(),true,'sharing is on the same result page');
    if(prefix==='celebration')assert.equal(await container.locator('select').count(),0);
   }
   // Existing artwork assets and hit targets retain their original data IDs.
@@ -139,8 +141,8 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   const before=await p.locator('#stage-picker').inputValue();
   const first=await current(p),targetCount=first.targets;
   await solve(p,true);
-  assert.match(await p.locator('#celebration-title').innerText(),/축하/);
-  assert.equal(await p.locator('#celebration-confetti i').count(),20);
+  assert.equal(await p.locator('#celebration .game-result-title').innerText(),'성공');
+  assert.equal(await p.locator('#celebration .game-result-confetti').count(),26);
   assert.equal(await p.locator('#zoom-dialog').evaluate(d=>d.open),false);
   assert.equal(await p.locator('#solved-total').innerText(),'1');
   assert.equal(await p.locator('#found-count').innerText(),String(targetCount));
@@ -230,9 +232,9 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    assert.equal((await saved(fp)).current,expected.index);
    if(position<sequence.length-1)await choose(fp,'celebration','next',sequence[position+1].id);
   }
-  assert.match(await final.page.locator('#celebration-title').innerText(),/모든 그림/);
+  assert.equal(await final.page.locator('#celebration .game-result-title').innerText(),'성공');
   assert.equal(await final.page.locator('#solved-total').innerText(),String(totalStages));
-  assert.equal(await final.page.locator('#celebration-confetti').isVisible(),false);
+  assert.equal(await final.page.locator('#celebration .game-result-confetti').count(),0);
   const last=await final.page.locator('#stage-picker').inputValue();await final.page.waitForTimeout(2600);
   assert.equal(await final.page.locator('#stage-picker').inputValue(),last,'last stage has no invalid or repeated next stage');
   await choiceLayout(fp,'celebration',152);

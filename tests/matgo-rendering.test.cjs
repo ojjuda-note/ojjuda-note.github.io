@@ -8,6 +8,7 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
   const noop=()=>{},flights=[];let cancels=0;
   w.matchMedia=()=>({matches:false});
   w.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:noop,getClient:()=>({auth:{getSession:async()=>({})}})};
+  require('./game-results-fixture.cjs')(w);
   w.eval(read('games/matgo-view.mjs').replace(/^import .*;\n/,'').replaceAll('export function','function')+'\nwindow.view={floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt};');
   w.deps={...engine,...art,...w.view,shuffledFloorSlots:noop,floorStackIds:stack=>[...stack.querySelectorAll('[data-face]')].map(n=>Number(n.dataset.face)),
    createWallet:()=>({status:async()=>({gold:5000,free_left:2})}),

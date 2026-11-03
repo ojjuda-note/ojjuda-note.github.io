@@ -97,10 +97,17 @@
     active.add(game); track(game, 'visit'); track(game, 'start');
   }
   function onOpen(game) { if (supported(game)) track(game, 'visit'); }
-  function resultMarkup(game, score) {
-    if (!supported(game) || !count(score)) return '';
+  function complete(game, score) {
+    if (!supported(game) || !count(score)) return null;
     if (active.delete(game)) track(game, 'complete');
     const target = incoming?.game === game && incoming.challenge ? incoming.score : null;
+    return { target, unit: GAMES[game].unit };
+  }
+  function recordShare(game) { if (supported(game)) track(game, 'share'); }
+  function resultMarkup(game, score) {
+    const result = complete(game, score);
+    if (!result) return '';
+    const target = result.target;
     const comparison = target === null ? '' : '<p class="game-challenge-comparison">친구 ' + target.toLocaleString('ko-KR')
       + GAMES[game].unit + ' · 나 ' + score.toLocaleString('ko-KR') + GAMES[game].unit + '</p>';
     return '<div class="game-challenge-result">' + comparison
@@ -160,5 +167,5 @@
   addEventListener('online', () => { retryAfter = 0; void flush(); });
   addEventListener('pageshow', () => void flush());
   document.addEventListener('visibilitychange', () => void flush());
-  window.OjjudaGameChallenges = Object.freeze({ configure, requestedGame: () => incoming?.game || null, onOpen, onStart, resultMarkup });
+  window.OjjudaGameChallenges = Object.freeze({ configure, requestedGame: () => incoming?.game || null, onOpen, onStart, complete, recordShare, resultMarkup });
 })();

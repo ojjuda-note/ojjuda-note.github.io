@@ -19,8 +19,8 @@ function fixture(id = 'stacker', options = {}) {
   const controls = { innerHTML: '' }, receipt = { innerHTML: '' };
   const game = { update() {}, draw() {} };
   const context = vm.createContext({
-    console, Promise, performance, URL,
-    window: { OjjudaGuestAccess: { canPlay: () => options.allowed !== false, finished(options) { events.push(['finished']); completions.push(options); } } },
+    console, Promise, performance, URL, setTimeout, clearTimeout,
+    window: { OjjudaGameResults: { markup: data => '<section>'+data.metric+'<button class="game-result-share">공유하기</button>'+data.actions+data.extra+'</section>' }, OjjudaGuestAccess: { canPlay: () => options.allowed !== false, finished(options) { events.push(['finished']); completions.push(options); } } },
     document: { getElementById: () => null, querySelector: () => null, body: { classList: { remove() {} } } },
     R: { id, running: false, loading: false, game: null, ctx: {}, ov: { querySelector: selector => selector === '#gres' ? receipt : controls, remove() { events.push(['closed']); } } },
     G2: { [id]: () => game }, _r: { [id]: { unit: id === 'stacker' ? '층' : '점' } },
@@ -34,7 +34,7 @@ function fixture(id = 'stacker', options = {}) {
   context.window.removeEventListener = () => {};
   if (!options.missing) context.window.OjjudaGameChallenges = {
     onStart(game) { if (options.broken) throw Error('analytics unavailable'); events.push(['start', game]); },
-    resultMarkup(game, score) { if (options.broken) throw Error('sharing unavailable'); events.push(['complete', game, score]); return '<button data-challenge-share>친구에게 도전</button>'; }
+    complete(game, score) { if (options.broken) throw Error('sharing unavailable'); events.push(['complete', game, score]); return null; }
   };
   vm.runInContext(rounds + '\n' + close, context);
   return { context, events, records, screens, receipt, completions };
@@ -52,9 +52,9 @@ for (const game of ['stacker', 'mole']) {
     await f.context.S2(12);
     assert.deepEqual(f.records, [{ key: game, score: 12 }]);
     assert.deepEqual(f.events, [['start', game], ['finished'], ['complete', game, 12]]);
-    assert.equal(f.completions[0].retainResult, true, 'only the shareable results retain the consumed trial');
-    assert.match(f.screens.at(-1), /친구에게 도전/);
-    assert.match(f.receipt.innerHTML, /손님으로 기록했어요/);
+    assert.equal(f.completions[0].retainResult, true, 'every result retains the consumed trial for sharing');
+    assert.match(f.screens.at(-1), /공유하기/);
+    assert.doesNotMatch(f.screens.at(-1), /오늘의 랭킹|step12 SQL|보상은 점검/);
   });
 
   test(game + ': leaving a running game cannot create a challenge result or completion', async () => {
@@ -87,12 +87,13 @@ test('existing guest play restrictions still run before a challenge round starts
   assert.deepEqual(f.records, []);
 });
 
-test('unrelated solo games keep their existing result screen and score submission', async () => {
+test('runner uses the same shareable result while preserving its score submission', async () => {
   const f = fixture('runner');
   await f.context._2(); await f.context.S2(20);
   assert.deepEqual(f.events, [['finished']]);
   assert.deepEqual(f.records, [{ key: 'runner', score: 20 }]);
-  assert.equal(f.completions[0].retainResult, false, 'unrelated games keep the existing automatic login entry');
+  assert.equal(f.completions[0].retainResult, true, 'a guest can share any finished game before the next-play login gate');
+  assert.match(f.screens.at(-1), /공유하기/);
   assert.doesNotMatch(f.screens.at(-1), /data-challenge-share/);
 });
 
@@ -211,11 +212,12 @@ function overlayFixture(t, { shareModule = false } = {}) {
   if (shareModule) {
     Object.defineProperty(w.navigator, 'share', { configurable: true, value: async data => shared.push(data) });
     w.eval(fs.readFileSync(path.join(__dirname, '../game-challenges.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(__dirname, '../game-results.js'), 'utf8'));
   } else {
     w.OjjudaGameChallenges = {
       onOpen: game => events.push(['visit', game]),
       onStart: game => events.push(['start', game]),
-      resultMarkup: (game, score) => { events.push(['complete', game, score]); return ''; }
+      complete: (game, score) => { events.push(['complete', game, score]); return null; }
     };
   }
   return { w, events, shared, counts };
@@ -239,7 +241,7 @@ test('a finished guest can click the real share button through the game overlay 
   const f = overlayFixture(t, { shareModule: true });
   f.w.Al('stacker'); f.w.document.querySelector('[data-g="start"]').click();
   await f.w.S2(12);
-  const button = f.w.document.querySelector('.gov .gscreen [data-challenge-share]');
+  const button = f.w.document.querySelector('.gov .gscreen .game-result-share');
   assert.ok(button, 'the sharing button is inside the actual result overlay');
   assert.equal(f.w.sessionStorage.getItem(guestKey), '1', 'the existing guest gate is already exhausted');
   const canvas = f.w.document.querySelector('#gcv');

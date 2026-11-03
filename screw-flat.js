@@ -51,7 +51,7 @@
     c.restore();
   }
   function flat(api,startStage=readResumeStage()) {
-    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,destroyed:false,down:null,pointers:new Set(),focus:null,
+    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
     const tell=text=>{st.message=text;st.messageTime=1.7;};
@@ -110,7 +110,7 @@
       const keep=L===st.L&&sameWallet(),paid=keep?st.extraHoles:0,extraMoves=keep?st.extraMoves:0;st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=extraMoves;
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
       addHoles(paid);
-      resetView();st.complete=false;st.ended=false;st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
+      resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
       if(sameWallet()&&api.buyScrew)void readUpgrades();
     }
@@ -128,11 +128,11 @@
       });
     }
     function tap(x,y) {
-      if(st.destroyed||st.ended)return;
+      if(st.destroyed||st.ended||st.failed)return;
       if(st.albumOpen){albumTap(x,y);return;}
       if(st.level.plates.length>18&&y>=5&&y<=48&&x>=208&&x<=272){if(st.view.zoom>1)resetView();else{st.view.zoom=Math.max(1.8,13/st.level.screwRadius);tell('확대한 철판을 밀어서 이동해요');}return;}
       if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
-      if(st.complete) { if(y>=491&&x>=197) { if(st.L===LAST_STAGE){st.ended=true;api.end(st.score);}else start(st.L+1); }return; }
+      if(st.complete) { if(y>=491&&x>=197) { if(api.stageClear)api.stageClear(st.score);else if(st.L===LAST_STAGE){st.ended=true;api.end(st.score,{outcome:'success'});}else start(st.L+1); }return; }
       if(st.shopBusy==='buying')return;
       if(y>=491&&x>=272){st.score=st.stageScore;api.setScore(st.score);start(st.L);tell('이 그림을 처음부터 다시 풀어요');return;}
       if(y>=491&&x>=24&&x<=140){void buyUpgrade('flat_hole');return;}
@@ -154,7 +154,7 @@
       st.pending={screw:screw.id,from:screw.hole.id,to:h.id,time:0};st.selected=null;st.focus=null;
     }
     function update(dt) {
-      if(st.destroyed||st.ended||st.albumOpen||st.shopBusy==='buying')return;
+      if(st.destroyed||st.ended||st.failed||st.albumOpen||st.shopBusy==='buying')return;
       dt=clamp(dt,0,.05);st.t+=dt;st.messageTime=Math.max(0,st.messageTime-dt);
       if(st.complete)return;
       const fallen=st.physics.step(dt);
@@ -171,6 +171,10 @@
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
         resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
+        api.stageClear?.(st.score);
+      }else if(api.stageFail&&!st.pending&&movesLeft()===0&&!st.level.plates.some(p=>p.state==='loose')){
+        const marker=`${st.moves}:${st.extraMoves}:${st.extraHoles}`;
+        if(marker!==st.failureMarker){st.failureMarker=marker;st.failed=true;st.selected=null;st.focus=null;api.stageFail(st.score);}
       }
     }
     function drawHole(c,h,scale=1) {
@@ -271,6 +275,22 @@
     }
     start(st.L);
     return {state:st,update,draw,screenPoint,
+      get stage(){return st.L;},
+      get levels(){return LAST_STAGE;},
+      get stageCleared(){return st.complete;},
+      get stageFailed(){return st.failed;},
+      get canResume(){return st.failed&&!st.destroyed&&!st.ended;},
+      viewPicture(){if(!st.complete||st.destroyed)return false;openAlbum();st.albumPicture=st.level.picture;return true;},
+      async prepareStageChoice(){
+        if(st.destroyed||st.shopBusy||(walletUser&&!sameWallet()))return false;
+        if(sameWallet()&&Object.keys(PURCHASE_KEYS).some(kind=>pendingPurchase(st.L,kind)))await readUpgrades();
+        return !st.destroyed&&!st.shopBusy&&!(walletUser&&!sameWallet())&&(!sameWallet()||!Object.keys(PURCHASE_KEYS).some(kind=>pendingPurchase(st.L,kind)));
+      },
+      continueStage(next){
+        if(st.destroyed||st.shopBusy||!st.complete||next!==st.L+1||next>LAST_STAGE||(walletUser&&!sameWallet())||(sameWallet()&&Object.keys(PURCHASE_KEYS).some(kind=>pendingPurchase(st.L,kind))))return false;
+        start(next);return true;
+      },
+      resume(){if(!st.failed||st.destroyed||st.ended)return false;st.failed=false;return true;},
       onDown(x,y,id=0){st.pointers.add(id);if(st.pointers.size!==1){st.down=null;return;}st.down={x,y,id,moved:false,pan:st.view.zoom>1&&inBoard(x,y),view:{...st.view}};},
       onMove(x,y,id=0){
         const down=st.down;if(down?.id!==id||Math.hypot(x-down.x,y-down.y)<=10)return;down.moved=true;

@@ -15,7 +15,7 @@
   }
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
   let autoStartToken=null;
-  const celebration=$('celebration');
+  const celebration=$('celebration'),failure=$('spot-failure');
   let zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
   const targetCount=()=>puzzle().spots.length;
@@ -34,6 +34,7 @@
   }
   function speak(message,good=false){
     $('message').textContent=message;$('message').classList.toggle('good',good);$('zoom-status').textContent=`${found().length} / ${targetCount()} · ${message}`;
+    if(failure.open)$('retry-status').textContent=message;
     clearTimeout(zoomNoticeTimer);
     if(zoomDialog.open){$('zoom-tools').classList.add('has-message');zoomNoticeTimer=setTimeout(()=>$('zoom-tools').classList.remove('has-message'),6500);}
   }
@@ -91,14 +92,15 @@
   }
   function refreshControls(){
     const r=round(),playing=r.status==='playing',won=r.status==='won',lost=r.status==='lost',pending=r.status==='payment';
-    $('board-shell').classList.toggle('covered',!playing&&!won&&!answerReview);$('board-curtain').hidden=playing||won||!!answerReview;
+    $('board-shell').classList.toggle('covered',!playing&&!won&&!lost&&!answerReview);$('board-curtain').hidden=playing||won||lost||!!answerReview||failure.open;
     $('board-shell').classList.toggle('round-ended',lost&&!answerReview);
     $('board-shell').classList.toggle('reviewing',!!answerReview);$('board-curtain').dataset.entry=!playing&&!won&&!lost&&!pending&&!answerReview?'menu':'round';
     $('gate-eyebrow').textContent=pending?'ZU 사용 확인':lost?'이번 도전 종료':'오쭈다 오락실';
     $('gate-title').textContent=pending?(paymentBusy?'잠깐만 기다려 주세요':'구매 결과를 확인해 주세요'):lost?(r.hearts===0?'하트를 모두 썼어요':'시간이 다 됐어요'):'틀린그림찾기';
     $('gate-copy').textContent=pending?'확인하는 동안 시간은 멈춰요. 같은 구매는 한 번만 차감돼요.':lost?'이전 그림이나 지금 그림에서 다시 도전하세요. 이번 그림을 완료하면 다음 그림으로 갈 수 있어요.':`두 그림에서 다른 곳 ${targetCount()}개를 찾아보세요. 난이도순으로 진행하며, 다시 열면 마지막 그림에서 새 판을 시작해요.`;
-    $('retry-level-choice').hidden=!lost||!!answerReview;
-    if(lost)updateEndChoices('retry');
+    $('retry-level-choice').hidden=(!lost&&!pending)||!!answerReview;
+    if(lost||failure.open)updateEndChoices('retry');
+    if(!lost&&!pending&&failure.open)failure.close();
     $('gate-entry-hint').hidden=pending||lost;$('gate-entry-hint').textContent=`하트 ${r.hearts}개 · ${Math.ceil(r.remainingMs/1000)}초 도전`;
     $('start').hidden=lost;
     $('start').textContent=!imagesReady?'그림 불러오는 중':pending?(paymentBusy?'확인 중…':'구매 다시 확인'):'시작하기';
@@ -114,6 +116,9 @@
     }
     const extendable=!r.timeBought&&(playing||(lost&&r.hearts>0))&&!paymentBusy&&!answerReview;
     for(const id of ['extend','zoom-extend'])$(id).disabled=!extendable;
+    $('retry-extend').hidden=!(r.pending?.kind==='time'||!r.timeBought&&r.hearts>0&&lost);
+    $('retry-extend').disabled=paymentBusy;
+    $('retry-extend').textContent=pending?(paymentBusy?'확인 중…':'구매 다시 확인'):'30초 연장 · 1 ZU';
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
     $('prev').disabled=position()===0||paymentBusy||pending;$('next').disabled=position()===puzzles.length-1||paymentBusy||pending||!clearedRound();
     $('stage-picker').disabled=paymentBusy||pending;$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
@@ -170,17 +175,19 @@
   }
   function clearCelebration(){
     if(celebration.open)celebration.close();
+    if(failure.open)failure.close();
   }
   function updateEndChoices(prefix){
     for(const [i,name] of ['previous','current','next'].entries()){
       const button=$(prefix+'-'+name),pos=position()+i-1;
       const outside=pos<0||pos>=state.order.length,needsClear=i===2&&!clearedRound();
-      button.disabled=outside||needsClear;
+      button.disabled=outside||needsClear||paymentBusy||!!round().pending;
       button.querySelector('small').textContent=outside?'없음':needsClear?'이번 그림 완료 후':`${pos+1} / ${puzzles.length} · ${difficultyLabels[core.puzzleDifficulty(puzzles[state.order[pos]])]}`;
     }
   }
   function playChosenLevel(offset){
     if(paymentBusy||round().pending||!['won','lost'].includes(round().status))return;
+    if(window.OjjudaGameResults?.canPlay?.()===false)return;
     if(![-1,0,1].includes(offset))return;
     if(offset===1&&!clearedRound())return;
     const index=state.order[position()+offset];
@@ -193,13 +200,22 @@
   function celebrate(){
     clearCelebration();const allDone=puzzles.every(isCompleted);
     $('celebration-count').textContent=`${targetCount()} / ${targetCount()}`;
-    $('celebration-title').textContent=allDone?'모든 그림을 완성했어요!':'축하해요! 모두 찾았어요!';
-    $('celebration-copy').textContent=allDone?`${puzzles.length}개의 그림을 모두 풀었어요. 원하는 그림을 다시 즐겨보세요.`:'이전 그림·지금 그림·다음 그림 중 골라 이어서 즐겨보세요.';
+    const title=$('celebration-title'),copy=$('celebration-copy');
+    if(title)title.textContent=allDone?'모든 그림을 완성했어요!':'축하해요! 모두 찾았어요!';
+    if(copy)copy.textContent='';
     updateEndChoices('celebration');
-    $('celebration-confetti').replaceChildren(...Array.from({length:20},(_,i)=>{
+    $('celebration-confetti')?.replaceChildren(...Array.from({length:20},(_,i)=>{
       const piece=document.createElement('i');piece.style.setProperty('--piece',i);piece.style.setProperty('--color',['#ffb547','#8b7bd8','#ff789a','#57c6b0','#5a9de2'][i%5]);return piece;
     }));
+    window.OjjudaGameResults?.decorate(celebration,{game:'spot',outcome:'success',metric:$('celebration-count'),key:`spot:${puzzle().id}:${loadToken}:won`,actions:[celebration.querySelector('.end-picture-choices')]});
+    celebration.removeAttribute('aria-labelledby');celebration.removeAttribute('aria-describedby');celebration.setAttribute('aria-label','틀린그림찾기 성공');
     celebration.showModal();$(position()<state.order.length-1?'celebration-next':'celebration-current').focus({preventScroll:true});
+  }
+  function showFailure(){
+    $('retry-count').textContent=`${found().length} / ${targetCount()} · ${round().hearts?'시간 종료':'하트 0'}`;
+    $('retry-status').textContent='';updateEndChoices('retry');
+    window.OjjudaGameResults?.decorate(failure,{game:'spot',outcome:'failure',metric:$('retry-count'),key:`spot:${puzzle().id}:${loadToken}:lost:${round().timeBought}`,actions:[$('retry-level-choice')],extra:[$('retry-tools')]});
+    if(!failure.open)failure.showModal();$('retry-current').focus({preventScroll:true});
   }
   function startNextWhenReady(){
     if(autoStartToken!==loadToken||!imagesReady||document.hidden)return;
@@ -221,11 +237,12 @@
       else Promise.resolve(wallet.recordClear?.(owner,stage)).then(result=>{if(!result?.ok)throw Error('save');}).catch(()=>speak('완료 기록을 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
     }
     if(reason==='won')celebrate();
-    else{window.scrollTo({top:0,behavior:'instant'});$('retry-current').focus({preventScroll:true});}
+    else showFailure();
   }
   function tick(){if(round().status==='playing'&&core.timeLeft(round())<=0)finish('time');else renderTime();}
   function start(){
     if(!imagesReady||paymentBusy||answerReview)return;
+    if(!round().pending&&window.OjjudaGameResults?.canPlay?.()===false)return;
     const r=round();if(r.status==='payment'){purchase();return;}
     if(r.status!=='ready')return;
     r.rankOwner=wallet.getState().userId;r.status='playing';r.deadline=Date.now()+r.remainingMs;refresh();
@@ -400,6 +417,8 @@
   $('stage-picker').onchange=e=>{show(Number(e.target.value));closeWalletMenu();walletMenu.querySelector('summary').focus();};$('prev').onclick=()=>{const index=state.order[position()-1];if(index!==undefined)show(index);};$('next').onclick=()=>{const index=state.order[position()+1];if(index!==undefined)show(index,{navigation:'next'});};
   $('retry').onclick=()=>show(state.current);$('hint').onclick=hint;$('zoom-hint').onclick=hint;$('hide-hint').onclick=()=>hideHint();
   $('start').onclick=start;$('reset').onclick=reset;$('extend').onclick=()=>purchase('time');$('zoom-extend').onclick=()=>purchase('time');
+  $('retry-extend').onclick=()=>purchase('time');
+  failure.addEventListener('cancel',event=>event.preventDefault());
   for(const prefix of ['celebration','retry'])for(const [i,name] of ['previous','current','next'].entries())$(prefix+'-'+name).onclick=()=>playChosenLevel(i-1);
   $('reveal-answers').onclick=toggleAnswers;$('zoom-reveal-answers').onclick=()=>{toggleAnswers();closeZoomSettings();};$('close-answers').onclick=()=>closeAnswers(true);
   $('continue').onclick=()=>{if(!clearedRound())return;const pos=position(),index=pos<puzzles.length-1?state.order[pos+1]:state.order.find(i=>!isCompleted(puzzles[i]));if(index!==undefined)show(index,{navigation:pos<puzzles.length-1?'next':'select'});window.scrollTo({top:0,behavior:'smooth'});};
