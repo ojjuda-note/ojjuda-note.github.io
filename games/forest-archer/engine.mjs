@@ -1,6 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-eagle-layout1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-eagle-layout1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-eagle-dive1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -425,7 +425,7 @@ function lessonStages() {
     {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:12.5,bob:.09,pace:1,hint:'짧은 보폭으로 가속하고 감속하는 살쾡이를 따라가요. 지금 속도에 맞춰 앞을 겨누세요.'},
     {kind:'deer',name:'사슴',radius:1.4,height:1.3,duration:7.6,bob:.66,pace:.95,hint:'큰 몸으로 빠르게 달리며 높이 도약하는 사슴의 도착 위치를 읽어보세요.'},
     {kind:'pigeon',name:'비둘기',radius:1.03,height:2.25,duration:9.2,bob:.62,pace:1,hint:'빠르게 위아래로 오르내리는 비둘기를 따라가요. 움직일 앞쪽과 높이를 함께 읽으세요.'},
-    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:5.65,bob:.95,pace:1,hint:'완만하게 활공하는 독수리의 이동 방향을 보고, 화살이 도착할 앞쪽을 겨누세요.'},
+    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:5.65,bob:.95,pace:1,hint:'매번 다른 지면 위치까지 내려왔다 올라가는 독수리의 앞쪽을 겨누세요.'},
     {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:5.8,bob:.18,pace:1,hint:'강하게 질주했다가 속도를 낮추는 치타를 따라가요. 가속 구간에서는 훨씬 앞을 겨누세요.'}
   ];
   for (const [animalIndex,animal] of animals.entries()) {
@@ -699,6 +699,10 @@ const animalPace = Object.freeze({
   eagle:{a:.34,b:.12,beats:2,secondBeats:3},cheetah:{a:.58,b:.13,beats:3,secondBeats:6},
   bird:{a:.30,b:.10,beats:3,secondBeats:5}
 });
+// The live eagle's tail is its lowest painted point throughout the wing cycle.
+// Derive its support once from the shared silhouette, not a broad hit envelope
+// or a fresh geometry allocation at every prediction/physics sample.
+const eagleGroundRadius = getAnimalGroundHeight({kind:'eagle',x:0,y:0,z:1,radius:1,poseTime:0});
 function hashUnit(value) {
   value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
   value = Math.imul(value ^ (value >>> 15), 0x846ca68b);
@@ -810,10 +814,23 @@ function animalMotion(stage, time, forcedPassId) {
   const span = stage.distance * 1.25 + (stage.radius || 1.25) * 3;
   const x = (stage.targetX || 0) + direction * span * (2 * progress - 1);
   let y = stage.height ?? (flyingKinds.has(stage.kind) ? 4.8 : stage.kind === 'rabbit' ? .7 : 1.65);
-  if (flyingKinds.has(stage.kind)) {
+  if (stage.kind === 'eagle') {
+    const radius = stage.radius || 1.25, center = stage.targetX || 0;
+    const ground = eagleGroundRadius * radius;
+    // Pick a different off-centre ground spot for each seeded pass, leaving
+    // room to see the whole body descend and rise on either side of the turn.
+    const visibleHalf = Math.max(radius, stage.distance * .4 - radius * stageShapes.eagle[0]);
+    const side = random(0xa54ff53a) < .5 ? -1 : 1;
+    const touchX = center + side * visibleHalf * (.18 + random(0x510e527f) * .37);
+    const width = x < touchX ? touchX - (center - visibleHalf) : center + visibleHalf - touchX;
+    const away = clamp(Math.abs(x - touchX) / width, 0, 1);
+    // Smooth at both the ground and the upper glide. Using the same monotone
+    // horizontal path keeps the contact inside the view despite pace changes.
+    const rise = away * away * (3 - 2 * away);
+    y = ground + Math.max(radius, y - ground + (stage.motion?.amplitudeY || 0)) * rise;
+  } else if (flyingKinds.has(stage.kind)) {
     const amplitude = stage.motion?.amplitudeY || .7;
-    const cycles = stage.kind === 'pigeon' ? 4.8 + random(0xa54ff53a) :
-      stage.kind === 'eagle' ? 1.8 + random(0xa54ff53a) * .7 : 2.4 + random(0xa54ff53a);
+    const cycles = stage.kind === 'pigeon' ? 4.8 + random(0xa54ff53a) : 2.4 + random(0xa54ff53a);
     y += amplitude * (.72 * Math.sin(tau * cycles * u + phase) + .28 * Math.sin(tau * (cycles + .8) * u + secondPhase));
   } else {
     const amplitude = stage.motion?.amplitudeY || 0;
@@ -907,7 +924,10 @@ export function targetAt(stage, time = 0, forcedPassId) {
     // Keep the horizontal impact spot; birds and jumping animals actually fall.
     // The shared drawn pose supplies ground support, so bodies and stuck arrows
     // settle together without either clipping into the floor or hovering above it.
-    const ground=Math.min(entry.frozen.y,getAnimalGroundHeight(corpse));
+    const support=getAnimalGroundHeight(corpse);
+    // A swooping eagle can be killed at ground contact. Its rotating wing may
+    // need slightly more support than the live tail did at the impact height.
+    const ground=kind==='eagle'?support:Math.min(entry.frozen.y,support);
     corpse.y=Math.max(ground,entry.frozen.y-GRAVITY*corpse.deathAge*corpse.deathAge/2);
     return corpse;
   }
