@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.6');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.7');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -96,20 +96,20 @@ releaseFixture.api.close();
 assert.ok(archeryRevision,'the iframe has its independent game revision');
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
-// Refresh the changed angle and flight modules while retaining unchanged
+// Refresh the changed target dimensions while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,'20261104-archery-launch-angle1','touch centering retains the verified high-arc engine');
+assert.equal(moduleRevision,'20261104-archery-target-scale1','every target consumer loads the fixed physical dimensions');
 assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
-assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the latest draw and coach share the same burst rules');
+assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the live game and coach share the same target sizes');
 assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the coach must use the same physics as actual shots');
 const anatomyRevision=read('games/forest-archer/engine.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1];
 assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-dive1','the unchanged scene keeps its cache revision');
 assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-layout1','the unchanged ammo client retains its released three-arrow support');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'the angle display loads its current styles');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-laser-touch1','the unchanged touch and angle styles retain their released cache URL');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
 assert.equal(cameraRevision,'20261104-archery-eagle-dive1','the unchanged camera keeps its cache revision');

@@ -912,8 +912,9 @@ test('both special arrows can be compared, bought once and equipped again after 
 });
 
 for (const fixture of [
-  { id: 12, stage: 3, charge: .30, yaw: 0, pitch: .08, effect: '1회 튕김' },
-  { id: 13, stage: 2, charge: 1, yaw: .07, pitch: .04, effect: '근접 유도' }
+  // Aim at the physical 1.22m face, rather than the former oversized rim.
+  { id: 12, stage: 3, charge: 1, yaw: 0, pitch: -.201, effect: '1회 튕김' },
+  { id: 13, stage: 2, charge: 1, yaw: .0275, pitch: .048, effect: '근접 유도' }
 ]) test(`special arrow ${fixture.id} keeps one touch, one flight and one reward through its physical effect`, async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false }));
   const { state } = app.api, pad = app.getElement('aimTouchpad');
@@ -1047,7 +1048,7 @@ test('moving-target replay follows recorded time through resizing and preserves 
   assert.deepEqual(shotAccounting(app).slice(0, 5), [1, 10, 1, 1, 1]);
 });
 
-for (const fixture of [{id: 12, bow: 11, stage: 4, charge: 1, pitch: -.21}, {id: 13, bow: 0, stage: 2, charge: 1, pitch: .066}]) {
+for (const fixture of [{id: 12, bow: 11, stage: 4, charge: 1, pitch: -.1959}, {id: 13, bow: 0, stage: 2, charge: 1, pitch: .066}]) {
   test(`a genuine special-arrow ${fixture.id} bullseye replays its resolved path without repeating its ability`, async () => {
     const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedBows: fixture.bow ? [0, fixture.bow] : [0], bow: fixture.bow, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false}));
     const {state} = app.api, pad = app.getElement('aimTouchpad');
@@ -4218,7 +4219,8 @@ for (const fixture of [
   { lessonKey: 'fixed-gap-1/2', distance: 30, bow: 6, arrow: 5 },
   { lessonKey: 'fixed-gap-1/3', distance: 10, bow: 6, arrow: 5, offset: { x: -.1, y: .3 }, resize: true },
   { lessonKey: 'moving-half-gap', distance: 20, bow: 8, arrow: 2, time: 3.2, resize: true },
-  { lessonKey: 'fixed-gap-1/2', distance: 30, bow: 19, arrow: 2 }
+  // The narrow real face requires placing the whole spread inside the gap.
+  { lessonKey: 'fixed-gap-1/2', distance: 30, bow: 19, arrow: 2, offset: { x: -.19, y: -.14 } }
 ]) test(`a real eight-point ${fixture.bow === 19 ? 'burst' : 'hit'} on ${fixture.lessonKey} at ${fixture.distance}m stays visible through approach and impact without changing its award`, async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100,
     lastStage: lessonStageId(fixture.lessonKey, fixture.distance),

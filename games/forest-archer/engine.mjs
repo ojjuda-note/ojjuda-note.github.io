@@ -213,10 +213,13 @@ export const ARROWS = equipmentCatalog([
     fletch('극세 균형 날개', '합성 베인', .18, .08, .017, 96), '#c2b58a'),longRange:true,recommendedDistance:150}
 ], 'arrow');
 
+// The painted scoring face and its collision circle share one physical size.
+// Distance and optical zoom, never a larger target, determine its screen size.
+export const CIRCULAR_TARGET_RADIUS = .61;
 const motion = (amplitudeX = 0, amplitudeY = 0, speed = 0) => ({ amplitudeX, amplitudeY, speed, irregular: speed > 0 });
 const wall = (z, height, width = 7, x = 0, type = 'stone') => ({ x, z, width, height, depth: 0.65, type, material: type === 'timber' ? 'wood' : 'stone' });
 const stage = (id, name, subtitle, hint, distance, extra = {}) => ({
-  id, legacyId: id, name, subtitle, hint, distance, radius: 1.25, height: 2.3,
+  id, legacyId: id, name, subtitle, hint, distance, radius: CIRCULAR_TARGET_RADIUS, height: 2.3,
   kind: 'target', motion: motion(), wind: 0, obstacles: [], passers: [], shots: 5, goal: 20,
   ...extra
 });
@@ -231,7 +234,9 @@ export const LONG_RANGE_LESSONS = Object.freeze([
   'low-wall-arc','animal-rabbit','animal-wildcat','animal-deer','animal-pigeon',
   'animal-eagle','animal-cheetah','passers-tracking','hidden-tracking','double-wall-finale'
 ]);
-const targetRadii = Object.freeze([1.45, 1.65, 1.85, 2.1]);
+// Retain authored lesson heights and travel distances. These old layout sizes
+// are not scoring radii: applyEquipmentLesson fixes every round face at .61m.
+const lessonLayoutSizes = Object.freeze([1.45, 1.65, 1.85, 2.1]);
 const MAIN_TARGET_SPEED_SCALE = 1.15;
 // Double circular target movement relative to the previous release.
 const CIRCULAR_TARGET_SPEED_SCALE = MAIN_TARGET_SPEED_SCALE * 2;
@@ -265,7 +270,7 @@ function projectedBox(distance, left, right, z, height, type = 'stone', depth = 
 }
 function partialCover(stage, targetX = 0) {
   const { distance, radius, height, coverageMode } = stage;
-  const z = distance * .82, top = height + radius + .3;
+  const z = distance * .82, top = height + radius + Math.abs(stage.motion?.amplitudeY || 0) + .3;
   if (coverageMode === 'side-walls') {
     const edge = radius * circularStripHalfWidth(stage.visibleFraction ?? .75);
     return [
@@ -273,11 +278,13 @@ function partialCover(stage, targetX = 0) {
       projectedBox(distance, targetX + edge, targetX + radius * 4.5, z, top, stage.coverMaterial || 'stone')
     ];
   }
-  // Seven thin columns cover roughly one quarter of the round face throughout
-  // its movement. Fixed columns and open gaps are independent collision boxes.
+  // Thin columns cover roughly one quarter of the fixed-size round face.
+  // Extend the row over its existing travel so shrinking the face never sends
+  // it beyond the cover. Each column and gap remains real collision geometry.
   const spacing = radius * .70, width = spacing * .25;
-  return Array.from({ length: 7 }, (_, index) => {
-    const center = targetX + (index - 3) * spacing;
+  const halfCount = Math.max(3, Math.ceil((Math.abs(stage.motion?.amplitudeX || 0) + radius) / spacing));
+  return Array.from({ length: halfCount * 2 + 1 }, (_, index) => {
+    const center = targetX + (index - halfCount) * spacing;
     return { ...projectedBox(distance, center - width / 2, center + width / 2, z, top, 'pillar'),
       material: stage.coverMaterial === 'timber' ? 'wood' : 'stone' };
   });
@@ -342,7 +349,7 @@ function lessonStages() {
   const addChapter = (title, subtitle, hint, build, {distances = learningDistances, legacyFirst, key} = {}) => {
     chapterId++;
     for (const [index, distance] of distances.entries()) {
-      const id = templates.length + 1, radius = targetRadii[index];
+      const id = templates.length + 1, radius = lessonLayoutSizes[index];
       // Keep balance and saved records attached to the lesson when its display
       // position changes. The elevated chapter moves from 41–44 to 5–8.
       const catalogV1Id = id >= 5 && id <= 8 ? id + 36 : id >= 9 && id <= 44 ? id - 4 : id;
@@ -562,12 +569,18 @@ function applyEquipmentLesson(template) {
   const band = STAGE_GEAR_BANDS.find(entry => template.id >= entry.first && template.id <= entry.last);
   const balance = band.balance, curveFirst = balance.curveFirst ?? band.first, curveLast = balance.curveLast ?? band.last;
   const fraction = (template.catalogV1Id - curveFirst) / Math.max(1, curveLast - curveFirst);
-  const targetSpeedScale = (template.kind || 'target') === 'target' ? CIRCULAR_TARGET_SPEED_SCALE : MAIN_TARGET_SPEED_SCALE;
+  const circular = (template.kind || 'target') === 'target';
+  const targetSpeedScale = circular ? CIRCULAR_TARGET_SPEED_SCALE : MAIN_TARGET_SPEED_SCALE;
+  const layoutRadius = template.radius * balance.radiusScale;
   const adjusted = {...template,gearTier:band.gearTier,gearLabel:band.gearLabel,referenceLoadouts:band.referenceLoadouts,
     targetSpeedScale,
-    radius:template.radius * balance.radiusScale,
+    radius:circular ? CIRCULAR_TARGET_RADIUS : layoutRadius,
     motion:{...template.motion,speed:template.motion.speed * balance.speedScale * targetSpeedScale},
     ...(Number.isFinite(template.passDuration) ? {passDuration:template.passDuration / balance.speedScale / targetSpeedScale} : {})};
+  // The narrow half-face exercise must still leave part of the face visible.
+  // Keep its authored exposure pattern and period inside the smaller opening;
+  // all other lessons retain their existing physical paths and speeds.
+  if (circular && adjusted.variableExposure) adjusted.motion.amplitudeX *= CIRCULAR_TARGET_RADIUS / layoutRadius;
   if (band.gearTier !== 'starter') {
     adjusted.wind = signedWind(template.catalogV1Id,balance.windStart + (balance.windEnd - balance.windStart) * fraction);
     const baseGoal = Math.round(balance.goalStart + (balance.goalEnd - balance.goalStart) * fraction);
@@ -576,6 +589,8 @@ function applyEquipmentLesson(template) {
   // Keep promised circular face fractions after any balance change to size.
   if (adjusted.coverageMode) adjusted.obstacles = partialCover(adjusted);
   if (adjusted.fullCover) adjusted.obstacles = hiddenCover(adjusted);
+  if (adjusted.lowWall) adjusted.obstacles = adjusted.obstacles.map(obstacle => ({...obstacle,
+    height:PLAYER.y+(adjusted.height-adjusted.radius*.18-PLAYER.y)*(obstacle.z/adjusted.distance)}));
   return {...adjusted,difficulty:stageDifficulty(adjusted)};
 }
 // Actual silhouette scores and distance-matched arrows set a reachable bonus
@@ -596,7 +611,7 @@ function longRangeStages(baseStages) {
     return LONG_RANGE_DISTANCES.map((distance,index)=>{
       const id=121+chapterIndex*5+index,rangeScale=distance/source.distance,sizeScale=Math.sqrt(rangeScale);
       const {catalogV1Id,legacyStageId,difficulty,...settings}=source;
-      const radius=source.radius*sizeScale;
+      const radius=source.kind==='target'?CIRCULAR_TARGET_RADIUS:source.radius*sizeScale;
       const expanded={...settings,id,longRange:true,sourceLessonKey:key,lessonKey:`long-${key}`,
         chapterId:31+chapterIndex,chapterName:`${source.chapterName} · 장거리`,
         name:`${source.chapterName} · ${distance}m`,distance,radius,height:source.height*sizeScale,

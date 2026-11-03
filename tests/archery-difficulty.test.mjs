@@ -118,7 +118,7 @@ test('one hundred long-range missions extend twenty familiar lessons through fiv
       assert.equal(stage.recommendedArrow,arrow);
       assert.deepEqual(stage.referenceLoadouts,[{family:'bow',bow:3,arrow},{family:'crossbow',bow:19,arrow}]);
       assert.ok(Number.isInteger(stage.goal)&&stage.goal>0&&stage.goal<=50,'a five-shot reference goal remains valid');
-      assert.ok(stage.difficulty.angularRadius<angle,'greater physical size must not cancel the smaller distant view');
+      assert.ok(stage.difficulty.angularRadius<angle,'greater distance makes the projected target smaller');
       assert.ok(stage.difficulty.flightSeconds>flight);angle=stage.difficulty.angularRadius;flight=stage.difficulty.flightSeconds;
       assert.equal(stage.coverageMode,source.coverageMode);assert.equal(stage.visibleFraction,source.visibleFraction);
       assert.equal(stage.fullCover,source.fullCover);assert.equal(stage.passers.length,source.passers.length);
@@ -145,19 +145,19 @@ test('long-range walls preserve their real exposure promises at the expanded tar
   }
 });
 
-test('original fixed and tracking lessons retain geometry, goals and wind while all fifty old scenes have one migration destination', () => {
-  const radii = [1.45, 1.65, 1.85, 2.1];
+test('fixed and tracking lessons use a constant face while retaining their released heights, paths, goals and identities', () => {
+  const layoutSizes = [1.45, 1.65, 1.85, 2.1];
   const originalIntro = STAGES.filter(stage => ['fixed-intro', 'tracking-intro'].includes(stage.lessonKey));
   assert.deepEqual(originalIntro.map(stage => stage.id), [1, 2, 3, 4, 9, 10, 11, 12]);
   for (let index = 0; index < 8; index++) {
     const stage = originalIntro[index], lesson = index % 4;
-    assert.equal(stage.distance, distances[lesson]);assert.equal(stage.radius, radii[lesson]);
-    close(stage.height, radii[lesson] + .5);
+    assert.equal(stage.distance, distances[lesson]);assert.equal(stage.radius, .61);
+    close(stage.height, layoutSizes[lesson] + .5);
     assert.equal(stage.goal, (index < 4 ? 10 : 12) + lesson * 2);
     assert.equal(stage.kind, 'target');assert.equal(stage.shots, 5);assert.deepEqual(stage.obstacles, []);
     close(stage.wind, [0, 0, 0, 0, .03, -.038, -.046, .054][index]);
     close(stage.motion.speed, index < 4 ? 0 : (.24 + lesson * .025) * 2.30);
-    close(stage.motion.amplitudeX, index < 4 ? 0 : radii[lesson] * (.6 + lesson * .1));
+    close(stage.motion.amplitudeX, index < 4 ? 0 : layoutSizes[lesson] * (.6 + lesson * .1));
     assert.equal(stage.motion.amplitudeY, 0);assert.equal(stage.motion.irregular, index >= 4);
   }
   const expected = Object.fromEntries(Array.from({length:50}, (_, index) => {
@@ -250,13 +250,13 @@ test('moving circular targets replay their complete paths exactly twice as fast 
 });
 
 test('the new second chapter teaches height with calm starter equipment and reachable ten-point centres', () => {
-  const heights = [2.60, 2.92, 3.24, 3.61], radii = [1.45, 1.65, 1.85, 2.1];
+  const heights = [2.60, 2.92, 3.24, 3.61];
   // Independently solved full-charge angles with the released basic bow and
   // component-based basic arrow; all are comfortably inside the real input.
   const pitches = [.120682, .116641, .134944, .184281];
   for (const [index, stage] of STAGES.slice(4, 8).entries()) {
     assert.equal(stage.lessonKey, 'elevated-fixed'); assert.equal(stage.distance, distances[index]);
-    close(stage.height, heights[index]); assert.equal(stage.radius, radii[index]);
+    close(stage.height, heights[index]); assert.equal(stage.radius, .61);
     assert.equal(stage.wind, 0); assert.equal(stage.goal, 12 + index * 2); assert.equal(stage.shots, 5);
     assert.equal(stage.gearTier, 'starter');
     assert.deepEqual(stage.referenceLoadouts, [{family: 'bow', bow: 0, arrow: 0}]);
@@ -269,8 +269,8 @@ test('the new second chapter teaches height with calm starter equipment and reac
   }
 });
 
-test('beginners get large calm targets and learn slow tracking before obstacles or animals', () => {
-  assert.ok(STAGES.slice(0, 4).every(stage => stage.wind === 0 && stage.radius >= 1.45 && stage.goal <= 16));
+test('beginners get calm standard-size targets and learn slow tracking before obstacles or animals', () => {
+  assert.ok(STAGES.slice(0, 4).every(stage => stage.wind === 0 && stage.radius === .61 && stage.goal <= 16));
   assert.ok(STAGES.slice(0, 20).every(stage => !stage.obstacles.length));
   assert.ok(STAGES.slice(0, 20).filter(stage => stage.lessonKey !== 'wind-intro').every(stage => Math.abs(stage.wind) <= .08));
   assert.ok(STAGES.slice(0, 48).every(stage => (stage.lessonKey === 'wind-intro' || Math.abs(stage.wind) <= .32) && stage.kind === 'target'));
@@ -285,8 +285,13 @@ test('beginners get large calm targets and learn slow tracking before obstacles 
   for (const velocityBias of [-1, 0, 1]) {
     const shot = launchArrow({bow:BOWS[0],arrow:ARROWS[0],charge:1,velocityBias,yaw:0,pitch:Math.atan2(target.y - PLAYER.y, target.z)});
     const hit = stepArrow(shot, 3, first, 0);
-    assert.equal(hit.type, 'hit', 'pointing at the first large target remains forgiving with starter-arrow speed variation');
-    assert.ok(hit.score >= 8);
+    assert.equal(hit.type, 'hit', 'the first 10m face remains hittable with starter-arrow speed variation');
+    // A smaller true face no longer hides gravity by giving a high score to
+    // an uncompensated centre-line shot. This independent full-charge angle
+    // offsets the actual drop and keeps the full speed range in the gold.
+    const corrected = launchArrow({bow:BOWS[0],arrow:ARROWS[0],charge:1,velocityBias,yaw:0,pitch:.05590997246});
+    const centered = stepArrow(corrected, 3, first, 0);
+    assert.equal(centered.type, 'hit');assert.equal(centered.score, 10);
   }
 });
 
