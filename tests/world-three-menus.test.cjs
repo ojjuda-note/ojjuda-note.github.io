@@ -7,7 +7,7 @@ const html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 let source=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 source=source.replaceAll('import.meta.env','({})').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 source=source.slice(0,source.indexOf('j1(()=>H());gm('));
-source+='\nwindow.worldTest={state:g,auth:D,actions:sr,render:H,start:my,model:$,rankGames:worldRankGames,adminTabs:adminTabsByArea,adminState:L,adminMarkup:y0};';
+source+='\nwindow.worldTest={state:g,auth:D,actions:sr,render:H,start:my,model:$,rankGames:worldRankGames,adminTabs:adminTabsByArea,adminState:L,adminMarkup:y0,presence(){bg();return jt;},connectPresence(client,channel){S=client;Wo=channel;}};';
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 function fixture(url='https://ojjuda.kr/world.html'){
  const dom=new JSDOM('<div id="app"></div><div id="modal-root"></div><div id="toast"></div>',{url,runScripts:'outside-only',pretendToBeVisual:true});
@@ -36,7 +36,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
    assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'테스트');
    assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'),null);
    assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=archery]'));
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['테스트','테스트','테스트']);
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용','테스트','테스트'],'Star advertises member-only access while the other trial entries retain their test badges');
   };
   assert.equal(active(),'arcade','the initial page opens the arcade');
   for(const selector of ['.bottomnav','.sidenav']){
@@ -95,7 +95,15 @@ function fixture(url='https://ojjuda.kr/world.html'){
   delete w.OjjudaMatgoAccess;t.auth.online=false;t.auth.user=null;t.render();
   assertTestGamesLast();
   assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
-  assert.ok(t.state.placeT,'presence keeps its update timer without the image stage');
+  assert.equal(t.state.placeT,null,'arcade presence needs no repeating scene-update timer');
+  const room=t.state.place,presence=t.presence();room.live=true;room.presenceStatus='auth';
+  presence.onConnection(room);
+  assert.equal(w.document.querySelector('#pcount').textContent,'접속자 인증 확인 중','connection events update the visible status without polling');
+  room.presenceStatus='connected';room.count=3;presence.onPeople(room);
+  assert.equal(w.document.querySelector('#pcount').textContent,'지금 3명','presence events update the visible member count without polling');
+  presence.onConnection({...room,presenceStatus:'reconnecting'});
+  assert.equal(w.document.querySelector('#pcount').textContent,'지금 3명','a stale room cannot overwrite the current connection status');
+  room.live=false;
   assert.equal(w.document.querySelector('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"],.arcade-welcome [data-tab="park"]'),null,'Arcade contains no public chat or Park shortcut');
   t.actions.tab({tab:'park'});assert.equal(active(),'park');assert.ok(w.document.querySelector('[data-park-app]'));
   t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.my-hub .h2').textContent,'설정');
@@ -116,6 +124,17 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(typeof t.actions['account-login'],'function');
   assert.equal(w.document.querySelector('.sidenav').textContent.includes('undefined'),false,'all navigation icons exist');
  }finally{dom.window.close();}
+ dom=fixture();
+ try{
+  const t=dom.window.worldTest,removed=[],channel={};t.render();
+  t.auth.online=true;t.auth.user={id:'presence-fixture'};t.state.place.live=true;
+  t.connectPresence({async removeChannel(current){removed.push(current);return 'ok';}},channel);
+  assert.equal(t.state.placeT,null,'the connected arcade has no scene timer');
+  t.actions.tab({tab:'my'});await tick();
+  assert.equal(t.state.place,null,'entering settings releases the active place without a timer');
+  assert.deepEqual(removed,[channel],'entering settings removes the live presence channel exactly once');
+  t.render();await tick();assert.deepEqual(removed,[channel],'rerendering settings does not repeat presence cleanup');
+ }finally{dom.window.close();}
  for(const [query,expected] of [['?tab=arcade','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','arcade'],['?tab=home','arcade']]){
   dom=fixture('https://ojjuda.kr/world.html'+query);
   try{const t=dom.window.worldTest;t.start();assert.equal(t.state.tab==='place'?t.state.place.id:t.state.tab,expected,'initial link '+query);}finally{dom.window.close();}
@@ -132,7 +151,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(host.querySelectorAll('.board-best,.board-latest,.board-comics').length,0);
   assert.equal(host.querySelector('h2'),null,'no board heading remains');
   assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'9승');
-  host.querySelector('[aria-label="다음 분류 순위"]').click();
+  const nextRank=host.querySelector('[aria-label="다음 게임 순위"]');
+  assert.ok(nextRank,'the shared ranking pager exposes its next-game control');nextRank.click();
   assert.equal(host.querySelector('.board-rank-groups').dataset.rankCategory,'multi');
   host.querySelector('[data-game=tank] button').click();await tick();assert.deepEqual(opened,['tank']);
   score=10;await w.OjjudaGameRankings.refresh();assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'10승');

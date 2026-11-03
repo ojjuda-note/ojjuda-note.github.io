@@ -30,7 +30,7 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('[data-arcade-games] [data-v=archery]').count(),1,'Archery appears once across all game categories');
  assert.equal(await page.locator('[data-arcade-games=solo] [data-v=archery] .game-test-badge').count(),0,'released archery has no test badge');
  assert.equal(await page.locator('[data-arcade-test-heading] h2').innerText(),'테스트');
- assert.deepEqual(await page.locator('[data-arcade-games=test] .game-test-badge').allTextContents(),['테스트','테스트','테스트']);
+ assert.deepEqual(await page.locator('[data-arcade-games=test] .game-test-badge').allTextContents(),['회원 전용','테스트','테스트'],'Star advertises member-only access while the other trial entries retain their test badges');
  assert.equal(await page.locator('[data-arcade-adult]').count(),0,'guests have no adult section');
  assert.equal(await page.getByRole('button',{name:'사천성',exact:true}).count(),1);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);

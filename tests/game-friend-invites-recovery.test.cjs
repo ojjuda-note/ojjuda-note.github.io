@@ -13,7 +13,7 @@ const deferred = () => {
 };
 
 async function fixture(onJoin, accept = async () => ({ok:true, kind:'tank', code:'A1B2C3D4'})) {
-  const dom = new JSDOM('<div id="app"><main class="main"><div data-game-friend-invite-slot></div></main></div>', {url:'https://fixture.test/world.html', runScripts:'outside-only'});
+  const dom = new JSDOM('<div id="app"><main class="main"><div data-game-friend-invite-slot></div></main></div>', {url:'https://fixture.test/world.html', runScripts:'outside-only', pretendToBeVisual:true});
   const {window} = dom, calls = [], subscriptions = [];
   let uid = 'me', inbox = [], authChanged, now = Date.now();
   window.Date.now = () => now;

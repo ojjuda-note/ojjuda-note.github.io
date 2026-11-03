@@ -97,7 +97,15 @@ async function assertFullscreen(page,size,playing=false){
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{window.screwFixtureStage=4;localStorage.setItem(OjjudaScrewGames.STAGE_KEY,'4');screwWorld.open('screw');});await page.locator('[data-mode=flat]').click();
   const canvas=page.locator('#gcv');
-  const touch=async q=>{const b=await canvas.boundingBox();await page.touchscreen.tap(b.x+q.x*b.width/360,b.y+q.y*b.height/540);};
+  const touch=async q=>{
+   const point=await canvas.evaluate((node,q)=>{
+    const b=node.getBoundingClientRect(),x=b.x+q.x*b.width/360,y=b.y+q.y*b.height/540;
+    return{x,y,visible:b.width>0&&b.height>0&&x>=0&&x<innerWidth&&y>=0&&y<innerHeight,hit:document.elementFromPoint(x,y)===node};
+   },q);
+   assert.equal(point.visible,true,`logical touch ${q.x},${q.y} is inside the visible canvas`);
+   assert.equal(point.hit,true,`logical touch ${q.x},${q.y} reaches the canvas without an overlay`);
+   await page.touchscreen.tap(point.x,point.y);
+  };
   const drawnText=()=>page.evaluate(()=>{
    const r=screwWorld.current(),original=r.ctx.fillText,labels=[];
    r.ctx.fillText=function(text,...args){labels.push(String(text));return original.call(this,text,...args);};
@@ -276,7 +284,12 @@ async function assertFullscreen(page,size,playing=false){
    if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-picture-${stage}.png`)});
   }
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.collection.size),6);
-  await page.setViewportSize({width:320,height:568});await touch({x:311,y:26});
+  const albumSize={width:320,height:568};await page.setViewportSize(albumSize);
+  // The viewport helper updates CSS on the next frame and the game then fits
+  // its canvas with ResizeObserver. Check that fit before converting tap points.
+  await assertFullscreen(page,albumSize,true);
+  await touch({x:311,y:26});
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumOpen),true,'the album opens with one real tap after the small-phone resize');
   await page.evaluate(()=>{const r=screwWorld.current();r.game.draw(r.ctx);});
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-album-320.png')});
   await touch({x:90,y:410});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.albumPicture),4,'the final album row is reachable on a small phone');
