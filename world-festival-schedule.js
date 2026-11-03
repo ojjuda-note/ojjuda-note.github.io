@@ -10,7 +10,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog festival-schedule-dialog';
    dialog.setAttribute('aria-label','축제일정 · 테스트');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>축제일정 <small>테스트</small></span></header><iframe title="축제일정 · 전국 행사 지도와 캘린더" src="/games/festival-schedule/index.html?v=20261103-festival-polish1&embedded=1" allow="geolocation; clipboard-write; web-share"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>축제일정 <small>테스트</small></span></header><iframe title="축제일정 · 전국 행사 지도와 캘린더" src="/games/festival-schedule/index.html?v=20261103-festival-undecided1&embedded=1" allow="geolocation; clipboard-write; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const current=()=>active?.dialog===dialog&&authorized();
    function close(){

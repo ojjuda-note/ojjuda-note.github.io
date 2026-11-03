@@ -78,6 +78,7 @@ export function periodRange(period, today = todayKST(), from = '', to = '') {
   }
   switch (period) {
     case 'all': return null;
+    case 'undecided': return null;
     case 'weekend': {
       const weekday = date.getUTCDay();
       // On Sunday, "this weekend" still means the current Saturday and Sunday.
@@ -99,10 +100,23 @@ function validDate(iso) {
   try { parseDate(iso); return true; } catch { return false; }
 }
 
+/** Only explicitly verified plans may be shown without exact dates. */
+export function isDateUndecided(event) {
+  return event?.dateStatus === 'undecided'
+    && event.start === null && event.end === null
+    && typeof event.dateNote === 'string' && event.dateNote.trim().length > 0;
+}
+
+export function hasEventDates(event) {
+  return (event?.dateStatus === undefined || event.dateStatus === 'confirmed')
+    && validDate(event?.start) && validDate(event?.end)
+    && event.end >= event.start;
+}
+
 export function overlaps(event, start, end) {
+  if (!hasEventDates(event)) return false;
   const eventStart = event?.start;
-  const eventEnd = event?.end || eventStart;
-  if (!validDate(eventStart) || !validDate(eventEnd) || eventEnd < eventStart) return false;
+  const eventEnd = event.end;
   const lower = start || FIRST_DATE;
   const upper = end || LAST_DATE;
   return lower <= upper && eventStart <= upper && eventEnd >= lower;
@@ -113,21 +127,22 @@ export function eventStatus(event, today = todayKST()) {
   const status = String(event?.status ?? '').toLowerCase();
   if (status === 'cancelled' || status === 'canceled') return 'cancelled';
   if (status === 'postponed') return 'postponed';
-  const end = event?.end || event?.start;
-  parseDate(event?.start);
-  parseDate(end);
+  if (isDateUndecided(event)) return 'undecided';
+  if (!hasEventDates(event)) throw new RangeError('Event dates are missing or invalid');
+  const end = event.end;
   if (end < today) return 'ended';
   if (event.start > today) return 'upcoming';
   return 'ongoing';
 }
 
 function dateOrder(a, b, today) {
-  const aEnded = (a.end || a.start) < today;
-  const bEnded = (b.end || b.start) < today;
-  if (aEnded !== bEnded) return aEnded ? 1 : -1;
-  const direction = aEnded ? -1 : 1;
+  const rank = event => isDateUndecided(event) ? 1 : event.end < today ? 2 : 0;
+  const aRank = rank(a), bRank = rank(b);
+  if (aRank !== bRank) return aRank - bRank;
+  if (aRank === 1) return koCompare(a.title, b.title);
+  const direction = aRank === 2 ? -1 : 1;
   return direction * a.start.localeCompare(b.start)
-    || direction * (a.end || a.start).localeCompare(b.end || b.start)
+    || direction * a.end.localeCompare(b.end)
     || koCompare(a.title, b.title);
 }
 
@@ -151,16 +166,19 @@ export function filterEvents(events, options = {}, fallbackToday) {
   const terms = normalized(query).trim().split(/\s+/).filter(Boolean);
   const savedIds = saved instanceof Set ? saved : new Set(Array.isArray(saved) ? saved : []);
   const result = events.filter(event => {
-    if (!overlaps(event, FIRST_DATE, LAST_DATE)) return false;
+    const undecided = isDateUndecided(event);
+    if (!undecided && !hasEventDates(event)) return false;
+    if (undecided && (!['upcoming', 'all', 'undecided'].includes(period) || selectedDate)) return false;
+    if (!undecided && period === 'undecided') return false;
     if (!isAny(category) && event.category !== category) return false;
     if (!isAny(region) && event.region !== region) return false;
     if (savedOnly && !savedIds.has(event.id)) return false;
-    if (range && !overlaps(event, range.start, range.end)) return false;
+    if (!undecided && range && !overlaps(event, range.start, range.end)) return false;
     if (selectedDate && !overlaps(event, selectedDate, selectedDate)) return false;
     if (terms.length) {
       const text = normalized([
         event.title, event.region, event.city, event.venue, event.address,
-        event.summary, CATEGORIES[event.category]?.label, ...(event.tags || [])
+        event.summary, event.dateNote, CATEGORIES[event.category]?.label, ...(event.tags || [])
       ].join(' '));
       if (!terms.every(term => text.includes(term))) return false;
     }
@@ -175,8 +193,12 @@ export function filterEvents(events, options = {}, fallbackToday) {
 
 /** Accepts an event, or (start, end). Includes years for archived events. */
 export function formatRange(eventOrStart, suppliedEnd) {
-  const start = typeof eventOrStart === 'object' ? eventOrStart.start : eventOrStart;
-  const end = (typeof eventOrStart === 'object' ? eventOrStart.end : suppliedEnd) || start;
+  if (isDateUndecided(eventOrStart)) return `${eventOrStart.dateNote.trim()} · 날짜 미정`;
+  if (eventOrStart && typeof eventOrStart === 'object' && !hasEventDates(eventOrStart)) {
+    throw new RangeError('Event dates are missing or invalid');
+  }
+  const start = eventOrStart && typeof eventOrStart === 'object' ? eventOrStart.start : eventOrStart;
+  const end = (eventOrStart && typeof eventOrStart === 'object' ? eventOrStart.end : suppliedEnd) || start;
   const first = parseDate(start), last = parseDate(end);
   const full = d => `${d.getUTCFullYear()}년 ${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
   if (start === end) return full(first);
@@ -209,10 +231,9 @@ function foldICSLine(line) {
 }
 
 export function createICS(event, { now = new Date() } = {}) {
-  const start = event.start, end = event.end || start;
-  parseDate(start);
-  parseDate(end);
-  if (end < start) throw new RangeError('Event end precedes start');
+  if (isDateUndecided(event)) throw new RangeError('Cannot export an event before its dates are confirmed');
+  if (!hasEventDates(event)) throw new RangeError('Event dates are missing or invalid');
+  const start = event.start, end = event.end;
   if (!event.id) throw new TypeError('Event ID is required');
   const stamp = new Date(now);
   if (!Number.isFinite(stamp.getTime())) throw new RangeError('Invalid timestamp');
