@@ -121,11 +121,70 @@ test('signed-out and anonymous accounts see only a login prompt without querying
     assert.equal(f.ui.isOpen(), true);
     assert.ok(f.rr('dialog')); assert.ok(f.rr('login'));
     assert.equal(f.rr('list'), null); assert.equal(f.rr('editor'), null); assert.equal(f.rr('compose'), null);
+    await assert.rejects(f.ui.getMapPage(), /sign_in_required/, 'map metadata uses the same membership boundary');
     assert.equal(f.calls('rpc').length, 0, 'member-only RPCs are never sent');
     assert.ok(f.state.notices.some(message => /로그인|회원/.test(message)));
     f.clickRR('login'); await f.settle();
     assert.equal(f.state.loginRequests, 1); assert.equal(f.ui.isOpen(), false);
   }
+});
+
+test('map pages include every eligible recommendation with only allowed metadata and no photo downloads', async t => {
+  const rows = Array.from({ length: 53 }, (_, index) => recommendation({ id: '20000000-0000-4000-8000-' + String(index + 1).padStart(12, '0'), name: '추천 가게 ' + index, latitude: index === 0 ? 36.324 : null, longitude: index === 0 ? 127.427 : null }));
+  const f = fixture(t, { rows });
+  const first = await f.ui.getMapPage(), last = await f.ui.getMapPage({ offset: 50 });
+  assert.equal(f.ui.isOpen(), false, 'the directory feed does not open a second dialog');
+  assert.equal(first.rows.length, 50); assert.equal(first.total, 53); assert.equal(first.hasMore, true);
+  assert.equal(last.rows.length, 3); assert.equal(last.hasMore, false);
+  assert.deepEqual([...first.rows, ...last.rows].map(row => row.id), rows.map(row => row.id));
+  assert.deepEqual(Object.keys(first.rows[0]).sort(), ['address', 'category', 'created_at', 'id', 'latitude', 'longitude', 'menu', 'name', 'region']);
+  assert.equal(first.rows[0].latitude, 36.324); assert.equal(first.rows[0].longitude, 127.427);
+  assert.equal(first.rows[0].created_at, rows[0].created_at, 'recent sorting receives the actual registration date');
+  assert.equal(first.rows[1].latitude, null); assert.equal(first.rows[1].longitude, null);
+  assert.equal(f.calls('download').length, 0, 'member photo paths and downloads stay in the recommendation detail');
+  for (const options of [{ offset: -1 }, { offset: 10001 }, { offset: 0.5 }, { limit: 51 }, { limit: '50' }]) await assert.rejects(f.ui.getMapPage(options), /invalid_input/);
+  assert.equal(f.rpc('list_restaurant_recommendations').length, 2, 'invalid page requests never reach the backend');
+  f.state.hooks.rpc.list_restaurant_recommendations = () => ({ data: { rows: [rows[0]], total: 10051 }, error: null });
+  await assert.rejects(f.ui.getMapPage(), /map_limit/, 'a feed larger than the backend range is reported, never silently truncated');
+});
+
+test('headless map reads reject account changes, sign-out and delayed responses without retaining member metadata', async t => {
+  const item = recommendation(), f = fixture(t, { rows: [item] });
+  let pending = deferred();
+  f.state.hooks.rpc.list_restaurant_recommendations = () => pending.promise;
+  const read = f.ui.getMapPage(), rejected = assert.rejects(read, /session_changed/);
+  f.state.setUser({ id: f.state.secondMember }); f.state.setUser({ id: f.state.member });
+  pending.resolve({ data: { rows: [item], total: 1 }, error: null }); await rejected;
+  pending = deferred();
+  const timeout = assert.rejects(f.ui.getMapPage(), /연결이 지연/);
+  f.expireTimeouts(); await timeout;
+  pending.resolve({ data: { rows: [item], total: 1 }, error: null }); await f.settle();
+  assert.equal(f.ui.isOpen(), false);
+  pending = deferred();
+  const cancelled = assert.rejects(f.ui.getMapPage(), /session_changed/);
+  f.ui.cancelMapReads(); pending.resolve({ data: { rows: [item], total: 1 }, error: null }); await cancelled;
+  f.state.setUser(null); await assert.rejects(f.ui.getMapPage(), /sign_in_required/);
+  assert.equal(f.calls('download').length, 0);
+});
+
+test('a map marker opens the original recommendation detail while preserving an unfinished editor', async t => {
+  const item = recommendation(), f = fixture(t, { rows: [item] });
+  assert.equal(await f.ui.openDetail('../private'), false); assert.equal(f.calls('rpc').length, 0);
+  assert.equal(await f.ui.openDetail(item.id), true);
+  await until(() => f.$('[data-rr="detail"] .rr-detail-name'), 'the marker opens the stored recommendation detail');
+  assert.equal(f.rpc('list_restaurant_recommendations').length, 0, 'detail navigation does not load a hidden recommendation list');
+  assert.equal(f.rpc('get_restaurant_recommendation')[0].parameters.p_id, item.id);
+  f.clickRR('back'); await until(() => f.rr('list'), 'Back reaches the original recommendation list');
+  await f.compose(); f.fill('name', '작성 중인 맛집');
+  const cancelled = f.ui.openDetail(item.id);
+  await until(() => f.rr('confirm-dialog'), 'marker navigation confirms an unfinished editor');
+  f.clickRR('confirm-cancel'); assert.equal(await cancelled, false);
+  assert.equal(f.rr('field-name').value, '작성 중인 맛집');
+  const accepted = f.ui.openDetail(item.id);
+  await until(() => f.rr('confirm-dialog'), 'the next marker navigation can be accepted');
+  f.clickRR('confirm-accept'); assert.equal(await accepted, true);
+  await until(() => f.$('[data-rr="detail"] .rr-detail-name'), 'accepted navigation opens the requested detail');
+  assert.equal(f.document.querySelectorAll('[data-rr="dialog"]').length, 1);
 });
 
 test('an initial list failure offers a working reload without mounting duplicate dialogs', async t => {
@@ -173,12 +232,14 @@ test('edit and delete controls belong only to the current member, including afte
 
 test('zero photos cannot save, removing the only photo restores that guard, and one photo saves', async t => {
   const f = fixture(t);
+  let changes = 0; f.ui.subscribeChanges(() => { changes++; });
   await f.open(); await f.compose(); f.validFields();
   assert.match(f.$('.rr-photo-help').textContent, /1~12장/);
   assert.equal(f.rr('submit').disabled, true);
   f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
   assert.equal(f.calls('upload').length, 0);
   assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
+  assert.equal(changes, 0, 'an uncommitted draft does not invalidate the directory');
   assert.match(f.rr('form-status').textContent, /1~12장/);
   f.choose(1); await f.photos(1); assert.equal(f.rr('submit').disabled, false);
   f.clickRR('photo-remove'); await f.photos(0);
@@ -194,6 +255,7 @@ test('zero photos cannot save, removing the only photo restores that guard, and 
   assert.equal(f.calls('upload').length, 1);
   assert.ok(f.calls('upload').every(call => call.mime === 'image/jpeg' && call.settings?.upsert === false));
   assert.ok(f.state.rows[0].photos.every(photo => photo.startsWith(f.state.member + '/' + f.state.rows[0].id + '/')));
+  assert.equal(changes, 1, 'a confirmed save refreshes the directory feed');
 });
 
 test('twelve photos save and a thirteenth cumulative selection cannot exceed the limit', async t => {
@@ -346,13 +408,16 @@ test('discard confirmation preserves or releases the draft and restores the back
 test('deletion requires owner confirmation and removes only the confirmed post', async t => {
   const item = recommendation(), other = recommendation({ id: '20000000-0000-4000-8000-000000000002', owner_id: '10000000-0000-4000-8000-000000000002', name: '다른 회원 식당' });
   const f = fixture(t, { rows: [item, other] });
+  let changes = 0; f.ui.subscribeChanges(() => { changes++; });
   await f.open(); await f.detail(item.id); f.clickRR('delete'); await until(() => f.rr('confirm-dialog'), 'delete asks for confirmation');
   f.clickRR('confirm-cancel'); await f.settle(); assert.equal(f.rpc('delete_restaurant_recommendation').length, 0);
+  assert.equal(changes, 0);
   f.clickRR('delete'); await until(() => f.rr('confirm-dialog'), 'delete confirmation opens again'); f.clickRR('confirm-accept');
   await until(() => f.state.rows.length === 1, 'confirmed deletion completes');
   assert.equal(f.state.rows[0].id, other.id);
   assert.equal(f.rpc('delete_restaurant_recommendation').length, 1);
   assert.equal(f.rpc('delete_restaurant_recommendation')[0].parameters.p_expected_updated_at, item.updated_at);
+  assert.equal(changes, 1, 'a confirmed deletion refreshes the directory feed');
 });
 
 test('a failed edit-photo cleanup is visible and retry removes only server-confirmed omitted photos', async t => {

@@ -105,6 +105,8 @@
 
   function create({ client, getUser, notify = () => {}, onLogin, returnLabel = '' } = {}) {
     let current = null, destroyed = false, authSubscription = null;
+    let mapGeneration = 0;
+    const mapReads = new Set(), changeListeners = new Set();
     const ratings = global.OjjudaRestaurantRatings?.create({ client, getUser }) || null;
     const photoUrls = new Map();
     const cleanupQueues = new Map(), cleanupLocks = new Set();
@@ -113,12 +115,25 @@
       const user = getUser?.();
       return user?.id && !user.is_anonymous ? String(user.id) : null;
     };
+    let observedMember = memberId();
     const active = session => !destroyed && current === session && !session.disposed && memberId() === session.owner;
     const check = session => { if (!active(session) || !session.owner) throw new Error('계정이 바뀌었어요. 추천맛집을 다시 열어 주세요.'); };
     const visible = (session, view) => active(session) && session.view === view;
+    function cancelMapReads() {
+      mapGeneration += 1;
+      for (const controller of mapReads) controller.abort();
+      mapReads.clear();
+    }
+    function changed() {
+      if (destroyed || !memberId()) return;
+      for (const listener of changeListeners) { try { listener(); } catch { /* A closed directory cannot interrupt a saved recommendation. */ } }
+    }
     function observeAuth() {
       if (authSubscription || !client?.auth?.onAuthStateChange) return;
       const result = client.auth.onAuthStateChange((event, authSession) => {
+        const next = authSession?.user?.id && !authSession.user.is_anonymous ? String(authSession.user.id) : null;
+        if (event === 'SIGNED_OUT' || (authSession?.user && next !== observedMember)) cancelMapReads();
+        if (event === 'SIGNED_OUT' || authSession?.user) observedMember = next;
         const session = current;
         if (!session) return;
         const changed = event === 'SIGNED_OUT' || (authSession?.user && (authSession.user.id !== session.owner || authSession.user.is_anonymous));
@@ -157,6 +172,36 @@
       return { ...raw, id: String(raw.id), owner_id: textValue(raw.owner_id || raw.user_id), name: textValue(raw.name), category: textValue(raw.category), region: textValue(raw.region), address: textValue(raw.address), latitude: location?.latitude ?? null, longitude: location?.longitude ?? null, menu: Array.isArray(raw.menu) ? raw.menu.join(', ') : textValue(raw.menu || raw.recommended_menu), reason: textValue(raw.reason || raw.recommendation), photos: (Array.isArray(raw.photos) ? raw.photos : Array.isArray(raw.photo_paths) ? raw.photo_paths : []).map(photo => typeof photo === 'string' ? photo : photo?.path).filter(path => typeof path === 'string'), author_name: textValue(raw.author_name || raw.nickname) || '회원', updated_at: raw.updated_at || null };
     }
     function rowsFrom(data) { return (Array.isArray(data) ? data : data?.items || data?.rows || data?.restaurants || []).map(rowFrom).filter(Boolean); }
+    async function getMapPage({ offset = 0, limit = 50 } = {}) {
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset > 10000 || !Number.isSafeInteger(limit) || limit < 1 || limit > 50) throw new Error('recommendation_invalid_input');
+      const owner = memberId();
+      if (destroyed || !owner || typeof client?.rpc !== 'function') throw new Error('sign_in_required');
+      observeAuth();
+      const generation = mapGeneration, controller = new AbortController();
+      const checkMember = () => { if (destroyed || controller.signal.aborted || generation !== mapGeneration || memberId() !== owner) throw new Error('recommendation_session_changed'); };
+      mapReads.add(controller);
+      try {
+        checkMember();
+        let request = client.rpc('list_restaurant_recommendations', { p_query: '', p_category: null, p_region: null, p_mine: false, p_limit: limit, p_offset: offset });
+        if (typeof request?.abortSignal === 'function') request = request.abortSignal(controller.signal);
+        const result = await timed(request, 18000, () => controller.abort());
+        checkMember();
+        if (result?.error) throw result.error;
+        const data = result?.data;
+        if (!data || !Array.isArray(data.rows) || data.rows.length > limit || !Number.isSafeInteger(data.total) || data.total < 0) throw new Error('recommendation_response_invalid');
+        // The existing member RPC cannot request a page starting after offset 10000.
+        if (data.total > 10050) throw new Error('recommendation_map_limit');
+        const rows = data.rows.map(raw => {
+          const row = rowFrom(raw);
+          if (!row || !UUID.test(row.id)) throw new Error('recommendation_response_invalid');
+          return { id: row.id, name: row.name, category: row.category, region: row.region, address: row.address, menu: row.menu, latitude: row.latitude, longitude: row.longitude, created_at: typeof row.created_at === 'string' && Number.isFinite(Date.parse(row.created_at)) ? row.created_at : null };
+        });
+        const hasMore = offset + rows.length < data.total;
+        if (hasMore && !rows.length) throw new Error('recommendation_response_invalid');
+        if (hasMore && offset + rows.length > 10000) throw new Error('recommendation_map_limit');
+        return { rows, total: data.total, offset, limit, hasMore };
+      } finally { mapReads.delete(controller); }
+    }
     function own(session, row) { return active(session) && row?.owner_id === session.owner; }
     function validPath(path) {
       if (typeof path !== 'string') return false;
@@ -428,7 +473,8 @@
           name: row.name,
           load: async () => (await ratings.getSummaries('recommended', [row.id])).find(summary => summary.id === row.id),
           save: score => ratings.setRating('recommended', row.id, score),
-          isCurrent: () => visible(session, view)
+          isCurrent: () => visible(session, view),
+          onChange: changed
         });
       }
       const address = node('section', 'rr-detail-section'); address.append(node('h3', '', '위치'), node('p', '', row.address), mapLink(row.name, row.address, row));
@@ -647,8 +693,20 @@
       if (existing) void showDetail(session, existing.id); else showList(session);
       return true;
     }
-    function open() {
+    async function openDetail(id) {
+      if (typeof id !== 'string' || !UUID.test(id) || destroyed) return false;
+      const owner = memberId(), generation = mapGeneration;
+      if (!owner) { open(); return false; }
+      if (current && active(current)) {
+        if (current.screen === 'detail' && current.detail?.id === id) { current.dialog.focus(); return true; }
+        if (await close() === false) return false;
+      }
+      if (destroyed || memberId() !== owner || mapGeneration !== generation) return false;
+      return open({ id });
+    }
+    function open({ id = null } = {}) {
       if (destroyed) return false;
+      if (id !== null && (typeof id !== 'string' || !UUID.test(id))) return false;
       const owner = memberId();
       if (owner && (!client?.rpc || !client?.storage)) { notify('추천맛집을 불러오지 못했어요. 다시 열어 주세요.'); return false; }
       if (current && active(current)) { if (!current.editor?.picker) current.dialog.focus(); return true; }
@@ -668,7 +726,7 @@
       dialog.addEventListener('keydown', event => { if (event.key === 'Escape') event.stopPropagation(); });
       session.authTimer = setInterval(() => { if (current === session && memberId() !== owner) close(true); }, 750);
       document.body.append(dialog); document.body.style.overflow = 'hidden'; document.body.classList.add('gaming'); dialog.showModal();
-      if (owner) { showList(session); renderCleanup(session); void flushCleanup(session); }
+      if (owner) { if (id) void showDetail(session, id); else showList(session); renderCleanup(session); void flushCleanup(session); }
       else {
         backButton.hidden = true;
         const message = '로그인하면 회원들의 추천 맛집을 보고 글을 올릴 수 있어요.';
@@ -748,6 +806,7 @@
       releaseEditor(editor); session.editor = null;
       notify(wasEdit ? '추천 글을 수정했어요.' : '맛집 추천을 등록했어요.');
       renderDetail(session, row);
+      changed();
     }
     async function runSave(session, editor, operation) {
       check(session); editor.saving = true; editor.uncertain = null; editorControls(session, editor);
@@ -837,6 +896,7 @@
       session.busy = false;
       void removePhotos(session, result?.removed_paths || row.photos);
       notify('추천 글을 삭제했어요.'); showList(session);
+      changed();
     }
     async function checkDelete(session, row, operation) {
       if (!active(session) || session.busy) return;
@@ -870,7 +930,7 @@
       } finally { session.busy = false; }
     }
 
-    return { open, close, ratings, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; ratings?.destroy(); authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
+    return { open, openDetail, getMapPage, cancelMapReads, subscribeChanges(listener) { if (typeof listener !== 'function' || destroyed) return () => {}; changeListeners.add(listener); return () => changeListeners.delete(listener); }, close, ratings, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; cancelMapReads(); changeListeners.clear(); ratings?.destroy(); authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
   }
   global.OjjudaRecommendedRestaurants = { create };
 })(window);

@@ -1108,8 +1108,8 @@ function Al(t,options={}){
  }
  if(t==="restaurants"){
   if(!window.OjjudaRestaurantGuide){M("인증맛집을 불러오지 못했어요. 다시 눌러 주세요.");return;}
-  const owner=D.online?D.user?.id:null;
-  window.OjjudaRestaurantGuide.open({owner,authorized:()=>(D.online?D.user?.id:null)===owner,recommendations:worldRecommendedApi(),openRecommendations:options.openRecommendations===true});return;
+  const owner=D.online&&D.user?.id&&!D.user.is_anonymous?D.user.id:null;
+  window.OjjudaRestaurantGuide.open({owner,authorized:()=>(D.online&&D.user?.id&&!D.user.is_anonymous?D.user.id:null)===owner,recommendations:worldRecommendedApi(),openRecommendations:options.openRecommendations===true});return;
  }
  if(t==="bang"){if(!window.OjjudaBangGame){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;window.OjjudaBangGame.open({nickname:$.me.nick,owner,client:S,authorized,joinCode:options.joinCode,onHintBuy:async(requestId,roomId,version)=>{if(!owner||!authorized())return {ok:false,reason:'sign_in'};return vl('bang_hint_buy',{p_request_id:requestId,p_room_id:roomId,p_version:version},worldRewardRequest());}});return;}
  if(t==="sacheonseong"){

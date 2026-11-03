@@ -6,8 +6,8 @@
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   festival:'1.1.0',
-  restaurants:'1.6.0',
-  recommendations:'1.3.0',
+  restaurants:'1.7.0',
+  recommendations:'1.4.0',
   archery:'2.0.2',
   roulette:'1.8.0',
   bang:'1.9.1',
@@ -36,8 +36,8 @@
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-map-pick1','/restaurant-location-picker.js?v=20261103-restaurants-map-pick1'];
  const groups={
   festival:['/world-festival-schedule.css?v=20261103-festival-undecided1','/world-festival-schedule.js?v=20261103-festival-undecided1'],
-  restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-regional1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-map-pick1'],
-  recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-map-pick1'],
+  restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-sort1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-sort1'],
+  recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-sort1'],
   archery:['/world-tour-game.css?v=20261012-marble-invite1','/world-archery-game.css?v=20261102-archery-fit-screen1','/world-archery-game.js?v=20261103-guest-one-round1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261103-game-results1'],
   bang:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261103-guest-one-round1'],

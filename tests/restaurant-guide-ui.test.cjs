@@ -36,16 +36,18 @@ async function assertMapListLayout(page, width) {
       map: rect('#map-panel'), mapCanvas: rect('#map'), list: rect('#results'),
       pager: { ...rect('#map-pagination'), visible: document.querySelector('#map-pagination').getClientRects().length > 0 },
       pagerControls: ['#map-prev', '#map-page-status', '#map-next'].map(selector => ({ selector, ...rect(selector) })),
-      controls: ['#search-form', '#region', '#nearby', '#reset', '#saved-only', '#recommendations-link', '#categories', '#filter-toggle', '#result-count', '.view-switch'].map(selector => ({ selector, ...rect(selector) })),
-      categories: [...document.querySelectorAll('#categories [data-category]')].map(button => { const value = button.getBoundingClientRect(); return { left: value.left, right: value.right, top: value.top }; }),
+      controls: ['#search-form', '#region', '#nearby', '#reset', '#saved-only', '#recommendations-link', '#category', '#filter-toggle', '#result-count', '.view-switch'].map(selector => ({ selector, ...rect(selector) })),
+      category: rect('#category'), region: rect('#region'), nearby: rect('#nearby'),
+      categoryOptions: [...document.querySelector('#category').options].map(option => option.value),
       scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth, viewportHeight: innerHeight, scrollY,
       filtersFolded: document.querySelector('#filter-options').hidden
     };
   });
   assert.ok(layout.scrollWidth <= width + 1, 'no horizontal page overflow at ' + width);
   layout.controls.forEach(control => assert.ok(control.width > 0 && control.left >= -1 && control.right <= width + 1, control.selector + ' fits within the ' + width + 'px viewport'));
-  assert.equal(layout.categories.length, 8, 'all seven cuisines and the all category stay exposed');
-  assert.ok(layout.categories.every(button => button.left >= 0 && button.right <= width + 1), 'no category requires horizontal scrolling at ' + width);
+  assert.deepEqual(layout.categoryOptions, ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
+  assert.ok(Math.abs(layout.category.top - layout.region.top) <= 2 && layout.category.left >= layout.region.right - 1, 'category selection stays beside the region at ' + width);
+  assert.ok(layout.nearby.left >= layout.mapCanvas.left && layout.nearby.left <= layout.mapCanvas.left + 24 && layout.nearby.top >= layout.mapCanvas.top && layout.nearby.top <= layout.mapCanvas.top + 24, 'my location stays at the map top-left at ' + width);
   if (layout.pager.visible) {
     assert.ok(layout.pager.height > 0 && layout.pager.left >= layout.map.left - 1 && layout.pager.right <= layout.map.right + 1 && layout.pager.bottom <= layout.map.bottom + 1, 'the visible pager stays inside the map panel at ' + width);
     assert.ok(Math.abs(layout.mapCanvas.bottom - layout.pager.top) <= 1, 'the pager follows the map canvas without covering it or leaving a gap at ' + width);
@@ -60,9 +62,6 @@ async function assertMapListLayout(page, width) {
     assert.ok(mapHeightWithoutPager >= 220 && mapHeightWithoutPager <= 261, 'the phone map keeps its original height after subtracting the visible pager: ' + JSON.stringify({ width, panel: layout.map.height, canvas: layout.mapCanvas.height, pager: layout.pager.height, pagerVisible: layout.pager.visible }));
     assert.ok(layout.mapCanvas.height >= 218 && layout.mapCanvas.height <= 261 && Math.abs(mapHeightWithoutPager - layout.mapCanvas.height) <= 2, 'the actual phone map canvas retains approximately 220–260px, allowing for its panel border');
     assert.ok(layout.map.height <= (layout.pager.visible ? 311 : 261), 'the phone map and its optional pager leave room for the restaurant list');
-    const rows = new Map();
-    layout.categories.forEach(button => { const top = Math.round(button.top); rows.set(top, (rows.get(top) || 0) + 1); });
-    assert.deepEqual([...rows.values()], [4, 4], 'phone categories form two complete four-item rows');
   } else {
     if (layout.filtersFolded) assert.ok(layout.map.bottom + layout.scrollY <= layout.viewportHeight + 1, 'the complete desktop map fits in the first viewport with optional filters folded');
     assert.ok(layout.map.right <= layout.list.left + 1, 'the desktop map sits to the left of the list');
@@ -142,8 +141,8 @@ async function fixture(browser, options = {}) {
     assert.match(await osmAttribution.textContent(), /OpenStreetMap/);
     assert.equal(await firstMap.page.locator('.leaflet-tile').first().getAttribute('referrerpolicy'), 'strict-origin-when-cross-origin');
     assert.equal(await firstMap.page.locator('#filter-options').isVisible(), false);
-    for (const selector of ['#region', '#nearby', '#reset', '#saved-only', '#recommendations-link']) assert.equal(await firstMap.page.locator(selector).isVisible(), true, selector + ' is available without opening the guide filter');
-    assert.equal(await firstMap.page.locator('#recommendations-link').evaluate(link => !!link.closest('header')), true, 'member recommendations remain a compact header action');
+    for (const selector of ['#region', '#category', '#nearby', '#reset', '#saved-only', '#recommendations-link']) assert.equal(await firstMap.page.locator(selector).isVisible(), true, selector + ' is available without opening the guide filter');
+    assert.equal(await firstMap.page.locator('#recommendations-link').evaluate(link => link.previousElementSibling?.id === 'search-form' && !link.closest('header')), true, 'recommendations follow the search form');
     assert.equal(await firstMap.page.locator('#recommendations-link').getAttribute('href'), '/world.html?game=restaurants&restaurantView=recommendations');
     assert.equal(await firstMap.page.locator('#recommendations-link').getAttribute('target'), '_top', 'the standalone action preserves the canonical nested destination');
     for (const width of [1280, 768, 370, 320]) await assertMapListLayout(firstMap.page, width);
@@ -185,9 +184,12 @@ async function fixture(browser, options = {}) {
     assert.equal(await page.locator('.result-shown').textContent(), '현재 ' + dataset.restaurants.length + '곳 표시', 'toolbar count follows visible pagination');
     assert.deepEqual(await visibleIds(page), ids(dataset.restaurants), 'every real dataset record appears once');
     assert.equal(await page.locator('#back-link').isVisible(), false, 'the embedded page leaves navigation to the arcade shell');
-    assert.deepEqual(await page.locator('#categories [data-category]').evaluateAll(nodes => nodes.map(node => node.dataset.category)), ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
+    assert.equal(await page.locator('#categories').count(), 0);
+    assert.deepEqual(await page.locator('#category').evaluate(select => [...select.options].map(option => option.value)), ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
     assert.equal(await page.evaluate(() => window.fixtureLocationRequests), 0, 'a known denied permission is not requested again on entry');
-    assert.equal(await page.locator('#nearby').isVisible(), true, 'nearby is a primary control');
+    assert.equal(await page.locator('#nearby').isVisible(), false, 'my location is hidden with the unused map in list view');
+    assert.equal(await page.locator('#nearby').evaluate(button => !!button.closest('#map-panel')), true);
+    assert.equal(await page.locator('#nearby-label').textContent(), '내 위치');
     assert.equal(await page.locator('#filter-options #nearby').count(), 0);
     assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'list', 'an explicitly saved list preference is honored');
     assert.equal(await page.locator('#results').isVisible(), true);
@@ -222,7 +224,7 @@ async function fixture(browser, options = {}) {
     const compactCard = page.locator('[data-restaurant-id="' + combined.id + '"]');
     assert.equal(await compactCard.locator('.card-address,.coord-note').count(), 0, 'details are not repeated on every compact card');
     assert.doesNotMatch(await compactCard.locator('.guide-badges').textContent(), /20\d{2}/, 'edition dates are shown in the detail');
-    await page.locator('[data-category="' + combined.category + '"]').click();
+    await page.locator('#category').selectOption(combined.category);
     await openFilters(page);
     await page.locator('#region').selectOption(combined.region);
     await page.locator('[data-guide="both"]').click();
@@ -275,7 +277,7 @@ async function fixture(browser, options = {}) {
     await resetFilters(page);
 
     // An explicit retry of location permission keeps browsing usable after denial.
-    await openFilters(page); await page.locator('#nearby').click();
+    await page.locator('#sort-order').selectOption('distance');
     await page.waitForFunction(() => document.querySelector('#location-status').textContent.includes('허용되지'));
     assert.equal(await page.evaluate(() => window.fixtureLocationRequests), 1);
     assert.equal(await page.locator('#nearby').isDisabled(), false);
@@ -294,9 +296,7 @@ async function fixture(browser, options = {}) {
       assert.equal(await page.locator('#results').isVisible(), true);
       assert.equal(await page.locator('#map-panel').isVisible(), false);
       if (width <= 760) {
-        const categoryLayout = await page.locator('#categories').evaluate(container => ({ columns: getComputedStyle(container).gridTemplateColumns.split(' ').length, count: container.querySelectorAll('[data-category]').length, withinViewport: [...container.querySelectorAll('[data-category]')].every(button => { const rect = button.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1; }) }));
-        assert.equal(categoryLayout.columns, 4, 'phone categories form a four-column grid');
-        assert.equal(categoryLayout.count, 8); assert.equal(categoryLayout.withinViewport, true, 'every category is exposed without horizontal scrolling');
+        assert.equal(await page.locator('#category').evaluate(select => { const rect = select.getBoundingClientRect(); return select.options.length === 8 && rect.left >= 0 && rect.right <= innerWidth + 1; }), true, 'all cuisines remain selectable without a horizontal chip row');
       }
       await page.locator('#show-map').click();
       await assertMapListLayout(page, width);
@@ -316,9 +316,12 @@ async function fixture(browser, options = {}) {
         assert.equal(await page.locator('#map-panel').isVisible(), true);
         assert.equal(await page.locator('.restaurant-pin').count(), Math.min(50, locatedPostal.length), 'the map shows only one page of located postal recommendations');
       }
+      assert.equal(await page.locator('#collections').evaluate(section => !!section.closest('.data-note details')), true);
+      assert.equal(await page.locator('#collections').isVisible(), false, 'official source links stay inside folded data details');
+      await page.locator('.data-note summary').click();
       assert.equal(await page.locator('#collections').isVisible(), true);
-      assert.equal(await page.locator('#collections').evaluate(section => section.classList.contains('is-featured')), true);
-      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'the official-map banner fits a phone viewport');
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'expanded official source links fit a phone viewport');
+      await page.locator('.data-note summary').click();
       await page.locator('#show-list').click();
       await waitForCount(page, postalRows.length);
       assert.deepEqual(await visibleIds(page), ids(postalRows), 'every postal recommendation remains accessible through visible list pagination');
@@ -549,9 +552,8 @@ async function fixture(browser, options = {}) {
     assert.equal(await firstVisit.page.evaluate(() => localStorage.getItem('ojjuda-certified-restaurants-location-v1')), 'denied');
     await firstVisit.page.reload(); await waitForCount(firstVisit.page, 3);
     assert.equal(await firstVisit.page.evaluate(() => window.fixtureLocationRequests), 0, 'reentry does not repeat a declined automatic prompt');
-    await firstVisit.page.locator('#choose-region').click();
-    assert.equal(await firstVisit.page.locator('#region').evaluate(node => node === document.activeElement), true);
-    await firstVisit.page.locator('#nearby').click();
+    assert.equal(await firstVisit.page.locator('#region').isVisible(), true, 'region remains directly selectable without routine location instructions');
+    await firstVisit.page.locator('#sort-order').selectOption('distance');
     await firstVisit.page.waitForFunction(() => window.fixtureLocationRequests === 1 && !document.querySelector('#nearby').disabled);
     assert.deepEqual(firstVisit.errors, []); await firstVisit.context.close();
 
@@ -562,12 +564,12 @@ async function fixture(browser, options = {}) {
     assert.equal(await coverage.page.locator('#result-coverage').textContent(), '지도 가능 4곳 · 위치 확인 중 8곳');
     for (const width of [320, 370]) {
       await coverage.page.setViewportSize({ width, height: 844 });
-      assert.equal(await coverage.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'registered and map coverage fit one line at ' + width);
+      assert.equal(await coverage.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return node.classList.contains('sr-only') && rect.width <= 1 && rect.height <= 1; }), true, 'coverage does not take a visual row at ' + width);
     }
     await coverage.page.locator('#show-map').click();
     await coverage.page.waitForFunction(() => document.querySelectorAll('.restaurant-pin').length === 4);
     assert.equal(await coverage.page.locator('#result-coverage').textContent(), '지도 표시 4곳 · 위치 확인 중 8곳');
-    await coverage.page.locator('[data-category="한식"]').click(); await waitForTotal(coverage.page, 6);
+    await coverage.page.locator('#category').selectOption('한식'); await waitForTotal(coverage.page, 6);
     assert.equal(await coverage.page.locator('.restaurant-pin').count(), 2);
     assert.equal(await coverage.page.locator('#result-coverage').textContent(), '지도 표시 2곳 · 위치 확인 중 4곳');
     await coverage.page.locator('#show-list').click();
@@ -650,8 +652,8 @@ async function fixture(browser, options = {}) {
     assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
     assert.equal(await mixedMap.page.locator('.map-caption').count(), 0, 'pagination coverage does not add a caption over the map');
     await mixedMap.page.setViewportSize({ width: 320, height: 844 });
-    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'the shown count and missing locations remain separate in one compact phone line');
-    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => node.getBoundingClientRect().bottom <= document.getElementById('map').getBoundingClientRect().top), true, 'coverage stays above the map without covering pins on a 320px phone viewport');
+    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return node.classList.contains('sr-only') && rect.width <= 1 && rect.height <= 1; }), true, 'coverage remains accessible without a visible phone summary');
+    assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => !node.closest('#map-panel')), true, 'coverage never overlays the map');
     assert.equal(await mixedMap.page.locator('#map-pagination').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1; }), true, 'the map pager fits a 320px phone viewport');
     for (let group = 1; group <= 6; group++) await mixedMap.page.locator('#map-next').click();
     assert.deepEqual(await mapNames(mixedMap.page), names(many.slice(300, 305)), 'the final group contains only five remaining located restaurants');

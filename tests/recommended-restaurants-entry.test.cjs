@@ -21,7 +21,7 @@ function fixture(query='') {
  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});w.OjjudaGameAssets={ready:()=>true,load:async()=>{}};
- w.eval(read('recommended-restaurants.js'));const create=w.OjjudaRecommendedRestaurants.create;
+  w.eval(read('restaurant-ratings.js'));w.eval(read('recommended-restaurants.js'));const create=w.OjjudaRecommendedRestaurants.create;
  w.OjjudaRecommendedRestaurants.create=options=>{const controller=create(options);created.push({options,controller});return controller;};
  w.eval(read('world-restaurant-guide.js'));w.eval(source);
  w.OjjudaWorldNavigation={install(options){navigation=options;return{};}};
@@ -29,7 +29,7 @@ function fixture(query='') {
  const client=()=>({auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}};}},
   async rpc(name,args){calls.push({name,args,owner:api.auth.user?.id||null});assert.equal(name,'list_restaurant_recommendations','navigation never writes member records');return{data:{rows:[],total:0,offset:0,limit:24},error:null};},
   storage:{from(){return{async remove(){assert.fail('navigation does not delete photos');},async download(){assert.fail('empty lists do not fetch photos');}};}}});
- api.setClient(client());const setUser=id=>{api.auth.online=!!id;api.auth.user=id?{id}:null;};setUser(null);
+  api.setClient(client());const setUser=(id,anonymous=false)=>{api.auth.online=!!id;api.auth.user=id?{id,is_anonymous:anonymous}:null;};setUser(null);
  const send=(frame,{origin=w.location.origin,source=frame.contentWindow,type='ojjuda:restaurants:recommendations'}={})=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type}}));
  return{dom,w,api,$,calls,created,client,setUser,send,navigation:()=>navigation,pollAuth(){for(const fn of [...intervals.values()])fn();},
   async memberReady(){await until(()=>$('[data-rr=compose]'),'the member list is ready');await tick();},
@@ -40,7 +40,7 @@ function fixture(query='') {
  const normal=fixture();try{
   normal.setUser(A);normal.api.open('restaurants');const frame=normal.$('.restaurant-guide-dialog iframe');
   assert.ok(frame,'the certified directory is the parent view');assert.equal(normal.api.catalog().recommendations,undefined,'recommendations have no standalone arcade tile');
-  assert.equal(new URL(frame.src).searchParams.get('member-menu'),'1');assert.equal(normal.$('[data-rr=dialog]'),null);assert.equal(normal.calls.length,0);
+   assert.equal(new URL(frame.src).searchParams.get('member-menu'),'1');assert.equal(new URL(frame.src).searchParams.get('member-ratings'),'1','members receive the rating controls');assert.equal(normal.$('[data-rr=dialog]'),null);assert.equal(normal.calls.length,0);
   frame.contentWindow.fixtureFilters={region:'서울',category:'한식',query:'국수',scroll:180};const retainedFilters=frame.contentWindow.fixtureFilters;
   normal.send(frame,{origin:'https://other.invalid'});normal.send(frame,{source:normal.w});normal.send(frame,{type:'unrecognized-menu'});
   assert.equal(normal.$('[data-rr=dialog]'),null,'foreign origin, wrong frame and wrong message cannot open the member view');assert.equal(normal.calls.length,0);
@@ -58,6 +58,23 @@ function fixture(query='') {
    assert.equal(logins,1,'the nested guest prompt keeps the established login action');assert.equal(guest.$('[data-rr=dialog]'),null);
   }finally{guest.close();}
  }
+  const anonymous=fixture();try{
+   anonymous.setUser(A,true);anonymous.api.open('recommendations');
+   const frame=anonymous.$('.restaurant-guide-dialog iframe');
+   assert.ok(frame,'anonymous accounts can browse the public directory');
+   assert.equal(new URL(frame.src).searchParams.has('member-ratings'),false,'an anonymous UUID never enables member rating controls');
+   assert.ok(anonymous.$('[data-rr=login]'),'anonymous registration shows the existing login action');
+   assert.equal(anonymous.$('[data-rr=compose],[data-rr=editor]'),null,'anonymous accounts cannot reach registration');
+   anonymous.w.dispatchEvent(new anonymous.w.MessageEvent('message',{origin:anonymous.w.location.origin,source:frame.contentWindow,data:{type:'ojjuda:restaurants:ratings',requestId:'anonymous-read',action:'summary',ids:['mingles']}}));
+   await tick();assert.equal(anonymous.calls.length,0,'a forged anonymous rating request never reaches member RPCs');
+   anonymous.setUser(A);anonymous.pollAuth();
+   assert.equal(anonymous.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'a same-ID anonymous-to-member change closes the old guest view');
+   anonymous.api.open('restaurants');const memberFrame=anonymous.$('.restaurant-guide-dialog iframe');
+   assert.equal(new URL(memberFrame.src).searchParams.get('member-ratings'),'1');
+   anonymous.setUser(A,true);anonymous.pollAuth();
+   assert.equal(anonymous.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'a same-ID membership downgrade closes the rating-enabled view');
+   assert.equal(anonymous.calls.length,0,'membership transitions never submit a rating or recommendation');
+  }finally{anonymous.close();}
  const dirty=fixture();try{
   dirty.setUser(A);dirty.api.open('recommendations');await dirty.memberReady();dirty.dirty();const frame=dirty.$('.restaurant-guide-dialog iframe');
   const first=dirty.api.close(),repeated=dirty.api.close();assert.equal(typeof first.then,'function');assert.equal(repeated,first,'global close shares one pending parent/child confirmation');
@@ -81,5 +98,5 @@ function fixture(query='') {
   race.setUser(A);race.api.open('recommendations');assert.equal(race.$('.restaurant-guide-dialog'),null);race.setUser(B);ready=true;release();await tick();await tick();
   assert.equal(race.$('.restaurant-guide-dialog'),null,'assets requested by an old account cannot open a nested view');race.api.open('recommendations');await race.memberReady();assert.equal(race.calls.at(-1).owner,B);
  }finally{race.close();}
- console.log('PASS: real nested restaurant bridge, origin/frame guards, preserved directory context, one dirty-close confirmation, two-step Back, guest/canonical/legacy entry, account replacement and stale asset isolation');
+  console.log('PASS: real nested restaurant bridge, member-only rating controls and registration, anonymous UUID and forged-message rejection, membership transitions, origin/frame guards, preserved directory context, one dirty-close confirmation, two-step Back, guest/canonical/legacy entry, account replacement and stale asset isolation');
 })().catch(error=>{console.error(error);process.exitCode=1;});
