@@ -38,6 +38,25 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /pwa-install.js
+            /sw.js
+            /offline.html
+            /world.html
+            /version.json
+            /index.html
+            /park/index.html
+            /note/index.html
+            /games/matgo.html
+            /games/ttang.html
+            /games/photo-ttang.html
+            /games/ojjuda-tour/index.html
+            /tests/package.json
+            /tests/package-lock.json
+            /tests/pwa-install.test.cjs
+            /tests/pwa-service-worker.test.cjs
+            /tests/inline-scripts.test.cjs
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
