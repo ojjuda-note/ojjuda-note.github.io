@@ -7,9 +7,9 @@
   <meta name="description" content="미쉐린·블루리본 가이드 선정 식당과 우체국 추천 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-audit1">
+  <link rel="stylesheet" href="./style.css?v=20261103-restaurant-nesting1">
   <script src="./vendor/leaflet.js" defer></script>
-  <script src="./app.js?v=20261103-restaurants-coverage2" defer></script>
+  <script src="./app.js?v=20261103-restaurant-nesting1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
@@ -18,6 +18,10 @@
       <div class="heading-copy"><h1>인증맛집</h1><p class="subtitle">미쉐린 · 블루리본 · 우체국 추천</p></div>
       <a id="back-link" class="back-link" href="/world.html?tab=arcade">← 오락실</a>
     </header>
+
+    <nav class="member-menu" aria-label="맛집 메뉴">
+      <a id="recommendations-link" class="member-menu-link" href="/world.html?game=restaurants&amp;restaurantView=recommendations" target="_top"><span class="member-menu-title">추천맛집</span><span class="member-menu-copy">회원들이 직접 추천한 맛집</span><span class="member-menu-arrow" aria-hidden="true">→</span></a>
+    </nav>
 
     <section class="search-area" aria-label="맛집 검색과 필터">
       <form id="search-form" class="search-row" role="search">
