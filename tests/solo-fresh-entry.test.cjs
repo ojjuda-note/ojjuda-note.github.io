@@ -80,7 +80,13 @@ function completeScrew(game){
  else game.state.level.plates.forEach(plate=>plate.state='gone');
  game.update(.05);
 }
-function nextScrew(game){if(game.state.lvl)for(let i=0;i<30;i++)game.update(.1);else game.onKey('Enter');}
+function nextScrew(game){
+ const stage=game.stage;
+ for(let i=0;i<30;i++)game.update(.1);
+ assert.equal(game.stage,stage,'a cleared level waits for an explicit next-level choice');
+ assert.equal(game.stageCleared,true,'waiting keeps the completed result available');
+ assert.equal(game.continueStage(stage+1),stage<game.levels,'only a completed, non-final level can advance');
+}
 
 test('both screw modes migrate old progress and reopen independent last levels with fresh boards and preserved purchases',()=>{
  const boxPurchase='ojjuda-screw-purchases-v1:'+owner+':37',flatPurchase='ojjuda-screw-flat-hole-pending-v1:'+owner+':14';

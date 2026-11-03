@@ -6,6 +6,7 @@ function fixture(pos=48,allDone=false){
  w.Date.now=()=>now;w.setTimeout=(fn,ms)=>{const id=++timerId;timers.set(id,{fn,at:now+ms});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.scrollTo=()=>{};w.confirm=()=>true;
  w.JjudaWallet={getState:()=>({userId:'member-a',coins:100}),subscribe:fn=>fn({userId:'member-a',coins:100}),refresh:async()=>{},recordClear:async(owner,stage)=>{scores.push(stage);return {ok:true};},buy:request=>{charges.push(request);return new Promise(()=>{});}};
+ w.eval(fs.readFileSync(path.join(root,'../../game-results.js'),'utf8'));
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const puzzles=w.JJUDA_PUZZLES,order=Array.from(w.JjudaGame.difficultyOrder(puzzles)),position=pos==='last'?order.length-1:pos,current=order[position];
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current,order:[...order].reverse(),completed:allDone?puzzles.filter((_,i)=>i!==current).map(p=>p.id):[]}));
@@ -28,6 +29,7 @@ for(const reason of ['won','time','hearts'])for(const offset of [-1,0,1]){
   assert(f.$('retry-level-choice').hidden,'no level choice during entry or play');f.end(reason);
   const prefix=reason==='won'?'celebration':'retry',names=['previous','current','next'],completed=f.state().current;
   assert.equal(f.round().status,reason==='won'?'won':'lost');
+  const popup=f.$(reason==='won'?'celebration':'spot-failure');assert.equal(popup.open,true);assert.equal(popup.querySelector('.game-result-title').textContent,reason==='won'?'성공':'실패');assert.ok(popup.querySelector('.game-result-share'),'sharing is on the same result page');
   assert.deepEqual(names.map(name=>f.$(prefix+'-'+name).querySelector('span').textContent),['이전 그림','지금 그림','다음 그림']);
   assert.deepEqual(names.map(name=>f.$(prefix+'-'+name).querySelector('small').textContent),['48 / 82 · 보통','49 / 82 · 어려움',reason==='won'?'50 / 82 · 어려움':'이번 그림 완료 후']);
   if(reason!=='won')assert.equal(f.$('start').hidden,true,'failure exposes direct choices without a second Start confirmation');
@@ -49,15 +51,17 @@ for(const pos of [0,'last']){
  const f=fixture(pos,pos==='last');try{
   f.end('won');
   assert.equal(f.$('celebration-previous').disabled,pos===0);assert.equal(f.$('celebration-next').disabled,pos==='last');
-  if(pos==='last')assert.match(f.$('celebration-title').textContent,/모든 그림/);
+  if(pos==='last'){assert.equal(f.$('celebration').querySelector('.game-result-title').textContent,'성공');assert.equal(f.$('solved-total').textContent,String(f.puzzles.length),'the final success retains every completed picture');}
   const current=f.state().current;f.$(pos===0?'celebration-previous':'celebration-next').click();assert.equal(f.state().current,current,'out-of-range choice cannot wrap or break the game');
   f.$('celebration-current').click();f.load();assert.equal(f.state().current,current);assert.equal(f.round().status,'playing');
  }finally{f.w.close();}
 }
 const f=fixture();try{
  for(let i=0;i<3;i++){f.end('time');f.$('retry-current').click();f.load();assert.equal(f.state().current,f.order[f.position],'current picture can be replayed after each ended round');}
- f.advance(61000);f.$('extend').click();assert.equal(f.round().status,'payment');assert.equal(f.$('retry-level-choice').hidden,true,'unresolved payment hides level choices');
- const current=f.state().current;f.$('celebration-next').click();assert.equal(f.state().current,current);assert.equal(f.charges.length,1,'an unresolved payment cannot be discarded by level selection');
+ f.advance(61000);f.$('retry-extend').click();assert.equal(f.round().status,'payment');assert.equal(f.$('spot-failure').open,true,'receipt verification retains the same result popup');
+ const current=f.state().current,pending=f.round().pending;
+ for(const name of ['previous','current','next']){const button=f.$('retry-'+name);assert.equal(button.disabled,true,'unresolved payment disables each level choice');button.click();button.onclick();}
+ f.$('celebration-next').click();assert.equal(f.state().current,current);assert.deepEqual(f.round().pending,pending);assert.equal(f.charges.length,1,'an unresolved payment cannot be discarded or purchased twice by level selection');
 }finally{f.w.close();}
 for(const id of ['next','continue','celebration-next','retry-next']){
  const f=fixture();try{

@@ -7,7 +7,7 @@ function section(start,end){
  return world.slice(from,to);
 }
 const launch=section('function Al(','// User-requested exits ask first;');
-const route=section('function my(){','// Member rooms use their own account;');
+const route=section('function openWorldGameLink(','// Member rooms use their own account;');
 const teardown=section('function El(){',"window.addEventListener('pagehide'");
 
 // Exercise the real rendered catalog, so registration cannot accidentally add
@@ -114,7 +114,7 @@ function routeFixture(){
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
  assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.0.2');
- assert.equal(boot.window.OjjudaGameAssets.version('archery'),'1.11.2','adding the page does not advance archery');
+ assert.equal(boot.window.OjjudaGameAssets.version('archery'),'1.12.0','archery retains its independent game release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
  assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalRevision,'iframe and bridge use the same independent cache revision');

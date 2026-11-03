@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..');
 const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/world-game-assets.js')||s.includes('/game-entry.js'))?s:'')
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/world-game-assets.js')||s.includes('/game-entry.js')||s.includes('/game-results.js'))?s:'')
  .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -78,6 +78,11 @@ g.tab='friends';H();
    const savedStage=()=>page.evaluate(()=>localStorage.getItem('ojjuda-breakout-last-stage-v1'));
    const snapshot=()=>page.evaluate(()=>{const r=breakoutTest.current,g=r.game,s=g.inspect();return{stage:g.stage,level:s.level,running:r.running,score:s.score,lives:s.lives,balls:s.balls.length,waiting:s.waiting,finished:s.finished,completed:s.completed,cleared:g.stageCleared,speed:s.speed,paddleWidth:s.paddle.w,bricks:s.bricks.length,drops:s.drops.length,piercing:s.balls.some(b=>b.piercing),fullBoard:s.bricks.every(b=>b.on&&b.hp===b.maxHp)}});
    async function assertChoices(level,cleared=true){
+    const result=page.locator('#gscreen [data-game-result-card][data-result-game="breakout"]');
+    await result.waitFor();
+    assert.equal(await result.getAttribute('data-result-outcome'),cleared?'success':'failure');
+    assert.equal(await result.locator('.game-result-metric').innerText(),`${level}단계 · ${(await snapshot()).score}점`);
+    assert.equal(await result.locator('[data-game-result-share]').count(),1,'the same result contains the game sharing action');
     await choices.first().waitFor();assert.equal(await choices.count(),3);
     const values=await choices.evaluateAll(buttons=>buttons.map(button=>{
      const box=button.getBoundingClientRect();return{label:button.textContent,stage:Number(button.dataset.stage),pressed:button.getAttribute('aria-pressed'),disabled:button.disabled,x:box.x,y:box.y,right:box.right,bottom:box.bottom};
@@ -85,7 +90,6 @@ g.tab='friends';H();
     for(const [i,value] of values.entries()){
      assert.ok(value.label.includes(['이전 단계','지금 단계','다음 단계'][i]));
      assert.equal(value.disabled,(i===0&&level===1)||(i===2&&(level===100||!cleared)));
-     if(i===2&&!cleared&&level<100)assert.match(value.label,/현재 단계 클리어 필요/);
      if(!value.disabled)assert.equal(value.stage,level+i-1);
      assert.equal(value.pressed,null,'level buttons are direct actions, not a selection followed by Start');
      assert.ok(value.x>=-1&&value.right<=width+1&&value.y>=-1&&value.bottom<=height+1,'all three level choices fit inside the viewport: '+JSON.stringify({width,height,level,value}));
@@ -218,7 +222,7 @@ g.tab='friends';H();
    await page.evaluate(async()=>{window.restartedBreakoutRun=breakoutTest.current.game;breakoutTest.holdRecords=false;breakoutTest.settleRecords();await new Promise(requestAnimationFrame);breakoutTest.freeze()});
    await assertFresh(3,34);assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.restartedBreakoutRun),true,'a late score response cannot replace the restarted game');
    assert.equal(await page.evaluate(()=>breakoutTest.records.length),1);checks++;
-   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(3,false);
+   await page.evaluate(()=>breakoutTest.loseRun());await assertChoices(3,false);
    const failedThird=await snapshot();
    await choices.filter({hasText:'다음 단계'}).evaluate(button=>{button.disabled=false;button.click();button.disabled=true});
    assert.deepEqual(await snapshot(),failedThird,'re-enabling a failed result button cannot bypass the current-stage clear requirement');
@@ -275,11 +279,10 @@ g.tab='friends';H();
     }
    }
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
-   await page.locator('#gres').waitFor();assert.match(await page.locator('#gscreen').innerText(),/100단계 클리어/);
    await assertChoices(100);assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'the final run submits one terminal result');
    await choices.filter({hasText:'지금 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());await assertFresh(100,1000);
    assert.equal(await page.evaluate(()=>breakoutTest.records.length),1,'restarting the final stage does not duplicate its old result');
-   await page.evaluate(()=>breakoutTest.loseRun());await page.locator('#gres').waitFor();await assertChoices(100,false);
+   await page.evaluate(()=>breakoutTest.loseRun());await assertChoices(100,false);
    await page.evaluate(()=>breakoutTest.close());assert.equal(await page.locator('#gov').count(),0);
    assert.deepEqual(errors,[],'no application errors while playing, finishing and restarting');checks++;
    await context.close();
