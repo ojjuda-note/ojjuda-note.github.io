@@ -28,6 +28,7 @@ async function screen(f,actor,{animate=false,saved=null,settings=null,joinCode=n
  w.__rules=rules;w.__motion={...motion,...await import('../games/poker/opening-selection.mjs')};const audio={enabled:true,volume:.45,voiceStyle:'classic'};w.__audio={pokerActionCall:(await import('../games/poker/sound.mjs')).pokerActionCall,createPokerSound:()=>({settings:()=>({...audio}),configure:v=>Object.assign(audio,v),play:(kind,options={})=>{sounds.push(kind);soundCalls.push({kind,...options});},preloadPlayers(){},unlock:async()=>true,pause(){}})};
  if(saved)w.localStorage.setItem('ojjuda.poker.practice.v1.'+actor,JSON.stringify(saved));
  if(settings)w.localStorage.setItem('ojjuda.poker.settings.v2.'+actor,JSON.stringify(settings));
+ require('./game-results-fixture.cjs')(w);
  w.eval(fs.readFileSync(path.join(root,'games/poker/online-client.mjs'),'utf8').replace(/export /g,'')+'\nwindow.__online={createOnlineClient,rotateView};');
  w.eval(fs.readFileSync(path.join(root,'games/poker/app.mjs'),'utf8').replace(/^import \{([^}]+)\} from '([^']+)';/gm,(_,names,file)=>`const {${names}}=window.${file.includes('engine.')?'__rules':file.includes('sound.')?'__audio':file.includes('online-client.')?'__online':'__motion'};`));
  const message=(data,origin='https://ojjuda.kr')=>w.dispatchEvent(new w.MessageEvent('message',{origin,source:parent,data}));

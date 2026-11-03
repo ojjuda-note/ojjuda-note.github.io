@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261103-stage-clear-gates1';
+  const gameUrl = '/games/photo-ttang.html?v=20261103-game-results1';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
@@ -76,7 +76,7 @@
     const candidate = document.createElement('iframe');
     candidate.title = demo ? '포토땅따먹기 한 판 체험' : '포토땅따먹기';
     candidate.dataset.demo = demo ? '1' : '0';
-    candidate.allow = 'vibrate';
+    candidate.allow = 'vibrate; web-share; clipboard-write';
     frame = candidate;
     candidate.addEventListener('load', async () => {
       if (frame !== candidate) return;

@@ -4,7 +4,7 @@
   if(active){active.dialog.focus();return;}
   const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
   const dialog=document.createElement('dialog');dialog.className='tour-game-dialog bang-game-dialog';dialog.setAttribute('aria-label','뱅!');
-  dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>뱅! · 최대 7명</span></header><iframe title="뱅! · 컴퓨터·회원 대전" src="/games/bang/index.html?v=20261031-best-streak-rankings1" allow="fullscreen; clipboard-write"></iframe>';
+  dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>뱅! · 최대 7명</span></header><iframe title="뱅! · 컴퓨터·회원 대전" src="/games/bang/index.html?v=20261103-game-results1" allow="fullscreen; clipboard-write; web-share"></iframe>';
   const frame=dialog.querySelector('iframe');let requests=0;
   const code=/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():'';
   function dispose(){if(active?.dialog!==dialog)return;active=null;window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');previous?.isConnected&&previous.focus({preventScroll:true});window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));}
@@ -39,6 +39,7 @@
    if(message.type==='ojjuda-game-exit')close();
    if(message.type==='ojjuda-bang-rooms-changed')window.dispatchEvent(new Event('ojjuda:arcade-rooms-changed'));
    if(message.type==='ojjuda-bang-finished')window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'bang'}}));
+   if(message.type==='ojjuda-bang-local-finished'&&!owner)window.OjjudaGuestAccess?.finished({retainResult:true});
   }
   const session=window.OjjudaGameSession.create({kind:'bang',dialog,frame,authorized:()=>active?.dialog===dialog&&authorized(),available:()=>!!(owner&&client?.functions),invoke,dispose,keepCode:code});
   const authTimer=setInterval(()=>{if(!authorized())close();},1000);

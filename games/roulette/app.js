@@ -15,7 +15,7 @@ let room=null,owner=null,initialized=false,screen='lobby',animating=false,settli
 let commandBusy=false,pollTimer=null,reading=false,requestCounter=0,lastServerTime=0,closed=false,connecting=false,exitRequested=false;
 let draftTimer=null,draftRequest=null,draftVersion=0;
 let bettingClockKey='',bettingClockAt=0,bettingClockTimer=null,bettingClockFired=false;
-let computerOutcome=null;
+let computerOutcome=null,settledResultPopup=null,settledResultKey=null,waitingSettledResult=null;
 let reducedPreference=null;
 let walletInfo=null,refillBusy=false,refillRequest=null,refillError='';
 const requests=new Map();
@@ -175,7 +175,7 @@ async function shareDraft(){
   catch(error){if(/round_in_progress/.test(error?.message||'')||bettingExpired())schedulePoll(0);else if(version===draftVersion&&!commandBusy&&!ownReady()&&!state.pending&&room?.code===code)notice(errorText(error))}
   finally{draftRequest=null;if(draftVersion!==version&&!closed)draftTimer=setTimeout(shareDraft,120)}
 }
-function setScreen(next){if(screen===next)return;screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else{winEffects.clear();cancelBetFlights();if($('historyDialog').open)$('historyDialog').close()}$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
+function setScreen(next){if(screen===next)return;if(next!=='game'){settledResultPopup?.close();settledResultPopup=null;waitingSettledResult=null;}screen=next;document.body.dataset.screen=next;if(next==='game')window.scrollTo({top:0,behavior:'instant'});else{winEffects.clear();cancelBetFlights();if($('historyDialog').open)$('historyDialog').close()}$('playSection').inert=next!=='game';$('multiplayerBar').hidden=next!=='game';requestAnimationFrame(()=>{wheel.resize();positionSeams()})}
 function renderRoom(){
   const solo=room?.mode==='solo';
   $('historyButton').hidden=!room;
@@ -223,7 +223,7 @@ function acknowledgeRemoteResult(){
   const spin=state.pending,roomId=room?.id;let result=null;
   if(spin&&state.lastSettled!==spin.id){const paid=payout(spin.bets,spin.number);result={...paid,number:spin.number,net:paid.total-paid.stake,bets:spin.bets};state.lastSettled=spin.id;recordHistory(spin);revealResult(result)}
   state.pending=null;animating=false;resultReadyId=null;sound.stopRoll();
-  void closeWheelPopup(null,{instant:true}).then(()=>{if(result&&!closed&&screen==='game'&&room?.id===roomId&&state.lastSettled===spin.id)winEffects.show(spin.id,result)});
+  void closeWheelPopup(null,{instant:true}).then(()=>{if(result&&!closed&&screen==='game'&&room?.id===roomId&&state.lastSettled===spin.id){winEffects.show(spin.id,result);showSettledResult(spin.id,result,roomId);}});
 }
 function applySnapshot(data){
   if(!data||closed)return;
@@ -517,6 +517,7 @@ async function startSpin(){
   await command('ready',{ready:true,bets:{...state.bets}});
 }
 function openWheelPopup(spin){
+  settledResultPopup?.close();settledResultPopup=null;waitingSettledResult=null;
   cancelBetFlights();
   winEffects.clear();
   $('wheel').setAttribute('aria-label','룰렛 공이 돌고 있습니다. 원판이 완전히 멈춘 뒤 공이 들어간 칸과 숫자를 확대해 보여줍니다.');
@@ -534,22 +535,32 @@ async function closeWheelPopup(spinId,{instant=false}={}){
   if(modal.open)modal.close();modal.classList.remove('closing');wheel.setVisible(false);document.body.classList.remove('wheel-open');
 }
 function revealResult(result,{pending=false}={}){
-  lastResult=result;const {number,total,gross,fee,net}=result;
+  lastResult=result;const {number,total,net}=result;
   const color=COLOR(number),colorName=color==='red'?'빨강':color==='black'?'검정':'초록';
+  const netText=`${net>0?'+':''}${fmt(net)} G`;
   $('resultNumber').className=`result-number ${color}`;$('resultNumber').textContent=number;
-  $('resultBanner').classList.toggle('won',net>0);
-  $('resultTitle').textContent=total?`${fmt(total)} G ${pending?'지급 예정':'지급'}${net>0?` · 순이익 +${fmt(net)} G`:''}`:'다음 행운을 기다려볼까요';
-  $('resultDetail').textContent=total?`당첨 ${fmt(gross)} G − 수수료 ${fmt(fee)} G (1%)`:`${number} · ${colorName} 당첨 / 이번 베팅 ${fmt(result.stake)} G`;
-  setStatus(`${number} · ${colorName}${number===0?'':number%2?' · 홀수':' · 짝수'}`);
+  $('resultBanner').classList.toggle('won',!pending&&net>0);
+  $('resultTitle').textContent=pending?'정산 대기':net>0?'골드 획득':net<0?'골드 손실':'골드 변동 없음';
+  $('resultDetail').textContent=`${pending?'예상 손익 ':''}${netText} · ${number} ${colorName}`;
+  setStatus(`${number} · ${colorName}`);
   cell(`n${number}`).classList.add('hit');for(const w of result.wins)cell(w.id).classList.add('hit');
-  $('wheel').setAttribute('aria-label',`룰렛 결과 ${number}, ${colorName}. 당첨금 ${fmt(total)} 골드 ${pending?'지급 예정':'지급'}.`);
-  $('wheelDialog').dataset.phase='resolved';$('wheelDialogTitle').textContent='공이 멈췄어요.';$('wheelDialogHint').textContent=pending?'확인을 누르면 칩을 정산해요':'칩을 정산하고 있어요';
+  $('wheel').setAttribute('aria-label',`룰렛 결과 ${number}, ${colorName}. ${pending?'정산 대기':'정산 완료'}.`);
+  $('wheelDialog').dataset.phase='resolved';$('wheelDialogTitle').textContent=pending?'정산 대기':'정산 완료';$('wheelDialogHint').textContent='';
   $('wheelOutcomeNumber').className=`result-number ${color}`;$('wheelOutcomeNumber').textContent=number;
-  $('wheelOutcomeTitle').textContent=total?`${fmt(total)} G ${pending?'지급 예정':'지급'}`:`${number} · ${colorName}`;
-  $('wheelOutcomeDetail').textContent=total?`당첨 ${fmt(gross)} G − 수수료 ${fmt(fee)} G`:pending?'확인을 눌러 테이블로 돌아가요':'테이블로 돌아가요';
-  if(!result.stake){$('resultTitle').textContent='베팅 없이 함께 관람했어요';$('resultDetail').textContent=`${number} · ${colorName}`;$('wheelOutcomeDetail').textContent='확인을 누르면 테이블로 돌아가요'}
+  $('wheelOutcomeTitle').textContent=pending?'정산 대기':netText;
+  $('wheelOutcomeDetail').textContent=pending?`예상 손익 ${netText}`:'정산 완료';
+  if(!result.stake){$('resultTitle').textContent='관람 완료';$('resultDetail').textContent=`${number} · ${colorName}`;$('wheelOutcomeDetail').textContent='베팅 없음'}
   renderComputerResult();
   $('wheelOutcome').hidden=false;$('wheelFootnote').hidden=true;
+}
+function showSettledResult(id,result,roomId){
+  if(closed||screen!=='game'||room?.id!==roomId||state.lastSettled!==id||settledResultKey===id)return;
+  if(document.hidden){waitingSettledResult={id,result,roomId};return;}
+  waitingSettledResult=null;settledResultKey=id;settledResultPopup?.close();
+  // Only an acknowledged server settlement reaches this popup. The stake is
+  // subtracted from the payout; gross return is never labelled as gold gained.
+  const net=result.net;
+  settledResultPopup=window.OjjudaGameResults.show({game:'roulette',outcome:net>0?'gold-gain':net<0?'gold-loss':'gold-even',key:`roulette:${id}`,metric:`${net>0?'+':''}${fmt(net)} G`,extra:`<p>${result.number}번${state.balance<1000?' · 보유 '+fmt(state.balance)+' G':''}</p>`,dismissible:true,actions:[{label:'다음 판',onClick:()=>{settledResultPopup=null;}}]});
 }
 function showSpinResult(id){
   sound.stopRoll();
@@ -578,7 +589,7 @@ async function confirmResult(){
   render({bets:false,balance:false});revealResult(result);renderHistory();
   if(result.net>0)sound.win();
   await closeWheelPopup(id,{instant:document.hidden});
-  if(document.hidden){settling=false;render();if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
+  if(document.hidden){settling=false;render();showSettledResult(id,result,roomId);if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);return}
   if(matchMedia('(max-width:940px)').matches){$('playSection').scrollIntoView({behavior:reduced()?'instant':'smooth',block:'start'});await sleep(reduced()?0:650)}
   if(!closed&&screen==='game'&&room?.id===roomId&&state.lastSettled===id)winEffects.show(id,result);
   const tableRect=$('feltTable').getBoundingClientRect(),bank={x:tableRect.left+tableRect.width/2,y:tableRect.top-12};
@@ -601,6 +612,7 @@ async function confirmResult(){
     await animateCounter($('balance'),oldBalance,state.balance);
   }
   settling=false;render({balance:!result.total});
+  if(!exitRequested)showSettledResult(id,result,roomId);
 
   if(state.balance<100&&result.stake>0)notice('베팅할 골드가 부족해요.');if(exitRequested){exitRequested=false;void leaveRoom({exit:true})}else schedulePoll(200);
 }
@@ -642,7 +654,7 @@ $('closeHistory').addEventListener('click',()=>historyDialog.close());
 historyDialog.addEventListener('click',event=>{if(event.target===historyDialog){const r=historyDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)historyDialog.close()}});
 $('wheelDialog').addEventListener('cancel',event=>{if(busy())event.preventDefault()});
 $('wheelDialog').addEventListener('close',()=>{document.body.classList.remove('wheel-open');wheel.setVisible(false)});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){sound.stopRoll();winEffects.clear()}else if(state.pending&&animating)sound.beginRoll(state.pending);renderBettingClock();schedulePoll(document.hidden?undefined:100)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){sound.stopRoll();winEffects.clear()}else{if(state.pending&&animating)sound.beginRoll(state.pending);if(waitingSettledResult&&!settling){const pending=waitingSettledResult;showSettledResult(pending.id,pending.result,pending.roomId);}}renderBettingClock();schedulePoll(document.hidden?undefined:100)});
 window.addEventListener('pagehide',()=>{closed=true;winEffects.clear();cancelBetFlights();clearTimeout(pollTimer);clearTimeout(draftTimer);clearTimeout(bettingClockTimer);sound.stopRoll();for(const pending of requests.values()){clearTimeout(pending.timer);pending.reject(new Error('closed'))}requests.clear()});
 render();send({type:'ready'});
 setTimeout(()=>{if(!initialized){$('connectionStatus').replaceChildren();const link=document.createElement('a');link.href='/world.html?game=roulette';link.target='_top';link.textContent='오쭈다 오락실에서 시작하기';$('connectionStatus').append(link)}},7000);

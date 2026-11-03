@@ -6,6 +6,7 @@
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
   const removalTimers=new Set(),REMOVE_MS=120;
   let purchaseBusy=false;
+  let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
@@ -19,7 +20,43 @@
     if(!state.sound)return;
     try{audioContext ||= new(window.AudioContext||window.webkitAudioContext)();audioContext.resume();const notes=kind==='win'?[523,659,784,1047]:kind==='match'?[659,880]:[440];notes.forEach((frequency,i)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain(),at=audioContext.currentTime+i*.08;osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.055,at+.015);gain.gain.exponentialRampToValueAtTime(.001,at+.22);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.24);});}catch{}
   }
-  function begin(){if(!state.startedAt){state.startedAt=Date.now();save();}}
+  function begin(){if(!state.startedAt){prepareGlobalResult();state.startedAt=Date.now();save();}}
+  const rankingMonth=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
+  function currentGlobalResult(result){return result===globalResult&&state.runId===result.runId&&state.stage===result.stage&&window.OjjudaSacheonseongOnline?.owner?.()===result.owner&&rankingMonth()===result.period;}
+  function validSnapshot(snapshot,result){return snapshot?.ok===true&&snapshot.owner===result.owner&&snapshot.period===result.period&&Array.isArray(snapshot.rows);}
+  function leader(snapshot){
+    const row=snapshot?.rows?.[0],rules=window.OjjudaSacheonseongRanking;
+    return row&&rules?.game(row.stage)&&rules.duration(row.score)!==null?row:null;
+  }
+  function prepareGlobalResult(){
+    const online=window.OjjudaSacheonseongOnline;if(window.parent===window||!online?.leaderboard)return;
+    const owner=online.owner();if(owner===undefined)return;
+    const result={runId:state.runId,stage:state.stage,owner,period:rankingMonth(),before:null,finished:false,outcome:'success',encouragement:'',notice:''};globalResult=result;
+    Promise.resolve(online.leaderboard()).then(snapshot=>{if(currentGlobalResult(result)&&!result.finished&&validSnapshot(snapshot,result))result.before=snapshot;}).catch(()=>{});
+  }
+  function showGlobalResult(result=globalResult){
+    if(!result||!currentGlobalResult(result)||!completedRound()||$('completion').hidden)return;
+    const notice=$('win-save-status');notice.textContent=result.notice;notice.hidden=!result.notice;
+    window.OjjudaGameResults?.update($('completion'),{outcome:result.outcome,encouragement:result.encouragement,key:result.runId});
+  }
+  function compareGlobalResult(result,delivery){
+    if(!currentGlobalResult(result)||!completedRound()||result.delivered)return;
+    if(!delivery?.ok){result.notice='기록 저장 대기';showGlobalResult(result);return;}
+    result.delivered=true;
+    result.notice='';showGlobalResult(result);
+    if(delivery.owner!==result.owner||delivery.period!==result.period||!result.before)return;
+    const online=window.OjjudaSacheonseongOnline,rules=window.OjjudaSacheonseongRanking,before=leader(result.before);
+    if(!before||before.stage!==result.stage)return;
+    Promise.resolve(online.leaderboard()).then(snapshot=>{
+      if(!currentGlobalResult(result)||!completedRound()||!validSnapshot(snapshot,result))return;
+      const after=leader(snapshot);if(!after||after.stage!==result.stage)return;
+      const score=rules.score(state.finishedMs),gap=rules.duration(score)-rules.duration(after.score);
+      if(score>before.score&&after.me===true&&after.score===score){result.outcome='record';result.encouragement='이번 달 1등 기록을 새로 썼어요!';}
+      else if(gap===0)result.encouragement='1등과 같은 시간이에요. 조금만 더 줄여봐요!';
+      else if(gap>0){const seconds=(gap/1000).toFixed(2).replace(/\.?0+$/,'');result.encouragement=`1등과 ${seconds}초 차이 · 한 번 더 도전해요!`;}
+      showGlobalResult(result);
+    }).catch(()=>{});
+  }
   function clearSelection(){selected=null;hints=[];$('connection').replaceChildren();document.querySelectorAll('.tile.selected,.tile.hinted').forEach(b=>{b.classList.remove('selected','hinted');b.setAttribute('aria-pressed','false');});}
   function cell(p){return document.querySelector(`[data-r="${p.r}"][data-c="${p.c}"]`);}
   function fittingTile(rows,cols,width,height,gap,pad=8){
@@ -92,13 +129,16 @@
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
+    globalResult=null;
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage,Math.random,boardColumns(stage)).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){clearSelection();state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
-    if(locked||state.pendingPurchase||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;begin();
+    if(locked||state.pendingPurchase||$('modal').open||$('options').open||state.grid[p.r][p.c]===E.EMPTY)return;
+    if(window.OjjudaGameResults?.canPlay?.()===false)return;
+    begin();
     if(selected&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
@@ -127,28 +167,37 @@
   }
   function finish(duration,present=true){
     if(state.finishedMs!=null||count()!==0)return;
+    const comparison=globalResult;if(comparison)comparison.finished=true;
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
     const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();updateStats();if(present){showCompletion(rank);sound('win');}
-    window.OjjudaSacheonseongOnline?.record(state.stage,record);
+    const delivery=window.OjjudaSacheonseongOnline?.record(state.stage,record);
+    if(comparison)comparison.deliveryId=delivery?.id;
+    if(comparison&&delivery?.then)delivery.then(result=>compareGlobalResult(comparison,result)).catch(()=>compareGlobalResult(comparison,{ok:false}));
     if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
   }
   function showCompletion(rank){
     if(!completedRound())return;
     locked=true;const final=state.stage===E.MAX_STAGE;
-    $('win-title').textContent=final?'15개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
-    $('win-desc').innerHTML=`<strong class="win-time">${time(state.finishedMs)}</strong><span class="win-rank">이 기기 ${state.stage}단계 ${rank}위${rank===1?' · 최고 기록!':''}</span>${final?'15단계까지, 멋진 도전이었어요.':`다음은 ${state.stage+1}단계 정원이에요.`}`;
+    const title=$('win-title');if(title)title.textContent=final?'15개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
+    $('win-desc').innerHTML=`${state.stage}단계 · <strong class="win-time">${time(state.finishedMs)}</strong>`;
     $('previous-level').disabled=state.stage===1;
     $('previous-level-detail').textContent=state.stage===1?'첫 레벨':`${state.stage-1}단계`;
     $('current-level-detail').textContent=`${state.stage}단계 다시 하기`;
     $('next').disabled=final;
     $('next-level-detail').textContent=final?'마지막 레벨':`${state.stage+1}단계`;
-    $('completion').hidden=false;$('current-level').focus({preventScroll:true});
+    const completion=$('completion');completion.hidden=false;
+    $('win-save-status').textContent='';$('win-save-status').hidden=true;
+    window.OjjudaGameResults?.decorate(completion.querySelector('.completion-card'),{game:'sacheonseong',outcome:'success',metric:$('win-desc'),key:state.runId,actions:[completion.querySelector('.completion-levels')],extra:[$('win-save-status')]});
+    completion.removeAttribute('aria-labelledby');completion.setAttribute('aria-label','사천성 결과');
+    showGlobalResult();
+    $('current-level').focus({preventScroll:true});
   }
   function chooseCompletedLevel(offset){
     const stage=state.stage+offset;
     if(![-1,0,1].includes(offset)||$('completion').hidden||!completedRound()||state.pendingPurchase||stage<1||stage>E.MAX_STAGE)return;
+    if(window.OjjudaGameResults?.canPlay?.()===false)return;
     newStage(stage);$('board-scroll').focus({preventScroll:true});
   }
   function showModal(html){if($('options').open)$('options').close();$('modal-content').innerHTML=html;$('modal').showModal();}
@@ -288,6 +337,7 @@
   if(window.ResizeObserver)new ResizeObserver(sizeBoard).observe($('board-scroll'));
   $('game-home').addEventListener('click',event=>{if(window.parent!==window){event.preventDefault();save();window.parent.postMessage({type:'ojjuda:sacheonseong-home'},location.origin);}});
   window.addEventListener('pagehide',save);
+  window.addEventListener('ojjuda:sacheonseong-record',event=>{if(globalResult?.deliveryId&&event.detail?.id===globalResult.deliveryId)compareGlobalResult(globalResult,event.detail);});
   function validPurchase(item){const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(value);return item&&uuid(item.id)&&uuid(item.runId)&&uuid(item.owner)&&Number.isInteger(item.stage)&&item.stage>=1&&item.stage<=E.MAX_STAGE&&['hint','shuffle'].includes(item.kind);}
   const saved=read(KEY),storedRecords=read(RECORDS);
   if(storedRecords&&typeof storedRecords==='object'&&!Array.isArray(storedRecords)){for(const [k,v]of Object.entries(storedRecords))if(/^\d+$/.test(k)&&Array.isArray(v))records[k]=v.filter(r=>r&&Number.isFinite(r.duration)&&r.duration>0&&Number.isFinite(r.at)).sort((a,b)=>a.duration-b.duration).slice(0,30);}
@@ -297,5 +347,11 @@
   const lastStage=Number.isInteger(saved?.stage)&&saved.stage>=1&&saved.stage<=E.MAX_STAGE?saved.stage:1;
   state={unlocked:Number.isInteger(saved?.unlocked)?Math.min(E.MAX_STAGE,Math.max(1,saved.unlocked)):1,sound:!!saved?.sound};
   newStage(lastStage,pending);
-  setInterval(()=>{if(state.finishedMs==null)$('timer').textContent=time(ms());},70);
+  setInterval(()=>{
+    if(state.finishedMs==null)$('timer').textContent=time(ms());
+    else if(globalResult&&!currentGlobalResult(globalResult)){
+      globalResult=null;$('win-save-status').hidden=true;
+      window.OjjudaGameResults?.update($('completion'),{outcome:'success',encouragement:''});
+    }
+  },70);
 })();

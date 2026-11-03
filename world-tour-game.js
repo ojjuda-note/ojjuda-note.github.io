@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261031-best-streak-rankings1" allow="fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261103-game-results1" allow="fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
       let invitation = new AbortController();
@@ -72,7 +72,7 @@
         if (!me || me.human !== true || !Number.isSafeInteger(me.assets) || me.assets < 0 ||
             me.assets > 1000000 || typeof me.bankrupt !== 'boolean' || (me.bankrupt && me.assets !== 0)) return;
         if (!authorized()) return;
-        window.OjjudaGuestAccess?.finished();
+        window.OjjudaGuestAccess?.finished({retainResult:true});
         let pending = results.get(runId);
         if (!pending) {
           pending = Promise.resolve().then(() => authorized() && typeof onScore === 'function'

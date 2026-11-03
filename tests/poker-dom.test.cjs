@@ -43,19 +43,20 @@ const root=path.join(__dirname,'..');
    try{
     assert.ok(s.find('[data-action=resume]'),'reopening a finished hand shows the entry first');
     assert.equal(s.find('.my-cards'),null);s.click('[data-action=resume]');
-    assert.equal(s.find('.result-breakdown div:first-child dd').textContent,scenario.totals[seat].toLocaleString('ko-KR')+' G');
-    assert.equal(s.find('.result-breakdown div:last-child dd').textContent,g.result.payouts[seat].toLocaleString('ko-KR')+' G');
-    assert.equal(s.find('.result-net-label').textContent,'최종 손익');
+    const ownNet=g.result.net[seat],outcome=ownNet>0?'gold-gain':ownNet<0?'gold-loss':'gold-even';
+    assert.equal(s.find('.game-result-card').dataset.resultOutcome,outcome);
+    assert.equal(s.find('.game-result-metric').textContent,(ownNet>0?'+':'')+ownNet.toLocaleString('ko-KR')+' G');
+    assert.ok(s.find('.game-result-share'));
     if(seat===0){
      assert.ok(s.find('.felt .table-start-overlay [data-action=online-ready]'),'rematch starts from the table popup');
      s.click('[data-action=inspect-result]');assert.equal(s.find('.table-start-overlay'),null);
      assert.equal(s.find('.player').hasAttribute('inert'),false,'reviewing the result makes cards accessible');
      s.click('[data-action=show-start]');assert.ok(s.find('.felt .table-start-overlay'));
-     assert.equal(s.find('.result-copy b').textContent,scenario.title);
-     assert.equal(s.find('.result-banner').classList.contains('result-win'),!!scenario.victory);
+     assert.equal(s.find('.result-copy b').textContent,scenario.net>0?'골드 획득':scenario.net<0?'골드 손실':'골드 변동 없음');
+     assert.equal(s.find('.result-banner').classList.contains('result-win'),scenario.net>0);
      const amount=s.find('.result-banner>strong');
      assert.equal(amount.classList.contains('loss'),scenario.net<0);
-     assert.equal(amount.textContent,'최종 손익'+(scenario.net>0?'+':'')+scenario.net.toLocaleString('ko-KR')+'G');
+     assert.equal(amount.textContent,(scenario.net>0?'+':'')+scenario.net.toLocaleString('ko-KR')+'G');
     }
    }finally{s.close();}
   }

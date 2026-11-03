@@ -127,7 +127,7 @@
       bar.append(close);
       frame = document.createElement('iframe');
       // Reopening must fetch current HTML; round rules still come from the server.
-      const params = new URLSearchParams({ v: '20261101-matgo-pi-order1', open: String(Date.now()) });
+      const params = new URLSearchParams({ v: '20261103-game-results1', open: String(Date.now()) });
       if(/^[A-Fa-f0-9]{8}$/.test(options.inviteCode||''))params.set('friend_code',options.inviteCode);
       if (/^[0-9a-f-]{36}$/i.test(options.roomId || '')) params.set('room_id', options.roomId);
       if (/^[0-9]+$/.test(String(options.roomNo || ''))) params.set('room_no', options.roomNo);
@@ -137,6 +137,7 @@
       if (/^[0-9a-f-]{36}$/i.test(options.createRequest || '')) params.set('create_request', options.createRequest);
       frame.src = 'games/matgo-online.html?' + params.toString();
       frame.title = '오쭈다 맞고';
+      frame.allow = 'web-share; clipboard-write';
       frame.style.cssText = 'flex:1;min-height:0;width:100%;border:0';
       overlay.append(bar, frame);
       document.body.appendChild(overlay);

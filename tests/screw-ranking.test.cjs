@@ -14,7 +14,7 @@ function fixture(){
   worldGameAssetRequest:0,worldClosingGames:null,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
   gt:{arcadeEnd:noop},_r:{screw:{unit:'점'}},w:String,nf:noop,B2:noop});
  vm.runInContext(part('function pendingScrewScore(', 'async function _2(')+
-  part('async function _2(', 'function sf(')+part('async function S2(', 'function z2(')+
+  part('async function _2(', 'function sf(')+part('var worldResultIds=', 'async function S2(')+part('async function S2(', 'function z2(')+
   part('function El(', 'var Cl=')+part('function M2(', 'function Ja(')+part('function Ja(', 'function D2('),context);
  context.ti=noop;context.nf=noop;
  return {context,calls,timers,messages,storage,setOwner:value=>{owner=value;},setSubmit:value=>{submit=value;},

@@ -1,0 +1,58 @@
+.game-result-dialog{padding:0!important;border:0!important;border-radius:26px!important;background:transparent!important;color:#27342f;width:min(430px,calc(100vw - 24px));max-width:430px;max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 24px 90px #10231c40}
+.game-result-dialog::backdrop{background:#101f27a6;backdrop-filter:blur(5px)}
+.game-result-card{--result-accent:#36876b;--result-soft:#eaf5ed;position:relative;isolation:isolate;box-sizing:border-box;width:100%;max-width:430px;margin:auto;padding:24px 22px 18px;border:1px solid #e4e9e2;border-radius:26px;background:#fffefa;color:#27342f;box-shadow:0 16px 52px #14291f26;text-align:center;font-family:inherit;overflow:hidden;line-height:1.5}
+.game-result-card *, .game-result-card *::before,.game-result-card *::after{box-sizing:border-box}
+.game-result-card[data-result-outcome="record"],.game-result-card[data-result-outcome="gold-gain"]{--result-accent:#a77519;--result-soft:#fff2cb}
+.game-result-card[data-result-outcome="failure"],.game-result-card[data-result-outcome="gold-loss"]{--result-accent:#627a9a;--result-soft:#edf1f8}
+.game-result-card[data-result-outcome="draw"],.game-result-card[data-result-outcome="complete"],.game-result-card[data-result-outcome="score"],.game-result-card[data-result-outcome="gold-even"]{--result-accent:#627868;--result-soft:#eff3ec}
+.game-result-content{position:relative;z-index:2}
+.game-result-icon{display:grid;place-items:center;width:76px;height:76px;margin:0 auto 12px;border-radius:25px;color:var(--result-accent);background:var(--result-soft)}
+.game-result-icon svg{width:56px;height:56px}
+.game-result-icon-star{fill:#f7cd64;stroke-width:1.6}
+.game-result-icon-tear{fill:#93c3e7;stroke:#93c3e7;stroke-width:1}
+.game-result-card h2.game-result-title{margin:0 0 8px;padding:0;font-size:29px;font-weight:850;letter-spacing:-.04em;line-height:1.25;color:#27342f}
+.game-result-card .game-result-metric{min-height:0;margin:0;font-size:18px;font-weight:750;line-height:1.45;white-space:pre-line;overflow-wrap:anywhere;color:#40574a}
+.game-result-card .game-result-metric:empty{display:none}
+.game-result-card .game-result-metric>p,.game-result-card .game-result-metric>div{margin:0}
+.game-result-card .game-result-encouragement{margin:7px 0 0;font-size:14px;line-height:1.5;color:#728277;white-space:pre-line}
+.game-result-card [hidden]{display:none!important}
+.game-result-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:22px;align-items:stretch}
+.game-result-actions:empty{display:none}
+.game-result-actions>:only-child{grid-column:1/-1}
+.game-result-actions:has(>:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+.game-result-actions>div,.game-result-actions>section{grid-column:1/-1}
+.game-result-actions button,.game-result-actions a,.game-result-card .game-result-extra button{min-height:44px;max-width:100%;margin:0;padding:10px 8px;border:1px solid #dbe5db;border-radius:12px;background:#f1f6ee;color:#304d3c;font:inherit;font-size:14px;font-weight:750;line-height:1.4;text-decoration:none;cursor:pointer;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+.game-result-actions button:hover:not(:disabled),.game-result-card .game-result-extra button:hover:not(:disabled){background:#e4efdf}
+.game-result-actions button:disabled,.game-result-card .game-result-extra button:disabled{opacity:.43;cursor:default;box-shadow:none}
+.game-result-card button:focus-visible,.game-result-card a:focus-visible,.game-result-card .game-result-copy input:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
+.game-result-card .game-result-extra{margin-top:10px;font-size:13px;line-height:1.5;color:#788279;overflow-wrap:anywhere}
+.game-result-card .game-result-extra:empty{display:none}
+.game-result-card .game-result-extra p{margin:5px 0;font:inherit;color:inherit}
+.game-result-card button.game-result-share{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;min-height:46px;margin:12px 0 0;padding:11px 14px;border:0;border-radius:13px;background:var(--result-accent);color:#fff;font:inherit;font-size:15px;font-weight:800;line-height:1.5;cursor:pointer;box-shadow:none;touch-action:manipulation}
+.game-result-share svg{width:18px;height:18px;flex-shrink:0}
+.game-result-share:hover{filter:brightness(1.06)}
+.game-result-share:disabled{opacity:.65;cursor:wait}
+.game-result-card .game-result-share-status{margin:8px 0 0;font-size:12px;color:#697c6c;line-height:1.5}
+.game-result-card .game-result-share-status:empty{display:none}
+.game-result-card .game-result-copy{margin-top:12px;text-align:left;font-size:12px;color:#697c6c}
+.game-result-card .game-result-copy label{display:block;font-weight:700}
+.game-result-card .game-result-copy input{width:100%;margin-top:4px;padding:10px;border:1px solid #d9e2d7;border-radius:10px;background:#fff;color:#304d3c;font:inherit;user-select:text}
+.game-result-card .game-result-copy p{margin:5px 0 0}
+.game-result-effects{position:absolute;z-index:1;inset:0;overflow:hidden;pointer-events:none!important;border-radius:inherit}
+.game-result-effects *{position:absolute;display:block;pointer-events:none!important;will-change:transform,opacity}
+.game-result-confetti{left:var(--x);top:-12px;width:7px;height:12px;border-radius:2px;background:var(--color);opacity:0;animation:game-result-confetti 2.9s var(--delay) cubic-bezier(.2,.5,.5,1) both}
+.game-result-confetti:nth-child(3n){height:7px;border-radius:50%}
+.game-result-spark{left:var(--x);top:var(--y);width:4px;height:15px;background:var(--color);border-radius:5px;opacity:0;animation:game-result-firework 1.25s var(--delay) ease-out both}
+.game-result-light{left:var(--x);bottom:-30%;width:42%;height:155%;background:linear-gradient(0deg,#f7db813b,transparent 88%);clip-path:polygon(48% 100%,0 0,100% 0,52% 100%);transform-origin:50% 100%;opacity:0;animation:game-result-light 2.8s var(--delay) ease-in-out both}
+.game-result-tear{left:var(--x);top:12%;width:7px;height:12px;border-radius:60% 40% 65% 40%;background:#a9c5df88;opacity:0;animation:game-result-tear 1.9s var(--delay) ease-in both}
+.is-celebrating .game-result-icon{animation:game-result-pop .65s cubic-bezier(.2,.7,.25,1.3) both}
+.is-sad .game-result-icon{animation:game-result-sad 1.4s ease both}
+@keyframes game-result-pop{0%{transform:scale(.65) rotate(-7deg);opacity:.3}65%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes game-result-confetti{0%{transform:translate3d(0,-12px,0) rotate(0);opacity:0}10%{opacity:.85}80%{opacity:.7}100%{transform:translate3d(var(--drift),560px,0) rotate(var(--turn));opacity:0}}
+@keyframes game-result-firework{0%{transform:rotate(var(--angle)) translateY(0) scale(.2);opacity:0}20%{opacity:.8}100%{transform:rotate(var(--angle)) translateY(-76px) scale(.35);opacity:0}}
+@keyframes game-result-light{0%,100%{opacity:0;transform:rotate(calc(var(--angle) - 8deg))}35%,65%{opacity:.7;transform:rotate(calc(var(--angle) + 8deg))}}
+@keyframes game-result-tear{0%{opacity:0;transform:translateY(0) rotate(-15deg)}20%{opacity:.65}100%{opacity:0;transform:translateY(180px) rotate(-15deg)}}
+@keyframes game-result-sad{0%{transform:translateY(-5px) rotate(0)}50%{transform:translateY(4px) rotate(-5deg)}100%{transform:translateY(1px) rotate(-2deg)}}
+@media(max-width:380px){.game-result-card{padding:20px 15px 15px;border-radius:22px}.game-result-icon{width:66px;height:66px;margin-bottom:10px}.game-result-icon svg{width:49px;height:49px}.game-result-card h2.game-result-title{font-size:26px}.game-result-card .game-result-metric{font-size:16px}.game-result-actions{gap:6px;margin-top:18px}.game-result-actions button,.game-result-actions a{font-size:13px;padding:9px 6px}}
+@media(max-height:520px){.game-result-card{padding-top:14px;padding-bottom:12px}.game-result-icon{width:48px;height:48px;margin-bottom:6px;border-radius:16px}.game-result-icon svg{width:39px;height:39px}.game-result-card h2.game-result-title{font-size:24px}.game-result-actions{margin-top:12px}}
+@media(prefers-reduced-motion:reduce){.game-result-card *{animation:none!important;transition:none!important}.game-result-effects{display:none}}

@@ -120,7 +120,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261101-matgo-pi-order1&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261103-game-results1&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}
@@ -360,7 +360,9 @@ function showResult(){
   clearTimeout(toast.timer);$('#toast').hidden=true;
   const delta=r.paidDelta[me],draw=r.type==='nagari',won=r.winner===me;
   const canRematch=!room.departed.some(Boolean),empty=room.gold[me]===0,waitingRefill=!empty&&room.gold[1-me]===0;
-  modal(`<div class="result-details"><h2>${draw?'나가리':won?'내가 이겼어요!':'상대가 이겼어요'}</h2><div class="big${delta<0?' negative':''}"><span class="gold-amount">${signed(delta)}</span><small class="gold-unit">G</small></div>${r.det?'<table class="sc">'+r.det.map(([label,value])=>'<tr><td>'+escape(label)+'</td><td>'+escape(value)+(typeof value==='number'?'점':'')+'</td></tr>').join('')+'<tr><td><b>합계</b></td><td><b>'+r.total+'점</b>'+(r.pts!==undefined?'<small class="score-formula">'+r.pts+'점 × '+r.mult+'</small>':'')+'</td></tr></table>':''}${draw?'<p>다음 판은 점수 ×'+r.nextCarry+'</p>':''}${r.firstPpukGold[me]?'<div class="gold-breakdown"><div><span>첫뻑 정산</span> <strong>'+signed(r.firstPpukGold[me])+'G</strong></div></div>':''}<p>이번 판 · 점당 ${number(room.rate??100)}G</p><p class="result-balance">내 골드 <strong>${number(room.gold[me])}</strong></p>${room.rankExcluded?.[me]?'<p class="result-note">컴퓨터가 대신 친 이번 판은 골드만 정산하고 순위에는 반영하지 않아요.</p>':''}<p class="result-note">정산은 상대의 보유 골드 한도 안에서 이뤄져요.</p></div><div class="row result-actions">${canRematch?'<button class="btn gold" id="rematch" '+(room.ready[me]||waitingRefill?'disabled':'')+'>'+(empty?'골드 충전':waitingRefill?'상대 충전 기다리는 중':room.ready[me]?'상대 준비 기다리는 중':room.ready[1-me]?'상대 준비 완료 · 다음 판':'다음 판')+'</button>':''}<button class="btn ghost" id="result-exit">나가기</button></div>`,{rematch:()=>ready(),'result-lobby':()=>leave(false),'result-exit':()=>leave(true)},key);
+  const actions=`${canRematch?'<button id="rematch" '+(room.ready[me]||waitingRefill?'disabled':'')+'>'+(empty?'골드 충전':waitingRefill?'상대 충전 중':room.ready[me]?'상대 준비 중':'다음 판')+'</button>':''}<button id="result-exit">나가기</button>`;
+  const extra=`${draw?'<p>다음 판 ×'+r.nextCarry+'</p>':''}${room.gold[me]<1000?'<p>보유 '+number(room.gold[me])+' G</p>':''}${room.rankExcluded?.[me]?'<p role="status">순위 제외 · 정산 완료</p>':''}`;
+  modal(window.OjjudaGameResults.markup({game:'matgo',outcome:draw?'draw':won?'success':'failure',metric:`${signed(delta)} G`,key,actions,extra}),{rematch:()=>ready(),'result-lobby':()=>leave(false),'result-exit':()=>leave(true)},key);
 }
 async function ready(){if(closed||busy)return;if(room.gold[room.seat]===0){await refill();return;}busy=true;try{await wallet.prepareStake();await accept((await rpc({action:'online_ready',room_id:room.id,cursor:0})).room);}catch(e){toast(e.message);}finally{busy=false;updateEnabled();renderRoom();}}
 async function leave(close){if(friendInviteId){try{parent.OjjudaFriendInvites?.cancel(friendInviteId);}catch{}friendInviteId=null;}

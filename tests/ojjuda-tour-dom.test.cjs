@@ -13,6 +13,7 @@ function game(embedded = false, storage = {}) {
   const messages = [];
   if (embedded) Object.defineProperty(w, 'parent', {value:{postMessage:(...args) => messages.push(args)}});
   w.confirm = () => true;
+  require('./game-results-fixture.cjs')(w);
   for (const script of w.document.querySelectorAll('script:not([src])')) require('node:vm').runInContext(script.textContent, dom.getInternalVMContext());
   require('node:vm').runInContext(read('games/ojjuda-tour/tour-entry.js'), dom.getInternalVMContext());
   w.eval('sfx=()=>{}');
@@ -148,14 +149,14 @@ function eliminationGame() {
     const result=messages.at(-1)[0];
     assert.equal(result.runId,runId);assert.equal(result.myRank,4);
     assert.equal(result.ranking[result.myRank-1].assets,0,'the eliminated human is recorded, never the AI winner');
-    assert.match($('#tourRecordStatus').textContent,/기록하는 중/);
+    assert.match($('#tourRecordStatus').textContent,/기록 저장 중/);
     receive({type:'ojjuda-tour-record',runId,ok:true},'https://other.test');
     receive({type:'ojjuda-tour-record',runId:'different',ok:true});
-    assert.match($('#tourRecordStatus').textContent,/기록하는 중/);
+    assert.match($('#tourRecordStatus').textContent,/기록 저장 중/);
     receive({type:'ojjuda-tour-record',runId,ok:false});
     $('#tourRecordStatus button').click();assert.equal(messages.at(-1)[0].runId,runId,'retry retains the result identity');
     receive({type:'ojjuda-tour-record',runId,ok:true});
-    assert.match($('#tourRecordStatus').textContent,/게임 순위에 기록했어요/);
+    assert.match($('#tourRecordStatus').textContent,/기록 저장 완료/);
   } finally {resultGame.dom.window.close();}
   const resultHost=new JSDOM('',{url:'https://fixture.test/world.html',runScripts:'outside-only'});
   try {

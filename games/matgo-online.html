@@ -39,6 +39,9 @@
 <link rel="stylesheet" href="./matgo-opponent.css?v=20261014-cartoon1">
 <link rel="stylesheet" href="/multiplayer-entry.css?v=20261029-matgo-deal1">
 <script src="/multiplayer-entry.js?v=20261029-matgo-deal1" defer></script>
+<link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
+<script src="/game-results.js?v=20261103-game-results1"></script>
+<style>.dialog>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 </head>
 <body data-mp-entry="true">
 <div id="gate" class="gate" hidden><h1>오쭈다 맞고</h1><p id="gate-message">입장 정보를 확인하고 있어요.</p><button id="retry" class="btn" hidden>다시 확인</button></div>
@@ -52,6 +55,6 @@
 </div>
 <div id="toast" role="status" hidden></div>
 <div id="event" class="event" aria-live="polite" hidden></div>
-<script type="module" src="./matgo-online.mjs?v=20261101-matgo-pi-order1"></script>
+<script type="module" src="./matgo-online.mjs?v=20261103-game-results1"></script>
 </body>
 </html>

@@ -58,6 +58,7 @@ const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
               if(picked)break;
             }
             for(let i=0;i<30;i++)game.update(0.04);
+            if(game.stageCleared){const previous=state.L;for(let i=0;i<80;i++)game.update(0.04);if(state.L!==previous)throw Error('Stage advanced without a choice');if(!game.continueStage(previous+1))throw Error('Explicit next-stage choice failed');}
           }
           game.draw(ctx);return {stage:state.L,rounds,purchases,elapsed:Math.round(performance.now()-begin),score:state.score};
         },

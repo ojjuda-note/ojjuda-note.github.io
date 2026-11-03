@@ -96,8 +96,8 @@ async function appHarness(saved = null, ammoOptions = {}) {
   let requestSequence = 0;
   const harnessId = ++harnessSequence;
   const uuid = () => `00000000-0000-4000-8000-${String(harnessId * 100000 + ++requestSequence).padStart(12, '0')}`;
-  const owner = '11111111-1111-4111-8111-111111111111', sessionId = '22222222-2222-4222-8222-222222222222', origin = 'https://ojjuda.test';
-  const ammoRequests = [], heldActions = new Set(ammoOptions.hold || []), receipts = ammoOptions.server?.receipts || new Map(), runs = ammoOptions.server?.runs || new Map();
+  const owner = ammoOptions.guest ? null : '11111111-1111-4111-8111-111111111111', sessionId = '22222222-2222-4222-8222-222222222222', origin = 'https://ojjuda.test';
+  const ammoRequests = [], finishedRounds = [], heldActions = new Set(ammoOptions.hold || []), receipts = ammoOptions.server?.receipts || new Map(), runs = ammoOptions.server?.runs || new Map();
   const account = ammoOptions.server?.account || { remaining: ammoOptions.remaining ?? 10000, coins: ammoOptions.coins ?? 100, main_rounds: ammoOptions.mainRounds ?? saved?.mainRounds ?? 0, revision: 1,
     coach_expires_at: ammoOptions.coachExpiresAt ?? (ammoOptions.coachActive ? new Date(SERVER_EPOCH + 86400000).toISOString() : null) };
   const accountSnapshot = extra => ({ ok: true, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
@@ -125,8 +125,9 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const replyAmmo = (request, result = executeAmmo(request)) => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'ammo-response', owner, sessionId, requestId: request.requestId, action: request.action, result } });
   const parentBridge = { postMessage(data, targetOrigin) {
     assert.equal(targetOrigin, origin);
-    if (data.type === 'ready') Promise.resolve().then(() => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'init', owner, sessionId, available: true } }));
+    if (data.type === 'ready') Promise.resolve().then(() => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'init', owner, sessionId, available: !ammoOptions.guest } }));
     if (data.type === 'ammo-request') { ammoRequests.push(data);if (!heldActions.has(data.action)) Promise.resolve().then(() => replyAmmo(data)); }
+    if (data.type === 'round-finished') finishedRounds.push(JSON.parse(JSON.stringify(data)));
   } };
   window.parent = ammoOptions.offline ? window : parentBridge;window.location = { origin };
   const fakeMath = Object.create(Math); fakeMath.random = () => 0.5;
@@ -156,6 +157,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   return {
     api, engine: engine.namespace, animals: animals.namespace, view: view.namespace, cinematic: cinematic.namespace, coach: coach.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, animalFrames, speech, flush,
     ammo: { account, receipts, runs, requests: ammoRequests, held: heldActions, reply: replyAmmo, execute: executeAmmo, snapshot: accountSnapshot },
+    finishedRounds,
     get viewport() { return { ...viewport }; },
     get sceneryFrame() { return sceneryFrame; },
     get firstPersonFrame() { return firstPersonFrame; },
@@ -358,6 +360,14 @@ async function startPreparedEvent(app) {
   assert.equal(modalActionDisabled(app, 'start-event'), false);
   modalAction(app, 'start-event');await app.flush();
   assert.equal(state.eventStarted, true);assert.equal(state.mode, 'ready');assert.equal(state.modal, null);assert.equal(state.time, 0);
+}
+
+async function choosePendingEvent(app) {
+  assert.equal(app.api.state.isEvent, false, 'the main result remains visible before event entry');
+  assert.equal(app.api.state.mode, 'finished');assert.equal(app.api.state.modal, 'result');
+  assert.ok(app.api.state.pendingEventLevel);
+  assert.equal(modalActionDisabled(app, 'continue-event'), false);
+  modalAction(app, 'continue-event');await app.flush();
 }
 
 async function enterAndStartEvent(app, level) {
@@ -1629,7 +1639,7 @@ test('the Next button reaches mission 220 and final records survive reload witho
   assert.equal(app.api.progress.unlocked, STAGE_COUNT, 'the final clear never creates mission 221');
   assert.equal(app.api.progress.best[STAGE_COUNT], 50);
   assert.deepEqual(app.ammo.requests.filter(request => request.action === 'round-complete').map(request => request.stage), [STAGE_COUNT - 1, STAGE_COUNT]);
-  assert.match(app.getElement('modalContent').innerHTML, /data-action="next-stage" disabled/);
+  assert.match(app.getElement('modalContent').innerHTML, /data-action="next-stage"[^>]*\bdisabled\b/);
   const reloaded = await appHarness(app.snapshot());
   assert.equal(reloaded.api.progress.unlocked, STAGE_COUNT);assert.equal(reloaded.api.state.stage.id, STAGE_COUNT);
   assert.equal(reloaded.api.progress.coins, 550, 'both newly cleared stages retain their completion bonuses');
@@ -1703,13 +1713,14 @@ test('an unfinished main round cannot use a stale Next even after reaching the s
   assert.equal(app.api.progress.best[17], 50);assert.equal(app.api.progress.best[18], 50);
 });
 
-test('automatic events preserve the main clear through preparation, exchanges and shops without granting a new clear', async () => {
+test('chosen fifth-round events preserve the main clear through preparation, exchanges and shops without granting a new clear', async () => {
   for (const [stage, passed] of [[17, false], [17, true], [STAGE_COUNT, true]]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: stage,
       best: { [stage]: 50 }, mainRounds: 4, coins: 100000, clayCredits: 10, stabilizers: 2, sound: false });
     const { state } = app.api, goal = state.stage.goal;
     state.score = goal - (passed ? 0 : 1);state.used = 5;
     app.api.finishRound();await app.flush();
+    await choosePendingEvent(app);
     assert.equal(state.isEvent, true);assert.equal(state.modal, 'event-ready');
     assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.api.progress.lastStage, stage);
     assert.equal(app.snapshot().lastStage, stage, 'entering the event alone never saves a successor stage');
@@ -2343,7 +2354,7 @@ test('finished clay events always offer guns and stage choices while exchange av
     assert.equal(state.modal, 'result', `${credits} credits and ${inventory} items`);
     assert.ok(state.resultSummary, 'the completed result is retained while its rewards are available');
     const html = app.getElement('modalContent').innerHTML;
-    assert.match(html, /표적 0개 격파/);assert.match(html, /안정제 1개 교환 · 접시 점수 5개/);assert.match(html, /총기 구매·장착/);
+    assert.match(html, /표적 0개 격파/);assert.match(html, /안정제 · 접시 5개/);assert.match(html, /총기 상점/);
     assert.equal(modalActionDisabled(app, 'buy-stabilizer'), !exchange);
     assert.equal(modalActionDisabled(app, 'result-shop'), false, 'gun shopping remains available even with no exchange credits');
     for (const action of ['previous-stage', 'retry']) assert.equal(modalActionDisabled(app, action), false);
@@ -2917,6 +2928,7 @@ test('rejected and unknown main-round saves never advance cadence or duplicate a
     const attempts = app.ammo.requests.filter(item => item.action === 'round-complete');
     assert.equal(attempts.length, 2);assert.equal(attempts[0].requestId, attempts[1].requestId);
     assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.ammo.account.main_rounds, 5);assert.equal(app.ammo.account.remaining, 10020);
+    await choosePendingEvent(app);
     assert.equal(app.api.state.isEvent, true);assert.equal(app.api.state.stage.eventLevel, 1);assert.equal(app.api.progress.lastStage, 1);
     assert.equal(app.api.progress.coins, 25, 'retrying the confirmed main-round receipt cannot award the game bonus again');
   }
@@ -2932,7 +2944,7 @@ test('an unknown round registration can be retried before completing that same s
   const starts = app.ammo.requests.filter(request => request.action === 'round-start');
   assert.equal(starts.length, 2);assert.equal(starts[0].requestId, starts[1].requestId);
   assert.equal(app.ammo.requests.filter(request => request.action === 'round-complete').length, 1);
-  assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.api.progress.coins, 25);assert.equal(app.api.state.isEvent, true);
+  assert.equal(app.api.progress.mainRounds, 5);assert.equal(app.api.progress.coins, 25);await choosePendingEvent(app);assert.equal(app.api.state.isEvent, true);
 });
 
 test('connected main play waits for its server run and recovered intents cannot strand the next registration', async () => {
@@ -2963,6 +2975,45 @@ test('connected main play waits for its server run and recovered intents cannot 
   }
 });
 
+test('guest main completion reports once before replay and leaves the finished result available', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false }, { guest: true });
+  app.frames(30);assert.equal(app.api.ammo.connection, 'unavailable');assert.equal(app.finishedRounds.length, 0,
+    'entry, guidance and target previews are not finished rounds');
+  const { state } = app.api, runId = state.runId;
+  state.score = 0;state.used = 5;app.api.finishRound();app.api.finishRound();await app.flush();
+  assert.equal(state.mode, 'finished');assert.equal(state.modal, 'result');assert.equal(app.finishedRounds.length, 1);
+  assert.deepEqual(app.finishedRounds[0], { source: 'ojjuda-archery-game', type: 'round-finished', kind: 'main', owner: null,
+    sessionId: '22222222-2222-4222-8222-222222222222', runId, stage: 1 });
+  assert.equal(app.ammo.requests.length, 0, 'guest completion cannot submit a paid or server reward request');
+  const completedEpoch = state.roundEpoch;
+  app.window.OjjudaGameResults = { canPlay: () => false };
+  modalAction(app, 'retry');modalAction(app, 'previous-stage');modalAction(app, 'next-stage');
+  app.api.startStage(2);app.api.enterEvent(1);
+  assert.equal(state.roundEpoch, completedEpoch);assert.equal(state.modal, 'result');assert.equal(state.isEvent, false);
+  assert.equal(app.finishedRounds.length, 1, 'blocked replay keeps the current popup and does not consume again');
+});
+
+test('event completion and result redraws never duplicate the main round guest notice', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false });
+  await enterAndStartEvent(app);app.api.finishRound();app.api.finishRound();
+  assert.equal(app.finishedRounds.length, 0, 'an event is not a completed main round');
+  app.api.exitEvent();await app.flush();
+  app.api.state.score = 50;app.api.state.used = 5;app.api.finishRound();await app.flush();
+  assert.equal(app.finishedRounds.length, 1);
+  app.api.finishRound();app.api.closeModal();assert.equal(app.finishedRounds.length, 1);
+  await enterAndStartEvent(app);app.api.finishRound();assert.equal(app.finishedRounds.length, 1);
+});
+
+test('a late completion retains its original account and iframe session identity', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false }, { guest: true });
+  app.window.emit('message', { source: app.window.parent, origin: app.window.location.origin,
+    data: { source: 'ojjuda-archery-world', type: 'init', owner: 'another-owner', sessionId: '33333333-3333-4333-8333-333333333333', available: false } });
+  app.api.state.used = 5;app.api.finishRound();await app.flush();
+  assert.equal(app.finishedRounds.length, 1);assert.equal(app.finishedRounds[0].owner, null);
+  assert.equal(app.finishedRounds[0].sessionId, '22222222-2222-4222-8222-222222222222',
+    'the parent can reject an old account/session without attributing its result to the new owner');
+});
+
 test('every fifth completed main round offers event preparation and event play never advances that cadence', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false });
   for (let round = 1; round <= 5; round++) {
@@ -2972,6 +3023,7 @@ test('every fifth completed main round offers event preparation and event play n
     if (round < 5) { assert.equal(app.api.state.isEvent, false);assert.equal(app.api.state.mode, 'finished');modalAction(app, 'retry');await app.flush(); }
   }
   const state = app.api.state;
+  await choosePendingEvent(app);
   assert.equal(state.isEvent, true);assert.equal(state.stage.eventLevel, 1);assert.equal(state.stage.targetsPerWave, 2);
   assert.equal(app.api.progress.lastStage, 1);assert.equal(app.api.progress.unlocked, STAGE_COUNT, 'event entry keeps the current main stage while the full picker remains available');
   assert.equal(app.snapshot().mainRounds, 5);assert.equal(app.snapshot().lastStage, 1);
@@ -3000,7 +3052,7 @@ test('every fifth completed main round offers event preparation and event play n
     assert.equal(reloaded.api.progress.mainRounds, round);
     if (round < 10) { assert.equal(reloaded.api.state.isEvent, false);modalAction(reloaded, 'retry');await reloaded.flush(); }
   }
-  assert.equal(reloaded.api.state.isEvent, true);assert.equal(reloaded.api.state.stage.eventLevel, 2);
+  await choosePendingEvent(reloaded);assert.equal(reloaded.api.state.isEvent, true);assert.equal(reloaded.api.state.stage.eventLevel, 2);
   assert.equal(reloaded.api.state.stage.targetsPerWave, 3);
   assert.equal(reloaded.api.progress.lastStage, 2, 'an automatic event after a failed main round never advances the saved resume stage');
   const failedReload = await appHarness(reloaded.snapshot(), { server: reloaded.ammo });

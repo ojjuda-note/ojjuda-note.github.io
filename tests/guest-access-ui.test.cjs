@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8'),origin='https://guest-access.test';
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-const helpers=['game-session.js', 'guest-access.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
+const helpers=['game-session.js', 'guest-access.js','game-results.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};
@@ -47,7 +47,12 @@ const cardId='00000000-0000-4000-8000-000000000001';
   await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.open('mole'));await login('world');
   // Closing an unplayed game must not consume the trial.
   await enter();await page.evaluate(()=>{guestFixture.open('stacker');guestFixture.close();});assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null);
-  for(const kind of ['chess','janggi','carom4','carom3','pool8']){await enter();await page.evaluate(kind=>guestFixture.board(kind),kind);await login('world');}
+  for(const kind of ['chess','janggi','carom4','carom3','pool8']){
+   await enter();await page.evaluate(kind=>guestFixture.board(kind),kind);
+   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1',kind+' consumes the trial');
+   await page.waitForTimeout(1750);assert.equal(new URL(page.url()).pathname,'/world.html',kind+' keeps its shareable result');
+   await page.evaluate(()=>guestFixture.open('mole'));await login('world');
+  }
   const uuid='10000000-0000-4000-8000-000000000001';
   for(const [kind,data] of [
    ['mines',{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:uuid}],
@@ -64,6 +69,11 @@ const cardId='00000000-0000-4000-8000-000000000001';
    await page.evaluate(data=>{dispatchEvent(new MessageEvent('message',{origin:'https://foreign.invalid',source:document.querySelector('iframe').contentWindow,data}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source:window,data}));},data);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,kind+' ignores forged sources');
    await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round,mode:'solo'}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
+   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1',kind+' consumes the trial');
+   if(kind!=='saetbyeol'){
+    await page.waitForTimeout(1750);assert.equal(new URL(page.url()).pathname,'/world.html',kind+' keeps the shareable result');
+    await page.evaluate(()=>guestFixture.open('mole'));
+   }
    await login('world').catch(error=>{error.message=kind+' completion: '+error.message;throw error;});
   }
   await enter();await page.evaluate(()=>{guestFixture.member();guestFixture.open('stacker');});await page.locator('[data-g=start]').click();await page.evaluate(()=>guestFixture.finish(0));
@@ -90,7 +100,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   await page.locator('#forgot-trigger').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   assert.deepEqual(errors,[]);
-  console.log('PASS: guest card/reply opens real login; first game allowed, shareable results stay open with the trial consumed, replay and other completions open login, six iframe sources and five board games, member replay unaffected; explicit signup/recovery and card return destination preserved');
+  console.log('PASS: guest card/reply opens real login; shareable iframe and board results stay open with the trial consumed, next entry is gated, Saetbyeol keeps its existing flow, member replay unaffected; explicit signup/recovery and card return destination preserved');
   await context.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

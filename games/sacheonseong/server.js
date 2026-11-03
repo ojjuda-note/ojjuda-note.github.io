@@ -4,29 +4,42 @@
  const rules=window.OjjudaSacheonseongRanking,KEY='ojjuda-sacheonseong-pending-v1',$=id=>document.getElementById(id);
  const embedded=parent!==window,uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
  function newId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,n=>n.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
- const purchases=new Map();
+ const purchases=new Map(),leaderRequests=new Map(),deliveries=new Map();
+ const monthKey=()=>new Date(Date.now()+8*3600000).toISOString().slice(0,7);
  let owner,stage=1,queue=[],waiting=[],busy=null,deliveryTimer,rankingTimer,rankingId=null,rankStage=0;
  try{const saved=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(saved))queue=saved.filter(r=>r&&uuid.test(r.id)&&rules.game(r.stage)&&rules.score(r.duration)!==null&&(r.owner==='guest'||uuid.test(r.owner))).slice(-100);}catch{}
  function persist(){try{localStorage.setItem(KEY,JSON.stringify(queue));}catch{note('순위 전송 대기 기록을 저장할 수 없어요. 이 화면에서 다시 등록해 주세요.',true);}}
  function note(message,retry=false){$('server-note').textContent=message;$('retry-records').hidden=!retry;}
  function send(message){if(embedded)parent.postMessage({source:'ojjuda-sacheonseong-game',...message},location.origin);}
+ function settleDelivery(id,result){const pending=deliveries.get(id);if(!pending)return;deliveries.delete(id);pending.resolve(result);}
  function flush(){
   if(!embedded||owner===undefined||busy)return;
   const next=queue.find(r=>r.owner===owner);if(!next)return;
   busy=next.id;note(`${next.stage}단계 기록을 오락실 순위에 등록하고 있어요…`);
   send({type:'record',...next});
-  clearTimeout(deliveryTimer);deliveryTimer=setTimeout(()=>{busy=null;note('기록은 보관했어요. 연결되면 다시 등록해 주세요.',true);},20000);
+  clearTimeout(deliveryTimer);deliveryTimer=setTimeout(()=>{settleDelivery(next.id,{ok:false,reason:'pending'});busy=null;note('기록은 보관했어요. 연결되면 다시 등록해 주세요.',true);},20000);
  }
  function enqueue(item){
   if(queue.some(r=>r.id===item.id))return;
   queue.push({...item,owner});queue=queue.slice(-100);persist();flush();
  }
  function record(nextStage,result){
-  if(!embedded)return;
+  if(!embedded)return Promise.resolve({ok:false,reason:'standalone'});
   const item={id:newId(),stage:nextStage,duration:result.duration};
-  if(!rules.game(nextStage)||rules.score(item.duration)===null)return;
-  if(owner===undefined){waiting.push(item);return;}
-  enqueue(item);
+  if(!rules.game(nextStage)||rules.score(item.duration)===null)return Promise.resolve({ok:false,reason:'invalid'});
+  const promise=new Promise(resolve=>deliveries.set(item.id,{resolve}));
+  Object.defineProperty(promise,'id',{value:item.id});
+  if(owner===undefined)waiting.push(item);else enqueue(item);
+  return promise;
+ }
+ function leaderboard(){
+  if(!embedded||owner===undefined)return Promise.resolve({ok:false,reason:'unavailable'});
+  const id=newId(),requestOwner=owner,period=monthKey();
+  return new Promise(resolve=>{
+   const timer=setTimeout(()=>{leaderRequests.delete(id);resolve({ok:false,reason:'timeout'});},12000);
+   leaderRequests.set(id,{owner:requestOwner,period,timer,resolve});
+   send({type:'ranking',id,stage:0});
+  });
  }
  function buy(item){
   if(!embedded||owner==='guest')return Promise.resolve({ok:false,reason:'sign_in'});
@@ -74,8 +87,15 @@
   if(message.type==='purchase'&&message.owner===owner&&purchases.has(message.id)){purchases.get(message.id).finish(message.result||{ok:false,reason:'pending'});}
   if(message.type==='record'&&message.id===busy){
    clearTimeout(deliveryTimer);const saved=queue.find(r=>r.id===busy);busy=null;
+   const result={id:message.id,ok:message.ok===true,owner:message.owner,period:message.period,stage:saved?.stage};
+   settleDelivery(message.id,result);window.dispatchEvent(new CustomEvent('ojjuda:sacheonseong-record',{detail:result}));
    if(message.ok){queue=queue.filter(r=>r.id!==message.id);persist();note(`${saved?.stage||stage}단계 기록을 오락실 순위에 등록했어요.`);flush();}
    else note('기록은 보관했어요. 다시 등록해 주세요.',true);
+  }
+  if(message.type==='ranking'&&leaderRequests.has(message.id)){
+   const request=leaderRequests.get(message.id);leaderRequests.delete(message.id);clearTimeout(request.timer);
+   const valid=!message.error&&message.stage===0&&Array.isArray(message.rows)&&request.owner===owner&&message.owner===owner&&request.period===monthKey()&&message.period===request.period;
+   request.resolve(valid?{ok:true,owner,period:request.period,rows:message.rows}:{ok:false,reason:'unavailable'});
   }
   if(message.type==='ranking'&&message.id===rankingId&&$('online-rows')){
    clearTimeout(rankingTimer);if(message.error||!Array.isArray(message.rows))rankFailed();else renderRows(message.rows);
@@ -83,7 +103,7 @@
  });
  $('online-ranking').onclick=open;$('retry-records').onclick=flush;
  window.addEventListener('online',flush);
- window.OjjudaSacheonseongOnline={record,buy,newId,owner:()=>embedded?owner:'guest',stage:value=>{stage=value;}};
+ window.OjjudaSacheonseongOnline={record,buy,newId,leaderboard,monthKey,owner:()=>embedded?owner:'guest',stage:value=>{stage=value;}};
  if(embedded){note('오락실 게임순위에 연결하고 있어요…');send({type:'ready'});}
  else note('오락실에서 시작하면 완료 기록이 게임순위에 등록돼요.');
 })();

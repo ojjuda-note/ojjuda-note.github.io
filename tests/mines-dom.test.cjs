@@ -23,6 +23,7 @@ function game({member = 'guest', saved = null, legacy = null, initialize = true}
   $('#wrap').getBoundingClientRect = () => ({left:0,top:0,width:360,height:420});
   if (saved !== null) w.localStorage.setItem('ojjuda.mines.save.v1:' + member,JSON.stringify(saved));
   if (legacy !== null) w.localStorage.setItem('ojjuda-mines-v1',JSON.stringify(legacy));
+  require('./game-results-fixture.cjs')(w);
   w.eval(read('games/mines/rules.js')); w.eval(read('games/mines/entry.js'));
   const script = $('script:not([src])').textContent;
   w.eval(script.replace("setMode('dig');\nwindow.OjjudaMinesEntry.connect", "window.fixture={get state(){return state},get saved(){return save},get cells(){return cells},get level(){return L},get view(){return view},newGame,open,win,flag,question,plant,nb,checkCustom};\nsetMode('dig');\nwindow.OjjudaMinesEntry.connect"));

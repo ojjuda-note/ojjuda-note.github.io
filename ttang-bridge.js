@@ -63,7 +63,7 @@
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
   const status=document.createElement('span');status.id='ttang-save-status';status.setAttribute('role','status');status.textContent='월드땅따먹기';
   const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','월드땅따먹기 닫기');done.style.cssText='font:inherit;color:inherit;border:1px solid #ddccec;background:#eee2f8;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';done.onclick=close;
-  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261031-best-streak-rankings1';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261103-game-results1';frame.allow='web-share; clipboard-write';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
   const current=session,openedFrame=frame;
   if(/^[a-f0-9]{24}$/.test(hostCode||''))frame.addEventListener('load',async()=>{
    if(session!==current||!current.authorized())return;
@@ -110,7 +110,7 @@
   if(d.type==='ojjuda:ttang:close'){close();return;}
   if(d.type==='ojjuda:ttang:start'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(d.round||'')&&['solo','duo'].includes(d.mode)){current.round=d.round;current.mode=d.mode;status.textContent='월드땅따먹기';return;}
   if(d.type!=='ojjuda:ttang:result'||d.mode!==current.mode||!d.round||d.round!==current.round||typeof d.win!=='boolean'||current.submitted.has(d.round)||current.excluded.has(d.round))return;
-  window.OjjudaGuestAccess?.finished();
+  window.OjjudaGuestAccess?.finished({retainResult:true});
   await saveResult(current,d.win,d.round);
  });
 })();

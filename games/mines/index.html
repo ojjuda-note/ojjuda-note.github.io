@@ -106,6 +106,9 @@ button:focus-visible{outline:1px dotted #000;outline-offset:-5px}
 #cok:disabled{color:#808080}
 #fx{display:none}
 </style>
+<link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
+<script src="/game-results.js?v=20261103-game-results1"></script>
+<style>#minesResultCard:has(> .game-result-card){padding:0;min-width:0;width:min(430px,100%);background:transparent;border:0;box-shadow:none}#result{background:rgba(0,0,0,.4)}</style>
 </head>
 <body>
 <main id="minesEntry" aria-label="지뢰찾기 시작화면"><section class="game-entry">
@@ -135,7 +138,7 @@ button:focus-visible{outline:1px dotted #000;outline-offset:-5px}
   <div id="minesRecord" role="status"><span id="minesRecordText">완료하면 게임순위에 기록돼요.</span><button id="minesRetry" class="raised" type="button" hidden>다시 등록</button></div>
 </div></div>
 <div id="cust" role="dialog" aria-label="커스텀 설정"><div id="card2" class="cc" style="min-width:270px"><div class="t">커스텀</div><div class="body"><div class="row"><span>가로</span><button class="st raised" data-t="cw" data-v="-1" aria-label="가로 줄이기">−</button><input id="cw" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"><button class="st raised" data-t="cw" data-v="1" aria-label="가로 늘리기">+</button></div><input type="range" id="cwR" min="2" max="100" aria-label="가로"><div class="row"><span>세로</span><button class="st raised" data-t="ch" data-v="-1" aria-label="세로 줄이기">−</button><input id="ch" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"><button class="st raised" data-t="ch" data-v="1" aria-label="세로 늘리기">+</button></div><input type="range" id="chR" min="2" max="100" aria-label="세로"><div class="row"><span>지뢰</span><button class="st raised" data-t="cm" data-v="-1" aria-label="지뢰 줄이기">−</button><input id="cm" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"><button class="st raised" data-t="cm" data-v="1" aria-label="지뢰 늘리기">+</button></div><input type="range" id="cmR" min="1" max="9999" aria-label="지뢰"><p id="cinfo"></p><p id="cerr"></p></div><div class="btns"><button id="cok" class="raised">확인</button><button id="ccancel" class="raised">취소</button></div></div></div>
-<div id="result" role="dialog" aria-live="polite"><div id="card"><div class="t">지뢰찾기</div><div class="body"><div id="cardIcon"></div><div><h2 id="rTitle"></h2><p id="rText"></p><p id="rRec" class="rec"></p></div></div><div class="btns"><button id="again" class="raised">다시 하기</button><button id="look" class="raised">판 보기</button></div></div></div>
+<div id="result" role="dialog" aria-label="지뢰찾기 결과" aria-live="polite"><div id="minesResultCard"><div class="t">지뢰찾기</div><div class="body"><div id="cardIcon"></div><div><h2 id="rTitle"></h2><p id="rText"></p><p id="rRec" class="rec"></p></div></div><div class="btns"><button id="again" class="raised" data-game-result-play>다시 하기</button><button id="look" class="raised">판 보기</button></div></div></div>
 <canvas id="fx"></canvas>
 <svg width="0" height="0" style="position:absolute">
   <defs>
@@ -146,7 +149,7 @@ button:focus-visible{outline:1px dotted #000;outline-offset:-5px}
   </defs>
 </svg>
 <script src="./rules.js?v=20261022-ranks1"></script>
-<script src="./entry.js?v=20261022-ranks1"></script>
+<script src="./entry.js?v=20261103-game-results1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -179,6 +182,7 @@ function act(c){if(mode==='flag'){if(c.q)c.q=false;flag(c)}else if(mode==='q')qu
 function question(c){if(c.open||state==='won'||state==='lost')return;if(c.flag){c.flag=false;flags--;$('#left').textContent=pad(L.m-flags,mw())}c.q=!c.q;paint(c);tick(600)}
 function showBest(){const b=getBest(),nm=save.d===8?`커스텀 ${L.c}×${L.r} 지뢰 ${L.m}`:L.name;$('#best').textContent=b!=null?`${nm} 최고 기록: ${b}초`:`${nm} 최고 기록: 없음`}
 function newGame(d){
+  if(window.OjjudaGameResults?.canPlay?.()===false)return;
   round++;runId=crypto.randomUUID();cancelPress();ptrs.clear();pinch=null;pan=null;
   if(d!=null){save.d=d;store()}
   L=save.d===8?{name:'커스텀',c:save.custom.c,r:save.custom.r,m:save.custom.m}:LEVELS[save.d];
@@ -189,6 +193,7 @@ function newGame(d){
   board.style.gridTemplateColumns=`repeat(${L.c},var(--s))`;
   board.innerHTML='';const frag=document.createDocumentFragment(),big=cells.length>2500;els=cells.map(c=>{const b=document.createElement('button');b.className='c';b.dataset.i=c.i;if(!big)b.setAttribute('aria-label',`${c.y+1}행 ${c.x+1}열`);frag.appendChild(b);return b});board.appendChild(frag);
   fitView(true);showBest();
+  window.OjjudaMinesEntry.started(runId,save.d);
 }
 const nb=c=>{const r=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const x=c.x+dx,y=c.y+dy;if(x>=0&&y>=0&&x<L.c&&y<L.r)r.push(cells[y*L.c+x])}return r};
 function plant(safe){
@@ -250,12 +255,15 @@ function win(){
   later(()=>result(true,sec,rec,prev),700);
 }
 function result(won,sec,rec,prev){
-  $('#cardIcon').innerHTML=`<svg viewBox="0 0 24 24"><use href="${won?'#i-flag':'#i-mine'}"/></svg>`;
-  $('#rTitle').textContent=won?'축하합니다!':'게임 오버';
-  $('#rText').textContent=won?`${L.name}을 ${sec}초 만에 완료했습니다.`:'지뢰를 밟았습니다.';
-  $('#rRec').textContent=won?(rec?(prev==null?'첫 기록입니다.':`최고 기록 갱신! (이전 ${prev}초)`):`최고 기록: ${getBest()}초`):'';
+  const comparison=won?window.OjjudaMinesEntry.comparison(runId):null;
+  window.OjjudaGameResults.decorate($('#minesResultCard'),{game:'mines',outcome:comparison?.outcome||(won?'success':'failure'),encouragement:comparison?.encouragement||'',key:runId,metric:won?`${L.name} · ${sec}초`:`${opened} / ${cells.length-L.m}칸`,actions:[$('#again'),$('#look')]});
   $('#result').classList.add('on');later(()=>$('#again').focus({preventScroll:true}),50);
 }
+addEventListener('ojjuda-mines-result-comparison',event=>{
+ if(event.detail?.runId!==runId||state!=='won')return;
+ const card=$('#minesResultCard [data-game-result-card]'),comparison=window.OjjudaMinesEntry.comparison(runId);
+ if(card?.dataset.resultKey===runId&&comparison)window.OjjudaGameResults.update(card,comparison);
+});
 
 // view: zoom, pan, minimap
 const BASE=32,wrap=$('#wrap'),mini=$('#mini'),mctx=mini.getContext('2d');

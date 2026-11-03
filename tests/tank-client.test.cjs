@@ -27,6 +27,7 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
    if(m.type==='request')void f.call(actor,m.body).then(result=>w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:parent,data:{source:'ojjuda-world',type:'tank-response',replyTo:m.requestId,result}})));
   }};
   Object.defineProperty(w,'parent',{value:parent});
+  require('./game-results-fixture.cjs')(w);
   for(const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g))vm.runInContext(m[1],context);
   const engine=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/engine.mjs'),'utf8'),{context});
   const online=new vm.SourceTextModule(fs.readFileSync(path.join(root,'games/tank/online.mjs'),'utf8'),{context});
