@@ -28,7 +28,9 @@
     document.body.classList.remove('star-browser-guide-open');
     try { localStorage.setItem(seenKey, 'seen'); } catch { /* Dismissal still works without storage. */ }
   });
-  dialog.showModal();
-  document.body.classList.add('star-browser-guide-open');
-  dialog.querySelector('h2').focus({ preventScroll: true });
+  document.addEventListener('ojjuda:star:member-ready', () => {
+    dialog.showModal();
+    document.body.classList.add('star-browser-guide-open');
+    dialog.querySelector('h2').focus({ preventScroll: true });
+  }, { once: true });
 })();

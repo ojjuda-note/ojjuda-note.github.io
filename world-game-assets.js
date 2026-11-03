@@ -1,11 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261104-restaurant-photos1';
+ const revision='20261104-star-members2';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  star:'1.0.0',
+  star:'1.1.0',
   festival:'1.1.0',
   restaurants:'1.8.1',
   recommendations:'1.5.1',

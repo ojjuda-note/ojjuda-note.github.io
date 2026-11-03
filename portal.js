@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', star: '/star/' };
   // The document linked from the checkbox and the recorded version must agree.
   // Keep the existing terms during the public notice period (Korea time).
   const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
@@ -51,6 +51,7 @@
   let authEventVersion = 0;
   let authViewVersion = 0;
   let enteringNote = false;
+  let enteringStar = null, starAuthEpoch = 0;
   let recoveryPending = /(?:^|[?&])reset=1(?:&|$)/.test(location.search.slice(1))
     || /(?:^|[&#])type=recovery(?:&|$)/.test(location.hash);
   let recoveryEventSeen = false;
@@ -59,6 +60,8 @@
   const validReturnCard = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
   let returnCard = authQuery.get('next') === 'note' && validReturnCard(authQuery.get('card'))
     ? authQuery.get('card') : null;
+  const starReturnKeys = ['startDate', 'endDate', 'guests', 'room'];
+  let returnStarQuery = authQuery.get('next') === 'star' ? safeStarQuery(authQuery) : '';
   let returnQueryDestination = destinationPath(authQuery.get('next')) ? authQuery.get('next') : null;
   let requestedAuthMode = ['login', 'signup', 'forgot'].includes(authQuery.get('auth'))
     ? authQuery.get('auth') : returnQueryDestination ? 'login' : null;
@@ -196,11 +199,35 @@
     return Object.hasOwn(destinations, key) ? destinations[key] : null;
   }
 
+  function safeStarQuery(value) {
+    const params = value instanceof URLSearchParams ? value : new URLSearchParams(typeof value === 'string' ? value : '');
+    if (starReturnKeys.some(key => params.getAll(key).length > 1)) return '';
+    const dateValue = value => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return NaN;
+      const time = Date.parse(value + 'T00:00:00Z');
+      return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value ? time : NaN;
+    };
+    const startDate = params.get('startDate'), endDate = params.get('endDate');
+    const nights = (dateValue(endDate) - dateValue(startDate)) / 86400000;
+    if (!Number.isInteger(nights) || nights < 1 || nights > 5) return '';
+    const guests = params.get('guests'), room = params.get('room');
+    if ((guests !== null && !/^[1-8]$/.test(guests)) || (room !== null && !/^[1-9]\d{0,19}$/.test(room))) return '';
+    const result = new URLSearchParams({ startDate, endDate });
+    if (guests !== null) result.set('guests', guests);
+    if (room !== null) result.set('room', room);
+    return result.toString();
+  }
+
+  function isStarMember(user) {
+    return Boolean(user?.id) && user.is_anonymous !== true;
+  }
+
   function rememberAfterEmail(destination, address) {
     if (!destinationPath(destination)) return;
     try {
       sessionStorage.setItem(postConfirmKey, JSON.stringify({
         destination, card: destination === 'note' ? returnCard : null,
+        ...(destination === 'star' && returnStarQuery ? { starQuery: returnStarQuery } : {}),
         email: address.toLowerCase(), expiresAt: Date.now() + 2 * 60 * 60 * 1000
       }));
     } catch { /* The redirect query still carries the chosen destination. */ }
@@ -212,6 +239,7 @@
       if (stored?.expiresAt > Date.now() && stored.email === String(user?.email || '').toLowerCase()
           && destinationPath(stored.destination)) {
         if (!returnCard && stored.destination === 'note' && validReturnCard(stored.card)) returnCard = stored.card;
+        if (!returnStarQuery && stored.destination === 'star') returnStarQuery = safeStarQuery(stored.starQuery);
         return stored.destination;
       }
     } catch { /* The session store can be unavailable or empty. */ }
@@ -225,9 +253,11 @@
   function clearReturnDestination() {
     returnQueryDestination = null;
     returnCard = null;
+    returnStarQuery = '';
     try { sessionStorage.removeItem(postConfirmKey); } catch { /* Ignore unavailable storage. */ }
     const url = new URL(location.href);
     if (url.searchParams.has('next')) {
+      if (url.searchParams.get('next') === 'star') starReturnKeys.forEach(key => url.searchParams.delete(key));
       url.searchParams.delete('next');
       url.searchParams.delete('card');
       history.replaceState(null, '', url.pathname + url.search + url.hash);
@@ -236,11 +266,53 @@
 
   function goToDestination(key) {
     const path = destinationPath(key);
-    if (key === 'note') {
+    if (key === 'star') {
+      void enterStar();
+    } else if (key === 'note') {
       void enterNote();
     } else if (path) {
       clearReturnDestination();
       location.assign(path);
+    }
+  }
+
+  async function enterStar() {
+    if (!client || !isStarMember(session?.user)) {
+      openAuth('login', 'star');
+      feedback.textContent = '별천지 예약 도우미는 로그인한 회원만 이용할 수 있어요.';
+      return;
+    }
+    const request = { owner: session.user.id, identity: identityVersion, view: authViewVersion, epoch: starAuthEpoch };
+    enteringStar = request;
+    const current = () => enteringStar === request && identityVersion === request.identity
+      && authViewVersion === request.view && starAuthEpoch === request.epoch
+      && session?.user?.id === request.owner && isStarMember(session.user) && !recoveryPending;
+    let verificationTimeout;
+    try {
+      const { data, error } = await Promise.race([client.auth.getUser(), new Promise((_, reject) => {
+        verificationTimeout = setTimeout(() => reject(new Error('member_check_timeout')), 12000);
+      })]);
+      if (!current()) return;
+      if (error) throw error;
+      if (!isStarMember(data?.user) || data.user.id !== request.owner) {
+        applySession(null);
+        openAuth('login', 'star');
+        feedback.textContent = '로그인을 다시 확인해 주세요. 별천지 예약 도우미는 회원만 이용할 수 있어요.';
+        return;
+      }
+      const path = destinations.star + (returnStarQuery ? '?' + returnStarQuery : '');
+      clearReturnDestination();
+      location.assign(path);
+    } catch (error) {
+      if (!current()) return;
+      const invalidSession = error?.status === 401 || error?.status === 403 || error?.name === 'AuthSessionMissingError';
+      if (invalidSession) applySession(null);
+      openAuth('login', 'star');
+      feedback.textContent = invalidSession ? '로그인이 만료됐어요. 다시 로그인해 주세요.'
+        : '로그인을 확인하지 못했어요. 인터넷 연결을 확인한 뒤 다시 로그인해 주세요.';
+    } finally {
+      clearTimeout(verificationTimeout);
+      if (enteringStar === request) enteringStar = null;
     }
   }
 
@@ -318,7 +390,7 @@
       url.searchParams.delete('auth');
       history.replaceState(null, '', url.pathname + url.search + url.hash);
       // Existing sessions resume the chosen space; recovery links take priority.
-      if ((!user || mode === 'forgot') && !recoveryPending) openAuth(mode, returnQueryDestination);
+      if ((!user || mode === 'forgot' || (returnQueryDestination === 'star' && !isStarMember(user))) && !recoveryPending) openAuth(mode, returnQueryDestination);
     }
     resumeAfterConfirmation(user);
   }
@@ -460,6 +532,7 @@
         const confirmationUrl = new URL('/', location.href);
         if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
         if (pendingDestination === 'note' && returnCard) confirmationUrl.searchParams.set('card', returnCard);
+        if (pendingDestination === 'star') new URLSearchParams(returnStarQuery).forEach((value, key) => confirmationUrl.searchParams.set(key, value));
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
@@ -608,6 +681,9 @@
   } else {
     client.auth.onAuthStateChange((event, current) => {
       authEventVersion++;
+      const starWasRequested = Boolean(enteringStar) || pendingDestination === 'star' || returnQueryDestination === 'star';
+      if (session?.user?.id !== current?.user?.id || session?.user?.is_anonymous !== current?.user?.is_anonymous
+          || event === 'SIGNED_OUT' || event === 'PASSWORD_RECOVERY') starAuthEpoch++;
       // Supabase warns against awaiting another auth operation in this callback.
       setTimeout(() => {
         applySession(current);
@@ -617,6 +693,9 @@
           openAuth('reset');
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           resolveAuthEntry(current?.user);
+        } else if (starWasRequested && !isStarMember(current?.user) && !recoveryPending) {
+          openAuth('login', 'star');
+          feedback.textContent = '별천지 예약 도우미를 이용하려면 다시 로그인해 주세요.';
         }
       }, 0);
     });
