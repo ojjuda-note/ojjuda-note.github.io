@@ -1,0 +1,46 @@
+#root[hidden], #star-member-access[hidden], #star-member-access [hidden] { display: none !important; }
+#star-member-access {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(28px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
+  background: radial-gradient(ellipse at 50% 12%, #223e56 0, #0d1725 65%);
+  color: #f5f5ed;
+  font: 16px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  word-break: keep-all;
+}
+#star-member-access * { box-sizing: border-box; }
+#star-member-access .star-access-card { width: min(100%, 420px); text-align: center; }
+#star-member-access .star-access-art { width: 140px; height: 98px; margin: 0 auto 22px; display: block; }
+#star-member-access .star-access-badge {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 4px 12px;
+  border: 1px solid #ffcd7060;
+  border-radius: 100px;
+  color: #ffda91;
+  font-size: 13px;
+  font-weight: 700;
+}
+#star-member-access h1 { margin: 0 0 10px; font-size: clamp(23px, 6vw, 29px); line-height: 1.4; letter-spacing: -.04em; }
+#star-member-access .star-access-name { margin: 0 0 16px; color: #c0d3e3; font-size: 14px; }
+#star-member-access #star-access-message { margin: 0 auto 26px; max-width: 340px; color: #d3dee8; }
+#star-member-access .star-access-actions { display: grid; gap: 12px; }
+#star-member-access .star-access-button {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 18px;
+  border: 1px solid #ffcd70;
+  border-radius: 14px;
+  background: #ffcd70;
+  color: #172534;
+  font: 800 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+#star-member-access .star-access-secondary { background: transparent; border-color: #7090a8; color: #eef4f9; }
+#star-member-access .star-access-home { display: inline-block; margin-top: 26px; color: #c0d3e3; font-size: 14px; text-underline-offset: 4px; }
+#star-member-access a:focus-visible, #star-member-access button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }

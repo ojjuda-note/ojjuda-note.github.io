@@ -12,20 +12,32 @@
   <meta name="description" content="앞으로 45일 중 한우산 별천지의 빈방이 있는 날짜를 자동으로 확인하세요.">
   <link rel="canonical" href="https://ojjuda.kr/star/">
   <link rel="icon" type="image/svg+xml" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site/favicon.svg">
-  <link rel="stylesheet" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site/star-client/star-app.css?v=20261101-restored1">
+  <link rel="stylesheet" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site/star-client/star-app.css?v=20261104-star-members1">
   <link rel="stylesheet" href="/star/browser-guide.css?v=20261103-star-browser-guide1">
-  <script defer src="/star/browser-guide.js?v=20261103-star-browser-guide1"></script>
-  <script defer src="https://hanusan-booking-helper.mj830417686850.chatgpt.site/star-client/star-app.js?v=20261101-restored1"></script>
+  <link rel="stylesheet" href="/star/member-access.css?v=20261104-star-members1">
+  <script defer src="/config.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
+  <script defer src="/star/browser-guide.js?v=20261104-star-members1"></script>
+  <script defer src="/star/member-access.js?v=20261104-star-members1"></script>
 </head>
 <body style="margin:0;background:#0d1725;color:#f5f5ed">
-  <div id="root">
-    <main style="max-width:500px;margin:15vh auto;padding:24px;font-family:sans-serif;line-height:1.8">
-      <h1>한우산 별천지 예약 도우미</h1>
-      <p>예약 도우미를 불러오고 있어요.</p>
-      <p>화면이 열리지 않으면 <a style="color:#cde8a0" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site">도우미 바로가기</a>를 눌러 주세요.</p>
-      <noscript>이 페이지를 이용하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
-    </main>
-  </div>
+  <main id="star-member-access" aria-busy="true" aria-labelledby="star-access-title">
+    <div class="star-access-card">
+      <img class="star-access-art" src="/assets/design/games/star.svg" width="140" height="98" alt="">
+      <p class="star-access-badge">오쭈다 회원 전용</p>
+      <p class="star-access-name">한우산 별천지 예약 도우미</p>
+      <h1 id="star-access-title">회원 정보를 확인하고 있어요</h1>
+      <p id="star-access-message" role="status" aria-live="polite">로그인한 회원인지 확인한 뒤 예약 도우미를 열어 드릴게요.</p>
+      <div id="star-access-actions" class="star-access-actions" hidden>
+        <button id="star-access-retry" class="star-access-button" type="button" hidden>다시 확인하기</button>
+        <a class="star-access-button" data-star-auth="login" href="/?auth=login&amp;next=star">로그인하고 이용하기</a>
+        <a class="star-access-button star-access-secondary" data-star-auth="signup" href="/?auth=signup&amp;next=star">아직 회원이 아니신가요? 회원가입</a>
+      </div>
+      <a class="star-access-home" href="/world.html?tab=arcade">오락실로 돌아가기</a>
+      <noscript><p>회원 정보를 확인하려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+    </div>
+  </main>
+  <div id="root" hidden></div>
   <dialog id="star-browser-guide" aria-labelledby="star-guide-title" aria-describedby="star-guide-description">
     <p class="star-guide-badge">실행 전 꼭 확인!</p>
     <svg class="star-guide-icon" width="62" height="52" viewBox="0 0 62 52" fill="none" aria-hidden="true">
