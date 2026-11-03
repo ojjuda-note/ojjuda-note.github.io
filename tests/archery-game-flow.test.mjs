@@ -694,9 +694,9 @@ test('touch movement follows every small relative pixel delta and holding a fing
   }
 });
 
-test('relative touch movement pans continuously at the upper aiming area edges without a 24px view jump', async () => {
+test('horizontal touch movement pans continuously at the aiming area edges without a 24px view jump', async () => {
   for (const [width, height] of [[390, 480], [1000, 600]]) for (const zoom of [1, 3]) {
-    const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, ...(zoom === 3 ? [{ x: 0, y: 1 }] : [])];
+    const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }];
     for (const direction of directions) {
       const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
       app.resize(width, height);await enterAndStartEvent(app, 1);
@@ -723,6 +723,45 @@ test('relative touch movement pans continuously at the upper aiming area edges w
       const stopped = { ...app.api.camera };holdFor(app, 200);
       assert.deepEqual({ ...app.api.camera }, stopped, 'edge panning stops immediately when the finger stops moving');
       canvas.emit('pointercancel');assert.equal(state.used, 0);
+    }
+  }
+});
+
+test('elevation touch and arrow keys change pitch without raising the view in normal play or administrator trials', async () => {
+  for (const adminTrial of [false, true]) for (const enabled of [false, true]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled } } }, { adminTrial });
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(13);app.api.closeModal();await app.flush();
+      assert.equal(app.api.setLaserSettings({ enabled }), true);
+    }
+    assert.equal(app.api.setAimZoom(1), true);
+    const state = app.api.state, pad = app.getElement('aimTouchpad');
+    for (const [width, height] of [[390, 480], [844, 235]]) {
+      app.resize(width, height);app.getElement('recenterBtn').emit('click');app.frames();
+      const panY = state.panY, horizon = app.api.camera.horizon;
+      const target = app.engine.targetAt(state.stage, state.time), targetScreen = app.api.project(target);
+      const fixedView = () => {
+        assert.equal(state.panY, panY);assert.equal(app.api.camera.horizon, horizon);
+        assert.deepEqual(app.api.project(target), targetScreen, 'the actual target stays at the same screen height');
+      };
+      const down = {clientX: width * .4, clientY: height * .85};
+      const before = enabled ? app.api.laserFrame().point.y : null;
+      pad.emit('pointerdown', down);
+      pad.emit('pointermove', {...down, clientY: down.clientY - 10000});app.frames();
+      assert.ok(Math.abs(state.aim.pitch - .58) < 1e-12, 'the full high launch angle remains available');fixedView();
+      if (enabled) assert.ok(app.api.laserFrame().point.y > before, 'only the aiming ray rises');
+      pad.emit('pointermove', {...down, clientY: down.clientY + 10000});app.frames();
+      assert.ok(Math.abs(state.aim.pitch + .22) < 1e-12, 'the full low launch angle remains available');fixedView();
+      if (enabled) assert.ok(app.api.laserFrame().point.y < before, 'only the aiming ray drops');
+      pad.emit('pointercancel');assert.equal(state.mode, 'ready');
+      for (const [code, pitch] of [['ArrowUp', .58], ['ArrowDown', -.22]]) {
+        app.document.emit('keydown', {code});
+        for (let step = 0; step < 20; step++) app.advanceTo(app.now + 250);
+        app.document.emit('keyup', {code});
+        assert.ok(Math.abs(state.aim.pitch - pitch) < 1e-12);fixedView();
+      }
+      assert.equal(state.used, 0);assert.equal(state.shot, null);
     }
   }
 });
@@ -2121,7 +2160,7 @@ test('laser purchases start with the first crossbow and charge once per eligible
   assert.equal(reloaded.api.progress.coins, 1000);assert.equal(reloaded.api.laserEnabled(), false);
   reloaded.api.showShop('bow');reloaded.api.equipItem(13);reloaded.api.closeModal();await reloaded.flush();
   assert.deepEqual({ ...reloaded.api.activeLaser() }, expected[13]);assert.equal(reloaded.api.laserEnabled(), true);
-  assert.equal(reloaded.api.laserFrame(), null, 'ready mode permits calibration without showing a sight dot');
+  assert.ok(reloaded.api.laserFrame(), 'the enabled sight is visible before drawing so its zero can be adjusted');
   const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, coins: 499 });
   assert.equal(poor.api.installLaser(13), false);assert.equal(poor.api.progress.coins, 499);assert.equal(poor.api.activeLaser(), null);
 });
@@ -2263,16 +2302,55 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
   horizontal.emit('keydown', { key: 'ArrowRight', code: 'ArrowRight' });assert.equal(app.api.activeLaser().horizontalClicks, 16);
   vertical.emit('wheel', { deltaY: -1 });assert.equal(app.api.activeLaser().verticalClicks, 70);
   assert.deepEqual({ ...app.api.state.aim }, aim);assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
-  assert.equal(app.api.state.shot, null);assert.equal(app.api.laserFrame(), null);
+  assert.equal(app.api.state.shot, null);assert.ok(app.api.laserFrame(), 'the adjusted sight remains visible while the gears are available');
   const reloaded = await appHarness(app.snapshot());
   assert.deepEqual({ ...reloaded.api.activeLaser() }, { enabled: true, horizontalClicks: 16, verticalClicks: 70 });
+});
+
+test('enabled laser zeroing stays visible before, during and after adjustment without steering or firing in either play mode', async () => {
+  for (const adminTrial of [false, true]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } }, {adminTrial});
+    if (adminTrial) { app.api.showShop('bow');app.api.equipItem(13);app.api.closeModal();await app.flush(); }
+    app.frames();
+    const state = app.api.state, canvas = app.getElement('gameCanvas');
+    const aim = {...state.aim}, view = {...app.api.camera}, pan = [state.panX, state.panY], requests = app.ammo.requests.length;
+    const visible = () => {
+      const frame = app.api.laserFrame();assert.ok(frame);assert.equal(canvas.dataset.laser, 'ready');
+      for (const axis of ['x', 'y', 'z'])
+        assert.ok(Math.abs(Number(canvas.dataset[`laser${axis.toUpperCase()}`]) - frame.point[axis]) < 1e-8);
+      const projected = app.api.project(frame.point);
+      assert.ok(Math.abs(Number(canvas.dataset.laserScreenX) - projected.x) < 1e-8);
+      assert.ok(Math.abs(Number(canvas.dataset.laserScreenY) - projected.y) < 1e-8);
+      return frame.point;
+    };
+    const original = visible();assert.equal(state.laserAdjustOpen, false);
+    assert.equal(app.api.openLaserAdjustments(), true);visible();
+    const popup = app.getElement('laserPopover'), placement = {...popup.style};
+    app.getElement('laserHorizontalGear').emit('keydown', {code: 'ArrowRight'});
+    const horizontal = visible();assert.ok(horizontal.x < original.x, 'the visible point responds immediately to the horizontal correction');
+    app.getElement('laserVerticalGear').emit('wheel', {deltaY: -1});
+    const vertical = visible();assert.ok(vertical.y < horizontal.y, 'the visible point responds immediately to the vertical correction');
+    assert.deepEqual({...popup.style}, placement, 'adjusting the sight never moves the controls under the finger');
+    assert.deepEqual({...state.aim}, aim);assert.deepEqual({...app.api.camera}, view);assert.deepEqual([state.panX, state.panY], pan);
+    app.api.closeLaserAdjustments();visible();app.frames();visible();
+    assert.equal(app.api.toggleLaser(), true);assert.equal(app.api.laserFrame(), null);assert.equal(canvas.dataset.laser, 'off');
+    assert.equal(canvas.dataset.laserScreenX, undefined);
+    assert.equal(app.api.toggleLaser(), true);visible();
+    app.getElement('menuBtn').emit('click');app.frames();
+    assert.equal(app.api.laserFrame(), null);assert.equal(canvas.dataset.laser, 'off');
+    app.api.closeModal();await app.flush();app.frames();visible();
+    assert.equal(state.mode, 'ready');assert.equal(state.used, 0);assert.equal(state.shot, null);
+    assert.equal(app.ammo.requests.length, requests, 'calibrating the visible dot does not perform an account action');
+    if (adminTrial) assert.deepEqual(app.storageOperations, [], 'trial zeroing never writes normal saves');
+  }
 });
 
 test('a held laser follows manual aim, never fires on target overlap or after ten seconds and fires once on release', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
     ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } }, scopeLoadouts: { 13: { owned: [2], equipped: 2 } } });
   const { state } = app.api, pad = app.getElement('aimTouchpad');
-  app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'off');
+  app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'ready');
   pad.emit('pointerdown');app.frames(90);
   const target = app.engine.targetAt(state.stage, state.time), angles = app.api.aimAngles();
   const desiredYaw = Math.atan2(target.x, target.z), desiredPitch = Math.atan2(target.y - app.engine.PLAYER.y, Math.hypot(target.x, target.z));
@@ -2327,7 +2405,9 @@ test('laser cancellation, lost capture, blur and hidden-page recovery never rele
     if (action === 'blur') app.window.emit('blur');
     if (action === 'hidden') { app.document.hidden = true;app.document.emit('visibilitychange'); }
     app.advanceTo(app.now + 12000);await app.flush();pad.emit('pointerup');await app.flush();
-    assert.equal(app.api.state.used, 0, action);assert.equal(app.api.state.shot, null, action);assert.equal(app.api.laserFrame(), null, action);
+    assert.equal(app.api.state.used, 0, action);assert.equal(app.api.state.shot, null, action);
+    if (action === 'hidden') assert.equal(app.api.laserFrame(), null, 'a hidden page has no visible sight');
+    else assert.ok(app.api.laserFrame(), 'canceling a draw returns to the visible ready sight without firing');
     if (action === 'hidden') { app.document.hidden = false;app.document.emit('visibilitychange');await app.flush(); }
     assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
   }

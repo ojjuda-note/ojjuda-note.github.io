@@ -265,7 +265,9 @@ function activeLaser(id=activeBow().id){
 const laserEnabled=()=>!state.isEvent&&activeLaser()?.enabled===true;
 const laserControlsReady=()=>!trialBlocked()&&!document.hidden&&!state.modal&&!state.isEvent&&state.mode==='ready'&&!ammoLocked()&&!!activeLaser();
 function laserFrame(now=performance.now()){
-  if(!laserEnabled()||document.hidden||state.modal||state.mode!=='drawing')return null;
+  // Keep the same physical sight visible before drawing, so its current zero
+  // can be judged on the target while the calibration controls are available.
+  if(!laserEnabled()||document.hidden||state.modal||(state.mode!=='drawing'&&!laserControlsReady()))return null;
   return traceLaserPoint({...shotParams(now),settings:activeLaser(),distance:state.stage.distance,obstacles:state.stage.obstacles,people:passersAt(state.stage,state.time)});
 }
 function setLaserSettings(patch,id=activeBow().id){
@@ -293,7 +295,25 @@ function setLaserStep(step){
 }
 function openLaserAdjustments(){
   if(!laserControlsReady())return false;
-  state.laserAdjustOpen=true;updateLaserPanel();$('laserHorizontalGear').focus({preventScroll:true});return true;
+  state.laserAdjustOpen=true;updateLaserPanel();positionLaserAdjustments();$('laserHorizontalGear').focus({preventScroll:true});return true;
+}
+function positionLaserAdjustments(){
+  if(!state.laserAdjustOpen)return;
+  clearLaserDial();
+  const popup=$('laserPopover');
+  for(const edge of ['top','right','bottom','left'])popup.style[edge]='';
+  const ray=traceLaserPoint({...shotParams(),settings:activeLaser(),distance:state.stage.distance,obstacles:state.stage.obstacles,people:passersAt(state.stage,state.time)});
+  if(!ray)return;
+  const point=project(ray.point),field=canvas.getBoundingClientRect(),box=popup.getBoundingClientRect();
+  const x=field.left+point.x,y=field.top+point.y,margin=14;
+  if(!point.visible||x<box.left-margin||x>box.left+box.width+margin||y<box.top-margin||y>box.top+box.height+margin)return;
+  // Place the controls away from the sight when opened or resized. Never move
+  // them during a gear gesture, which would shift the dial under the finger.
+  if((window.innerWidth||w)>(window.innerHeight||h)){
+    popup.style.right='auto';popup.style.left='8px';
+  }else{
+    popup.style.top='auto';popup.style.bottom='8px';
+  }
 }
 function closeLaserAdjustments(restoreFocus=false){
   const wasOpen=state.laserAdjustOpen;
@@ -320,7 +340,7 @@ function updateLaserPanel(){
   if(!visible)return;
   $('laserWeaponLabel').textContent=activeBow().name;
   $('laserToggleBtn').textContent=settings.enabled?'레이저 ON':'레이저 OFF';$('laserToggleBtn').setAttribute('aria-pressed',String(settings.enabled));
-  const status=!ready?(state.mode==='drawing'?'영점 조절 잠김 · 빨간 점으로 겨누고 손을 놓으면 발사해요.':'영점 조절 잠김 · 다음 조준 전에 바꿀 수 있어요.'):settings.enabled?'톱니로 먼저 보정하세요. 화면을 누르면 빨간 점이 켜져요.':'레이저를 켜면 보정한 빨간 점으로 조준할 수 있어요.';
+  const status=!ready?(state.mode==='drawing'?'영점 조절 잠김 · 빨간 점으로 겨누고 손을 놓으면 발사해요.':'영점 조절 잠김 · 다음 조준 전에 바꿀 수 있어요.'):settings.enabled?'빨간 점을 보며 톱니로 영점을 조절하세요.':'레이저를 켜면 보정한 빨간 점으로 조준할 수 있어요.';
   if($('laserStatus').textContent!==status)$('laserStatus').textContent=status;
   for(const step of [1,10]){$(`laserStep${step}Btn`).classList.toggle('active',state.laserStep===step);$(`laserStep${step}Btn`).setAttribute('aria-pressed',String(state.laserStep===step));}
   for(const [axis,prefix,label] of [['horizontalClicks','laserHorizontal','좌우'],['verticalClicks','laserVertical','상하']]){
@@ -532,6 +552,7 @@ function resize(){
   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
   updateCamera(0,true);
   if(state.mode==='ready'||state.mode==='drawing')clampAim();
+  if(state.laserAdjustOpen)positionLaserAdjustments();
   ctx.setTransform(dpr,0,0,dpr,0,0);state.guide=null;
 }
 function project(p){
@@ -545,11 +566,10 @@ function aimBounds(){
 function clampAim(pan=true){
   state.aim.yaw=clamp(state.aim.yaw,-.48,.48);state.aim.pitch=clamp(state.aim.pitch,-.22,.58);
   if(!pan)return;
-  const x=camera.cx+Math.tan(state.aim.yaw)*camera.focal,y=camera.horizon-Math.tan(state.aim.pitch)/Math.cos(state.aim.yaw)*camera.focal,bounds=aimBounds();
-  // Keep the same world-angle range at every zoom. Pan by the exact overflow
-  // so a fine adjustment at the edge cannot jump the view by a whole step.
+  const x=camera.cx+Math.tan(state.aim.yaw)*camera.focal,bounds=aimBounds();
+  // Keep horizontal tracking smooth at the edges. Elevation changes only the
+  // firing angle: the ground and target must not rise with an upward aim.
   if(x<bounds.left)state.panX+=bounds.left-x;else if(x>bounds.right)state.panX+=bounds.right-x;
-  if(y<bounds.top)state.panY+=bounds.top-y;else if(y>bounds.bottom)state.panY+=bounds.bottom-y;
   camera.cx=w/2+state.panX;camera.horizon=h*.405+state.panY;
 }
 function sound(type){
@@ -1452,7 +1472,7 @@ function drawGuide(){
   ctx.restore();
 }
 function drawLaser(){
-  const frame=laserFrame();canvas.dataset.laser=frame?'drawing':'off';
+  const frame=laserFrame();canvas.dataset.laser=frame?state.mode:'off';
   if(!frame){for(const key of ['laserX','laserY','laserZ','laserScreenX','laserScreenY','laserBlocked'])delete canvas.dataset[key];return;}
   for(const axis of ['x','y','z'])canvas.dataset[`laser${axis.toUpperCase()}`]=String(frame.point[axis]);
   canvas.dataset.laserBlocked=String(frame.blocked);
@@ -1664,7 +1684,7 @@ function updatePower(){
   }else if(state.mode==='settling'){
     $('powerLabel').textContent='다음 한 발을 준비해요';$('controlTitle').textContent='호흡을 가다듬고, 다시 한 발';$('controlHint').textContent='곧 다음 화살을 쏠 수 있어요';
   }else{
-    $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent='화면 아래 1/3을 끌어 조준';$('controlHint').textContent=state.isEvent?'탄창을 비우면 자동 장전 · 접시와 UFO를 노려요':laser?'먼저 톱니로 영점 조절 · 누르면 레이저 ON · 손을 놓으면 발사':state.practiceOnly?'저장 없이 연습 중 · 계정 총알 보상 제외':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
+    $('powerLabel').textContent=usingGun()?'움직이는 표적의 앞을 겨눠요':'활을 당겨보세요';$('controlTitle').textContent='화면 아래 1/3을 끌어 조준';$('controlHint').textContent=state.isEvent?'탄창을 비우면 자동 장전 · 접시와 UFO를 노려요':laser?'빨간 점을 보며 영점 조절 · 누른 채 조준하고 손을 놓으면 발사':state.practiceOnly?'저장 없이 연습 중 · 계정 총알 보상 제외':activeBow().burstCount>1?`레어 석궁 · 3연발 · ${steadySeconds}초 안정`:`${steadySeconds}초 안정 기회 · 10초 후 자동발사`;
   }
 }
 function tick(now){

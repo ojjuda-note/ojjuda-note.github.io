@@ -110,7 +110,7 @@ for(const file of ['engine.mjs','scenery.mjs']) {
 }
 for(const file of ['scenery'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene retains its matching physics revision');
 assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-layout1','the unchanged ammo client retains its released three-arrow support');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-eagle-layout1','the compact aiming controls load their new styles');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-admin-laser1','the calibration controls load their current styles');
 
 assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the game loads the wall-aware follow camera');
 assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the replay receives the same camera release');
