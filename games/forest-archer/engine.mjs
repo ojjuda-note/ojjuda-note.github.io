@@ -738,7 +738,7 @@ export function prepareStage(stage, seed = 0) {
   const prepared = {
     ...stage, motion: { ...stage.motion },
     obstacles: (stage.obstacles || []).map(obstacle => ({ ...obstacle })),
-    passers: (stage.passers || []).map(person => ({ ...person })), encounterSeed,
+    passers: (stage.passers || []).map(person => ({ ...person })), retiredPasserIds: [], encounterSeed,
     ...(isAnimalKind(stage.kind) ? {animalState:{}} : {}),
     ...(stage.kind === 'clay' ? { brokenPasses: [] } : {})
   };
@@ -986,9 +986,20 @@ function passerAt(stage, config, time) {
   };
 }
 
-/** Harmless moving blockers. Each linear leg is continuous through its next turn. */
+const isPasserRetired = (stage, config) => stage.retiredPasserIds?.includes(config.id ?? 0) === true;
+
+/** Commit a confirmed person hit between turns; forecasts never call this. */
+export function retirePasser(stage, personId) {
+  if (!Array.isArray(stage?.retiredPasserIds) ||
+      !(stage.passers || []).some(config => (config.id ?? 0) === personId) ||
+      stage.retiredPasserIds.includes(personId)) return false;
+  stage.retiredPasserIds.push(personId);
+  return true;
+}
+
+/** Harmless moving blockers still present in this round, across every walking leg. */
 export function passersAt(stage, time = 0) {
-  return (stage.passers || []).map(config => passerAt(stage, config, time));
+  return (stage.passers || []).filter(config => !isPasserRetired(stage, config)).map(config => passerAt(stage, config, time));
 }
 
 export function getArrowMass(arrow) {
@@ -1165,6 +1176,7 @@ function obstacleTime(position, velocity, acceleration, obstacle, dt, drag = 0) 
 function personCollision(position, velocity, acceleration, stage, worldTime, dt, drag) {
   let earliest = null;
   for (const config of stage.passers || []) {
+    if (isPasserRetired(stage, config)) continue;
     let start = 0;
     while (start < dt - 1e-10) {
       const person = passerAt(stage, config, worldTime + start);

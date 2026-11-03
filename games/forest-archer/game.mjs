@@ -1,10 +1,10 @@
-import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-target-scale1';
+import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-passer-retire1';
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-eagle-dive1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
-import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-target-scale1';
+import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-passer-retire1';
 import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261104-archery-eagle-layout1';
-import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-target-scale1';
+import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-passer-retire1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -974,7 +974,7 @@ function onImpact(){
   const animalHit=animalHits.find(result=>result.justKilled)||animalHits.at(-1);
   const animalStatus=animalHit?`${ANIMAL_NAMES[animalHit.kind]} ${animalHit.killed?'쓰러짐':`체력 ${animalHit.health}/${animalHit.maxHealth}`} · `:'';
   $('feedbackTitle').textContent=hit?`${state.volley?'3연발 합계'+(animalZone?` · ${animalZone}`:''):animalZone||(r.score===10?'정중앙!':'명중!')} +${score}점`:r.zone;
-  $('feedbackDetail').textContent=hit?`${animalStatus}${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 사람이 지나간 틈을 노려보세요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
+  $('feedbackDetail').textContent=hit?`${animalStatus}${state.volley?`${state.volley.shots.filter(arrow=>arrow.result.type==='hit').length}/3발 명중`:r.flightTime.toFixed(2)+'초 비행'} · +${reward} 코인`:`${r.type==='person'?'이번 발사 0점 · 맞은 사람은 다음 발사부터 빠져요':r.type==='obstacle'?'벽 위나 기둥 사이의 틈을 노려보세요':r.type==='ground'?'조준을 높이거나 더 길게 당겨보세요':'거리와 바람을 다시 읽어보세요'} · +1 코인`;
   $('shotFeedback').className=`shot-feedback ${!hit?'miss':r.score===10?'gold':''}${state.cinematic&&!state.cinematic.reducedMotion?' hidden':''}`;
   sound(state.cinematic?'cinematic':hit?(r.score===10?'bull':'hit'):'miss');if(hit&&!state.cinematic&&navigator.vibrate)navigator.vibrate(r.score===10?[15,30,15]:15);
   updateHeader();updateRound();
@@ -1816,6 +1816,9 @@ function tick(now){
       moveAttachedArrows();
       if(state.settle>=impactHold()+impactReturn()){
         if(state.cinematic){state.effects=state.effects.filter(effect=>effect!==state.cinematic.shot.impactEffect);state.cinematic=null;}
+        // Retire actual person hits only when the whole trigger has settled.
+        // Every arrow in a burst still faces the same people this turn.
+        for(const shot of state.volley?.shots||[state.shot])if(shot?.result?.type==='person')retirePasser(state.stage,shot.result.personId);
         $('flightBadge').classList.add('hidden');state.returnCamera=null;camera=aimCamera();
         if(state.used>=shotLimit())finishRound();else{state.mode='ready';state.held=0;state.charge=0;}
       }

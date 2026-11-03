@@ -4438,6 +4438,113 @@ test('real shots at 10, 50 and 150 metres must wait for a walker gap and retain 
   }
 });
 
+test('a real crowd hit removes only that walker from the next shot and restores everyone on retry or reload', async () => {
+  const template = STAGE_FIXTURES.find(stage => stage.lessonKey === 'two-passers' && stage.distance === 10);
+  const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, lastStage: template.id,
+    ownedBows: [0, 8], bow: 8, ownedArrows: [0, 2], arrow: 2, coins: 100, sound: false}));
+  const {state} = app.api, engine = app.engine, definitions = JSON.stringify(state.stage.passers);
+  const allIds = Array.from(state.stage.passers, person => person.id);
+  const visibleIds = () => Array.from(app.api.sceneItems(engine.targetAt(state.stage, state.time)))
+    .filter(item => item.kind === 'person').map(item => item.person.id).sort((a, b) => a - b);
+  const params = {bow: app.api.activeBow(), arrow: app.api.activeArrow(), charge: 1, velocityBias: 0};
+  const cycle = state.stage.passers[0].passDuration * 2;
+  let chosen;
+  for (let time = 1.3; time < 1.3 + cycle; time += .025) {
+    const aim = targetIntercept(engine, params, state.stage, time);
+    const result = engine.predictTrajectory(aim, state.stage, time).result;
+    if (result?.type !== 'person' || result.personId !== 0) continue;
+    const withoutHitWalker = {...state.stage, passers: state.stage.passers.filter(person => person.id !== result.personId)};
+    const clear = engine.predictTrajectory(aim, withoutHitWalker, time).result;
+    if (clear?.type === 'hit' && clear.score === 10) { chosen = {time, personId: result.personId};break; }
+  }
+  assert.ok(chosen, 'a real crowd edge exposes the target once its struck walker is absent');
+  assert.deepEqual(visibleIds(), allIds, 'trajectory and coach probes cannot remove a person');
+  state.time = chosen.time - 1.3;
+  const draw = preciseMainDraw(app);draw.pad.emit('pointerup', draw.coords);await app.flush();
+  app.until(() => state.mode === 'settling');
+  assert.equal(state.shot.result.type, 'person');assert.equal(state.shot.result.personId, chosen.personId);
+  assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);
+  assert.equal(state.targetMarks.length, 0);assert.equal(state.stuck.length, 0);
+  assert.deepEqual(visibleIds(), allIds, 'the hit stays visible for its current impact view');
+  assert.match(app.getElement('feedbackDetail').textContent, /이번 발사 0점.*다음 발사부터 빠져요/);
+  app.api.onImpact();app.api.onImpact();
+  assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);
+  app.until(() => state.mode === 'ready');
+  const remainingIds = allIds.filter(id => id !== chosen.personId);
+  assert.deepEqual(visibleIds(), remainingIds);
+  assert.equal(JSON.stringify(state.stage.passers), definitions, 'round state preserves every original person for a fresh attempt');
+  for (const time of [state.time, state.time + cycle / 2, state.time + cycle, state.time + cycle * 10])
+    assert.deepEqual(Array.from(engine.passersAt(state.stage, time), person => person.id), remainingIds,
+      'changing walking legs cannot bring the same person back during this round');
+
+  // Return to the same walking phase at a later time. The other people still
+  // move, but the actual next arrow must pass through the removed person's gap.
+  const nextRelease = chosen.time + Math.ceil((state.time + 1.3 - chosen.time) / cycle) * cycle;
+  state.time = nextRelease - 1.3;
+  const next = preciseMainDraw(app);next.pad.emit('pointerup', next.coords);await app.flush();
+  app.until(() => state.mode === 'settling');
+  assert.equal(state.shot.result.type, 'hit');assert.equal(state.shot.result.score, 10);
+  assert.deepEqual(shotAccounting(app), [2, 10, 1, 2, 1, 111, 10000]);
+  app.until(() => state.mode === 'ready');assert.deepEqual(visibleIds(), remainingIds);
+  const saved = app.snapshot();
+  app.getElement('menuBtn').emit('click');modalAction(app, 'retry');await app.flush();
+  assert.equal(state.used, 0);assert.equal(state.score, 0);assert.deepEqual(visibleIds(), allIds);
+  assert.equal(JSON.stringify(STAGE_FIXTURES[template.id - 1].passers), definitions, 'the shared stage catalog never loses people');
+  const resumed = await appHarness(saved);
+  assert.deepEqual(Array.from(resumed.engine.passersAt(resumed.api.state.stage, 0), person => person.id), allIds,
+    'a saved account does not retain a previous round’s removals');
+});
+
+test('a three-arrow trigger keeps every struck walker through settling and removes all hit IDs for the next trigger', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 15], bow: 15, coins: 100, sound: false});
+  const {state} = app.api, engine = app.engine;
+  const draw = preciseMainDraw(app), params = app.api.shotParams(), probes = engine.launchVolley(params), z = 5;
+  const crossingX = shot => {
+    const time = -Math.log1p(-shot.dragRate * z / shot.velocity.z) / shot.dragRate;
+    return shot.velocity.x * -Math.expm1(-shot.dragRate * time) / shot.dragRate;
+  };
+  const [firstX, secondX, thirdX] = Array.from(probes, crossingX);
+  const walker = (id, centerX, width) => ({id, behavior: 'shuttle', centerX, z, width, height: 10, depth: .01,
+    span: 1, passDuration: 1e6, phase: .5});
+  state.stage.passers = [walker(0, (firstX + thirdX) / 2, .06), walker(7, secondX, .02), walker(9, 2, .2)];
+  const definitions = JSON.stringify(state.stage.passers);
+  const visibleIds = () => Array.from(app.api.sceneItems(engine.targetAt(state.stage, state.time)))
+    .filter(item => item.kind === 'person').map(item => item.person.id).sort((a, b) => a - b);
+  const expected = Array.from(engine.launchVolley(params), shot => engine.stepArrow(shot, 8, state.stage, state.time + shot.launchDelay));
+  assert.deepEqual(expected.map(result => [result.type, result.personId]), [['person', 0], ['person', 7], ['person', 0]],
+    'the delayed third arrow really meets the same person as the first');
+  assert.deepEqual(visibleIds(), [0, 7, 9], 'speculative collisions never retire people');
+  draw.pad.emit('pointerup', draw.coords);await app.flush();
+  app.until(() => !!state.volley.shots[0].result);
+  assert.equal(state.mode, 'flight');assert.ok(state.volley.shots.slice(1).some(shot => shot.active));
+  assert.deepEqual(visibleIds(), [0, 7, 9], 'the first impact cannot open a gap for later arrows of this trigger');
+  app.until(() => !!state.volley.shots[1].result);
+  assert.equal(state.mode, 'flight');assert.equal(state.volley.shots[2].active, true);
+  assert.deepEqual(visibleIds(), [0, 7, 9], 'a second struck person also remains until the trigger finishes');
+  app.until(() => state.mode === 'settling');
+  assert.deepEqual(Array.from(state.volley.shots, shot => [shot.result.type, shot.result.personId]),
+    [['person', 0], ['person', 7], ['person', 0]]);
+  assert.deepEqual(visibleIds(), [0, 7, 9]);assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);
+  assert.equal(state.arrowHits, 0);assert.equal(state.targetMarks.length, 0);assert.equal(state.stuck.length, 0);
+  app.api.onImpact();app.api.onImpact();
+  app.until(() => state.mode === 'ready');
+  assert.deepEqual(visibleIds(), [9], 'every actually hit ID is removed together, including nonrepresentative arrows');
+  assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 10000]);
+  assert.equal(JSON.stringify(state.stage.passers), definitions);
+
+  const next = preciseMainDraw(app);next.pad.emit('pointerup', next.coords);await app.flush();
+  app.until(() => state.mode === 'settling');
+  assert.ok(state.volley.shots.every(shot => shot.result.type === 'hit'), 'the next trigger has no invisible body blockers');
+  assert.equal(state.score, state.volley.shots.reduce((total, shot) => total + shot.result.score, 0));
+  assert.equal(state.used, 2);assert.equal(app.api.progress.shots, 2);assert.equal(state.hits, 1);assert.equal(state.arrowHits, 3);
+  app.until(() => state.mode === 'ready');assert.deepEqual(visibleIds(), [9]);
+  app.api.resetRound();await app.flush();
+  assert.deepEqual(visibleIds(), [0, 7, 9], 'restarting the already prepared round restores its full roster');
+  assert.equal(state.used, 0);assert.equal(state.score, 0);
+  app.api.startStage(1);await app.flush();
+  assert.deepEqual(visibleIds(), [], 'a new stage uses only its own roster');
+});
+
 test('the close pillar crowd leaves a real opening through the last burst arrow and release-time error', async () => {
   const id = lessonStageId('pillars-passers', 10);
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, lastStage: id,
