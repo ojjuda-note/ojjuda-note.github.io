@@ -93,7 +93,7 @@ function volleyResult(params, stage, time, trial=0, steady=false) {
   for(const shot of shots){
     const launchedAt=time+jitter+shot.launchDelay,r=stepArrow(shot,8,sampleStage,launchedAt);
     if(r?.type==='hit'&&animalKinds.includes(r.targetCenter.kind))applyAnimalHit(sampleStage,r.targetCenter,r.score,launchedAt+r.flightTime);
-    hit ||= r?.type==='hit';personHit ||= r?.type==='person';score=Math.max(score,r?.score||0);
+    hit ||= r?.type==='hit';personHit ||= r?.type==='person';score+=r?.score||0;
   }
   return {hit:hit&&!personHit,score:personHit?0:score,swayX:sway.x*.68,swayY:sway.y*.68};
 }

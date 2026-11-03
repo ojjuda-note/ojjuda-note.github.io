@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow} from './engine.mjs?v=20261103-stage-clear-gates1';
+import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow} from './engine.mjs?v=20261104-archery-burst-sum1';
 
 export const COACH_REACTION_SECONDS = .10;
 const CHARGE_SECONDS = 1.25;
@@ -79,8 +79,9 @@ export function evaluateCoachShot(params = {}, stage = {}, worldTime = 0, {held,
   }
 
   if ((weapon.burstCount || 1) > 1 && stage.passers?.length) {
-    // The centered first bolt establishes best-of-three quality. Extra bolts
-    // may miss or hit a wall, but hitting a person invalidates the whole volley.
+    // nowScore/laterScore describe the centered first bolt's quality, not the
+    // summed volley score. Extra bolts may miss or hit a wall, but hitting a
+    // person invalidates the whole volley and must suppress the release cue.
     // A draw keeps one burst seed, so these are the actual extra trajectories,
     // including their launch delays, at release now and after reaction time.
     for (const check of checks) {
