@@ -177,11 +177,21 @@ async function fixture(browser, options = {}) {
       await page.locator('#show-map').click();
       await openFilters(page);
       await page.locator('[data-guide="post-office"]').click();
-      await waitForCount(page, postalRows.length);
-      if (!postalRows.some(hasCoordinates)) assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'list', 'mobile users see useful address results instead of an empty map');
+      await waitForTotal(page, postalRows.length);
+      const locatedPostal = postalRows.filter(hasCoordinates);
+      if (!locatedPostal.length) {
+        assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'list', 'mobile users see useful address results instead of an empty map');
+      } else {
+        assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'map', 'postal results with coordinates preserve the chosen map view');
+        assert.equal(await page.locator('#map-panel').isVisible(), true);
+        assert.equal(await page.locator('.restaurant-pin').count(), Math.min(300, locatedPostal.length), 'the map shows only located postal recommendations within the pin limit');
+      }
       assert.equal(await page.locator('#collections').isVisible(), true);
       assert.equal(await page.locator('#collections').evaluate(section => section.classList.contains('is-featured')), true);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'the official-map banner fits a phone viewport');
+      await page.locator('#show-list').click();
+      await waitForCount(page, postalRows.length);
+      assert.deepEqual(await visibleIds(page), ids(postalRows), 'every postal recommendation remains accessible through visible list pagination');
       await resetFilters(page);
     }
     await page.setViewportSize({ width: 1280, height: 1000 });
