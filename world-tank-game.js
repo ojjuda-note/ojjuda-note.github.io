@@ -7,7 +7,7 @@
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');dialog.className='tour-game-dialog tank-game-dialog';dialog.setAttribute('aria-label','탱크게임');
    dialog.innerHTML='<header class="tour-game-header"><button type="button">← 게임 목록</button><span>탱크게임 · 혼자 / 같은 기기 / 온라인</span></header><iframe title="탱크게임" src="/games/tank/index.html?v=20261103-game-results1" allow="fullscreen; clipboard-write; web-share"></iframe>';
-   const frame=dialog.querySelector('iframe');let invitation=new AbortController(),requests=0,rankedRoom=null;
+   const frame=dialog.querySelector('iframe');let invitation=new AbortController(),requests=0,rankedRoom=null,guestFinished=false;
    function dispose(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    function close(){invitation.abort();const result=session.close();if(result?.then)result.then(closed=>{if(!closed&&active?.dialog===dialog)invitation=new AbortController();});return result;}
    async function invoke(body){
@@ -53,7 +53,7 @@
     if(e.data.type==='ready')void session.enter(()=>frame.contentWindow.postMessage({source:'ojjuda-world',type:'tank-init',available:!!(owner&&client?.functions),joinCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode.toUpperCase():''},location.origin));
     else if(e.data.type==='request')void session.run(()=>online(e.data));
     else if(e.data.type==='exit')close();
-    else if(e.data.type==='finished')window.OjjudaGuestAccess?.finished({retainResult:true});
+    else if(e.data.type==='finished'&&!owner&&!guestFinished){guestFinished=true;window.OjjudaGuestAccess?.finished();}
    }
    const session=window.OjjudaGameSession.create({kind:'tank',dialog,frame,authorized:()=>active?.dialog===dialog&&authorized(),available:()=>!!(owner&&client?.functions),invoke,dispose,keepCode:/^[A-F0-9]{8}$/i.test(joinCode)?joinCode:''});
    const authTimer=setInterval(()=>{if(!authorized())close();},1000);

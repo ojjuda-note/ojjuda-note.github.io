@@ -17,14 +17,12 @@
     if (!isGuest() || !used()) return true;
     signup(); return false;
   }
-  function finished(options = {}) {
+  function finished() {
     if (!isGuest() || completed) return;
     completed = true;
     try { sessionStorage.setItem(key, '1'); } catch {}
-    // A shareable result stays open. Its trial is already consumed, so any
-    // replay or new game still reaches the same login gate in canPlay().
-    if (options?.retainResult === true) return;
-    // Let other results appear, even when saving a zero score fails or is offline.
+    // Every completed guest round opens login after a brief result display.
+    // Saving, sharing, and a caller's old retainResult option cannot defer it.
     timer = setTimeout(signup, 1600);
   }
   document.addEventListener('click', event => {

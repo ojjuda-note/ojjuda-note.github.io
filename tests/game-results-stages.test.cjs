@@ -68,7 +68,7 @@ test('spot timeout result can recover its original paid extension receipt and re
   }finally{f.w.close();}
 });
 
-test('a retained guest result blocks another round while its share action remains available',async()=>{
+test('a completed guest result blocks another round during the automatic-login delay',async()=>{
   const f=spot();try{
     f.solve();f.w.OjjudaGuestAccess={canPlay:()=>false};
     const before=f.state().current;f.$('celebration-next').click();f.$('celebration-next').onclick();

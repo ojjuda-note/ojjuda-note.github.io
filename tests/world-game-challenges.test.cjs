@@ -22,12 +22,12 @@ function fixture(id = 'stacker', options = {}) {
     console, Promise, performance, URL, setTimeout, clearTimeout,
     window: { OjjudaGameResults: { markup: data => '<section>'+data.metric+'<button class="game-result-share">공유하기</button>'+data.actions+data.extra+'</section>' }, OjjudaGuestAccess: { canPlay: () => options.allowed !== false, finished(options) { events.push(['finished']); completions.push(options); } } },
     document: { getElementById: () => null, querySelector: () => null, body: { classList: { remove() {} } } },
-    R: { id, running: false, loading: false, game: null, ctx: {}, ov: { querySelector: selector => selector === '#gres' ? receipt : controls, remove() { events.push(['closed']); } } },
+    R: { id, owner: null, running: false, loading: false, game: null, ctx: {}, ov: { querySelector: selector => selector === '#gres' ? receipt : controls, remove() { events.push(['closed']); } } },
     G2: { [id]: () => game }, _r: { [id]: { unit: id === 'stacker' ? '층' : '점' } },
     gt: { arcadeEnd() {} },
     worldGameAssetRequest: 0, worldClosingGames: null, worldRecommendedRestaurants: null,
     requestAnimationFrame: () => 1, cancelAnimationFrame() {},
-    worldRewardRequest: () => ({}), worldRewardCurrent: () => true,
+    worldRewardOwner: () => null, worldRewardRequest: () => ({}), worldRewardCurrent: () => true,
     ti: html => screens.push(html), Ja() {}, nf() {}, w: value => String(value),
     tf: async (key, score) => { records.push({ key, score }); return { ok: true, best: score, rank: 1, guest: true }; }
   });
@@ -52,7 +52,7 @@ for (const game of ['stacker', 'mole']) {
     await f.context.S2(12);
     assert.deepEqual(f.records, [{ key: game, score: 12 }]);
     assert.deepEqual(f.events, [['start', game], ['finished'], ['complete', game, 12]]);
-    assert.equal(f.completions[0].retainResult, true, 'every result retains the consumed trial for sharing');
+    assert.equal(f.completions[0], undefined, 'completion reaches the automatic login flow without a retention override');
     assert.match(f.screens.at(-1), /공유하기/);
     assert.doesNotMatch(f.screens.at(-1), /오늘의 랭킹|step12 SQL|보상은 점검/);
   });
@@ -92,7 +92,7 @@ test('runner uses the same shareable result while preserving its score submissio
   await f.context._2(); await f.context.S2(20);
   assert.deepEqual(f.events, [['finished']]);
   assert.deepEqual(f.records, [{ key: 'runner', score: 20 }]);
-  assert.equal(f.completions[0].retainResult, true, 'a guest can share any finished game before the next-play login gate');
+  assert.equal(f.completions[0], undefined, 'the completed guest round opens login automatically');
   assert.match(f.screens.at(-1), /공유하기/);
   assert.doesNotMatch(f.screens.at(-1), /data-challenge-share/);
 });
@@ -137,12 +137,12 @@ function guestFixture({ guest = true, blockedStorage = false, storage = new Map(
   return { api, storage, timers, navigations, listeners };
 }
 
-test('a retained guest result consumes the trial immediately and replay still opens login', () => {
+test('a completed guest result consumes the trial immediately and a quick replay opens login before the timer', () => {
   const f = guestFixture();
   assert.equal(f.api.canPlay(), true);
   f.api.finished({ retainResult: true });
   assert.equal(f.storage.get(guestKey), '1');
-  assert.equal(f.timers.size, 0, 'no timer can interrupt a share picker');
+  assert.equal(f.timers.size, 1, 'every completed guest result schedules login');
   assert.deepEqual(f.navigations, []);
   let stopped = false, prevented = false;
   f.listeners.get('click')({ target: { closest: () => ({}) }, preventDefault() { prevented = true; }, stopImmediatePropagation() { stopped = true; } });
@@ -152,7 +152,7 @@ test('a retained guest result consumes the trial immediately and replay still op
   assert.equal(f.navigations.length, 1, 'repeat requests do not duplicate navigation');
 });
 
-test('a reload after sharing retains the exhausted guest trial', () => {
+test('a reload after completion retains the exhausted guest trial', () => {
   const storage = new Map(), first = guestFixture({ storage });
   first.api.finished({ retainResult: true });
   const reloaded = guestFixture({ storage });
@@ -163,12 +163,12 @@ test('a reload after sharing retains the exhausted guest trial', () => {
 test('blocked browser storage still prevents a second guest round in the active page', () => {
   const f = guestFixture({ blockedStorage: true });
   f.api.finished({ retainResult: true });
-  assert.equal(f.timers.size, 0);
+  assert.equal(f.timers.size, 1);
   assert.equal(f.api.canPlay(), false);
   assert.deepEqual(f.navigations, ['/?auth=login&next=world']);
 });
 
-for (const options of [undefined, { retainResult: false }, { retainResult: 'true' }]) {
+for (const options of [undefined, { retainResult: false }, { retainResult: true }, { retainResult: 'true' }]) {
   test('ordinary completion ' + JSON.stringify(options) + ' keeps the existing timed login', () => {
     const f = guestFixture();
     f.api.finished(options); f.api.finished(options);
@@ -204,7 +204,7 @@ function overlayFixture(t, { shareModule = false } = {}) {
     var gt={arcadeEnd(){}};
     function worldGameEntryGate(){return true;} function M(){} function Wi(){return false;} function w(s){return String(s);}
     function E2(){} function A2(){} function C2(){} function requestArcadeClose(){El();} function nf(){}
-    function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
+    function worldRewardOwner(){return null;} function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
     async function tf(game,score){return {ok:true,best:score,guest:true};}
     ${entrance}\n${controls}\n${preview}\n${rounds}\n${close}
   `);

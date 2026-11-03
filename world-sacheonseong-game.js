@@ -44,11 +44,13 @@
    send({type:'purchase',id,owner,result:result||{ok:false,reason:'pending'}});
   }
   function onMessage(event){
-   if(!frame||event.origin!==location.origin||event.source!==frame.contentWindow)return;
+   if(!frame||event.origin!==location.origin||event.source!==frame.contentWindow||!current())return;
    if(event.data?.type==='ojjuda:sacheonseong-home')session.close();
-   if(event.data?.type==='ojjuda:sacheonseong-finished'&&!finished){finished=true;window.OjjudaGuestAccess?.finished({retainResult:true});}
-   if(!current()||event.data?.source!=='ojjuda-sacheonseong-game')return;
+   if(event.data?.source!=='ojjuda-sacheonseong-game')return;
    const message=event.data,rules=window.OjjudaSacheonseongRanking;
+   if(message.type==='ojjuda:sacheonseong-finished'&&!owner&&!finished&&rules.game(message.stage)&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.runId||'')){
+    finished=true;window.OjjudaGuestAccess?.finished();
+   }
    if(message.type==='ready')initialize();
    if(message.type==='purchase')void purchase(message);
    if(message.type==='record'&&message.owner===(owner||'guest')&&rules.game(message.stage)&&rules.score(message.duration)!==null&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.id||'')){
@@ -66,7 +68,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
-   frame.src='/games/sacheonseong/index.html?v=20261103-game-results1';
+   frame.src='/games/sacheonseong/index.html?v=20261103-guest-one-round1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();

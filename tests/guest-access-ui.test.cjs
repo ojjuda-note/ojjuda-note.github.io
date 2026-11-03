@@ -40,9 +40,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
    assert.equal(new URL(page.url()).pathname,'/world.html','a guest gets the first round');
    await page.evaluate(()=>guestFixture.finish(0));
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1','zero-score loss immediately consumes the round even when save fails');
-   await page.waitForTimeout(1750);
-   assert.equal(new URL(page.url()).pathname,'/world.html',game+' keeps the completed result available for sharing');
-   await page.locator('[data-g=start]').click();await login('world');
+   await login('world');
   }
   await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.open('mole'));await login('world');
   // Closing an unplayed game must not consume the trial.
@@ -50,8 +48,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   for(const kind of ['chess','janggi','carom4','carom3','pool8']){
    await enter();await page.evaluate(kind=>guestFixture.board(kind),kind);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1',kind+' consumes the trial');
-   await page.waitForTimeout(1750);assert.equal(new URL(page.url()).pathname,'/world.html',kind+' keeps its shareable result');
-   await page.evaluate(()=>guestFixture.open('mole'));await login('world');
+   await login('world');
   }
   const uuid='10000000-0000-4000-8000-000000000001';
   for(const [kind,data] of [
@@ -70,10 +67,6 @@ const cardId='00000000-0000-4000-8000-000000000001';
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),null,kind+' ignores forged sources');
    await page.evaluate(data=>{const source=document.querySelector('iframe').contentWindow;if(data.round)dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data:{type:'ojjuda:ttang:start',round:data.round,mode:'solo'}}));dispatchEvent(new MessageEvent('message',{origin:location.origin,source,data}));},data);
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1',kind+' consumes the trial');
-   if(kind!=='saetbyeol'){
-    await page.waitForTimeout(1750);assert.equal(new URL(page.url()).pathname,'/world.html',kind+' keeps the shareable result');
-    await page.evaluate(()=>guestFixture.open('mole'));
-   }
    await login('world').catch(error=>{error.message=kind+' completion: '+error.message;throw error;});
   }
   await enter();await page.evaluate(()=>{guestFixture.member();guestFixture.open('stacker');});await page.locator('[data-g=start]').click();await page.evaluate(()=>guestFixture.finish(0));
@@ -100,7 +93,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   assert.equal(await page.locator('#recovery-identity-slot').isVisible(),true);assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   await page.locator('#forgot-trigger').click();await login('note');assert.equal(new URL(page.url()).searchParams.get('card'),cardId);
   assert.deepEqual(errors,[]);
-  console.log('PASS: guest card/reply opens real login; shareable iframe and board results stay open with the trial consumed, next entry is gated, Saetbyeol keeps its existing flow, member replay unaffected; explicit signup/recovery and card return destination preserved');
+  console.log('PASS: every completed guest arcade, board and iframe round automatically opens real login without replay; returning guests remain gated, member replay unaffected; park signup/recovery and card return destination preserved');
   await context.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

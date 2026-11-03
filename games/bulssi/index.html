@@ -120,7 +120,7 @@ body[data-mode="hub"] #panel{display:block}
 <div id="toast" class="serif" role="status"></div>
 <div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261021-guest1"></script>
+<script src="./entry.js?v=20261103-guest-one-round1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261013-sky2001"></script>
 <script src="./encounters.js?v=20261013-sky2001"></script>
@@ -359,6 +359,7 @@ function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,
 
 // ---------- run ----------
 function startRun(withBoss){
+  if(window.OjjudaSaetbyeolEntry?.canPlay?.()===false)return;
   if(R?.boostPending)return;
   if(withBoss&&!canChallengeBoss()){toast('현재 단계의 다섯 영역 강화를 모두 마치면 보스에 도전할 수 있어요.');return;}
   ensureAudio();st=stats();

@@ -10,12 +10,16 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog';
       dialog.setAttribute('aria-label', '마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261103-game-results1" allow="fullscreen; web-share; clipboard-write"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261103-guest-one-round1" allow="fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
       let invitation = new AbortController();
       const invitedCode = typeof joinCode === 'string' && /^[A-F0-9]{8}$/i.test(joinCode) ? joinCode.toUpperCase() : '';
-      let onlineRequests = 0;
+      let onlineRequests = 0, guestFinished = false;
+      function finishGuestRound() {
+        if (owner || guestFinished) return;
+        guestFinished = true; window.OjjudaGuestAccess?.finished();
+      }
       async function invoke(body) {
         const {data,error} = await client.functions.invoke('marble', {body});
         if (error) { try { return await error.context.json(); } catch { return {error:'unavailable'}; } }
@@ -72,7 +76,7 @@
         if (!me || me.human !== true || !Number.isSafeInteger(me.assets) || me.assets < 0 ||
             me.assets > 1000000 || typeof me.bankrupt !== 'boolean' || (me.bankrupt && me.assets !== 0)) return;
         if (!authorized()) return;
-        window.OjjudaGuestAccess?.finished({retainResult:true});
+        finishGuestRound();
         let pending = results.get(runId);
         if (!pending) {
           pending = Promise.resolve().then(() => authorized() && typeof onScore === 'function'
@@ -107,6 +111,7 @@
         }
         if (message.type === 'ojjuda-marble-request') void session.run(()=>online(message));
         if (message.type === 'ojjuda-game-exit') close();
+        if (message.type === 'ojjuda-game-finished' && message.game === 'ojjuda-tour' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.runId || '')) finishGuestRound();
         // Casual records share the existing unverified, zero-reward score path.
         if (message.type === 'ojjuda-game-result') void session.run(()=>record(message));
       }

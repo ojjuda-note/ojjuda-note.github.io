@@ -3,15 +3,41 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const trialKey = 'ojjuda-photo-ttang-demo-v1';
-  const gameUrl = '/games/photo-ttang.html?v=20261103-game-results1';
+  const gameUrl = '/games/photo-ttang.html?v=20261103-guest-one-round1';
   const access = window.OjjudaPhotoTtangAccess;
   const config = window.OJJUDA_CONFIG;
   const client = config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseKey) : null;
   let member = null, signedUser = null, ageCode = '', frame = null, loading = false, reserved = false, started = false;
   let authEpoch = 0, loadTimer = null, rankDispose = null, identityPending = true;
+  let demoRound = null, guestCompletion = null, loginTimer = null;
   window.OjjudaPhotoTtangBridge = { client: null, nick: '' };
   access?.configure(client);
+
+  function cancelGuestLogin() {
+    clearTimeout(loginTimer); loginTimer = null; guestCompletion = null;
+  }
+  function scheduleGuestLogin() {
+    clearTimeout(loginTimer); loginTimer = null;
+    if (!guestCompletion || identityPending || signedUser || member) return;
+    const completion = guestCompletion, epoch = authEpoch;
+    loginTimer = setTimeout(() => {
+      loginTimer = null;
+      if (guestCompletion !== completion || epoch !== authEpoch || identityPending || signedUser || member) return;
+      guestCompletion = null;
+      location.assign('/?auth=login&next=photo');
+    }, Math.max(0, completion.dueAt - Date.now()));
+  }
+  function demoFinished(message) {
+    const round = demoRound;
+    if (!round || round.frame !== frame || frame?.dataset.demo !== '1' || !started || round.completed || round.ownerChanged
+      || message.source !== 'ojjuda-photo-ttang-game' || message.runId !== round.id
+      || !['win', 'loss'].includes(message.outcome)) return;
+    round.completed = true;
+    if (round.owner || signedUser || member) return;
+    guestCompletion = { dueAt: Date.now() + 1600 };
+    scheduleGuestLogin();
+  }
 
   function usedTrial() {
     try { return localStorage.getItem(trialKey) === '1'; }
@@ -50,9 +76,16 @@
     clearTimeout(loadTimer);
     rankDispose?.(); rankDispose = null;
     frame?.remove(); $('photo-ranking-status')?.remove(); frame = null;
+    demoRound = null;
     reserved = started = loading = false;
   }
-  function closeGame(force=false) { if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){$('page-status').textContent='구매 결과를 확인 중이에요.';return false;}stopFrame(); renderEntry(); }
+  function closeGame(force=false) {
+    if(force!==true&&frame?.contentWindow?.OjjudaPhotoTtang?.canLeave?.()===false){$('page-status').textContent='구매 결과를 확인 중이에요.';return false;}
+    // A completed photo may still be in its reveal animation when the player closes it.
+    const result = frame?.dataset.demo === '1' && frame.contentWindow?.OjjudaPhotoTtang?.demoResult?.();
+    if (result) demoFinished({ source: 'ojjuda-photo-ttang-game', ...result });
+    stopFrame(); renderEntry();
+  }
   function loadFailure(candidate) {
     if (candidate !== frame) return;
     stopFrame(); renderEntry();
@@ -69,7 +102,7 @@
     candidate.focus();
   }
   function openGame(demo) {
-    if (loading || frame) return;
+    if (loading || frame || identityPending) return;
     if (!demo && !access?.allowed()) { void verifyIdentity(); return; }
     loading = true;
     renderEntry();
@@ -78,6 +111,7 @@
     candidate.dataset.demo = demo ? '1' : '0';
     candidate.allow = 'vibrate; web-share; clipboard-write';
     frame = candidate;
+    demoRound = demo ? { frame: candidate, id: crypto.randomUUID(), owner: signedUser?.id || null, completed: false } : null;
     candidate.addEventListener('load', async () => {
       if (frame !== candidate) return;
       const api = candidate.contentWindow?.OjjudaPhotoTtang;
@@ -88,7 +122,7 @@
         if (!allowed) { stopFrame(); renderEntry(); return; }
         reserved = true;
         showGame(candidate);
-        if (!api.demo()) { stopFrame(); renderEntry(); return; }
+        if (!api.demo(demoRound.id)) { stopFrame(); renderEntry(); return; }
       } else if (!member || !access?.allowed()) { closeGame(true); return; }
       showGame(candidate);
     });
@@ -107,14 +141,17 @@
   }
   window.OjjudaPhotoTtangDemo = {
     allowed() { return Boolean(frame?.dataset.demo === '1' && (reserved || started)); },
-    beginRound() {
-      if (!frame || frame.dataset.demo !== '1' || !reserved || started) return false;
+    beginRound(runId) {
+      if (!frame || frame.dataset.demo !== '1' || !reserved || started || identityPending
+        || demoRound?.frame !== frame || demoRound.id !== runId || demoRound.owner !== (signedUser?.id || null)) return false;
       started = true; reserved = false; return true;
     }
   };
 
   async function verifyIdentity() {
     const epoch = ++authEpoch;
+    identityPending = true;
+    clearTimeout(loginTimer); loginTimer = null;
     let user = null, verified = null, code = '';
     try {
       const result = await client?.auth.getUser();
@@ -130,8 +167,11 @@
     if (epoch !== authEpoch) return;
     identityPending = false;
     signedUser = user; ageCode = code;
+    if (demoRound && demoRound.owner !== (user?.id || null)) demoRound.ownerChanged = true;
     const oldId = member?.id;
     member = verified;
+    if (signedUser) cancelGuestLogin();
+    else scheduleGuestLogin();
     window.OjjudaPhotoTtangBridge.client = member ? client : null;
     window.OjjudaPhotoTtangBridge.nick = String(member?.user_metadata?.nickname || '');
     if (member) {
@@ -160,6 +200,7 @@
   addEventListener('message', event => {
     if (!frame || event.origin !== location.origin || event.source !== frame.contentWindow) return;
     if (event.data?.type === 'ojjuda:photottang:close') closeGame();
+    else if (event.data?.type === 'ojjuda:photottang:demo-finished') demoFinished(event.data);
   });
   addEventListener('storage', event => {
     if (event.key === trialKey && !frame && !member) renderEntry();
@@ -167,7 +208,7 @@
   addEventListener('pageshow', event => { if (event.persisted) void verifyIdentity(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && member) void verifyIdentity(); });
   setInterval(() => { if (member) void verifyIdentity(); }, 30000);
-  client?.auth.onAuthStateChange(event => {
+  client?.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') return;
     if (event === 'SIGNED_OUT') {
       authEpoch++; identityPending = false; member = signedUser = null; ageCode = '';
@@ -175,8 +216,15 @@
       window.OjjudaPhotoTtangBridge.nick = '';
       if (frame?.dataset.demo === '0') closeGame(true);
       else if (!frame) renderEntry();
+      scheduleGuestLogin();
     } else if (['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
       authEpoch++;
+      identityPending = true;
+      clearTimeout(loginTimer); loginTimer = null;
+      if (session?.user?.id && !session.user.is_anonymous) {
+        if (demoRound && demoRound.owner !== session.user.id) demoRound.ownerChanged = true;
+        cancelGuestLogin();
+      }
       setTimeout(() => { void verifyIdentity(); }, 0);
     }
   });

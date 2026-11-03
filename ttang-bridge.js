@@ -57,7 +57,7 @@
  }
  function open({client,owner,authorized=()=>true,onResult=async()=>({ok:false}),joinCode,hostCode,arcadeRoom}={}){
   if(overlay||!authorized())return;
-  previousFocus=document.activeElement;session={owner,authorized,onResult,client,round:null,mode:null,submitted:new Set(),excluded:new Set(),outcomes:new Map(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
+  previousFocus=document.activeElement;session={owner,authorized,onResult,client,round:null,mode:null,guestFinished:false,submitted:new Set(),excluded:new Set(),outcomes:new Map(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
   overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','월드땅따먹기');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;height:100dvh;display:flex;flex-direction:column;background:#f3eafa;padding-top:env(safe-area-inset-top,0px)';
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
@@ -110,7 +110,7 @@
   if(d.type==='ojjuda:ttang:close'){close();return;}
   if(d.type==='ojjuda:ttang:start'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(d.round||'')&&['solo','duo'].includes(d.mode)){current.round=d.round;current.mode=d.mode;status.textContent='월드땅따먹기';return;}
   if(d.type!=='ojjuda:ttang:result'||d.mode!==current.mode||!d.round||d.round!==current.round||typeof d.win!=='boolean'||current.submitted.has(d.round)||current.excluded.has(d.round))return;
-  window.OjjudaGuestAccess?.finished({retainResult:true});
+  if(!current.owner&&!current.guestFinished){current.guestFinished=true;window.OjjudaGuestAccess?.finished();}
   await saveResult(current,d.win,d.round);
  });
 })();

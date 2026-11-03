@@ -12,16 +12,60 @@ function fixture(t,html='<main></main>'){
  const w=dom.window;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});loadResults(w);t.after(()=>w.close());return w;
 }
 
-test('bang guest completion is retained only from the active authorized game frame',t=>{
+test('bang guest completion requests automatic login only once from the active authorized game frame',t=>{
  const w=fixture(t);const finished=[];let allowed=true;
  w.OjjudaGuestAccess={finished:options=>finished.push(options)};
  w.OjjudaGameSession={create:()=>({enter:callback=>callback(),run:callback=>callback(),close:()=>true})};
  w.eval(read('world-bang-game.js'));w.OjjudaBangGame.open({authorized:()=>allowed});
  const frame=w.document.querySelector('iframe'),send=(source=frame.contentWindow,origin=w.location.origin,type='ojjuda-bang-local-finished')=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{source:'ojjuda-bang',type}}));
  send(w);send(frame.contentWindow,'https://other.invalid');assert.equal(finished.length,0);
- send();assert.equal(finished.length,1);assert.equal(finished[0].retainResult,true);
+ send();assert.deepEqual(finished,[undefined]);send();assert.equal(finished.length,1,'a repeated local completion cannot consume a second trial');
  send(frame.contentWindow,w.location.origin,'ojjuda-bang-finished');assert.equal(finished.length,1,'ranked online notification does not consume local guest trial');
  allowed=false;send();assert.equal(finished.length,1,'stale authorization cannot finish a trial');
+});
+
+const guestRound='10000000-0000-4000-8000-000000000001';
+const iframeCompletions=[
+ {name:'mines',file:'world-mines-game.js',api:'OjjudaMinesGame',message:{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:guestRound}},
+ {name:'saetbyeol',file:'world-saetbyeol-game.js',api:'OjjudaSaetbyeolGame',message:{source:'ojjuda-saetbyeol',type:'ojjuda-game-finished',runId:guestRound,demo:false}},
+ {name:'spot',file:'world-spot-game.js',api:'OjjudaSpotGame',message:{type:'ojjuda:spot-finished'}},
+ {name:'sacheonseong',file:'world-sacheonseong-game.js',api:'OjjudaSacheonseongGame',message:{source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:guestRound,stage:1}},
+ {name:'tank',file:'world-tank-game.js',api:'OjjudaTankGame',message:{source:'ojjuda-tank',type:'finished'}},
+ {name:'tour',file:'world-tour-game.js',api:'OjjudaTourGame',message:{source:'ojjuda-tour',type:'ojjuda-game-finished',game:'ojjuda-tour',runId:guestRound}},
+ {name:'ttang',file:'ttang-bridge.js',api:'OjjudaTtangBridge',start:{type:'ojjuda:ttang:start',round:guestRound,mode:'solo'},message:{type:'ojjuda:ttang:result',round:guestRound,mode:'solo',win:false}},
+ {name:'bang',file:'world-bang-game.js',api:'OjjudaBangGame',message:{source:'ojjuda-bang',type:'ojjuda-bang-local-finished'}}
+];
+for(const game of iframeCompletions)for(const mode of ['guest','member','stale'])test(`${game.name} completion: ${mode} session respects one-round login and frame identity`,t=>{
+ const w=fixture(t),finished=[];let allowed=true;
+ w.OjjudaGuestAccess={finished:options=>finished.push(options)};
+ w.OjjudaGameSession={create:({dispose})=>({enter:callback=>callback(),run:callback=>callback(),close:()=>{dispose();return true;}})};
+ w.OjjudaSacheonseongRanking={game:stage=>Number.isInteger(stage)&&stage>=1&&stage<=15?'sacheonseong_'+stage:null};
+ w.eval(read(game.file));w[game.api].open({owner:mode==='member'?guestRound:null,authorized:()=>allowed,onResult:async()=>({ok:true})});
+ if(game.name==='sacheonseong')w.document.querySelector('.ge-primary').click();
+ const frame=w.document.querySelector('iframe'),send=(data=game.message,source=frame.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{data,source,origin}));
+ if(game.start)send(game.start);
+ send(game.message,w);send(game.message,frame.contentWindow,'https://other.invalid');
+ if(game.message.source)send({...game.message,source:'another-game'});
+ if(game.message.runId)send({...game.message,runId:'invalid'});
+ if(game.name==='saetbyeol')send({...game.message,demo:true});
+ if(game.name==='sacheonseong')send({...game.message,stage:0});
+ assert.equal(finished.length,0,'only the intended frame and valid completion can finish a trial');
+ if(mode==='stale')allowed=false;
+ send();send();
+ assert.deepEqual(finished,mode==='guest'?[undefined]:[],'only a currently authorized guest requests automatic login, exactly once');
+});
+
+test('tour zero-asset win, loss and draw results consume the guest round even when score persistence fails',async t=>{
+ for(const {won,bankrupt} of [{won:true,bankrupt:false},{won:false,bankrupt:true},{won:false,bankrupt:false}]){
+  const w=fixture(t),finished=[];let writes=0;
+  w.OjjudaGuestAccess={finished:options=>finished.push(options)};
+  w.OjjudaGameSession={create:({dispose})=>({enter:callback=>callback(),run:callback=>callback(),close:()=>{dispose();return true;}})};
+  w.eval(read('world-tour-game.js'));w.OjjudaTourGame.open({onScore:async()=>{writes++;return {ok:false};}});
+  const frame=w.document.querySelector('iframe'),message={source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:guestRound,completed:true,won,myRank:1,players:2,ranking:[{human:true,assets:0,bankrupt},{human:false,assets:0,bankrupt:false}]};
+  const send=()=>w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,origin:w.location.origin,data:message}));
+  send();await new Promise(resolve=>setImmediate(resolve));send();await new Promise(resolve=>setImmediate(resolve));
+  assert.ok(writes>=1);assert.deepEqual(finished,[undefined],'record retries do not postpone or repeat the login request');
+ }
 });
 
 test('poker uses settled net gold even when a hand received a positive gross payout',t=>{

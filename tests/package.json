@@ -2,6 +2,7 @@
   "name": "ojjuda-member-identity-tests",
   "private": true,
   "scripts": {
+    "test:guest-access": "node --test guest-access.test.cjs game-results-arcade.test.cjs game-results-multiplayer.test.cjs archery-ammo-bridge.test.cjs photo-ttang-guest-login.test.cjs && node guest-access-ui.test.cjs && node photo-ttang-trial-ui.test.cjs",
     "test:matgo-tools": "node matgo-tazza.test.mjs && node matgo-purchases.test.cjs && node matgo-deck-tools.test.mjs && node matgo-wallet-purchases.test.mjs",
     "test:security": "node client-table-privileges-db.test.cjs && node member-restrictions-db.test.cjs && node profile-color-security.test.cjs && node account-recovery-db.test.cjs && node account-recovery-edge.test.cjs && node world-rpc-security.test.cjs && node game-verification.test.cjs && node feedback-codex-gateway.test.cjs",
     "test": "npm run test:unit && npm run test:ui && npm run test:screw",

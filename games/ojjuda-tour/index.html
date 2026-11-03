@@ -1477,6 +1477,7 @@ async function settle(p,to){
     if(p===cur()){R.diceReady=false;R.holding=false;R.pickSet=null}
     // Elimination completes this turn, so it is safe to resume at this checkpoint.
     save();sfx('bust');render();setFace(p,'sad');
+    if(p.human&&!window.MarbleOnline?.active()&&spectating())ojjudaPost({type:'ojjuda-game-finished',game:'ojjuda-tour',runId:G.runId});
     if(p.human)await ask('탈락',`<p>${reason}</p><p>이번 게임에서 탈락했습니다.<br>이제 남은 참가자의 경기를 지켜볼 수 있어요.</p>`,[{k:'watch',l:alive().length>1?'관전하기':'결과 보기'}],p,'sad');
     else{say(`${p.name} 탈락!`);await wait(aiDelay())}
   }else if(sold.length){
@@ -1667,6 +1668,7 @@ function ojjudaPost(msg){try{if(window.parent&&window.parent!==window)window.par
 function endScreen(winner,reason){
   GEN++;G.over=true;clearSave();
   G.runId ||= crypto.randomUUID();
+  ojjudaPost({type:'ojjuda-game-finished',game:'ojjuda-tour',runId:G.runId});
   const rk=[...G.players].sort((a,b)=>(b===winner)-(a===winner)||(a.bankrupt-b.bankrupt)||assets(b)-assets(a));
   const me=G.players.find(p=>p.human);
   const result={type:'ojjuda-game-result',game:'ojjuda-tour',runId:G.runId,reason:reason||'',winner:winner?winner.name:null,completed:reason!=='중간 종료',won:reason!=='중간 종료' && winner===me,

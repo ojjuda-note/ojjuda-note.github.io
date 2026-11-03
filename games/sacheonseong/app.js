@@ -175,7 +175,7 @@
     const delivery=window.OjjudaSacheonseongOnline?.record(state.stage,record);
     if(comparison)comparison.deliveryId=delivery?.id;
     if(comparison&&delivery?.then)delivery.then(result=>compareGlobalResult(comparison,result)).catch(()=>compareGlobalResult(comparison,{ok:false}));
-    if(state.stage===E.MAX_STAGE&&window.parent!==window)window.parent.postMessage({type:'ojjuda:sacheonseong-finished'},location.origin);
+    if(window.parent!==window)window.parent.postMessage({source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:state.runId,stage:state.stage},location.origin);
   }
   function showCompletion(rank){
     if(!completedRound())return;

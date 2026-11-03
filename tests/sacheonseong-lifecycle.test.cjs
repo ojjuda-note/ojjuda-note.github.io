@@ -1,9 +1,13 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{test}=require('node:test'),{JSDOM}=require('jsdom');
 const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
-function fixture({stage=2,grid=null,saved=null,records={},seed=null}={}){
+function fixture({stage=2,grid=null,saved=null,records={},seed=null,embedded=false}={}){
  const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
- const timers=new Map(),intervals=[],sent=[];let id=0,now=Date.now();w.Date.now=()=>now;
+ const timers=new Map(),intervals=[],sent=[],finished=[];let id=0,now=Date.now();w.Date.now=()=>now;
+ if(embedded){
+  Object.defineProperty(w,'parent',{value:{postMessage:(message,origin)=>{if(message.type==='ojjuda:sacheonseong-finished')finished.push({message,origin});},OjjudaGuestAccess:{canPlay:()=>finished.length===0}}});
+  require('./game-results-fixture.cjs')(w);
+ }
  if(seed!==null){let value=seed>>>0;w.Math.random=()=>((value=(Math.imul(value,1664525)+1013904223)>>>0)/4294967296);}
  w.setTimeout=(fn,delay)=>{timers.set(++id,{fn,delay});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -19,8 +23,18 @@ function fixture({stage=2,grid=null,saved=null,records={},seed=null}={}){
  };}
  w.eval(read('games/sacheonseong/app.js'));
  if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
- return {w,d,sent,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},pending:delay=>[...timers.values()].filter(timer=>timer.delay===delay).map(timer=>timer.fn),run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
+ return {w,d,sent,finished,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},pending:delay=>[...timers.values()].filter(timer=>timer.delay===delay).map(timer=>timer.fn),run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
+for(const stage of [1,7,15])test(`guest stage ${stage} completion ends the trial once and blocks an immediate next round`,()=>{
+ const f=fixture({stage,embedded:true});try{
+  const runId=f.state().runId;f.match();
+  assert.equal(f.finished.length,1,'a single completed stage ends the guest round');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.finished[0])),{message:{source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId,stage},origin:'https://example.test'});
+  f.run(120);f.run(1000);assert.equal(f.finished.length,1,'completion animation cannot send the round twice');
+  f.d.getElementById('next').click();f.d.getElementById('restart').click();
+  assert.equal(f.state().runId,runId,'guest replay and Next cannot begin another round during the login delay');
+ }finally{f.close();}
+});
 for(const stage of [2,7])test(`stage ${stage} saves and queues its last pair completion before the screen can close`,()=>{
  const f=fixture({stage});try{
   const before=f.state();if(stage===7)assert.ok(before.grid.length>before.grid[0].length,'the late-round fixture retains the generated portrait shape');
