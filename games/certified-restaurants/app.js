@@ -147,8 +147,8 @@
     const controller = new AbortController(); backgroundController = controller;
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./korea-provinces.json', { signal: controller.signal, cache: 'force-cache' });
-      if (!response.ok) throw new Error('Map background unavailable');
+      const response = await fetch('./korea-provinces.json', { signal: controller.signal, cache: 'no-cache' });
+      if (!response.ok) throw new Error('Map background unavailable: ' + response.status);
       const data = await response.json();
       if (controller !== backgroundController) return;
       if (data.type !== 'FeatureCollection' || !Array.isArray(data.features) || !data.features.length) throw new Error('Invalid map background');
