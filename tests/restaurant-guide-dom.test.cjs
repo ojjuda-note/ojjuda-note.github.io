@@ -257,6 +257,64 @@ function fixture(options = {}) {
   assert.deepEqual([...years.document.querySelectorAll('.source-year')].map(node => node.textContent), ['판본 연도 미확인', '선정 연도 미확인', '발행 연도 미확인', '자료 연도 미확인', '수록 연도 미확인']);
   assert.deepEqual(years.errors, []); years.dom.window.close();
 
+  // Municipal designations are independent of private guides, including on a jointly selected restaurant.
+  const localGuide = {
+    provider: 'local-guide', label: '대전광역시 3대 30년 전통음식업소 및 지역대표음식 전문업소 지정',
+    year: 2025, yearType: 'source', sourceAsOf: '2025-05', sourceDateType: 'official-page-last-modified', verifiedAt: '2026-11-03',
+    sourceName: '대전광역시 식품안전과 · 지역대표음식 전문업소 및 전통음식업소 공식 안내 자료',
+    sourceUrl: 'https://fixture.test/sources/daejeon-designations-2025.pdf',
+    selectionCriteria: '<img src=x onerror="window.localGuideInjected=1"> 맛·지역성 검토 <script>window.localGuideInjected=2</script> & 지자체 지정'
+  };
+  const localRows = [
+    { id: 'municipal-only', name: '가 지자체 지정 식당', category: '한식', region: '대전', district: '중구', address: '대전광역시 중구 테스트로 1', lat: null, lng: null, menu: ['국밥'], guides: [localGuide] },
+    { id: 'municipal-and-ribbon', name: '나 중복 선정 식당', category: '한식', region: '충북', district: '청주시', address: '충청북도 청주시 테스트로 2', lat: null, lng: null, menu: ['국수'], guides: [
+      { ...localGuide, label: '청주시 향토음식점 지정', year: null, yearType: 'selection', sourceAsOf: '2025', sourceDateType: undefined, sourceName: '청주시 향토음식점 공식 안내', sourceUrl: 'https://fixture.test/sources/cheongju-designations', selectionCriteria: '향토성과 음식 맛 등을 심사하여 지자체가 지정한 음식점' },
+      { provider: 'blue-ribbon', label: '1리본', year: 2026, yearType: 'edition', sourceName: '블루리본 서베이 공식 가이드', sourceUrl: 'https://fixture.test/sources/blue-ribbon-2026', verifiedAt: '2026-11-03' }
+    ] },
+    { id: 'michelin-only', name: '다 미쉐린 선정 식당', category: '한식', region: '대전', district: '유성구', address: '대전광역시 유성구 테스트로 3', lat: null, lng: null, menu: ['정식'], guides: [
+      { provider: 'michelin', label: '빕 구르망', year: 2026, yearType: 'edition', sourceName: '미쉐린 공식 가이드', sourceUrl: 'https://fixture.test/sources/michelin-2026', verifiedAt: '2026-11-03' }
+    ] }
+  ];
+  const municipal = fixture({ dataset: { restaurants: localRows } });
+  await ready(municipal, 3);
+  assert.deepEqual(municipal.records(), ids(localRows), 'all guides includes each municipal/private selection once');
+  const municipalCard = municipal.$('[data-restaurant-id="municipal-only"]');
+  assert.equal(municipalCard.querySelector('.is-local-guide').textContent, '지자체 지정 ' + localGuide.label, 'the card identifies the municipal designation and its program');
+  assert.equal(municipalCard.querySelector('.is-ribbon,.is-michelin,.is-post-office'), null, 'a municipal designation is not displayed as a private or postal guide');
+  assert.equal(municipal.document.querySelectorAll('[data-restaurant-id="municipal-and-ribbon"] .guide-badge').length, 2, 'joint selections retain both badges on one card');
+  municipal.filters(); municipal.click('[data-guide="local-guide"]');
+  assert.deepEqual(municipal.records(), ['municipal-and-ribbon', 'municipal-only'], 'municipal-only and jointly selected restaurants both match the municipal filter');
+  assert.equal(municipal.$('[data-guide="local-guide"]').getAttribute('aria-pressed'), 'true');
+  assert.equal(municipal.$('[data-guide="blue-ribbon"]').getAttribute('aria-pressed'), 'false');
+  assert.equal(municipal.$('#filter-summary').textContent, '지자체 지정');
+  municipal.change('#region', '대전'); assert.deepEqual(municipal.records(), ['municipal-only'], 'region and municipal designation intersect');
+  assert.equal(municipal.$('#filter-summary').textContent, '대전 · 지자체 지정');
+  municipal.change('#region', '충북'); assert.deepEqual(municipal.records(), ['municipal-and-ribbon']);
+  municipal.click('[data-guide="blue-ribbon"]'); assert.deepEqual(municipal.records(), ['municipal-and-ribbon'], 'switching to blue ribbon keeps a jointly selected restaurant');
+  assert.equal(municipal.$('[data-guide="local-guide"]').getAttribute('aria-pressed'), 'false');
+  municipal.change('#region', '대전'); assert.deepEqual(municipal.records(), [], 'municipal-only records do not leak into blue ribbon results');
+  municipal.click('[data-guide=""]'); assert.deepEqual(municipal.records(), ['michelin-only', 'municipal-only'], 'all guides removes only the guide condition');
+  municipal.change('#region', ''); assert.deepEqual(municipal.records(), ids(localRows));
+  municipal.click('[data-guide="michelin"]'); assert.deepEqual(municipal.records(), ['michelin-only']);
+  municipal.click('[data-guide="both"]'); assert.deepEqual(municipal.records(), [], 'municipal plus blue ribbon never satisfies the Michelin-and-blue-ribbon intersection');
+  municipal.click('#reset'); assert.deepEqual(municipal.records(), ids(localRows));
+  municipal.click('[data-restaurant-id="municipal-only"] .card-main');
+  assert.equal(municipal.$('.source-heading .is-local-guide').textContent, '지자체 지정 ' + localGuide.label);
+  assert.equal(municipal.$('.source-year').textContent, '2025년 자료', 'a municipal source year is not a designation year');
+  assert.doesNotMatch(municipal.$('.source-list').textContent, /2025년 선정/);
+  assert.equal(municipal.$('.source-verified').textContent, '페이지 수정 2025.05 · 출처 확인일 2026.11.03', 'a page edit date is distinct from the data reference date and verification date');
+  assert.equal(municipal.$('.source-link').textContent, localGuide.sourceName + ' ↗', 'the responsible agency is shown with the official source');
+  assert.equal(municipal.$('.source-link').href, localGuide.sourceUrl);
+  assert.equal(municipal.$('.source-criteria').textContent, localGuide.selectionCriteria, 'designation criteria are preserved as readable text');
+  assert.equal(municipal.$('.source-criteria').children.length, 0, 'HTML-looking criteria do not create elements or handlers');
+  assert.equal(municipal.$('#detail img,#detail script'), null);
+  assert.equal(municipal.window.localGuideInjected, undefined);
+  municipal.click('#close-detail'); municipal.click('[data-restaurant-id="municipal-and-ribbon"] .card-main');
+  assert.deepEqual([...municipal.document.querySelectorAll('.source-year')].map(node => node.textContent), ['선정 연도 미확인', '2026년판'], 'unknown municipal selection dates remain unknown beside a dated private guide');
+  assert.equal(municipal.$('.source-verified').textContent, '자료 기준 2025 · 출처 확인일 2026.11.03', 'a year-only source date does not invent a month or designation year');
+  assert.deepEqual([...municipal.document.querySelectorAll('.source-link')].map(node => node.href), localRows[1].guides.map(guide => guide.sourceUrl));
+  assert.deepEqual(municipal.errors, []); municipal.dom.window.close();
+
   const malicious = structuredClone(dataset.restaurants[0]); malicious.id = 'fixture-unsafe-text'; malicious.name = '<img src=x onerror="window.injected=1"> 테스트'; malicious.address = '<svg onload="window.injected=1"> 주소'; malicious.menu = ['<script>window.injected=1</script>']; malicious.lat = null; malicious.lng = null;
   malicious.guides = [
     { provider: 'post-office', label: '집배원 추천 <img onerror="window.injected=1">', year: 2011, sourceUrl: 'https://www.koreapost.go.kr/fixture', sourceName: '<img onerror="window.injected=1"> 공식', verifiedAt: '2026-11-03', sourceAsOf: '2011-06' },

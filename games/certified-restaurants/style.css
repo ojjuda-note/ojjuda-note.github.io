@@ -82,7 +82,7 @@ svg { display:block; flex-shrink:0; }
 .guide-filter { display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:7px 12px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px; white-space:nowrap; }
 .guide-filter.is-active,.guide-filter:hover { background:var(--light); border-color:#b6c9bb; color:var(--green); }
 .guide-dot { width:5px; height:5px; display:inline-block; border-radius:50%; flex-shrink:0; }
-.michelin-dot { background:#a14a47; }.ribbon-dot { background:#47759a; }.post-office-dot { background:#927137; }
+.michelin-dot { background:#a14a47; }.ribbon-dot { background:#47759a; }.post-office-dot { background:#927137; }.local-guide-dot { background:#4d7758; }
 .filter-summary { margin:0 0 10px; font-size:12px; color:var(--green); line-height:1.6; overflow-wrap:anywhere; }
 
 .results-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:5px 12px; margin-bottom:10px; min-height:36px; }
@@ -122,7 +122,7 @@ svg { display:block; flex-shrink:0; }
 .guide-badges { display:flex; gap:4px 10px; flex-wrap:wrap; }
 .guide-badge { font-size:11px; line-height:1.5; font-weight:500; display:inline-flex; align-items:center; gap:5px; }
 .guide-badge::before { content:""; width:4px; height:4px; border-radius:50%; background:currentColor; flex:0 0 4px; }
-.guide-badge.is-michelin { color:#9b4845; }.guide-badge.is-ribbon { color:#426d92; }.guide-badge.is-post-office { color:#8a6a33; }
+.guide-badge.is-michelin { color:#9b4845; }.guide-badge.is-ribbon { color:#426d92; }.guide-badge.is-post-office { color:#8a6a33; }.guide-badge.is-local-guide { color:#426c4d; }
 .save-button { position:absolute; top:12px; right:10px; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; color:#91a095; background:#f5f8f1; }
 .save-button svg { width:18px; height:18px; }
 .save-button:hover { background:#eaf1ec; }.save-button.is-saved { color:var(--green); background:#e6f1e5; }.save-button.is-saved svg { fill:#dcebe1; }
@@ -205,3 +205,5 @@ svg { display:block; flex-shrink:0; }
   .category::before { display:none; }.category { padding-inline:3px; }.view-switch svg { display:none; }.view-switch button { padding-inline:6px; }.card-menu { font-size:13px; }.list-toolbar { gap:5px; }.list-toolbar>span { font-size:9px; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
+
+.source-criteria { margin:7px 0; color:var(--ink); font-size:12px; line-height:1.65; overflow-wrap:anywhere; }

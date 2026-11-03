@@ -4,7 +4,7 @@
 
   const $ = id => document.getElementById(id);
   const CATEGORIES = ['한식', '중식', '일식', '양식', '분식', '디저트', '기타'];
-  const PROVIDERS = { michelin: '미쉐린', 'blue-ribbon': '블루리본', 'post-office': '우체국' };
+  const PROVIDERS = { michelin: '미쉐린', 'blue-ribbon': '블루리본', 'post-office': '우체국', 'local-guide': '지자체 지정' };
   const STORAGE_KEY = 'ojjuda-certified-restaurants-saved-v1';
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
   const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
@@ -74,12 +74,12 @@
   }
   function text(value, limit = 300) { return typeof value === 'string' ? value.trim().slice(0, limit) : ''; }
   function validDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value : ''; }
-  function sourceDate(value) { return /^\d{4}-\d{2}(?:-\d{2})?$/.test(value || '') ? value : ''; }
+  function sourceDate(value) { return /^\d{4}(?:-\d{2}(?:-\d{2})?)?$/.test(value || '') ? value : ''; }
   function dateLabel(value) { return validDate(value) ? value.replaceAll('-', '.') : '미표기'; }
   function hasCoordinates(item) { return typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng) && Math.abs(item.lat) <= 90 && Math.abs(item.lng) <= 180; }
   function normalize(item) {
     if (!item || !text(item.id) || !text(item.name) || !Array.isArray(item.guides)) return null;
-    const guides = item.guides.filter(g => g && Object.hasOwn(PROVIDERS, g.provider) && safeHttps(g.sourceUrl)).map(g => ({ provider: g.provider, label: text(g.label, 80) || (g.provider === 'post-office' ? '추천' : '선정 이력'), year: Number.isInteger(g.year) && g.year >= 1900 && g.year <= 2200 ? g.year : null, yearType: ['edition', 'selection', 'publication', 'source', 'listing'].includes(g.yearType) ? g.yearType : '', sourceUrl: safeHttps(g.sourceUrl), sourceName: text(g.sourceName, 120) || PROVIDERS[g.provider] + (g.provider === 'post-office' ? ' 추천 자료' : ' 선정 출처'), verifiedAt: validDate(g.verifiedAt), sourceAsOf: sourceDate(g.sourceAsOf || item.sourceAsOf) }));
+    const guides = item.guides.filter(g => g && Object.hasOwn(PROVIDERS, g.provider) && safeHttps(g.sourceUrl)).map(g => ({ provider: g.provider, label: text(g.label, 80) || (g.provider === 'post-office' ? '추천' : '선정 이력'), year: Number.isInteger(g.year) && g.year >= 1900 && g.year <= 2200 ? g.year : null, yearType: ['edition', 'selection', 'publication', 'source', 'listing'].includes(g.yearType) ? g.yearType : '', sourceUrl: safeHttps(g.sourceUrl), sourceName: text(g.sourceName, 120) || PROVIDERS[g.provider] + (g.provider === 'post-office' ? ' 추천 자료' : ' 선정 출처'), verifiedAt: validDate(g.verifiedAt), sourceAsOf: sourceDate(g.sourceAsOf || item.sourceAsOf), sourceDateType: g.sourceDateType === 'official-page-last-modified' ? 'page-modified' : 'as-of', selectionCriteria: text(g.selectionCriteria, 300) }));
     if (!guides.length) return null;
     const result = { id: text(item.id, 120), name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: text(item.district, 80), address: text(item.address, 300), lat: item.lat, lng: item.lng, menu: Array.isArray(item.menu) ? item.menu.map(v => text(v, 80)).filter(Boolean).slice(0, 8) : [], guides };
     const coordinateSource = item.coordinateSource;
@@ -109,7 +109,7 @@
   }
   function badge(guide, includeYear = true) {
     const year = includeYear && guide.year ? ' · ' + guide.year : '';
-    return el('span', 'guide-badge ' + (guide.provider === 'michelin' ? 'is-michelin' : guide.provider === 'post-office' ? 'is-post-office' : 'is-ribbon'), PROVIDERS[guide.provider] + ' ' + guide.label + year);
+    return el('span', 'guide-badge ' + (guide.provider === 'michelin' ? 'is-michelin' : guide.provider === 'post-office' ? 'is-post-office' : guide.provider === 'local-guide' ? 'is-local-guide' : 'is-ribbon'), PROVIDERS[guide.provider] + ' ' + guide.label + year);
   }
   function saveButton(item, detail = false) {
     const button = el('button', 'save-button' + (detail ? ' detail-save' : ''));
@@ -365,8 +365,10 @@
       const yearSuffix = { edition: '년판', selection: '년 선정', publication: '년 발행', source: '년 자료', listing: '년 수록' }[yearType];
       const missingYear = { edition: '판본 연도 미확인', selection: '선정 연도 미확인', publication: '발행 연도 미확인', source: '자료 연도 미확인', listing: '수록 연도 미확인' }[yearType];
       const row = el('li', 'source-item'), heading = el('div', 'source-heading'); heading.append(badge(guide, false), el('span', 'source-year', guide.year ? guide.year + yearSuffix : missingYear));
-      const checked = (guide.sourceAsOf ? '자료 기준 ' + guide.sourceAsOf.replaceAll('-', '.') + ' · ' : '') + '출처 확인일 ' + dateLabel(guide.verifiedAt);
-      row.append(heading, el('p', 'source-verified', checked), link(guide.sourceName + ' ↗', guide.sourceUrl, 'source-link')); sources.append(row);
+      const checked = (guide.sourceAsOf ? (guide.sourceDateType === 'page-modified' ? '페이지 수정 ' : '자료 기준 ') + guide.sourceAsOf.replaceAll('-', '.') + ' · ' : '') + '출처 확인일 ' + dateLabel(guide.verifiedAt);
+      row.append(heading);
+      if (guide.selectionCriteria) row.append(el('p', 'source-criteria', guide.selectionCriteria));
+      row.append(el('p', 'source-verified', checked), link(guide.sourceName + ' ↗', guide.sourceUrl, 'source-link')); sources.append(row);
     });
     if (hasCoordinates(item) && item.coordinateSource) {
       const coordinateRow = el('li', 'coordinate-source');
@@ -418,7 +420,7 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./restaurants.json?v=20261103-restaurants-fit2', { signal: controller.signal, cache: 'no-cache' });
+      const response = await fetch('./restaurants.json?v=20261103-restaurants-regional1', { signal: controller.signal, cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json(); if (!data || !Array.isArray(data.restaurants)) throw new Error('Invalid dataset');
       const ids = new Set(); state.restaurants = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));

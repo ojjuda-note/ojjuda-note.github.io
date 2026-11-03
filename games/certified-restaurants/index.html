@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#faf9f5">
-  <meta name="description" content="미쉐린·블루리본 가이드 선정 식당과 우체국 추천 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
+  <meta name="description" content="미쉐린·블루리본·우체국 추천과 지자체 지정 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
   <link rel="stylesheet" href="/restaurant-ratings.css?v=20261103-restaurants-ratings1">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-osm1">
+  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-regional1">
   <script src="./vendor/leaflet.js" defer></script>
   <script src="/restaurant-ratings.js?v=20261103-restaurants-ratings1" defer></script>
-  <script src="./app.js?v=20261103-restaurants-osm1" defer></script>
+  <script src="./app.js?v=20261103-restaurants-regional1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
@@ -56,6 +56,7 @@
           <button type="button" class="guide-filter" data-guide="michelin" aria-pressed="false"><span class="guide-dot michelin-dot" aria-hidden="true"></span>미쉐린</button>
           <button type="button" class="guide-filter" data-guide="blue-ribbon" aria-pressed="false"><span class="guide-dot ribbon-dot" aria-hidden="true"></span>블루리본</button>
           <button type="button" class="guide-filter" data-guide="post-office" aria-pressed="false"><span class="guide-dot post-office-dot" aria-hidden="true"></span>우체국 추천</button>
+          <button type="button" class="guide-filter" data-guide="local-guide" aria-pressed="false"><span class="guide-dot local-guide-dot" aria-hidden="true"></span>지자체 지정</button>
           <button type="button" class="guide-filter" data-guide="both" aria-pressed="false">미쉐린·블루리본 모두</button>
       </div>
     </section>
@@ -78,7 +79,7 @@
         </nav>
       </div>
       <div id="results" class="results-panel" tabindex="-1" aria-label="선정 식당 목록">
-        <div class="list-toolbar"><strong id="list-label">가게 이름순</strong><span>미쉐린 · 블루리본 · 우체국</span></div>
+        <div class="list-toolbar"><strong id="list-label">가게 이름순</strong><span>선정·추천 출처 표시</span></div>
         <div id="cards" class="cards"><div class="loading-state"><span class="loading-ring" aria-hidden="true"></span><p>확인된 맛집을 불러오고 있어요.</p></div></div>
         <button id="load-more" class="load-more" type="button" hidden>더 보기</button>
       </div>
