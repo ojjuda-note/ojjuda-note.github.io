@@ -17,8 +17,9 @@ const timing = {held:2, steadyStart:5, steadyDuration:.5};
 // velocity, never a target-distance preset or a fitted display angle.
 function pointAt(shot, time) {
   const k = shot.dragRate, u = -Math.expm1(-k * time) / k;
+  const gravity = GRAVITY * (shot.gravityScale ?? 1);
   return {x:PLAYER.x + shot.velocity.x * u,
-    y:PLAYER.y + (shot.velocity.y + GRAVITY / k) * u - GRAVITY * time / k,
+    y:PLAYER.y + (shot.velocity.y + gravity / k) * u - gravity * time / k,
     z:PLAYER.z + shot.velocity.z * u};
 }
 function groundTime(shot) {
@@ -140,20 +141,21 @@ test('the coach keeps the same long magnetic trajectory when guidance starts aft
   assert.equal(cue.ready, true);assert.equal(cue.nowScore, result.score);assert.equal(cue.laterScore, result.score);
 });
 
-test('event bullets retain their eight-second backstop when no target plane or ground is reached', () => {
-  assert.equal(BULLET_FLIGHT_LIMIT, 8);
-  const stage = {...createClayEvent(1), distance:10000, obstacles:[], passers:[]};
-  for (const bow of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
-    const params = {bow, pitch:radians(60), charge:1, velocityBias:0};
-    const shot = launchArrow(params);
-    assert.equal(getFlightTimeLimit(shot), 8);
-    assert.equal(stepArrow(shot, 7.9, stage), null);assert.equal(shot.active, true);
-    const result = stepArrow(shot, 1, stage, 7.9);
-    assert.equal(result.type, 'miss');assert.equal(shot.active, false);
-    near(result.flightTime, 8);assert.ok(result.point.y > 0);
-    const predicted = predictTrajectory(params, stage).result;
-    assert.equal(predicted.type, 'miss');near(predicted.flightTime, 8);
-    assert.equal(evaluateCoachShot(params, stage, 0, timing).ready, false);
+test('main-range bullets complete their 45 and 60 degree falling arcs after the former event timeout', () => {
+  assert.equal(BULLET_FLIGHT_LIMIT, 16);
+  for (const bow of BOWS.filter(weapon => weapon.weaponType === 'gun')) for (const degrees of [45, 60]) {
+    const params = {bow, pitch:radians(degrees), charge:1, velocityBias:0};
+    const initial = launchArrow(params), shot = launchArrow(params), expectedTime = groundTime(initial);
+    assert.equal(getFlightTimeLimit(shot), 16);
+    assert.ok(expectedTime > 8 && expectedTime < 16);
+    assert.equal(stepArrow(shot, 8, emptyRange), null);assert.equal(shot.active, true);
+    const result = stepArrow(shot, 8, emptyRange, 8);
+    assert.equal(result.type, 'ground');assert.equal(shot.active, false);
+    near(result.flightTime, expectedTime);near(result.point.y, 0);
+    near(result.point.z, pointAt(initial, expectedTime).z);
+    const predicted = predictTrajectory(params, emptyRange).result;
+    assert.equal(predicted.type, 'ground');near(predicted.flightTime, expectedTime);
+    near(predicted.point.z, result.point.z);
   }
 });
 

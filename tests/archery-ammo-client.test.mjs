@@ -16,7 +16,7 @@ const snapshot = (extra = {}) => ({ ok: true, launch_epoch: 4, remaining: 20, fr
 
 // Real client, isolated browser globals and fake parent messages. No RPC or wallet
 // connector is present in this harness, including the purchase tests.
-async function fixture({ store = new Map(), initialize = true, owner = OWNER, sessionId = SESSION, storageFails = false } = {}) {
+async function fixture({ store = new Map(), initialize = true, owner = OWNER, sessionId = SESSION, storageFails = false, recordsOnly = false } = {}) {
   let now = 0, sequence = 0, timerId = 0;
   const fixtureId = ++fixtureSequence;
   const listeners = new Set(), messages = [], timers = new Map(), changes = [];
@@ -26,7 +26,7 @@ async function fixture({ store = new Map(), initialize = true, owner = OWNER, se
   const context = vm.createContext({ window, localStorage: storage, performance: {now: () => now}, crypto: { randomUUID: () => `00000000-0000-4000-8000-${String(fixtureId * 10000 + ++sequence).padStart(12, '0')}` }, Uint8Array,
     setTimeout(fn, delay) { const id = ++timerId;timers.set(id, { fn, due: now + delay });return id; }, clearTimeout(id) { timers.delete(id); } });
   const module = new vm.SourceTextModule(source, { context });await module.link(() => {});await module.evaluate();
-  const client = module.namespace.createAmmoClient({ onChange(value) { changes.push({ connection: value.connection, pending: value.pending, snapshot: value.snapshot }); } });
+  const client = module.namespace.createAmmoClient({ recordsOnly, onChange(value) { changes.push({ connection: value.connection, pending: value.pending, snapshot: value.snapshot }); } });
   const f = {
     client, store, messages, changes, module, synchronousChanges: changes.length,
     requests: () => messages.filter(item => item.data.type === 'ammo-request').map(item => item.data),
@@ -73,13 +73,13 @@ test('stage 220 registration, refresh and completion serialize with the parent a
 });
 
 test('pending high-stage registration and completion survive reopening and recover their original receipts', async () => {
-  for (const [action, stage] of [['round-start', 121], ['round-complete', 220]]) {
-    const original = await fixture();
+  for (const recordsOnly of [false, true]) for (const [action, stage] of [['round-start', 121], ['round-complete', 220]]) {
+    const original = await fixture({recordsOnly});
     const operation = action === 'round-start' ? original.client.startRound(OTHER, stage) : original.client.completeRound(SESSION, stage, 44);
     await original.flush();const request = original.requests().at(-1);
     original.reply(request, {ok: false, reason: 'pending'});assert.equal((await operation).reason, 'pending');
     original.client.dispose();
-    const reopened = await fixture({store: original.store, sessionId: OTHER});await reopened.flush();
+    const reopened = await fixture({store: original.store, sessionId: OTHER, recordsOnly});await reopened.flush();
     const lookup = reopened.requests().find(item => item.action === 'receipt');
     assert.ok(lookup, `the persisted ${stage} mission remains valid after reopening`);
     assert.equal(lookup.receiptId, request.requestId);assert.equal(lookup.originalAction, action);
@@ -347,4 +347,65 @@ test('a 150-point round survives pending receipt recovery without resubmitting a
   assert.equal((await reopened.client.retryPending()).ok,true);assert.equal(reopened.client.pending,null);
   assert.deepEqual(reopened.requests().map(item=>item.action),['status','receipt']);
   reopened.client.dispose();
+});
+
+test('records-only mode rejects financial operations before handshake and during normal record saving', async () => {
+  const f = await fixture({initialize: false, recordsOnly: true});
+  const retiredActions = () => Promise.all([f.client.spend('main-round'), f.client.buy(), f.client.buyCoach()]);
+  for (const result of await retiredActions()) assert.equal(result.reason, 'ammo_retired');
+  assert.equal(f.requests().length, 0);assert.equal(f.store.size, 0);
+  f.init();await f.flush();
+  f.reply(f.requests().at(-1), snapshot({remaining: 0, free_remaining: 0}));await f.flush();
+  const started = f.client.startRound(OTHER, 220);await f.flush();
+  const start = f.requests().at(-1);assert.equal(start.action, 'round-start');
+  f.reply(start, snapshot({remaining: 0, free_remaining: 0, run_id: SESSION, revision: 2}));
+  assert.equal((await started).run_id, SESSION);
+  const completed = f.client.completeRound(SESSION, 220, 150);await f.flush();
+  const completion = f.requests().at(-1);
+  for (const result of await retiredActions()) assert.equal(result.reason, 'ammo_retired');
+  assert.equal(f.client.pending.requestId, completion.requestId, 'retired operations cannot disturb a saved round');
+  f.reply(completion, snapshot({remaining: 0, free_remaining: 0, main_rounds: 6, revision: 3, score: 150}));
+  assert.equal((await completed).score, 150);assert.equal(f.client.pending, null);
+  assert.deepEqual(f.requests().map(request => request.action), ['status', 'round-start', 'round-complete']);
+  assert.equal(f.client.snapshot.remaining, 0, 'record mode never fabricates an ammunition balance');
+  f.client.dispose();
+});
+
+test('records-only mode archives old financial intents and never replays them or overwrites a new round', async () => {
+  for (const action of ['spend', 'buy', 'coach-buy']) for (const outcome of ['found', 'declined', 'missing', 'timeout']) {
+    const old = await fixture();
+    const operation = action === 'spend' ? old.client.spend('old-event') : action === 'buy' ? old.client.buy() : old.client.buyCoach();
+    await old.flush();const original = old.requests().at(-1);
+    old.reply(original, {ok: false, reason: 'pending'});assert.equal((await operation).reason, 'pending');old.client.dispose();
+    const f = await fixture({store: old.store, sessionId: OTHER, recordsOnly: true});await f.flush();
+    const lookup = f.requests().find(request => request.action === 'receipt');
+    assert.ok(lookup);assert.equal(lookup.receiptId, original.requestId);assert.equal(lookup.originalAction, action);
+    assert.equal(f.client.pending, null, 'a retired financial request cannot keep new records locked');
+    assert.equal((await f.client.retryPending()).reason, 'nothing_pending');
+    const recoveryKey = 'forest-archer-ammo-recovery-v4:' + OWNER;
+    const pendingKey = 'forest-archer-ammo-pending-v4:' + OWNER;
+    const entry = () => JSON.parse(f.store.get(recoveryKey)).find(item => item.requestId === original.requestId);
+    assert.equal(entry().retired, true);assert.equal(entry().action, action);
+
+    const started = f.client.startRound(OTHER, 17);await f.flush();
+    assert.equal(f.client.pending.action, 'round-start');
+    assert.equal(JSON.parse(f.store.get(pendingKey)).requestId, OTHER);
+    if (outcome === 'timeout') { f.advance(12000);await f.flush(); }
+    else {
+      const found = outcome !== 'missing';
+      f.reply(lookup, snapshot({found, receipt: found ? {ok: outcome === 'found', reason: outcome === 'declined' ? 'coins' : undefined} : null}));
+      await f.flush();
+      assert.equal(entry().receiptFound, found);
+      if (found) assert.equal(entry().confirmed, outcome === 'found');
+    }
+    const start = f.requests().at(-1);
+    assert.equal(start.action, 'round-start');assert.equal(start.requestId, OTHER);
+    assert.equal(f.client.pending.requestId, OTHER);
+    assert.equal(JSON.parse(f.store.get(pendingKey)).requestId, OTHER, 'a late retirement lookup cannot erase the new record intent');
+    f.reply(start, snapshot({run_id: SESSION, revision: 2}));assert.equal((await started).run_id, SESSION);
+    assert.equal(f.client.pending, null);assert.equal((await f.client.retryPending()).reason, 'nothing_pending');
+    assert.deepEqual(f.requests().map(request => request.action), ['status', 'receipt', 'round-start']);
+    assert.equal(f.client.snapshot.coins, 100, 'the read-only transition submits no new payment');
+    f.client.dispose();
+  }
 });

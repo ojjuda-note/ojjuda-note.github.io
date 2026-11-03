@@ -4,11 +4,15 @@ export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=2
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
-// High bow arcs need time to reach the ground. Event bullets retain their
-// existing timeout as well as their earlier target-plane miss resolution.
+// Every main-range weapon can make a high arc and complete its falling flight.
 export const ARROW_FLIGHT_LIMIT = 16;
-export const BULLET_FLIGHT_LIMIT = 8;
+export const BULLET_FLIGHT_LIMIT = 16;
 export const getFlightTimeLimit = shot => shot?.projectileType === 'bullet' ? BULLET_FLIGHT_LIMIT : ARROW_FLIGHT_LIMIT;
+export const BULLET_SPEED_RATIO = 2;
+export const BULLET_DROP_RATIO = .5;
+// Drop is measured below the aim ray at the SAME distance. Scaling speed and
+// drag by 2 halves arrival time, so 2g gives half the reference arrow's drop.
+export const BULLET_GRAVITY_SCALE = BULLET_SPEED_RATIO ** 2 * BULLET_DROP_RATIO;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const SCOPES = Object.freeze([
   {magnification:2,name:'2배 조준경',priceMultiplier:.6},
@@ -47,21 +51,20 @@ const arrow = (id, name, tag, description, tipMass, shaftMass, tip, shaft, fletc
   // Compatibility summaries; simulation helpers always read the actual components.
   return { ...item, variance: getArrowVariance(item), windFactor: getWindResponse(item) };
 };
-const gun = (id, name, tag, description, price, grip, power, mass, windFactor, dragRate, color) => ({
-  id, name, tag, description, price, grip, power, muzzleSpeed: 0, color, weaponType: 'gun',
+const gun = (id, name, tag, description, grip, power, mass, windFactor, color) => ({
+  id, name, tag, description, grip, power, muzzleSpeed: 0, color, weaponType: 'gun', visualTier: 24,
   speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
-  grouping: 100, rarity: '일반', scopeCompatible: id >= 22, scopePrice: id >= 22 ? 240 : 0,
-  scopeMagnifications: Object.freeze(id >= 22 ? [3] : []),
-  magazineSize: [2, 4, 6, 8, 10][id - 20],
-  reloadSeconds: [3, 2.5, 2, 1.5, 1][id - 20],
-  reloadLabel: ['느림', '보통', '보통', '빠름', '빠름'][id - 20],
-  ammo: { name: '기본 탄환', mass, windFactor, dragRate, variance: 0 }
+  grouping: 100, rarity: '일반', scopeCompatible: true, scopePrice: 0,
+  magazineSize: 10,
+  reloadSeconds: 1,
+  reloadLabel: '빠름',
+  ammo: { name: '전용 탄환', mass, windFactor, dragRate: 0, gravityScale: BULLET_GRAVITY_SCALE, variance: 0 }
 });
 
 // Released ranks are stable: rebalancing stats must not move saved items to a
 // different price, equipment band, scope cost or steady-window duration.
 const EQUIPMENT_ORDER = Object.freeze({
-  weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19]),
+  weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19, 20]),
   arrow: Object.freeze([0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13, 14, 15, 16, 17, 18])
 });
 function equipmentCatalog(items, kind) {
@@ -87,9 +90,15 @@ function equipmentCatalog(items, kind) {
       item.scopePrice = Math.max(500, Math.ceil(item.price * .2 / 50) * 50);
     }
   });
-  // Event guns have their own shop and retain their separate economy and timing.
-  items.filter(item => item.weaponType === 'gun').forEach((item, rank) => {
-    item.shopRank = rank + 1;item.familyRank = rank + 1;item.steadyDuration = .5;
+  // Guns continue after the released bow/crossbow curve. Do not stretch the
+  // original twenty weapons' steady durations or move their purchased scopes.
+  items.filter(item => item.weaponType === 'gun').sort((a, b) => ranks.get(a.id) - ranks.get(b.id)).forEach((item, index) => {
+    const rank = ranked.length + index;
+    item.shopRank = rank + 1;item.familyRank = index + 1;item.steadyDuration = 2;
+    item.price = 500 * rank + 50 * rank * (rank - 1);
+    item.gearTier = 'upper';item.gearLabel = '상위';
+    item.scopeMagnifications = Object.freeze(SCOPES.map(scope => scope.magnification));
+    item.scopePrice = Math.max(500, Math.ceil(item.price * .2 / 50) * 50);
   });
   return Object.freeze(items);
 }
@@ -134,11 +143,7 @@ export const BOWS = equipmentCatalog([
   bow(17, '레어 정밀석궁', '레어 정밀 3연발', '속사석궁의 탄성에 더 좋은 그립과 정밀한 레일을 더했어요.', 95, 95, '#a79679'),
   bow(18, '레어 매눈석궁', '레어 고급 3연발', '정밀석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 95, 100, '#b1a471'),
   bow(19, '레어 명인석궁', '레어 명품 3연발', '최고 그립과 탄성, 가장 좁은 탄착군을 갖춘 마지막 석궁.', 100, 100, '#bcafcf'),
-  gun(20, '훈련용 공기총', '입문 사격총', '접시 사격용 기본 총. 본편 최고 탄속의 2배로 전용 탄환을 발사해요.', 0, 60, 40, 4, .28, .130, '#7c9a83'),
-  gun(21, '숲길 카빈', '경량 사격총', '기본 총보다 좋은 그립과 빠른 장전. 4발 탄창으로 두 발 더 쏴요.', 950, 70, 50, 5, .22, .110, '#9a8467'),
-  gun(22, '안정형 소총', '안정 사격총', '카빈보다 안정적인 그립과 빠른 장전. 6발 탄창과 고정 스코프를 사용해요.', 1250, 80, 60, 6, .16, .090, '#7b949b'),
-  gun(23, '장거리 소총', '장거리 사격총', '안정형 소총보다 그립과 장전이 좋아지고, 탄환의 공기 저항도 줄었어요.', 1750, 90, 70, 7, .12, .065, '#9c8e73'),
-  gun(24, '정밀 사격총', '정밀 사격총', '최고 그립과 가장 빠른 장전, 10발 탄창으로 정밀하게 겨눠요.', 2200, 100, 80, 8, .08, .050, '#a8b1bf')
+  gun(20, '정밀 사격총', '정밀 사격총', '마지막 석궁 다음 장비. 10발을 쏘면 한 판이 끝나고, 새 판은 1초 장전 뒤 시작해요. 최고 화살 대비 탄속 2배·같은 거리 낙하 절반으로 겨눠요.', 100, 80, 8, .08, '#a8b1bf')
 ], 'weapon');
 
 /** Return a supported scope's price without treating an invalid weapon as the starter bow. */
@@ -147,7 +152,7 @@ export function getScopePrice(weaponOrId, magnification) {
   const scope = SCOPES.find(item => item.magnification === magnification);
   if (!scope || !weapon?.scopeCompatible || !Array.isArray(weapon.scopeMagnifications) || !weapon.scopeMagnifications.includes(magnification) ||
       !Number.isFinite(weapon.scopePrice) || weapon.scopePrice <= 0) return null;
-  // Event guns retain their exact 240-coin price instead of rounding it to 250.
+  // Keep each catalog weapon's three-power price as the shared base.
   return magnification === 3 ? weapon.scopePrice : Math.max(50, Math.ceil(weapon.scopePrice * scope.priceMultiplier / 50) * 50);
 }
 
@@ -702,11 +707,17 @@ function getArrow(arrow) { return typeof arrow === 'number' ? ARROWS[arrow] || A
 
 // Evaluate the same launch formula only after both catalogs and their lookups
 // exist. Excluding guns avoids a circular dependency on their derived speed.
-export const MAX_MAIN_PROJECTILE_SPEED = Math.max(...BOWS.filter(weapon => weapon.weaponType !== 'gun')
-  .flatMap(bow => ARROWS.map(arrow => getSpeed({ bow, arrow, charge: 1, velocityBias: 1 }))));
-export const BULLET_SPEED = MAX_MAIN_PROJECTILE_SPEED * 2;
+export const FASTEST_ARROW_REFERENCE = Object.freeze(BOWS.filter(weapon => weapon.weaponType !== 'gun')
+  .flatMap(bow => ARROWS.map(arrow => ({bowId: bow.id, arrowId: arrow.id,
+    speed: getSpeed({ bow, arrow, charge: 1, velocityBias: 1 }),
+    dragRate: getArrowDragRate(arrow) + Math.max(0, bow.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow)})))
+  .reduce((best, candidate) => candidate.speed >= best.speed ? candidate : best));
+export const MAX_MAIN_PROJECTILE_SPEED = FASTEST_ARROW_REFERENCE.speed;
+export const BULLET_SPEED = MAX_MAIN_PROJECTILE_SPEED * BULLET_SPEED_RATIO;
+export const BULLET_DRAG_RATE = FASTEST_ARROW_REFERENCE.dragRate * BULLET_SPEED_RATIO;
 for (const weapon of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
   weapon.muzzleSpeed = BULLET_SPEED;weapon.speed = BULLET_SPEED;
+  weapon.ammo.dragRate = BULLET_DRAG_RATE;
 }
 
 const animalPassDuration = Object.freeze(Object.fromEntries(Object.entries(stageShapes).map(([kind, shape]) => [kind, shape[2]])));
@@ -1056,6 +1067,7 @@ export function launchArrow(params = {}) {
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
     speed, mass: bullet ? weapon.ammo.mass : getArrowMass(arrow), windFactor: bullet ? weapon.ammo.windFactor : getWindResponse(arrow),
     projectileType: bullet ? 'bullet' : 'arrow', shaftLength: bullet ? .12 : .85,
+    gravityScale: bullet ? weapon.ammo.gravityScale : 1,
     dragRate: bullet ? weapon.ammo.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
     bounceCount:0,bouncesRemaining:ability?.type === 'bounce' ? ability.maxBounces : 0,
@@ -1211,7 +1223,7 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
   if (!(dt > 0) || !Number.isFinite(dt)) return null;
   const position = shot.position, velocity = shot.velocity;
   const drag = Math.max(0, shot.dragRate ?? 0);
-  const acceleration = { x: (stage.wind || 0) * WIND_RESPONSE * (shot.windFactor ?? 1), y: -GRAVITY, z: 0 };
+  const acceleration = { x: (stage.wind || 0) * WIND_RESPONSE * (shot.windFactor ?? 1), y: -GRAVITY * (shot.gravityScale ?? 1), z: 0 };
   if (steering) for (const axis of ['x','y','z']) acceleration[axis] += steering[axis];
   const events = [];
   const ground = roots(position.y, velocity.y, acceleration.y, 0, dt, drag).filter(t => t >= 0 && t <= dt && velocityAt(velocity, acceleration, t, drag).y <= 0);
