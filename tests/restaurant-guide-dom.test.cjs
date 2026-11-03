@@ -21,9 +21,47 @@ async function ready(f, count, expand = true) { await until(() => Number(f.$('#r
 function fixture(options = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
-  const dom = new JSDOM(html, { url: 'https://fixture.test/games/certified-restaurants/index.html?embedded=1', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole });
+  const recommendationRows = Array.isArray(options.memberRecommendations) ? options.memberRecommendations : [];
+  const hasMemberRecommendations = Array.isArray(options.memberRecommendations);
+  const dom = new JSDOM(html, { url: 'https://fixture.test/games/certified-restaurants/index.html?embedded=1' + (options.member ? '&member-ratings=1' : '') + (hasMemberRecommendations || options.recommendationFlagOnly ? '&member-recommendations=1' : ''), runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole });
   const { window } = dom, document = window.document;
-  const calls = { data: 0, location: 0, maps: 0, tiles: 0, tileLoads: 0, tileBatches: 0, tileRedraws: 0, tileRemoves: 0, tileLayers: [], fits: [], markers: new Set() };
+  const calls = { data: 0, location: 0, locationCallbacks: [], ratingRequests: [], recommendationRequests: [], recommendationNavigation: [], maps: 0, tiles: 0, tileLoads: 0, tileBatches: 0, tileRedraws: 0, tileRemoves: 0, tileLayers: [], fits: [], markers: new Set() };
+  let parent;
+  const replyRating = (request, result = {}) => {
+    assert.ok(request && !request.replied, 'rating request is pending'); request.replied = true;
+    const data = Object.hasOwn(result, 'data') ? result.data : request.ids.map(id => options.ratings?.[id] || { id, average: null, count: 0, my_rating: null });
+    window.dispatchEvent(new window.MessageEvent('message', { origin: window.location.origin, source: parent, data: { type: 'ojjuda:restaurants:rating-result', requestId: request.requestId, data, ...result } }));
+  };
+  const replyRecommendation = (request, result = {}) => {
+    assert.ok(request && !request.replied, 'recommendation request is pending'); request.replied = true;
+    const rows = recommendationRows.slice(request.offset, request.offset + request.limit);
+    const data = { rows, total: recommendationRows.length, offset: request.offset, limit: request.limit, hasMore: request.offset + rows.length < recommendationRows.length };
+    window.dispatchEvent(new window.MessageEvent('message', { origin: window.location.origin, source: parent, data: { type: 'ojjuda:restaurants:recommendation-data-result', requestId: request.requestId, data, ...result } }));
+  };
+  if (options.member || hasMemberRecommendations) {
+    parent = { postMessage(message, origin) {
+      assert.equal(origin, window.location.origin, 'member messages stay same-origin');
+      if (message.type === 'ojjuda:restaurants:recommendation-data') {
+        assert.equal(message.action, 'page'); assert.equal(message.limit, 50);
+        const request = { ...message, replied: false }; calls.recommendationRequests.push(request);
+        if (!options.deferRecommendations) queueMicrotask(() => replyRecommendation(request));
+        return;
+      }
+      if (message.type === 'ojjuda:restaurants:recommendations') { calls.recommendationNavigation.push({ ...message }); return; }
+      if (message.type !== 'ojjuda:restaurants:ratings') return;
+      assert.equal(message.action, 'summary');
+      assert.ok(message.ids.length <= 100, 'each summary request observes the bridge batch limit');
+      const request = { ...message, ids: [...message.ids], replied: false }; calls.ratingRequests.push(request);
+      if (!options.deferRatings) queueMicrotask(() => replyRating(request));
+    } };
+    Object.defineProperty(window, 'parent', { value: parent });
+  }
+  if (options.member) {
+    window.OjjudaRestaurantRatings = {
+      renderSummary(node, summary) { node.textContent = summary === undefined ? '별점 확인 중' : summary === null ? '별점 확인 불가' : summary.count ? '별점 ' + summary.average + ' · ' + summary.count + '명' : '아직 평가 없음'; },
+      mountEditor(section, editor) { calls.editor = editor; return { dispose() {} }; }
+    };
+  }
   let tileFailures = options.tileFailures || 'none', tilesStalled = !!options.stallTiles;
   const backgroundDeadlines = new Map();
   if (options.controlTimeouts) {
@@ -44,7 +82,7 @@ function fixture(options = {}) {
     return { ok: !(options.failOnce && calls.data === 1), status: options.failOnce && calls.data === 1 ? 503 : 200, json: async () => structuredClone(options.dataset || dataset) };
   };
   if (!options.noPermissionApi) Object.defineProperty(window.navigator, 'permissions', { value: { query: async () => ({ state: options.permission || 'denied' }) } });
-  Object.defineProperty(window.navigator, 'geolocation', { value: { getCurrentPosition(success, failure) { calls.location++; queueMicrotask(() => options.position ? success({ coords: { latitude: options.position.lat, longitude: options.position.lng } }) : failure({ code: options.locationError || 1 })); } } });
+  Object.defineProperty(window.navigator, 'geolocation', { value: { getCurrentPosition(success, failure) { calls.location++; calls.locationCallbacks.push({ success, failure }); if (!options.deferLocation) queueMicrotask(() => options.position ? success({ coords: { latitude: options.position.lat, longitude: options.position.lng } }) : failure({ code: options.locationError || 1 })); } } });
   if (options.storage) window.localStorage.setItem(savedKey, options.storage);
   if (options.locationChoice) window.localStorage.setItem(locationKey, options.locationChoice);
   // Data-behavior cases explicitly prefer the full list; default-map behavior is exercised below.
@@ -97,7 +135,7 @@ function fixture(options = {}) {
   if (options.noMap) delete window.L;
   window.eval(code);
   const $ = selector => document.querySelector(selector);
-  return { dom, window, document, $, calls, errors, backgroundDeadlines, expireMapTimeout() { assert.equal(backgroundDeadlines.size, 1, 'exactly one map deadline is active'); const [id, handler] = backgroundDeadlines.entries().next().value; backgroundDeadlines.delete(id); handler(); }, recoverTiles() { tileFailures = 'none'; tilesStalled = false; }, records: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId).sort(), order: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId), all() { let page = 0; while (!$('#load-more').hidden && page++ < 1000) $('#load-more').click(); }, click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); }, filters() { if ($('#filter-options').hidden) $('#filter-toggle').click(); }, change(selector, value) { $(selector).value = value; $(selector).dispatchEvent(new window.Event('change', { bubbles: true })); }, search(value) { $('#search').value = value; $('#search-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); } };
+  return { dom, window, document, $, calls, errors, replyRating, replyRecommendation, parent, backgroundDeadlines, expireMapTimeout() { assert.equal(backgroundDeadlines.size, 1, 'exactly one map deadline is active'); const [id, handler] = backgroundDeadlines.entries().next().value; backgroundDeadlines.delete(id); handler(); }, recoverTiles() { tileFailures = 'none'; tilesStalled = false; }, records: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId).sort(), order: () => [...document.querySelectorAll('#cards [data-restaurant-id]')].map(node => node.dataset.restaurantId), all() { let page = 0; while (!$('#load-more').hidden && page++ < 1000) $('#load-more').click(); }, click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); }, filters() { if ($('#filter-options').hidden) $('#filter-toggle').click(); }, change(selector, value) { $(selector).value = value; $(selector).dispatchEvent(new window.Event('change', { bubbles: true })); }, search(value) { $('#search').value = value; $('#search-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); } };
 }
 
 (async () => {
@@ -115,7 +153,17 @@ function fixture(options = {}) {
   assert.equal(initialMap.$('#show-map').getAttribute('aria-pressed'), 'true');
   assert.equal(initialMap.$('#results').hidden, false, 'the list remains available beside the map');
   assert.equal(initialMap.records().length, 50, 'the first map view also provides a bounded batch of restaurant cards');
-  assert.equal(initialMap.document.querySelectorAll('[data-category]').length, 8, 'category controls stay unambiguous when cards are visible beside the map');
+  assert.equal(initialMap.$('#categories'), null, 'the category chip rows are removed');
+  assert.equal(initialMap.$('#category').getAttribute('aria-label'), '음식 종류');
+  assert.deepEqual([...initialMap.$('#category').options].map(option => option.value), ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
+  assert.equal(initialMap.$('#category').closest('#search-form'), initialMap.$('#search-form'), 'the category select sits with the regional search controls');
+  assert.equal(initialMap.document.querySelectorAll('#recommendations-link').length, 1, 'there is one recommendation entry');
+  assert.equal(initialMap.$('#search-form').nextElementSibling, initialMap.$('#recommendations-link'), 'recommendations immediately follow the search form');
+  assert.equal(initialMap.$('#recommendations-link').closest('header'), null, 'the recommendation entry is not duplicated in the header');
+  assert.equal(initialMap.$('#nearby').closest('#map-panel'), initialMap.$('#map-panel'), 'my location belongs to the map');
+  assert.equal(initialMap.$('#nearby-label').textContent, '내 위치');
+  assert.equal(initialMap.$('#result-coverage').classList.contains('sr-only'), true, 'coverage remains available to assistive technology without a visible summary row');
+  assert.equal(initialMap.$('#list-label').classList.contains('sr-only'), true);
   assert.equal(initialMap.$('#load-more').hidden, false, 'map-and-list browsing retains progressive loading');
   assert.equal(initialMap.window.localStorage.getItem(viewKey), null, 'the default view does not create an explicit preference');
   initialMap.click('#show-list');
@@ -127,7 +175,7 @@ function fixture(options = {}) {
   assert.equal(initialMap.calls.tiles, 1);
   assert.equal(initialMap.window.localStorage.getItem(viewKey), 'map', 'explicit map selection is persisted');
   const explicitMap = initialMap.window.localStorage.getItem(viewKey);
-  initialMap.click('[data-category="한식"]'); initialMap.click('#reset');
+  initialMap.change('#category', '한식'); initialMap.click('#reset');
   assert.equal(initialMap.window.localStorage.getItem(viewKey), explicitMap, 'search conditions never overwrite the chosen view');
   assert.equal(initialMap.calls.maps, 1, 'view changes reuse the map');
   assert.deepEqual(initialMap.errors, []); initialMap.dom.window.close();
@@ -181,20 +229,20 @@ function fixture(options = {}) {
   assert.equal(actual.$('.result-shown').hidden, true, 'list pagination counts are hidden in map mode');
   const missingActual = dataset.restaurants.filter(item => !coordinates(item)).length;
   assert.equal(actual.$('.map-caption'), null, 'the map has no obstructing summary caption');
-  if (missingActual) assert.ok(actual.$('#result-coverage').textContent.includes('위치 확인 중 ' + missingActual + '곳'), 'coordinate gaps remain explained above the map even when the pin limit applies');
+  if (missingActual) assert.ok(actual.$('#result-coverage').textContent.includes('위치 확인 중 ' + missingActual + '곳'), 'coordinate gaps remain in accessible coverage metadata even when the pin limit applies');
   actual.click('#show-list'); actual.click('#show-map');
   assert.equal(actual.calls.maps, 1, 'map switching reuses the existing map');
   assert.equal(actual.calls.tiles, 1, 'map switching reuses the tile layer');
   actual.click('#show-list');
   assert.equal(actual.$('.result-shown').hidden, false);
   actual.filters(); assert.equal(actual.$('#filter-options').hidden, false); assert.equal(actual.$('#filter-toggle').getAttribute('aria-expanded'), 'true');
-  if (dataset.collections?.length) assert.deepEqual([...actual.document.querySelectorAll('.collection-title')].map(link => link.href), dataset.collections.map(collection => new URL(collection.url).href), 'default browse exposes the exact official collection map');
+  if (dataset.collections?.length) assert.deepEqual([...actual.document.querySelectorAll('.collection-title')].map(link => link.href), dataset.collections.map(collection => new URL(collection.url).href), 'footer data details preserve the exact official collection map');
   const combined = dataset.restaurants.find(item => item.guides.some(g => g.provider === 'michelin') && item.guides.some(g => g.provider === 'blue-ribbon'));
   assert.ok(combined, 'real data includes a joint guide selection');
   const compactCard = actual.$('[data-restaurant-id="' + combined.id + '"]');
   assert.equal(compactCard.querySelector('.card-address,.coord-note'), null, 'repeated detailed fields stay out of the compact list');
   assert.doesNotMatch(compactCard.querySelector('.guide-badges').textContent, /20\d{2}/, 'edition dates are reserved for the detail');
-  actual.click('[data-category="' + combined.category + '"]'); actual.change('#region', combined.region); actual.click('[data-guide="both"]');
+  actual.change('#category', combined.category); actual.change('#region', combined.region); actual.click('[data-guide="both"]');
   const intersection = dataset.restaurants.filter(item => item.category === combined.category && item.region === combined.region && item.guides.some(g => g.provider === 'michelin') && item.guides.some(g => g.provider === 'blue-ribbon'));
   actual.all(); assert.deepEqual(actual.records(), ids(intersection), 'all active filters intersect');
   actual.click('#filter-toggle'); assert.equal(actual.$('#filter-options').hidden, true);
@@ -228,7 +276,7 @@ function fixture(options = {}) {
   assert.ok(decodeURIComponent(actual.$('.detail-links a').href).includes(combined.address));
   if (coordinates(combined)) assert.ok(actual.$('.route-link').href.endsWith(',' + combined.lat + ',' + combined.lng));
   actual.click('#close-detail'); assert.equal(actual.$('#detail').open, false);
-  actual.click('#nearby'); await until(() => !actual.$('#nearby').disabled, 'denied location resolves');
+  actual.change('#sort-order', 'distance'); await until(() => !actual.$('#nearby').disabled, 'denied location resolves');
   actual.all(); assert.equal(actual.calls.location, 1); assert.match(actual.$('#location-status').textContent, /허용되지/); assert.equal(actual.records().length, dataset.restaurants.length);
   actual.click('#choose-region'); assert.equal(actual.document.activeElement.id, 'region', 'denial provides a direct region-selection path');
   assert.deepEqual(actual.errors, []); actual.dom.window.close();
@@ -354,7 +402,8 @@ function fixture(options = {}) {
   mobilePostal.all(); assert.deepEqual(mobilePostal.records(), ids(postalRows));
   if (!postalRows.some(coordinates)) assert.equal(mobilePostal.$('#workspace').dataset.view, 'list', 'a mobile filter with no coordinates opens the useful list automatically');
   assert.equal(mobilePostal.$('#collections').hidden, false);
-  assert.equal(mobilePostal.$('#collections').classList.contains('is-featured'), true, 'postal view makes its original full map prominent');
+  assert.ok(mobilePostal.$('#collections').closest('.data-note details'), 'official full maps live in the footer data details');
+  assert.equal(mobilePostal.$('#collections').closest('details').open, false, 'data details start folded');
   assert.equal(mobilePostal.$('.collection-title').href, collection.url);
   assert.equal(mobilePostal.$('.collection-title').textContent, collection.title + ' ↗');
   assert.equal(mobilePostal.$('.collection-note'), null, 'the collection stays a compact single-line shortcut');
@@ -457,7 +506,7 @@ function fixture(options = {}) {
   firstVisit.dom.window.close();
   const laterVisit = fixture({ dataset: nearbyData, permission: 'prompt', locationChoice: deniedChoice });
   await ready(laterVisit, 3); assert.equal(laterVisit.calls.location, 0, 'a denied preference survives reentry without another automatic prompt');
-  laterVisit.click('#nearby'); await until(() => laterVisit.calls.location === 1 && !laterVisit.$('#nearby').disabled, 'an explicit nearby retry remains available');
+  laterVisit.change('#sort-order', 'distance'); await until(() => laterVisit.calls.location === 1 && !laterVisit.$('#nearby').disabled, 'an explicit nearby retry remains available');
   laterVisit.dom.window.close();
   const permissionFallback = fixture({ dataset: nearbyData, noPermissionApi: true, locationChoice: 'enabled', position: { lat: 37.5665, lng: 126.978 } });
   await ready(permissionFallback, 3); assert.equal(permissionFallback.calls.location, 1, 'previously enabled nearby works without the Permissions API');
@@ -473,7 +522,7 @@ function fixture(options = {}) {
   assert.equal(coverage.calls.maps, 0, 'list coverage does not initialize the optional map');
   coverage.click('#show-map'); await until(() => coverage.calls.tileLoads === 1, 'the coverage map loads');
   assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 4곳 · 위치 확인 중 8곳'); assert.equal(coverage.calls.markers.size, 4);
-  coverage.click('[data-category="한식"]');
+  coverage.change('#category', '한식');
   assert.equal(coverage.$('#result-count').dataset.total, '6'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 2곳 · 위치 확인 중 4곳');
   coverage.change('#region', '서울');
   assert.equal(coverage.$('#result-count').dataset.total, '0'); assert.equal(coverage.$('#result-coverage').textContent, '지도 표시 0곳'); assert.equal(coverage.calls.markers.size, 0);
@@ -602,5 +651,192 @@ function fixture(options = {}) {
     assert.deepEqual(boundary.errors, []); boundary.dom.window.close();
   }
 
-  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, non-cumulative 50-pin map pages, boundary/partial pages, filter/location resets and whole-page selection, folded filters, keyless OSM tile settings and attribution, mixed tile failures, manual retry and stale-error recovery, saved state, exact sources, edition/selection/publication/source/listing years and safe text/URLs. Browser layout and screenshots require Chromium/CUA.');
+  const byName = rows => [...rows].sort((a, b) => a.name.localeCompare(b.name, 'ko') || a.id.localeCompare(b.id)).map(row => row.id);
+  const sourceGuide = { provider: 'blue-ribbon', sourceUrl: 'https://fixture.test/selection', label: '선정 이력', verifiedAt: '2026-11-03' };
+  const dateRow = (id, name, guides) => ({ ...structuredClone(near), id, name, guides });
+  const datedRows = [
+    dateRow('date-old', '하 예전 등록', [{ ...sourceGuide, sourceRegisteredAt: '2022-10-24', sourceRegistrationUrl: 'https://fixture.test/registered/old', sourceAsOf: '2026-11-03' }]),
+    dateRow('date-latest', '차 최근 등록', [{ ...sourceGuide, sourceRegisteredAt: '2025-07-08', sourceRegistrationUrl: 'https://fixture.test/registered/new' }]),
+    dateRow('date-two-guides', '타 여러 출처', [{ ...sourceGuide, sourceRegisteredAt: '2021-01-01', sourceRegistrationUrl: 'https://fixture.test/registered/first' }, { ...sourceGuide, provider: 'michelin', sourceRegisteredAt: '2026-05-06', sourceRegistrationUrl: 'https://fixture.test/registered/latest' }]),
+    dateRow('date-missing', '가 자료 기준일만', [{ ...sourceGuide, sourceAsOf: '2026-11-03' }]),
+    dateRow('date-invalid', '나 잘못된 날짜', [{ ...sourceGuide, sourceRegisteredAt: '2026-02-30', sourceRegistrationUrl: 'https://fixture.test/registered/invalid' }]),
+    dateRow('date-unsafe', '다 안전하지 않은 출처', [{ ...sourceGuide, sourceRegisteredAt: '2026-11-02', sourceRegistrationUrl: 'javascript:window.injected=1' }]),
+    dateRow('date-month', '라 월 단위 자료', [{ ...sourceGuide, sourceRegisteredAt: '2026-10', sourceRegistrationUrl: 'https://fixture.test/registered/month' }])
+  ];
+  const recent = fixture({ dataset: { updatedAt: '2026-11-03', restaurants: datedRows } });
+  await ready(recent, datedRows.length);
+  assert.deepEqual([...recent.$('#sort-order').options].map(option => option.value), ['distance', 'name', 'popular', 'recent'], 'all four requested sorting choices are present');
+  assert.equal(recent.$('#sort-order').value, 'name');
+  assert.equal(recent.$('#sort-order option[value="popular"]').disabled, true, 'guests cannot select the member-rating sort');
+  recent.change('#sort-order', 'recent');
+  assert.deepEqual(recent.order(), ['date-two-guides', 'date-latest', 'date-old', ...byName(datedRows.slice(3))], 'recent uses only genuine complete source registration dates; verified/source-as-of dates never substitute');
+  assert.equal(recent.$('#sort-description').textContent, '등록일 미확인은 뒤에 표시해요.');
+  assert.equal(recent.$('#sort-description').closest('#map-panel'), null, 'registration-date guidance never covers the map');
+  recent.change('#sort-order', 'name'); assert.deepEqual(recent.order(), byName(datedRows));
+  recent.change('#sort-order', 'popular');
+  assert.notEqual(recent.$('#sort-order').value, 'popular', 'a synthetic guest change cannot enable member sorting');
+  assert.equal(recent.calls.ratingRequests.length, 0);
+  assert.deepEqual(recent.errors, []); recent.dom.window.close();
+
+  const explicitName = fixture({ dataset: nearbyData, permission: 'granted', deferLocation: true });
+  await ready(explicitName, 3);
+  await until(() => explicitName.calls.location === 1, 'automatic geolocation starts');
+  explicitName.change('#sort-order', 'name');
+  explicitName.calls.locationCallbacks[0].success({ coords: { latitude: 37.5665, longitude: 126.978 } });
+  assert.equal(explicitName.$('#sort-order').value, 'name', 'late geolocation does not override an explicit sort choice');
+  assert.deepEqual(explicitName.order(), byName(nearbyData.restaurants));
+  assert.equal(explicitName.$('.list-section-title'), null, 'name sorting does not split records into distance groups');
+  explicitName.change('#sort-order', 'distance'); assert.deepEqual(explicitName.order(), ['near', 'far', 'unknown']);
+  assert.match(explicitName.$('.list-section-title').textContent, /거리/);
+  explicitName.change('#sort-order', 'name'); explicitName.click('#reset');
+  assert.equal(explicitName.$('#sort-order').value, 'name', 'resetting search filters preserves the explicit sort');
+  assert.deepEqual(explicitName.order(), byName(nearbyData.restaurants));
+  assert.deepEqual(explicitName.errors, []); explicitName.dom.window.close();
+
+  const distanceDenied = fixture({ dataset: nearbyData, permission: 'denied' });
+  await ready(distanceDenied, 3); distanceDenied.change('#sort-order', 'distance');
+  await until(() => !distanceDenied.$('#nearby').disabled, 'explicit distance request handles denied location');
+  assert.deepEqual(distanceDenied.order(), byName(nearbyData.restaurants), 'missing user location never fabricates distances');
+  assert.equal(distanceDenied.$('.list-section-title'), null);
+  assert.ok(/위치|이름순/.test(distanceDenied.$('#sort-description').textContent + distanceDenied.$('#location-status').textContent), 'distance fallback is explained');
+  assert.deepEqual(distanceDenied.errors, []); distanceDenied.dom.window.close();
+
+  const popularityRows = many.slice(0, 120);
+  const rating = (index, average, count) => ({ id: 'many-' + index, average, count, my_rating: null });
+  const popularityScores = { 'many-119': rating(119, 5, 1), 'many-118': rating(118, 4.5, 20), 'many-117': rating(117, 4.5, 1), 'many-1': rating(1, 4.5, 20) };
+  async function settleRatings(f) {
+    let quiet = 0;
+    for (let step = 0; step < 30 && quiet < 3; step++) {
+      const pending = f.calls.ratingRequests.filter(request => !request.replied);
+      pending.forEach(request => f.replyRating(request));
+      quiet = pending.length ? 0 : quiet + 1;
+      await pause();
+    }
+    assert.equal(f.calls.ratingRequests.some(request => !request.replied), false, 'all requested summaries settle');
+  }
+  const popular = fixture({ dataset: { restaurants: popularityRows }, member: true, deferRatings: true, ratings: popularityScores });
+  await ready(popular, popularityRows.length, false);
+  assert.equal(popular.$('#sort-order option[value="popular"]').disabled, false);
+  popular.change('#sort-order', 'popular');
+  assert.match(popular.$('#sort-description').textContent, /불러|확인/);
+  await settleRatings(popular);
+  await until(() => popular.order()[0] === 'many-119', 'a restaurant outside the first 50 rows becomes most popular');
+  assert.deepEqual(popular.order().slice(0, 4), ['many-119', 'many-1', 'many-118', 'many-117'], 'popularity sorts average, then rating count, then Korean name');
+  assert.equal(popular.order().length, 50, 'popularity retains bounded list pagination');
+  const requestedIds = popular.calls.ratingRequests.flatMap(request => request.ids);
+  assert.equal(new Set(requestedIds).size, popularityRows.length, 'popularity includes the entire filtered population');
+  assert.equal(requestedIds.length, popularityRows.length, 'concurrent card and popularity requests share each pending ID');
+  popular.all(); assert.equal(popular.order().length, popularityRows.length);
+  assert.deepEqual(popular.order().slice(4), byName(popularityRows.filter(item => !popularityScores[item.id])), 'unrated restaurants follow rated ones with deterministic name ordering');
+  popular.change('#sort-order', 'name'); popular.change('#sort-order', 'popular');
+  await pause(); assert.equal(popular.calls.ratingRequests.flatMap(request => request.ids).length, popularityRows.length, 'resolved summaries are reused within the current member view');
+  assert.deepEqual(popular.errors, []); popular.dom.window.close();
+
+  const changedSort = fixture({ dataset: { restaurants: popularityRows }, member: true, deferRatings: true, ratings: popularityScores });
+  await ready(changedSort, popularityRows.length, false); changedSort.change('#sort-order', 'popular'); changedSort.change('#sort-order', 'name');
+  await settleRatings(changedSort);
+  assert.equal(changedSort.$('#sort-order').value, 'name');
+  assert.deepEqual(changedSort.order(), byName(popularityRows).slice(0, 50), 'late popularity results cannot override a newer sort selection');
+  assert.equal(changedSort.$('#retry-sort').hidden, true);
+  assert.deepEqual(changedSort.errors, []); changedSort.dom.window.close();
+
+  const updatedRating = fixture({ dataset: { restaurants: popularityRows }, member: true, deferRatings: true, ratings: popularityScores });
+  await ready(updatedRating, popularityRows.length, false); updatedRating.change('#sort-order', 'popular');
+  updatedRating.click('[data-restaurant-id="many-0"] .card-main');
+  assert.ok(updatedRating.calls.editor, 'the member detail exposes its existing rating editor');
+  updatedRating.calls.editor.onChange({ id: 'many-0', average: 5, count: 2, my_rating: 5 });
+  await settleRatings(updatedRating);
+  await until(() => updatedRating.order()[0] === 'many-0', 'a confirmed saved rating reorders popularity');
+  assert.match(updatedRating.$('[data-rating-id="many-0"]').textContent, /5.*2/);
+  assert.deepEqual(updatedRating.order().slice(0, 2), ['many-0', 'many-119'], 'an older pending summary cannot overwrite a just-saved rating');
+  updatedRating.click('#close-detail'); assert.deepEqual(updatedRating.errors, []); updatedRating.dom.window.close();
+
+  const retryPopular = fixture({ dataset: { restaurants: popularityRows }, member: true, deferRatings: true, ratings: popularityScores });
+  await ready(retryPopular, popularityRows.length, false); retryPopular.change('#sort-order', 'popular');
+  let popularityFailed = false;
+  for (let step = 0; step < 30; step++) {
+    const pending = retryPopular.calls.ratingRequests.filter(request => !request.replied);
+    for (const request of pending) {
+      if (!popularityFailed && request.ids.includes('many-119')) { retryPopular.replyRating(request, { error: '연결 실패' }); popularityFailed = true; }
+      else retryPopular.replyRating(request);
+    }
+    await pause();
+    if (popularityFailed && !retryPopular.$('#retry-sort').hidden) break;
+  }
+  assert.equal(popularityFailed, true); assert.equal(retryPopular.$('#retry-sort').hidden, false, 'failed summaries have an explicit retry instead of being treated as unrated');
+  assert.match(retryPopular.$('#sort-description').textContent, /못|실패|다시/);
+  retryPopular.click('#retry-sort'); await settleRatings(retryPopular);
+  await until(() => retryPopular.order()[0] === 'many-119', 'retry restores full popularity sorting');
+  assert.equal(retryPopular.$('#retry-sort').hidden, true);
+  assert.deepEqual(retryPopular.errors, []); retryPopular.dom.window.close();
+
+  // Member recommendations join the same filters and map without exposing their private records.
+  const recommendation = index => ({
+    id: '00000000-0000-4000-8000-' + String(index + 1).padStart(12, '0'),
+    name: '추천등록' + String(index).padStart(2, '0'), category: index === 50 ? '중식' : '한식', region: '서울',
+    address: '서울특별시 중구 테스트로 ' + (index + 1), menu: '등록 메뉴',
+    latitude: index === 50 ? null : 37.56 + index / 100000, longitude: index === 50 ? null : 126.97,
+    created_at: index === 50 ? '2026-11-02T12:30:00Z' : '2026-10-01T12:30:00Z'
+  });
+  const recommendedRows = Array.from({ length: 51 }, (_, index) => recommendation(index));
+  const certifiedSample = { ...structuredClone(near), id: 'certified-near', name: '가 인증식당', category: '중식', guides: [sourceGuide] };
+  const integrated = fixture({ dataset: { restaurants: [certifiedSample] }, memberRecommendations: recommendedRows, view: 'map' });
+  await ready(integrated, 52);
+  await until(() => integrated.calls.tileLoads > 0, 'the combined map loads');
+  assert.deepEqual(integrated.calls.recommendationRequests.map(request => request.offset), [0, 50], 'all 51 recommendations are read through bounded pages');
+  assert.equal(integrated.records().filter(id => id.startsWith('recommended-')).length, 51);
+  assert.ok(integrated.$('[data-restaurant-id="recommended-' + recommendedRows[0].id + '"] .is-recommendation'), 'member recommendations have their own badge');
+  assert.ok(integrated.document.querySelectorAll('.restaurant-pin.is-recommendation').length > 0, 'recommendation pins are visually distinct');
+  assert.equal([...integrated.calls.markers].some(marker => marker.node.title === recommendedRows[50].name), false, 'missing recommendation coordinates never produce a map pin');
+  integrated.change('#category', '중식'); integrated.all();
+  assert.deepEqual(integrated.records(), [certifiedSample.id, 'recommended-' + recommendedRows[50].id].sort(), 'category filters apply to certified and member records together');
+  await until(() => integrated.document.querySelectorAll('.restaurant-pin').length === 1, 'only the coordinate-backed certified result remains mapped');
+  integrated.click('#reset'); integrated.change('#sort-order', 'recent');
+  assert.equal(integrated.order()[0], 'recommended-' + recommendedRows[50].id, 'recommendation recent order uses its actual registration timestamp');
+  integrated.search(recommendedRows[0].name);
+  await until(() => integrated.order().length === 1 && integrated.document.querySelectorAll('.restaurant-pin').length === 1, 'member names are searchable on the same map');
+  integrated.click('.card-main');
+  assert.equal(integrated.calls.recommendationNavigation.at(-1).id, recommendedRows[0].id, 'recommendation cards open the existing member record');
+  assert.equal(integrated.$('#detail').open, false, 'recommendation cards do not fabricate certified source details');
+  integrated.click('.restaurant-pin');
+  assert.equal(integrated.calls.recommendationNavigation.at(-1).id, recommendedRows[0].id, 'recommendation pins open the same member record');
+  assert.deepEqual(integrated.errors, []); integrated.dom.window.close();
+
+  const guestFeed = fixture({ dataset: { restaurants: [certifiedSample] }, recommendationFlagOnly: true });
+  await ready(guestFeed, 1);
+  assert.deepEqual(guestFeed.records(), [certifiedSample.id]);
+  assert.equal(guestFeed.calls.recommendationRequests.length, 0, 'a query flag without a member parent cannot enable member data');
+  assert.deepEqual(guestFeed.errors, []); guestFeed.dom.window.close();
+
+  const feedRace = fixture({ dataset: { restaurants: [certifiedSample] }, memberRecommendations: [recommendedRows[0]], deferRecommendations: true });
+  await ready(feedRace, 1);
+  await until(() => feedRace.calls.recommendationRequests.length === 1, 'member feed starts its first request');
+  const oldFeedRequest = feedRace.calls.recommendationRequests[0];
+  const oldFeedData = { rows: [recommendedRows[0]], total: 1, offset: 0, limit: 50, hasMore: false };
+  const feedEvent = (type, data = {}, origin = feedRace.window.location.origin, source = feedRace.parent) => feedRace.window.dispatchEvent(new feedRace.window.MessageEvent('message', { origin, source, data: { type, ...data } }));
+  feedEvent('ojjuda:restaurants:recommendation-data-result', { requestId: oldFeedRequest.requestId, data: oldFeedData }, 'https://untrusted.test');
+  feedEvent('ojjuda:restaurants:recommendation-data-result', { requestId: oldFeedRequest.requestId, data: oldFeedData }, feedRace.window.location.origin, null);
+  feedEvent('ojjuda:restaurants:recommendations-changed', {}, 'https://untrusted.test');
+  await pause();
+  assert.deepEqual(feedRace.records(), [certifiedSample.id], 'foreign-origin and nonparent feed replies are rejected');
+  assert.equal(feedRace.calls.recommendationRequests.length, 1, 'foreign refresh messages do not reload member data');
+  feedEvent('ojjuda:restaurants:recommendations-changed');
+  await until(() => feedRace.calls.recommendationRequests.length === 2, 'a trusted member change refreshes the feed');
+  feedRace.replyRecommendation(oldFeedRequest);
+  feedRace.replyRecommendation(feedRace.calls.recommendationRequests[1], { data: { rows: [recommendedRows[1]], total: 1, offset: 0, limit: 50, hasMore: false } });
+  await ready(feedRace, 2);
+  assert.deepEqual(feedRace.records(), [certifiedSample.id, 'recommended-' + recommendedRows[1].id].sort(), 'a stale feed page cannot replace a newer member update');
+  assert.deepEqual(feedRace.errors, []); feedRace.dom.window.close();
+
+  const combinedRatings = fixture({ dataset: { restaurants: [certifiedSample] }, member: true, memberRecommendations: [recommendedRows[0]], ratings: { [recommendedRows[0].id]: { id: recommendedRows[0].id, average: 5, count: 2, my_rating: null } } });
+  await ready(combinedRatings, 2); combinedRatings.change('#sort-order', 'popular');
+  await until(() => combinedRatings.order()[0] === 'recommended-' + recommendedRows[0].id, 'member recommendation ratings participate in combined popularity');
+  assert.ok(combinedRatings.calls.ratingRequests.some(request => request.kind === 'recommended' && request.ids.includes(recommendedRows[0].id)), 'recommendations use the recommended rating kind and original UUID');
+  assert.ok(combinedRatings.calls.ratingRequests.some(request => (!request.kind || request.kind === 'certified') && request.ids.includes(certifiedSample.id)), 'certified ratings retain their separate namespace');
+  assert.equal(combinedRatings.calls.ratingRequests.some(request => request.ids.some(id => id.startsWith('recommended-'))), false, 'display-only prefixed IDs are never sent as rating identities');
+  combinedRatings.window.dispatchEvent(new combinedRatings.window.Event('pagehide'));
+  await pause();
+  assert.deepEqual(combinedRatings.errors, []); combinedRatings.dom.window.close();
+
+  console.log('PASS: directory DOM behavior over ' + dataset.restaurants.length + ' real records plus 800-record performance sample: first-visit map plus list, explicit view restoration, mobile no-location fallback, first-visit/granted/denied/reentry location, truthful nearest/unknown ordering, 50-row append pagination, non-cumulative 50-pin map pages, boundary/partial pages, filter/location resets and whole-page selection, folded filters, keyless OSM tile settings and attribution, mixed tile failures, manual retry and stale-error recovery, saved state, exact sources, edition/selection/publication/source/listing years, four list sorts, evidence-backed registration dates, member-only full-population popularity, shared in-flight cache, stale sort protection, retry, paged member recommendations on the shared map, UUID navigation, typed ratings, stale/foreign feed isolation and safe text/URLs. Browser layout and screenshots require Chromium/CUA.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

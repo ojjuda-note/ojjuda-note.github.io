@@ -5,6 +5,8 @@
   const $ = id => document.getElementById(id);
   const CATEGORIES = ['한식', '중식', '일식', '양식', '분식', '디저트', '기타'];
   const PROVIDERS = { michelin: '미쉐린', 'blue-ribbon': '블루리본', 'post-office': '우체국', 'local-guide': '지자체 지정' };
+  // Verified original publication registration dates. Never infer these from verification or page edits.
+  const SOURCE_REGISTRATIONS = Object.freeze({ 'https://www.daejeon.go.kr/its/ItsdjNormalboardView.do?boardGubun=itsdj01&boardSeq=2211': '2022-10-24' });
   const STORAGE_KEY = 'ojjuda-certified-restaurants-saved-v1';
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
   const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
@@ -14,11 +16,14 @@
   const embedded = entryParams.get('embedded') === '1';
   const ratingUI = window.OjjudaRestaurantRatings;
   const memberRatings = !!ratingUI && embedded && entryParams.get('member-ratings') === '1' && window.parent !== window;
-  const ratingCache = new Map(), ratingRequests = new Map(), ratingVersions = new Map();
-  let ratingSequence = 0, ratingEditor = null;
+  const memberRecommendations = embedded && entryParams.get('member-recommendations') === '1' && window.parent !== window;
+  const recommendationRequests = new Map();
+  let recommendationSequence = 0, recommendationLoad = 0;
+  const ratingCache = new Map(), ratingRequests = new Map(), ratingVersions = new Map(), ratingLoads = new Map();
+  let ratingSequence = 0, ratingEditor = null, ratingEpoch = 0, sortRequest = 0;
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
+  const state = { restaurants: [], certified: [], recommended: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', sort: 'name', sortChosen: false, sortBusy: false, sortError: false, loading: true, loadError: false };
   let map = null, backgroundLayer = null, backgroundTimer = null, markers = new Map(), userMarker = null, searchTimer = null, storageWarned = false, loadController = null, locationRequest = 0;
   const bookmarkSvg = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 
@@ -46,46 +51,134 @@
     if (event.data.error) pending.reject(new Error(String(event.data.error).slice(0, 160)));
     else pending.resolve(event.data.data);
   });
+  function requestRecommendationPage(offset) {
+    const requestId = 'recommendations-' + (++recommendationSequence);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { recommendationRequests.delete(requestId); reject(new Error('추천맛집 연결 지연')); }, 20000);
+      recommendationRequests.set(requestId, { resolve, reject, timer });
+      try { window.parent.postMessage({ type: 'ojjuda:restaurants:recommendation-data', action: 'page', requestId, offset, limit: 50 }, location.origin); }
+      catch (error) { clearTimeout(timer); recommendationRequests.delete(requestId); reject(error); }
+    });
+  }
+  function cancelRecommendationRequests() {
+    recommendationRequests.forEach(pending => { clearTimeout(pending.timer); pending.reject(new Error('새 요청으로 변경')); });
+    recommendationRequests.clear();
+  }
+  window.addEventListener('message', event => {
+    if (!memberRecommendations || event.origin !== location.origin || event.source !== window.parent) return;
+    if (event.data?.type === 'ojjuda:restaurants:recommendations-changed') { void loadRecommendations(); return; }
+    if (event.data?.type !== 'ojjuda:restaurants:recommendation-data-result') return;
+    const pending = recommendationRequests.get(event.data.requestId);
+    if (!pending) return;
+    recommendationRequests.delete(event.data.requestId); clearTimeout(pending.timer);
+    if (event.data.error) pending.reject(new Error(String(event.data.error).slice(0, 160)));
+    else pending.resolve(event.data.data);
+  });
   function updateRating(summary) {
-    if (!summary || !state.restaurants.some(item => item.id === summary.id)) return;
+    if (!summary || !state.restaurants.some(item => item.id === summary.id) || !Number.isInteger(summary.count) || summary.count < 0 || (summary.count > 0 && (!Number.isFinite(summary.average) || summary.average < 1 || summary.average > 5)) || (summary.count === 0 && summary.average !== null)) return;
     ratingCache.set(summary.id, summary);
     document.querySelectorAll('[data-rating-id]').forEach(node => { if (node.dataset.ratingId === summary.id) ratingUI.renderSummary(node, summary); });
   }
+  async function loadRatingSummaries(items, current = () => true) {
+    if (!memberRatings) return false;
+    const epoch = ratingEpoch, ids = [...new Set(items.map(item => item.id))];
+    const byId = new Map(items.map(item => [item.id, item]));
+    // Share card requests and fetch every eligible restaurant, including those beyond page 1.
+    for (let start = 0; start < ids.length; start += 100) {
+      if (epoch !== ratingEpoch || !current()) return false;
+      const batch = ids.slice(start, start + 100), pending = new Set();
+      batch.forEach(id => { if (ratingLoads.has(id)) pending.add(ratingLoads.get(id)); });
+      for (const kind of ['certified', 'recommended']) {
+        const missing = batch.filter(id => !ratingCache.has(id) && !ratingLoads.has(id) && (byId.get(id).ratingKind || 'certified') === kind);
+        if (!missing.length) continue;
+        const versions = new Map(missing.map(id => [id, ratingVersions.get(id) || 0]));
+        const targets = new Map(missing.map(id => [byId.get(id).ratingId || id, id]));
+        const request = requestRating('summary', { kind, ids: [...targets.keys()] }).then(rows => {
+          if (epoch !== ratingEpoch || !Array.isArray(rows)) return;
+          rows.forEach(row => {
+            const id = row && targets.get(row.id);
+            if (id && versions.get(id) === (ratingVersions.get(id) || 0)) updateRating({ ...row, id });
+          });
+        }).finally(() => { missing.forEach(id => { if (ratingLoads.get(id) === request) ratingLoads.delete(id); }); });
+        missing.forEach(id => ratingLoads.set(id, request)); pending.add(request);
+      }
+      await Promise.allSettled([...pending]);
+    }
+    return epoch === ratingEpoch && ids.every(id => ratingCache.has(id));
+  }
   async function loadCardRatings(items) {
     if (!memberRatings) return;
-    const ids = items.filter(item => !ratingCache.get(item.id)).map(item => item.id);
-    if (!ids.length) return;
-    const versions = new Map(ids.map(id => [id, ratingVersions.get(id) || 0]));
-    try {
-      const rows = await requestRating('summary', { ids });
-      if (!Array.isArray(rows)) throw new Error('Invalid ratings');
-      rows.forEach(row => { if (versions.get(row.id) === (ratingVersions.get(row.id) || 0)) updateRating(row); });
-      const received = new Set(rows.map(row => row.id));
-      ids.filter(id => !received.has(id)).forEach(id => {
-        document.querySelectorAll('[data-rating-id]').forEach(node => { if (node.dataset.ratingId === id) ratingUI.renderSummary(node, null); });
-      });
-    } catch {
-      document.querySelectorAll('[data-rating-id]').forEach(node => { if (ids.includes(node.dataset.ratingId) && !ratingCache.has(node.dataset.ratingId)) ratingUI.renderSummary(node, null); });
-    }
+    const epoch = ratingEpoch;
+    await loadRatingSummaries(items);
+    if (epoch !== ratingEpoch) return;
+    const missing = new Set(items.filter(item => !ratingCache.has(item.id)).map(item => item.id));
+    document.querySelectorAll('[data-rating-id]').forEach(node => { if (missing.has(node.dataset.ratingId)) ratingUI.renderSummary(node, null); });
   }
   function disposeRatingEditor() { ratingEditor?.dispose(); ratingEditor = null; }
   function safeHttps(value) {
     try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; }
   }
   function text(value, limit = 300) { return typeof value === 'string' ? value.trim().slice(0, limit) : ''; }
-  function validDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? value : ''; }
+  function validDate(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
+    const date = new Date(value + 'T00:00:00Z');
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : '';
+  }
   function sourceDate(value) { return /^\d{4}(?:-\d{2}(?:-\d{2})?)?$/.test(value || '') ? value : ''; }
   function dateLabel(value) { return validDate(value) ? value.replaceAll('-', '.') : '미표기'; }
   function hasCoordinates(item) { return typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng) && Math.abs(item.lat) <= 90 && Math.abs(item.lng) <= 180; }
   function normalize(item) {
     if (!item || !text(item.id) || !text(item.name) || !Array.isArray(item.guides)) return null;
-    const guides = item.guides.filter(g => g && Object.hasOwn(PROVIDERS, g.provider) && safeHttps(g.sourceUrl)).map(g => ({ provider: g.provider, label: text(g.label, 80) || (g.provider === 'post-office' ? '추천' : '선정 이력'), year: Number.isInteger(g.year) && g.year >= 1900 && g.year <= 2200 ? g.year : null, yearType: ['edition', 'selection', 'publication', 'source', 'listing'].includes(g.yearType) ? g.yearType : '', sourceUrl: safeHttps(g.sourceUrl), sourceName: text(g.sourceName, 120) || PROVIDERS[g.provider] + (g.provider === 'post-office' ? ' 추천 자료' : ' 선정 출처'), verifiedAt: validDate(g.verifiedAt), sourceAsOf: sourceDate(g.sourceAsOf || item.sourceAsOf), sourceDateType: g.sourceDateType === 'official-page-last-modified' ? 'page-modified' : 'as-of', selectionCriteria: text(g.selectionCriteria, 300) }));
+    const guides = item.guides.filter(g => g && Object.hasOwn(PROVIDERS, g.provider) && safeHttps(g.sourceUrl)).map(g => ({ provider: g.provider, label: text(g.label, 80) || (g.provider === 'post-office' ? '추천' : '선정 이력'), year: Number.isInteger(g.year) && g.year >= 1900 && g.year <= 2200 ? g.year : null, yearType: ['edition', 'selection', 'publication', 'source', 'listing'].includes(g.yearType) ? g.yearType : '', sourceUrl: safeHttps(g.sourceUrl), sourceName: text(g.sourceName, 120) || PROVIDERS[g.provider] + (g.provider === 'post-office' ? ' 추천 자료' : ' 선정 출처'), verifiedAt: validDate(g.verifiedAt), sourceAsOf: sourceDate(g.sourceAsOf || item.sourceAsOf), sourceRegisteredAt: safeHttps(g.sourceRegistrationUrl) ? validDate(g.sourceRegisteredAt) : SOURCE_REGISTRATIONS[g.sourceUrl] || '', sourceRegistrationUrl: safeHttps(g.sourceRegistrationUrl) || (SOURCE_REGISTRATIONS[g.sourceUrl] ? safeHttps(g.sourceUrl) : ''), sourceDateType: g.sourceDateType === 'official-page-last-modified' ? 'page-modified' : 'as-of', selectionCriteria: text(g.selectionCriteria, 300) }));
     if (!guides.length) return null;
     const result = { id: text(item.id, 120), name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: text(item.district, 80), address: text(item.address, 300), lat: item.lat, lng: item.lng, menu: Array.isArray(item.menu) ? item.menu.map(v => text(v, 80)).filter(Boolean).slice(0, 8) : [], guides };
+    result.sourceRegisteredAt = guides.map(guide => guide.sourceRegisteredAt).filter(Boolean).sort().at(-1) || '';
+    result.registrationTime = result.sourceRegisteredAt ? Date.parse(result.sourceRegisteredAt) : 0;
+    result.ratingKind = 'certified'; result.ratingId = result.id;
     const coordinateSource = item.coordinateSource;
     if (coordinateSource && text(coordinateSource.name) && safeHttps(coordinateSource.url)) result.coordinateSource = { name: text(coordinateSource.name, 160), url: safeHttps(coordinateSource.url), method: text(coordinateSource.method, 120), checkedAt: validDate(coordinateSource.checkedAt) };
     result.searchText = [result.name, result.category, result.region, result.district, result.address, ...result.menu].join(' ').normalize('NFKC').toLocaleLowerCase('ko');
     return result;
+  }
+  function normalizeRecommendation(item) {
+    if (!item || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id || '') || !text(item.name)) return null;
+    const date = validDate(typeof item.created_at === 'string' ? item.created_at.slice(0, 10) : '');
+    const timestamp = date && Number.isFinite(Date.parse(item.created_at)) ? Date.parse(item.created_at) : 0;
+    const result = { id: 'recommended-' + item.id, recommendationId: item.id, ratingKind: 'recommended', ratingId: item.id, name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: '', address: text(item.address), lat: item.latitude, lng: item.longitude, menu: (Array.isArray(item.menu) ? item.menu : [item.menu]).map(value => text(value, 80)).filter(Boolean).slice(0, 8), guides: [], sourceRegisteredAt: timestamp ? date : '', registrationTime: timestamp };
+    result.searchText = [result.name, result.category, result.region, result.address, ...result.menu].join(' ').normalize('NFKC').toLocaleLowerCase('ko');
+    return result;
+  }
+  function combineRestaurantSources() {
+    state.restaurants = [...state.certified, ...state.recommended];
+    $('region').replaceChildren(new Option('전국', ''));
+    [...new Set(state.restaurants.map(item => item.region))].sort((a, b) => a.localeCompare(b, 'ko')).forEach(region => $('region').append(new Option(region, region)));
+    if (![...$('region').options].some(option => option.value === state.region)) state.region = '';
+    $('region').value = state.region;
+  }
+  async function loadRecommendations() {
+    if (!memberRecommendations) return;
+    const request = ++recommendationLoad;
+    cancelRecommendationRequests();
+    try {
+      const items = [], seen = new Set();
+      let offset = 0;
+      while (true) {
+        const page = await requestRecommendationPage(offset);
+        if (request !== recommendationLoad) return;
+        if (!page || !Array.isArray(page.rows) || page.offset !== offset || typeof page.hasMore !== 'boolean' || page.rows.length > 50) throw new Error('추천맛집 응답 확인 필요');
+        page.rows.forEach(row => { const item = normalizeRecommendation(row); if (item && !seen.has(item.id)) { seen.add(item.id); items.push(item); } });
+        if (!page.hasMore) break;
+        if (!page.rows.length || offset + page.rows.length > 10000) throw new Error('추천맛집 전체 목록 확인 필요');
+        offset += page.rows.length;
+      }
+      new Set([...state.recommended, ...items].map(item => item.id)).forEach(id => { ratingVersions.set(id, (ratingVersions.get(id) || 0) + 1); ratingCache.delete(id); ratingLoads.delete(id); });
+      state.recommended = items; combineRestaurantSources();
+      $('recommendations-error').hidden = true; render(false);
+    } catch {
+      if (request !== recommendationLoad) return;
+      state.recommended = []; combineRestaurantSources(); render(false);
+      $('recommendations-error').hidden = false;
+    }
   }
   function distanceKm(item) {
     if (!state.position || !hasCoordinates(item)) return null;
@@ -137,24 +230,57 @@
   }
   function filteredRestaurants() {
     const words = state.query.normalize('NFKC').toLocaleLowerCase('ko').trim().split(/\s+/).filter(Boolean);
-    return state.restaurants.filter(item => {
+    const items = state.restaurants.filter(item => {
       if (state.category && item.category !== state.category) return false;
       if (state.region && item.region !== state.region) return false;
       if (state.savedOnly && !state.saved.has(item.id)) return false;
       const providers = new Set(item.guides.map(g => g.provider));
       if (state.guide === 'both' && !(providers.has('michelin') && providers.has('blue-ribbon'))) return false;
-      if (state.guide && state.guide !== 'both' && !providers.has(state.guide)) return false;
+      if (state.guide === 'recommended' && !item.recommendationId) return false;
+      if (state.guide && !['both', 'recommended'].includes(state.guide) && !providers.has(state.guide)) return false;
       return words.every(word => item.searchText.includes(word));
-    }).sort((a, b) => {
-      if (state.position) { const distance = (distanceKm(a) ?? Infinity) - (distanceKm(b) ?? Infinity); if (Number.isFinite(distance) && distance !== 0) return distance; if (distanceKm(a) === null && distanceKm(b) !== null) return 1; if (distanceKm(b) === null && distanceKm(a) !== null) return -1; }
-      return a.name.localeCompare(b.name, 'ko');
     });
+    const popularityReady = state.sort === 'popular' && memberRatings && items.every(item => ratingCache.has(item.id));
+    return items.sort((a, b) => {
+      if (state.sort === 'distance' && state.position) { const distance = (distanceKm(a) ?? Infinity) - (distanceKm(b) ?? Infinity); if (Number.isFinite(distance) && distance !== 0) return distance; if (distanceKm(a) === null && distanceKm(b) !== null) return 1; if (distanceKm(b) === null && distanceKm(a) !== null) return -1; }
+      if (state.sort === 'recent') { const recent = b.registrationTime - a.registrationTime; if (recent) return recent; }
+      if (popularityReady) {
+        const left = ratingCache.get(a.id), right = ratingCache.get(b.id);
+        const average = (right.average ?? 0) - (left.average ?? 0);
+        if (average) return average;
+        if (left.count !== right.count) return right.count - left.count;
+      }
+      return a.name.localeCompare(b.name, 'ko') || a.id.localeCompare(b.id);
+    });
+  }
+  function syncSortControls() {
+    $('sort-order').value = state.sort;
+    $('sort-popular').disabled = !memberRatings;
+    $('sort-popular').textContent = memberRatings ? '인기순' : '인기순 · 회원 전용';
+    const labels = { distance: state.position ? '내 위치에서 가까운 순' : '위치 확인 전 · 이름순', name: '가게 이름순', popular: state.sortBusy ? '인기순 준비 중' : state.sortError ? '인기순 연결 확인 중' : '평균 별점이 높은 순', recent: '자료 등록일이 최신인 순' };
+    $('list-label').textContent = labels[state.sort];
+    let description = '';
+    if (state.sort === 'distance' && !state.position) description = '위치 확인 전에는 이름순으로 표시해요.';
+    if (state.sort === 'popular') description = state.sortBusy ? '별점 확인 중 · 현재 이름순' : state.sortError ? '별점을 불러오지 못했어요 · 현재 이름순' : '';
+    if (state.sort === 'recent' && state.visible.some(item => !item.sourceRegisteredAt)) description = '등록일 미확인은 뒤에 표시해요.';
+    $('sort-description').textContent = description;
+    $('sort-description').hidden = !description;
+    $('sort-description').classList.toggle('is-error', state.sortError);
+    $('retry-sort').hidden = !state.sortError;
+    $('cards').setAttribute('aria-busy', String(state.sortBusy));
+  }
+  async function finishPopularitySort(request, items, fit) {
+    const complete = await loadRatingSummaries(items, () => request === sortRequest && state.sort === 'popular');
+    if (request !== sortRequest || state.sort !== 'popular') return;
+    state.sortBusy = false; state.sortError = !complete;
+    if (complete) render(fit);
+    else syncSortControls();
   }
   function updateResultCount() {
     if (state.loading || state.loadError) return;
     const total = state.visible.length, located = state.visible.filter(hasCoordinates).length;
     const mapped = state.visible.filter(item => markers.has(item.id)).length;
-    const shown = el('span', 'result-shown', '현재 ' + state.renderedCount + '곳 표시');
+    const shown = el('span', 'result-shown sr-only', '현재 ' + state.renderedCount + '곳 표시');
     shown.hidden = state.view !== 'list';
     $('result-count').dataset.total = String(total);
     $('result-count').replaceChildren(document.createTextNode('등록 '), el('strong', '', String(total)), document.createTextNode('곳'), shown);
@@ -175,17 +301,22 @@
     }
     const fragment = document.createDocumentFragment();
     const start = state.renderedCount, end = Math.min(start + LIST_PAGE_SIZE, state.visible.length);
-    const firstUnknown = state.position ? state.visible.findIndex(item => !hasCoordinates(item)) : -1;
+    const firstUnknown = state.sort === 'distance' && state.position ? state.visible.findIndex(item => !hasCoordinates(item)) : -1;
+    const firstUndated = state.sort === 'recent' ? state.visible.findIndex(item => !item.sourceRegisteredAt) : -1;
     state.visible.slice(start, end).forEach((item, offset) => {
       if (start + offset === firstUnknown) fragment.append(el('h2', 'list-section-title', '거리 정보 없는 식당 · 전국 목록'));
-      const card = el('article', 'restaurant-card'); card.dataset.restaurantId = item.id; card.dataset.cuisine = item.category; card.classList.toggle('is-selected', state.selected === item.id);
+      if (start + offset === firstUndated) fragment.append(el('h2', 'list-section-title', '자료 등록일 미확인'));
+      const card = el('article', 'restaurant-card'); card.dataset.restaurantId = item.id; card.dataset.cuisine = item.category; card.dataset.kind = item.ratingKind; card.classList.toggle('is-selected', state.selected === item.id);
       const main = el('button', 'card-main'); main.type = 'button'; main.setAttribute('aria-label', item.name + ' 상세 정보');
       const kicker = el('p', 'card-kicker'); kicker.append(el('span', 'card-category', item.category), el('span', '', [item.region, item.district].filter(Boolean).join(' · ')));
       const distance = distanceKm(item); if (distance !== null) kicker.append(el('span', 'distance', '직선 ' + distanceLabel(distance)));
       else if (state.position) kicker.append(el('span', 'distance-unknown', '거리 미확인'));
       main.append(kicker, el('h2', 'card-name', item.name));
       if (item.menu.length) main.append(el('p', 'card-menu', item.menu.slice(0, 2).join(' · ')));
-      const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false))); main.append(badges);
+      if (state.sort === 'recent' && item.sourceRegisteredAt) main.append(el('p', 'card-registered', (item.recommendationId ? '추천 등록 ' : '자료 등록 ') + dateLabel(item.sourceRegisteredAt)));
+      const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false)));
+      if (item.recommendationId) badges.append(el('span', 'guide-badge is-recommendation', '회원 추천'));
+      main.append(badges);
       if (memberRatings) { const summary = el('span', 'card-rating'); summary.dataset.ratingId = item.id; ratingUI.renderSummary(summary, ratingCache.get(item.id)); main.append(summary); }
       main.addEventListener('click', () => selectRestaurant(item.id, true)); card.append(main, saveButton(item)); fragment.append(card);
     });
@@ -197,13 +328,13 @@
     void loadCardRatings(state.visible.slice(start, end));
   }
   function syncPressed() {
-    $('categories').querySelectorAll('[data-category]').forEach(button => { const active = button.dataset.category === state.category; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
+    $('category').value = state.category;
     $('guides').querySelectorAll('[data-guide]').forEach(button => { const active = button.dataset.guide === state.guide; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
     $('saved-only').setAttribute('aria-pressed', String(state.savedOnly));
-    const active = [state.region, state.guide === 'both' ? '미쉐린·블루리본 모두' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : ''].filter(Boolean);
+    const active = [state.region, state.guide === 'both' ? '미쉐린·블루리본 모두' : state.guide === 'recommended' ? '회원 추천' : state.guide === 'post-office' ? '우체국 추천' : PROVIDERS[state.guide], state.savedOnly ? '저장한 곳' : ''].filter(Boolean);
     $('filter-summary').textContent = active.join(' · '); $('filter-summary').hidden = !active.length;
     $('filter-label').textContent = '가이드' + (state.guide ? ' 1' : '');
-    $('list-label').textContent = state.position ? '내 위치에서 가까운 순' : '가게 이름순';
+    syncSortControls();
   }
   function renderCollections() {
     const section = $('collections'), sources = $('collection-sources');
@@ -218,14 +349,18 @@
     if (state.loading || state.loadError) return;
     if (fit) state.mapPage = 0;
     state.visible = filteredRestaurants();
+    const request = ++sortRequest;
+    state.sortBusy = state.sort === 'popular' && memberRatings && state.visible.some(item => !ratingCache.has(item.id));
+    state.sortError = false;
     if (state.selected && !state.visible.some(item => item.id === state.selected)) state.selected = '';
     const locatedCount = state.visible.filter(hasCoordinates).length;
-    if (state.position) setLocationStatus(locatedCount ? '가까운 순 · 거리 미확인 식당은 뒤에 표시' : '이 조건의 식당은 거리 정보가 없어 맛집 목록으로 표시해요.', false);
+    if (state.position) setLocationStatus(locatedCount ? state.sort === 'distance' ? '가까운 순 · 거리 미확인 식당은 뒤에 표시' : '내 위치와의 직선거리를 함께 표시해요.' : '이 조건의 식당은 거리 정보가 없어 맛집 목록으로 표시해요.', false, true);
     if (mobile.matches && !state.visible.some(hasCoordinates)) setView('list');
     syncPressed(); renderCollections(); renderCards(); syncMap(fit);
+    if (state.sortBusy) void finishPopularitySort(request, [...state.visible], fit);
   }
-  function pinIcon(number, selected) {
-    return window.L.divIcon({ className: 'restaurant-pin' + (selected ? ' is-selected' : ''), html: '<div class="pin-core"><span>' + String(number) + '</span></div>', iconSize: [30, 37], iconAnchor: [15, 34], tooltipAnchor: [0, -30] });
+  function pinIcon(number, selected, recommended = false) {
+    return window.L.divIcon({ className: 'restaurant-pin' + (recommended ? ' is-recommendation' : '') + (selected ? ' is-selected' : ''), html: '<div class="pin-core"><span>' + String(number) + '</span></div>', iconSize: [30, 37], iconAnchor: [15, 34], tooltipAnchor: [0, -30] });
   }
   function mapIsVisible() { return state.view === 'map'; }
   function showMapMessage(message, retry = true) { $('map-message-text').textContent = message; $('map-message').hidden = false; $('retry-map').hidden = !retry; }
@@ -308,10 +443,10 @@
     located.forEach((item, index) => {
       let marker = markers.get(item.id);
       if (!marker) {
-        marker = window.L.marker([item.lat, item.lng], { icon: pinIcon(index + 1, state.selected === item.id), keyboard: true, title: item.name, alt: item.name });
-        const tooltip = el('span', '', item.name); marker.bindTooltip(tooltip, { direction: 'top' });
+        marker = window.L.marker([item.lat, item.lng], { icon: pinIcon(index + 1, state.selected === item.id, !!item.recommendationId), keyboard: true, title: item.name, alt: item.name });
+        const tooltip = el('span', '', item.name + (item.recommendationId ? ' · 회원 추천' : '')); marker.bindTooltip(tooltip, { direction: 'top' });
         marker.on('click', () => selectRestaurant(item.id, true)); marker.addTo(map); markers.set(item.id, marker);
-      } else marker.setIcon(pinIcon(index + 1, state.selected === item.id));
+      } else { marker.setIcon(pinIcon(index + 1, state.selected === item.id, !!item.recommendationId)); marker.setLatLng([item.lat, item.lng]); }
       marker.setZIndexOffset(state.selected === item.id ? 1000 : 0);
     });
     if (state.position) {
@@ -337,11 +472,15 @@
     if (locatedIndex >= 0) state.mapPage = Math.floor(locatedIndex / MAP_PAGE_SIZE);
     if (mapIsVisible() && hasCoordinates(item)) syncMap(false);
     const { located } = currentMapPage();
-    located.forEach((restaurant, index) => { const marker = markers.get(restaurant.id); if (marker) { marker.setIcon(pinIcon(index + 1, restaurant.id === id)); marker.setZIndexOffset(restaurant.id === id ? 1000 : 0); } });
+    located.forEach((restaurant, index) => { const marker = markers.get(restaurant.id); if (marker) { marker.setIcon(pinIcon(index + 1, restaurant.id === id, !!restaurant.recommendationId)); marker.setZIndexOffset(restaurant.id === id ? 1000 : 0); } });
     if (map && hasCoordinates(item) && mapIsVisible()) { map.setView([item.lat, item.lng], Math.max(map.getZoom(), 16), { animate: !reducedMotion.matches }); }
     if (openDetail) showDetail(item);
   }
   function showDetail(item) {
+    if (item.recommendationId) {
+      if (memberRecommendations) window.parent.postMessage({ type: 'ojjuda:restaurants:recommendations', id: item.recommendationId }, location.origin);
+      return;
+    }
     disposeRatingEditor();
     const content = $('detail-content'); content.replaceChildren();
     const cover = el('div', 'detail-cover'), body = el('div', 'detail-body');
@@ -365,10 +504,11 @@
       const yearSuffix = { edition: '년판', selection: '년 선정', publication: '년 발행', source: '년 자료', listing: '년 수록' }[yearType];
       const missingYear = { edition: '판본 연도 미확인', selection: '선정 연도 미확인', publication: '발행 연도 미확인', source: '자료 연도 미확인', listing: '수록 연도 미확인' }[yearType];
       const row = el('li', 'source-item'), heading = el('div', 'source-heading'); heading.append(badge(guide, false), el('span', 'source-year', guide.year ? guide.year + yearSuffix : missingYear));
-      const checked = (guide.sourceAsOf ? (guide.sourceDateType === 'page-modified' ? '페이지 수정 ' : '자료 기준 ') + guide.sourceAsOf.replaceAll('-', '.') + ' · ' : '') + '출처 확인일 ' + dateLabel(guide.verifiedAt);
+      const checked = (guide.sourceRegisteredAt ? '자료 등록일 ' + dateLabel(guide.sourceRegisteredAt) + ' · ' : '') + (guide.sourceAsOf ? (guide.sourceDateType === 'page-modified' ? '페이지 수정 ' : '자료 기준 ') + guide.sourceAsOf.replaceAll('-', '.') + ' · ' : '') + '출처 확인일 ' + dateLabel(guide.verifiedAt);
       row.append(heading);
       if (guide.selectionCriteria) row.append(el('p', 'source-criteria', guide.selectionCriteria));
       row.append(el('p', 'source-verified', checked), link(guide.sourceName + ' ↗', guide.sourceUrl, 'source-link')); sources.append(row);
+      if (guide.sourceRegisteredAt && guide.sourceRegistrationUrl !== guide.sourceUrl) row.append(link('자료 등록일 출처 ↗', guide.sourceRegistrationUrl, 'source-link'));
     });
     if (hasCoordinates(item) && item.coordinateSource) {
       const coordinateRow = el('li', 'coordinate-source');
@@ -394,7 +534,7 @@
       },
       save: async score => requestRating('save', { id: item.id, score }),
       isCurrent: () => $('detail').open && state.selected === item.id && ratingSection.isConnected,
-      onChange: summary => { ratingVersions.set(item.id, (ratingVersions.get(item.id) || 0) + 1); updateRating(summary); }
+      onChange: summary => { ratingVersions.set(item.id, (ratingVersions.get(item.id) || 0) + 1); updateRating(summary); if (state.sort === 'popular') render(false); }
     });
     $('close-detail').focus({ preventScroll: true });
   }
@@ -420,18 +560,17 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./restaurants.json?v=20261103-restaurants-regional1', { signal: controller.signal, cache: 'no-cache' });
+      const response = await fetch('./restaurants.json?v=20261103-restaurants-sort1', { signal: controller.signal, cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json(); if (!data || !Array.isArray(data.restaurants)) throw new Error('Invalid dataset');
-      const ids = new Set(); state.restaurants = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));
+      const ids = new Set(); state.certified = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));
       state.collections = Array.isArray(data.collections) ? data.collections.filter(collection => collection && Object.hasOwn(PROVIDERS, collection.provider) && text(collection.title) && safeHttps(collection.url)).map(collection => ({ provider: collection.provider, title: text(collection.title, 160), url: safeHttps(collection.url), sourceUrl: safeHttps(collection.sourceUrl), sourceName: text(collection.sourceName, 160), note: text(collection.note, 400) })) : [];
-      $('region').replaceChildren(new Option('전국', ''));
-      [...new Set(state.restaurants.map(item => item.region))].sort((a, b) => a.localeCompare(b, 'ko')).forEach(region => $('region').append(new Option(region, region)));
-      if (![...$('region').options].some(option => option.value === state.region)) state.region = ''; $('region').value = state.region;
+      combineRestaurantSources();
       $('coverage').textContent = text(data.coverageNote, 400) || '공식 출처로 확인한 일부 식당부터 제공합니다.';
       $('updated').textContent = validDate(data.updatedAt) ? '자료 갱신 ' + dateLabel(data.updatedAt) : '';
       state.loading = false; announce(''); render(true);
-      if (data.restaurants.length !== state.restaurants.length) announce('출처를 확인할 수 있는 가게부터 표시했어요. 일부 자료는 확인 중이에요.');
+      if (data.restaurants.length !== state.certified.length) announce('출처를 확인할 수 있는 가게부터 표시했어요. 일부 자료는 확인 중이에요.');
+      void loadRecommendations();
     } catch (error) {
       if (controller !== loadController) return;
       state.loading = false; state.loadError = true; $('result-count').textContent = '자료 연결 확인 중';
@@ -440,9 +579,10 @@
       announce('맛집 정보 연결이 지연되고 있어요. 목록에서 다시 불러올 수 있어요.', true); setView('list');
     } finally { clearTimeout(timeout); }
   }
-  function setLocationStatus(message, chooseRegion = true) {
+  function setLocationStatus(message, chooseRegion = true, quiet = false) {
     $('location-status').textContent = message;
     $('location-bar').hidden = !message;
+    $('location-bar').classList.toggle('sr-only', quiet);
     $('choose-region').hidden = !chooseRegion;
   }
   function readLocationChoice() {
@@ -457,14 +597,14 @@
   }
   function finishLocationRequest() {
     $('nearby').disabled = false; $('nearby').removeAttribute('aria-busy');
-    $('nearby').setAttribute('aria-pressed', String(!!state.position)); $('nearby-label').textContent = '내 주변';
+    $('nearby').setAttribute('aria-pressed', String(!!state.position)); $('nearby-label').textContent = '내 위치';
   }
-  function requestLocation() {
+  function requestLocation(centerMap = false) {
     if (!navigator.geolocation) { setLocationStatus('위치를 사용할 수 없어 맛집 목록을 보여드려요.'); return; }
     const request = ++locationRequest;
     saveLocationChoice('asked');
     $('nearby').disabled = true; $('nearby').setAttribute('aria-busy', 'true'); $('nearby-label').textContent = '확인 중';
-    setLocationStatus('내 위치를 확인하고 있어요.', false);
+    setLocationStatus('내 위치를 확인하고 있어요.', false, true);
     const failed = error => {
       if (request !== locationRequest) return;
       if (error?.code === 1) {
@@ -480,7 +620,9 @@
         const point = { lat: position.coords?.latitude, lng: position.coords?.longitude };
         if (!hasCoordinates(point)) { failed({ code: 2 }); return; }
         state.position = point; saveLocationChoice('enabled'); finishLocationRequest();
-        setLocationStatus('가까운 순으로 보여드려요 · 거리는 직선거리예요.', false); render(true);
+        if (!state.sortChosen) state.sort = 'distance';
+        render(true);
+        if (centerMap && map && mapIsVisible()) requestAnimationFrame(() => { if (request === locationRequest && mapIsVisible()) map.setView([point.lat, point.lng], 14, { animate: !reducedMotion.matches }); });
       }, failed, { enableHighAccuracy: false, timeout: 12000, maximumAge: 120000 });
     } catch { failed({ code: 2 }); }
   }
@@ -489,27 +631,36 @@
     let permission = '';
     try { if (navigator.permissions?.query) permission = (await navigator.permissions.query({ name: 'geolocation' })).state; } catch {}
     if (requestBeforeCheck !== locationRequest) return;
-    if (permission === 'denied') { saveLocationChoice('denied'); setLocationStatus('위치 사용이 꺼져 있어요. 지역을 선택해 주세요.'); return; }
+    if (permission === 'denied') { saveLocationChoice('denied'); setLocationStatus('위치 사용이 꺼져 있어요. 지역을 선택해 주세요.', false, true); return; }
     const choice = readLocationChoice();
     if (permission === 'granted' || !choice || choice === 'enabled') requestLocation();
-    else setLocationStatus('내 주변을 누르면 위치를 확인해 가까운 맛집을 보여드려요.');
+    else setLocationStatus('내 위치를 누르면 가까운 맛집을 보여드려요.', false, true);
   }
 
-  readSaved(); setView(readView());
+  readSaved(); setView(readView()); syncSortControls();
+  $('guide-recommended').hidden = !memberRecommendations;
   if (embedded) $('back-link').hidden = true;
   $('detail').addEventListener('close', disposeRatingEditor);
   window.addEventListener('pagehide', () => {
     disposeRatingEditor();
+    ratingEpoch++; sortRequest++;
+    recommendationLoad++; cancelRecommendationRequests();
+    state.recommended = []; state.restaurants = state.certified;
+    document.querySelectorAll('[data-kind="recommended"]').forEach(node => node.remove());
+    markers.forEach((marker, id) => { if (id.startsWith('recommended-')) { marker.remove(); markers.delete(id); } });
     ratingRequests.forEach(pending => { clearTimeout(pending.timer); pending.reject(new Error('화면을 닫았어요.')); });
-    ratingRequests.clear(); ratingCache.clear(); ratingVersions.clear();
+    ratingRequests.clear(); ratingCache.clear(); ratingVersions.clear(); ratingLoads.clear();
   });
   window.addEventListener('pageshow', event => {
-    if (!event.persisted || !memberRatings) return;
+    if (!event.persisted) return;
+    if (memberRecommendations) { render(false); void loadRecommendations(); }
+    if (!memberRatings) return;
     const shown = new Set([...document.querySelectorAll('[data-rating-id]')].map(node => {
       ratingUI.renderSummary(node, undefined); return node.dataset.ratingId;
     }));
     const items = state.restaurants.filter(item => shown.has(item.id));
-    void (async () => { for (let start = 0; start < items.length; start += LIST_PAGE_SIZE) await loadCardRatings(items.slice(start, start + LIST_PAGE_SIZE)); })();
+    if (state.sort === 'popular') render(false);
+    else void loadCardRatings(items);
     const selected = state.restaurants.find(item => item.id === state.selected);
     if ($('detail').open && selected) showDetail(selected);
   });
@@ -526,7 +677,15 @@
   $('search-form').addEventListener('submit', event => { event.preventDefault(); clearTimeout(searchTimer); state.query = $('search').value; render(true); });
   $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.query = $('search').value; render(true); }, 130); });
   $('region').addEventListener('change', () => { state.region = $('region').value; render(true); });
-  $('categories').addEventListener('click', event => { const button = event.target.closest('[data-category]'); if (!button) return; state.category = button.dataset.category; render(true); });
+  $('sort-order').addEventListener('change', () => {
+    const sort = $('sort-order').value;
+    if (!['distance', 'name', 'popular', 'recent'].includes(sort) || (sort === 'popular' && !memberRatings)) { syncSortControls(); return; }
+    state.sort = sort; state.sortChosen = true; render(true);
+    if (sort === 'distance' && !state.position) requestLocation();
+  });
+  $('retry-sort').addEventListener('click', () => render(true));
+  $('retry-recommendations').addEventListener('click', () => { $('recommendations-error').hidden = true; void loadRecommendations(); });
+  $('category').addEventListener('change', () => { state.category = CATEGORIES.includes($('category').value) ? $('category').value : ''; render(true); });
   $('guides').addEventListener('click', event => { const button = event.target.closest('[data-guide]'); if (!button) return; state.guide = button.dataset.guide; render(true); });
   $('saved-only').addEventListener('click', () => { state.savedOnly = !state.savedOnly; render(true); });
   $('filter-toggle').addEventListener('click', () => { const open = $('filter-options').hidden; $('filter-options').hidden = !open; $('filter-toggle').setAttribute('aria-expanded', String(open)); });
@@ -534,7 +693,8 @@
   $('load-more').addEventListener('click', () => renderCards(true));
   $('map-prev').addEventListener('click', () => changeMapPage(-1));
   $('map-next').addEventListener('click', () => changeMapPage(1));
-  $('reset').addEventListener('click', resetFilters); $('nearby').addEventListener('click', requestLocation);
+  $('reset').addEventListener('click', resetFilters);
+  $('nearby').addEventListener('click', () => { state.sort = 'distance'; state.sortChosen = true; render(true); requestLocation(true); });
   $('show-map').addEventListener('click', () => setView('map', true)); $('show-list').addEventListener('click', () => setView('list', true));
   $('close-detail').addEventListener('click', () => $('detail').close());
   $('detail').addEventListener('click', event => { if (event.target === $('detail')) { const rect = $('detail').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('detail').close(); } });
