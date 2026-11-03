@@ -25,7 +25,7 @@ world=world.slice(0,boot)+`
  const soloGames=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
  assert.deepEqual(await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),soloGames.map(id=>({id,images:1})),'solo cards retain exactly their intended games and cover images');
  assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi','test'],'test games follow every regular category visible to guests');
- assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'festival',images:1},{id:'archery',images:1}],'Festival schedule and Archery retain their covers in the dedicated test category');
+ assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'festival',images:1},{id:'restaurants',images:1},{id:'archery',images:1}],'Festival schedule, certified restaurants and Archery retain their covers in the dedicated test category');
  assert.equal(await page.locator('[data-arcade-games] [data-v=archery]').count(),1,'Archery appears once across all game categories');
  assert.match(await page.locator('[data-arcade-games=test] [data-v=archery] .game-test-badge').innerText(),/테스트게임/);
  assert.equal(await page.locator('[data-arcade-adult]').count(),0,'guests have no adult section');

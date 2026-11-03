@@ -1,0 +1,7099 @@
+{
+  "updatedAt": "2026-11-03",
+  "coverageNote": "미쉐린·블루리본은 확인된 일부 식당, 우체국은 2026년판 부산·울산·경남 240곳을 제공합니다. 선정·추천 당시의 정보이며 영업 여부는 방문 전에 확인해 주세요.",
+  "restaurants": [
+    {
+      "id": "mingles",
+      "name": "밍글스",
+      "category": "한식",
+      "region": "서울",
+      "district": "강남구",
+      "address": "서울 강남구 도산대로67길 19, 2층",
+      "lat": 37.52535,
+      "lng": 127.04426,
+      "menu": [
+        "한식 코스"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "3스타",
+          "year": 2026,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/mingles",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        },
+        {
+          "provider": "blue-ribbon",
+          "label": "3리본",
+          "year": 2027,
+          "sourceUrl": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+          "sourceName": "BR미디어 출판사 제공 도서정보 · KOBIC",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/mingles"
+    },
+    {
+      "id": "jin-jin",
+      "name": "진진",
+      "category": "중식",
+      "region": "서울",
+      "district": "마포구",
+      "address": "서울 마포구 월드컵북로1길 60",
+      "lat": 37.55777,
+      "lng": 126.91324,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/jin-jin",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/jin-jin"
+    },
+    {
+      "id": "kyodaiya",
+      "name": "교다이야",
+      "category": "일식",
+      "region": "서울",
+      "district": "마포구",
+      "address": "서울 마포구 성지길 39",
+      "lat": 37.54681,
+      "lng": 126.91317,
+      "menu": [
+        "우동"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/kyodaiya",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/kyodaiya"
+    },
+    {
+      "id": "oreno-ramen",
+      "name": "오레노 라멘",
+      "category": "일식",
+      "region": "서울",
+      "district": "마포구",
+      "address": "서울 마포구 독막로8길 16",
+      "lat": 37.54725,
+      "lng": 126.91781,
+      "menu": [
+        "라멘"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/oreno-ramen",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/oreno-ramen"
+    },
+    {
+      "id": "horapa",
+      "name": "호라파",
+      "category": "기타",
+      "region": "서울",
+      "district": "종로구",
+      "address": "서울 종로구 자하문로 37-1, 2층",
+      "lat": 37.57938,
+      "lng": 126.9711,
+      "menu": [
+        "태국 요리"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/horapa",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/horapa"
+    },
+    {
+      "id": "gosari-express",
+      "name": "고사리 익스프레스",
+      "category": "기타",
+      "region": "서울",
+      "district": "중구",
+      "address": "서울 중구 퇴계로85길 12-10",
+      "lat": 37.56626,
+      "lng": 127.02001,
+      "menu": [
+        "비건 요리"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망 · 그린 스타",
+          "year": 2026,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/gosari-express",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/gosari-express"
+    },
+    {
+      "id": "jaha-son-mandu",
+      "name": "자하 손만두",
+      "category": "한식",
+      "region": "서울",
+      "district": "종로구",
+      "address": "서울 종로구 백석동길 12",
+      "lat": 37.59309,
+      "lng": 126.96603,
+      "menu": [
+        "만두"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/jaha-son-mandu",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/jaha-son-mandu"
+    },
+    {
+      "id": "gaeseong-mandu-koong",
+      "name": "개성만두 궁",
+      "category": "한식",
+      "region": "서울",
+      "district": "종로구",
+      "address": "서울 종로구 인사동10길 11-3",
+      "lat": 37.57423,
+      "lng": 126.98539,
+      "menu": [
+        "만두"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/gaeseong-mandu-koong",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/gaeseong-mandu-koong"
+    },
+    {
+      "id": "hapcheon-gukbapjip",
+      "name": "합천국밥집",
+      "category": "한식",
+      "region": "부산",
+      "district": "남구",
+      "address": "부산 남구 용호로 235",
+      "lat": 35.11124,
+      "lng": 129.11127,
+      "menu": [
+        "국밥"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "빕 구르망",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hapcheon-gukbapjip",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hapcheon-gukbapjip"
+    },
+    {
+      "id": "dim-tao",
+      "name": "딤타오",
+      "category": "중식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산 해운대구 우동1로 25",
+      "lat": 35.16394,
+      "lng": 129.15647,
+      "menu": [
+        "딤섬"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "셀렉티드",
+          "year": null,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/dim-tao",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/dim-tao"
+    },
+    {
+      "id": "palate",
+      "name": "팔레트",
+      "category": "양식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산 해운대구 달맞이길65번길 154, 3층",
+      "lat": 35.15659,
+      "lng": 129.17844,
+      "menu": [
+        "프렌치 기반 요리"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "1스타",
+          "year": 2026,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/palate",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/palate"
+    },
+    {
+      "id": "fiotto",
+      "name": "피오또",
+      "category": "양식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산 해운대구 달맞이길117번가길 219, 2층",
+      "lat": 35.16127,
+      "lng": 129.1833,
+      "menu": [
+        "이탈리아 요리"
+      ],
+      "guides": [
+        {
+          "provider": "michelin",
+          "label": "1스타 · 그린 스타",
+          "year": 2026,
+          "sourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/fiotto",
+          "sourceName": "미쉐린 가이드 공식 식당 페이지",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/fiotto"
+    },
+    {
+      "id": "korea-house",
+      "name": "한국의집",
+      "category": "한식",
+      "region": "서울",
+      "district": "중구",
+      "address": "서울 중구 퇴계로36길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "궁중음식"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "3리본",
+          "year": 2027,
+          "sourceUrl": "https://kh.or.kr/brd/board/715/L/menu/373?bbIdx=119955&brdType=R",
+          "sourceName": "한국의집 운영기관 · 국가유산진흥원",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://www.kh.or.kr/cms/content/view/415"
+    },
+    {
+      "id": "kokkiri-bunsik",
+      "name": "코끼리분식",
+      "category": "분식",
+      "region": "서울",
+      "district": "마포구",
+      "address": "서울 마포구 도화2길 3",
+      "lat": 37.5403361441386,
+      "lng": 126.948796338712,
+      "menu": [
+        "즉석떡볶이",
+        "김밥",
+        "참치주먹밥"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": 2018,
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023029/KOP028053",
+          "sourceName": "서울관광재단 · Visit Seoul",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://korean.visitseoul.net/restaurants/2023029/KOP028053"
+    },
+    {
+      "id": "cafe-stairs",
+      "name": "계단집",
+      "category": "디저트",
+      "region": "서울",
+      "district": "중구",
+      "address": "서울 중구 퇴계로6길 35",
+      "lat": 37.556949565722,
+      "lng": 126.979247211045,
+      "menu": [
+        "스페셜티 커피",
+        "디저트"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": 2025,
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/cafestairs/KOPmfxylf",
+          "sourceName": "서울관광재단 · Visit Seoul",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://korean.visitseoul.net/restaurants/cafestairs/KOPmfxylf"
+    },
+    {
+      "id": "polin-coffee-roasting-room",
+      "name": "폴린커피 로스팅룸",
+      "category": "디저트",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충북 진천군 이월면 진광로 231, 101호",
+      "lat": 36.8848920530556,
+      "lng": 127.442451434864,
+      "menu": [
+        "필터 커피",
+        "아메리카노"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": 2025,
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=aeaaa457-8934-4a70-8de9-6db71610c1f1",
+          "sourceName": "한국관광공사 · 대한민국 구석구석",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=aeaaa457-8934-4a70-8de9-6db71610c1f1"
+    },
+    {
+      "id": "routinia",
+      "name": "루티니아",
+      "category": "디저트",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충남 아산시 곡교천로 203",
+      "lat": 36.7951746041234,
+      "lng": 127.001426780954,
+      "menu": [
+        "루티니아 크림라떼",
+        "크루아상",
+        "소금빵"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": 2025,
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=b8975011-e50b-41ef-9047-972876aada76",
+          "sourceName": "한국관광공사 · 대한민국 구석구석",
+          "verifiedAt": "2026-11-03"
+        }
+      ],
+      "locationSourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=b8975011-e50b-41ef-9047-972876aada76"
+    },
+    {
+      "id": "post-2026-04-1-0",
+      "name": "다무치아",
+      "category": "양식",
+      "region": "부산",
+      "district": "중구",
+      "address": "부산광역시 중구 대청로135번길 13-1, 3층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바질페스토 파스타",
+        "감바스&오일파스타",
+        "코스요리"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=4",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 5쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-04-1-1",
+      "name": "된장한상",
+      "category": "한식",
+      "region": "부산",
+      "district": "중구",
+      "address": "부산광역시 중구 대청로141번길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우육회비빔밥 된장한상",
+        "청국장한상",
+        "제육볶음된장한상"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=4",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 5쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-05-0-0",
+      "name": "황태를벗삼아",
+      "category": "한식",
+      "region": "부산",
+      "district": "중구",
+      "address": "부산광역시 중구 대청로137번길 10-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "황태통찜(2인분)",
+        "황태북어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=5",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 6쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-05-0-1",
+      "name": "분식회계",
+      "category": "분식",
+      "region": "부산",
+      "district": "중구",
+      "address": "부산광역시 중구 대청로141번길 18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쫄우동",
+        "비빔만두",
+        "김초밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=5",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 6쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-06-0-0",
+      "name": "쿠루미과자점",
+      "category": "디저트",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 온천천로 71-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쿠루미 생식빵",
+        "공주밤식빵",
+        "백빙수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=6",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 8쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-06-0-1",
+      "name": "수안커피컴퍼니",
+      "category": "디저트",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 충렬대로256번길 32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고메 플레이트 블랙",
+        "솔티크림 콜드브루",
+        "핸드드립"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=6",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 8쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-06-1-0",
+      "name": "동래밀면",
+      "category": "한식",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 명륜로 47",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "밀면",
+        "비빔밀면",
+        "왕만두",
+        "들깨손칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=6",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 9쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-06-1-1",
+      "name": "영남식육식당 동래점",
+      "category": "한식",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 명륜로112번가길 51",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "깍둑등심(110g)",
+        "소금정식(110g)",
+        "양념진갈비(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=6",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 9쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-07-0-0",
+      "name": "봉식당",
+      "category": "한식",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 온천장로119번길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "스페셜코스(1인)",
+        "A코스(1인)",
+        "B코스(1인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=7",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 10쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-07-0-1",
+      "name": "리바이브",
+      "category": "양식",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 명륜로 173",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "그릴드베지 샐러드",
+        "바질루꼴라 치아바타샌드위치"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=7",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 10쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-07-1-0",
+      "name": "더라이스",
+      "category": "디저트",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 동래로79번길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소금빵",
+        "쌀샌드위치",
+        "비건쌀식빵",
+        "수제마카롱"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=7",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 11쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-07-1-1",
+      "name": "베르",
+      "category": "양식",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 동래로79번길 30",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "피스타치오 파스타",
+        "프렌치토스트",
+        "크리스피샌드위치"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=7",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 11쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동래우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-08-1-0",
+      "name": "황령산 보쌈",
+      "category": "한식",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 황령산로8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=8",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 13쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-08-1-1",
+      "name": "스위스제과",
+      "category": "디저트",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 광남로 45",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "밤식빵",
+        "레몬파운드",
+        "케익"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=8",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 13쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-09-0-0",
+      "name": "구름고개카페",
+      "category": "디저트",
+      "region": "부산",
+      "district": "남구",
+      "address": "부산광역시 남구 황령산로 260",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "카페라떼",
+        "아메리카노",
+        "허브티"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 14쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-09-0-1",
+      "name": "소바재우재",
+      "category": "일식",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 광남로 4-1, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "유자온소바",
+        "유자소바",
+        "수제만두"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 14쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-09-1-0",
+      "name": "지밀레니얼",
+      "category": "디저트",
+      "region": "부산",
+      "district": "남구",
+      "address": "부산광역시 남구 진남로 135, B동 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노",
+        "아인슈페너",
+        "아몬드크림라떼"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 15쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-09-1-1",
+      "name": "구자윤 과자점",
+      "category": "디저트",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 수영로705번길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생크림 팡도르",
+        "소금빵",
+        "단팥빵"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 15쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-10-0-0",
+      "name": "부산돼지국밥",
+      "category": "한식",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 남천동로 107",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥",
+        "순대섞어국밥",
+        "수육(대)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=10",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 16쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-10-0-1",
+      "name": "금강 복아구전문점",
+      "category": "한식",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 남천동로9번길 62",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "복탕",
+        "생밀복",
+        "아구찜(중)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=10",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 16쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-11-0-0",
+      "name": "수연이네",
+      "category": "한식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 학장로 318-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "문어숙회",
+        "문어튀김",
+        "랍스터 코스 2인"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=11",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 18쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-11-0-1",
+      "name": "호포장어마을",
+      "category": "한식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 광장로 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물장어구이(1인분)",
+        "바다장어구이(1인분)",
+        "민물장어 곰탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=11",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 18쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-11-1-0",
+      "name": "설화회초밥",
+      "category": "일식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 새벽로 218",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회 코스"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=11",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 19쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-11-1-1",
+      "name": "순풍삼계탕",
+      "category": "한식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 사상로181번길 33",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕",
+        "전복삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=11",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 19쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-12-0-0",
+      "name": "첨단돌솥감자탕 엄궁점",
+      "category": "한식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 낙동대로 784-13 휴그린아파트 상가 201호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "파지감자탕(소)",
+        "매운뼈찜(소)",
+        "파지돌솥뼈해장국"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=12",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 20쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-12-0-1",
+      "name": "밥짓는부엌 한식뷔페",
+      "category": "한식",
+      "region": "부산",
+      "district": "사상구",
+      "address": "부산광역시 사상구 학감대로 222번길 67",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "1인"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=12",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 20쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사상우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-13-0-0",
+      "name": "대박손칼국수",
+      "category": "한식",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 수림로20번길 21, 천호빌딩 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "얼큰칼국수",
+        "들깨칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=13",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 22쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-13-0-1",
+      "name": "유림정",
+      "category": "한식",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 상현로79번길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우모듬(150g)",
+        "한우특선(140g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=13",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 22쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-13-1-0",
+      "name": "북문국수",
+      "category": "한식",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 북문로 53",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "촌국수",
+        "비빔국수",
+        "해물파전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=13",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 23쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-13-1-1",
+      "name": "LAB 이흥용과자점 두실점",
+      "category": "디저트",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 금단로 80 LAB 이흥용과자점",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "저온숙성느림보(L)",
+        "명장전병종합1호",
+        "명장카스테라"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=13",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 23쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-14-0-0",
+      "name": "국수가",
+      "category": "한식",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 수림로20번길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물국수",
+        "칼국수",
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=14",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 24쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-14-0-1",
+      "name": "강명장요리가",
+      "category": "일식",
+      "region": "부산",
+      "district": "금정구",
+      "address": "부산광역시 금정구 수림로20번길 36, 주1동 109호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "초밥세트",
+        "명장런치코스",
+        "명장디너코스"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=14",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 24쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산금정우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-15-0-0",
+      "name": "해주냉면",
+      "category": "한식",
+      "region": "부산",
+      "district": "사하구",
+      "address": "부산광역시 사하구 낙동대로324번길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "비빔냉면",
+        "물냉면",
+        "물밀면",
+        "밀비빔"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=15",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 26쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사하우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-15-0-1",
+      "name": "남해영양보리밥",
+      "category": "한식",
+      "region": "부산",
+      "district": "사하구",
+      "address": "부산광역시 사하구 제석로18번길 70",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "영양보리밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=15",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 26쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사하우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-15-1-0",
+      "name": "한우지존",
+      "category": "한식",
+      "region": "부산",
+      "district": "사하구",
+      "address": "부산광역시 사하구 장림로184번길 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "등심(100g)",
+        "생갈비(100g)",
+        "꽃살(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=15",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 27쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사하우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-15-1-1",
+      "name": "화반",
+      "category": "한식",
+      "region": "부산",
+      "district": "사하구",
+      "address": "부산광역시 사하구 낙동대로 516번길 55",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "비빔밥+된장(김치)찌개",
+        "제육두루치기(200g)+찌개"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=15",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 27쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산사하우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-16-1-0",
+      "name": "해운대 하선집",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 좌동순환로 395, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "양념돼지갈비(250g)",
+        "생돼지갈비(180g)",
+        "(점심특선)한우육회비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=16",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 29쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-16-1-1",
+      "name": "송정횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 송정중앙로33번길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회",
+        "고급모듬회",
+        "제철회 시세에 따라 다름"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=16",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 29쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-17-0-0",
+      "name": "꽃도새기 센텀점",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 해운대로 173",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃삼겹(120g)",
+        "꽃목살(120g)",
+        "양념목살(200g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=17",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 30쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-17-0-1",
+      "name": "방갈로끝집",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 청사포로128번길 66",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "조개구이",
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=17",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 30쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-17-1-0",
+      "name": "윤가네 신토불이보쌈",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 구남로29번길 35",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보쌈+쟁반국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=17",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 31쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-17-1-1",
+      "name": "충무김밥 김치수제비",
+      "category": "분식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 중동1로 15-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "충무김밥",
+        "김치수제비"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=17",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 31쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-18-0-0",
+      "name": "비안리안",
+      "category": "중식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 재반로 96-17, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "매운오향장육",
+        "비안리안탕수육",
+        "가지만두"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=18",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 32쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-18-0-1",
+      "name": "그집한우",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 중동1로19번길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비살(100g)",
+        "등심(100g)",
+        "육회(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=18",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 32쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "해운대우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-19-0-0",
+      "name": "당감우체국카페",
+      "category": "디저트",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 당감로10번길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "연탄빵",
+        "에그인헬",
+        "함박스테이크"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=19",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 34쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-19-0-1",
+      "name": "대성각",
+      "category": "중식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 가야대로587번길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면",
+        "짬뽕",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=19",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 34쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-19-1-0",
+      "name": "조방낙지 가야점",
+      "category": "한식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 가야대로 597",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지볶음",
+        "낙곱새볶음"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=19",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 35쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-19-1-1",
+      "name": "심청이왕족발",
+      "category": "한식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 가야대로588번길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "차가운 옛날족발",
+        "심청이 족발"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=19",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 35쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-20-0-0",
+      "name": "연돼지국밥",
+      "category": "한식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 범일로192번길 33",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥",
+        "순대국밥",
+        "모듬국밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=20",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 36쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-20-0-1",
+      "name": "왕짜장",
+      "category": "중식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 진남로 505",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면",
+        "짬뽕",
+        "탕·짜",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=20",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 36쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-20-1-0",
+      "name": "하이까눌레",
+      "category": "디저트",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 동천로 36, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "까눌레 선물세트(4구)",
+        "까눌레 선물세트(8구)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=20",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 37쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-20-1-1",
+      "name": "부자집생고기",
+      "category": "한식",
+      "region": "부산",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 월드컵대로472번길 64",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살(100g)",
+        "목살(100g)",
+        "된장찌개"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=20",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 37쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산진우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-21-1-0",
+      "name": "바보엄마칼국수",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 화명대로12번길 91",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "사골칼국수",
+        "들깨칼국수",
+        "쭈꾸미비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=21",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 39쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-21-1-1",
+      "name": "소설가",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 용당로20번길 1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "탱글갈비살(100g)",
+        "눈꽃갈비살(100g)",
+        "꽃등심(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=21",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 39쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-22-0-0",
+      "name": "윤가네산오징어",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 만덕대로16번길 24",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "먹통",
+        "낙지",
+        "해물모듬"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=22",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 40쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-22-0-1",
+      "name": "금용만두",
+      "category": "분식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 구포만세길 75",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "군만두",
+        "찐만두",
+        "만두국밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=22",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 40쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-22-1-0",
+      "name": "첸차이나",
+      "category": "중식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 효열로219번가길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜짱면",
+        "짬뽕",
+        "간짜장",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=22",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 41쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-22-1-1",
+      "name": "아낙촌",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 만덕3로 46",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불향쭈꾸미삼겹살(2인분)",
+        "통낙지불고기전골",
+        "낙지볶음(1인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=22",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 41쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-23-0-0",
+      "name": "숙향",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 덕천로 217-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생오리양념구이",
+        "생오리구이",
+        "한방오리백숙"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=23",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 42쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-23-0-1",
+      "name": "가마솥추어탕",
+      "category": "한식",
+      "region": "부산",
+      "district": "북구",
+      "address": "부산광역시 북구 산성로 75-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=23",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 42쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "북부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-24-0-0",
+      "name": "팔팔연제장어",
+      "category": "한식",
+      "region": "부산",
+      "district": "연제구",
+      "address": "부산광역시 연제구 황새알로 21-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물장어구이(1인분)",
+        "바다장어구이",
+        "장어추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 44쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-24-0-1",
+      "name": "차애전할매칼국수",
+      "category": "한식",
+      "region": "부산",
+      "district": "연제구",
+      "address": "부산광역시 연제구 과정로191번가길 70",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "비빔칼국수",
+        "맛비빔",
+        "콩칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 44쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-24-1-0",
+      "name": "쏘이472",
+      "category": "기타",
+      "region": "부산",
+      "district": "동래구",
+      "address": "부산광역시 동래구 아시아드대로134번길 14, 상가 103호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "팟타이",
+        "팟카파오 무쌈",
+        "카오팟 탈래"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 45쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-24-1-1",
+      "name": "큰바위횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "연제구",
+      "address": "부산광역시 연제구 법원로32번길19 다성빌딩 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복영양솥밥",
+        "도다리쑥국",
+        "모듬회(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 45쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-25-0-0",
+      "name": "만포장회전문점",
+      "category": "한식",
+      "region": "부산",
+      "district": "연제구",
+      "address": "부산광역시 연제구 법원북로3번길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회덮밥",
+        "물회",
+        "모듬회(소)",
+        "고급모듬회(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=25",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 46쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-25-0-1",
+      "name": "콤파운드",
+      "category": "디저트",
+      "region": "부산",
+      "district": "연제구",
+      "address": "부산광역시 연제구 교대로24번길 20, 102호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "마시멜로케잌",
+        "레몬치즈파운드",
+        "휘낭시에세트(3구)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=25",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 46쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산연제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-26-0-0",
+      "name": "좋은집",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 조방로 10, 1층 코리아시티관광호텔",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "대패삼겹살(90g)",
+        "꽃삼겹한판(500g)",
+        "제주흑돼지오겹살(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=26",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 48쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-26-0-1",
+      "name": "명가",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 부산진성공원로 23-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "감자탕",
+        "김치찌개",
+        "동태탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=26",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 48쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-26-1-0",
+      "name": "감포참가자미",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 범일로102번길 16-20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회정식(점심 한정)",
+        "참가자미물회",
+        "코스요리(1인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=26",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 49쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-26-1-1",
+      "name": "마파람해물찜해물탕",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 범일로90번길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물찜",
+        "해물탕",
+        "대구뽈찜"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=26",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 49쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-27-0-0",
+      "name": "수미식당",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 고관로 109-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "방어, 홍어, 과메기 등 시세에 따라 다름"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=27",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 50쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-27-0-1",
+      "name": "용궁횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "동구",
+      "address": "부산광역시 동구 초량중로 78",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회",
+        "점심특선 물회"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=27",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 50쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동부산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-28-0-0",
+      "name": "봉래화로",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 대교로 1, 101호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보석살(130g)",
+        "황제갈비살(130g)",
+        "(평일런치) 보석살정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=28",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 52쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-28-0-1",
+      "name": "모디포차 1호점",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 태종로113번길 36, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물탕",
+        "해물찜",
+        "새우깡"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=28",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 52쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-28-1-0",
+      "name": "우리이모집",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 감지해변길 92",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "조개구이",
+        "해물모듬",
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=28",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 53쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-28-1-1",
+      "name": "육미당찬",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 태종로 75, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "시그니처(평일 저녁,주말)",
+        "프리미엄(평일 저녁,주말)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=28",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 53쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-29-0-0",
+      "name": "등대횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 남항로31번길 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회",
+        "물회",
+        "회비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=29",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 54쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-29-0-1",
+      "name": "장어마을",
+      "category": "한식",
+      "region": "부산",
+      "district": "영도구",
+      "address": "부산광역시 영도구 절영로13번길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이",
+        "장어정식",
+        "장어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=29",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 54쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산영도우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-30-0-0",
+      "name": "고귀관",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 대저중앙로 399",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고세트(2인/500g)",
+        "귀세트(4인/950g)",
+        "(점심특선)돼지갈비정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=30",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 56쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-30-0-1",
+      "name": "공항족발",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 공항앞길 12, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼미리앞발",
+        "반반족발(소)",
+        "(점심특선)두루치기정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=30",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 56쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-30-1-0",
+      "name": "다금정",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 공항로811번길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불낙전골",
+        "두루치기",
+        "생삼겹살(130g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=30",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 57쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-30-1-1",
+      "name": "시골추어탕",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 대저로3번길 163",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕",
+        "미꾸라지 튀김"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=30",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 57쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-31-0-0",
+      "name": "주화횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 화전산단4로30번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "주화모듬회",
+        "물회",
+        "회비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=31",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 58쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-31-0-1",
+      "name": "옥이감자탕",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 화전산단4로7번길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우거지감자탕",
+        "김치감자탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=31",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 58쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-31-1-0",
+      "name": "복오네",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 대저중앙로 61-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "밀복",
+        "복수육",
+        "왕대구탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=31",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 59쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-31-1-1",
+      "name": "뒷고기 상회",
+      "category": "한식",
+      "region": "부산",
+      "district": "강서구",
+      "address": "부산광역시 강서구 명지국제5로 148번길 16-8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "뒷고기(120g)",
+        "뒷통(120g)",
+        "생삼겹살(120g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=31",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 59쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "부산강서우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-32-1-0",
+      "name": "가마솥생복집",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 차성로 327-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생밀복",
+        "까치복",
+        "밀복",
+        "복수육",
+        "특선요리(1인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=32",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 61쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-32-1-1",
+      "name": "소달구지",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 철마면 철마로 579 소달구지 한우직판장",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃등심·갈비살(120g)",
+        "안창·꽃살(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=32",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 61쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-33-0-0",
+      "name": "한양횟집",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 일광읍 문오성길 165-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회",
+        "아나고"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=33",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 62쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-33-0-1",
+      "name": "해녀조씨할매집",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 연화1길 187",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복죽세트 2인/3인/4인",
+        "전복죽"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=33",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 62쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-33-1-0",
+      "name": "청기와 식육식당",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 철마면 중리1길 15-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비살·꽃등심·모듬 (100g)",
+        "꽃살(100g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=33",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 63쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-33-1-1",
+      "name": "나누리생선구이",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 차성동로87번길 16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고등어구이",
+        "모듬정식",
+        "갈치조림"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=33",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 63쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "기장우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-35-1-0",
+      "name": "전통한우수구레국밥",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 삼남읍 작괘들길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우수구레국밥",
+        "한우육회비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=35",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 67쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-35-1-1",
+      "name": "유쾌한낙지 본점",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 태화강국가정원길 231-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "직화낙지볶음",
+        "직화낙지보쌈(1인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=35",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 67쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-36-0-0",
+      "name": "허준 굴요리전문점",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 새치로 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "굴국밥",
+        "굴탕",
+        "굴떡국",
+        "매생이굴국밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=36",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 68쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-36-0-1",
+      "name": "대박터숯불촌",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 구교로 52",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "왕갈비",
+        "생삼겹살",
+        "소갈비살",
+        "물냉면"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=36",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 68쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-36-1-0",
+      "name": "만선어탕전문",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 학성1길 44-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수제비어탕",
+        "칼국수어탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=36",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 69쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-36-1-1",
+      "name": "로이수제청",
+      "category": "디저트",
+      "region": "울산",
+      "district": "북구",
+      "address": "울산광역시 북구 상방1길 19-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "딸기라떼",
+        "청귤에이드",
+        "대추차"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=36",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 69쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-37-0-0",
+      "name": "가정식당",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 언양읍 언양로 76",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "야채비빔",
+        "청국장",
+        "된장찌개"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=37",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 70쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-37-0-1",
+      "name": "북경",
+      "category": "중식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 삼남읍 울산역1길 5, 다온빌 101호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면",
+        "짬뽕",
+        "탕수육(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=37",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 70쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-38-0-0",
+      "name": "명가씨푸드 수산시장",
+      "category": "한식",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 번영로150번길 16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "대게",
+        "킹크랩",
+        "모듬회(소/중/대)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=38",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 72쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-38-0-1",
+      "name": "돈당",
+      "category": "한식",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 월평로217번길 4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생삼겹살",
+        "돼지갈비",
+        "생목살",
+        "두루치기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=38",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 72쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-38-1-0",
+      "name": "달다_달동다쿠아즈",
+      "category": "디저트",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 왕생로138번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바닐라",
+        "황뽀또",
+        "제주말차",
+        "쿠키앤크림"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=38",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 73쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-38-1-1",
+      "name": "카페온",
+      "category": "디저트",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 월평로 191",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노",
+        "카페라떼",
+        "청포도에이드",
+        "레몬파운드"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=38",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 73쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-39-0-0",
+      "name": "한양식당",
+      "category": "한식",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 대암로 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "정식",
+        "비빔밥",
+        "된장찌개",
+        "김치찌개"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=39",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 74쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-39-0-1",
+      "name": "덕하홍두깨 손칼국수",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 청량읍 덕하장터길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "수제비",
+        "잔치국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=39",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 74쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-40-0-0",
+      "name": "원아구찜",
+      "category": "한식",
+      "region": "울산",
+      "district": "동구",
+      "address": "울산광역시 동구 진성2길 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아구찜·대구뽈찜"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=40",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 76쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-40-0-1",
+      "name": "호다방",
+      "category": "디저트",
+      "region": "울산",
+      "district": "동구",
+      "address": "울산광역시 동구 진성4가길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노",
+        "호두과자",
+        "라면땅"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=40",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 76쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-40-1-0",
+      "name": "남도돼지국밥",
+      "category": "한식",
+      "region": "울산",
+      "district": "동구",
+      "address": "울산광역시 동구 진성2길 16, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지(순대,내장)국밥",
+        "돼지두루치기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=40",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 77쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-40-1-1",
+      "name": "곤지곤지",
+      "category": "한식",
+      "region": "울산",
+      "district": "동구",
+      "address": "울산광역시 동구 진성13길 101",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곤드레돌솥밥",
+        "더덕오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=40",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 77쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "동울산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-42-1-0",
+      "name": "스시쇼우진",
+      "category": "일식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산회원구 양덕동2길 59",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "후토마키(한줄)",
+        "숙성회 모리아와세",
+        "디너코스"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=42",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 81쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-42-1-1",
+      "name": "하동가식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산합포구 반월동5길 38",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우특수부위(200g)",
+        "한우모듬(200g)",
+        "(점심특선)한우전골"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=42",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 81쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-43-0-0",
+      "name": "달동치킨",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산합포구 반월동2길 32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "마늘치킨",
+        "간장치킨",
+        "양념치킨",
+        "후라이드치킨"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 82쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-43-0-1",
+      "name": "미미스시앤일식",
+      "category": "일식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산합포구 문화동15길 22, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "미미디너",
+        "런치특선 초밥세트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 82쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-43-1-0",
+      "name": "대흥관",
+      "category": "중식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산회원구 내서읍 삼계로31-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면",
+        "짬뽕",
+        "등심탕수육(소)",
+        "탕수육+만두+식사2인세트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 83쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-43-1-1",
+      "name": "몬스터로스터스",
+      "category": "디저트",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 마산합포구 월영동9길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바닐라라떼",
+        "아메리카노",
+        "카페라떼"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 83쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "마산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-44-1-0",
+      "name": "진주성소문",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 남강로 639",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물냉면",
+        "한우육회비빔밥",
+        "와규화로구이정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=44",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 85쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-44-1-1",
+      "name": "진주운석빵",
+      "category": "디저트",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 남강로 627",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "운석빵(5개/12개/20개)",
+        "아메리카노"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=44",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 85쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-45-0-0",
+      "name": "효성갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 진주대로 1236",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수제돼지갈비(220g)",
+        "소양념갈비(220g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 86쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-45-0-1",
+      "name": "마메종",
+      "category": "디저트",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 비봉로23번길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "카페라떼",
+        "바닐라라떼",
+        "미스사이공"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 86쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-45-1-0",
+      "name": "하연옥",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 진주대로 1317-20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "진주물냉면",
+        "진주비빔냉면",
+        "돌판소갈비(2인)",
+        "진주육전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 87쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-45-1-1",
+      "name": "사천냉면",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 강남로177번길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물냉면",
+        "비빔냉면",
+        "섞어냉면(물비빔)",
+        "육전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 87쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-46-0-0",
+      "name": "삼다도전복죽",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 남강로673번길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복죽",
+        "전복물회",
+        "삼다도코스"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=46",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 88쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-46-0-1",
+      "name": "천황식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "진주시",
+      "address": "경상남도 진주시 촉석로207번길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "육회비빔밥",
+        "한우육회",
+        "석쇠불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=46",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 88쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진주우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-47-0-0",
+      "name": "돌산갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 중원로 52",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생등심(100g)",
+        "꽃삼겹로스구이(100g)",
+        "고추장불고기정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 90쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-47-0-1",
+      "name": "카페 이저",
+      "category": "디저트",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 편백로 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노",
+        "이저크림라떼",
+        "청귤유자크림치즈"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 90쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-47-1-0",
+      "name": "음식이보약",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 백구로13, 102호~103호(근화동 보문빌딩)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비찜(소)",
+        "도가니수육/모듬수육",
+        "갈비해장국"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 91쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-47-1-1",
+      "name": "대한삼계탕",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 충장로82번길 16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕",
+        "들깨삼계탕",
+        "옻삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 91쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-48-0-0",
+      "name": "갈비랑아구랑",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 충장로491번길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소갈비찜(2인)",
+        "생아구찜(2인)",
+        "황태찜(2인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=48",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 92쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-48-0-1",
+      "name": "행님족발 남문점",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 진해구 웅천중로 49",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발",
+        "불족발",
+        "아우보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=48",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 92쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "진해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-49-0-0",
+      "name": "아구나라꽃게마을",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 성산구 상남로 71, 창원코아상가 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "매운닭찜 1마리",
+        "말린아구찜(2인)",
+        "대구찜(2인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=49",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 94쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-49-0-1",
+      "name": "양지정",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 성산구 중앙대로 56, 1층 108호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쭈꾸미덮밥",
+        "왕갈비탕",
+        "능이닭백숙/오리백숙"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=49",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 94쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-49-1-0",
+      "name": "할매낙지마당",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 성산구 신촌로 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙새볶음(1인분)",
+        "낙곱새볶음(1인분)",
+        "낙지전골류"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=49",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 95쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-49-1-1",
+      "name": "전주보리식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 성산구 대정로 36, 지하 23호~24호(가음동종합상가)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보리밥+꽃게된장+고등어조림"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=49",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 95쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-50-0-0",
+      "name": "진고려삼계탕",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 의창구 태복산로3번길 11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕",
+        "옻삼계탕",
+        "한방삼계탕",
+        "해신탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=50",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 96쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-50-0-1",
+      "name": "정가",
+      "category": "한식",
+      "region": "경남",
+      "district": "창원시",
+      "address": "경상남도 창원시 성산구 비음로 230",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "가자미조림",
+        "고등어김치조림",
+        "돼지불고기/오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=50",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 96쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창원우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-51-0-0",
+      "name": "이선이 명품갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 전하로 258",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수제돼지왕갈비(200g)",
+        "황제갈비살(1kg)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=51",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 98쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-51-0-1",
+      "name": "경성주물럭",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 인제로39번길 59",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지주물럭",
+        "흑돼지생삼겹살",
+        "오리불고기(1마리)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=51",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 98쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-51-1-0",
+      "name": "한근두근",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 분성로 518",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생삼겹/생오겹살 1인분(120g)",
+        "돼지갈비 1인분(180g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=51",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 99쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-51-1-1",
+      "name": "국수마을",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 능동로7번길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "잔치국수",
+        "비빔국수",
+        "냉김치말이국수",
+        "해물부추전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=51",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 99쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-52-0-0",
+      "name": "풍년밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 삼안로77번길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "영양돌솥밥",
+        "보리밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 100쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-52-0-1",
+      "name": "산골버섯",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 전하로222번길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "능이버섯전골",
+        "송이버섯전골"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 100쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-52-1-0",
+      "name": "진영박가네참숯불갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 장유로288번길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "양념돼지왕갈비",
+        "돼지생갈비",
+        "비빔냉면",
+        "물냉면"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 101쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-52-1-1",
+      "name": "커피나무",
+      "category": "디저트",
+      "region": "경남",
+      "district": "김해시",
+      "address": "경상남도 김해시 전하로176번길 93",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생강라떼",
+        "딸기쉐이크",
+        "인절미빙수쉐이크"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 101쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "김해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-53-1-0",
+      "name": "양산장어만찬",
+      "category": "한식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 중앙로 296",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "만찬세트(소)",
+        "민물장어",
+        "바다장어",
+        "꼼장어"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=53",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 103쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-53-1-1",
+      "name": "명곡농원",
+      "category": "한식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 명곡로 491",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리불고기",
+        "오리백숙",
+        "닭백숙",
+        "옻닭",
+        "영계닭"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=53",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 103쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-54-0-0",
+      "name": "우리농원",
+      "category": "한식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 중앙로 300",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살(200g)",
+        "한우등심(100g)",
+        "왕갈비탕(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=54",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 104쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-54-0-1",
+      "name": "왕카이",
+      "category": "중식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 신기1길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "탕수육+짜장2",
+        "탕수육+쟁반짜장2+군만두"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=54",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 104쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-54-1-0",
+      "name": "동암식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 하북면 월평1길 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "얼큰명태탕",
+        "닭한마리칼국수",
+        "수제비명태탕",
+        "쭈꾸미돼지불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=54",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 105쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-54-1-1",
+      "name": "내몸에좋은오리",
+      "category": "한식",
+      "region": "경남",
+      "district": "양산시",
+      "address": "경상남도 양산시 물금읍 동중5길20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한방백숙",
+        "옻백숙",
+        "오리양념불고기",
+        "고등어구이 점심특선"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=54",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 105쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "양산우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-55-1-0",
+      "name": "구선장네 1박2식",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 사등면 성포로 77",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "구선장네 1박2식(1인)",
+        "모듬회한상(4인)",
+        "회정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 107쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-55-1-1",
+      "name": "슬로우소랑",
+      "category": "디저트",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 거제남서로 3955-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곡물크림라떼",
+        "아이스크림돌체라떼",
+        "각종 베이글"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 107쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-56-0-0",
+      "name": "몽순이네식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 고현로6길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "정식백반",
+        "동태탕",
+        "제육볶음",
+        "민어찜"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 108쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-56-0-1",
+      "name": "옛날그집",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 고현로9길 4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생삼겹",
+        "낙지볶음",
+        "차돌된장",
+        "열무강된장"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 108쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-56-1-0",
+      "name": "박가네식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 고현로6길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한상차림(3~4인기준)",
+        "낙지볶음",
+        "김치(된장)찌개"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 109쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-56-1-1",
+      "name": "연화횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 거제중앙로 1881-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회(소)",
+        "모듬회세트(소)",
+        "회정식",
+        "회덮밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 109쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-57-0-0",
+      "name": "고풍쌈밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 일운면 지세포4길 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수육쌈밥",
+        "야채쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=57",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 110쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-57-0-1",
+      "name": "이든횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 계룡로 40",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회(소)",
+        "모듬회(중)",
+        "모듬회(대)",
+        "회덮밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=57",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 110쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-57-1-0",
+      "name": "대원군숯불갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 거제중앙로31길 32-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비",
+        "흑돼지오겹살",
+        "소양념갈비",
+        "평일점심특선"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=57",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 111쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-57-1-1",
+      "name": "쓰리원식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 사등면 두동로3길 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈치조림(1인분)",
+        "청국장"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=57",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 111쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거제우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-58-1-0",
+      "name": "봉자가든",
+      "category": "한식",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 남해안대로736-14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "옻닭백숙",
+        "한방백숙(오리)",
+        "오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=58",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 113쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-58-1-1",
+      "name": "목장원",
+      "category": "한식",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 무전5길 37-23",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생불고기버섯전골",
+        "안창살(120g)",
+        "모둠( 400g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=58",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 113쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-59-0-0",
+      "name": "밀보리베이커리",
+      "category": "디저트",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 중앙로 264",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "통팥빵/소보루/국화빵 등",
+        "롤케이크",
+        "밀크쉐이크"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 114쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-59-0-1",
+      "name": "마리나송원횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 도남로269-38, 상가 302호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회 한상(4인) 시세에 따라 다름 (사전 가격문의 필수)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 114쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-59-1-0",
+      "name": "블루하라",
+      "category": "디저트",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 무전5길 12-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "라떼",
+        "시나몬라떼",
+        "디저트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 115쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-59-1-1",
+      "name": "무전리샤브칼국수",
+      "category": "한식",
+      "region": "경남",
+      "district": "통영시",
+      "address": "경상남도 통영시 무전8길 13-32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물칼국수",
+        "반반샤브샤브",
+        "무전리칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 115쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "통영우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-60-1-0",
+      "name": "베지나랑키친",
+      "category": "기타",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 남하면 대야길 69-17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "버섯샐러드",
+        "콩까스",
+        "두부자몽샐러드",
+        "스페셜볶음쌀국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=60",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 117쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-60-1-1",
+      "name": "비룡",
+      "category": "중식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 공수들6길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물짬뽕",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=60",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 117쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-61-0-0",
+      "name": "외양간구시",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 상동2길 70",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우뭉탱이",
+        "한우육회(소)",
+        "한우소고기 버섯전골(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 118쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-61-0-1",
+      "name": "명당",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 동동4길 67-15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리불고기 한마리",
+        "알치즈볶음밥",
+        "누룽지탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 118쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-61-1-0",
+      "name": "영남쌈밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 강변로8길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌈밥정식",
+        "대구뽈찜"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 119쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-61-1-1",
+      "name": "지리산옻닭",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 상동2길 21",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "옻닭",
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 119쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-62-0-0",
+      "name": "창성식당",
+      "category": "중식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 죽전4길 132-15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "비빔짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 120쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-62-0-1",
+      "name": "거창고제식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 고제면 입석2길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "두루치기",
+        "생삼겹(170g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 120쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-62-1-0",
+      "name": "그때그집고기",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 공수들2길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우특수부위모듬(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 121쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-62-1-1",
+      "name": "명품토종흑돼지",
+      "category": "한식",
+      "region": "경남",
+      "district": "거창군",
+      "address": "경상남도 거창군 거창읍 거열로1길 36",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살(150g)",
+        "흑돼지대패(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 121쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "거창우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-63-1-0",
+      "name": "해금강횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "고성군",
+      "address": "경상남도 고성군 고성읍 중앙로25번길 47",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=63",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 123쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "고성우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-63-1-1",
+      "name": "홍스쭈꾸미",
+      "category": "한식",
+      "region": "경남",
+      "district": "고성군",
+      "address": "경상남도 고성군 고성읍 남포로80번길 112-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쭈꾸미(1인분)",
+        "쭈삼겹(1인분)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=63",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 123쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "고성우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-64-0-0",
+      "name": "빵연구소",
+      "category": "디저트",
+      "region": "경남",
+      "district": "고성군",
+      "address": "경상남도 고성군 고성읍 중앙로25번길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소금빵",
+        "쫀득쫀득몽실이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=64",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 124쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "고성우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-64-0-1",
+      "name": "자연촌",
+      "category": "한식",
+      "region": "경남",
+      "district": "고성군",
+      "address": "경상남도 고성군 고성읍 동외로156번길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복삼계탕",
+        "유황오리 야채불고기+영양솥밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=64",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 124쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "고성우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-65-0-0",
+      "name": "복만식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남면 남면로 1743",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "통갈치구이(2~3인)",
+        "전복갈치조림(2~3인)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 126쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-65-0-1",
+      "name": "효준횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남해읍 화전로 110 나동-22호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회(2인)",
+        "모듬회(3인)",
+        "멍게덮밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 126쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-65-1-0",
+      "name": "초량정",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남해읍 화전로38번길 28-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "멸치쌈밥",
+        "멸치쌈밥+수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 127쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-65-1-1",
+      "name": "앵강마켓",
+      "category": "디저트",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남면 남서대로 772",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "호지냉차",
+        "보리커피",
+        "양갱"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 127쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-66-0-0",
+      "name": "봉정식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남해읍 화전로110",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "멸치쌈밥",
+        "생선구이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=66",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 128쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-66-0-1",
+      "name": "무쇠왕솥뚜껑",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남해읍 화전로96번나길 1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=66",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 128쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "남해우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-67-0-0",
+      "name": "일품각 본점",
+      "category": "한식",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 석정로 75",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비(200g)",
+        "한우안창살(120g)",
+        "한우갈비살(120g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=67",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 130쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-67-0-1",
+      "name": "천하왕소금구이",
+      "category": "한식",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 미리벌로2길 39",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "숙성 삼겹살(130g)",
+        "천하모듬(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=67",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 130쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-67-1-0",
+      "name": "진미추어탕",
+      "category": "한식",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 중앙로 66-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕",
+        "추어탕국수",
+        "비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=67",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 131쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-67-1-1",
+      "name": "서울삼계탕",
+      "category": "한식",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 미리벌중앙로 90",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복삼계탕",
+        "삼계탕",
+        "옻삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=67",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 131쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-68-0-0",
+      "name": "밀양시문화도시센터 열두달",
+      "category": "디저트",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 밀양대로 1908, 5호관 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "열두달시그니쳐음료",
+        "밀양딸기휘낭시에",
+        "밀양고추깻잎휘낭시에"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=68",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 132쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-68-0-1",
+      "name": "복합문화공간 볕뉘",
+      "category": "디저트",
+      "region": "경남",
+      "district": "밀양시",
+      "address": "경상남도 밀양시 밀양향교3길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "사랑의볕",
+        "아침의볕",
+        "다식세트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=68",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 132쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "밀양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-69-0-0",
+      "name": "춤추는염소",
+      "category": "디저트",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 사천읍 정의길 73-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노",
+        "바닐라라떼",
+        "에그타르트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=69",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 134쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-69-0-1",
+      "name": "만기",
+      "category": "한식",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 사천읍 샘골2길 4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선회(1인)",
+        "(점심특선) 생우럭탕/생선초밥/회덮밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=69",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 134쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-69-1-0",
+      "name": "염소빵",
+      "category": "디저트",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 사남면 유천길 73-12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "에스프레소",
+        "스피니치샌드위치",
+        "에그타르트",
+        "피칸타르트"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=69",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 135쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-69-1-1",
+      "name": "오서방횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 서포면 서포로 259",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회(소)",
+        "회덮밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=69",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 135쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-70-0-0",
+      "name": "사천할매콩나물국밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 서포면 서포로 294-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "콩나물국밥",
+        "계란말이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=70",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 136쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-70-0-1",
+      "name": "토담",
+      "category": "한식",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 사천읍 항공로 32-10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "황토진흙구이",
+        "북경오리",
+        "생오리양념구이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=70",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 136쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "사천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-71-0-0",
+      "name": "지리산약초장어",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 금서면 친환경로2605번길 6-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이(1kg)",
+        "장어구이SET(장어+더덕/1kg)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 138쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-71-0-1",
+      "name": "일신식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 생초면 산수로 1022-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쏘가리탕(소)",
+        "메기탕(소)",
+        "어탕국수"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 138쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-71-1-0",
+      "name": "산청엔 흑돼지",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 산청읍 꽃봉산로 115",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "흑돼지 오겹살(150g)",
+        "양념갈비(180g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 139쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-71-1-1",
+      "name": "화계식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 금서면 동의보감로 1055",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 차돌박이(1인분)",
+        "흑돼지 삼겹살(1인분)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 139쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-72-0-0",
+      "name": "원지한우 상차림식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 신안면 원지로 70",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "특수부위, 갈비살, 꽃등심 등 가격변동",
+        "육회비빔냉면"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 140쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-72-0-1",
+      "name": "나들목아구찜",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 신안면 신차로 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아구수육(소)",
+        "아구찜(소)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 140쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-72-1-0",
+      "name": "장안식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 산청읍 꽃봉산로91번길 26-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소고기구이",
+        "차돌박이",
+        "흑돼지삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 141쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-72-1-1",
+      "name": "대장금약선관 산청",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 금서면 친환경로 2605번길 6-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "건강정찬(산청흑돼지)",
+        "옛정찬(한우석쇠불고기)",
+        "숙성정찬(생선구이)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 141쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "산청우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-73-1-0",
+      "name": "의령백년식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "의령군",
+      "address": "경상남도 의령군 충익로 20-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우칼국수",
+        "육회비빔밥",
+        "갈비탕",
+        "제육볶음"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=73",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 143쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "의령우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-73-1-1",
+      "name": "서진식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "의령군",
+      "address": "경상남도 의령군 칠곡면 자굴산로 98",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우양지사골곰탕",
+        "한우수육정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=73",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 143쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "의령우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-74-0-0",
+      "name": "꽃피는산골",
+      "category": "한식",
+      "region": "경남",
+      "district": "의령군",
+      "address": "경상남도 의령군 의령읍 수암로 278-16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산야초누룽지백숙",
+        "오리불고기(대)",
+        "명인산야초삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=74",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 144쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "의령우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-74-0-1",
+      "name": "솔밭돼지국밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "의령군",
+      "address": "경상남도 의령군 의령읍 의병로20길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥",
+        "순대국밥",
+        "내장국밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=74",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 144쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "의령우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-75-0-0",
+      "name": "ATATAK(아타탁)",
+      "category": "디저트",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 부곡면 부곡로 62",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "드립커피",
+        "수제바닐라라떼",
+        "트와이닝수제밀크티"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 146쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-75-0-1",
+      "name": "원아구찜",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 창녕읍 종로5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아구찜/대구찜(소)",
+        "아구탕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 146쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-75-1-0",
+      "name": "영우네우렁쌈밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 대합면 십이리3길 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우렁제육쌈밥",
+        "청국장(솥밥)",
+        "청국장",
+        "제육볶음"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 147쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-75-1-1",
+      "name": "벌교꼬막마을",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 부곡면 온천1길 50, 102호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꼬막정식",
+        "꼬막잡채",
+        "꼬막부추전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 147쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-76-0-0",
+      "name": "부잣집보쌈",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 영산면 유생길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "육개장",
+        "부잣집보쌈",
+        "해물보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 148쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-76-0-1",
+      "name": "화왕산청국장마을",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 계성면 계성화왕산로 287-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리불고기(중)",
+        "청국장정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 148쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-76-1-0",
+      "name": "커피지오",
+      "category": "디저트",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 남지읍 낙동로 466-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생레몬에이드",
+        "수제청에이드",
+        "수제차"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 149쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-76-1-1",
+      "name": "자율돼지국밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "창녕군",
+      "address": "경상남도 창녕군 창녕읍 경남대로 4514",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥",
+        "내장국밥",
+        "순대국밥",
+        "섞어국밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 149쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "창녕우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-77-1-0",
+      "name": "하양",
+      "category": "한식",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 하동읍 부두길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돌솥밥",
+        "돌솥밥+생선구이",
+        "수육(대)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=77",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 151쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "하동우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-77-1-1",
+      "name": "백년국밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 하동읍 시장3길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥",
+        "수육"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=77",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 151쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "하동우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-78-0-0",
+      "name": "카페 스톤브릿지",
+      "category": "디저트",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 적량면 공설운동장로 215",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피",
+        "하동녹차라떼",
+        "수제브라우니"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=78",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 152쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "하동우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-78-0-1",
+      "name": "은성쌈밥",
+      "category": "한식",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 금남면 섬진강대로 962-1, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "제육쌈밥",
+        "멸치쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=78",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 152쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "하동우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-79-0-0",
+      "name": "가야반점짬뽕집",
+      "category": "중식",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 가야읍 함안대로 510",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짬뽕",
+        "하얀짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=79",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 154쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-79-0-1",
+      "name": "자원오리성",
+      "category": "한식",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 가야읍 한절골길 27-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "청둥오리탕",
+        "청둥오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=79",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 154쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-79-1-0",
+      "name": "순이네 시골집",
+      "category": "한식",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 가야읍 중앙남길 18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "연잎한상",
+        "생선구이+된장"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=79",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 155쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-79-1-1",
+      "name": "불막열삼 함안점",
+      "category": "한식",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 가야읍 고분길 69",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우곱창전골",
+        "김치곱창전골"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=79",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 155쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-80-0-0",
+      "name": "대구식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 함안면 북촌2길 50-27",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우국밥",
+        "돼지불고기"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=80",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 156쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-80-0-1",
+      "name": "모티쿠키",
+      "category": "디저트",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 가야읍 본동길 61",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "초코르뱅",
+        "쿠키박스(6개)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=80",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 156쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함안우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-81-0-0",
+      "name": "동막골",
+      "category": "한식",
+      "region": "경남",
+      "district": "함양군",
+      "address": "경상남도 함양군 함양읍 용평4길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "왕코다리찜정식(1인)",
+        "왕코다리찜(소)",
+        "갈비찜(소)",
+        "모듬전"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 158쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-81-0-1",
+      "name": "돌대가리",
+      "category": "한식",
+      "region": "경남",
+      "district": "함양군",
+      "address": "경상남도 함양군 함양읍 고운로 66",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소갈비살(150g)",
+        "항정살(150g)",
+        "오겹살(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 158쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-81-1-0",
+      "name": "뼈대여행",
+      "category": "한식",
+      "region": "경남",
+      "district": "함양군",
+      "address": "경상남도 함양군 함양읍 동위천1길 31",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "등갈비",
+        "갈매기살",
+        "막창",
+        "가브리살"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 159쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-81-1-1",
+      "name": "불막열삼 함양점",
+      "category": "한식",
+      "region": "경남",
+      "district": "함양군",
+      "address": "경상남도 함양군 함양읍 함양로 1148",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생막창",
+        "소막창",
+        "곱창전골"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 159쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "함양우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-82-1-0",
+      "name": "참숯골 합천본점",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 옥산로 31",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "숙성삼겹",
+        "돼지갈비",
+        "한치물회냉면"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=82",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 161쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-82-1-1",
+      "name": "만조횟집",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 옥산로 35-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회",
+        "문어숙회",
+        "전복구이"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=82",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 161쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-83-0-0",
+      "name": "행복가든",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 핫들1로 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비(200g)",
+        "삼겹살(200g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 162쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-83-0-1",
+      "name": "민수네",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 동서로60",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지주물럭(150g)",
+        "삼겹살(150g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 162쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-83-1-0",
+      "name": "누이",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 중앙로 50-39",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "직화두루치기정식",
+        "돼지찌개정식",
+        "김치·된장찌개정식"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 163쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-83-1-1",
+      "name": "시장식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 문화로 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살(1인분/200g)",
+        "한우생등심(1인분/180g)"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 163쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-84-0-0",
+      "name": "합천명품토종흑돼지",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 가야면 가야시장로 106",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "토종왕소금(150g)",
+        "토종삼겹살(150g)",
+        "한방쪽갈비"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=84",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 164쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    },
+    {
+      "id": "post-2026-84-0-1",
+      "name": "에스리떼",
+      "category": "디저트",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 합천읍 충효로 77-20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "프로즌커피",
+        "아메리카노",
+        "아이스 시그니처 딥 초코링"
+      ],
+      "guides": [
+        {
+          "provider": "post-office",
+          "label": "추천",
+          "year": 2026,
+          "sourceUrl": "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=84",
+          "sourceName": "부산지방우정청 · 우체국 추천 맛집가이드 164쪽",
+          "verifiedAt": "2026-11-03",
+          "sourceAsOf": "2026-06",
+          "recommendingPostOffice": "합천우체국"
+        }
+      ],
+      "sourceAsOf": "2026-06"
+    }
+  ],
+  "collections": [
+    {
+      "provider": "post-office",
+      "title": "우체국 2026 전체 지도 · 240곳",
+      "url": "https://kko.to/zH7DKi6NU",
+      "sourceUrl": "https://www.koreapost.go.kr/user/bbs/442c/98/2802/bbsDataView/100099515.do",
+      "note": "부산·울산·경남 240곳 · 2026년 6월 자료. 영업 여부는 방문 전 확인해 주세요."
+    }
+  ]
+}

@@ -12,7 +12,7 @@ let world = read('world.html')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
 const scripts = ['game-session.js', 'world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
-  'world-tour-game.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
+  'world-tour-game.js', 'world-restaurant-guide.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
   'photo-ttang-bridge.js', 'matgo-bridge.js'].map(read).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
@@ -83,7 +83,7 @@ window.childReady=true;
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
       const games = [
-        ['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
+        ['restaurants','.restaurant-guide-dialog'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
         ['tour','.tour-game-dialog'],['tank','.tank-game-dialog'],['spot','.spot-game-dialog'],
         ['ttang','#ttang-overlay'],['photo_ttang','#photo-ttang-overlay'],['matgo','#matgo-overlay'],['billiards','[data-bl="close"]']
       ];
