@@ -164,7 +164,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawAnimal' ? (...args) => animalFrames.push(args.slice(1)) : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, startEvent, exitEvent, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, closeModal, activeBow, activeArrow, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, showTrialEvents, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, startEvent, exitEvent, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, showTrialEvents, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
@@ -2093,45 +2093,49 @@ test('new main rounds and event rounds automatically activate only their equippe
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 22], 'round changes never transfer or duplicate a scope');
 });
 
-test('laser purchases charge once per main weapon and preserve independent manual settings across reload', async () => {
-  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 2000, ownedBows: [0, 3, 20, 22], bow: 0 });
+test('laser purchases start with the first crossbow and charge once per eligible weapon and preserve independent manual settings across reload', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 2000, ownedBows: [0, 3, 13, 14, 20, 22], bow: 13 });
   assert.equal(app.api.activeLaser(), null);assert.equal(app.getElement('laserPanel').classList.contains('hidden'), true);
-  for (const id of [-1, 25, '0', 10, 20, 22]) assert.equal(app.api.installLaser(id), false);
+  for (const id of [-1, 25, '13', 0, 3, 10, 20, 22]) assert.equal(app.api.installLaser(id), false);
   assert.equal(app.api.progress.coins, 2000);
   const buy = id => {
     app.api.showShop('bow');
+    const available = [...app.getElement('modalContent').innerHTML.matchAll(/data-install-laser="(\d+)"/g)].map(match => Number(match[1])).sort((a,b) => a-b);
+    assert.deepEqual(available, Array.from({length: 10}, (_, index) => index + 10), 'only the ten crossbows offer lasers, including the first shop crossbow');
     const button = app.getElement(`buy-laser-${id}`);button.tagName = 'BUTTON';button.dataset.installLaser = String(id);
     app.document.emit('click', { target: button });
   };
-  buy(0);assert.equal(app.api.progress.coins, 1500);assert.equal(app.api.activeBow().id, 0);
+  buy(13);assert.equal(app.api.progress.coins, 1500);assert.equal(app.api.activeBow().id, 13);
+  assert.equal(app.api.state.laserAdjustOpen, false, 'a newly purchased laser keeps the play area unobstructed');
   assert.equal(app.api.setLaserSettings({ horizontalClicks: 12, verticalClicks: -7 }), true);
-  assert.equal(app.api.installLaser(0), true);assert.equal(app.api.progress.coins, 1500);
+  assert.equal(app.api.installLaser(13), true);assert.equal(app.api.progress.coins, 1500);
+  assert.equal(app.api.state.laserAdjustOpen, true, 'the owned laser adjustment action opens its controls without another purchase');
   assert.deepEqual({ ...app.api.activeLaser() }, { enabled: true, horizontalClicks: 12, verticalClicks: -7 });
-  buy(3);assert.equal(app.api.progress.coins, 1000);assert.equal(app.api.activeBow().id, 3);
+  buy(14);assert.equal(app.api.progress.coins, 1000);assert.equal(app.api.activeBow().id, 14);
   assert.equal(app.api.setLaserSettings({ enabled: false, horizontalClicks: -30, verticalClicks: 9, autoFire: true, targetId: 1 }), true);
-  assert.equal(app.api.setLaserSettings({ horizontalClicks: 99 }, 0), false, 'a callback cannot change an unequipped weapon');
-  const expected = { 0: { enabled: true, horizontalClicks: 12, verticalClicks: -7 }, 3: { enabled: false, horizontalClicks: -30, verticalClicks: 9 } };
+  assert.equal(app.api.setLaserSettings({ horizontalClicks: 99 }, 13), false, 'a callback cannot change an unequipped weapon');
+  const expected = { 13: { enabled: true, horizontalClicks: 12, verticalClicks: -7 }, 14: { enabled: false, horizontalClicks: -30, verticalClicks: 9 } };
   assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.laserLoadouts)), expected);
   const reloaded = await appHarness(app.snapshot());
   assert.deepEqual(JSON.parse(JSON.stringify(reloaded.api.progress.laserLoadouts)), expected);
   assert.equal(reloaded.api.progress.coins, 1000);assert.equal(reloaded.api.laserEnabled(), false);
-  reloaded.api.showShop('bow');reloaded.api.equipItem(0);reloaded.api.closeModal();await reloaded.flush();
-  assert.deepEqual({ ...reloaded.api.activeLaser() }, expected[0]);assert.equal(reloaded.api.laserEnabled(), true);
+  reloaded.api.showShop('bow');reloaded.api.equipItem(13);reloaded.api.closeModal();await reloaded.flush();
+  assert.deepEqual({ ...reloaded.api.activeLaser() }, expected[13]);assert.equal(reloaded.api.laserEnabled(), true);
   assert.equal(reloaded.api.laserFrame(), null, 'ready mode permits calibration without showing a sight dot');
-  const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 499 });
-  assert.equal(poor.api.installLaser(0), false);assert.equal(poor.api.progress.coins, 499);assert.equal(poor.api.activeLaser(), null);
+  const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, coins: 499 });
+  assert.equal(poor.api.installLaser(13), false);assert.equal(poor.api.progress.coins, 499);assert.equal(poor.api.activeLaser(), null);
 });
 
-test('laser save loading keeps only owned main weapons and finite manual zeroing values', async () => {
-  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 3, 20, 22], bow: 3,
+test('laser save loading keeps only owned crossbows and finite manual zeroing values', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13, 14, 20, 22], bow: 14,
     laserLoadouts: {
-      0: { enabled: false, horizontalClicks: 2000, verticalClicks: -2000, autoFire: true },
-      3: { horizontalClicks: '20', verticalClicks: 3.6, targetPoint: { x: 0, y: 0, z: 10 } },
-      19: { enabled: true }, 20: { enabled: true }, 22: { enabled: true }, '03': { enabled: true }, bad: {}, '-1': {}
+      13: { enabled: false, horizontalClicks: 2000, verticalClicks: -2000, autoFire: true },
+      14: { horizontalClicks: '20', verticalClicks: 3.6, targetPoint: { x: 0, y: 0, z: 10 } },
+      19: { enabled: true }, 20: { enabled: true }, 22: { enabled: true }, '014': { enabled: true }, bad: {}, '-1': {}
     } });
   assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.laserLoadouts)), {
-    0: { enabled: false, horizontalClicks: 1200, verticalClicks: -1200 },
-    3: { enabled: true, horizontalClicks: 0, verticalClicks: 4 }
+    13: { enabled: false, horizontalClicks: 1200, verticalClicks: -1200 },
+    14: { enabled: true, horizontalClicks: 0, verticalClicks: 4 }
   });
   for (const id of [19, 20, 22]) assert.equal(app.api.activeLaser(id), null);
   const original = app.snapshot(), settings = { ...app.api.activeLaser() };
@@ -2140,8 +2144,106 @@ test('laser save loading keeps only owned main weapons and finite manual zeroing
   assert.deepEqual({ ...app.api.activeLaser() }, settings);assert.deepEqual(app.snapshot(), original);
 });
 
+test('old owned bow lasers refund once while crossbow settings and the rest of the saved journey survive', async () => {
+  const original = { version: 1, launchEpoch: 4, stageCatalog: STAGE_CATALOG, coins: 321, bow: 3, arrow: 2,
+    ownedBows: [0, 3, 13, 20, 22], ownedArrows: [0, 2], stabilizers: 4, clayCredits: 9,
+    lastStage: 17, best: { 17: 30 }, mainRounds: 7, shots: 42, hits: 31, sound: false, coachEnabled: false,
+    scopeLoadouts: { 3: { owned: [2, 3], equipped: 3 } },
+    laserLoadouts: { 0: { enabled: false }, 3: { enabled: true, horizontalClicks: 7 },
+      13: { enabled: true, horizontalClicks: 12, verticalClicks: -7 },
+      4: { enabled: true }, 20: {}, 22: {}, '03': {}, bad: {}, '-1': {}, 9: null } };
+  const app = await appHarness(original);
+  assert.equal(app.api.progress.coins, 1321, 'the two previously owned bow lasers return their full purchase prices');
+  assert.equal(app.snapshot().coins, 1321, 'normal startup commits the refund immediately');
+  assert.deepEqual(app.snapshot().laserLoadouts, { 13: { enabled: true, horizontalClicks: 12, verticalClicks: -7 } });
+  for (const key of ['bow', 'arrow', 'stabilizers', 'clayCredits', 'lastStage', 'best', 'mainRounds', 'shots', 'hits', 'sound', 'coachEnabled', 'scopeLoadouts']) {
+    assert.deepEqual(app.snapshot()[key], original[key], `${key} survives the compatibility migration`);
+  }
+  const reloaded = await appHarness(app.snapshot());
+  assert.equal(reloaded.api.progress.coins, 1321, 'removed bow records cannot be refunded again after reopening');
+  assert.deepEqual(reloaded.snapshot().laserLoadouts, app.snapshot().laserLoadouts);
+  const forged = await appHarness({ version: 1, coins: 100, laserLoadouts: { 0: { enabled: true } } });
+  assert.equal(forged.api.progress.coins, 100, 'the default starter weapon is not evidence of a previous purchase');
+  assert.deepEqual(forged.snapshot().laserLoadouts, {});
+
+  const store = new Map([[SAVE_KEY, JSON.stringify(original)]]), before = new Map(store);
+  const trial = await appHarness(null, { store, adminTrial: true });
+  assert.equal(trial.api.adminTrialActive, true);assert.deepEqual(store, before);
+  assert.deepEqual(trial.storageOperations, []);assert.deepEqual(trial.ammo.requests, []);
+  assert.deepEqual(Object.keys(trial.api.progress.laserLoadouts).map(Number), Array.from({length: 10}, (_, id) => id + 10));
+});
+
+test('a failed bow laser refund preserves the original save and commits its credit exactly once on retry', async () => {
+  const original = { version: 1, launchEpoch: 4, stageCatalog: STAGE_CATALOG, coins: 123, ownedBows: [0, 13], bow: 13,
+    best: { 1: 44 }, laserLoadouts: { 0: { enabled: true }, 13: { enabled: false, horizontalClicks: 3, verticalClicks: -2 } } };
+  const store = new Map([[SAVE_KEY, JSON.stringify(original)]]), write = store.set.bind(store);let failed = true;
+  store.set = (key, value) => { if (failed && key === SAVE_KEY) throw new Error('storage unavailable');return write(key, value); };
+  const app = await appHarness(null, { store, offline: true });
+  assert.equal(app.api.progress.coins, 123, 'an uncommitted credit is not spendable');
+  assert.deepEqual(app.snapshot(), original, 'failed writes retain the purchased bow record and all original progress');
+  assert.equal(app.getElement('saveFooter').classList.contains('save-error'), true);
+  assert.equal(app.getElement('saveFooter').classList.contains('visually-hidden'), false);
+  assert.equal(app.api.setLaserSettings({ horizontalClicks: 99 }), false);
+  assert.equal(app.api.activeLaser().horizontalClicks, 3, 'a failed setting transaction still rolls back');
+  assert.equal(app.api.progress.coins, 123);assert.deepEqual(app.snapshot(), original);
+  failed = false;
+  assert.equal(app.api.save(), true);
+  assert.equal(app.api.progress.coins, 623);assert.equal(app.snapshot().coins, 623);
+  assert.deepEqual(app.snapshot().laserLoadouts, { 13: { enabled: false, horizontalClicks: 3, verticalClicks: -2 } });
+  assert.deepEqual(app.snapshot().best, original.best);
+  assert.equal(app.getElement('saveFooter').classList.contains('visually-hidden'), true);
+  assert.equal(app.api.save(), true);assert.equal(app.api.progress.coins, 623);
+  const reopened = await appHarness(null, { store, offline: true });assert.equal(reopened.api.progress.coins, 623);
+});
+
+test('forged bow laser ownership cannot show a sight, disable the coach or accept manual calibration', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 2000, coachEnabled: true, sound: true });
+  app.api.progress.laserLoadouts[0] = { enabled: true, horizontalClicks: 40, verticalClicks: 40 };
+  assert.equal(app.api.activeLaser(), null);assert.equal(app.api.laserEnabled(), false);
+  assert.equal(app.api.installLaser(0), false);assert.equal(app.api.setLaserSettings({ enabled: true }), false);
+  assert.equal(app.api.openLaserAdjustments(), false);assert.equal(app.api.progress.coins, 2000);
+  preciseMainDraw(app, { x: 0, y: 0 }, { missDuringHold: true });
+  app.until(() => app.speech.utterances.length === 1, 20);
+  assertCoachCue(app, true);assert.equal(app.api.laserFrame(), null);
+  assert.equal(app.getElement('laserPanel').classList.contains('hidden'), true);
+  assert.equal(app.api.progress.coachEnabled, true);
+});
+
+test('laser calibration starts collapsed and closes on Escape, menu, reset and aiming without changing saved settings', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13,
+    laserLoadouts: { 13: { enabled: true, horizontalClicks: 8, verticalClicks: -4 } } });
+  const popup = app.getElement('laserPopover'), adjust = app.getElement('laserAdjustBtn'), close = app.getElement('laserCloseBtn');
+  adjust.tagName = close.tagName = 'BUTTON';adjust.dataset.laserAction = 'open';close.dataset.laserAction = 'close';
+  const saved = app.snapshot(), horizontal = app.getElement('laserHorizontalGear');
+  const assertClosed = () => {
+    assert.equal(app.api.state.laserAdjustOpen, false);assert.equal(popup.hidden, true);
+    assert.equal(popup.classList.contains('hidden'), true);assert.equal(adjust.getAttribute('aria-expanded'), 'false');
+    assert.equal(horizontal.disabled, true);
+  };
+  const open = () => {
+    app.document.emit('click', { target: adjust });
+    assert.equal(app.api.state.laserAdjustOpen, true);assert.equal(popup.hidden, false);
+    assert.equal(adjust.getAttribute('aria-expanded'), 'true');assert.equal(horizontal.disabled, false);
+    assert.equal(app.document.activeElement, horizontal);
+  };
+  assertClosed();horizontal.emit('wheel', { deltaY: -1 });horizontal.emit('keydown', { code: 'ArrowRight' });
+  assert.equal(app.api.activeLaser().horizontalClicks, 8, 'closed controls cannot change the saved calibration');
+  open();app.document.emit('click', { target: close });assertClosed();assert.equal(app.document.activeElement, adjust);
+  open();app.document.emit('keydown', { code: 'Escape' });assertClosed();assert.equal(app.document.activeElement, adjust);
+  open();app.getElement('menuBtn').emit('click');assertClosed();app.api.closeModal();await app.flush();
+  open();app.api.resetRound(app.engine.STAGES[0]);await app.flush();assertClosed();
+  open();const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(20);assertClosed();
+  assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.openLaserAdjustments(), false);
+  const forged = app.getElement('forged-open-laser');forged.tagName = 'BUTTON';forged.dataset.laserAction = 'open';
+  app.document.emit('click', { target: forged });assertClosed();
+  assert.deepEqual(app.snapshot().laserLoadouts, saved.laserLoadouts);assert.equal(app.api.state.used, 0);
+  pad.emit('pointercancel');app.frames();assertClosed();
+  assert.equal(app.api.state.mode, 'ready');assert.equal(adjust.disabled, false);assert.equal(app.api.state.used, 0);
+});
+
 test('laser rotary gears use fifteen-degree detents and one or ten-click steps without aiming or firing', async () => {
-  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, laserLoadouts: { 0: { enabled: true } } });
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } });
+  assert.equal(app.api.openLaserAdjustments(), true);
   const aim = { ...app.api.state.aim }, horizontal = app.getElement('laserHorizontalGear'), vertical = app.getElement('laserVerticalGear');
   for (const gear of [horizontal, vertical]) gear.getBoundingClientRect = () => ({ left: 100, top: 60, width: 80, height: 80 });
   horizontal.emit('pointerdown', { pointerId: 81, clientX: 140, clientY: 60 });
@@ -2168,7 +2270,7 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
 
 test('a held laser follows manual aim, never fires on target overlap or after ten seconds and fires once on release', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
-    laserLoadouts: { 0: { enabled: true } }, scopeLoadouts: { 0: { owned: [2], equipped: 2 } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } }, scopeLoadouts: { 13: { owned: [2], equipped: 2 } } });
   const { state } = app.api, pad = app.getElement('aimTouchpad');
   app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'off');
   pad.emit('pointerdown');app.frames(90);
@@ -2194,14 +2296,14 @@ test('a held laser follows manual aim, never fires on target overlap or after te
 
 test('laser zeroing controls and forged callbacks stay locked throughout a drawn or flying shot', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 1000,
-    laserLoadouts: { 0: { enabled: true, horizontalClicks: 8, verticalClicks: -4 } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true, horizontalClicks: 8, verticalClicks: -4 } } });
   const pad = app.getElement('aimTouchpad'), horizontal = app.getElement('laserHorizontalGear');
   const settings = { ...app.api.activeLaser() }, saved = app.snapshot();
   pad.emit('pointerdown');app.frames(30);
   const assertLocked = () => {
     assert.equal(app.getElement('laserPanel').dataset.locked, 'true');assert.equal(horizontal.disabled, true);
     for (const call of [() => app.api.setLaserSettings({ horizontalClicks: 500 }), () => app.api.adjustLaser('verticalClicks', 10),
-      () => app.api.toggleLaser(), () => app.api.resetLaser(), () => app.api.setLaserStep(10), () => app.api.installLaser(0)]) assert.equal(call(), false);
+      () => app.api.toggleLaser(), () => app.api.resetLaser(), () => app.api.setLaserStep(10), () => app.api.installLaser(13)]) assert.equal(call(), false);
     for (const action of ['toggle', 'reset']) {
       const button = app.getElement(`forged-laser-${action}`);button.tagName = 'BUTTON';button.dataset.laserAction = action;
       app.document.emit('click', { target: button });
@@ -2218,7 +2320,7 @@ test('laser zeroing controls and forged callbacks stay locked throughout a drawn
 
 test('laser cancellation, lost capture, blur and hidden-page recovery never release an arrow', async () => {
   for (const action of ['cancel', 'lost-capture', 'blur', 'hidden']) {
-    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, laserLoadouts: { 0: { enabled: true } } });
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } });
     const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(20);
     if (action === 'cancel') pad.emit('pointercancel');
     if (action === 'lost-capture') pad.emit('lostpointercapture');
@@ -2232,9 +2334,9 @@ test('laser cancellation, lost capture, blur and hidden-page recovery never rele
 });
 
 test('incorrect laser zeroing moves only the sight and leaves the real arrow trajectory and score unchanged', async () => {
-  const fixture = { version: 1, stageCatalog: STAGE_CATALOG, sound: false };
+  const fixture = { version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, sound: false };
   const ordinary = await appHarness(fixture), laser = await appHarness({ ...fixture,
-    laserLoadouts: { 0: { enabled: true, horizontalClicks: 600, verticalClicks: 80 } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true, horizontalClicks: 600, verticalClicks: 80 } } });
   const shots = [];
   for (const app of [ordinary, laser]) {
     const { pad, coords } = preciseMainDraw(app), { state } = app.api;
@@ -2252,7 +2354,7 @@ test('incorrect laser zeroing moves only the sight and leaves the real arrow tra
 
 test('an enabled laser suppresses coach prediction, firing cues and voice while preserving the saved coaching preference', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true,
-    laserLoadouts: { 0: { enabled: false } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: false } } });
   const { state } = app.api;
   let draw = preciseMainDraw(app, { x: 0, y: 0 }, { missDuringHold: true });
   app.until(() => app.speech.utterances.length === 1, 20);assertCoachCue(app, true);
@@ -2276,7 +2378,7 @@ test('an enabled laser suppresses coach prediction, firing cues and voice while 
   assert.equal(state.coachReady, true);assert.ok(Number.isFinite(state.coachLastCheck));
   draw.pad.emit('pointercancel');
   const quiet = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: false, sound: true,
-    laserLoadouts: { 0: { enabled: true } } });
+    ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } });
   assert.equal(quiet.api.setLaserSettings({ enabled: false }), true);
   preciseMainDraw(quiet, { x: 0, y: 0 }, { missDuringHold: true });holdFor(quiet, 800);
   assert.equal(quiet.api.progress.coachEnabled, false);assert.equal(quiet.snapshot().coachEnabled, false);
@@ -4628,7 +4730,7 @@ test('administrators can equip the full catalog, use consumables and visit all e
   assert.deepEqual([...app.api.progress.ownedArrows],Array.from(app.engine.ARROWS,item=>item.id));
   assert.equal(app.api.progress.scopedBows.length,23);
   assert.deepEqual([...app.api.progress.scopedBows],Array.from(app.engine.BOWS.filter(item=>item.scopeCompatible),item=>item.id));
-  assert.deepEqual(Object.keys(app.api.progress.laserLoadouts).map(Number),Array.from({length:20},(_,id)=>id));
+  assert.deepEqual(Object.keys(app.api.progress.laserLoadouts).map(Number),Array.from({length:10},(_,id)=>id+10));
   for(const item of app.engine.BOWS.filter(item=>item.weaponType!=='gun')){
     app.api.showShop('bow');app.api.equipItem(item.id);
     assert.equal(app.api.activeBow().id,item.id,`${item.name} is usable without buying it`);
@@ -4640,8 +4742,14 @@ test('administrators can equip the full catalog, use consumables and visit all e
       assert.equal(app.api.progress.coins,coins,'all supported trial lenses can be selected without a purchase');
     }
     app.api.closeModal();await app.flush();
-    assert.equal(app.api.setLaserSettings({horizontalClicks:item.id,verticalClicks:-item.id}),true);
-    assert.equal(app.api.activeLaser().horizontalClicks,item.id);assert.equal(app.api.progress.coins,coins);
+    if(app.laser.canEquipLaser(item)){
+      assert.equal(app.api.setLaserSettings({horizontalClicks:item.id,verticalClicks:-item.id}),true);
+      assert.equal(app.api.activeLaser().horizontalClicks,item.id);
+    }else{
+      assert.equal(app.api.activeLaser(),null);assert.equal(app.api.setLaserSettings({enabled:true}),false);
+      assert.equal(app.getElement('laserPanel').classList.contains('hidden'),true);
+    }
+    assert.equal(app.api.progress.coins,coins);
   }
   for(const arrow of app.engine.ARROWS){
     app.api.showShop('arrow');app.api.equipItem(arrow.id);assert.equal(app.api.activeArrow().id,arrow.id);

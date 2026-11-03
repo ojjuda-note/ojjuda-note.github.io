@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 거리·바람·이동·장애물을 익히는 220개 미션, 활 10종·석궁 10종·총기 5종과 화살 19종을 조합하는 숲속 활쏘기 게임.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261104-archery-scope-laser1">
+  <link rel="stylesheet" href="style.css?v=20261104-archery-eagle-layout1">
   <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
   <script src="/game-results.js?v=20261103-game-results1" defer></script>
 </head>
@@ -42,7 +42,7 @@
       </div>
     </header>
 
-    <div class="admin-trial-banner hidden" id="adminTrialBanner" role="status"><strong>관리자 체험 · 기록 저장 안 함</strong><button type="button" class="button" data-action="trial-events">총기·이벤트 체험</button></div>
+    <div class="admin-trial-banner hidden" id="adminTrialBanner" role="status"><strong>관리자 체험 <small>저장 안 함</small></strong><button type="button" class="button" data-action="trial-events">총기·이벤트</button></div>
     <main>
       <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div></div>
       <div class="game-layout">
@@ -78,8 +78,10 @@
             <div class="control-status" id="controlStatus"><span class="control-copy"><strong id="controlTitle">화면 아래 1/3을 끌어 조준</strong><small id="controlHint">손을 떼면 발사</small></span><div class="shot-feedback hidden" id="shotFeedback" aria-live="polite"><strong id="feedbackTitle"></strong><span id="feedbackDetail"></span></div></div>
             <p class="mobile-hint" id="mobileHint"></p>
             <section id="laserPanel" class="laser-panel hidden" aria-label="레이저 영점 조절" data-locked="true">
-              <div class="laser-panel-heading"><div><strong>레이저 영점</strong><span id="laserWeaponLabel"></span></div><button type="button" id="laserToggleBtn" data-laser-action="toggle" aria-pressed="true" disabled>레이저 ON</button></div>
-              <p id="laserStatus" class="laser-status" role="status">조준 전에 톱니를 돌려 영점을 맞추세요.</p>
+              <div class="laser-toolbar"><button type="button" id="laserToggleBtn" data-laser-action="toggle" aria-pressed="true" disabled>레이저 ON</button><button type="button" id="laserAdjustBtn" data-laser-action="open" aria-controls="laserPopover" aria-expanded="false" aria-haspopup="dialog" disabled>영점 조절</button></div>
+              <section id="laserPopover" class="laser-popover hidden" role="dialog" aria-labelledby="laserPopoverTitle" hidden>
+              <div class="laser-panel-heading"><div><strong id="laserPopoverTitle">영점 조절</strong><span id="laserWeaponLabel"></span></div><button type="button" id="laserCloseBtn" data-laser-action="close" aria-label="영점 조절 닫기">닫기</button></div>
+              <p id="laserStatus" class="visually-hidden" role="status">조준 전에 톱니를 돌려 영점을 맞추세요.</p>
               <div class="laser-step-control"><span>톱니 한 칸</span><button type="button" id="laserStep1Btn" data-laser-step="1" aria-pressed="true" disabled>1눈금</button><button type="button" id="laserStep10Btn" data-laser-step="10" aria-pressed="false" disabled>10눈금</button></div>
               <div class="laser-adjustments">
                 <div class="laser-axis">
@@ -97,8 +99,9 @@
                   <div id="laserVerticalValue" class="laser-odometer" role="img" aria-label="0눈금, 0.00도"><span id="laserVerticalSign" class="laser-value-sign">+</span><span class="laser-digit"><span id="laserVerticalDigit0" class="laser-digit-strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="laser-digit"><span id="laserVerticalDigit1" class="laser-digit-strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="laser-digit"><span id="laserVerticalDigit2" class="laser-digit-strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="laser-digit"><span id="laserVerticalDigit3" class="laser-digit-strip"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></div>
                 </div>
               </div>
-              <button type="button" id="laserResetBtn" class="laser-reset-button" data-laser-action="reset" disabled>영점 0으로</button>
-              <p id="laserNote" class="laser-note">1눈금 = 0.05° · 숫자는 실제 발사 방향의 보정값이에요. 상하 +는 더 높게, 좌우 +는 더 오른쪽으로 쏘기 위한 조절이에요.<br>레이저 영점은 반대쪽으로 옮겨져요. 빨간 점을 같은 지점에 다시 겨누면 실제 발사각이 바뀌어요. 좌우는 바람에 밀리는 방향의 반대로 직접 맞추세요.<br>누르면 빨간 점이 켜지고 보정이 잠겨요. 겨눈 뒤 손을 놓으면 발사해요. 영점이 틀리면 빗나갈 수 있어요. 레이저를 켜면 코치 안내는 쉬어요.</p>
+              <div class="laser-popover-actions"><button type="button" class="text-button" data-action="help">사용 방법</button><button type="button" id="laserResetBtn" class="laser-reset-button" data-laser-action="reset" disabled>영점 0으로</button></div>
+              <p id="laserNote" class="laser-note">1눈금 = 0.05° · 시계 방향 +</p>
+              </section>
             </section>
             <section id="ammoPanel" class="event-ammo hidden" aria-label="이벤트 총알">
               <div class="ammo-balance"><span>보유 총알</span><strong id="ammoRemaining">—</strong><span>발</span></div>
@@ -117,7 +120,7 @@
       </div>
       <section class="journey"><div class="journey-heading"><span class="eyebrow">YOUR JOURNEY</span><span id="journeyCaption">숲길에서 시작하는 궁수의 여정</span><span id="journeyCount">1 / 220</span></div><div id="journeySteps" class="journey-steps"></div></section>
     </main>
-    <footer><span><span class="status-dot"></span><span id="saveStatus">진행 상황은 이 기기에 자동 저장됩니다</span></span><span class="keyboard-note">방향키 조준 · SPACE 당기고 놓기</span></footer>
+    <footer id="saveFooter" class="visually-hidden"><span id="saveStatus" role="status">진행 상황은 이 기기에 자동 저장됩니다</span></footer>
   </div>
   <section class="admin-trial-gate hidden" id="adminTrialGate" role="status" aria-live="polite" tabindex="-1"><div><p class="eyebrow">관리자 아이템 체험</p><h1 id="adminTrialGateTitle">관리자 권한을 확인하고 있어요.</h1><p id="adminTrialGateDetail">오락실에서 관리자 체험을 열어 주세요.</p><a class="button soft-button" href="/world.html?game=archery" target="_top">오락실로 돌아가기</a></div></section>
   <div class="modal-backdrop hidden" id="modalBackdrop">

@@ -9,7 +9,7 @@
   festival:'1.1.1',
   restaurants:'1.8.2',
   recommendations:'1.5.2',
-  archery:'2.2.1',
+  archery:'2.2.2',
   roulette:'1.8.2',
   bang:'1.9.3',
   poker:'1.5.2',
