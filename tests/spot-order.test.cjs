@@ -17,6 +17,7 @@ const puzzles=[
 const expectedOrder=[3,1,4,2,5,0],flush=()=>new Promise(resolve=>setImmediate(resolve));
 const catalogFiles=['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','fairytale-pets-puzzles.js'];
 function readCatalog(){const context=vm.createContext({window:{}});for(const file of catalogFiles)vm.runInContext(read(file),context);return JSON.parse(JSON.stringify(context.window.JJUDA_PUZZLES));}
+function completedBefore(catalog,index){const order=core.difficultyOrder(catalog);return order.slice(0,order.indexOf(index)).map(i=>catalog[i].id).sort((a,b)=>a-b);}
 
 test('Spot inserts the 70 slightly-hard pictures in display order without changing the original 82 IDs or saved indices',()=>{
  const context=vm.createContext({window:{}});
@@ -83,7 +84,7 @@ test('adding the real 70-picture catalog resumes old ID 49 at display 119 and pr
 });
 
 test('new ID 83 clears only on its tenth answer and each Next handler requires the current picture to be won',async t=>{
- const catalog=readCatalog(),f=fixture(t,{version:2,current:82},catalog);
+ const catalog=readCatalog(),completed=completedBefore(catalog,82),f=fixture(t,{version:2,current:82,completed},catalog);
  assert.match(f.$('stage-label').textContent,/49 \/ 152.*조금 어려움$/);assert.equal(f.$('found-total').textContent,'10');
  const tryNext=()=>{for(const id of ['next','continue','celebration-next','retry-next'])f.$(id).onclick();};
  tryNext();assert.equal(f.state().current,82,'a ready picture cannot be skipped by result or menu handlers');
@@ -91,24 +92,24 @@ test('new ID 83 clears only on its tenth answer and each Next handler requires t
  assert.equal(f.state().found[83].length,9);assert.equal(f.round().status,'playing');assert.equal(f.$('next').disabled,true);assert.deepEqual(f.records,[]);
  tryNext();assert.equal(f.state().current,82,'nine answers cannot unlock the next picture');
  const tenth=catalog[82].spots[9];f.tap(tenth.x,tenth.y);await flush();
- assert.equal(f.round().status,'won');assert.deepEqual(f.records,[{owner,stage:83}],'score uses stable ID 83, not display position 49');assert.deepEqual(f.state().completed,[83]);
+ assert.equal(f.round().status,'won');assert.deepEqual(f.records,[{owner,stage:83}],'score uses stable ID 83, not display position 49');assert.deepEqual(f.state().completed,[...completed,83]);
  f.$('celebration-next').onclick();f.load();assert.equal(f.state().current,83);assert.equal(catalog[f.state().current].id,84);assert.equal(f.round().status,'playing');
  tryNext();assert.equal(f.state().current,83,'repeated Next clicks cannot skip the fresh next picture');
 });
 
 test('the last slightly-hard picture advances from ID 152 to old ID 49 and reentry keeps that identity',async t=>{
- const catalog=readCatalog(),f=fixture(t,{version:2,current:151},catalog);
+ const catalog=readCatalog(),completed=completedBefore(catalog,151),f=fixture(t,{version:2,current:151,completed},catalog);
  assert.match(f.$('stage-label').textContent,/118 \/ 152.*조금 어려움$/);
  f.$('next').onclick();assert.equal(f.state().current,151,'the difficulty boundary stays locked before clearing');
  f.$('start').click();f.solve();await flush();assert.equal(f.round().status,'won');assert.deepEqual(f.records,[{owner,stage:152}]);
  f.$('celebration-next').onclick();f.load();assert.equal(f.state().current,48);assert.equal(catalog[f.state().current].id,49);assert.match(f.$('stage-label').textContent,/119 \/ 152.*어려움$/);
  f.$('next').onclick();f.$('celebration-next').onclick();assert.equal(f.state().current,48,'old ID 49 must also be cleared before advancing');
- const again=fixture(t,f.state(),catalog);assert.equal(again.state().current,48);assert.equal(again.round().status,'ready');assert.deepEqual(again.state().completed,[152]);assert.deepEqual(again.records,[]);
+ const again=fixture(t,f.state(),catalog);assert.equal(again.state().current,48);assert.equal(again.round().status,'ready');assert.deepEqual(again.state().completed,[...completed,152]);assert.deepEqual(again.records,[]);
 });
 
 test('reentry remembers the last picture and history, while confirmed hints and time stay round consumables',async t=>{
- const stored={version:2,current:0,order:[0,5,4,2,1,3],completed:[61],found:{7:[0,1,2,3,4,5],82:[0,1,2]},rounds:{82:{...core.freshRound(),status:'playing',hearts:1,deadline:999999,remainingMs:9000,totalMs:120000,paid:[8],hintIndex:8,timeBought:true,assisted:true,rankOwner:other}}};
- const f=fixture(t,stored);assert.equal(f.state().current,0);assert.deepEqual(f.state().order,expectedOrder);assert.deepEqual(f.state().completed,[7,61]);
+ const stored={version:2,current:0,order:[0,5,4,2,1,3],completed:[2,49,61,63],found:{7:[0,1,2,3,4,5],82:[0,1,2]},rounds:{82:{...core.freshRound(),status:'playing',hearts:1,deadline:999999,remainingMs:9000,totalMs:120000,paid:[8],hintIndex:8,timeBought:true,assisted:true,rankOwner:other}}};
+ const f=fixture(t,stored);assert.equal(f.state().current,0);assert.deepEqual(f.state().order,expectedOrder);assert.deepEqual(f.state().completed,[2,7,49,61,63]);
  assert.deepEqual(f.state().found[82],[]);assert.equal(f.round().status,'ready');assert.equal(f.round().hearts,3);assert.equal(f.round().remainingMs,60000);assert.equal(f.round().totalMs,60000);
  assert.deepEqual(f.round().paid,[]);assert.equal(f.round().hintIndex,null);assert.equal(f.round().timeBought,false);assert.equal(f.round().assisted,false,'confirmed purchases are consumed by the previous round, not permanent picture rights');
  assert.equal(f.$('retry-level-choice').hidden,true);assert.equal(f.$('celebration').open,false);assert.deepEqual(f.records,[]);assert.deepEqual(f.charges,[]);
@@ -117,12 +118,12 @@ test('reentry remembers the last picture and history, while confirmed hints and 
  f.$('start').click();f.tap(spots[0].x,spots[0].y);const deadline=f.round().deadline;f.advance(7000);f.d.dispatchEvent(new f.w.Event('visibilitychange'));
  assert.equal(f.round().status,'playing');assert.equal(f.round().deadline,deadline);assert.equal(f.$('time-left').textContent,'53');assert.deepEqual(f.state().found[82],[0],'visibility changes preserve the current attempt');
  f.solve();await flush();assert.deepEqual(f.records,[{owner,stage:82}],'completion sends the original ID rather than order position six');
- assert.deepEqual(f.state().completed,[7,61,82]);f.$('celebration-current').click();f.load();assert.equal(f.round().status,'playing');assert.deepEqual(f.state().found[82],[]);assert.equal(f.$('solved-total').textContent,'3','completion history does not make the replay finish immediately');
- const nextVisit=fixture(t,f.state());assert.equal(nextVisit.state().current,0);assert.equal(nextVisit.round().status,'ready');assert.deepEqual(nextVisit.state().completed,[7,61,82]);assert.deepEqual(nextVisit.records,[],'opening an old completed picture does not resubmit its score');
+ assert.deepEqual(f.state().completed,[2,7,49,61,63,82]);f.$('celebration-current').click();f.load();assert.equal(f.round().status,'playing');assert.deepEqual(f.state().found[82],[]);assert.equal(f.$('solved-total').textContent,'6','completion history does not make the replay finish immediately');
+ const nextVisit=fixture(t,f.state());assert.equal(nextVisit.state().current,0);assert.equal(nextVisit.round().status,'ready');assert.deepEqual(nextVisit.state().completed,[2,7,49,61,63,82]);assert.deepEqual(nextVisit.records,[],'opening an old completed picture does not resubmit its score');
 });
 
 test('all unresolved receipts survive reentry without moving their pictures or rebinding their owners',async t=>{
- const f=fixture(t,{version:2,current:1,order:[1,2,4,0,3,5],rounds:{61:{...core.freshRound(),status:'payment',pending:receiptA,rankOwner:originalOwner,paid:[0],totalMs:120000,timeBought:true},49:{...core.freshRound(),status:'payment',pending:receiptB}}});
+ const f=fixture(t,{version:2,current:1,order:[1,2,4,0,3,5],completed:[2,7,49],rounds:{61:{...core.freshRound(),status:'payment',pending:receiptA,rankOwner:originalOwner,paid:[0],totalMs:120000,timeBought:true},49:{...core.freshRound(),status:'payment',pending:receiptB}}});
  assert.equal(f.state().current,1);assert.deepEqual(f.state().order,expectedOrder);assert.deepEqual(f.state().rounds[61].pending,receiptA);assert.deepEqual(f.state().rounds[49].pending,receiptB);
  assert.equal(f.state().rounds[61].rankOwner,originalOwner);assert.equal(f.state().rounds[49].rankOwner,other,'a receipt supplies the owner only when the old round had none');
  assert.equal(f.state().rounds[61].totalMs,60000);assert.deepEqual(f.state().rounds[61].paid,[],'only unresolved purchases recover into a new attempt');
@@ -146,13 +147,18 @@ test('replaying a failed picture consumes the old round help without changing hi
  assert.deepEqual(f.state().completed,[7]);assert.equal(f.charges.length,2,'choosing the new round does not buy help');assert.deepEqual(f.records,[],'failure and replay never submit a completion');
 });
 
-test('explicit picture selection and the open-stage tool retain free access without permitting Next on an unfinished round',t=>{
+test('explicit picture selection and the open-stage tool require real clears and retain original index semantics',async t=>{
  const f=fixture(t),open=f.registered.find(tool=>tool.name==='open_game_stage');
  assert.equal(f.state().current,expectedOrder[0]);assert.equal(f.$('next').disabled,true);
  f.$('next').onclick();assert.equal(f.state().current,expectedOrder[0]);
- f.select(0);assert.equal(f.state().current,0,'the menu may explicitly select any existing picture');
- assert.equal(open.execute({stage:3}).stage,61,'the tool keeps original array-index selection semantics');
- assert.equal(f.state().current,2);assert.equal(f.round().status,'ready');assert.deepEqual(f.charges,[]);assert.deepEqual(f.records,[]);
- assert.equal(Object.hasOwn(f.state(),'unlockedStage'),false);
- f.$('continue').onclick();assert.equal(f.state().current,2,'explicit access does not change the current-clear requirement for sequential progress');
+ f.select(0);assert.equal(f.state().current,expectedOrder[0],'the menu rejects an unearned high picture');
+ assert.equal(f.$('stage-picker').value,String(expectedOrder[0]));
+ assert.throws(()=>open.execute({stage:3}),/앞선 그림/,'the tool cannot bypass the same lock');
+ assert.equal(open.execute({stage:4}).stage,2,'the tool retains original array-index selection semantics for an open picture');
+ f.load();f.$('start').click();f.solve();await flush();
+ assert.deepEqual(f.state().completed,[2]);assert.deepEqual(f.records,[{owner,stage:2}]);
+ assert.equal(open.execute({stage:2}).stage,7,'the next picture opens only after the first real clear');
+ assert.equal(f.state().current,1);assert.equal(f.round().status,'ready');assert.deepEqual(f.charges,[]);
+ assert.throws(()=>open.execute({stage:3}),/앞선 그림/,'unlocking one picture does not open later pictures');
+ f.$('continue').onclick();assert.equal(f.state().current,1,'an open picture still must be won before Next');
 });

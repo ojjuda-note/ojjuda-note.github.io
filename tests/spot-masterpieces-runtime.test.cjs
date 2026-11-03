@@ -55,7 +55,7 @@ function domFixture(stored){
  w.JjudaWallet={getState:()=>account,subscribe:fn=>fn(account),refresh:async()=>{},recordClear:async(owner,stage)=>{scores.push({owner,stage});return {ok:true};},buy:async(request,stage)=>{requests.push({...request,stage});return {ok:true,kind:request.kind,stage,spot:request.spot,price:1};}};
  w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixtures));
  w.eval(read('game-core.js'));
- w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:1,order:[1,0],...stored}));
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:1,order:[1,0],completed:[fixtures[0].id],...stored}));
  w.eval(read('app.js'));
  const load=()=>{for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();};
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1'));
@@ -85,7 +85,7 @@ async function checkRuntime(){
   f.$('start').click();assert.equal(f.round().hearts,3);assert.equal(f.round().totalMs,60000);
   for(let i=0;i<6;i++)f.tap(i);
   assert.equal(f.round().status,'playing');assert.equal(f.$('found-count').textContent,'6');assert.equal(f.$('found-summary').textContent,'6 / 10');
-  assert.equal(f.$('celebration').open,false);assert.equal(f.$('solved-total').textContent,'0');assert.deepEqual(f.scores,[]);
+  assert.equal(f.$('celebration').open,false);assert.equal(f.$('solved-total').textContent,'1');assert.deepEqual(f.scores,[]);
   f.tap(0);assert.equal(f.$('found-count').textContent,'6','a repeated find cannot advance progress');
   for(let i=6;i<9;i++)f.tap(i);
   f.$('hint').click();await flush();
@@ -95,7 +95,7 @@ async function checkRuntime(){
   f.$('zoom').click();assert.match(f.$('zoom-status').textContent,/9 \/ 10/);
   f.tap(9,true);await flush();
   assert.equal(f.round().status,'won');assert.equal(f.$('celebration').open,true);assert.equal(f.$('celebration-count').textContent,'10 / 10');
-  assert.equal(f.$('found-count').textContent,'10');assert.equal(f.$('solved-total').textContent,'1');
+  assert.equal(f.$('found-count').textContent,'10');assert.equal(f.$('solved-total').textContent,'2');
   assert.equal(f.w.document.querySelectorAll('.hint-mark').length,0);assert.equal(f.w.document.querySelectorAll('.mark').length,40);
   assert.ok([...f.w.document.querySelectorAll('.mark')].every(mark=>mark.textContent===''&&mark.children.length===0),'found rings remain unnumbered');
   f.tap(9);assert.deepEqual(f.scores,[{owner:userId,stage:82}],'one completed masterpiece records its true stage exactly once');
@@ -209,10 +209,11 @@ async function checkRenderedCircles(){
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
   page.on('pageerror',error=>errors.push(error.message));page.on('dialog',dialog=>dialog.accept());
-  await page.addInitScript(({userId})=>{
+  await page.addInitScript(({userId,completed})=>{
+   if(!localStorage.getItem('jjuda-spot-six-v1'))localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:0,completed}));
    const account={ready:true,userId,coins:100};
    window.JjudaWallet={getState:()=>account,subscribe:fn=>fn(account),refresh:async()=>{},recordClear:async()=>({ok:true}),buy:async(request,stage)=>({ok:true,kind:request.kind,stage,spot:request.spot,price:1})};
-  },{userId});
+  },{userId,completed:fixtures.map(p=>p.id)});
   let paintLayer=null;
   await page.route('**/*',async route=>{
    const url=new URL(route.request().url());

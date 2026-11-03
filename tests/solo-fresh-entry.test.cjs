@@ -145,8 +145,10 @@ async function pendingSpot(t,buy){
  })};
  w.eval(read('games/spot-difference/wallet.js'));await tick();
  for(const file of ['puzzles','photo-puzzles','masterpiece-puzzles','game-core'])w.eval(read('games/spot-difference/'+file+'.js'));
- const puzzles=w.JJUDA_PUZZLES,id=puzzles[48].id;
- w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,order:[48,...puzzles.map((_,i)=>i).filter(i=>i!==48)],found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,totalMs:90000,paid:[0],hintIndex:0,timeBought:true,assisted:true,rankOwner:owner,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
+ const puzzles=w.JJUDA_PUZZLES,id=puzzles[48].id,order=Array.from(w.JjudaGame.difficultyOrder(puzzles));
+ // This receipt belongs to a legitimately reached picture, after its predecessors were cleared.
+ const completed=order.slice(0,order.indexOf(48)).map(index=>puzzles[index].id);
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,completed,order:[48,...puzzles.map((_,i)=>i).filter(i=>i!==48)],found:{[id]:[0,1]},rounds:{[id]:{...w.JjudaGame.freshRound(),status:'payment',hearts:1,remainingMs:5000,totalMs:90000,paid:[0],hintIndex:0,timeBought:true,assisted:true,rankOwner:owner,pending:request}},revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original']))}));
  w.eval(read('games/spot-difference/app.js'));for(const image of w.document.querySelectorAll('img'))if(image.onload)image.onload();
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1')),round=()=>state().rounds[id];
  const surface=w.document.getElementById('original').parentElement;surface.getBoundingClientRect=()=>({left:0,top:0,width:1000,height:800});

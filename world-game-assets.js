@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261104-archery-scope-laser1';
+ const revision='20261104-game-progression-lock1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,7 +9,7 @@
   festival:'1.1.1',
   restaurants:'1.8.2',
   recommendations:'1.5.2',
-  archery:'2.2.0',
+  archery:'2.2.1',
   roulette:'1.8.2',
   bang:'1.9.3',
   poker:'1.5.2',
@@ -24,7 +24,7 @@
   runner:'1.3.3',
   stacker:'1.4.3',
   breakout:'1.5.3',
-  spot:'1.10.4',
+  spot:'1.10.5',
   screw:'1.5.3',
   janggi:'1.4.2',
   chess:'1.4.2',
@@ -40,7 +40,7 @@
   festival:['/world-festival-schedule.css?v=20261103-festival-undecided1','/world-festival-schedule.js?v=20261103-festival-undecided1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-sort1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261104-restaurant-photos1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261104-restaurant-photos1'],
-  archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261104-archery-admin-trial1','/world-archery-game.js?v=20261104-archery-scope-laser1'],
+  archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261104-archery-admin-trial1','/world-archery-game.js?v=20261104-game-progression-lock1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261104-game-fullscreen1'],
   bang:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-bang-game.js?v=20261104-game-fullscreen1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261104-game-fullscreen1','/world-sacheonseong-game.js?v=20261104-game-fullscreen1'],
@@ -49,7 +49,7 @@
   mines:['/world-tour-game.css?v=20261104-game-fullscreen1',minesRules,'/world-mines-game.js?v=20261104-game-fullscreen1'],
   saetbyeol:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-saetbyeol-game.js?v=20261104-game-fullscreen1'],
   tour:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tour-game.js?v=20261104-game-fullscreen1'],
-  spot:['/world-spot-game.css?v=20261104-game-fullscreen1','/world-spot-game.js?v=20261104-game-fullscreen1'],
+  spot:['/world-spot-game.css?v=20261104-game-fullscreen1','/world-spot-game.js?v=20261104-game-progression-lock1'],
   ttang:['/ttang-bridge.js?v=20261104-game-fullscreen1'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261103-guest-one-round1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],

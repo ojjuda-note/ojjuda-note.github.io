@@ -25,6 +25,16 @@
     const rank={normal:0,'slightly-hard':1,hard:2,'very-hard':3};
     return puzzles.map((_,i)=>i).sort((a,b)=>rank[puzzleDifficulty(puzzles[a])]-rank[puzzleDifficulty(puzzles[b])]||puzzles[a].id-puzzles[b].id||a-b);
   }
+  function nextUnclearedIndex(progress,puzzles){
+    const completed=new Set(progress.completed||[]),order=difficultyOrder(puzzles);
+    return order.find(index=>!completed.has(puzzles[index].id))??order[order.length-1];
+  }
+  function canSelectPuzzle(progress,puzzles,index){
+    if(!Number.isInteger(index)||!puzzles[index])return false;
+    // A past clear can be replayed, but a skipped clear never opens the gaps
+    // before it or the following uncleared pictures.
+    return (progress.completed||[]).includes(puzzles[index].id)||index===nextUnclearedIndex(progress,puzzles);
+  }
   function cleanProgress(raw,puzzles){
     const result={current:0,found:{},rounds:{},completed:[],revisions:Object.fromEntries(puzzles.map(p=>[p.id,p.revision||'original'])),order:difficultyOrder(puzzles)};
     result.current=result.order[0];
@@ -45,6 +55,7 @@
         if(!unopened&&Number.isFinite(r.remainingMs))round.remainingMs=Math.max(0,Math.min(round.totalMs,r.remainingMs));
         round.paid=ids(r.paid,total);
         round.assisted=r.assisted===true||round.paid.length>0||round.totalMs>ROUND_MS;round.timeBought=r.timeBought===true||round.totalMs>ROUND_MS;
+        if(r.deferredHelp===true&&(round.paid.length||round.timeBought))round.deferredHelp=true;
         if(uuid(r.rankOwner))round.rankOwner=r.rankOwner;
         if(round.paid.includes(r.hintIndex))round.hintIndex=r.hintIndex;
         if(['ready','playing','lost','payment'].includes(r.status))round.status=r.status;
@@ -66,7 +77,7 @@
     return round.status==='playing'?Math.max(0,Math.min(round.totalMs,round.deadline-now)):round.remainingMs;
   }
   function normalizedPoint(rect,clientX,clientY){return {x:(clientX-rect.left)/rect.width*100,y:(clientY-rect.top)/rect.height*100};}
-  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,puzzleDifficulty,difficultyOrder,ROUND_MS,EXTEND_MS,HEARTS};
+  const api={hitTest,cleanProgress,normalizedPoint,freshRound,timeLeft,shuffleOrder,puzzleDifficulty,difficultyOrder,nextUnclearedIndex,canSelectPuzzle,ROUND_MS,EXTEND_MS,HEARTS};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.JjudaGame=api;
 })(typeof window!=='undefined'?window:globalThis);
