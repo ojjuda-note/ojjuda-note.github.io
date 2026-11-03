@@ -30,7 +30,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const assertTestGamesLast=()=>{
    const grids=[...w.document.querySelectorAll('[data-arcade-games]')];
    assert.equal(grids.at(-1).dataset.arcadeGames,'test','test games follow every regular game category');
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['festival','restaurants','recommendations','archery']);
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['festival','restaurants','archery']);
+   assert.equal(w.document.querySelector('[data-arcade-games] [data-v=recommendations]'),null,'member recommendations belong inside the certified directory');
    assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'the test game appears exactly once');
    assert.match(grids.at(-1).querySelector('[data-v=archery] .game-test-badge').textContent,/테스트게임/);
   };
@@ -61,7 +62,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
    solo:['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang'],
-   test:['festival','restaurants','recommendations','archery']
+   test:['festival','restaurants','archery']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'test games follow solo, multiplayer and adult games');
   assertTestGamesLast();

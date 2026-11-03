@@ -1,88 +1,85 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const { JSDOM } = require('jsdom');
-const root = path.join(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
-let source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+/* Real World routing, directory bridge and member controller; only transport is a fixture. */
+const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
+const { JSDOM, VirtualConsole } = require('jsdom');
+const root = path.join(__dirname, '..'), read = file => fs.readFileSync(path.join(root, file), 'utf8');
+let source = read('world.html').match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 source = source.replaceAll('import.meta.env', '({})').replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
 source = source.slice(0, source.indexOf('j1(()=>H());gm('));
-source += '\nwindow.recommendationEntry={auth:D,actions:sr,open:openWorldGameLink,close:El,setupNavigation:gm,setClient:client=>S=client};';
+source += `window.recommendationEntry={auth:D,actions:sr,open:openWorldGameLink,close:El,setupNavigation:gm,
+ setClient:client=>S=client,getController:()=>worldRecommendedRestaurants,catalog:()=>_r,
+ route(){py=()=>{};sr.tab=({tab})=>{g.tab='place';g.place={id:tab};};bm=true;
+ resolveWorldProfilePhoto=()=>{};m1=()=>{};x1=()=>Promise.resolve();return my();}};`;
+const A = '11111111-1111-4111-8111-111111111111', B = '22222222-2222-4222-8222-222222222222';
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
-
-function fixture() {
-  const dom = new JSDOM('<div id="app"></div><div id="modal-root"></div><div id="toast"></div>', { url: 'https://ojjuda.kr/world.html', runScripts: 'outside-only', pretendToBeVisual: true });
-  const w = dom.window;
-  w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
-  w.ResizeObserver = class { observe() {} disconnect() {} };
-  w.scrollTo = () => {};
-  w.HTMLElement.prototype.scrollIntoView = () => {};
-  w.fetch = async () => ({ ok: true, json: async () => ({}), text: async () => '' });
-  w.OjjudaGameAssets = { ready: () => true, load: async () => {} };
-  w.eval(source);
-  const created = [], events = [];
-  let canClose = true, opened = false, navigation;
-  w.OjjudaRecommendedRestaurants = { create(options) {
-    created.push(options);
-    return {
-      open() { opened = true; events.push(['open', options.getUser()?.id || null]); },
-      close() { events.push(['close']); if (canClose) opened = false; return canClose; },
-      destroy() { events.push(['destroy']); opened = false; },
-      isOpen: () => opened,
-      back() { events.push(['back']); return true; }
-    };
-  } };
-  w.OjjudaWorldNavigation = { install(options) { navigation = options; return {}; } };
-  return { dom, w, api: w.recommendationEntry, created, events, blockClose: () => { canClose = false; }, navigation: () => navigation };
+async function until(check, message) { for (let n=0;n<100;n++) { if(check())return;await tick(); } assert.fail(message); }
+function fixture(query='') {
+ const errors=[],virtualConsole=new VirtualConsole();virtualConsole.on('jsdomError',error=>errors.push(error.message));
+ const dom=new JSDOM('<div id="app"></div><div id="modal-root"></div><div id="toast"></div>',{url:'https://ojjuda.kr/world.html'+query,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole});
+ const w=dom.window,intervals=new Map(),calls=[],created=[];let intervalId=0,navigation;
+ w.setInterval=fn=>{intervals.set(++intervalId,fn);return intervalId;};w.clearInterval=id=>intervals.delete(id);
+ w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.ResizeObserver=class{observe(){}disconnect(){}};
+ w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
+ w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+ w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});w.OjjudaGameAssets={ready:()=>true,load:async()=>{}};
+ w.eval(read('recommended-restaurants.js'));const create=w.OjjudaRecommendedRestaurants.create;
+ w.OjjudaRecommendedRestaurants.create=options=>{const controller=create(options);created.push({options,controller});return controller;};
+ w.eval(read('world-restaurant-guide.js'));w.eval(source);
+ w.OjjudaWorldNavigation={install(options){navigation=options;return{};}};
+ const api=w.recommendationEntry,$=selector=>w.document.querySelector(selector);
+ const client=()=>({auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}};}},
+  async rpc(name,args){calls.push({name,args,owner:api.auth.user?.id||null});assert.equal(name,'list_restaurant_recommendations','navigation never writes member records');return{data:{rows:[],total:0,offset:0,limit:24},error:null};},
+  storage:{from(){return{async remove(){assert.fail('navigation does not delete photos');},async download(){assert.fail('empty lists do not fetch photos');}};}}});
+ api.setClient(client());const setUser=id=>{api.auth.online=!!id;api.auth.user=id?{id}:null;};setUser(null);
+ const send=(frame,{origin=w.location.origin,source=frame.contentWindow,type='ojjuda:restaurants:recommendations'}={})=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type}}));
+ return{dom,w,api,$,calls,created,client,setUser,send,navigation:()=>navigation,pollAuth(){for(const fn of [...intervals.values()])fn();},
+  async memberReady(){await until(()=>$('[data-rr=compose]'),'the member list is ready');await tick();},
+  dirty(){$('[data-rr=compose]').click();const input=$('[data-rr=field-name]');input.value='작성 중인 추천';input.dispatchEvent(new w.Event('input',{bubbles:true}));},
+  close(){w.OjjudaRestaurantGuide.close(true);for(const{controller}of created)controller.destroy();dom.window.close();assert.deepEqual(errors,[],'no uncaught bridge or World errors');}};
 }
-
-(async () => {
-  const f = fixture();
-  try {
-    const client = { rpc() { throw Error('Entry must not make member requests'); } };
-    f.api.setClient(client);
-    f.api.auth.online = false; f.api.auth.user = null;
-    f.api.open('recommendations');
-    assert.equal(f.created.length, 1, 'the menu lazily creates one recommendation module');
-    assert.equal(f.created[0].client, client);
-    assert.deepEqual(f.events.at(-1), ['open', null], 'a guest reaches the module login state without a fabricated identity');
-    let logins = 0;
-    f.api.actions['account-login'] = () => { logins++; };
-    f.created[0].onLogin();
-    assert.equal(logins, 1, 'the member prompt uses the established account login action');
-    f.api.auth.online = true; f.api.auth.user = { id: 'member-a' };
-    f.api.open('recommendations');
-    assert.equal(f.created.length, 1, 'reentry reuses the current client instance');
-    assert.deepEqual(f.events.at(-1), ['open', 'member-a']);
-    f.api.auth.user = { id: 'member-b' };
-    assert.equal(f.created[0].getUser().id, 'member-b', 'the module receives the current identity, not a captured account');
-    const nextClient = {};
-    f.api.setClient(nextClient); f.api.open('recommendations');
-    assert.equal(f.created.length, 2); assert.equal(f.created[1].client, nextClient);
-    assert.ok(f.events.some(event => event[0] === 'destroy'), 'replacing the client destroys the old module');
-    await f.api.setupNavigation(() => {});
-    assert.equal(f.navigation().closeOverlay(), true);
-    assert.deepEqual(f.events.at(-1), ['back'], 'browser and Android Back delegate to the module view history');
-    f.blockClose();
-    let others = 0;
-    f.w.OjjudaRestaurantGuide = { open() { others++; } };
-    f.api.open('restaurants');
-    assert.equal(others, 0, 'a protected pending editor cannot be discarded by launching another menu');
-    assert.equal(f.api.close(), false);
-  } finally { f.dom.window.close(); }
-
-  const race = fixture();
-  try {
-    let release, ready = false;
-    race.w.OjjudaGameAssets = { ready: () => ready, load: () => new Promise(resolve => { release = resolve; }) };
-    race.api.auth.online = true; race.api.auth.user = { id: 'member-a' };
-    race.api.open('recommendations');
-    assert.equal(race.created.length, 0);
-    race.api.auth.user = { id: 'member-b' }; ready = true; release();
-    await tick(); await tick();
-    assert.equal(race.created.length, 0, 'an asset response for the previous account cannot open the menu');
-    race.api.open('recommendations');
-    assert.deepEqual(race.events.at(-1), ['open', 'member-b']);
-  } finally { race.dom.window.close(); }
-  console.log('PASS: recommendation route, guest login handoff, current identity, client replacement, native/browser Back, pending-editor protection and asset/account race');
-})().catch(error => { console.error(error); process.exitCode = 1; });
+(async()=>{
+ const normal=fixture();try{
+  normal.setUser(A);normal.api.open('restaurants');const frame=normal.$('.restaurant-guide-dialog iframe');
+  assert.ok(frame,'the certified directory is the parent view');assert.equal(normal.api.catalog().recommendations,undefined,'recommendations have no standalone arcade tile');
+  assert.equal(new URL(frame.src).searchParams.get('member-menu'),'1');assert.equal(normal.$('[data-rr=dialog]'),null);assert.equal(normal.calls.length,0);
+  frame.contentWindow.fixtureFilters={region:'서울',category:'한식',query:'국수',scroll:180};const retainedFilters=frame.contentWindow.fixtureFilters;
+  normal.send(frame,{origin:'https://other.invalid'});normal.send(frame,{source:normal.w});normal.send(frame,{type:'unrecognized-menu'});
+  assert.equal(normal.$('[data-rr=dialog]'),null,'foreign origin, wrong frame and wrong message cannot open the member view');assert.equal(normal.calls.length,0);
+  normal.send(frame);await normal.memberReady();assert.equal(normal.calls[0].owner,A);assert.equal(normal.created[0].options.getUser().id,A);
+  assert.equal(normal.$('[data-rr=close]').textContent,'← 인증맛집');await normal.api.setupNavigation(()=>{});
+  assert.equal(normal.navigation().closeOverlay(),true);assert.equal(normal.$('[data-rr=dialog]'),null,'Back first closes only the recommendation child');
+  assert.equal(normal.$('.restaurant-guide-dialog iframe'),frame);assert.equal(frame.contentWindow.fixtureFilters,retainedFilters,'returning never reloads the directory browsing context');
+  assert.equal(normal.w.document.body.classList.contains('gaming'),true);assert.equal(normal.navigation().closeOverlay(),true);
+  assert.equal(normal.$('.restaurant-guide-dialog'),null,'a second Back returns to the arcade');assert.equal(normal.w.document.body.classList.contains('gaming'),false);
+ }finally{normal.close();}
+ for(const query of ['?game=recommendations','?game=restaurants&restaurantView=recommendations']){
+  const guest=fixture(query);try{
+   guest.api.route();assert.ok(guest.$('.restaurant-guide-dialog iframe'),query+' creates the directory first');assert.ok(guest.$('[data-rr=dialog]'),query+' opens its recommendation child');
+   assert.equal(guest.calls.length,0,'guest aliases do not query member records');let logins=0;guest.api.actions['account-login']=()=>{logins++;};guest.$('[data-rr=login]').click();
+   assert.equal(logins,1,'the nested guest prompt keeps the established login action');assert.equal(guest.$('[data-rr=dialog]'),null);
+  }finally{guest.close();}
+ }
+ const dirty=fixture();try{
+  dirty.setUser(A);dirty.api.open('recommendations');await dirty.memberReady();dirty.dirty();const frame=dirty.$('.restaurant-guide-dialog iframe');
+  const first=dirty.api.close(),repeated=dirty.api.close();assert.equal(typeof first.then,'function');assert.equal(repeated,first,'global close shares one pending parent/child confirmation');
+  assert.equal(dirty.w.document.querySelectorAll('[data-rr=confirm-dialog]').length,1);dirty.$('[data-rr=confirm-cancel]').click();assert.equal(await first,false);
+  assert.equal(dirty.$('.restaurant-guide-dialog iframe'),frame,'cancelling keeps the parent alive');assert.equal(dirty.$('[data-rr=field-name]').value,'작성 중인 추천','cancelling preserves the actual member draft');
+  const accepted=dirty.api.close();dirty.$('[data-rr=confirm-accept]').click();assert.equal(await accepted,true);assert.equal(dirty.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'accepting closes child and parent once');
+  assert.equal(dirty.w.document.body.classList.contains('gaming'),false);
+ }finally{dirty.close();}
+ const account=fixture();try{
+  account.setUser(A);account.api.open('recommendations');await account.memberReady();account.dirty();
+  const staleFrame=account.$('.restaurant-guide-dialog iframe'),staleSource=staleFrame.contentWindow,before=account.calls.length;
+  account.setUser(B);account.pollAuth();assert.equal(account.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'an account change force-clears both private child and parent');
+  assert.equal(account.calls.length,before,'changing accounts does not replay an old member request');account.api.open('restaurants');const currentFrame=account.$('.restaurant-guide-dialog iframe');
+  account.send(currentFrame,{source:staleSource});assert.equal(account.$('[data-rr=dialog]'),null,'a detached frame cannot reopen a later account view');
+  account.send(currentFrame);await account.memberReady();assert.equal(account.calls.at(-1).owner,B);assert.equal(account.created.length,1,'the controller reads the current account on reuse');
+  account.api.setClient(account.client());account.api.open('recommendations');await account.memberReady();assert.equal(account.created.length,2,'a replaced authenticated client gets a new controller');
+  assert.equal(account.created[0].controller.isOpen(),false);
+ }finally{account.close();}
+ const race=fixture();try{
+  let release,ready=false;race.w.OjjudaGameAssets={ready:()=>ready,load:id=>{assert.equal(id,'restaurants');return new Promise(resolve=>{release=resolve;});}};
+  race.setUser(A);race.api.open('recommendations');assert.equal(race.$('.restaurant-guide-dialog'),null);race.setUser(B);ready=true;release();await tick();await tick();
+  assert.equal(race.$('.restaurant-guide-dialog'),null,'assets requested by an old account cannot open a nested view');race.api.open('recommendations');await race.memberReady();assert.equal(race.calls.at(-1).owner,B);
+ }finally{race.close();}
+ console.log('PASS: real nested restaurant bridge, origin/frame guards, preserved directory context, one dirty-close confirmation, two-step Back, guest/canonical/legacy entry, account replacement and stale asset isolation');
+})().catch(error=>{console.error(error);process.exitCode=1;});

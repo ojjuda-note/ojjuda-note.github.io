@@ -83,7 +83,7 @@ window.childReady=true;
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
       const games = [
-        ['restaurants','.restaurant-guide-dialog'],['recommendations','.recommended-restaurants-dialog'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
+        ['restaurants','.restaurant-guide-dialog'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
         ['tour','.tour-game-dialog'],['tank','.tank-game-dialog'],['spot','.spot-game-dialog'],
         ['ttang','#ttang-overlay'],['photo_ttang','#photo-ttang-overlay'],['matgo','#matgo-overlay'],['billiards','[data-bl="close"]']
       ];
@@ -100,6 +100,22 @@ window.childReady=true;
         await back();
         await main();
       }
+
+      // A legacy member link opens a child of the directory; each Back removes
+      // one view, keeping the directory frame alive between the two actions.
+      await page.evaluate(() => backFixture.open('recommendations'));
+      await page.locator('.restaurant-guide-dialog').waitFor();
+      await page.locator('.recommended-restaurants-dialog').waitFor();
+      await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
+      await page.evaluate(() => { backFixture.restaurantFrame=document.querySelector('.restaurant-guide-dialog iframe'); });
+      assert.equal(await page.locator('[data-rr=close]').innerText(),'← 인증맛집');
+      await back();
+      await page.waitForFunction(() => !document.querySelector('.recommended-restaurants-dialog') && history.state?.ojjudaWorld === 'menu');
+      assert.equal(await page.locator('.restaurant-guide-dialog').isVisible(),true,'Back from member recommendations returns to the certified directory');
+      assert.equal(await page.evaluate(() => document.querySelector('.restaurant-guide-dialog iframe')===backFixture.restaurantFrame),true,'returning preserves the original directory frame');
+      assert.equal(await page.evaluate(() => document.body.classList.contains('gaming')),true,'the parent retains its overlay state');
+      await back();
+      await main();
 
       // A browser confirmation must retain both the running game and its return entry.
       await page.evaluate(() => backFixture.open('stacker'));
@@ -146,7 +162,7 @@ window.childReady=true;
         assert.equal(await page.evaluate(() => backFixture.exits), 1, 'only Back from the main screen may exit');
       }
       await context.close();
-      console.log(`PASS: ${native?'native':'browser'} Back returns ten game types to Arcade, retains cancelled exits, respects Matgo confirmation and consumes stale history.`);
+      console.log(`PASS: ${native?'native':'browser'} Back closes one nested restaurant view at a time, returns game bridges to Arcade, retains cancelled exits, respects Matgo confirmation and consumes stale history.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });
