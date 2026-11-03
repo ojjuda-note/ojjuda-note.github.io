@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.7');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.3.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -96,13 +96,13 @@ releaseFixture.api.close();
 assert.ok(archeryRevision,'the iframe has its independent game revision');
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
-// Refresh the changed target dimensions while retaining unchanged
+// Refresh round-only passer retirement while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,'20261104-archery-target-scale1','every target consumer loads the fixed physical dimensions');
+assert.equal(moduleRevision,'20261104-archery-passer-retire1','every consumer loads the same round-only passer state');
 assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
-assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the live game and coach share the same target sizes');
+assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the live game and coach share the remaining people');
 assert.equal(coach.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the coach must use the same physics as actual shots');
 const anatomyRevision=read('games/forest-archer/engine.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1];
 assert.ok(anatomyRevision);
