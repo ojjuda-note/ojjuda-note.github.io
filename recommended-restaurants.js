@@ -100,6 +100,7 @@
 
   function create({ client, getUser, notify = () => {}, onLogin, returnLabel = '' } = {}) {
     let current = null, destroyed = false, authSubscription = null;
+    const ratings = global.OjjudaRestaurantRatings?.create({ client, getUser }) || null;
     const photoUrls = new Map();
     const cleanupQueues = new Map(), cleanupLocks = new Set();
     const cleanupKey = owner => 'ojjuda.restaurant-photo-cleanup.v1.' + owner;
@@ -266,6 +267,7 @@
     }
     function resetView(session, kind, title) {
       session.view += 1; session.screen = kind;
+      session.ratingEditor?.dispose(); session.ratingEditor = null;
       for (const request of session.reads) request.abort(); session.reads.clear();
       clearPhotoUrls();
       session.body.replaceChildren(); session.body.scrollTop = 0;
@@ -294,10 +296,27 @@
       meta.append(node('span', 'rr-category', row.category || '기타'), node('span', '', row.region));
       body.append(meta, node('strong', 'rr-card-name', row.name), node('span', 'rr-card-address', row.address));
       if (row.menu) body.append(node('span', 'rr-card-menu', row.menu));
+      if (ratings) {
+        const rating = node('span'); rating.dataset.rrRatingId = row.id;
+        global.OjjudaRestaurantRatings.renderSummary(rating, undefined); body.append(rating);
+      }
       const author = node('span', 'rr-card-author');
       author.append(node('span', '', row.author_name), node('span', '', dateLabel(row.created_at)));
       body.append(author); openButton.append(body); openButton.onclick = () => void showDetail(session, row.id); article.append(openButton);
       return article;
+    }
+    async function loadListRatings(session, view, rows) {
+      if (!ratings || !rows.length || !visible(session, view)) return;
+      const wanted = new Set(rows.map(row => row.id));
+      const targets = [...session.grid.querySelectorAll('[data-rr-rating-id]')].filter(el => wanted.has(el.dataset.rrRatingId));
+      try {
+        const summaries = await ratings.getSummaries('recommended', [...wanted]);
+        if (!visible(session, view)) return;
+        const byId = new Map(summaries.map(summary => [summary.id, summary]));
+        for (const target of targets) if (session.grid.contains(target)) global.OjjudaRestaurantRatings.renderSummary(target, byId.get(target.dataset.rrRatingId) || null);
+      } catch {
+        if (visible(session, view)) for (const target of targets) if (session.grid.contains(target)) global.OjjudaRestaurantRatings.renderSummary(target, null);
+      }
     }
     async function loadList(session, append = false) {
       if (!active(session) || session.screen !== 'list' || session.listBusy) return;
@@ -311,6 +330,7 @@
         if (!append) session.grid.replaceChildren();
         const seen = new Set(session.rows.map(row => row.id));
         for (const row of rows) if (!seen.has(row.id)) { session.rows.push(row); seen.add(row.id); session.grid.append(renderCard(session, view, row)); }
+        void loadListRatings(session, view, rows);
         session.total = Number.isFinite(Number(data?.total)) ? Number(data.total) : null;
         session.hasMore = typeof data?.has_more === 'boolean' ? data.has_more : session.total !== null ? session.rows.length < session.total : rows.length === PAGE_SIZE;
         updateCount(session);
@@ -395,6 +415,15 @@
       if (row.photos.length) display(0); else hero.append(statusBlock('사진을 찾지 못했어요.'));
       const content = node('div', 'rr-detail-content'), meta = node('div', 'rr-detail-meta'); meta.append(node('span', 'rr-category', row.category), node('span', '', row.region));
       content.append(meta, node('h2', 'rr-detail-name', row.name), node('p', 'rr-detail-author', row.author_name + (dateLabel(row.created_at) ? ' · ' + dateLabel(row.created_at) : '')));
+      if (ratings) {
+        const ratingSection = node('section'); content.append(ratingSection);
+        session.ratingEditor = global.OjjudaRestaurantRatings.mountEditor(ratingSection, {
+          name: row.name,
+          load: async () => (await ratings.getSummaries('recommended', [row.id])).find(summary => summary.id === row.id),
+          save: score => ratings.setRating('recommended', row.id, score),
+          isCurrent: () => visible(session, view)
+        });
+      }
       const address = node('section', 'rr-detail-section'); address.append(node('h3', '', '위치'), node('p', '', row.address), mapLink(row.name, row.address));
       const menu = node('section', 'rr-detail-section'); menu.append(node('h3', '', '추천 메뉴'), node('p', '', row.menu));
       const reason = node('section', 'rr-detail-section'); reason.append(node('h3', '', '이래서 추천해요'), node('p', 'rr-reason', row.reason));
@@ -538,6 +567,7 @@
       if (session.disposed) return;
       discardDraftPhotos(session, session.editor);
       session.disposed = true; session.view += 1;
+      session.ratingEditor?.dispose(); session.ratingEditor = null;
       clearInterval(session.authTimer); clearTimeout(session.searchTimer);
       session.confirm?.done(false);
       for (const request of session.reads) request.abort(); session.reads.clear();
@@ -795,7 +825,7 @@
       } finally { session.busy = false; }
     }
 
-    return { open, close, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
+    return { open, close, ratings, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; ratings?.destroy(); authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
   }
   global.OjjudaRecommendedRestaurants = { create };
 })(window);

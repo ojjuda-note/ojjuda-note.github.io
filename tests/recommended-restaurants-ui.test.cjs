@@ -9,7 +9,7 @@ const { installRecommendedRestaurantsFixture, recommendation } = require('./help
 const root = path.resolve(__dirname, '..');
 const origin = 'https://fixture.test';
 const proof = process.env.RECOMMENDED_RESTAURANTS_PROOF_DIR;
-const markup = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/recommended-restaurants.css"><style>body{margin:0;overflow:auto;font:16px system-ui}#world-content{min-height:1800px;padding:12px}#world-entry{min-height:44px}</style></head><body><main id="world-content"><button id="world-entry">회원 추천맛집 열기</button><p>아지트 배경 화면</p></main><script src="/recommended-restaurants.js"></script><script>rrFixture.loginRequests=0;window.rrUI=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,notify:rrFixture.notify,onLogin:()=>rrFixture.loginRequests++});document.getElementById('world-entry').onclick=()=>rrUI.open();</script></body></html>`;
+const markup = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css"><style>body{margin:0;overflow:auto;font:16px system-ui}#world-content{min-height:1800px;padding:12px}#world-entry{min-height:44px}</style></head><body><main id="world-content"><button id="world-entry">회원 추천맛집 열기</button><p>아지트 배경 화면</p></main><script src="/restaurant-ratings.js"></script><script src="/recommended-restaurants.js"></script><script>rrFixture.loginRequests=0;window.rrUI=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,notify:rrFixture.notify,onLogin:()=>rrFixture.loginRequests++});document.getElementById('world-entry').onclick=()=>rrUI.open();</script></body></html>`;
 
 async function fixture(t, options = {}) {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'], ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}) });
@@ -26,7 +26,7 @@ async function fixture(t, options = {}) {
     const url = new URL(route.request().url());
     if (url.origin !== origin) { escaped.push(url.href); return route.abort(); }
     if (url.pathname === '/fixture') return route.fulfill({ contentType: 'text/html', body: markup });
-    if (!['/recommended-restaurants.js', '/recommended-restaurants.css'].includes(url.pathname)) return route.abort();
+    if (!['/recommended-restaurants.js', '/recommended-restaurants.css', '/restaurant-ratings.js', '/restaurant-ratings.css'].includes(url.pathname)) return route.abort();
     return route.fulfill({ path: path.join(root, url.pathname.slice(1)) });
   });
   const page = await context.newPage();
@@ -141,4 +141,61 @@ test('native account change clears private image URLs and the guest prompt never
   assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.type === 'rpc').length), reads);
   await rr('login').click(); await rr('dialog').waitFor({ state: 'detached' });
   assert.equal(await page.evaluate(() => rrFixture.loginRequests), 1);
+});
+
+test('member ratings use nine half-point choices, update one vote, survive reentry and fit a narrow phone', { timeout: 60000 }, async t => {
+  const item = recommendation(), other = '10000000-0000-4000-8000-000000000002';
+  const f = await fixture(t, { rows: [item], ratings: [{ kind: 'recommended', id: item.id, user_id: other, score: 3.5 }] });
+  const { page, rr } = f;
+  await page.locator('#world-entry').click(); await rr('card').waitFor();
+  await page.waitForFunction(() => document.querySelector('[data-rr="card"] .orr-average')?.textContent === '3.5');
+  assert.equal(await rr('card').locator('.orr-count').textContent(), '· 1명', 'the list shows the aggregate from existing member votes');
+  await rr('card').click();
+  const editor = rr('dialog').locator('.orr-editor');
+  await editor.waitFor();
+  await page.waitForFunction(() => document.querySelector('.orr-editor .orr-fieldset')?.disabled === false);
+  assert.deepEqual(await editor.locator('[data-orr="choice"]').evaluateAll(inputs => inputs.map(input => Number(input.value))), [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
+  assert.equal(await editor.locator('[data-orr="choice"]:checked').count(), 0, 'another member vote is not mistaken for my own');
+  assert.equal(await editor.locator('[data-orr="save"]').isEnabled(), false);
+  await editor.getByText('1.5점', { exact: true }).click();
+  assert.equal(await editor.locator('[data-orr="choice"][value="1.5"]').isChecked(), true);
+  await editor.locator('[data-orr="save"]').click();
+  await page.waitForFunction(() => document.querySelector('.orr-editor .orr-status')?.textContent.includes('1.5점으로 저장했어요'));
+  assert.equal(await editor.locator('.orr-average').textContent(), '2.5');
+  assert.equal(await editor.locator('.orr-count').textContent(), '· 2명');
+  assert.equal(await editor.locator('.orr-selected').textContent(), '1.5점 · 내 별점');
+  assert.equal(await editor.locator('[data-orr="save"]').isEnabled(), false, 'a saved score is not submitted again without a change');
+  await editor.getByText('4.5점', { exact: true }).click();
+  assert.equal(await editor.locator('[data-orr="save"]').textContent(), '별점 수정');
+  await editor.locator('[data-orr="save"]').click();
+  await page.waitForFunction(() => document.querySelector('.orr-editor .orr-status')?.textContent.includes('4.5점으로 저장했어요'));
+  assert.equal(await editor.locator('.orr-average').textContent(), '4.0');
+  assert.equal(await editor.locator('.orr-count').textContent(), '· 2명', 'editing replaces my vote without increasing the participant count');
+  const saved = await page.evaluate(() => ({
+    votes: [...rrFixture.ratings.values()].map(({ user_id, score }) => ({ user_id, score })),
+    saves: rrFixture.calls.filter(call => call.name === 'set_restaurant_rating').map(call => ({ kind: call.parameters.p_kind, id: call.parameters.p_id, score: call.parameters.p_score, owner: call.owner }))
+  }));
+  assert.deepEqual(saved.votes, [{ user_id: other, score: 3.5 }, { user_id: item.owner_id, score: 4.5 }]);
+  assert.deepEqual(saved.saves, [1.5, 4.5].map(score => ({ kind: 'recommended', id: item.id, score, owner: item.owner_id })));
+  await page.keyboard.press('Escape'); await rr('list').waitFor();
+  await page.waitForFunction(() => document.querySelector('[data-rr="card"] .orr-average')?.textContent === '4.0');
+  assert.equal(await rr('card').locator('.orr-count').textContent(), '· 2명');
+  await rr('card').click();
+  await page.waitForFunction(() => document.querySelector('.orr-editor [data-orr="choice"][value="4.5"]')?.checked === true);
+  assert.equal(await editor.locator('.orr-selected').textContent(), '4.5점 · 내 별점', 'reopening restores the saved personal score');
+  for (const width of [370, 320]) {
+    await page.setViewportSize({ width, height: 740 }); await f.fits();
+    await editor.locator('.orr-choices').scrollIntoViewIfNeeded();
+    assert.equal(await editor.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return element.scrollWidth <= element.clientWidth + 1 && rect.left >= -1 && rect.right <= innerWidth + 1 && [...element.querySelectorAll('.orr-choice')].every(choice => {
+        const box = choice.getBoundingClientRect(); return box.width > 0 && box.height >= 44 && box.left >= rect.left - 1 && box.right <= rect.right + 1;
+      });
+    }), true, 'all nine touch choices fit within the ' + width + 'px rating editor');
+  }
+  await page.keyboard.press('Escape'); await rr('list').waitFor();
+  await rr('close').click(); await rr('dialog').waitFor({ state: 'detached' });
+  await page.locator('#world-entry').click(); await rr('card').waitFor(); await rr('card').click();
+  await page.waitForFunction(() => document.querySelector('.orr-editor [data-orr="choice"][value="4.5"]')?.checked === true);
+  assert.equal(await editor.locator('.orr-count').textContent(), '· 2명', 'closing the whole menu also preserves the vote');
 });

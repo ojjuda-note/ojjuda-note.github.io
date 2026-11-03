@@ -2,6 +2,8 @@
 (() => {
  'use strict';
  const MESSAGE='ojjuda:restaurants:recommendations';
+ const RATING_MESSAGE='ojjuda:restaurants:ratings',RATING_RESULT='ojjuda:restaurants:rating-result';
+ const validRatingId=id=>typeof id==='string'&&id.length<=80&&/^[a-z0-9가-힣]+(?:-[a-z0-9가-힣]+)*$/.test(id);
  let active=null;
  window.OjjudaRestaurantGuide={
   open({owner=null,authorized=()=>true,recommendations=null,openRecommendations=false}={}){
@@ -22,7 +24,10 @@
    dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
-   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-map50-2&embedded=1'+(hasMemberMenu?'&member-menu=1':'');
+   const ratings=recommendations?.ratings;
+   const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
+   const ratingRequests=new Set();
+   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-ratings1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();
@@ -71,9 +76,27 @@
     if(childOpen())return typeof recommendations.back==='function'?recommendations.back():recommendations.close();
     return close();
    }
+   async function handleRating(message){
+    if(!current()){close(true);return;}
+    if(!hasRatings||typeof message.requestId!=='string'||!/^[a-zA-Z0-9-]{1,80}$/.test(message.requestId)||ratingRequests.has(message.requestId)||ratingRequests.size>=10)return;
+    const requestId=message.requestId;
+    const reply=payload=>{if(current())frame.contentWindow.postMessage({type:RATING_RESULT,requestId,...payload},location.origin);};
+    const ids=message.ids;
+    const valid=message.action==='summary'?Array.isArray(ids)&&ids.length>0&&ids.length<=100&&ids.every(validRatingId)
+     :message.action==='save'&&validRatingId(message.id)&&typeof message.score==='number'&&Number.isFinite(message.score)&&message.score>=1&&message.score<=5&&Number.isInteger(message.score*2);
+    if(!valid){reply({error:'별점 요청을 확인해 주세요.'});return;}
+    ratingRequests.add(requestId);
+    try{
+     const data=message.action==='summary'?await ratings.getSummaries('certified',[...new Set(ids)]):await ratings.setRating('certified',message.id,message.score);
+     reply({data});
+    }catch{
+     reply({error:message.action==='save'?'별점을 저장하지 못했어요. 다시 시도해 주세요.':'별점을 불러오지 못했어요. 다시 시도해 주세요.'});
+    }finally{ratingRequests.delete(requestId);}
+   }
    function receive(event){
-    if(event.origin!==location.origin||event.source!==frame.contentWindow||event.data?.type!==MESSAGE)return;
-    void showRecommendations();
+    if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
+    if(event.data?.type===MESSAGE)void showRecommendations();
+    else if(event.data?.type===RATING_MESSAGE)void handleRating(event.data);
    }
    function loaded(){if(!disposed&&!allowed())close(true);}
    active={dialog,owner,current,close,back,childOpen,openRecommendations:showRecommendations};
