@@ -153,7 +153,7 @@ test('dismissible false protects a required result action from Escape', t => {
   const event = new w.Event('cancel', { cancelable: true }); handle.element.dispatchEvent(event);
   assert.equal(event.defaultPrevented, true); assert.ok(handle.element.isConnected); handle.close();
 });
-test('a retained guest result still gates replay while sharing and settlement controls remain usable', async t => {
+test('a completed guest result gates replay during the login delay while its existing controls remain usable', async t => {
   const { api, w } = fixture(t); let replays = 0, shares = 0, settlements = 0, gates = 0;
   w.OjjudaGuestAccess = { canPlay: () => { gates++; return false; } };
   w.navigator.share = async () => shares++;

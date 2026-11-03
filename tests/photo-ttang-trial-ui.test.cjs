@@ -4,6 +4,8 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 const trialKey = 'ojjuda-photo-ttang-demo-v1';
+const portal = fs.readFileSync(path.join(root, 'index.html'), 'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,
+  tag => /portal\.js|signup-identity\.js|signup-referral\.js|config\.js/.test(tag) ? tag : '');
 
 (async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, args: ['--no-sandbox'] });
@@ -28,6 +30,7 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
             rpc:async name=>{if(name!=='get_my_member_identity')return{data:false};fixtureReads++;return{data:fixtureIdentity}}
           })};` });
         if (url.hostname !== 'fixture.test') return route.abort();
+        if (url.pathname === '/') return route.fulfill({ contentType: 'text/html', body: portal });
         if (url.pathname === '/config.js') return route.fulfill({ contentType: 'application/javascript', body: "window.OJJUDA_CONFIG={supabaseUrl:'https://example.invalid',supabaseKey:'fixture'};" });
         const file = path.join(root, url.pathname);
         if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return route.fulfill({ status: 404, body: '' });
@@ -54,6 +57,12 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
       assert.equal(await page.evaluate(key => localStorage.getItem(key), trialKey), '1');
       return frame;
     }
+    async function expectLogin(page) {
+      await page.locator('#auth-dialog[open]').waitFor();
+      assert.equal(await page.locator('#login-tab').getAttribute('aria-selected'), 'true');
+      assert.equal(await page.locator('#signup-tab').getAttribute('aria-selected'), 'false');
+      assert.equal(new URL(page.url()).searchParams.get('next'), 'photo');
+    }
 
     // A completed demo reveals its photo, but neither retries nor the next stage.
     const win = await fixture();
@@ -77,11 +86,11 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
     await result.getByRole('button', { name: '공유하기', exact: true }).click();
     assert.equal(await winningFrame.evaluate(() => fixtureShares.length), 1);
     assert.equal(await winningFrame.evaluate(() => fixtureShares[0].url), 'https://ojjuda.kr/world.html?game=photo_ttang');
-    assert.equal(await result.isVisible(), true, 'sharing preserves the finished demo');
-    assert.equal(win.page.url(), 'https://fixture.test/photo-ttang.html');
+    assert.equal(await result.isVisible(), true, 'the result remains visible during the brief login delay');
     assert.equal(await winningFrame.evaluate(() => startStage(0)), false);
     assert.equal(await winningFrame.evaluate(() => over && paused), true);
-    await win.page.reload();
+    await expectLogin(win.page);
+    await win.page.goto('https://fixture.test/photo-ttang.html');
     await win.page.getByRole('link', { name: '로그인하고 계속하기', exact: true }).waitFor();
     assert.equal(await win.page.locator('iframe').count(), 0, 'refresh cannot reset the used demo');
     assert.equal(await win.page.getByRole('button', { name: '한 판 체험하기', exact: true }).count(), 0);
@@ -111,8 +120,9 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
         await game.getByRole('button', { name: '공유하기', exact: true }).click();
         assert.equal(await game.evaluate(() => fixtureShares.length), 1);
         assert.equal(await game.locator('[data-game-result-card]').isVisible(), true);
+        await expectLogin(f.page);
       }
-      await f.page.reload();
+      await f.page.goto('https://fixture.test/photo-ttang.html');
       await f.page.getByRole('link', { name: '로그인하고 계속하기', exact: true }).waitFor();
       assert.equal(await f.page.locator('iframe').count(), 0);
       await f.context.close();
@@ -193,6 +203,6 @@ const trialKey = 'ojjuda-photo-ttang-demo-v1';
     assert.equal(await missing.page.locator('iframe').count(), 0, 'switching to an underage account closes an active full game');
     await missing.context.close();
     assert.deepEqual(errors, []);
-    console.log('PASS: one guest round, 90% reveal, timeout/death/exit gates, refresh/direct-link/two-tab limits, 19+ verified member play, unrestricted minor demo, birth-date registration, account change and sign-out');
+    console.log('PASS: one guest round with automatic login after win/loss, 90% reveal, timeout/death/exit gates, refresh/direct-link/two-tab limits, 19+ verified member play, unrestricted minor demo, birth-date registration, account change and sign-out');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

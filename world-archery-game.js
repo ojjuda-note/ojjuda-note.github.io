@@ -80,7 +80,7 @@
      if(finished||owner!==null||message.kind!=='main'||!uuid(message.runId)||!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return;
      const allowed=new Set(['source','type','kind','owner','sessionId','runId','stage']);
      if(!Object.keys(message).every(key=>allowed.has(key)))return;
-     finished=true;window.OjjudaGuestAccess?.finished({retainResult:true});return;
+     finished=true;window.OjjudaGuestAccess?.finished();return;
     }
     if(message.type!=='ammo-request')return;
     void request(message);

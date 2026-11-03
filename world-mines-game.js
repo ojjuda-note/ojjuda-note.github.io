@@ -14,7 +14,7 @@
       const frame = dialog.querySelector('iframe');
       const records = new Map(), baselines = new Map();
       let leaderFlight = null;
-      let rankingPending = false, connected = false;
+      let rankingPending = false, connected = false, guestFinished = false;
       const current = () => active?.dialog === dialog && authorized();
       function send(message) {
         if (current()) frame.contentWindow.postMessage({source:'ojjuda-world', ...message}, location.origin);
@@ -101,7 +101,9 @@
         if (message.type === 'ojjuda-game-ready') void initialize();
         if (message.type === 'ojjuda-game-start') startComparison(message.runId,message.difficulty);
         if (message.type === 'ojjuda-game-exit') close();
-        if (message.type === 'ojjuda-game-finished' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(message.runId || '')) window.OjjudaGuestAccess?.finished({retainResult:true});
+        if (message.type === 'ojjuda-game-finished' && !owner && !guestFinished && validRun(message.runId)) {
+          guestFinished = true; window.OjjudaGuestAccess?.finished();
+        }
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
       }

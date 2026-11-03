@@ -27,7 +27,7 @@ function fixture(options={},fakeTimers=false){
  }
  const previous=new Element('button');previous.isConnected=true;
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
- const window={OjjudaGuestAccess:{finished:options=>finishes.push(JSON.parse(JSON.stringify(options)))},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
+ const window={OjjudaGuestAccess:{finished:options=>finishes.push(options)},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
  vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
  const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onCoachBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
  const api={
@@ -54,14 +54,14 @@ function fixture(options={},fakeTimers=false){
  api.open();api.ready();return api;
 }
 
-test('a completed guest main round consumes one trial and retains the result while event and stale messages do not',()=>{
+test('a completed guest main round requests automatic login once while event and stale messages do not',()=>{
  const f=fixture({owner:null});
  try{
   for(const fields of [{kind:'event'},{stage:0},{stage:221},{stage:'1'},{runId:'invalid'},{owner},{sessionId:randomUUID()},{source:'another-game'},{score:9999}])f.finish(fields);
   f.finish({}, {messageOrigin:'https://other.test'});f.finish({}, {source:{}});
   assert.equal(f.finishes.length,0,'only a real same-origin, same-session main result can consume the guest trial');
-  const completed=f.finish();assert.deepEqual(f.finishes,[{retainResult:true}]);
-  assert.equal(f.dialog.open,true);assert.equal(f.dialog.isConnected,true,'sharing stays available in the open result');
+  const completed=f.finish();assert.deepEqual(f.finishes,[undefined]);
+  assert.equal(f.dialog.open,true);assert.equal(f.dialog.isConnected,true,'the result remains visible until the shared login delay completes');
   f.finish(completed);f.finish();assert.equal(f.finishes.length,1,'duplicate completion and replay messages cannot consume twice');
   const oldFrame=f.dialog.frame;f.close();f.open({owner:null});f.ready();
   f.finish(completed);f.finish({}, {frame:oldFrame});assert.equal(f.finishes.length,1,'a closed iframe and its old nonce cannot finish the new session');
@@ -75,7 +75,7 @@ test('member and account-changed archery sessions cannot consume a guest trial',
   const member=f.finish();f.finish({owner:null});assert.equal(f.finishes.length,0);
   const oldFrame=f.dialog.frame;f.close();f.open({owner:null});f.ready();
   f.finish(member);f.finish(member,{frame:oldFrame});assert.equal(f.finishes.length,0);
-  f.finish();assert.deepEqual(f.finishes,[{retainResult:true}]);
+  f.finish();assert.deepEqual(f.finishes,[undefined]);
  }finally{f.close();}
 });
 

@@ -7,6 +7,10 @@
   let game, owner, ready = false, started = false, sent = 0, queued = null, flight = null, timer, timeout;
   let boost = null, boostTimer;
   function post(message) { parent.postMessage({source:'ojjuda-saetbyeol', ...message}, location.origin); }
+  function canPlay() {
+    if (owner !== 'guest') return true;
+    try { return parent.OjjudaGuestAccess?.canPlay?.() !== false; } catch { return false; }
+  }
   function sendBoost() {
     clearTimeout(boostTimer);
     if (!boost) return;
@@ -120,12 +124,12 @@
     }
   }
   window.OjjudaSaetbyeolEntry = {
-    save, buyBooster,
+    save, buyBooster, canPlay,
     ended(runId) { if (ready && !game.isDemo()) post({type:'ojjuda-game-finished', runId, demo:false}); },
     connect(controller) {
       game = controller;
       const enter = (growth=false) => {
-        if (!ready) return;
+        if (!ready || !canPlay()) return;
         started = true; $('#starEntry').hidden = true;
         game.start(growth); save(game.getState());
       };

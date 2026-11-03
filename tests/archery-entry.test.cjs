@@ -72,15 +72,16 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.0.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.0.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
 assert.ok(world.includes('/world-game-assets.js?v='+revision));
-// Another game may advance the shared release without changing archery assets.
-const archeryRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
-assert.ok(archeryRevision,'the archery bridge has its own cache revision');
-assert.equal(bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1],archeryRevision);
+// A bridge-only change does not reload unchanged game and ammo modules.
+const bridgeRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
+assert.ok(bridgeRevision,'the archery bridge has its own cache revision');
+const archeryRevision=bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1];
+assert.ok(archeryRevision,'the iframe has its independent game revision');
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
 // Result UI releases refresh entry files while unchanged internal modules keep

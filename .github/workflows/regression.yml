@@ -325,6 +325,8 @@ jobs:
       - name: Install the test browser
         working-directory: tests
         run: npx playwright install --with-deps chromium
+      - name: Check automatic login after one guest round
+        run: npm --prefix tests run test:guest-access
       - name: Check restaurant guide and arcade navigation
         run: |
           npm --prefix tests run test:restaurants

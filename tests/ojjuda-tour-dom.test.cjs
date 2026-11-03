@@ -129,8 +129,8 @@ const hub = new JSDOM(markup);
 assert.equal(hub.window.document.querySelectorAll('[data-arcade-games=multi] [data-v=tour]').length, 1);
 assert.equal(hub.window.document.querySelectorAll('[data-arcade-games=solo] [data-v=tour]').length, 0);
 hub.window.close();
-function eliminationGame() {
-  const fixture=game(), {w,$}=fixture;
+function eliminationGame(embedded=false) {
+  const fixture=game(embedded), {w,$}=fixture;
   const timer=w.setTimeout.bind(w);w.setTimeout=fn=>timer(fn,0);w.notices=[];
   w.eval(`begin=()=>{};sync3D=()=>{};setFace=()=>{};camOver=()=>{};coinFly=()=>{};floatText=()=>{};
     openSheet=async(title,body,buttons)=>{window.notices.push({title,body,buttons});return buttons[0].k};`);
@@ -147,6 +147,7 @@ function eliminationGame() {
     const runId=w.eval('G.runId');
     w.eval("G.players[0].money=0;G.players[0].bankrupt=true;endScreen(G.players[1],'라운드 종료')");
     const result=messages.at(-1)[0];
+    assert.equal(messages.filter(([message])=>message.type==='ojjuda-game-finished'&&message.runId===runId).length,1,'a completed tour sends a separate guest-round finish before its ranking result');
     assert.equal(result.runId,runId);assert.equal(result.myRank,4);
     assert.equal(result.ranking[result.myRank-1].assets,0,'the eliminated human is recorded, never the AI winner');
     assert.match($('#tourRecordStatus').textContent,/기록 저장 중/);
@@ -180,7 +181,7 @@ function eliminationGame() {
   const registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
   const games=runInNewContext(registry+';worldRankGames()',{window:{},_r:{},D:{online:false,user:null}});
   assert.equal(games.tour.name,'마블');assert.equal(games.tour.unit,'연승');
-  const a=eliminationGame();
+  const a=eliminationGame(true);
   try {
     const {w,$}=a;
     w.eval(`G.players[0].money=100;G.players[1].money=1000;
@@ -200,6 +201,7 @@ function eliminationGame() {
     assert.equal($('#players .out').classList.contains('now'),false);
     assert.equal($('#quitBtn').classList.contains('hidden'),true);
     assert.equal(w.eval('spectating()'),true);
+    assert.equal(a.messages.filter(([message])=>message.type==='ojjuda-game-finished'&&message.runId===w.eval('G.runId')).length,1,'human elimination ends the guest round while computers are still playing');
     w.eval('window.picked=false;pickResolve=()=>{window.picked=true};startHold()');
     $('#rollBtn').click();$('#seg [data-par="1"]').dispatchEvent(new w.MouseEvent('click',{bubbles:true}));$('#quitBtn').click();
     assert.equal(w.picked,false,'eliminated player cannot pick or skip');
@@ -207,6 +209,7 @@ function eliminationGame() {
     assert.notEqual(w.eval('R.holding'),true,'eliminated player cannot roll');
     assert.equal($('#sheet2').classList.contains('hidden'),true,'spectator cannot end the remaining game');
     await w.eval('takeTurn(G.players[0]);pay(G.players[0],50,G.players[1])');
+    assert.equal(a.messages.filter(([message])=>message.type==='ojjuda-game-finished').length,1,'a settled elimination is not reported twice');
     assert.equal(w.eval('G.players[0].money'),0,'no more actions or payments after elimination');
     const saved=JSON.parse(w.localStorage.getItem('ojjuda-tour-save-v1:guest'));
     assert.equal(saved.players[0].bankrupt,true,'elimination saved before notice can be closed');
@@ -260,6 +263,15 @@ function eliminationGame() {
     await w.eval('gameLoop()');
     assert.equal(w.winner,1,'last survivor wins');
   }finally{c.dom.window.close()}
+  const localHumans=eliminationGame(true);
+  try{
+    const {w,messages}=localHumans;
+    w.eval('G.players[1].human=true;G.players[0].money=-1');await w.eval('settle(G.players[0])');
+    assert.equal(messages.filter(([message])=>message.type==='ojjuda-game-finished').length,0,'another local human can finish the same round');
+    w.eval('G.players[1].money=-1');await w.eval('settle(G.players[1])');
+    assert.equal(w.eval('alive().length'),2,'computers are still active');
+    assert.equal(messages.filter(([message])=>message.type==='ojjuda-game-finished').length,1,'the last local human loss completes the trial');
+  }finally{localHumans.dom.window.close()}
   const d=eliminationGame();
   try {
     const {w}=d;w.turns=[];

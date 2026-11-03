@@ -60,6 +60,26 @@ const forgedGuest = game({admin:true});
 try { forgedGuest.w.fixture.startDemo(); assert.equal(forgedGuest.w.fixture.demo, null); }
 finally { forgedGuest.dom.window.close(); }
 
+// A finished guest cannot restart during the shared login delay; members keep their replay flow.
+for(const member of ['guest',owner]){
+ const f=game({member});let completed=false,blocked=0;
+ try{
+  const {w,$,messages}=f,post=w.parent.postMessage;
+  w.parent.OjjudaGuestAccess={canPlay:()=>{if(completed)blocked++;return !completed;}};
+  w.parent.postMessage=(message,origin)=>{post(message,origin);if(message.type==='ojjuda-game-finished')completed=true;};
+  $('#starStart').click();const first=w.fixture.run.id;
+  w.fixture.run.heat=0;w.fixture.updateRun(.02);
+  assert.equal(w.fixture.mode,'end');assert.equal(messages.filter(m=>m.data.type==='ojjuda-game-finished').length,1);
+  const replay=[...w.document.querySelectorAll('#overlay button')].find(button=>button.textContent.includes('바로 다시 타오르기'));
+  assert.ok(replay);replay.click();
+  if(member==='guest'){
+   assert.equal(w.fixture.run.id,first);assert.equal(w.fixture.mode,'end');assert.equal(blocked,1,'the immediate replay invokes the shared login gate');
+  }else{
+   assert.notEqual(w.fixture.run.id,first);assert.equal(w.fixture.mode,'run');assert.equal(blocked,0,'member replay never consults the guest restriction');
+  }
+ }finally{f.dom.window.close();}
+}
+
 // A branch stops at its checkpoint, including other upgrades in that branch.
 // The last missing branch unlocks the next checkpoint without an extra action.
 const balanced = game({saved:{stage:0,cur:{light:100000},intro:true}});

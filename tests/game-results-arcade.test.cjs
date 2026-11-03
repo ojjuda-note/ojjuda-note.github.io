@@ -9,16 +9,16 @@ const stages=world.slice(world.indexOf('function canChooseBreakoutStage('),world
 const routes=world.slice(world.indexOf('function openWorldGameLink('),world.indexOf('function my(){'));
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 const practiceStart=world.indexOf('async function savePracticeStreak('),practiceSource=world.slice(practiceStart,world.indexOf('\n}\n',practiceStart)+2);
-function roundFixture({id='runner',leaders=[[{score:100}],[{score:100}]],receipt={ok:true,best:9999},save,rank}={}){
+function roundFixture({id='runner',leaders=[[{score:100}],[{score:100}]],receipt={ok:true,best:9999},save,rank,guest=false}={}){
  const cards=[],saved=[],events=[],elements={'#gctrl':{innerHTML:''},'#gres':{textContent:''}};
- let owner='member',day='2026-11-03';
+ let owner=guest?null:'member',day='2026-11-03',completed=false;
  const rankRead=rank||(async()=>{const value=leaders.shift();if(value instanceof Error)throw value;return value;});
- const game={draw(){},update(){}},window={OjjudaGuestAccess:{canPlay:()=>true,finished:options=>events.push(['finished',options.retainResult])},OjjudaGameResults:{markup:options=>{cards.push(options);return '<div data-result>'+options.metric+'</div>';}},OjjudaGameChallenges:{onStart:id=>events.push(['start',id]),complete:(id,score)=>events.push(['complete',id,score])}};
- const context=vm.createContext({window,console,Promise,performance,URL,setTimeout,clearTimeout,D:{online:true,user:{id:owner}},Date:class extends Date{static now(){return Date.parse(day+'T12:00:00Z');}},S:{rpc:async(name,args)=>{assert.equal(name,'community_game_monthly_ranking');assert.equal(args.p_game,id);return {data:await rankRead()};}},
-  R:{id,game:null,running:false,loading:false,ctx:{},ov:{querySelector:selector=>elements[selector]||null}},
+ const game={draw(){},update(){}},window={OjjudaGuestAccess:{canPlay:()=>!guest||!completed,finished:()=>{events.push(['finished']);completed=true;}},OjjudaGameResults:{markup:options=>{cards.push(options);return '<div data-result>'+options.metric+'</div>';}},OjjudaGameChallenges:{onStart:id=>events.push(['start',id]),complete:(id,score)=>events.push(['complete',id,score])}};
+ const context=vm.createContext({window,console,Promise,performance,URL,setTimeout,clearTimeout,D:{online:!guest,parkGuest:guest,user:guest?null:{id:owner}},Date:class extends Date{static now(){return Date.parse(day+'T12:00:00Z');}},S:{rpc:async(name,args)=>{assert.equal(name,'community_game_monthly_ranking');assert.equal(args.p_game,id);return {data:await rankRead()};}},
+  R:{id,owner,game:null,running:false,loading:false,ctx:{},ov:{querySelector:selector=>elements[selector]||null}},
   G2:{[id]:()=>game},_r:{[id]:{unit:id==='stacker'?'층':'점'}},gt:{arcadeEnd(){}},requestAnimationFrame:()=>1,cancelAnimationFrame(){},
   worldRewardRequest:()=>({owner}),worldRewardCurrent:request=>request.owner===owner,worldRewardOwner:()=>owner,
-  Xp:()=>day,w:value=>String(value),ti(){},Ja(){},ef:rankRead,
+  Xp:()=>day,w:value=>String(value),ti(){},Ja(){},ef:rankRead,breakoutControls:()=>'',
   tf:async(key,score)=>{saved.push({key,score});return save?save():receipt;}
  });
  vm.runInContext(stages+'\n'+rounds,context);
@@ -39,15 +39,15 @@ for(const [name,before,score,after,outcome,gap] of [
  assert.equal(f.cards.at(-1).outcome,outcome);
  if(gap)assert.ok(f.cards.at(-1).metric.includes('이번 달 1등과 '+gap+' 차이'));
  assert.deepEqual(f.saved,[{key:'runner',score}],'opening or sharing a result must not duplicate a submission');
- assert.deepEqual(f.events,[['finished',true]],'all guest results retain the sharing controls');
+ assert.deepEqual(f.events,[],'a signed-in round does not consume guest access');
 });
 test('stacker keeps floors as its comparison unit and challenge completion runs only once',async()=>{
  const f=roundFixture({id:'stacker',leaders:[[{score:12}],[{score:12}]]});await f.context._2();await f.context.S2(8);await f.context.S2(8);
  assert.match(f.cards.at(-1).metric,/8층 · 이번 달 1등과 4층 차이/);
- assert.deepEqual(f.events,[['start','stacker'],['finished',true],['complete','stacker',8]]);
+ assert.deepEqual(f.events,[['start','stacker'],['complete','stacker',8]]);
 });
 test('guest records use the same monthly board and confirm the winning guest token',async()=>{
- const f=roundFixture({id:'mole'}),queries=[],rows=[[{score:8,me:false}],[{score:9,me:true}]];
+ const f=roundFixture({id:'mole',guest:true}),queries=[],rows=[[{score:8,me:false}],[{score:9,me:true}]];
  f.context.D.online=false;f.context.D.user=null;f.context.window.OjjudaGuestScores={ranking:async(game,period)=>{queries.push({game,period});return rows.shift();}};
  await f.context._2();await f.context.S2(9);
  assert.equal(f.cards.at(-1).outcome,'record');assert.deepEqual(queries,[{game:'mole',period:'month'},{game:'mole',period:'month'}]);
@@ -57,6 +57,13 @@ test('ranking month follows the same 01:00 Korea reset as the main leaderboard',
 });
 test('a successfully read empty board is not reported as a network failure after a zero-score run',async()=>{
  const f=roundFixture({leaders:[[],[]]});await f.context._2();await f.context.S2(0);assert.equal(f.cards.at(-1).outcome,'score');assert.doesNotMatch(f.cards.at(-1).extra,/못했|실패/);assert.match(f.cards.at(-1).encouragement,/첫 기록/);
+});
+for(const id of ['mole','runner','stacker','breakout'])test(id+': a zero-score guest finish still gates replay when score saving fails',async()=>{
+ const f=roundFixture({id,guest:true,receipt:{ok:false,reason:'network'}});
+ await f.context._2();assert.equal(f.context.R.running,true);await f.context.S2(0);await f.context.S2(0);
+ assert.equal(f.events.filter(event=>event[0]==='finished').length,1);
+ assert.deepEqual(f.saved,[{key:id,score:0}]);assert.equal(f.context.R.running,false);
+ await f.context._2();assert.equal(f.context.R.running,false,'a replay cannot start during the login delay');
 });
 for(const [name,leaders,receipt]of [
  ['before lookup failed',[new Error('offline'),[{score:12}]],{ok:true}],
@@ -97,11 +104,68 @@ test('breakout progress buttons stay together and the next stage is locked on fa
  html=f.context.breakoutStagePicker(9);assert.doesNotMatch(html,/data-stage="10" disabled/);assert.equal(f.context.canChooseBreakoutStage(10),true);
  assert.equal(f.context.canChooseBreakoutStage(11),false);assert.doesNotMatch(html,/힌트|클리어하면|다시 도전할 수/);
 });
-for(const id of ['breakout','screw'])test(id+': a lower-stage clear is success without inventing a different-stage ranking comparison',()=>{
- let queries=0;const f=roundFixture({id,rank:()=>{queries++;throw Error('not a comparable stage leaderboard');}});
+for(const id of ['breakout','screw'])test(id+': a lower-stage clear consumes the guest round without inventing a different-stage ranking comparison',async()=>{
+ let queries=0;const f=roundFixture({id,guest:true,rank:()=>{queries++;throw Error('not a comparable stage leaderboard');}});
  f.context.window.OjjudaBreakoutGame={levels:100};f.context.R.running=true;f.context.R.game={draw(){},stage:8,levels:1000,stageCleared:true};
  if(id==='breakout')f.context.breakoutStageComplete(40);else{f.context.R.screwMode='box';f.context.screwStageResult(40,'success');}
  assert.equal(f.cards.at(-1).outcome,'success');assert.match(f.cards.at(-1).metric,/8단계/);assert.doesNotMatch(f.cards.at(-1).metric,/1등|차이/);assert.equal(queries,0);
+ assert.deepEqual(f.events,[['finished']]);
+ if(id==='breakout'){f.context.R.breakoutStage=9;await f.context._2();}else await f.context.chooseScrewStage(9);
+ assert.equal(f.context.R.running,false,'the next stage cannot begin before the scheduled login');
+});
+test('a guest breakout clear finalizes and submits its score before navigation, once',async()=>{
+ const f=roundFixture({id:'breakout',guest:true});let finished=0;
+ f.context.window.OjjudaBreakoutGame={levels:100};await f.context._2();
+ Object.assign(f.game,{stage:1,stageCleared:true,finishRun(){if(finished)return false;finished++;void f.context.S2(40);return true;}});
+ f.context.breakoutStageComplete(40);await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(finished,1);assert.deepEqual(f.saved,[{key:'breakout',score:40}]);assert.deepEqual(f.events,[['finished']]);
+ assert.equal(f.cards.at(-1).outcome,'success');assert.equal(f.context.R.running,false);
+ f.context.breakoutStageComplete(40);assert.equal(f.game.finishRun(),false,'the later close/pagehide cannot finish the same engine run twice');await f.context.S2(40);
+ assert.equal(f.saved.length,1);assert.equal(f.events.length,1);
+});
+test('a member breakout clear retains the next-stage flow and does not finalize early',async()=>{
+ const f=roundFixture({id:'breakout'});let finished=0;
+ f.context.window.OjjudaBreakoutGame={levels:100};await f.context._2();
+ Object.assign(f.game,{stage:1,stageCleared:true,finishRun(){finished++;return true;},continueStage(stage){this.stage=stage;this.stageCleared=false;return true;}});
+ f.context.breakoutStageComplete(40);assert.equal(finished,0);assert.equal(f.saved.length,0);assert.equal(f.events.length,0);
+ f.context.R.breakoutStage=2;await f.context._2();assert.equal(f.context.R.running,true);assert.equal(f.game.stage,2);assert.equal(finished,0);
+});
+for(const mode of ['box','flat'])for(const outcome of ['success','failure'])test('screw '+mode+': first-stage '+outcome+' consumes exactly one guest round',async()=>{
+ const f=roundFixture({id:'screw',guest:true});
+ const game={draw(){},stage:1,levels:1000,stageCleared:outcome==='success',stageFailed:outcome==='failure'};
+ Object.assign(f.context.R,{game,running:true,screwMode:mode});
+ f.context.screwStageResult(0,outcome);f.context.screwStageResult(0,outcome);
+ assert.deepEqual(f.events,[['finished']]);assert.equal(f.cards.at(-1).outcome,outcome);
+ await f.context.chooseScrewStage(1);assert.equal(f.context.R.game,game);assert.equal(f.context.R.running,false,'retrying the same stage is also gated');
+});
+test('screw failure recovery cannot resume play during the guest login delay',()=>{
+ let allowed=false,resumed=0;
+ const c=vm.createContext({window:{OjjudaGuestAccess:{canPlay:()=>allowed}},performance,worldRewardOwner:()=>null,R:{id:'screw',owner:null,game:{resume:()=>{resumed++;return true;}}},ti(){},sf(){}});
+ vm.runInContext(world.slice(world.indexOf('function M2('),world.indexOf('function ti(')),c);
+ const event={target:{closest:()=>({dataset:{g:'screw-resume'}})}};
+ c.M2(event);assert.equal(resumed,0);assert.equal(c.R.running,undefined);
+ allowed=true;c.M2(event);assert.equal(resumed,1);assert.equal(c.R.running,true,'the existing member recovery flow remains available');
+});
+test('screw next-stage choice rechecks guest access after pending purchase verification',async()=>{
+ const f=roundFixture({id:'screw',guest:true}),pending=deferred();let continued=0;
+ Object.assign(f.context.R,{screwBaseStage:1,game:{stage:1,levels:1000,stageCleared:true,prepareStageChoice:()=>pending.promise,continueStage:()=>{continued++;return true;}}});
+ const choosing=f.context.chooseScrewStage(2);f.context.window.OjjudaGuestAccess.finished();pending.resolve(true);await choosing;
+ assert.equal(continued,0);assert.equal(f.context.R.running,false);assert.equal(f.context.R.stageChanging,false);
+});
+for(const id of ['runner','breakout','screw'])test(id+': a stale member round cannot consume access after sign-out into guest',async()=>{
+ const f=roundFixture({id,guest:true});f.context.R.owner='previous-member';
+ await f.context._2();assert.equal(f.context.R.running,false,'a stale member session cannot start another round');
+ Object.assign(f.context.R,{running:true,game:{draw(){},stage:1,levels:1000,stageCleared:true},screwMode:'box'});f.context.window.OjjudaBreakoutGame={levels:100};
+ if(id==='breakout')f.context.breakoutStageComplete(40);else if(id==='screw')f.context.screwStageResult(40,'success');else await f.context.S2(40);
+ assert.equal(f.events.filter(event=>event[0]==='finished').length,0);
+});
+test('closing an unplayed inline game never consumes the guest round',()=>{
+ const start=world.indexOf('function El(){'),source=world.slice(start,world.indexOf("window.addEventListener('pagehide'",start));
+ for(const id of ['mole','runner','stacker','breakout','screw']){
+  let finished=0,closed=false;
+  const c=vm.createContext({window:{OjjudaGuestAccess:{finished:()=>finished++},removeEventListener(){}},document:{getElementById:()=>null,querySelector:()=>null,body:{classList:{remove(){}}}},worldGameAssetRequest:0,worldClosingGames:null,R:{id,running:false,game:null,ov:{remove:()=>{closed=true;}}},cancelAnimationFrame(){}});
+  vm.runInContext(source,c);assert.equal(c.El(),true);assert.equal(closed,true);assert.equal(c.R,null);assert.equal(finished,0,id+' did not finish a round');
+ }
 });
 test('all public game links use their existing entry functions and cannot select a locked stage',()=>{
  const calls=[],c=vm.createContext({window:{openMatgo:()=>calls.push(['matgo'])},Al:(...args)=>calls.push(['arcade',...args]),xn:id=>calls.push(['billiards',id]),vn:id=>calls.push(['board',id])});vm.runInContext(routes,c);
@@ -145,13 +209,25 @@ test('flat screw move exhaustion pauses for a result and preserves the existing 
  for(const plate of game.state.level.plates)plate.state='gone';game.update(.05);assert.deepEqual(events,['failure','success']);assert.equal(game.stageCleared,true);
  for(let n=0;n<50;n++)game.update(.05);assert.equal(game.stage,1);assert.equal(game.continueStage(2),true);assert.equal(game.stage,2);game.destroy();
 });
-for(const kind of ['chess','janggi','carom4'])test(kind+': a guest result stays open and never schedules a forced login',async()=>{
- const finished=[],c=vm.createContext({window:{OjjudaGuestAccess:{finished:options=>finished.push(options)}},D:{online:false},console});vm.runInContext(practiceSource,c);
- await c.savePracticeStreak({kind,mode:'local'},'p1');assert.equal(finished.length,1);assert.equal(finished[0].retainResult,true);
+for(const [kind,outcomes]of [['chess',['w','b','draw']],['janggi',['c','h','draw']],['carom4',['p1','p2']],['carom3',['p1','p2']],['pool8',['p1','p2']]])for(const mode of ['ai','local'])test(kind+' '+mode+': every guest outcome reaches the shared one-round login flow',async()=>{
+ const finished=[],c=vm.createContext({window:{OjjudaGuestAccess:{finished:(...args)=>finished.push(args)}},D:{online:false},console});vm.runInContext(practiceSource,c);
+ const session={kind,mode,owner:null};
+ await c.savePracticeStreak(session,null);assert.equal(finished.length,0,'opening or closing an unfinished game is not a result');
+ for(const winner of outcomes)await c.savePracticeStreak(session,winner);
+ assert.equal(finished.length,outcomes.length);assert.ok(finished.every(args=>args.length===0),'no result bypasses the automatic login with retainResult');
+ await c.savePracticeStreak({...session,owner:'previous-member'},outcomes[0]);assert.equal(finished.length,outcomes.length,'a stale member result cannot consume the new guest session');
+});
+for(const kind of ['chess','janggi','carom4','carom3','pool8'])test(kind+': direct start also gates a consumed guest trial',()=>{
+ let allowed=false,started=0;
+ const c=vm.createContext({window:{OjjudaGuestAccess:{canPlay:()=>allowed}},mn(){},tp:()=>{started++;return {st:{inHand:false}};},ol(){},gn(){},Jt(){},yn(){},jp:()=>{started++;return {};},pa(){},Je(){}});
+ const board=['chess','janggi'].includes(kind),start=board?'function zp(':'function ep(',end=board?'function b2(':'function gn(';
+ vm.runInContext(world.slice(world.indexOf(start),world.indexOf(end,world.indexOf(start))),c);
+ const launch=()=>board?c.zp(kind,'local',{}):c.ep(kind,'local',{});
+ launch();assert.equal(started,0);allowed=true;launch();assert.equal(started,1,'an unused trial or signed-in start is unchanged');
 });
 for(const kind of ['chess','carom4'])test(kind+': failed streak settlement exposes retry inside the result and duplicate retry clicks still save once',async t=>{
  const {JSDOM}=require('jsdom'),dom=new JSDOM(kind==='chess'?'<div id="bd-root"><div class="game-result-extra"></div></div>':'<div id="gov"><div class="bl-ctrl"></div><div class="world-billiards-result"><div class="game-result-extra"></div></div></div>');t.after(()=>dom.window.close());
- let calls=0;const notifications=[],session={kind,mode:'ai',me:'p1',level:'normal',ov:dom.window.document.querySelector('#gov'),streakRound:{id:'round',owner:'member',pending:false,saved:false}};
+ let calls=0;const notifications=[],session={kind,mode:'ai',owner:'member',me:'p1',level:'normal',ov:dom.window.document.querySelector('#gov'),streakRound:{id:'round',owner:'member',pending:false,saved:false}};
  const c=vm.createContext({window:{OjjudaGuestAccess:{finished(){}}},document:dom.window.document,D:{online:true,user:{id:'member'}},S:{rpc:async()=>++calls===1?{error:new Error('temporary offline')}:{data:{ok:true}}},k:kind==='chess'?null:session,E:kind==='chess'?session:null,notifyStreakSaved:owner=>notifications.push(owner),M(){},console:{error(){}}});
  vm.runInContext(practiceSource,c);await c.savePracticeStreak(session,'p1');
  const retry=dom.window.document.querySelector('.game-result-extra button');assert.ok(retry,'retry is in the visible result, not behind the game overlay');assert.equal(calls,1);

@@ -19,7 +19,7 @@ function fixture(){
  context.ti=noop;context.nf=noop;
  return {context,calls,timers,messages,storage,setOwner:value=>{owner=value;},setSubmit:value=>{submit=value;},
   session(mode='flat'){
-   const r={id:'screw',screwMode:mode,ov:{dataset:{},querySelector:()=>node,remove:noop},game:null,running:false};
+   const r={id:'screw',owner,screwMode:mode,ov:{dataset:{},querySelector:()=>node,remove:noop},game:null,running:false};
    context.R=r;context.window.OjjudaScrewLoader={load:async()=>api=>{r.api=api;return{draw:noop,destroy:noop};}};return r;
   }};
 }
