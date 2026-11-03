@@ -473,7 +473,7 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .app-shell>.save-error{min-height:18px;padding:1px 5px;font-size:10px;color:#926333;background:#fff2d9;border-radius:4px}
 @media(max-width:480px){
   .game-card{grid-template-rows:42px auto minmax(0,1fr) auto}
-  .laser-popover{top:56px;right:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 72px);padding:12px}
+  .laser-popover{top:56px;right:8px;width:calc(100vw - 16px);max-height:calc(50dvh - 48px);padding:12px}
   .laser-popover .laser-axis{grid-template-columns:52px minmax(0,1fr);padding:6px;gap:5px}
   .laser-popover .laser-gear{width:52px;height:52px}
   .laser-popover .laser-gear-rotor{width:50px;height:50px}
@@ -484,4 +484,14 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
   .controls{grid-column:1;grid-row:4;display:grid;padding:0;border:0;overflow:visible}
   .field{grid-column:1;grid-row:3}
   .laser-popover{top:8px;max-height:calc(100dvh - 16px)}
+}
+@media(orientation:landscape){
+  .laser-popover{top:8px;right:8px;width:min(360px,calc(50vw - 24px));max-height:calc(100dvh - 16px);padding:10px}
+  .laser-popover .laser-axis{grid-template-columns:48px minmax(0,1fr);padding:6px;gap:5px}
+  .laser-popover .laser-gear{width:48px;height:48px}
+  .laser-popover .laser-gear-rotor{width:46px;height:46px}
+  .laser-popover .laser-odometer{font-size:12px}
+}
+@media(orientation:landscape) and (max-width:600px){
+  .laser-popover .laser-adjustments{grid-template-columns:minmax(0,1fr)}
 }

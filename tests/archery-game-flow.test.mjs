@@ -694,9 +694,9 @@ test('touch movement follows every small relative pixel delta and holding a fing
   }
 });
 
-test('relative touch movement pans continuously at the upper aiming area edges without a 24px view jump', async () => {
+test('horizontal touch movement pans continuously at the aiming area edges without a 24px view jump', async () => {
   for (const [width, height] of [[390, 480], [1000, 600]]) for (const zoom of [1, 3]) {
-    const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, ...(zoom === 3 ? [{ x: 0, y: 1 }] : [])];
+    const directions = [{ x: -1, y: 0 }, { x: 1, y: 0 }];
     for (const direction of directions) {
       const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
       app.resize(width, height);await enterAndStartEvent(app, 1);
@@ -723,6 +723,45 @@ test('relative touch movement pans continuously at the upper aiming area edges w
       const stopped = { ...app.api.camera };holdFor(app, 200);
       assert.deepEqual({ ...app.api.camera }, stopped, 'edge panning stops immediately when the finger stops moving');
       canvas.emit('pointercancel');assert.equal(state.used, 0);
+    }
+  }
+});
+
+test('elevation touch and arrow keys change pitch without raising the view in normal play or administrator trials', async () => {
+  for (const adminTrial of [false, true]) for (const enabled of [false, true]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled } } }, { adminTrial });
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(13);app.api.closeModal();await app.flush();
+      assert.equal(app.api.setLaserSettings({ enabled }), true);
+    }
+    assert.equal(app.api.setAimZoom(1), true);
+    const state = app.api.state, pad = app.getElement('aimTouchpad');
+    for (const [width, height] of [[390, 480], [844, 235]]) {
+      app.resize(width, height);app.getElement('recenterBtn').emit('click');app.frames();
+      const panY = state.panY, horizon = app.api.camera.horizon;
+      const target = app.engine.targetAt(state.stage, state.time), targetScreen = app.api.project(target);
+      const fixedView = () => {
+        assert.equal(state.panY, panY);assert.equal(app.api.camera.horizon, horizon);
+        assert.deepEqual(app.api.project(target), targetScreen, 'the actual target stays at the same screen height');
+      };
+      const down = {clientX: width * .4, clientY: height * .85};
+      const before = enabled ? app.api.laserFrame().point.y : null;
+      pad.emit('pointerdown', down);
+      pad.emit('pointermove', {...down, clientY: down.clientY - 10000});app.frames();
+      assert.ok(Math.abs(state.aim.pitch - .58) < 1e-12, 'the full high launch angle remains available');fixedView();
+      if (enabled) assert.ok(app.api.laserFrame().point.y > before, 'only the aiming ray rises');
+      pad.emit('pointermove', {...down, clientY: down.clientY + 10000});app.frames();
+      assert.ok(Math.abs(state.aim.pitch + .22) < 1e-12, 'the full low launch angle remains available');fixedView();
+      if (enabled) assert.ok(app.api.laserFrame().point.y < before, 'only the aiming ray drops');
+      pad.emit('pointercancel');assert.equal(state.mode, 'ready');
+      for (const [code, pitch] of [['ArrowUp', .58], ['ArrowDown', -.22]]) {
+        app.document.emit('keydown', {code});
+        for (let step = 0; step < 20; step++) app.advanceTo(app.now + 250);
+        app.document.emit('keyup', {code});
+        assert.ok(Math.abs(state.aim.pitch - pitch) < 1e-12);fixedView();
+      }
+      assert.equal(state.used, 0);assert.equal(state.shot, null);
     }
   }
 });
@@ -2121,7 +2160,7 @@ test('laser purchases start with the first crossbow and charge once per eligible
   assert.equal(reloaded.api.progress.coins, 1000);assert.equal(reloaded.api.laserEnabled(), false);
   reloaded.api.showShop('bow');reloaded.api.equipItem(13);reloaded.api.closeModal();await reloaded.flush();
   assert.deepEqual({ ...reloaded.api.activeLaser() }, expected[13]);assert.equal(reloaded.api.laserEnabled(), true);
-  assert.equal(reloaded.api.laserFrame(), null, 'ready mode permits calibration without showing a sight dot');
+  assert.ok(reloaded.api.laserFrame(), 'the enabled sight is visible before drawing so its zero can be adjusted');
   const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 13], bow: 13, coins: 499 });
   assert.equal(poor.api.installLaser(13), false);assert.equal(poor.api.progress.coins, 499);assert.equal(poor.api.activeLaser(), null);
 });
@@ -2263,16 +2302,55 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
   horizontal.emit('keydown', { key: 'ArrowRight', code: 'ArrowRight' });assert.equal(app.api.activeLaser().horizontalClicks, 16);
   vertical.emit('wheel', { deltaY: -1 });assert.equal(app.api.activeLaser().verticalClicks, 70);
   assert.deepEqual({ ...app.api.state.aim }, aim);assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
-  assert.equal(app.api.state.shot, null);assert.equal(app.api.laserFrame(), null);
+  assert.equal(app.api.state.shot, null);assert.ok(app.api.laserFrame(), 'the adjusted sight remains visible while the gears are available');
   const reloaded = await appHarness(app.snapshot());
   assert.deepEqual({ ...reloaded.api.activeLaser() }, { enabled: true, horizontalClicks: 16, verticalClicks: 70 });
+});
+
+test('enabled laser zeroing stays visible before, during and after adjustment without steering or firing in either play mode', async () => {
+  for (const adminTrial of [false, true]) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } }, {adminTrial});
+    if (adminTrial) { app.api.showShop('bow');app.api.equipItem(13);app.api.closeModal();await app.flush(); }
+    app.frames();
+    const state = app.api.state, canvas = app.getElement('gameCanvas');
+    const aim = {...state.aim}, view = {...app.api.camera}, pan = [state.panX, state.panY], requests = app.ammo.requests.length;
+    const visible = () => {
+      const frame = app.api.laserFrame();assert.ok(frame);assert.equal(canvas.dataset.laser, 'ready');
+      for (const axis of ['x', 'y', 'z'])
+        assert.ok(Math.abs(Number(canvas.dataset[`laser${axis.toUpperCase()}`]) - frame.point[axis]) < 1e-8);
+      const projected = app.api.project(frame.point);
+      assert.ok(Math.abs(Number(canvas.dataset.laserScreenX) - projected.x) < 1e-8);
+      assert.ok(Math.abs(Number(canvas.dataset.laserScreenY) - projected.y) < 1e-8);
+      return frame.point;
+    };
+    const original = visible();assert.equal(state.laserAdjustOpen, false);
+    assert.equal(app.api.openLaserAdjustments(), true);visible();
+    const popup = app.getElement('laserPopover'), placement = {...popup.style};
+    app.getElement('laserHorizontalGear').emit('keydown', {code: 'ArrowRight'});
+    const horizontal = visible();assert.ok(horizontal.x < original.x, 'the visible point responds immediately to the horizontal correction');
+    app.getElement('laserVerticalGear').emit('wheel', {deltaY: -1});
+    const vertical = visible();assert.ok(vertical.y < horizontal.y, 'the visible point responds immediately to the vertical correction');
+    assert.deepEqual({...popup.style}, placement, 'adjusting the sight never moves the controls under the finger');
+    assert.deepEqual({...state.aim}, aim);assert.deepEqual({...app.api.camera}, view);assert.deepEqual([state.panX, state.panY], pan);
+    app.api.closeLaserAdjustments();visible();app.frames();visible();
+    assert.equal(app.api.toggleLaser(), true);assert.equal(app.api.laserFrame(), null);assert.equal(canvas.dataset.laser, 'off');
+    assert.equal(canvas.dataset.laserScreenX, undefined);
+    assert.equal(app.api.toggleLaser(), true);visible();
+    app.getElement('menuBtn').emit('click');app.frames();
+    assert.equal(app.api.laserFrame(), null);assert.equal(canvas.dataset.laser, 'off');
+    app.api.closeModal();await app.flush();app.frames();visible();
+    assert.equal(state.mode, 'ready');assert.equal(state.used, 0);assert.equal(state.shot, null);
+    assert.equal(app.ammo.requests.length, requests, 'calibrating the visible dot does not perform an account action');
+    if (adminTrial) assert.deepEqual(app.storageOperations, [], 'trial zeroing never writes normal saves');
+  }
 });
 
 test('a held laser follows manual aim, never fires on target overlap or after ten seconds and fires once on release', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
     ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } }, scopeLoadouts: { 13: { owned: [2], equipped: 2 } } });
   const { state } = app.api, pad = app.getElement('aimTouchpad');
-  app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'off');
+  app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'ready');
   pad.emit('pointerdown');app.frames(90);
   const target = app.engine.targetAt(state.stage, state.time), angles = app.api.aimAngles();
   const desiredYaw = Math.atan2(target.x, target.z), desiredPitch = Math.atan2(target.y - app.engine.PLAYER.y, Math.hypot(target.x, target.z));
@@ -2327,7 +2405,9 @@ test('laser cancellation, lost capture, blur and hidden-page recovery never rele
     if (action === 'blur') app.window.emit('blur');
     if (action === 'hidden') { app.document.hidden = true;app.document.emit('visibilitychange'); }
     app.advanceTo(app.now + 12000);await app.flush();pad.emit('pointerup');await app.flush();
-    assert.equal(app.api.state.used, 0, action);assert.equal(app.api.state.shot, null, action);assert.equal(app.api.laserFrame(), null, action);
+    assert.equal(app.api.state.used, 0, action);assert.equal(app.api.state.shot, null, action);
+    if (action === 'hidden') assert.equal(app.api.laserFrame(), null, 'a hidden page has no visible sight');
+    else assert.ok(app.api.laserFrame(), 'canceling a draw returns to the visible ready sight without firing');
     if (action === 'hidden') { app.document.hidden = false;app.document.emit('visibilitychange');await app.flush(); }
     assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
   }
@@ -4754,8 +4834,9 @@ test('administrators can equip the full catalog, use consumables and visit all e
   for(const arrow of app.engine.ARROWS){
     app.api.showShop('arrow');app.api.equipItem(arrow.id);assert.equal(app.api.activeArrow().id,arrow.id);
   }
-  app.api.closeModal();app.api.startStage(220);await app.flush();assert.equal(state.stage.id,1);
-  assert.equal(app.api.progress.unlocked,1,"item trials use the same sequential stage locks");
+  app.api.closeModal();app.api.startStage(220);await app.flush();assert.equal(state.stage.id,220);
+  assert.equal(app.api.progress.unlocked,1,'trial access does not fabricate sequential progress');
+  assert.deepEqual({...app.api.progress.best},{},'opening a trial mission is not a clear');
   app.api.startStage(1);await app.flush();
   const stabilizers=app.api.progress.stabilizers;
   for(let round=0;round<3;round++){
@@ -4795,16 +4876,104 @@ test('administrators can equip the full catalog, use consumables and visit all e
   assert.equal(resumed.api.adminTrialActive,false);assert.ok(resumed.ammo.requests.some(request=>request.action==='status'));
 });
 
+test('approved item trials expose all 220 missions through the picker and journey without changing normal progression', async () => {
+  const original={version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,coins:321,bow:3,ownedBows:[0,3,20],
+    lastStage:2,best:{1:STAGE_FIXTURES[0].goal},sound:false};
+  const store=new Map([[SAVE_KEY,JSON.stringify(original)],[PREVIOUS_SAVE_KEY,'preserve legacy progress']]);
+  const beforeStore=new Map(store),app=await appHarness(null,{store,adminTrial:true});
+  const beforeAccount=JSON.stringify(app.ammo.account),state=app.api.state;
+  const expected=Array.from({length:STAGE_COUNT},(_,index)=>index+1);
+  const allOpen=markup=>{
+    const tags=Array.from(markup.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>/g));
+    assert.deepEqual(tags.map(match=>Number(match[1])),expected);
+    assert.ok(tags.every(match=>!/\bdisabled\b/.test(match[0])),'every trial mission is selectable');
+  };
+  allOpen(app.getElement('journeySteps').innerHTML);
+  assert.match(app.getElement('journeyCaption').textContent,/220단계 자유 선택/);
+  app.getElement('menuBtn').emit('click');modalAction(app,'stages');
+  assert.equal(state.modal,'stages');allOpen(app.getElement('modalContent').innerHTML);
+  assert.doesNotMatch(app.getElement('modalContent').innerHTML,/앞 단계를 통과하면 다음 단계가 열려요/);
+  const button=app.getElement('trial-stage-selection');button.tagName='BUTTON';
+  for(const id of[220,65]){
+    button.dataset.stage=String(id);app.document.emit('click',{target:button});await app.flush();
+    assert.equal(state.stage.id,id,'the real picker/journey handler opens the requested trial mission');
+    allOpen(app.getElement('journeySteps').innerHTML);
+  }
+  assert.deepEqual({...app.api.progress.best},{});assert.equal(app.api.progress.unlocked,1);
+  assert.deepEqual(app.storageOperations,[]);assert.deepEqual(store,beforeStore);
+  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);
+  assert.equal(JSON.stringify(app.ammo.account),beforeAccount);
+  const resumed=await appHarness(null,{store});
+  assert.equal(resumed.api.adminTrialActive,false);assert.equal(resumed.api.state.stage.id,2);
+  assert.equal(resumed.api.progress.unlocked,2);assert.deepEqual({...resumed.api.progress.best},original.best);
+  resumed.api.startStage(220);await resumed.flush();assert.equal(resumed.api.state.stage.id,2);
+  assert.equal(resumed.api.progress.coins,321);assert.equal(resumed.api.progress.bow,3);
+});
+
+test('approved item trials can move before clearing or after failing while retaining stage and shot boundaries', async () => {
+  const app=await appHarness(null,{adminTrial:true}),state=app.api.state;
+  app.getElement('menuBtn').emit('click');
+  assert.equal(modalActionDisabled(app,'previous-stage'),true);
+  assert.equal(modalActionDisabled(app,'next-stage'),false,'an unplayed trial can advance from its menu');
+  modalAction(app,'next-stage');await app.flush();assert.equal(state.stage.id,2);
+  app.getElement('menuBtn').emit('click');modalAction(app,'previous-stage');await app.flush();
+  assert.equal(state.stage.id,1);assert.deepEqual({...app.api.progress.best},{});
+  app.api.startStage(65);await app.flush();
+  state.used=5;state.score=0;app.api.finishRound();await app.flush();
+  assert.equal(state.mode,'finished');assert.match(app.getElement('modalContent').innerHTML,/65단계 다시 도전/);
+  assert.equal(app.api.progress.best[65],0);assert.equal(app.api.progress.unlocked,1);
+  assert.equal(modalActionDisabled(app,'previous-stage'),false);
+  assert.equal(modalActionDisabled(app,'next-stage'),false,'failure does not restrict trial navigation');
+  assert.doesNotMatch(app.getElement('journeySteps').innerHTML,/\bdisabled\b/,'finishing a trial cannot relock the catalog');
+  modalAction(app,'next-stage');await app.flush();assert.equal(state.stage.id,66);
+  app.api.startStage(STAGE_COUNT);await app.flush();app.getElement('menuBtn').emit('click');
+  assert.equal(modalActionDisabled(app,'previous-stage'),false);assert.equal(modalActionDisabled(app,'next-stage'),true);
+  staleModalAction(app,'next-stage');
+  for(const id of[0,-1,STAGE_COUNT+1,1.5,NaN])app.api.startStage(id);
+  await app.flush();assert.equal(state.stage.id,STAGE_COUNT,'trial access still respects mission bounds');
+  modalAction(app,'previous-stage');await app.flush();assert.equal(state.stage.id,STAGE_COUNT-1);
+  for(const mode of['flight','settling']){
+    state.mode=mode;app.getElement('menuBtn').emit('click');const epoch=state.roundEpoch;
+    assert.equal(modalActionDisabled(app,'previous-stage'),true);assert.equal(modalActionDisabled(app,'next-stage'),true);
+    staleModalAction(app,'next-stage');app.api.startStage(1);await app.flush();
+    assert.equal(state.stage.id,STAGE_COUNT-1);assert.equal(state.mode,mode);assert.equal(state.roundEpoch,epoch);
+  }
+  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
+});
+
+test('approved item trials return from events to any mission and can advance without a main clear', async () => {
+  const app=await appHarness(null,{adminTrial:true}),state=app.api.state;
+  const beforeAccount=JSON.stringify(app.ammo.account);
+  app.api.startStage(200);await app.flush();app.api.enterEvent(10);await app.flush();
+  assert.equal(state.modal,'event-ready');modalAction(app,'leave-event');await app.flush();
+  assert.equal(state.isEvent,false);assert.equal(state.stage.id,200);
+  app.api.enterEvent(1);await app.flush();await startPreparedEvent(app);
+  state.time=state.stage.eventDuration;app.api.finishRound();await app.flush();
+  assert.equal(state.mode,'finished');assert.equal(state.eventMainResult.completed,false);
+  assert.equal(modalActionDisabled(app,'previous-stage'),false);assert.equal(modalActionDisabled(app,'next-stage'),false);
+  modalAction(app,'next-stage');await app.flush();
+  assert.equal(state.isEvent,false);assert.equal(state.stage.id,201);assert.equal(state.eventMainResult,null);
+  app.api.startStage(STAGE_COUNT);await app.flush();app.api.enterEvent(10);await app.flush();await startPreparedEvent(app);
+  state.time=state.stage.eventDuration;app.api.finishRound();await app.flush();
+  assert.equal(modalActionDisabled(app,'next-stage'),true,'the last mission remains the last after an event');
+  modalAction(app,'retry');await app.flush();assert.equal(state.isEvent,false);assert.equal(state.stage.id,STAGE_COUNT);
+  assert.deepEqual({...app.api.progress.best},{});assert.equal(app.api.progress.unlocked,1);
+  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
+  assert.equal(JSON.stringify(app.ammo.account),beforeAccount);
+});
+
 test('an accepted trial stays temporary and blocks a later account or session change', async () => {
   for(const changed of [{owner:'another-owner'},{sessionId:'33333333-3333-4333-8333-333333333333'}]){
     const app=await appHarness(null,{adminTrial:true});
     app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();
+    app.api.startStage(200);await app.flush();assert.equal(app.api.state.stage.id,200);
     app.sendInit();await app.flush();assert.equal(app.api.progress.bow,19,'duplicate init cannot reset the chosen equipment');
     app.sendInit(changed);await app.flush();
     assert.equal(app.api.adminTrialActive,false);assert.equal(app.api.state.mode,'blocked');
     app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');
     app.api.startStage(220);app.api.enterEvent(10);await app.flush();
-    assert.equal(app.api.state.mode,'blocked');assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.storageOperations,[]);
+    assert.equal(app.api.state.mode,'blocked');assert.equal(app.api.state.stage.id,200,'revoked trial access cannot open another mission');
+    assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.storageOperations,[]);
   }
 });
 
