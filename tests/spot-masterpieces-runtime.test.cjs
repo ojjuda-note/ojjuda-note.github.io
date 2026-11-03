@@ -151,6 +151,59 @@ function checkLayerClipping(){
  }finally{f.w.close();}
 }
 
+function checkCropLayers(){
+ const f=domFixture();try{
+  const bounds={left:20,top:10,right:60,bottom:50};
+  const rect={shape:'rect',x:40,y:30,rx:10,ry:8,spotIndex:0};
+  const ellipse={shape:'ellipse',x:30,y:20,rx:4,ry:6,spotIndex:1};
+  const polygon=[[0,0],[60,0],[60,100],[0,100]];
+  const layer=(extra={})=>({image:'/crop.svg',regions:[{...rect}],...extra});
+  const invalid=[null,{},
+   {...bounds,left:-1},{...bounds,top:-1},{...bounds,right:101},{...bounds,bottom:101},
+   {...bounds,right:20},{...bounds,bottom:10},{...bounds,left:70},{...bounds,top:60},
+   {...bounds,left:'20'},{...bounds,top:NaN},{...bounds,right:Infinity}];
+  f.w.JJUDA_PUZZLES[1].layers=[
+   layer({imageBounds:bounds}),layer({imageBounds:bounds,regions:[ellipse]}),
+   layer({imageBounds:bounds,regions:[{...rect,feather:.04}],clipPolygon:polygon,blend:'color',brightness:1.1}),
+   layer({imageBounds:bounds,regions:[rect,ellipse]}),layer(),
+   ...invalid.map(imageBounds=>layer({imageBounds}))
+  ];
+  f.select(1);
+  for(const id of ['difference','zoom-difference']){
+   const images=[...f.$(id).parentElement.querySelectorAll('.contrast-overlay')];
+   assert.equal(images.length,5+invalid.length);
+   for(const image of images.slice(0,4)){
+    assert.equal(image.style.inset,'10% auto auto 20%');assert.equal(image.style.width,'40%');assert.equal(image.style.height,'40%');
+   }
+   assert.equal(images[0].style.maskSize,'50% 40%');assert.equal(images[0].style.maskPosition,'50% 50%','global rectangle stays at its scene location within the crop');
+   assert.equal(images[1].style.maskImage,'radial-gradient(ellipse 10% 15% at 25% 25%, #000 94%, transparent 100%)','ellipse center and both radii use crop coordinates');
+   assert.equal(images[2].style.maskSize,'50% 40%,50% 40%');assert.equal(images[2].style.maskPosition,'50% 50%,50% 50%');
+   assert.match(images[2].style.maskImage,/#000 4%,#000 96%/);assert.equal(images[2].style.maskComposite,'intersect');
+   assert.equal(images[2].style.clipPath,'polygon(0% 0%,60% 0%,60% 100%,0% 100%)','polygon remains image-local and is not transformed a second time');
+   assert.equal(images[2].style.mixBlendMode,'color');assert.equal(images[2].style.filter,'brightness(1.1)');
+   assert.equal(images[3].style.maskSize,'50% 40%,100% 100%','multiple masks keep their union');
+   for(const image of images.slice(4)){
+    assert.equal(image.style.inset,'');assert.equal(image.style.width,'');assert.equal(image.style.height,'','missing or invalid bounds retain CSS full-scene placement');
+    assert.equal(image.style.maskImage,images[4].style.maskImage);assert.equal(image.style.maskSize,'20% 16%');assert.equal(image.style.maskPosition,images[4].style.maskPosition);
+   }
+  }
+  assert.deepEqual(bounds,{left:20,top:10,right:60,bottom:50});assert.deepEqual(rect,{shape:'rect',x:40,y:30,rx:10,ry:8,spotIndex:0});
+  assert.equal(f.$('original').parentElement.querySelectorAll('.contrast-overlay').length,0);
+
+  // Each crop has one shared load slot; zoom duplicates and repeated loads
+  // cannot release Start before every main image has loaded successfully.
+  f.w.JJUDA_PUZZLES[1].layers=[layer({imageBounds:bounds}),layer({imageBounds:bounds,regions:[ellipse]})];
+  f.$('stage-picker').dispatchEvent(new f.w.Event('change'));
+  const main=[...f.$('difference').parentElement.querySelectorAll('.contrast-overlay')],zoom=[...f.$('zoom-difference').parentElement.querySelectorAll('.contrast-overlay')];
+  f.$('original').onload();f.$('difference').onload();main[0].onload();main[0].onload();zoom[1].dispatchEvent(new f.w.Event('load'));
+  assert.equal(f.$('start').disabled,true,'base images, duplicate loads and the zoom copy do not bypass an outstanding crop');
+  main[1].onerror();assert.equal(f.$('load-error').hidden,false);assert.equal(f.$('start').disabled,true);
+  main[1].onload();assert.equal(f.$('load-error').hidden,true);assert.equal(f.$('start').disabled,false,'the recovered crop completes the existing load counter');
+  f.select(0);main[1].onerror();main[0].onload();
+  assert.equal(f.$('load-error').hidden,true);assert.equal(f.$('start').disabled,false,'late crop events cannot change a newer scene');
+ }finally{f.w.close();}
+}
+
 async function checkRenderedCircles(){
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
@@ -160,14 +213,16 @@ async function checkRenderedCircles(){
    const account={ready:true,userId,coins:100};
    window.JjudaWallet={getState:()=>account,subscribe:fn=>fn(account),refresh:async()=>{},recordClear:async()=>({ok:true}),buy:async(request,stage)=>({ok:true,kind:request.kind,stage,spot:request.spot,price:1})};
   },{userId});
+  let paintLayer=null;
   await page.route('**/*',async route=>{
    const url=new URL(route.request().url());
-   if(url.pathname.endsWith('/puzzles.js'))return route.fulfill({contentType:'text/javascript',body:`window.JJUDA_PUZZLES=${JSON.stringify(fixtures)};`});
+   if(url.pathname.endsWith('/puzzles.js'))return route.fulfill({contentType:'text/javascript',body:`window.JJUDA_PUZZLES=${JSON.stringify(paintLayer?[{...fixtures[0],layers:[paintLayer]},fixtures[1]]:fixtures)};`});
    if(url.origin!=='https://fixture.test'||/\/(photo-puzzles|masterpiece-puzzles|fairytale-pets-puzzles|wallet|supabase)\.js$/.test(url.pathname))return route.fulfill({body:'',contentType:'text/javascript'});
    if(['/portrait.svg','/landscape.svg'].includes(url.pathname)){
     const [width,height]=url.pathname==='/portrait.svg'?[800,1200]:[1500,1000];
     return route.fulfill({contentType:'image/svg+xml',body:`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#e7ecef"/></svg>`});
    }
+   if(url.pathname==='/crop.svg')return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#f00"/></svg>'});
    const file=path.join(root,url.pathname);
    return fs.existsSync(file)?route.fulfill({path:file,contentType:file.endsWith('.js')?'text/javascript':undefined}):route.fulfill({status:404,body:''});
   });
@@ -193,11 +248,55 @@ async function checkRenderedCircles(){
    }
    await page.locator('#close-zoom').click();
   }
+  // Check painted output, not only the generated CSS: a red crop must expose
+  // the untouched gray scene outside its global answer mask.
+  const bounds={left:20,top:10,right:60,bottom:50},rect={shape:'rect',x:40,y:30,rx:10,ry:8,spotIndex:0};
+  const cases=[
+   {name:'rectangle',regions:[rect],samples:[[40,30],[31,23],[25,30]],expected:['red','red','base']},
+   {name:'ellipse',regions:[{...rect,shape:'ellipse'}],samples:[[40,30],[32,30],[31,23]],expected:['red','red','base']},
+   {name:'feather and local polygon',regions:[{...rect,feather:.1}],clipPolygon:[[0,0],[60,0],[60,100],[0,100]],samples:[[42,30],[48,30],[30.5,30]],expected:['red','base','soft']}
+  ];
+  const paintedSamples=async samples=>{
+   const png=await page.locator('#difference').locator('..').screenshot({animations:'disabled'});
+   return page.evaluate(async({data,samples})=>{
+    const image=new Image();image.src='data:image/png;base64,'+data;await image.decode();
+    const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+    const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
+    return samples.map(([x,y])=>Array.from(ctx.getImageData(Math.floor(image.width*x/100),Math.floor(image.height*y/100),1,1).data).slice(0,3));
+   },{data:png.toString('base64'),samples});
+  };
+  const checkPlacement=async id=>{
+   const box=await page.locator('#'+id).locator('..').evaluate(surface=>{
+    const parent=surface.getBoundingClientRect(),image=surface.querySelector('.contrast-overlay').getBoundingClientRect();
+    return {left:(image.x-parent.x)/parent.width*100,top:(image.y-parent.y)/parent.height*100,width:image.width/parent.width*100,height:image.height/parent.height*100};
+   });
+   for(const [key,value]of Object.entries({left:20,top:10,width:40,height:40}))assert.ok(Math.abs(box[key]-value)<.1,id+': crop '+key+' stays at its scene percentage');
+  };
+  for(const example of cases){
+   paintLayer={image:'/crop.svg',imageBounds:bounds,regions:example.regions,clipPolygon:example.clipPolygon};
+   await page.evaluate(()=>localStorage.clear());await page.reload();
+   await page.waitForFunction(()=>!document.querySelector('#start').disabled);await page.locator('#start').click();
+   await checkPlacement('difference');
+   const colors=await paintedSamples(example.samples);
+   for(let i=0;i<colors.length;i++){
+    const [r,g,b]=colors[i],expected=example.expected[i],label=example.name+' at '+example.samples[i]+': '+colors[i];
+    if(expected==='red')assert.ok(r>250&&g<5&&b<5,label);
+    else if(expected==='base')assert.deepEqual(colors[i],[231,236,239],label);
+    else assert.ok(r>231&&r<255&&g>5&&g<230&&b>5&&b<235,label+' keeps a blended feather edge');
+   }
+   await page.locator('#zoom').click();await checkPlacement('zoom-difference');
+   await page.locator('#zoom-more').click();await page.locator('#zoom-level').selectOption('2');await checkPlacement('zoom-difference');await page.locator('#close-zoom').click();
+  }
+  await page.locator('#stage-picker').evaluate(select=>{
+   JJUDA_PUZZLES[0].layers[0].image='/missing-crop.svg';select.dispatchEvent(new Event('change'));
+  });
+  await page.locator('#load-error').waitFor();assert.equal(await page.locator('#start').isDisabled(),true,'a real failed crop request blocks play');
+  assert.equal(await page.locator('.contrast-overlay').count(),2,'both views keep the same failed crop source');
   assert.deepEqual(errors,[]);await context.close();
  }finally{await browser.close();}
 }
 
 (async()=>{
- checkPreciseTargetBounds();checkProgressNormalization();checkLayerClipping();await checkRuntime();await checkRenderedCircles();
- console.log('PASS: precise masterpiece edit hits without changing legacy ellipses, safe optional layer clipping, six/ten-answer completion, stage82 single recording, spot9 hint/receipt recovery, safe artwork credits, ten-answer review, portrait/landscape circles in normal and zoom views');
+ checkPreciseTargetBounds();checkProgressNormalization();checkLayerClipping();checkCropLayers();await checkRuntime();await checkRenderedCircles();
+ console.log('PASS: precise masterpiece edit hits without changing legacy ellipses, safe crop bounds and polygon clipping, painted rect/ellipse/feather masks, crop loading/error/stale-event guards, six/ten-answer completion, stage82 single recording, spot9 hint/receipt recovery, safe artwork credits, ten-answer review, portrait/landscape circles and crop placement in normal and zoom views');
 })().catch(error=>{console.error(error);process.exitCode=1;});

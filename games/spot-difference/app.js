@@ -16,7 +16,7 @@
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
   let autoStartToken=null;
   const celebration=$('celebration'),failure=$('spot-failure');
-  let zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
+  let loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
   const targetCount=()=>puzzle().spots.length;
   const difficultyLabels={normal:'보통','slightly-hard':'조금 어려움',hard:'어려움','very-hard':'매우 어려움'};
@@ -34,9 +34,8 @@
   }
   function speak(message,good=false){
     $('message').textContent=message;$('message').classList.toggle('good',good);$('zoom-status').textContent=`${found().length} / ${targetCount()} · ${message}`;
+    $('zoom-status').scrollTop=0;
     if(failure.open)$('retry-status').textContent=message;
-    clearTimeout(zoomNoticeTimer);
-    if(zoomDialog.open){$('zoom-tools').classList.add('has-message');zoomNoticeTimer=setTimeout(()=>$('zoom-tools').classList.remove('has-message'),6500);}
   }
   function makeMark(spot,isHint=false,isAnswer=false){
     const mark=document.createElement('div');mark.className='mark'+(isHint?' hint-mark':'');
@@ -294,9 +293,15 @@
     }
     layers.forEach((layer,layerIndex)=>{
       const layerKey=`overlay-${layerIndex}`;
-      const clips=layer.regions.map(region=>{
+      const bounds=layer.imageBounds;
+      const cropped=bounds&&['left','top','right','bottom'].every(key=>Number.isFinite(bounds[key]))&&bounds.left>=0&&bounds.top>=0&&bounds.left<bounds.right&&bounds.top<bounds.bottom&&bounds.right<=100&&bounds.bottom<=100;
+      const cropWidth=cropped?bounds.right-bounds.left:100,cropHeight=cropped?bounds.bottom-bounds.top:100;
+      // Crop placement uses scene percentages; answer masks keep their existing
+      // scene coordinates and are converted only for this image's local mask.
+      const regions=cropped?layer.regions.map(region=>({...region,x:(region.x-bounds.left)/cropWidth*100,y:(region.y-bounds.top)/cropHeight*100,rx:region.rx/cropWidth*100,ry:region.ry/cropHeight*100})):layer.regions;
+      const clips=regions.map(region=>{
         if(region.shape!=='rect')return {image:`radial-gradient(ellipse ${region.rx}% ${region.ry}% at ${region.x}% ${region.y}%, #000 94%, transparent 100%)`,size:'100% 100%',position:'0% 0%'};
-        const left=Math.max(0,region.x-region.rx),top=Math.max(0,region.y-region.ry),width=Math.min(100,region.x+region.rx)-left,height=Math.min(100,region.y+region.ry)-top;
+        const left=Math.min(100,Math.max(0,region.x-region.rx)),top=Math.min(100,Math.max(0,region.y-region.ry)),width=Math.max(0,Math.min(100,region.x+region.rx)-left),height=Math.max(0,Math.min(100,region.y+region.ry)-top);
         return {image:'linear-gradient(#000,#000)',size:`${width}% ${height}%`,position:`${width===100?0:left/(100-width)*100}% ${height===100?0:top/(100-height)*100}%`};
       });
       let mask=clips.map(clip=>clip.image).join(','),maskSize=clips.map(clip=>clip.size).join(','),maskPosition=clips.map(clip=>clip.position).join(',');
@@ -309,9 +314,11 @@
       }
       for(const surface of surfaces.filter(surface=>surface.dataset.side==='difference')){
         const image=document.createElement('img');image.className='contrast-overlay';image.alt='';image.setAttribute('aria-hidden','true');image.draggable=false;
+        if(cropped){image.style.inset=`${bounds.top}% auto auto ${bounds.left}%`;image.style.width=`${cropWidth}%`;image.style.height=`${cropHeight}%`;}
         image.style.maskImage=mask;image.style.webkitMaskImage=mask;
         image.style.maskSize=maskSize;image.style.webkitMaskSize=maskSize;image.style.maskPosition=maskPosition;image.style.webkitMaskPosition=maskPosition;
         if(soft){image.style.maskComposite='intersect';image.style.webkitMaskComposite='source-in';}
+        // Polygon vertices are image-local for both full-scene and crop assets.
         const polygon=layer.clipPolygon;
         if(Array.isArray(polygon)&&polygon.length>=3&&polygon.every(point=>Array.isArray(point)&&point.length===2&&point.every(value=>Number.isFinite(value)&&value>=0&&value<=100))){
           image.style.clipPath=`polygon(${polygon.map(([x,y])=>`${x}% ${y}%`).join(',')})`;
@@ -346,7 +353,7 @@
     }
     if(result.alreadyFound){speak('이미 찾은 곳이에요.');return;}
     found().push(result.index);if(r.hintIndex===result.index)hideHint(true);
-    if(found().length===targetCount()){finish('won');return;}refresh();speak(`맞았어요! ${found().length} / ${targetCount()}`,true);
+    if(found().length===targetCount()){finish('won');return;}refresh();speak('맞았어요!',true);
   }
   function openAuth(){if(zoomDialog.open)zoomDialog.close();$('auth-error').textContent='';authDialog.showModal();}
   async function purchase(kind,spot=-1){
@@ -458,11 +465,11 @@
   $('zoom-more').onclick=()=>{const open=zoomDialog.classList.toggle('settings-open');$('zoom-more').setAttribute('aria-expanded',String(open));if(open)$('zoom-level').focus();};
   function openZoom(){
     if($('zoom').disabled)return false;
-    closeZoomSettings();$('zoom-tools').classList.remove('has-message');zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);resizeZoom(1);for(const pane of zoomPanes){pane.scrollLeft=0;pane.scrollTop=0;}refresh();return true;
+    closeZoomSettings();zoomDialog.showModal();document.body.style.overflow='hidden';notifyZoom(true);resizeZoom(1);for(const pane of zoomPanes){pane.scrollLeft=0;pane.scrollTop=0;}refresh();return true;
   }
   $('zoom').onclick=openZoom;
   function clearPictureGesture(){if(picturePointers.size)ignorePictureClickUntil=Date.now()+400;picturePointers.clear();picturePinch=null;pictureDrag=false;picturePane=null;}
-  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{clearPictureGesture();clearTimeout(zoomNoticeTimer);$('zoom-tools').classList.remove('has-message');closeZoomSettings();notifyZoom(false);document.body.style.overflow='';$('zoom').focus();});
+  $('close-zoom').onclick=()=>zoomDialog.close();zoomDialog.addEventListener('close',()=>{clearPictureGesture();closeZoomSettings();notifyZoom(false);document.body.style.overflow='';$('zoom').focus();});
   $('zoom-level').onchange=()=>{resizeZoom(Number($('zoom-level').value));closeZoomSettings();};window.addEventListener('resize',()=>{if(zoomDialog.open)resizeZoom();});
   function pointerPair(){const [a,b]=picturePointers.values();return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))};}
   function capturePicture(id,target){try{target.setPointerCapture(id);}catch{}}

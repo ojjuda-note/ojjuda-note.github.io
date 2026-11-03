@@ -7,7 +7,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "토끼의 숲속 빵집",
     "category": "fairytale",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/01-original.webp",
     "difference": "assets/fairytale-pets/01-original.webp",
@@ -113,8 +113,8 @@ window.JJUDA_PUZZLES.push(...[
         "y": 54.4,
         "rx": 1.5,
         "ry": 1.7999999999999985,
-        "text": "토끼의 작은 어깨 단추 구멍 수가 달라요.",
-        "kind": "count",
+        "text": "토끼의 작은 어깨 단추가 금색에서 초록색으로 바뀌었어요.",
+        "kind": "color",
         "visibility": "zoom",
         "size": "tiny",
         "targetBounds": {
@@ -228,14 +228,6 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 44.8,
-            "y": 54.4,
-            "rx": 1,
-            "ry": 1.3999999999999986,
-            "spotIndex": 6
-          },
-          {
-            "shape": "rect",
             "x": 96,
             "y": 43.9,
             "rx": 1.5,
@@ -259,6 +251,27 @@ window.JJUDA_PUZZLES.push(...[
             "spotIndex": 9
           }
         ]
+      },
+      {
+        "image": "assets/fairytale-pets/01-detail-07-v2.webp",
+        "imageBounds": {
+          "left": 41.26268320180383,
+          "top": 50.84554678692221,
+          "right": 48.365276211950395,
+          "bottom": 57.94813979706878
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 44.8,
+            "y": 54.4,
+            "rx": 1,
+            "ry": 1.3999999999999986,
+            "spotIndex": 6,
+            "feather": 0.04
+          }
+        ],
+        "blend": "color"
       }
     ]
   },
@@ -1834,7 +1847,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "바닷속 조개 카페",
     "category": "fairytale",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/08-original.webp",
     "difference": "assets/fairytale-pets/08-original.webp",
@@ -2071,19 +2084,31 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 15.75,
-            "y": 50.9,
-            "rx": 1.1499999999999995,
-            "ry": 1,
-            "spotIndex": 8
-          },
-          {
-            "shape": "rect",
             "x": 83.35,
             "y": 72.65,
             "rx": 2.0500000000000043,
             "ry": 1.6499999999999986,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/08-detail-09-v2.webp",
+        "imageBounds": {
+          "left": 12.852311161217585,
+          "top": 47.91431792559188,
+          "right": 18.714768883878243,
+          "bottom": 53.77677564825254
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 15.75,
+            "y": 50.9,
+            "rx": 1.1499999999999995,
+            "ry": 1,
+            "spotIndex": 8,
+            "feather": 0.04
           }
         ]
       }
@@ -2095,7 +2120,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "아기 곰의 장난감 공방",
     "category": "fairytale",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/09-original.webp",
     "difference": "assets/fairytale-pets/09-original.webp",
@@ -2249,8 +2274,8 @@ window.JJUDA_PUZZLES.push(...[
         "y": 55.55,
         "rx": 1.7000000000000006,
         "ry": 1.9500000000000006,
-        "text": "곰 어깨의 작은 단추 가운데 돌기가 없어졌어요.",
-        "kind": "missing",
+        "text": "곰 어깨의 작은 단추가 갈색에서 파란색으로 바뀌었어요.",
+        "kind": "color",
         "visibility": "zoom",
         "size": "tiny",
         "targetBounds": {
@@ -2337,16 +2362,29 @@ window.JJUDA_PUZZLES.push(...[
             "rx": 1.5,
             "ry": 1.7000000000000028,
             "spotIndex": 8
-          },
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/09-detail-10-v2.webp",
+        "imageBounds": {
+          "left": 18.376550169109358,
+          "top": 51.634723788049605,
+          "right": 26.155580608793688,
+          "bottom": 59.41375422773394
+        },
+        "regions": [
           {
             "shape": "rect",
             "x": 22.3,
             "y": 55.55,
             "rx": 1.3000000000000007,
             "ry": 1.5500000000000007,
-            "spotIndex": 9
+            "spotIndex": 9,
+            "feather": 0.04
           }
-        ]
+        ],
+        "blend": "color"
       }
     ]
   },
@@ -2878,7 +2916,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "아기용의 햇살 가득 화원",
     "category": "fairytale",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/12-original.webp",
     "difference": "assets/fairytale-pets/12-original.webp",
@@ -3107,14 +3145,6 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 68.75,
-            "y": 91.85,
-            "rx": 1.1500000000000057,
-            "ry": 1.1499999999999986,
-            "spotIndex": 7
-          },
-          {
-            "shape": "rect",
             "x": 6.949999999999999,
             "y": 48.65,
             "rx": 1.15,
@@ -3128,6 +3158,26 @@ window.JJUDA_PUZZLES.push(...[
             "rx": 1.5500000000000043,
             "ry": 0.8000000000000007,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/12-detail-08-v2.webp",
+        "imageBounds": {
+          "left": 65.83990980834274,
+          "top": 88.95152198421647,
+          "right": 71.70236753100339,
+          "bottom": 94.81397970687712
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 68.75,
+            "y": 91.85,
+            "rx": 1.1500000000000057,
+            "ry": 1.1499999999999986,
+            "spotIndex": 7,
+            "feather": 0.04
           }
         ]
       }
@@ -5749,7 +5799,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "해마의 산호 우체국",
     "category": "fairytale",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/23-original.webp",
     "difference": "assets/fairytale-pets/23-original.webp",
@@ -5887,7 +5937,7 @@ window.JJUDA_PUZZLES.push(...[
         "y": 79,
         "rx": 2.099999999999999,
         "ry": 1.9,
-        "text": "봉투의 붉은 봉인에 찍힌 작은 점 개수가 달라요.",
+        "text": "봉투의 붉은 봉인에 찍힌 작은 점이 세 개에서 두 개로 줄었어요.",
         "kind": "count",
         "visibility": "zoom",
         "size": "tiny",
@@ -5986,19 +6036,31 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 43.099999999999994,
-            "y": 79,
-            "rx": 1.6999999999999993,
-            "ry": 1.5,
-            "spotIndex": 8
-          },
-          {
-            "shape": "rect",
             "x": 26.6,
             "y": 15.8,
             "rx": 1.4000000000000004,
             "ry": 1.3999999999999995,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/23-detail-09-v2.webp",
+        "imageBounds": {
+          "left": 38.78241262683202,
+          "top": 74.74633596392334,
+          "right": 47.350620067643746,
+          "bottom": 83.31454340473506
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 43.099999999999994,
+            "y": 79,
+            "rx": 1.6999999999999993,
+            "ry": 1.5,
+            "spotIndex": 8,
+            "feather": 0.04
           }
         ]
       }
@@ -9403,7 +9465,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "발코니 화분 옆 회색태비",
     "category": "cat",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/37-original.webp",
     "difference": "assets/fairytale-pets/37-original.webp",
@@ -9592,14 +9654,6 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 17.4,
-            "y": 92.7,
-            "rx": 8.1,
-            "ry": 4.200000000000003,
-            "spotIndex": 2
-          },
-          {
-            "shape": "rect",
             "x": 95.7,
             "y": 14.5,
             "rx": 4,
@@ -9653,6 +9707,26 @@ window.JJUDA_PUZZLES.push(...[
             "rx": 1.6000000000000014,
             "ry": 1.2999999999999972,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/37-detail-03-v2.webp",
+        "imageBounds": {
+          "left": 0,
+          "top": 59.41375422773394,
+          "right": 40.58624577226607,
+          "bottom": 100
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 17.4,
+            "y": 92.7,
+            "rx": 8.1,
+            "ry": 4.200000000000003,
+            "spotIndex": 2,
+            "feather": 0.04
           }
         ]
       }
@@ -10447,7 +10521,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "작은 서점의 메인쿤",
     "category": "cat",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/41-original.webp",
     "difference": "assets/fairytale-pets/41-original.webp",
@@ -10465,7 +10539,7 @@ window.JJUDA_PUZZLES.push(...[
           "left": 42.5,
           "top": 8.4,
           "right": 49,
-          "bottom": 13.4
+          "bottom": 17.2
         }
       },
       {
@@ -10620,14 +10694,6 @@ window.JJUDA_PUZZLES.push(...[
         "regions": [
           {
             "shape": "rect",
-            "x": 45.75,
-            "y": 10.9,
-            "rx": 3.25,
-            "ry": 2.5,
-            "spotIndex": 0
-          },
-          {
-            "shape": "rect",
             "x": 28.5,
             "y": 72.75,
             "rx": 11.5,
@@ -10698,6 +10764,100 @@ window.JJUDA_PUZZLES.push(...[
             "ry": 2.75,
             "spotIndex": 9
           }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/41-detail-01-v2.webp",
+        "imageBounds": {
+          "left": 37.54227733934611,
+          "top": 2.705749718151071,
+          "right": 53.88951521984217,
+          "bottom": 19.052987598647125
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 45.75,
+            "y": 12.8,
+            "rx": 3.25,
+            "ry": 4.3999999999999995,
+            "spotIndex": 0,
+            "feather": 0.04
+          }
+        ],
+        "clipPolygon": [
+          [
+            44,
+            35
+          ],
+          [
+            53,
+            35
+          ],
+          [
+            53,
+            44
+          ],
+          [
+            61,
+            46
+          ],
+          [
+            67,
+            53
+          ],
+          [
+            68,
+            61
+          ],
+          [
+            67,
+            70
+          ],
+          [
+            66,
+            77
+          ],
+          [
+            61,
+            84
+          ],
+          [
+            54,
+            88
+          ],
+          [
+            44,
+            88
+          ],
+          [
+            37,
+            83
+          ],
+          [
+            33,
+            76
+          ],
+          [
+            31,
+            65
+          ],
+          [
+            31,
+            57
+          ],
+          [
+            33,
+            50
+          ],
+          [
+            41,
+            45
+          ],
+          [
+            44,
+            44
+          ]
         ]
       }
     ]
@@ -14884,7 +15044,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "닥스훈트의 조용한 서재",
     "category": "dog",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/58-original.webp",
     "difference": "assets/fairytale-pets/58-original.webp",
@@ -15105,14 +15265,6 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 84.95,
-            "y": 16.7,
-            "rx": 0.5499999999999972,
-            "ry": 0.7999999999999998,
-            "spotIndex": 6
-          },
-          {
-            "shape": "rect",
             "x": 73.1,
             "y": 70.94999999999999,
             "rx": 0.8999999999999986,
@@ -15134,6 +15286,26 @@ window.JJUDA_PUZZLES.push(...[
             "rx": 1.8999999999999986,
             "ry": 1.1999999999999957,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/58-detail-07-v2.webp",
+        "imageBounds": {
+          "left": 82.2998872604284,
+          "top": 13.979706877113868,
+          "right": 87.71138669673056,
+          "bottom": 19.39120631341601
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 84.95,
+            "y": 16.7,
+            "rx": 0.5499999999999972,
+            "ry": 0.7999999999999998,
+            "spotIndex": 6,
+            "feather": 0.04
           }
         ]
       }
@@ -15928,7 +16100,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "꽃가게의 슈나우저",
     "category": "dog",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/62-original.webp",
     "difference": "assets/fairytale-pets/62-original.webp",
@@ -16066,14 +16238,14 @@ window.JJUDA_PUZZLES.push(...[
         "y": 79.6,
         "rx": 1.65,
         "ry": 1.5,
-        "text": "씨앗 봉투 잎무늬의 짧은 흰 잎맥 선이 없어졌어요.",
-        "kind": "detail",
+        "text": "씨앗 봉투 잎무늬의 오른쪽 가운데 잎맥 선이 없어졌어요.",
+        "kind": "missing",
         "visibility": "zoom",
         "size": "tiny",
         "targetBounds": {
           "left": 52,
           "top": 78.8,
-          "right": 54.5,
+          "right": 55,
           "bottom": 80.4
         }
       },
@@ -16165,19 +16337,31 @@ window.JJUDA_PUZZLES.push(...[
           },
           {
             "shape": "rect",
-            "x": 53.25,
-            "y": 79.6,
-            "rx": 1.25,
-            "ry": 0.8000000000000043,
-            "spotIndex": 8
-          },
-          {
-            "shape": "rect",
             "x": 78,
             "y": 88.5,
             "rx": 0.9000000000000057,
             "ry": 0.9000000000000057,
             "spotIndex": 9
+          }
+        ]
+      },
+      {
+        "image": "assets/fairytale-pets/62-detail-09-v2.webp",
+        "imageBounds": {
+          "left": 50.05636978579482,
+          "top": 76.43742953776776,
+          "right": 56.36978579481398,
+          "bottom": 82.75084554678692
+        },
+        "regions": [
+          {
+            "shape": "rect",
+            "x": 53.5,
+            "y": 79.6,
+            "rx": 1.5,
+            "ry": 0.8000000000000043,
+            "spotIndex": 8,
+            "feather": 0.015
           }
         ]
       }
@@ -16450,7 +16634,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "장난감 방의 골든 강아지",
     "category": "dog",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/64-original.webp",
     "difference": "assets/fairytale-pets/64-original.webp",
@@ -16476,8 +16660,8 @@ window.JJUDA_PUZZLES.push(...[
         "y": 71.8,
         "rx": 2.0500000000000003,
         "ry": 2.2500000000000013,
-        "text": "간식 그릇 뒤쪽 비스킷 하나가 없어졌어요.",
-        "kind": "missing",
+        "text": "간식 그릇 뒤쪽 비스킷의 모양이 작고 둥글게 바뀌었어요.",
+        "kind": "shape",
         "visibility": "normal",
         "size": "small",
         "targetBounds": {
@@ -17233,7 +17417,7 @@ window.JJUDA_PUZZLES.push(...[
     "title": "베이킹 방의 푸들",
     "category": "dog",
     "difficulty": "slightly-hard",
-    "revision": "six-normal-four-zoom-1",
+    "revision": "six-normal-four-zoom-2",
     "aspectRatio": 1,
     "original": "assets/fairytale-pets/67-original.webp",
     "difference": "assets/fairytale-pets/67-original.webp",
@@ -17323,8 +17507,8 @@ window.JJUDA_PUZZLES.push(...[
         "y": 10.1,
         "rx": 3.599999999999999,
         "ry": 3.0499999999999994,
-        "text": "꽃병의 작은 흰 꽃이 없어졌어요.",
-        "kind": "missing",
+        "text": "작은 화분의 흰 꽃이 분홍 꽃과 잎으로 바뀌었어요.",
+        "kind": "shape",
         "visibility": "normal",
         "size": "small",
         "targetBounds": {

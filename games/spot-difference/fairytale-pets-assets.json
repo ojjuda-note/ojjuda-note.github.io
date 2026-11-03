@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "generation": "AI-generated original fairy-tale illustrations and photorealistic cat and dog scenes created for these puzzles.",
   "difficulty": "slightly-hard",
   "totalPuzzles": 70,
@@ -26,6 +26,13 @@
           "sha256": "e1e998b979543091253ea144fdff0d628e3f2874d3b1c3d875f1ae49ecb4ad66",
           "width": 887,
           "height": 887
+        },
+        "detail07": {
+          "path": "assets/fairytale-pets/01-detail-07-v2.webp",
+          "bytes": 977976,
+          "sha256": "a9261efb7247573604e8e35b8d0aadcc3050ae3f0814988e2668a83919077df2",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -180,6 +187,13 @@
           "sha256": "c779ec583e4137c40821c69915114c9a972598b785460884bcea08d51078f2d4",
           "width": 887,
           "height": 887
+        },
+        "detail09": {
+          "path": "assets/fairytale-pets/08-detail-09-v2.webp",
+          "bytes": 923012,
+          "sha256": "eabcc3a5164c987ad6b4aeaa8fd09a40dedf84cee0058fa75ce9076579098e29",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -202,6 +216,13 @@
           "sha256": "a9324a0d09361a76cd30806e0900ffd4fb585c96850978b00b6ba8e195b7bcec",
           "width": 887,
           "height": 887
+        },
+        "detail10": {
+          "path": "assets/fairytale-pets/09-detail-10-v2.webp",
+          "bytes": 961492,
+          "sha256": "64c3cb79d0395bc018c00eadb39df9b7bba196d6cc3fbe851ad528e977419252",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -268,6 +289,13 @@
           "sha256": "bc0dfe7d7f06bf56cad73b9a07f93431b322b9de5103f0ee8a5d0aca58277032",
           "width": 887,
           "height": 887
+        },
+        "detail08": {
+          "path": "assets/fairytale-pets/12-detail-08-v2.webp",
+          "bytes": 767724,
+          "sha256": "e64a95f1070a7573069157d5375aefa5401bc78486abb00ee7141e884677f595",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -510,6 +538,13 @@
           "sha256": "b1d51f0546f85c857791ea577aacecb26fa07271650fe8baee92350c0ee11359",
           "width": 887,
           "height": 887
+        },
+        "detail09": {
+          "path": "assets/fairytale-pets/23-detail-09-v2.webp",
+          "bytes": 882560,
+          "sha256": "a5e9d754ea73556ae6682ef98cbea7f31251ed8de082c1ff7a7ccc1a9a08a58a",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -818,6 +853,13 @@
           "sha256": "bb5eb181613a7745d09cbbf4125ec080f007948710e61f04251754b416705a97",
           "width": 887,
           "height": 887
+        },
+        "detail03": {
+          "path": "assets/fairytale-pets/37-detail-03-v2.webp",
+          "bytes": 1762226,
+          "sha256": "39afb64b2dffa6d0cbff2827101cebcbbe08574708d226633875b7b91be37dd1",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -906,6 +948,13 @@
           "sha256": "6ce454d4fb5a7d7e1a6811a747b0c48518a7baa290bd3110569f6a8f5fb115ea",
           "width": 887,
           "height": 887
+        },
+        "detail01": {
+          "path": "assets/fairytale-pets/41-detail-01-v2.webp",
+          "bytes": 975382,
+          "sha256": "68d0fc97fb6326f3cd06d58cea4a0e8765046d2abb79a3ccdc1f3cf079ba7ed1",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -1280,6 +1329,13 @@
           "sha256": "b8178a7459e2aa7ba72fba02b3e11bc74da3dc459b97f2a2328cc0ba46f0bae9",
           "width": 887,
           "height": 887
+        },
+        "detail07": {
+          "path": "assets/fairytale-pets/58-detail-07-v2.webp",
+          "bytes": 753814,
+          "sha256": "3b5c74419e83b2d79a4d281d20ed15fa46d86410be5b81cc77085b437c41f321",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -1368,6 +1424,13 @@
           "sha256": "9c13ef32f3cad9f33d714551e79859b3217d26c0e1980babdbc96594325dc4be",
           "width": 887,
           "height": 887
+        },
+        "detail09": {
+          "path": "assets/fairytale-pets/62-detail-09-v2.webp",
+          "bytes": 837916,
+          "sha256": "0ac561bc7bbe4ada45a11628be66736076ddeb077b683251a187107e0dd2a5b1",
+          "width": 1254,
+          "height": 1254
         }
       }
     },
@@ -1547,5 +1610,15 @@
         }
       }
     }
-  ]
+  ],
+  "visibilityReview": {
+    "revision": "20261103-spot-visibility2",
+    "reviewedPuzzles": 70,
+    "reviewedTargets": 700,
+    "updatedImageTargets": 9,
+    "colorTargets": 2,
+    "normalPerPuzzle": 6,
+    "zoomPerPuzzle": 4,
+    "targetEdgeCorrections": 2
+  }
 }
