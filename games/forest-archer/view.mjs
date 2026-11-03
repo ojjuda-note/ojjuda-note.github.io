@@ -1,5 +1,6 @@
 /** Forward-facing camera and painter-order geometry. World units are metres. */
-export const FLIGHT_TIME_SCALE = .32;
+// Keep targets and projectiles on the same real-time clock during live flight.
+export const FLIGHT_TIME_SCALE = 1;
 export const IMPACT_HOLD = .65;
 export const RETURN_DURATION = .7;
 export const NEAR_PLANE = .15;
