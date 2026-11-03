@@ -77,12 +77,12 @@ test('a short ground impact bounces once, loses energy and continues to a real l
   assert.equal(shot.bounceCount, 1);
 });
 
-test('normal bow launches can rescue short shots on the actual 30m and 50m stages', () => {
-  for (const {stage, charge, pitch} of [
-    {stage: STAGES[2], charge: .30, pitch: .083},
-    {stage: STAGES[3], charge: .35, pitch: .222}
+test('normal bow and crossbow launches can bounce into the real 122cm faces at 30m and 50m', () => {
+  for (const {stage, bow, charge, pitch} of [
+    {stage: STAGES[2], bow: BOWS[0], charge: 1, pitch: -.201},
+    {stage: STAGES[3], bow: BOWS[11], charge: 1, pitch: -.1959}
   ]) {
-    const params = {bow: BOWS[0], charge, pitch};
+    const params = {bow, charge, pitch};
     const shot = launchArrow({...params, arrow: ARROWS[12]});
     const plain = launchArrow({...params, arrow: ordinaryCopy(12)});
     const plainResult = finishInSteps(plain, stage, 1 / 120);
