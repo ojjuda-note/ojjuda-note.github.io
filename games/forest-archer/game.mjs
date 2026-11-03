@@ -37,8 +37,9 @@ function stageCleared(id,saved=progress){
 }
 function stageAvailable(id,saved=progress){
   // Keep genuine older clears replayable without opening the gaps before them
-  // or the next uncleared mission beyond the sequential frontier.
-  return Number.isInteger(id)&&id>=1&&id<=STAGES.length&&(id<=saved.unlocked||stageCleared(id,saved));
+  // or the next uncleared mission beyond the sequential frontier. Only the
+  // approved temporary admin trial can visit every valid mission freely.
+  return Number.isInteger(id)&&id>=1&&id<=STAGES.length&&(adminTrialActive||id<=saved.unlocked||stageCleared(id,saved));
 }
 // Only these weapons could own a paid scope before magnification choices existed.
 const LEGACY_SCOPE_IDS=new Set([3,7,8,9,10,11,12,13,14,15,16,17,18,19,22,23,24]);
@@ -606,7 +607,7 @@ function updateRound(){
   $('roundProgress').textContent=state.isEvent?`${state.hits} / ${s.totalTargets}개 명중`:`${state.used} / ${shotLimit()}회 발사`;
   if(!state.isEvent){$('shotDots').innerHTML=Array.from({length:shotLimit()},(_,i)=>`<i class="arrow-dot ${i<state.used?'used':''}"></i>`).join('');$('shotCountLabel').textContent=`${Math.max(0,shotLimit()-state.used)}${shotUnit()} 남음${activeBow().burstCount>1?' · 3연발':''}`;}
   $('journeyCount').textContent=state.isEvent?`최고 ${(progress.eventBestByLevel[s.eventLevel]||0)/10}개`:`${s.id} / ${STAGES.length}`;
-  $('journeyCaption').textContent=state.isEvent?`이벤트 ${s.eventLevel}단계 · ${s.targetsPerWave}개씩 등장`:adminTrialActive?`${progress.unlocked}단계까지 열림 · 모든 장비 체험`:`${progress.unlocked}단계까지 열림 · 이벤트까지 ${5-progress.mainRounds%5}판`;
+  $('journeyCaption').textContent=state.isEvent?`이벤트 ${s.eventLevel}단계 · ${s.targetsPerWave}개씩 등장`:adminTrialActive?`전체 ${STAGES.length}단계 자유 선택 · 모든 장비 체험`:`${progress.unlocked}단계까지 열림 · 이벤트까지 ${5-progress.mainRounds%5}판`;
   $('journeySteps').innerHTML=STAGES.map(s=>{const locked=!stageAvailable(s.id);return `<button class="journey-step ${s.id===state.stage.id?'active':''} ${stageCleared(s.id)?'done':''}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><strong>${String(s.id).padStart(2,'0')}</strong><small>${locked?'잠김':`${s.distance}m`}</small></button>`}).join('');
   const journey=$('journeySteps');
   journey.classList.toggle('hidden',!!state.isEvent);
@@ -671,7 +672,8 @@ function mainRoundCleared(){
   return state.mode==='finished'&&state.score>=state.stage.goal;
 }
 const mainGoalForChoices=()=>state.isEvent?(state.eventMainResult?.goal??STAGES[mainStageForChoices()-1].goal):state.stage.goal;
-const canAdvanceStage=()=>state.mode==='finished'&&mainStageForChoices()<STAGES.length&&mainRoundCleared()&&stageAvailable(mainStageForChoices()+1);
+const canAdvanceStage=()=>mainStageForChoices()<STAGES.length&&stageAvailable(mainStageForChoices()+1)&&
+  (adminTrialActive||(state.mode==='finished'&&mainRoundCleared()));
 function navigateStage(delta){
   if(guardAmmoAction())return;
   if(delta>0&&!canAdvanceStage()){
@@ -1299,8 +1301,8 @@ function showMenu(){
   const level=mainStageForChoices(),event=state.isEvent,finished=state.mode==='finished';
   const action=(name,symbol,title,detail)=>`<button class="menu-action" data-action="${name}">${icon(symbol)}<span><strong>${title}</strong><small>${detail}</small></span></button>`;
   const choices=!event||finished?stageChoiceMarkup('menu-stage-actions'):'';
-  const route=event?action('ammo-shop','coin',adminTrialActive?'체험 총알 무제한':'총알 충전',`보유 ${ammoStockLabel()}`):action('stages','grid','전체 단계',`${progress.unlocked}단계까지 열림 · 클리어한 판 다시 하기`);
-  const subtitle=adminTrialActive?'관리자 체험 · 모든 장비 사용 · 기록 저장 안 함':event?`접시 사격 이벤트 ${state.stage.eventLevel}단계 · 활쏘기 5판마다 한 번`:`지금 ${level}단계 · 접시 사격 이벤트까지 ${5-progress.mainRounds%5}판`;
+  const route=event?action('ammo-shop','coin',adminTrialActive?'체험 총알 무제한':'총알 충전',`보유 ${ammoStockLabel()}`):action('stages','grid','전체 단계',adminTrialActive?`전체 ${STAGES.length}단계 자유 선택`:`${progress.unlocked}단계까지 열림 · 클리어한 판 다시 하기`);
+  const subtitle=adminTrialActive?'관리자 체험 · 모든 단계·장비 사용 · 기록 저장 안 함':event?`접시 사격 이벤트 ${state.stage.eventLevel}단계 · 활쏘기 5판마다 한 번`:`지금 ${level}단계 · 접시 사격 이벤트까지 ${5-progress.mainRounds%5}판`;
   const coachSetting=event?'':`<button class="menu-action" data-action="toggle-coach" aria-pressed="${!laserEnabled()&&progress.coachEnabled}" ${laserEnabled()?'disabled':''}>${icon('target')}<span><strong>${laserEnabled()?'코치 · 레이저 사용 중':`코치 ${progress.coachEnabled?'켜짐':'꺼짐'}`}</strong><small>${laserEnabled()?'레이저를 끄면 이전 코치 설정으로 돌아와요.':`무료 기본 기능 · 눌러서 ${progress.coachEnabled?'끄기':'켜기'}`}</small></span></button>`;
   openModal('menu',`<div class="game-menu"><p class="eyebrow">TAKE YOUR NEXT SHOT</p><h2 id="modalTitle">게임 메뉴</h2><p class="modal-subtitle">${subtitle}</p>${choices}<div class="menu-actions">${route}${adminTrialActive?action('trial-events','target','총기·이벤트 체험','1~10단계 자유 선택 · 총기 5종'):''}${action('stabilizers','tonic','안정제',adminTrialActive?'무제한 체험 · 이번 판 떨림 50%':`${progress.stabilizers}개 보유 · 이번 판 떨림 50%`)}<button class="menu-action" data-action="toggle-sound" aria-pressed="${progress.sound}">${icon(progress.sound?'sound':'mute')}<span><strong>소리 ${progress.sound?'켜짐':'꺼짐'}</strong><small>눌러서 ${progress.sound?'끄기':'켜기'}</small></span></button>${coachSetting}${action('help','help','게임 방법','조준·장비·이벤트 안내')}</div>${event&&!finished?`<button class="button soft-button menu-return" data-action="leave-event" ${ammoLocked()?'disabled':''}>활쏘기로 돌아가기</button>`:''}<button class="button primary-button" data-action="close">${finished?'결과로 돌아가기':'게임 계속하기'}</button></div>`,true);
 }
@@ -1320,7 +1322,7 @@ function showStages(){
     else chapters.push({chapterId:stage.chapterId,first:stage.id,last:stage.id,name:stage.chapterName});
   }
   const ranges=STAGE_GEAR_BANDS.map((band,index)=>({...band,name:['기초','응용','심화','최종'][index]}));
-  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}개 미션 · 고정 과녁부터 이동·가림막·동물·복합 장애물까지 한 가지씩 익혀요. 121~220단계는 60·80·100·120·150m 장거리 미션이에요. 상위 활·석궁과 거리별 장거리 화살을 권장해요. 앞 단계를 통과하면 다음 단계가 열려요. 클리어한 판은 다시 선택할 수 있어요.</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.gearLabel} 권장"><strong>${range.first}–${range.last}</strong><small>${range.name}</small></button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=!stageAvailable(s.id),best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-chapter-${s.chapterId}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" id="stage-range-${s.id}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · 잠김':''}</span><strong>${s.name}</strong><small>${s.gearLabel}${s.longRange?` + ${s.distance}m 화살`:""} 권장</small><small>${s.distance}m · 목표 점수 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
+  openModal('stages',`<p class="eyebrow">FOLLOW YOUR OWN TRAIL</p><h2 id="modalTitle">어느 숲길로 갈까요?</h2><p class="modal-subtitle">총 ${STAGES.length}개 미션 · 고정 과녁부터 이동·가림막·동물·복합 장애물까지 한 가지씩 익혀요. 121~220단계는 60·80·100·120·150m 장거리 미션이에요. 상위 활·석궁과 거리별 장거리 화살을 권장해요. ${adminTrialActive?'관리자 체험에서는 모든 단계를 자유롭게 선택할 수 있어요.':'앞 단계를 통과하면 다음 단계가 열려요. 클리어한 판은 다시 선택할 수 있어요.'}</p><nav class="stage-range-nav" aria-label="단계 구간">${ranges.map(range=>`<button type="button" data-stage-range="${range.first}" aria-label="${range.first}~${range.last}단계 ${range.gearLabel} 권장"><strong>${range.first}–${range.last}</strong><small>${range.name}</small></button>`).join('')}</nav><div class="stage-grid">${STAGES.map(s=>{const locked=!stageAvailable(s.id),best=progress.best[s.id]||0,stars=starsFor(best,s.goal),range=chapters.find(chapter=>chapter.chapterId===s.chapterId);return `${s.id===range.first?`<h3 class="stage-section-title" id="stage-chapter-${s.chapterId}">${String(s.id).padStart(2,'0')}–${range.last} · ${range.name}</h3>`:''}<button class="stage-card ${s.id===state.stage.id?'active':''}" id="stage-range-${s.id}" data-stage="${s.id}" ${locked?'disabled':''} aria-label="${s.id}단계 ${s.name}${locked?' 잠김':''}"><span class="stage-index">${String(s.id).padStart(2,'0')}${locked?' · 잠김':''}</span><strong>${s.name}</strong><small>${s.gearLabel}${s.longRange?` + ${s.distance}m 화살`:""} 권장</small><small>${s.distance}m · 목표 점수 ${s.goal}점</small><span class="stage-stars">${locked?'앞 단계를 통과하세요':'★'.repeat(stars)+'☆'.repeat(3-stars)}</span></button>`}).join('')}</div>`);
 }
 document.addEventListener('click',e=>{
   if(trialBlocked())return;
