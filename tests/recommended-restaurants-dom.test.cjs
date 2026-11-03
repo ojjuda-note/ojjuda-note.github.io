@@ -67,6 +67,14 @@ function fixture(t, options = {}) {
     queueMicrotask(() => callback(new window.Blob([new Uint8Array([255, 216, 255, 224, 0, 16, 255, 217])], { type: type || 'image/jpeg' })));
   };
   const state = installRecommendedRestaurantsFixture(window, options);
+  const pickers = [];
+  window.OjjudaRestaurantLocationPicker = {
+    open(settings) {
+      const pending = deferred(), entry = { settings, resolve: pending.resolve, closeCount: 0 };
+      const picker = { result: pending.promise, close() { entry.closeCount++; pending.resolve(null); } };
+      entry.picker = picker; pickers.push(entry); return picker;
+    }
+  };
   window.eval(fs.readFileSync(path.join(root, 'recommended-restaurants.js'), 'utf8'));
   state.loginRequests = 0;
   const ui = window.OjjudaRecommendedRestaurants.create({ client: state.client, getUser: state.getUser, notify: state.notify, onLogin: () => { state.loginRequests++; } });
@@ -75,7 +83,7 @@ function fixture(t, options = {}) {
   const calls = type => state.calls.filter(call => call.type === type);
   const rpc = name => calls('rpc').filter(call => call.name === name);
   const f = {
-    dom, window, document, state, ui, $, rr, urls, revoked, errors, calls, rpc,
+    dom, window, document, state, ui, $, rr, urls, revoked, errors, calls, rpc, pickers,
     click(selector) { const node = $(selector); assert.ok(node, selector + ' exists'); node.click(); },
     clickRR(name) { const node = rr(name); assert.ok(node, name + ' exists'); node.click(); },
     async open() { $('#world-entry').focus(); await ui.open(); await until(() => rr('list'), 'the member list opens'); },
@@ -170,19 +178,19 @@ test('zero photos cannot save, removing the only photo restores that guard, and 
   assert.equal(f.rr('submit').disabled, true);
   f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
   assert.equal(f.calls('upload').length, 0);
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.match(f.rr('form-status').textContent, /1~12장/);
   f.choose(1); await f.photos(1); assert.equal(f.rr('submit').disabled, false);
   f.clickRR('photo-remove'); await f.photos(0);
   assert.equal(f.rr('submit').disabled, true);
   assert.match(f.rr('form-status').textContent, /1장 이상/);
   f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.calls('upload').length, 0);
   f.choose(1); await f.photos(1); f.clickRR('submit');
   await until(() => f.state.rows.length === 1, 'one photo can be saved');
   assert.equal(f.state.rows[0].photos.length, 1);
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 1);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1);
   assert.equal(f.calls('upload').length, 1);
   assert.ok(f.calls('upload').every(call => call.mime === 'image/jpeg' && call.settings?.upsert === false));
   assert.ok(f.state.rows[0].photos.every(photo => photo.startsWith(f.state.member + '/' + f.state.rows[0].id + '/')));
@@ -216,8 +224,8 @@ test('editing counts retained photos together with additions and removes only om
   await f.photos(3); f.clickRR('photo-remove'); f.clickRR('photo-remove'); await f.photos(1);
   assert.equal(f.rr('submit').disabled, false, 'one retained photo satisfies the minimum');
   f.choose(2); await f.photos(3); f.clickRR('submit');
-  await until(() => f.rpc('save_restaurant_recommendation').length === 1 && f.state.rows[0].updated_at !== item.updated_at, 'retained plus added photos save as one edit');
-  const request = f.rpc('save_restaurant_recommendation')[0].parameters;
+  await until(() => f.rpc('save_restaurant_recommendation_with_location').length === 1 && f.state.rows[0].updated_at !== item.updated_at, 'retained plus added photos save as one edit');
+  const request = f.rpc('save_restaurant_recommendation_with_location')[0].parameters;
   assert.equal(request.p_id, item.id);
   assert.equal(request.p_expected_updated_at, item.updated_at);
   assert.equal(f.calls('upload').length, 2, 'retained photographs are not uploaded again');
@@ -248,7 +256,7 @@ test('editing a one-photo post rejects zero photos and saves a replacement befor
   await f.photos(1); assert.equal(f.rr('submit').disabled, false);
   f.clickRR('photo-remove'); await f.photos(0); assert.equal(f.rr('submit').disabled, true);
   f.$('form.rr-editor').dispatchEvent(new f.window.Event('submit', { bubbles: true, cancelable: true })); await f.settle();
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.calls('remove').length, 0, 'the saved original survives an unsaved empty draft');
   assert.ok(f.state.files.has(item.photos[0]));
   f.choose(1); await f.photos(1); f.clickRR('submit');
@@ -267,25 +275,25 @@ test('an upload failure keeps a retryable draft and does not create a partial po
   };
   await f.open(); await f.compose(); f.validFields(); f.choose(3); await f.photos(3); f.clickRR('submit');
   await until(() => uploadAttempt >= 2 && f.rr('submit') && !f.rr('submit').disabled, 'the failed upload releases retry');
-  assert.equal(f.state.rows.length, 0); assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.state.rows.length, 0); assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.photoCount(), 3); assert.equal(f.rr('field-name').value, '새 추천 국수집');
   f.clickRR('submit'); await until(() => f.state.rows.length === 1, 'retry completes the same draft');
   assert.equal(f.state.rows[0].photos.length, 3);
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 1);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1);
   assert.equal(new Set(f.state.rows[0].photos).size, 3);
 });
 
 test('an unresolved save cannot be submitted twice and read-back recovers a late commit', async t => {
   const pending = deferred(), f = fixture(t);
-  f.state.hooks.rpc.save_restaurant_recommendation = () => pending.promise;
+  f.state.hooks.rpc.save_restaurant_recommendation_with_location = () => pending.promise;
   await f.open(); await f.compose(); f.validFields(); f.choose(3); await f.photos(3); f.clickRR('submit');
-  await until(() => f.rpc('save_restaurant_recommendation').length === 1, 'the save has reached the service');
-  const request = f.rpc('save_restaurant_recommendation')[0].parameters;
+  await until(() => f.rpc('save_restaurant_recommendation_with_location').length === 1, 'the save has reached the service');
+  const request = f.rpc('save_restaurant_recommendation_with_location')[0].parameters;
   f.expireTimeouts();
   await until(() => f.rr('reconcile') && !f.rr('reconcile').hidden, 'the uncertain save offers read-back');
   assert.equal(f.rr('submit').disabled, true);
   f.clickRR('submit'); f.clickRR('reconcile'); await f.settle();
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 1, 'an empty early read-back cannot resubmit an unresolved write');
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1, 'an empty early read-back cannot resubmit an unresolved write');
   assert.equal(f.calls('remove').length, 0, 'photos needed by an in-flight write are preserved');
   assert.equal(f.rr('submit').disabled, true);
   pending.resolve(); await until(() => f.state.rows.length === 1, 'the original write eventually commits');
@@ -293,7 +301,7 @@ test('an unresolved save cannot be submitted twice and read-back recovers a late
   await until(() => !f.rr('editor'), 'the committed draft leaves edit mode after verification');
   assert.equal(f.state.rows[0].id, request.p_id);
   assert.equal(f.state.rows[0].request_id, request.p_request_id);
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 1);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1);
   assert.ok(f.state.rows[0].photos.every(photo => f.state.files.has(photo)));
 });
 
@@ -306,7 +314,7 @@ test('switching accounts during upload closes the draft and blocks later mutatio
   await until(() => !f.ui.isOpen(), 'account change closes the editor immediately');
   pending.resolve(); await f.settle();
   assert.equal(f.calls('upload').length, 1, 'the old draft cannot upload its remaining photos');
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.calls('remove').length, 0, 'the new account cannot issue cleanup for the old account');
   assert.equal(f.urls.size, 0, 'private preview URLs are released');
 });
@@ -331,7 +339,7 @@ test('discard confirmation preserves or releases the draft and restores the back
   f.clickRR('close'); await until(() => f.rr('confirm-dialog'), 'discard can be retried');
   f.clickRR('confirm-accept'); await until(() => !f.ui.isOpen(), 'discard closes the directory');
   assert.equal(f.urls.size, 0); assert.equal(f.document.body.style.overflow, 'auto');
-  assert.equal(f.calls('upload').length, 0); assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.calls('upload').length, 0); assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.document.activeElement.id, 'world-entry');
 });
 
@@ -362,7 +370,7 @@ test('a failed edit-photo cleanup is visible and retry removes only server-confi
   cleanupFailed = false; f.clickRR('cleanup-retry');
   await until(() => !f.state.files.has(item.photos[0]), 'retry removes the confirmed old photo');
   await until(() => f.rr('cleanup-status').hidden, 'successful retry clears the pending warning');
-  assert.equal(f.rpc('save_restaurant_recommendation').length, 1, 'cleanup retry does not repeat the post mutation');
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1, 'cleanup retry does not repeat the post mutation');
   assert.ok(f.state.rows[0].photos.every(photo => f.state.files.has(photo)), 'retained and new referenced photos survive cleanup');
 });
 
@@ -391,9 +399,63 @@ test('Back dismisses an open confirmation without discarding or navigating away 
   f.clickRR('close'); await until(() => f.rr('confirm-dialog'), 'discard confirmation opens');
   await f.ui.back(); await until(() => !f.rr('confirm-dialog'), 'public Back cancels only the confirmation');
   assert.ok(f.rr('editor')); assert.equal(f.photoCount(), 3); assert.equal(f.rr('field-name').value, '새 추천 국수집');
-  assert.equal(f.calls('upload').length, 0); assert.equal(f.rpc('save_restaurant_recommendation').length, 0);
+  assert.equal(f.calls('upload').length, 0); assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   f.clickRR('close'); await until(() => f.rr('confirm-dialog'), 'native cancel is checked on a new confirmation');
   f.rr('confirm-dialog').dispatchEvent(new f.window.Event('cancel', { cancelable: true }));
   await until(() => !f.rr('confirm-dialog'), 'native cancel also keeps the draft');
   assert.ok(f.rr('editor')); assert.equal(f.photoCount(), 3);
+});
+
+test('a chosen map point survives cancel, photo and text edits, saving and reopening', async t => {
+  const initial = { latitude: 36.3504, longitude: 127.3845 }, selected = { latitude: 36.3612, longitude: 127.3917 };
+  const item = recommendation(initial), f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the edit form opens');
+  f.fill('name', '지도와 함께 수정한 국수집');
+  assert.match(f.rr('location-status').textContent, /선택 완료/);
+  f.clickRR('location-open');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.pickers[0].settings.location)), initial, 'the existing pair is passed to the map for pin restoration');
+  assert.equal(f.pickers[0].settings.name, '지도와 함께 수정한 국수집');
+  f.pickers[0].picker.close(); await until(() => !f.rr('location-open').disabled, 'cancel returns control to the same editor');
+  assert.equal(f.rr('field-name').value, '지도와 함께 수정한 국수집');
+  assert.equal(f.photoCount(), 3); assert.match(f.rr('location-status').textContent, /선택 완료/);
+  f.clickRR('location-open'); f.pickers[1].resolve(selected);
+  await until(() => !f.rr('location-open').disabled, 'a selected point returns to the form');
+  f.fill('menu', '수정한 손칼국수'); f.choose(1); await f.photos(4);
+  f.clickRR('submit');
+  await until(() => f.state.rows[0].updated_at !== item.updated_at && !f.rr('editor'), 'photo, fields and location are saved together');
+  const saved = f.state.rows[0], request = f.rpc('save_restaurant_recommendation_with_location')[0].parameters;
+  assert.deepEqual({ latitude: saved.latitude, longitude: saved.longitude }, selected);
+  assert.deepEqual(request.p_location, selected);
+  assert.equal(saved.photos.length, 4); assert.equal(saved.menu, '수정한 손칼국수');
+  assert.ok(f.$('.rr-map-link').href.endsWith(',' + selected.latitude + ',' + selected.longitude), 'detail opens the selected coordinates rather than another address search');
+  f.clickRR('edit'); await until(() => f.rr('editor'), 'the saved record can be edited again'); f.clickRR('location-open');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.pickers[2].settings.location)), selected, 'reediting restores the saved point');
+  await f.ui.back(); await until(() => !f.rr('location-open').disabled, 'Back closes the picker first');
+  assert.ok(f.rr('editor')); assert.equal(f.rr('confirm-dialog'), null); assert.equal(f.photoCount(), 4);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1, 'map cancellation and Back do not submit another write');
+});
+
+test('clearing a map point explicitly saves a null pair while preserving the recommendation', async t => {
+  const item = recommendation({ latitude: 36.3504, longitude: 127.3845 }), f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the located record opens for editing');
+  f.clickRR('location-clear'); assert.equal(f.rr('location-clear').hidden, true);
+  f.clickRR('submit'); await until(() => f.state.rows[0].updated_at !== item.updated_at && !f.rr('editor'), 'cleared location saves');
+  assert.deepEqual(f.rpc('save_restaurant_recommendation_with_location')[0].parameters.p_location, { latitude: null, longitude: null });
+  assert.equal(f.state.rows[0].latitude, null); assert.equal(f.state.rows[0].longitude, null);
+  assert.deepEqual(f.state.rows[0].photos, item.photos); assert.equal(f.state.rows[0].address, item.address);
+  assert.equal(f.calls('upload').length, 0, 'clearing the pin never reuploads retained photos');
+  assert.ok(f.$('.rr-map-link').href.startsWith('https://map.kakao.com/?q='), 'an unlocated record retains its address search fallback');
+});
+
+test('a map result resolving during an account change cannot repopulate or save the previous draft', async t => {
+  const item = recommendation({ latitude: 36.3504, longitude: 127.3845 }), f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the owner opens an edit');
+  f.clickRR('location-open');
+  f.pickers[0].resolve({ latitude: 37.5665, longitude: 126.978 });
+  f.state.setUser({ id: f.state.secondMember });
+  await until(() => !f.ui.isOpen(), 'the account change closes the parent and picker'); await f.settle();
+  assert.ok(f.pickers[0].closeCount > 0); assert.equal(f.rr('editor'), null);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
+  assert.equal(f.state.rows[0].latitude, item.latitude); assert.equal(f.state.rows[0].longitude, item.longitude);
+  assert.equal(f.pickers[0].settings.isCurrent(), false, 'the stale map session loses authorization');
 });

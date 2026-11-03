@@ -12,7 +12,7 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
   const user = () => state.user ? copy(state.user) : null;
   const response = data => ({ data: copy(data), error: null });
   const failure = message => ({ data: null, error: { message, code: 'P0001' } });
-  const view = (row, owner) => row ? { ...copy(row), is_owner: row.owner_id === owner } : null;
+  const view = (row, owner) => row ? { latitude: null, longitude: null, ...copy(row), is_owner: row.owner_id === owner } : null;
   const ratingKey = (kind, id, owner) => JSON.stringify([kind, id, owner]);
   const ratingTargetExists = (kind, id) => kind === 'certified' || state.rows.some(row => row.id === id && !row.deleted_at);
   const ratingSummary = (kind, id, owner) => {
@@ -68,9 +68,20 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
         return response({ rows: rows.slice(offset, offset + limit).map(row => view(row, owner)), total: rows.length, offset, limit });
       }
       if (name === 'get_restaurant_recommendation') return response(view(state.rows.find(row => row.id === parameters.p_id), owner));
-      if (name === 'save_restaurant_recommendation') {
+      if (name === 'save_restaurant_recommendation' || name === 'save_restaurant_recommendation_with_location') {
         const previous = state.rows.find(row => row.id === parameters.p_id);
         if (previous && previous.owner_id !== owner) return failure('recommendation_not_owner');
+        let latitude = previous?.latitude ?? null, longitude = previous?.longitude ?? null;
+        const point = name === 'save_restaurant_recommendation_with_location' ? parameters.p_location : null;
+        if (point != null) {
+          const keys = typeof point === 'object' && !Array.isArray(point) ? Object.keys(point).sort() : [];
+          if (keys.length !== 2 || keys[0] !== 'latitude' || keys[1] !== 'longitude') return failure('recommendation_location_invalid');
+          const cleared = point.latitude === null && point.longitude === null;
+          const valid = typeof point.latitude === 'number' && Number.isFinite(point.latitude) && Math.abs(point.latitude) <= 90 && typeof point.longitude === 'number' && Number.isFinite(point.longitude) && Math.abs(point.longitude) <= 180;
+          if (!cleared && !valid) return failure('recommendation_location_invalid');
+          latitude = point.latitude; longitude = point.longitude;
+          if (previous?.request_id === parameters.p_request_id && (latitude !== (previous.latitude ?? null) || longitude !== (previous.longitude ?? null))) return failure('recommendation_request_conflict');
+        }
         if (previous && previous.request_id === parameters.p_request_id) return response({ item: view(previous, owner), removed_paths: [] });
         if (previous && parameters.p_expected_updated_at !== previous.updated_at) return failure('recommendation_conflict');
         const photos = parameters.p_photos || [];
@@ -80,6 +91,7 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
         const row = {
           id: parameters.p_id, owner_id: owner, name: parameters.p_name, category: parameters.p_category,
           region: parameters.p_region, address: parameters.p_address, menu: parameters.p_menu, reason: parameters.p_reason,
+          latitude, longitude,
           photos: copy(photos), author_name: '추천 회원', created_at: previous?.created_at || stamp,
           updated_at: stamp, is_owner: true, request_id: parameters.p_request_id
         };
@@ -151,6 +163,7 @@ function recommendation(overrides = {}) {
   return {
     id, owner_id: owner, name: '회원 추천 국수집', category: '한식', region: '대전',
     address: '대전 중구 중교로 45-5', menu: '손칼국수', reason: '직접 방문해서 먹은 국물이 깔끔하고 맛있어요.',
+    latitude: null, longitude: null,
     photos: Array.from({ length: 3 }, (_, index) => owner + '/' + id + '/30000000-0000-4000-8000-' + String(index + 1).padStart(12, '0') + '.jpg'),
     author_name: '추천 회원', created_at: '2026-11-02T00:00:00.000Z', updated_at: '2026-11-02T00:00:00.000Z',
     is_owner: true, request_id: '40000000-0000-4000-8000-000000000001', ...overrides

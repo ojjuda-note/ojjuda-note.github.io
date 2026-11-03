@@ -36,11 +36,16 @@
       Promise.resolve(promise).then(value => { clearTimeout(timer); resolve(value); }, error => { clearTimeout(timer); reject(error); });
     });
   }
-  function mapLink(name, address) {
-    const link = node('a', 'rr-button rr-map-link', '지도에서 찾기 ↗');
-    link.href = 'https://map.kakao.com/?q=' + encodeURIComponent([address, name].filter(Boolean).join(' '));
+  function locationFrom(value) {
+    if (!value || typeof value.latitude !== 'number' || typeof value.longitude !== 'number' || !Number.isFinite(value.latitude) || !Number.isFinite(value.longitude) || Math.abs(value.latitude) > 90 || Math.abs(value.longitude) > 180) return null;
+    return { latitude: value.latitude, longitude: value.longitude };
+  }
+  function mapLink(name, address, location = null) {
+    const point = locationFrom(location);
+    const link = node('a', 'rr-button rr-map-link', point ? '선택한 지도 위치 보기 ↗' : '지도에서 찾기 ↗');
+    link.href = point ? 'https://map.kakao.com/link/map/' + encodeURIComponent(name || '추천 맛집') + ',' + point.latitude + ',' + point.longitude : 'https://map.kakao.com/?q=' + encodeURIComponent([address, name].filter(Boolean).join(' '));
     link.target = '_blank'; link.rel = 'noopener noreferrer';
-    link.setAttribute('aria-label', (name || '입력한 주소') + ' 지도에서 찾기, 새 창');
+    link.setAttribute('aria-label', (name || '입력한 주소') + (point ? ' 선택한 지도 위치 보기, 새 창' : ' 지도에서 찾기, 새 창'));
     return link;
   }
   function optionSelect(values, placeholder) {
@@ -142,13 +147,14 @@
         return read(session, 'list_restaurant_recommendations', { p_query: session.filters.query || '', p_category: session.filters.category || null, p_region: session.filters.region || null, p_mine: session.filters.mine, p_limit: PAGE_SIZE, p_offset: offset });
       },
       async detail(session, id) { return read(session, 'get_restaurant_recommendation', { p_id: id }); },
-      save(payload) { return client.rpc('save_restaurant_recommendation', payload); },
+      save(payload) { return client.rpc('save_restaurant_recommendation_with_location', payload); },
       remove(id, updatedAt) { return client.rpc('delete_restaurant_recommendation', { p_id: id, p_expected_updated_at: updatedAt || null }); }
     };
     function rowFrom(value) {
       const raw = value?.item || value?.restaurant || value?.row || (Array.isArray(value) ? value[0] : value);
       if (!raw?.id) return null;
-      return { ...raw, id: String(raw.id), owner_id: textValue(raw.owner_id || raw.user_id), name: textValue(raw.name), category: textValue(raw.category), region: textValue(raw.region), address: textValue(raw.address), menu: Array.isArray(raw.menu) ? raw.menu.join(', ') : textValue(raw.menu || raw.recommended_menu), reason: textValue(raw.reason || raw.recommendation), photos: (Array.isArray(raw.photos) ? raw.photos : Array.isArray(raw.photo_paths) ? raw.photo_paths : []).map(photo => typeof photo === 'string' ? photo : photo?.path).filter(path => typeof path === 'string'), author_name: textValue(raw.author_name || raw.nickname) || '회원', updated_at: raw.updated_at || null };
+      const location = locationFrom(raw);
+      return { ...raw, id: String(raw.id), owner_id: textValue(raw.owner_id || raw.user_id), name: textValue(raw.name), category: textValue(raw.category), region: textValue(raw.region), address: textValue(raw.address), latitude: location?.latitude ?? null, longitude: location?.longitude ?? null, menu: Array.isArray(raw.menu) ? raw.menu.join(', ') : textValue(raw.menu || raw.recommended_menu), reason: textValue(raw.reason || raw.recommendation), photos: (Array.isArray(raw.photos) ? raw.photos : Array.isArray(raw.photo_paths) ? raw.photo_paths : []).map(photo => typeof photo === 'string' ? photo : photo?.path).filter(path => typeof path === 'string'), author_name: textValue(raw.author_name || raw.nickname) || '회원', updated_at: raw.updated_at || null };
     }
     function rowsFrom(data) { return (Array.isArray(data) ? data : data?.items || data?.rows || data?.restaurants || []).map(rowFrom).filter(Boolean); }
     function own(session, row) { return active(session) && row?.owner_id === session.owner; }
@@ -262,6 +268,7 @@
     function releaseEditor(editor) {
       if (!editor) return;
       editor.disposed = true;
+      editor.picker?.close(); editor.picker = null;
       for (const photo of editor.photos) if (photo.localUrl) URL.revokeObjectURL(photo.localUrl);
       editor.photos = [];
     }
@@ -424,7 +431,7 @@
           isCurrent: () => visible(session, view)
         });
       }
-      const address = node('section', 'rr-detail-section'); address.append(node('h3', '', '위치'), node('p', '', row.address), mapLink(row.name, row.address));
+      const address = node('section', 'rr-detail-section'); address.append(node('h3', '', '위치'), node('p', '', row.address), mapLink(row.name, row.address, row));
       const menu = node('section', 'rr-detail-section'); menu.append(node('h3', '', '추천 메뉴'), node('p', '', row.menu));
       const reason = node('section', 'rr-detail-section'); reason.append(node('h3', '', '이래서 추천해요'), node('p', 'rr-reason', row.reason));
       content.append(address, menu, reason);
@@ -452,7 +459,7 @@
     }
     function editorControls(session, editor) {
       if (!active(session) || session.editor !== editor || editor.disposed) return;
-      const locked = editor.processing || editor.saving || !!editor.uncertain;
+      const locked = editor.processing || editor.saving || !!editor.uncertain || !!editor.picker;
       editor.form.querySelectorAll('input,select,textarea,button').forEach(control => { control.disabled = locked; });
       editor.submit.disabled = locked || editor.photos.length < MIN_PHOTOS || editor.photos.length > MAX_PHOTOS;
       editor.submit.textContent = editor.saving ? '저장하는 중…' : editor.existing ? '수정 내용 저장' : '추천 등록';
@@ -509,12 +516,42 @@
         formMessage(editor, [...new Set(errors)].join(' ') || (editor.photos.length < MIN_PHOTOS ? '사진을 ' + MIN_PHOTOS + '장 이상 골라 주세요.' : '사진 준비가 끝났어요.'), errors.length > 0);
       }
     }
+    function renderLocation(editor) {
+      editor.locationOpen.textContent = editor.location ? '지도 위치 변경' : '지도에서 위치 선택';
+      editor.locationClear.hidden = !editor.location;
+      editor.locationStatus.textContent = editor.location ? '지도 위치 선택 완료 · 입력한 주소도 확인해 주세요.' : '지도에서 가게 위치를 선택할 수 있어요. 주소는 위에 적어 주세요.';
+    }
+    async function chooseLocation(session, editor) {
+      if (!active(session) || session.editor !== editor || editor.disposed || editor.processing || editor.saving || editor.uncertain || editor.picker) return;
+      if (!global.OjjudaRestaurantLocationPicker?.open) { formMessage(editor, '지도를 불러오지 못했어요. 맛집 화면을 다시 열어 주세요.', true); return; }
+      let picker;
+      try {
+        picker = global.OjjudaRestaurantLocationPicker.open({
+          name: editor.fields.name.value.trim(), region: editor.fields.region.value, location: editor.location,
+          isCurrent: () => active(session) && session.editor === editor && !editor.disposed && !editor.saving && !editor.processing
+        });
+        editor.picker = picker; editorControls(session, editor);
+        const selected = await picker.result;
+        if (!active(session) || session.editor !== editor || editor.disposed || editor.picker !== picker) return;
+        if (selected !== null) {
+          const point = locationFrom(selected);
+          if (!point) throw new Error('invalid_location');
+          editor.location = point; editor.dirty = true; renderLocation(editor);
+          formMessage(editor, '지도 위치를 선택했어요. 주소도 확인해 주세요.');
+        }
+      } catch {
+        if (active(session) && session.editor === editor && !editor.disposed) formMessage(editor, '지도 위치를 선택하지 못했어요. 다시 시도해 주세요.', true);
+      } finally {
+        if (editor.picker === picker) editor.picker = null;
+        if (active(session) && session.editor === editor && !editor.disposed) { editorControls(session, editor); editor.locationOpen.focus({ preventScroll: true }); }
+      }
+    }
     function showEditor(session, row = null) {
       if (!active(session) || (row && !own(session, row))) return;
       releaseEditor(session.editor);
       resetView(session, 'editor', row ? '추천 글 수정' : '맛집 추천하기');
       const form = node('form', 'rr-editor'); form.noValidate = false;
-      const editor = { id: row?.id || uid(), existing: row, form, dirty: false, processing: false, saving: false, uncertain: null, disposed: false, photos: (row?.photos || []).map(path => ({ key: uid(), path, uploaded: true })), fields: {}, originalPaths: row?.photos || [] };
+      const editor = { id: row?.id || uid(), existing: row, form, dirty: false, processing: false, saving: false, uncertain: null, disposed: false, location: locationFrom(row), picker: null, photos: (row?.photos || []).map(path => ({ key: uid(), path, uploaded: true })), fields: {}, originalPaths: row?.photos || [] };
       session.editor = editor;
       form.append(node('p', 'rr-editor-intro', '직접 다녀온 맛집을 회원들에게 소개해 주세요.'));
       const name = field('name', '가게명', 'text', row?.name, 80, '지점이 있다면 함께 적어 주세요');
@@ -525,12 +562,17 @@
       const reason = field('reason', '추천 이유', 'textarea', row?.reason, 1000, '맛, 분위기, 방문 팁을 자유롭게 적어 주세요');
       address.control.minLength = 5; reason.control.minLength = 5;
       const pair = node('div', 'rr-field-pair'); pair.append(category.wrap, region.wrap);
-      const location = node('div', 'rr-address-action'), addressLink = mapLink(row?.name, row?.address); location.append(addressLink);
-      addressLink.onclick = event => {
-        if (!address.control.value.trim()) { event.preventDefault(); address.control.focus(); formMessage(editor, '주소를 먼저 적어 주세요.', true); return; }
-        addressLink.href = 'https://map.kakao.com/?q=' + encodeURIComponent(address.control.value.trim() + ' ' + name.control.value.trim());
+      const location = node('div', 'rr-address-action');
+      editor.locationOpen = button('지도에서 위치 선택', 'rr-button rr-location-open', 'location-open');
+      editor.locationOpen.onclick = () => void chooseLocation(session, editor);
+      editor.locationClear = button('지도 위치 해제', 'rr-link-button', 'location-clear');
+      editor.locationClear.onclick = () => {
+        if (!active(session) || session.editor !== editor || editor.disposed || editor.processing || editor.saving || editor.uncertain || editor.picker) return;
+        editor.location = null; editor.dirty = true; renderLocation(editor); formMessage(editor, '선택한 지도 위치를 해제했어요.');
       };
-      for (const [key, item] of Object.entries({ name, category, region, address, menu, reason })) { editor.fields[key] = item.control; item.control.oninput = () => { item.control.setCustomValidity(''); editor.dirty = true; }; }
+      editor.locationStatus = hook(node('p', 'rr-location-status'), 'location-status'); editor.locationStatus.setAttribute('role', 'status');
+      location.append(editor.locationOpen, editor.locationClear, editor.locationStatus); renderLocation(editor);
+      for (const [key, item] of Object.entries({ name, category, region, address, menu, reason })) { editor.fields[key] = item.control; item.control.oninput = () => { item.control.setCustomValidity(''); editor.dirty = true; if ((key === 'address' || key === 'region') && editor.location) formMessage(editor, '주소나 지역을 바꿨다면 지도 위치도 확인해 주세요.'); }; }
       form.append(name.wrap, pair, address.wrap, location, menu.wrap, reason.wrap);
       const photos = node('section', 'rr-photo-section'), photoHeading = node('div', 'rr-photo-heading');
       editor.count = hook(node('span', 'rr-photo-count'), 'photo-count'); photoHeading.append(node('h3', '', '맛집 사진'), editor.count);
@@ -583,6 +625,7 @@
       const session = current;
       if (!session) return true;
       if (force === true || !active(session)) { disposal(session); return true; }
+      if (session.editor?.picker) { session.editor.picker.close(); return false; }
       if (session.confirm) { session.confirm.done(false); return false; }
       if (session.busy || session.editor?.saving || session.editor?.processing) { notify('처리가 끝날 때까지 잠시 기다려 주세요.'); return false; }
       if (session.editor?.dirty || session.editor?.uncertain) {
@@ -592,6 +635,7 @@
     }
     async function back(session) {
       if (!active(session)) return close(true);
+      if (session.editor?.picker) { session.editor.picker.close(); return true; }
       if (session.confirm) { session.confirm.done(false); return true; }
       if (session.busy || session.editor?.saving || session.editor?.processing) return false;
       if (session.editor?.dirty || session.editor?.uncertain) {
@@ -607,7 +651,7 @@
       if (destroyed) return false;
       const owner = memberId();
       if (owner && (!client?.rpc || !client?.storage)) { notify('추천맛집을 불러오지 못했어요. 다시 열어 주세요.'); return false; }
-      if (current && active(current)) { current.dialog.focus(); return true; }
+      if (current && active(current)) { if (!current.editor?.picker) current.dialog.focus(); return true; }
       if (current) disposal(current);
       observeAuth();
       const dialog = hook(node('dialog', 'recommended-restaurants-dialog'), 'dialog'); dialog.setAttribute('aria-label', '회원 추천맛집');
@@ -638,7 +682,7 @@
 
     /* Persistence handlers are kept below the view code for contract review. */
     async function savePost(session, editor) {
-      if (!active(session) || session.editor !== editor || editor.processing || editor.saving || editor.uncertain) return;
+      if (!active(session) || session.editor !== editor || editor.processing || editor.saving || editor.uncertain || editor.picker) return;
       const minimum = { name: 1, address: 5, menu: 1, reason: 5 };
       for (const [key, min] of Object.entries(minimum)) {
         const control = editor.fields[key];
@@ -658,6 +702,7 @@
       const message = String(error?.message || '');
       if (/photos_required/.test(message)) return '사진은 ' + MIN_PHOTOS + '~' + MAX_PHOTOS + '장 필요해요. 선택한 사진을 확인해 주세요.';
       if (/photo_invalid/.test(message)) return '사진 저장을 확인하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
+      if (/location_invalid/.test(message)) return '지도에서 가게 위치를 다시 선택해 주세요.';
       if (/invalid_input/.test(message)) return '가게 정보와 추천 이유를 다시 확인해 주세요.';
       if (/not_found/.test(message)) return '이 추천 글을 찾을 수 없어요. 목록에서 다시 확인해 주세요.';
       return friendlyError(error, '저장하지 못했어요. 작성한 내용은 그대로 있으니 다시 시도해 주세요.');
@@ -693,7 +738,7 @@
     }
     function makePayload(editor) {
       const f = editor.fields;
-      return { p_id: editor.id, p_request_id: uid(), p_name: f.name.value.trim(), p_category: f.category.value, p_region: f.region.value, p_address: f.address.value.trim(), p_menu: f.menu.value.trim(), p_reason: f.reason.value.trim(), p_photos: editor.photos.map(photo => photo.path), p_expected_updated_at: editor.existing?.updated_at || null };
+      return { p_id: editor.id, p_request_id: uid(), p_name: f.name.value.trim(), p_category: f.category.value, p_region: f.region.value, p_address: f.address.value.trim(), p_menu: f.menu.value.trim(), p_reason: f.reason.value.trim(), p_photos: editor.photos.map(photo => photo.path), p_expected_updated_at: editor.existing?.updated_at || null, p_location: editor.location ? { ...editor.location } : { latitude: null, longitude: null } };
     }
     function completeSave(session, editor, row, removed = []) {
       if (!active(session) || session.editor !== editor) return;

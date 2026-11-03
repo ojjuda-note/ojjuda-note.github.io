@@ -10,8 +10,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const origin = 'https://nesting.test';
 const owner = '11111111-1111-4111-8111-111111111111';
 const shell = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="/world-restaurant-guide.css"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css">
-<button id="open">인증맛집</button><script>${read('restaurant-ratings.js')}\n${read('recommended-restaurants.js')}\n${read('world-restaurant-guide.js')}</script>
+<link rel="stylesheet" href="/world-restaurant-guide.css"><link rel="stylesheet" href="/games/certified-restaurants/vendor/leaflet.css"><link rel="stylesheet" href="/restaurant-location-picker.css"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css">
+<button id="open">인증맛집</button><script src="/games/certified-restaurants/vendor/leaflet.js"></script><script src="/restaurant-location-picker.js"></script><script>${read('restaurant-ratings.js')}\n${read('recommended-restaurants.js')}\n${read('world-restaurant-guide.js')}</script>
 <script>
  (${installRecommendedRestaurantsFixture.toString()})(window,{user:{id:${JSON.stringify(owner)}}});
  const member=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,returnLabel:'인증맛집'});
@@ -27,10 +27,11 @@ test('370px nested member view preserves directory state and half-point ratings 
   const escaped=[],errors=[];let directoryLoads=0;
   await context.route('**/*',route=>{
    const url=new URL(route.request().url());
+   if(url.origin==='https://tile.openstreetmap.org'&&/^\/\d+\/\d+\/\d+\.png$/.test(url.pathname))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><path fill="#edf0e4" d="M0 0h256v256H0z"/><path stroke="#fff" stroke-width="10" d="M0 128h256M128 0v256"/></svg>'});
    if(url.origin!==origin){escaped.push(url.href);return route.abort();}
    if(url.pathname==='/fixture.html')return route.fulfill({contentType:'text/html',body:shell});
    if(url.pathname==='/games/certified-restaurants/index.html')directoryLoads++;
-   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/world-restaurant-guide.css','/recommended-restaurants.css','/restaurant-ratings.js','/restaurant-ratings.css'].includes(url.pathname))return route.abort();
+   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/world-restaurant-guide.css','/recommended-restaurants.css','/restaurant-ratings.js','/restaurant-ratings.css','/restaurant-location-picker.js','/restaurant-location-picker.css'].includes(url.pathname))return route.abort();
    const file=path.resolve(root,'.'+url.pathname);
    if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.abort();
    return route.fulfill({path:file});
@@ -62,6 +63,13 @@ test('370px nested member view preserves directory state and half-point ratings 
   assert.equal(await page.locator('[data-rr=close]').innerText(),'← 인증맛집');
   assert.equal(await page.locator('.rr-header').evaluate(header=>{const r=header.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&header.scrollWidth<=header.clientWidth+1;}),true,'the member return control fits a 370px screen');
   await page.getByRole('button',{name:'+ 맛집 추천하기',exact:true}).click();await page.locator('[data-rr=field-name]').fill('보존할 추천 초안');
+  await page.locator('[data-rr=location-open]').click();await page.locator('[data-rlp=dialog]').waitFor();
+  await page.locator('[data-rlp=map] .leaflet-tile-loaded').first().waitFor();
+  await page.evaluate(()=>nestingFixture.guide.back());await page.locator('[data-rlp=dialog]').waitFor({state:'detached'});
+  assert.equal(await page.locator('[data-rr=editor]').isVisible(),true,'nested Back closes the map picker before the recommendation draft');
+  assert.equal(await page.locator('[data-rr=field-name]').inputValue(),'보존할 추천 초안');
+  assert.equal(await page.locator('[data-rr=confirm-dialog]').count(),0,'returning from the picker does not ask to discard the outer draft');
+  assert.equal(await page.evaluate(()=>document.querySelector('.restaurant-guide-dialog iframe')===nestingFixture.frame),true,'the third-level picker keeps the original directory frame alive');
   const pending=await page.evaluate(()=>{const first=nestingFixture.guide.close(),second=nestingFixture.guide.close();nestingFixture.pending=first;return{async:!!first?.then,same:first===second};});
   assert.deepEqual(pending,{async:true,same:true},'repeated parent close shares one actual dirty-child decision');
   await page.locator('[data-rr=confirm-dialog]').waitFor();await page.keyboard.press('Escape');
