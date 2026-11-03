@@ -35,29 +35,53 @@ function heartAim(stage,time,loadout){
   return null;
 }
 
-function visibleHeartHit(stage,time,loadout){
+// Check that a phone camera can frame both the current body and the real lead
+// point while the reticle stays in the existing aiming area. This permits pan,
+// but rejects a mathematically reachable shot that needs its subject offscreen.
+function canFrameBodyAndLead(stage,animal,params,zoom){
+  const width=390,height=410,focal=Math.min(width*1.08,height*1.5)*zoom,scale=focal/stage.distance;
+  const leadX=Math.tan(params.yaw)*stage.distance,leadY=PLAYER.y+Math.tan(params.pitch)/Math.cos(params.yaw)*stage.distance;
+  const left=Math.min(42,width*.12),right=width-left,top=Math.min(58,height*.2),bottom=height*2/3-Math.min(14,height*.06);
+  const minX=Math.max(-(animal.x-animal.rx)*scale,left-leadX*scale),maxX=Math.min(width-(animal.x+animal.rx)*scale,right-leadX*scale);
+  const minY=Math.max((animal.y+animal.ry-PLAYER.y)*scale,top+(leadY-PLAYER.y)*scale);
+  const maxY=Math.min(height+(animal.y-animal.ry-PLAYER.y)*scale,bottom+(leadY-PLAYER.y)*scale);
+  return minX<=maxX&&minY<=maxY;
+}
+
+function visibleHeartHit(stage,time,loadout,zoom=1){
   const now=targetAt(stage,time);
   if(Math.abs(now.x)+now.rx>=stage.distance*.43)return false;
   const params=heartAim(stage,time,loadout);
   if(!params||Math.abs(params.yaw)>.38||params.pitch<-.15||params.pitch>.55)return false;
+  if(zoom>1&&!canFrameBodyAndLead(stage,now,params,zoom))return false;
   const result=stepArrow(launchArrow(params),8,stage,time);
   return result?.type==='hit'&&result.score===10&&result.targetCenter.passId===now.passId;
 }
 
-function longestWindow(stage,loadout){
+function longestWindow(stage,loadout,{zoom=1,interval=step}={}){
   const duration=targetAt(stage,0).passDuration;
   let start=null,longest=0,hits=0;
   // A fully drawn bow can be held before the animal enters; require an actual
   // visible body and a normal aim at every release throughout the whole window.
-  for(let index=Math.ceil(2.58/step);index*step<duration*2;index++){
-    const time=index*step;
-    if(visibleHeartHit(stage,time,loadout)){start??=time;hits++;longest=Math.max(longest,time-start);}
+  for(let index=Math.ceil(2.58/interval);index*interval<duration*2;index++){
+    const time=index*interval;
+    if(visibleHeartHit(stage,time,loadout,zoom)){start??=time;hits++;longest=Math.max(longest,time-start);}
     else start=null;
   }
   return{longest,hits};
 }
 
-for(const id of[68,72,196])test(`fast animal stage ${id} keeps at least 0.32 seconds to lead a visible animal`,t=>{
+for(const template of STAGES.filter(stage=>stage.kind==='eagle'))test(`eagle stage ${template.id} leaves at least one visible second to lead the same animal at 2x`,t=>{
+  let minimum=Infinity;
+  for(const seed of seeds)for(const loadout of template.referenceLoadouts){
+    const stage=prepareStage(template,seed),window=longestWindow(stage,loadout,{zoom:2,interval:.01});
+    assert.ok(window.longest>=1,`${template.id}, seed ${seed}, ${loadout.family}: only ${window.longest.toFixed(3)} seconds with the eagle and lead point in view`);
+    minimum=Math.min(minimum,window.longest);
+  }
+  t.diagnostic(`Shortest continuous visible same-pass release window at 2x: ${minimum.toFixed(3)} seconds`);
+});
+
+for(const id of[72])test(`fast animal stage ${id} keeps at least 0.32 seconds to lead a visible animal`,t=>{
   let minimum=Infinity;
   for(const seed of seeds)for(const loadout of STAGES[id-1].referenceLoadouts){
     const stage=prepareStage(STAGES[id-1],seed),window=longestWindow(stage,loadout);
@@ -73,8 +97,8 @@ test('stage 72 remains reachable with the starter bow and arrow in its difficult
     'the introductory equipment can lead the actual visible cheetah without shooting at a future offscreen pass');
 });
 
-test('the three local reading windows preserve crossing times, vertical paths and average species speed',()=>{
-  const durations={68:4.45/1.03/1.15,72:4.6/1.03/1.15,196:4.45/1.03/1.15*1.2};
+test('local approach easing preserves adjusted crossing times, vertical paths and average species speed',()=>{
+  const durations={68:4.45/1.03/1.15*2,72:4.6/1.03/1.15,196:4.45/1.03/1.15*1.2*2};
   for(const id of[68,72,196])for(const seed of seeds){
     const stage=prepareStage(STAGES[id-1],seed),previous={...stage,approachEase:.15};
     close(stage.passDuration,durations[id]);

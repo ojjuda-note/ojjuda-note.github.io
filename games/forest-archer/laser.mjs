@@ -1,5 +1,5 @@
 /** A manually zeroed sight only. This module never aims or fires an arrow. */
-import {PLAYER} from './engine.mjs?v=20261104-archery-scope-laser1';
+import {PLAYER, BOWS} from './engine.mjs?v=20261104-archery-eagle-layout1';
 
 export const LASER_PRICE = 500;
 export const LASER_CLICK_DEGREES = .05;
@@ -8,6 +8,12 @@ const CLICK_RADIANS = LASER_CLICK_DEGREES * Math.PI / 180;
 const EPSILON = 1e-10;
 const finitePoint = point => point && ['x','y','z'].every(axis => Number.isFinite(point[axis]));
 const clicks = value => Number.isFinite(value) ? Math.max(-LASER_MAX_CLICKS,Math.min(LASER_MAX_CLICKS,Math.round(value))) : 0;
+
+/** The second half of the main weapon shop starts with the first crossbow. */
+export function canEquipLaser(weaponOrId) {
+  const id=weaponOrId && typeof weaponOrId==='object'?weaponOrId.id:weaponOrId;
+  return Number.isInteger(id)&&BOWS.some(weapon=>weapon.id===id&&weapon.weaponType==='crossbow');
+}
 
 /** Saved settings contain no target, automatic trigger or ballistic correction. */
 export function normalizeLaserSettings(value = {}) {

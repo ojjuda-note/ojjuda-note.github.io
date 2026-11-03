@@ -1,6 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-scope-laser1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-scope-laser1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-eagle-layout1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-eagle-layout1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -425,7 +425,7 @@ function lessonStages() {
     {kind:'wildcat',name:'살쾡이',radius:1,height:.8,duration:12.5,bob:.09,pace:1,hint:'짧은 보폭으로 가속하고 감속하는 살쾡이를 따라가요. 지금 속도에 맞춰 앞을 겨누세요.'},
     {kind:'deer',name:'사슴',radius:1.4,height:1.3,duration:7.6,bob:.66,pace:.95,hint:'큰 몸으로 빠르게 달리며 높이 도약하는 사슴의 도착 위치를 읽어보세요.'},
     {kind:'pigeon',name:'비둘기',radius:1.03,height:2.25,duration:9.2,bob:.62,pace:1,hint:'빠르게 위아래로 오르내리는 비둘기를 따라가요. 움직일 앞쪽과 높이를 함께 읽으세요.'},
-    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:5.65,bob:.95,pace:1,hint:'큰 날개로 빠르게 지나가며 넓게 솟구치고 내려오는 독수리를 따라가요.'},
+    {kind:'eagle',name:'독수리',radius:1.22,height:2.35,duration:5.65,bob:.95,pace:1,hint:'완만하게 활공하는 독수리의 이동 방향을 보고, 화살이 도착할 앞쪽을 겨누세요.'},
     {kind:'cheetah',name:'치타',radius:1.16,height:.93,duration:5.8,bob:.18,pace:1,hint:'강하게 질주했다가 속도를 낮추는 치타를 따라가요. 가속 구간에서는 훨씬 앞을 겨누세요.'}
   ];
   for (const [animalIndex,animal] of animals.entries()) {
@@ -633,8 +633,19 @@ function arrangeHiddenRange(template) {
 // their total crossing time and vertical motion; the entry/exit stays fast.
 // Apply after long-range expansion so a repair never spreads to other ranges.
 const animalApproachEase=Object.freeze({68:.35,72:.25,196:.30});
-export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)].map(arrangeHiddenRange).map(template=>
-  Object.hasOwn(animalApproachEase,template.id)?{...template,approachEase:animalApproachEase[template.id]}:template));
+function arrangeAnimalTracking(template) {
+  const adjusted=Object.hasOwn(animalApproachEase,template.id)?{...template,approachEase:animalApproachEase[template.id]}:template;
+  if(adjusted.kind!=='eagle')return adjusted;
+  // A broad soaring pass must leave time to see, lead and release a real arrow.
+  // Apply once after range expansion, keeping every eagle lesson readable while
+  // the other animals and the doubled circular-target speed stay independent.
+  const eagle={...adjusted,passDuration:adjusted.passDuration*2,
+    paceVariation:Math.min(adjusted.paceVariation??1,.55),
+    motion:{...adjusted.motion,amplitudeY:adjusted.motion.amplitudeY*.6}};
+  return {...eagle,difficulty:stageDifficulty(eagle)};
+}
+export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)]
+  .map(arrangeHiddenRange).map(arrangeAnimalTracking));
 /** The first 120-mission catalog keeps its records after the teaching reorder. */
 export const CATALOG_V1_STAGE_MAP = Object.freeze(Object.fromEntries(introductoryStages.map(stage => [stage.catalogV1Id,stage.id])));
 /** Migration only: old saved records move to their corresponding expanded lesson. */

@@ -1,5 +1,5 @@
 /** A replay of recorded flight only: this module never advances game physics. */
-import {NEAR_PLANE, projectPoint, lerpCamera} from './view.mjs?v=20261104-archery-scope-laser1';
+import {NEAR_PLANE, projectPoint, lerpCamera} from './view.mjs?v=20261104-archery-eagle-layout1';
 
 export const BULLSEYE_REPLAY_DISTANCE = 3.4;
 export const BULLSEYE_FLIGHT_DURATION = .48;

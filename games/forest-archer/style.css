@@ -431,3 +431,57 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .trial-event-grid strong{font-size:13px}.trial-event-grid small{font-size:10px;line-height:1.6;color:#6c7e63}
 @media(max-width:360px){.admin-trial-banner{gap:5px;padding:4px 6px}.admin-trial-banner strong{font-size:10px}.admin-trial-banner>.button{font-size:9px;padding:6px}}
 @media(max-height:500px) and (min-width:600px){.admin-trial-banner{padding:3px 8px}.admin-trial-banner>.button{padding:4px 8px;min-height:28px}.trial-event-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Keep instructions in Help and give the remaining viewport to the range. */
+.visually-hidden,.controls>.draw-timing,.control-copy{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.game-card{grid-template-columns:minmax(0,1fr);grid-template-rows:46px auto minmax(0,1fr) auto}
+.round-heading,.power-row.bow-power,.gun-reload,.field,.controls{grid-column:1}
+.controls{position:relative;grid-row:4;display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding:0;overflow:visible;border:0}
+.control-status{position:absolute;left:10px;right:10px;bottom:calc(100% + 52px);height:24px;overflow:visible;pointer-events:none;z-index:3}
+.shot-feedback{padding:2px 8px;border-radius:7px;background:#fffdf2e8;box-shadow:0 2px 8px #243d2220}
+.shot-feedback.miss,.shot-feedback.gold{background:#fffdf2e8}
+.toast{pointer-events:none}
+.laser-panel{grid-column:1;min-width:0;margin:0;padding:0 8px;border:0;border-radius:0;background:#eff3e8;box-shadow:none}
+.laser-toolbar{height:36px;display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.laser-toolbar>button{height:30px;min-height:30px;padding:3px 11px;border:1px solid #bdcbb2;border-radius:6px;background:#fbfcf5;color:#395e37;font-family:inherit;font-size:11px;font-weight:600;line-height:1.3;white-space:nowrap}
+.laser-toolbar>button[aria-pressed="true"]{background:#e3edd8;border-color:#9db888}
+.laser-toolbar>button[aria-expanded="true"]{border-color:#688655;box-shadow:inset 0 0 0 1px #688655}
+.laser-popover{position:fixed;top:70px;right:12px;z-index:25;width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 86px);max-height:calc(100dvh - 86px);overflow-y:auto;overscroll-behavior:contain;padding:14px;border:1px solid #a8bc98;border-radius:14px;background:#f5f7ed;box-shadow:0 12px 38px #243b2950}
+.laser-popover[hidden]{display:none}
+.laser-popover .laser-panel-heading{margin:0 0 12px;gap:10px}
+.laser-popover .laser-panel-heading>div{min-width:0}
+.laser-popover .laser-panel-heading strong{font-size:14px}
+.laser-popover .laser-panel-heading span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.laser-popover .laser-panel-heading>button{min-width:44px;min-height:36px;flex:none;padding:5px 10px;border:1px solid #bac9ae;border-radius:7px;background:#fffef7;color:#48633b;font-size:11px}
+.laser-popover .laser-step-control{margin:0 0 10px}
+.laser-popover .laser-step-control button{min-height:34px}
+.laser-popover .laser-adjustments{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.laser-popover .laser-axis{grid-template-columns:60px minmax(0,1fr);padding:8px;gap:6px}
+.laser-popover .laser-axis-label{font-size:11px}
+.laser-popover .laser-axis-label small{display:block;margin-top:3px;font-size:9px;font-weight:400}
+.laser-popover .laser-gear{width:60px;height:60px}
+.laser-popover .laser-gear-rotor{width:58px;height:58px}
+.laser-popover .laser-odometer{font-size:13px;padding:6px 2px}
+.laser-popover-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.laser-popover-actions .text-button{min-height:34px;font-size:11px}
+.laser-popover .laser-reset-button{margin:0;min-height:34px}
+.laser-popover .laser-note{margin:6px 0 0;font-size:10px;text-align:right}
+.admin-trial-banner{min-height:30px;padding:1px 6px;gap:6px;border-radius:6px}
+.admin-trial-banner strong{font-size:10px;white-space:nowrap}
+.admin-trial-banner strong small{margin-left:5px;font-size:9px;font-weight:400;color:#6d8065}
+.admin-trial-banner>.button{min-height:26px;padding:3px 7px;font-size:10px}
+.app-shell>.save-error{min-height:18px;padding:1px 5px;font-size:10px;color:#926333;background:#fff2d9;border-radius:4px}
+@media(max-width:480px){
+  .game-card{grid-template-rows:42px auto minmax(0,1fr) auto}
+  .laser-popover{top:56px;right:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 72px);padding:12px}
+  .laser-popover .laser-axis{grid-template-columns:52px minmax(0,1fr);padding:6px;gap:5px}
+  .laser-popover .laser-gear{width:52px;height:52px}
+  .laser-popover .laser-gear-rotor{width:50px;height:50px}
+  .laser-popover .laser-odometer{font-size:12px}
+}
+@media(max-height:600px) and (min-width:600px){
+  .game-card{grid-template-rows:38px auto minmax(0,1fr) auto}
+  .controls{grid-column:1;grid-row:4;display:grid;padding:0;border:0;overflow:visible}
+  .field{grid-column:1;grid-row:3}
+  .laser-popover{top:8px;max-height:calc(100dvh - 16px)}
+}
