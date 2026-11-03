@@ -20,9 +20,9 @@
     for(let i=order.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
     return order;
   }
-  function puzzleDifficulty(puzzle){return ['hard','very-hard'].includes(puzzle.difficulty)?puzzle.difficulty:'normal';}
+  function puzzleDifficulty(puzzle){return ['slightly-hard','hard','very-hard'].includes(puzzle.difficulty)?puzzle.difficulty:'normal';}
   function difficultyOrder(puzzles){
-    const rank={normal:0,hard:1,'very-hard':2};
+    const rank={normal:0,'slightly-hard':1,hard:2,'very-hard':3};
     return puzzles.map((_,i)=>i).sort((a,b)=>rank[puzzleDifficulty(puzzles[a])]-rank[puzzleDifficulty(puzzles[b])]||puzzles[a].id-puzzles[b].id||a-b);
   }
   function cleanProgress(raw,puzzles){

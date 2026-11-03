@@ -19,7 +19,7 @@
   let zoomNoticeTimer=null,loadToken=0,imagesReady=false,paymentBusy=false,keyboardPoint={x:50,y:50},answerReview=null;
   const puzzle=()=>puzzles[state.current];
   const targetCount=()=>puzzle().spots.length;
-  const difficultyLabels={normal:'보통',hard:'어려움','very-hard':'매우 어려움'};
+  const difficultyLabels={normal:'보통','slightly-hard':'조금 어려움',hard:'어려움','very-hard':'매우 어려움'};
   const pictureRatio=()=>Number.isFinite(puzzle().aspectRatio)&&puzzle().aspectRatio>0?puzzle().aspectRatio:1.5;
   const isSolved=p=>(state.found[p.id]||[]).length===p.spots.length;
   const isCompleted=p=>state.completed.includes(p.id)||isSolved(p);
@@ -29,7 +29,7 @@
   const clearedRound=()=>round().status==='won'&&isSolved(puzzle());
   function save(){
     try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
-    $('storage-note').textContent=storageWorks?'보통 → 어려움 → 매우 어려움 순서예요. 마지막 그림을 기억하고, 다시 열면 새 판으로 시작해요.':'그림은 난이도순으로 나와요. 마지막 그림을 기억하고 ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
+    $('storage-note').textContent=storageWorks?'보통 → 조금 어려움 → 어려움 → 매우 어려움 순서예요. 마지막 그림을 기억하고, 다시 열면 새 판으로 시작해요.':'그림은 난이도순으로 나와요. 마지막 그림을 기억하고 ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
   function speak(message,good=false){
@@ -392,7 +392,7 @@
     });
   }
   $('stage-total').textContent=puzzles.length;
-  for(const [difficulty,label] of [['normal','쭈다의 일상 · 보통'],['hard','도시와 사계절 산 · 어려움'],['very-hard','세계 명화 · 매우 어려움 · 10곳 찾기']]){
+  for(const [difficulty,label] of [['normal','쭈다의 일상 · 보통'],['slightly-hard','귀여운 동화와 반려동물 · 조금 어려움 · 10곳 찾기'],['hard','도시와 사계절 산 · 어려움'],['very-hard','세계 명화 · 매우 어려움 · 10곳 찾기']]){
     const group=document.createElement('optgroup');group.label=label;
     for(const i of state.order.filter(i=>core.puzzleDifficulty(puzzles[i])===difficulty)){const option=document.createElement('option');option.value=i;option.textContent=puzzles[i].title;group.append(option);}
     if(group.children.length)$('stage-picker').append(group);

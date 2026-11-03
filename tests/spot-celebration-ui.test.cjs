@@ -98,7 +98,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    assert.equal(await page.locator('#hearts .empty').count(),3);
    assert.equal(await page.locator('#start').isVisible(),false,'failure offers direct picture buttons without Start');
   }
-  async function choiceLayout(page,prefix,position,total=82){
+  async function choiceLayout(page,prefix,position,total=152){
    const viewport=page.viewportSize(),labels=['이전 그림','지금 그림','다음 그림'],choices=['previous','current','next'];
    const rects=[];
    for(let i=0;i<choices.length;i++){
@@ -117,8 +117,8 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   // Existing artwork assets and hit targets retain their original data IDs.
   const photos=await fixture(),totalStages=await photos.page.evaluate(()=>JJUDA_PUZZLES.length);
-  assert.equal(totalStages,82);
-  assert.deepEqual(await photos.page.evaluate(()=>JJUDA_PUZZLES.map(p=>p.id)),Array.from({length:82},(_,i)=>i+1));
+  assert.equal(totalStages,152);
+  assert.deepEqual(await photos.page.evaluate(()=>JJUDA_PUZZLES.map(p=>p.id)),Array.from({length:152},(_,i)=>i+1));
   for(let id=49;id<=62;id++){
    // Enter the round before using the HUD behind the full-screen start menu.
    if(await photos.page.locator('#start').isVisible())await photos.page.locator('#start').click();
@@ -214,15 +214,15 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   // sequence and the last boundary without rewriting storage or game helpers.
   const final=await fixture(),fp=final.page;await fp.emulateMedia({reducedMotion:'reduce'});
   const catalog=await fp.evaluate(()=>JJUDA_PUZZLES.map((p,index)=>({index,id:p.id,difficulty:p.difficulty||'normal',targets:p.spots.length})));
-  assert.deepEqual(catalog.reduce((groups,p)=>(groups[p.difficulty]=(groups[p.difficulty]||0)+1,groups),{}),{normal:48,hard:14,'very-hard':20});
-  const ranks={normal:0,hard:1,'very-hard':2},sequence=[...catalog].sort((a,b)=>ranks[a.difficulty]-ranks[b.difficulty]||a.id-b.id);
+  assert.deepEqual(catalog.reduce((groups,p)=>(groups[p.difficulty]=(groups[p.difficulty]||0)+1,groups),{}),{normal:48,hard:14,'very-hard':20,'slightly-hard':70});
+  const ranks={normal:0,'slightly-hard':1,hard:2,'very-hard':3},sequence=[...catalog].sort((a,b)=>ranks[a.difficulty]-ranks[b.difficulty]||a.id-b.id);
   const expectedOrder=sequence.map(p=>p.index);
-  assert.deepEqual(await fp.locator('#stage-picker option').evaluateAll(options=>options.map(option=>Number(option.value))),expectedOrder,'menu order matches normal, hard and very-hard, then ascending ID');
+  assert.deepEqual(await fp.locator('#stage-picker option').evaluateAll(options=>options.map(option=>Number(option.value))),expectedOrder,'menu order matches normal, slightly-hard, hard and very-hard, then ascending ID');
   assert.deepEqual((await saved(fp)).order,expectedOrder,'saved order is deterministic');
   for(let position=0;position<sequence.length;position++){
    const expected=sequence[position],picture=await current(fp);
    assert.equal(picture.id,expected.id,`picture ${position+1} follows the specified sequence`);
-   assert.match(await fp.locator('#stage-label').innerText(),new RegExp(`${String(position+1).padStart(2,'0')} / 82.*${{normal:'보통',hard:'어려움','very-hard':'매우 어려움'}[expected.difficulty]}`));
+   assert.match(await fp.locator('#stage-label').innerText(),new RegExp(`${String(position+1).padStart(2,'0')} / 152.*${{normal:'보통','slightly-hard':'조금 어려움',hard:'어려움','very-hard':'매우 어려움'}[expected.difficulty]}`));
    await solve(fp);
    assert.equal(await fp.locator('#found-count').innerText(),String(expected.targets));
    assert.equal(await fp.locator('#celebration-count').innerText(),`${expected.targets} / ${expected.targets}`);
@@ -235,13 +235,13 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   assert.equal(await final.page.locator('#celebration-confetti').isVisible(),false);
   const last=await final.page.locator('#stage-picker').inputValue();await final.page.waitForTimeout(2600);
   assert.equal(await final.page.locator('#stage-picker').inputValue(),last,'last stage has no invalid or repeated next stage');
-  await choiceLayout(fp,'celebration',82);
+  await choiceLayout(fp,'celebration',152);
   assert.deepEqual(await fp.evaluate(()=>spotScores),sequence.map(p=>({owner:'member-a',stage:p.id})),'every server clear keeps the original data ID');
-  assert.deepEqual((await saved(fp)).completed,[...catalog.map(p=>p.id)],'completed history stores real IDs');
+  assert.deepEqual([...(await saved(fp)).completed].sort((a,b)=>a-b),catalog.map(p=>p.id),'completed history stores real IDs independently of the new display order');
   await choose(fp,'celebration','current',82);
-  assert.equal(await fp.locator('#solved-total').innerText(),'82','replaying does not erase completed history');
+  assert.equal(await fp.locator('#solved-total').innerText(),'152','replaying does not erase completed history');
   await fp.reload();await freshMenu(fp,82);
-  await lose(fp);await choiceLayout(fp,'retry',82);await choose(fp,'retry','previous',81);
+  await lose(fp);await choiceLayout(fp,'retry',152);await choose(fp,'retry','previous',81);
   assert.deepEqual(final.errors,[]);await final.context.close();
 
   // The phone layout is checked above; include small phones, landscape and desktop.
@@ -292,15 +292,15 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   }
   const host=await browser.newPage();await host.route('**/*',route=>route.fulfill({body:'<!doctype html><body></body>',contentType:'text/html'}));await host.goto('https://fixture.test/');
   await host.addScriptTag({path:path.join(root,'world-spot-game.js')});
-  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));for(const invalid of [0,83,82.5,'82'])scoreMessage(invalid);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);for(const stage of [62,63,82])scoreMessage(stage);});
-  await host.waitForFunction(()=>recorded.length===3);assert.deepEqual(await host.evaluate(()=>recorded),[62,63,82].map(stage=>({stage,owner:'member-a'})),'only valid old/new scores from the same-origin game frame are accepted');
-  await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===4);assert.equal(await host.evaluate(()=>recorded[3].stage),6);
+  await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));for(const invalid of [0,153,152.5,'152'])scoreMessage(invalid);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);for(const stage of [62,63,82,83,152])scoreMessage(stage);});
+  await host.waitForFunction(()=>recorded.length===5);assert.deepEqual(await host.evaluate(()=>recorded),[62,63,82,83,152].map(stage=>({stage,owner:'member-a'})),'only valid old/new scores from the same-origin game frame are accepted');
+  await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===6);assert.equal(await host.evaluate(()=>recorded[5].stage),6);
   await host.evaluate(()=>{window.rpcScores=[];window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'member-a'}}}}),onAuthStateChange(fn){window.walletAuth=fn}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{coins:0}})})})}),rpc:(name,args)=>({abortSignal:async()=>{rpcScores.push({name,...args});return{data:{ok:true}}}})})};});
   await host.addScriptTag({path:path.join(root,'games/spot-difference/wallet.js')});await host.waitForFunction(()=>JjudaWallet.getState().coins===0);
   assert.equal(await host.evaluate(async()=>{try{await JjudaWallet.recordClear('other-member',6);return false}catch{return true}}),true,'standalone score rejects another account');
-  for(const stage of [0,83,82.5,'82'])assert.equal(await host.evaluate(async stage=>{try{await JjudaWallet.recordClear('member-a',stage);return false}catch{return true}},stage),true,'standalone score rejects invalid stage bounds');
-  await host.evaluate(async()=>{for(const stage of [62,63,82])await JjudaWallet.recordClear('member-a',stage);});assert.deepEqual(await host.evaluate(()=>rpcScores),[62,63,82].map(stage=>({name:'record_spot_clear',p_stage:stage})));
+  for(const stage of [0,153,152.5,'152'])assert.equal(await host.evaluate(async stage=>{try{await JjudaWallet.recordClear('member-a',stage);return false}catch{return true}},stage),true,'standalone score rejects invalid stage bounds');
+  await host.evaluate(async()=>{for(const stage of [62,63,82,83,152])await JjudaWallet.recordClear('member-a',stage);});assert.deepEqual(await host.evaluate(()=>rpcScores),[62,63,82,83,152].map(stage=>({name:'record_spot_clear',p_stage:stage})));
   await host.close();
-  console.log('PASS: fixed 82-picture difficulty/ID sequence, fresh last-picture reentry, direct result choices, four responsive layouts, image loading races, celebrations, zoom/payment safeguards and original server IDs');
+  console.log('PASS: fixed 152-picture difficulty/ID sequence, fresh last-picture reentry, direct result choices, four responsive layouts, image loading races, celebrations, zoom/payment safeguards and original server IDs');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
