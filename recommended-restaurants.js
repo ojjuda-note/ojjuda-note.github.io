@@ -562,10 +562,10 @@
         formMessage(editor, [...new Set(errors)].join(' ') || (editor.photos.length < MIN_PHOTOS ? '사진을 ' + MIN_PHOTOS + '장 이상 골라 주세요.' : '사진 준비가 끝났어요.'), errors.length > 0);
       }
     }
-    function renderLocation(editor) {
+    function renderLocation(editor, message = '지역·주소를 확인해 주세요.') {
       editor.locationOpen.textContent = editor.location ? '지도 위치 변경' : '지도에서 위치 선택';
       editor.locationClear.hidden = !editor.location;
-      editor.locationStatus.textContent = editor.location ? '지도 위치 선택 완료 · 입력한 주소도 확인해 주세요.' : '지도에서 가게 위치를 선택할 수 있어요. 주소는 위에 적어 주세요.';
+      editor.locationStatus.textContent = editor.location ? '지도 위치 선택 완료 · ' + message : '지도에서 위치를 고르면 지역과 주소를 자동으로 입력해요.';
     }
     async function chooseLocation(session, editor) {
       if (!active(session) || session.editor !== editor || editor.disposed || editor.processing || editor.saving || editor.uncertain || editor.picker) return;
@@ -582,8 +582,16 @@
         if (selected !== null) {
           const point = locationFrom(selected);
           if (!point) throw new Error('invalid_location');
-          editor.location = point; editor.dirty = true; renderLocation(editor);
-          formMessage(editor, '지도 위치를 선택했어요. 주소도 확인해 주세요.');
+          const region = textValue(selected.region).trim(), address = textValue(selected.address).trim();
+          const hasRegion = REGIONS.includes(region), hasAddress = address.length >= 5 && address.length <= 200;
+          if (hasRegion) { editor.fields.region.value = region; editor.fields.region.setCustomValidity(''); }
+          if (hasAddress) { editor.fields.address.value = address; editor.fields.address.setCustomValidity(''); }
+          const message = hasRegion && hasAddress ? '지역·주소를 자동으로 입력했어요. 상세 주소를 확인해 주세요.'
+            : hasRegion ? '지역을 입력했어요. 주소는 직접 입력해 주세요.'
+            : hasAddress ? '주소를 입력했어요. 지역은 직접 선택해 주세요.'
+            : '주소를 찾지 못했어요. 지역·주소를 직접 입력해 주세요.';
+          editor.location = point; editor.dirty = true; renderLocation(editor, message);
+          formMessage(editor, message);
         }
       } catch {
         if (active(session) && session.editor === editor && !editor.disposed) formMessage(editor, '지도 위치를 선택하지 못했어요. 다시 시도해 주세요.', true);
@@ -796,7 +804,7 @@
     }
     function makePayload(editor) {
       const f = editor.fields;
-      return { p_id: editor.id, p_request_id: uid(), p_name: f.name.value.trim(), p_category: f.category.value, p_region: f.region.value, p_address: f.address.value.trim(), p_menu: f.menu.value.trim(), p_reason: f.reason.value.trim(), p_photos: editor.photos.map(photo => photo.path), p_expected_updated_at: editor.existing?.updated_at || null, p_location: editor.location ? { ...editor.location } : { latitude: null, longitude: null } };
+      return { p_id: editor.id, p_request_id: uid(), p_name: f.name.value.trim(), p_category: f.category.value, p_region: f.region.value, p_address: f.address.value.trim(), p_menu: f.menu.value.trim(), p_reason: f.reason.value.trim(), p_photos: editor.photos.map(photo => photo.path), p_expected_updated_at: editor.existing?.updated_at || null, p_location: editor.location ? { latitude: editor.location.latitude, longitude: editor.location.longitude } : { latitude: null, longitude: null } };
     }
     function completeSave(session, editor, row, removed = []) {
       if (!active(session) || session.editor !== editor) return;

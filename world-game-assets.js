@@ -7,8 +7,8 @@
  const versions=Object.freeze({
   star:'1.0.0',
   festival:'1.1.0',
-  restaurants:'1.7.0',
-  recommendations:'1.4.0',
+  restaurants:'1.8.0',
+  recommendations:'1.5.0',
   archery:'2.0.3',
   roulette:'1.8.1',
   bang:'1.9.2',
@@ -34,11 +34,11 @@
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
  const restaurantRatings=['/restaurant-ratings.css?v=20261103-restaurants-ratings1','/restaurant-ratings.js?v=20261103-restaurants-ratings1'];
- const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-map-pick1','/restaurant-location-picker.js?v=20261103-restaurants-map-pick1'];
+ const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
   festival:['/world-festival-schedule.css?v=20261103-festival-undecided1','/world-festival-schedule.js?v=20261103-festival-undecided1'],
-  restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-sort1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-sort1'],
-  recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-sort1'],
+  restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-sort1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-auto-address1'],
+  recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-auto-address1'],
   archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261102-archery-fit-screen1','/world-archery-game.js?v=20261103-guest-one-round1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261104-game-fullscreen1'],
   bang:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-bang-game.js?v=20261104-game-fullscreen1'],
