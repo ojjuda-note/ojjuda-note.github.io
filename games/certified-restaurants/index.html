@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#faf9f5">
   <meta name="description" content="미쉐린·블루리본 가이드 선정 식당과 우체국 추천 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
   <link rel="stylesheet" href="/restaurant-ratings.css?v=20261103-restaurants-ratings1">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-map-clean1">
+  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-osm1">
   <script src="./vendor/leaflet.js" defer></script>
   <script src="/restaurant-ratings.js?v=20261103-restaurants-ratings1" defer></script>
-  <script src="./app.js?v=20261103-restaurants-map-clean1" defer></script>
+  <script src="./app.js?v=20261103-restaurants-osm1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
@@ -68,7 +69,7 @@
     <p id="status" class="status" role="status" hidden></p>
     <section id="workspace" class="workspace" data-view="map" aria-label="맛집 지도와 목록">
       <div id="map-panel" class="map-panel">
-        <div id="map" role="region" aria-label="선정 식당 지역 지도"><div class="map-loading">지도를 준비하고 있어요.</div></div>
+        <div id="map" role="region" aria-label="선정 식당 지도"><div class="map-loading">지도를 준비하고 있어요.</div></div>
         <div id="map-message" class="map-message" hidden><span id="map-message-text"></span><button id="retry-map" type="button">다시 불러오기</button></div>
         <nav id="map-pagination" class="map-pagination" aria-label="지도 맛집 넘기기" hidden>
           <button id="map-prev" type="button" aria-controls="map" disabled>이전 50곳</button>
@@ -83,7 +84,7 @@
       </div>
     </section>
 
-    <footer class="page-footer data-note"><details><summary>자료 안내</summary><p id="coverage">공식 출처로 확인한 일부 식당부터 제공합니다.</p><p><span id="updated"></span> · 선정·발행 연도와 출처는 가게 정보에서 확인할 수 있어요.</p><div id="collection-sources"></div><p>지역 지도: KOSTAT 2018 시도 경계 · <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">지도 출처</a></p></details></footer>
+    <footer class="page-footer data-note"><details><summary>자료 안내</summary><p id="coverage">공식 출처로 확인한 일부 식당부터 제공합니다.</p><p><span id="updated"></span> · 선정·발행 연도와 출처는 가게 정보에서 확인할 수 있어요.</p><div id="collection-sources"></div><p>지도: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a></p></details></footer>
   </main>
 
   <dialog id="detail" class="detail-dialog" aria-labelledby="detail-title"><div class="detail-shell"><button id="close-detail" class="close-detail" type="button" aria-label="가게 정보 닫기">×</button><div id="detail-content"></div></div></dialog>

@@ -1,4 +1,4 @@
-/* Real browser checks for the directory; local restaurant data and regional geography stay in this fixture. */
+/* Real browser checks for the directory; restaurant data and OSM tile images are fulfilled locally. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const directory = path.join(root, 'games/certified-restaurants');
 const dataset = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.json'), 'utf8'));
-const geography = JSON.parse(fs.readFileSync(path.join(directory, 'korea-provinces.json'), 'utf8'));
+const tileImage = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#edf1e7"/><path d="M0 96h256M144 0v256" stroke="#fff" stroke-width="12"/></svg>';
 const proof = process.env.RESTAURANT_PROOF_DIR || '/tmp/restaurant-guide-proof';
 const origin = 'https://fixture.test';
 const entry = origin + '/games/certified-restaurants/index.html?embedded=1';
@@ -74,7 +74,8 @@ async function assertMapListLayout(page, width) {
 
 async function fixture(browser, options = {}) {
   const context = await browser.newContext({ viewport: options.viewport || { width: 1280, height: 1000 }, reducedMotion: 'reduce' });
-  const network = { geography: 0, escaped: [], data: 0 };
+  const network = { tiles: 0, tileUrls: [], escaped: [], data: 0 };
+  let tileFailures = options.tileFailures || 'none', failedTileUrl = null;
   const records = options.dataset || dataset;
   await context.addInitScript(({ permission, position, locationChoice, blockStorage, firstVisit, savedView, viewKey }) => {
     window.fixtureLocationRequests = 0;
@@ -90,12 +91,14 @@ async function fixture(browser, options = {}) {
   }, { permission: options.permission || 'denied', position: options.position || null, locationChoice: options.locationChoice || '', blockStorage: !!options.blockStorage, firstVisit: !!options.firstVisit, savedView: options.savedView || 'list', viewKey });
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
+    if (url.origin === 'https://tile.openstreetmap.org' && /^\/\d+\/\d+\/\d+\.png$/.test(url.pathname) && !url.search) {
+      network.tiles++; network.tileUrls.push(url.href);
+      if (tileFailures === 'mixed' && !failedTileUrl) failedTileUrl = url.href;
+      const fail = tileFailures === 'all' || tileFailures === 'mixed' && url.href === failedTileUrl;
+      return route.fulfill({ status: fail ? 503 : 200, contentType: fail ? 'text/plain' : 'image/svg+xml', body: fail ? 'Fixture tile unavailable' : tileImage });
+    }
     if (url.origin !== origin) { network.escaped.push(url.href); return route.abort(); }
     if (options.noMap && url.pathname.endsWith('/vendor/leaflet.js')) return route.fulfill({ contentType: 'application/javascript', body: '' });
-    if (url.pathname.endsWith('/korea-provinces.json')) {
-      network.geography++;
-      return route.fulfill({ status: options.failGeoOnce && network.geography === 1 ? 503 : 200, contentType: 'application/json', body: JSON.stringify(geography) });
-    }
     if (url.pathname.endsWith('/restaurants.json')) {
       network.data++;
       return route.fulfill({ status: options.failOnce && network.data === 1 ? 503 : 200, contentType: 'application/json', body: JSON.stringify(records) });
@@ -107,7 +110,7 @@ async function fixture(browser, options = {}) {
   const page = await context.newPage(), errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(entry);
-  return { context, page, errors, network };
+  return { context, page, errors, network, recoverTiles() { tileFailures = 'none'; } };
 }
 
 (async () => {
@@ -124,12 +127,17 @@ async function fixture(browser, options = {}) {
     ];
     const firstMap = await fixture(browser, { firstVisit: true, dataset: { restaurants: layoutRows } });
     await waitForTotal(firstMap.page, layoutRows.length);
-    await firstMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
+    await firstMap.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
     assert.equal(await firstMap.page.locator('#workspace').getAttribute('data-view'), 'map', 'an unconfigured first visit opens the map with its list');
     assert.equal(await firstMap.page.evaluate(key => localStorage.getItem(key), viewKey), null, 'the automatic default is not saved as a user preference');
     assert.equal(await firstMap.page.locator('.restaurant-pin').count(), 2, 'the initial map contains only known locations');
     assert.deepEqual(await visibleIds(firstMap.page), ids(layoutRows), 'initial map mode also includes the restaurant without coordinates in its list');
-    assert.equal(firstMap.network.geography, 1, 'the first map loads its local background once');
+    assert.ok(firstMap.network.tiles > 0, 'the first map requests street map tiles');
+    assert.equal(await firstMap.page.locator('.leaflet-tile-pane > .leaflet-layer').count(), 1, 'the map uses one street tile layer');
+    const osmAttribution = firstMap.page.locator('.leaflet-control-attribution a[href="https://www.openstreetmap.org/copyright"]');
+    assert.equal(await osmAttribution.isVisible(), true, 'OpenStreetMap attribution remains visible');
+    assert.match(await osmAttribution.textContent(), /OpenStreetMap/);
+    assert.equal(await firstMap.page.locator('.leaflet-tile').first().getAttribute('referrerpolicy'), 'strict-origin-when-cross-origin');
     assert.equal(await firstMap.page.locator('#filter-options').isVisible(), false);
     for (const selector of ['#region', '#nearby', '#reset', '#saved-only', '#recommendations-link']) assert.equal(await firstMap.page.locator(selector).isVisible(), true, selector + ' is available without opening the guide filter');
     assert.equal(await firstMap.page.locator('#recommendations-link').evaluate(link => !!link.closest('header')), true, 'member recommendations remain a compact header action');
@@ -142,12 +150,13 @@ async function fixture(browser, options = {}) {
     await resetFilters(firstMap.page); await waitForTotal(firstMap.page, layoutRows.length);
     await firstMap.page.locator('#show-list').click();
     assert.equal(await firstMap.page.evaluate(key => localStorage.getItem(key), viewKey), 'list');
-    const beforeListReload = firstMap.network.geography;
+    await firstMap.page.waitForLoadState('networkidle');
+    const beforeListReload = firstMap.network.tiles;
     await firstMap.page.reload(); await waitForTotal(firstMap.page, layoutRows.length);
     assert.equal(await firstMap.page.locator('#workspace').getAttribute('data-view'), 'list', 'an explicitly chosen list view survives reload');
     assert.equal(await firstMap.page.locator('#map-panel').isVisible(), false);
     assert.equal(await firstMap.page.locator('#results').isVisible(), true);
-    assert.equal(firstMap.network.geography, beforeListReload, 'restoring list view leaves the map unloaded');
+    assert.equal(firstMap.network.tiles, beforeListReload, 'restoring list view leaves the map unloaded');
     await firstMap.page.locator('#show-map').click();
     assert.equal(await firstMap.page.evaluate(key => localStorage.getItem(key), viewKey), 'map');
     await firstMap.page.reload(); await waitForTotal(firstMap.page, layoutRows.length);
@@ -184,19 +193,22 @@ async function fixture(browser, options = {}) {
     assert.equal(await page.locator('#filter-toggle').getAttribute('aria-expanded'), 'false');
     assert.equal(await page.locator('#region').isVisible(), true, 'region selection stays outside the folded guide filters');
     assert.equal(await page.locator('#saved-only').isVisible(), true, 'saved restaurants are directly available from the header');
-    assert.equal(regular.network.geography, 0, 'entry does not fetch unrequested geography');
+    assert.equal(regular.network.tiles, 0, 'list entry does not request unused map tiles');
     assert.equal(await page.locator('#map.leaflet-container').count(), 0, 'entry does not initialize an unused map');
     if (dataset.collections?.length) assert.deepEqual(await page.locator('.collection-title').evaluateAll(links => links.map(link => link.href)), dataset.collections.map(collection => new URL(collection.url).href), 'the collection shortcut uses the source-provided map URL');
     await page.locator('#show-map').click();
-    await page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
-    assert.equal(regular.network.geography, 1);
+    await page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
+    assert.ok(regular.network.tiles > 0);
     assert.equal(await page.locator('.restaurant-pin').count(), Math.min(50, dataset.restaurants.filter(hasCoordinates).length));
     assert.equal(await page.locator('.result-shown').isVisible(), false, 'list-only counts do not compete with map coverage');
     const missingActual = dataset.restaurants.filter(item => !hasCoordinates(item)).length;
     assert.equal(await page.locator('.map-caption').count(), 0, 'the map has no obstructing summary caption');
     if (missingActual) assert.ok((await page.locator('#result-coverage').textContent()).includes('위치 확인 중 ' + missingActual + '곳'));
-    await page.locator('#show-list').click(); await page.locator('#show-map').click();
-    assert.equal(regular.network.geography, 1, 'view changes reuse the existing local map');
+    await page.locator('#show-list').click();
+    assert.equal(await page.locator('.leaflet-tile-pane > .leaflet-layer').count(), 0, 'list view detaches unused map tiles');
+    await page.locator('#show-map').click();
+    await page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
+    assert.equal(await page.locator('.leaflet-tile-pane > .leaflet-layer').count(), 1, 'view changes keep a single tile layer');
     assert.equal(await page.locator('#map.leaflet-container').count(), 1);
     await page.locator('#show-list').click();
     assert.equal(await page.locator('.result-shown').isVisible(), true);
@@ -366,22 +378,38 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(retry.errors, []);
     await retry.context.close();
 
-    const mapFailure = await fixture(browser, { failGeoOnce: true });
+    const mapFailure = await fixture(browser, { tileFailures: 'all' });
     await waitForCount(mapFailure.page, dataset.restaurants.length);
     await mapFailure.page.locator('#show-map').click();
     await mapFailure.page.locator('#retry-map').waitFor();
     await mapFailure.page.locator('#show-list').click();
     await mapFailure.page.locator('.card-main').first().click();
-    assert.equal(await mapFailure.page.locator('#detail').evaluate(dialog => dialog.open), true, 'local geography failures do not block restaurant information');
+    assert.equal(await mapFailure.page.locator('#detail').evaluate(dialog => dialog.open), true, 'tile failures do not block restaurant information');
     await mapFailure.page.locator('#close-detail').click();
     await mapFailure.page.locator('#show-map').click();
+    await mapFailure.page.waitForLoadState('networkidle');
+    await mapFailure.page.locator('#retry-map').waitFor();
+    const failedTileRequests = mapFailure.network.tiles;
+    mapFailure.recoverTiles();
     await mapFailure.page.locator('#retry-map').click();
-    await mapFailure.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
-    assert.equal(mapFailure.network.geography, 2, 'retry retrieves the local geography again');
+    await mapFailure.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded') && document.querySelector('#map-message').hidden);
+    assert.ok(mapFailure.network.tiles > failedTileRequests, 'manual retry requests the failed tiles again');
+    assert.ok(mapFailure.network.tileUrls.every(url => /^https:\/\/tile\.openstreetmap\.org\/\d+\/\d+\/\d+\.png$/.test(url)), 'retry uses the same keyless, cacheable tile URLs');
     assert.equal(await mapFailure.page.locator('#map-message').isVisible(), false);
     assert.equal(await mapFailure.page.locator('.map-caption').count(), 0, 'retry does not restore an obstructing map caption');
-    assert.deepEqual(mapFailure.errors, []);
+    assert.deepEqual(mapFailure.errors, []); assert.deepEqual(mapFailure.network.escaped, []);
     await mapFailure.context.close();
+
+    const partialTiles = await fixture(browser, { tileFailures: 'mixed', dataset: { restaurants: layoutRows } });
+    await waitForTotal(partialTiles.page, layoutRows.length); await partialTiles.page.locator('#show-map').click();
+    await partialTiles.page.locator('#retry-map').waitFor();
+    assert.ok(await partialTiles.page.locator('.leaflet-tile-loaded').count() > 0, 'the fixture mixes successful and failed tiles');
+    assert.equal(await partialTiles.page.locator('#map-message').isVisible(), true, 'successful neighboring tiles do not hide a remaining tile error');
+    assert.equal(await partialTiles.page.locator('.restaurant-pin').count(), 2, 'partial tile errors preserve known restaurant pins');
+    await partialTiles.page.waitForLoadState('networkidle');
+    partialTiles.recoverTiles(); await partialTiles.page.locator('#retry-map').click();
+    await partialTiles.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded') && document.querySelector('#map-message').hidden);
+    assert.deepEqual(partialTiles.errors, []); assert.deepEqual(partialTiles.network.escaped, []); await partialTiles.context.close();
 
     const temporarySave = await fixture(browser, { blockStorage: true });
     await waitForCount(temporarySave.page, dataset.restaurants.length);
@@ -478,7 +506,7 @@ async function fixture(browser, options = {}) {
     assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
     assert.equal(await performance.page.locator('.result-shown').textContent(), '현재 50곳 표시');
     assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 가능 800곳');
-    assert.equal(performance.network.geography, 0, 'nearby entry does not force map loading');
+    assert.equal(performance.network.tiles, 0, 'nearby entry does not force map loading');
     await performance.page.evaluate(() => { window.fixtureFirstCard = document.querySelector('.restaurant-card'); });
     await performance.page.locator('#load-more').click();
     assert.equal(await performance.page.locator('.restaurant-card').count(), 100);
@@ -493,7 +521,7 @@ async function fixture(browser, options = {}) {
     while (await performance.page.locator('.restaurant-card').count() < 700) await performance.page.locator('#load-more').click();
     assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'successive batches expose cards beyond the current map page');
     await performance.page.locator('#show-map').click();
-    await performance.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
+    await performance.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
     assert.equal(await performance.page.locator('.restaurant-pin').count(), 50);
     assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 표시 50 / 800곳');
     assert.deepEqual(await mapNames(performance.page), names(many.slice(0, 50)), 'nearby maps the nearest 50 first');
@@ -529,7 +557,7 @@ async function fixture(browser, options = {}) {
     await performance.page.locator('[data-restaurant-id="many-99"] .card-main').click();
     assert.deepEqual(await mapNames(performance.page), names(many.slice(50, 100)), 'another-page selection replaces all pins without a 51st marker');
     await performance.page.locator('#close-detail').click();
-    assert.equal(performance.network.geography, 1, 'selection reuses the local background');
+    assert.equal(await performance.page.locator('.leaflet-tile-pane > .leaflet-layer').count(), 1, 'selection keeps one street tile layer');
     assert.deepEqual(performance.network.escaped, []); assert.deepEqual(performance.errors, []); await performance.context.close();
 
     const mixedRows = [...many.slice(0, 305), ...Array.from({ length: 7 }, (_, index) => ({ ...structuredClone(unknown), id: 'unlocated-' + index, name: '지도미확인' + index }))];
@@ -537,7 +565,7 @@ async function fixture(browser, options = {}) {
     await waitForTotal(mixedMap.page, mixedRows.length);
     assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 가능 305곳 · 위치 확인 중 7곳');
     await mixedMap.page.locator('#show-map').click();
-    await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
+    await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
     assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 50);
     assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 50 / 305곳 · 위치 확인 중 7곳');
     assert.equal(await mixedMap.page.locator('.map-caption').count(), 0, 'pagination coverage does not add a caption over the map');
@@ -552,6 +580,6 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(await mapNames(mixedMap.page), names(many.slice(250, 300)), 'previous works on a phone after the final partial page');
     assert.deepEqual(mixedMap.network.escaped, []); assert.deepEqual(mixedMap.errors, []); await mixedMap.context.close();
 
-    console.log('PASS: first-visit map with a visible list, explicit view persistence, festival-style desktop split and 320–1280px phone layout, location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, non-cumulative 50-pin map pages with whole-page selection and map focus, partial-page navigation and phone pager layout, real data filters, saved state, exact sources, edition/selection/publication/source/listing labels, safe rendering and recovery; no real location permission or external map requests.');
+    console.log('PASS: first-visit map with a visible list, explicit view persistence, festival-style desktop split and 320–1280px phone layout, location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, non-cumulative 50-pin map pages with whole-page selection and map focus, partial-page navigation and phone pager layout, keyless OSM tiles and attribution, mixed tile failures and manual recovery, real data filters, saved state, exact sources, edition/selection/publication/source/listing labels and safe rendering; all tile requests fulfilled locally and no real location permission requested.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
