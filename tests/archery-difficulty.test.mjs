@@ -227,7 +227,7 @@ test('moving circular targets replay their complete paths exactly twice as fast 
         close(actual.velocityX, expected.velocityX * factor, 1e-8);
         if (animalKinds.includes(template.kind)) {
           assert.equal(actual.passId, expected.passId); assert.equal(actual.direction, expected.direction);
-          assert.deepEqual(actual, targetAt(original, time), 'animals retain their complete previous-release motion and pass duration');
+          assert.deepEqual(actual, targetAt(original, time), 'animal-specific motion remains independent of the circular-target speed multiplier');
         }
         if (!isMoving) {
           const unchanged = targetAt(original, time);
@@ -381,7 +381,7 @@ test('each animal keeps its own body shape and characteristic motion without rev
   assert.ok(turns(pigeon) > turns(eagle), 'pigeons flutter more frequently than the eagle soars');
 });
 
-test('later species cross faster relative to their painted body width at every distance, with honest continuous velocity',()=>{
+test('the animal speed ladder retains honest continuous velocity while eagles deliberately soar more calmly',()=>{
   const directions=new Set();
   for(const distance of[10,20,30,50,...LONG_RANGE_DISTANCES])for(const seed of[0,19,42])for(const passId of[0,1]){
     let previous=0;
@@ -403,8 +403,11 @@ test('later species cross faster relative to their painted body width at every d
         }
       }
       const speed=sum/240;
-      if(previous)assert.ok(speed>=previous*1.05,`${distance}m ${kind}: a larger body must not make the later lesson easier`);
-      previous=speed;
+      if(kind==='eagle')assert.ok(speed<previous,`${distance}m eagle: a broad soaring pass is deliberately calmer than the pigeon lesson`);
+      else{
+        if(previous)assert.ok(speed>=previous*1.05,`${distance}m ${kind}: the remaining species keep their relative-speed progression`);
+        previous=speed;
+      }
       assert.ok(Math.abs(start.x-(stage.targetX||0))>distance,'new animals begin outside the view');
       const end=targetAt(stage,duration*(passId+1),passId);
       assert.ok(Math.abs(end.x-(stage.targetX||0))>distance,'old animals leave before the next pass spawns');
@@ -431,7 +434,8 @@ test('visible species motion has real hops, large leaps, quick bird waves and st
     assert.ok(metrics.deer.range>metrics.rabbit.range*1.1);
     assert.ok(metrics.wildcat.variation>1.4,'wildcats accelerate and slow inside the visible crossing');
     assert.ok(metrics.cheetah.variation>2.5,'cheetahs visibly alternate a sprint and a slower interval');
-    assert.ok(metrics.pigeon.range>.55&&metrics.eagle.range>.55,'bird height changes are large enough to require vertical tracking');
+    assert.ok(metrics.pigeon.range>.55,'pigeon height changes still require the same vertical tracking');
+    assert.ok(metrics.eagle.range>.33,'eagle soars remain visibly vertical after easing their height changes');
     assert.ok(metrics.pigeon.turns>metrics.eagle.turns,'pigeon waves are quicker than the eagle’s larger swoops');
   }
 });

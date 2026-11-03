@@ -1,11 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PLAYER,launchArrow,stepArrow} from '../games/forest-archer/engine.mjs';
+import {PLAYER,BOWS,sortEquipment,launchArrow,stepArrow} from '../games/forest-archer/engine.mjs';
 import {projectPoint} from '../games/forest-archer/view.mjs';
-import {LASER_PRICE,LASER_CLICK_DEGREES,LASER_MAX_CLICKS,normalizeLaserSettings,projectLaserPoint,traceLaserPoint} from '../games/forest-archer/laser.mjs';
+import {LASER_PRICE,LASER_CLICK_DEGREES,LASER_MAX_CLICKS,canEquipLaser,normalizeLaserSettings,projectLaserPoint,traceLaserPoint} from '../games/forest-archer/laser.mjs';
 
 const near = (actual,expected,epsilon=1e-10) => assert.ok(Math.abs(actual-expected)<=epsilon,`${actual} != ${expected}`);
 const radians = clicks => clicks * LASER_CLICK_DEGREES * Math.PI / 180;
+
+test('laser compatibility starts at the first crossbow and excludes every bow and event gun', () => {
+  const shop=sortEquipment(BOWS.filter(weapon=>weapon.weaponType!=='gun'));
+  assert.equal(shop.length,20);
+  for(const [index,weapon] of shop.entries()) {
+    assert.equal(canEquipLaser(weapon),index>=10,weapon.name);
+    assert.equal(canEquipLaser(weapon.id),index>=10,`${weapon.name} by saved ID`);
+  }
+  assert.equal(shop[10].weaponType,'crossbow');assert.equal(shop[10].gearTier,'lower');
+  for(const weapon of BOWS.filter(item=>item.weaponType==='gun'))assert.equal(canEquipLaser(weapon),false);
+  for(const value of [null,undefined,-1,25,NaN,Infinity,'13',{}, {id:0,weaponType:'crossbow'}])
+    assert.equal(canEquipLaser(value),false,'unknown or forged weapons cannot gain a laser');
+});
 
 test('laser settings keep only manual zeroing and clamp clicks to the supported range', () => {
   assert.equal(LASER_PRICE,500);assert.equal(LASER_CLICK_DEGREES,.05);assert.equal(LASER_MAX_CLICKS,1200);
