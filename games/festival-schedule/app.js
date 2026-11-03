@@ -2,7 +2,7 @@ import {
   CATEGORIES, REGIONS, todayKST, parseDate, isoDate, addDays,
   monthRange, periodRange, overlaps, eventStatus, filterEvents,
   formatRange, createICS
-} from './core.js?v=20261103-festival-schedule1';
+} from './core.js?v=20261103-festival-simple1';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'ojjuda.festival.saved.v1';
@@ -13,7 +13,6 @@ const VIEW_MODES = ['map', 'calendar', 'list'];
 const PERIODS = ['upcoming', 'weekend', 'month', 'all', 'custom'];
 const OWN_QUERY_KEYS = ['q', 'region', 'category', 'period', 'from', 'to', 'date', 'view', 'month', 'saved', 'sort', 'event'];
 const STATUS_LABELS = { ongoing: '진행 중', upcoming: '예정', ended: '종료', cancelled: '취소', postponed: '연기' };
-const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const paths = {
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/>',
   pin: '<path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
@@ -180,12 +179,6 @@ function syncControls() {
   $('workspace').dataset.view = state.view;
   $('map-panel').hidden = state.view !== 'map';
   $('calendar-panel').hidden = state.view !== 'calendar';
-  document.querySelectorAll('.top-nav [data-action]').forEach(button => {
-    const action = button.dataset.action;
-    const active = state.savedOnly ? action === 'nav-saved' : state.view === 'calendar' ? action === 'nav-calendar' : action === 'nav-map';
-    button.classList.toggle('active', active);
-    if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
-  });
   $('selection-bar').hidden = !state.selectedDate;
   $('selected-date-label').textContent = state.selectedDate ? `${dateLabel(state.selectedDate)} 열리는 행사` : '';
   if (map && state.view === 'map') requestAnimationFrame(() => map.invalidateSize({ pan: false }));
@@ -204,42 +197,38 @@ function getVisibleEvents() {
 function render() {
   if (loading) return;
   filteredEvents = getVisibleEvents();
-  const heading = state.savedOnly ? '저장한 행사' : state.region !== 'all' ? `${state.region}의 행사` : '전국의 행사';
+  const heading = state.savedOnly ? '저장한 행사' : state.region !== 'all' ? `${state.region} 행사` : '전국 행사';
   $('results-heading').firstChild.textContent = `${heading} `;
   $('result-count').textContent = filteredEvents.length;
-  $('total-count').textContent = events.length;
-  $('saved-count').textContent = events.filter(event => saved.has(event.id)).length;
-  const [year, month] = state.month.split('-').map(Number);
-  $('results-subtitle').textContent = state.selectedDate
-    ? `${dateLabel(state.selectedDate)} · 선택한 조건에 맞는 일정이에요.`
-    : state.view === 'calendar'
-      ? `${year}년 ${month}월에 열리는 행사를 모았어요.`
-      : state.period === 'all' ? '지난 행사까지 함께 볼 수 있어요.' : '공식 안내에서 확인한 일정을 모았어요.';
+  const savedCount = events.filter(event => saved.has(event.id)).length;
+  $('saved-count').textContent = savedCount;
+  $('saved-count').hidden = savedCount === 0;
+  const month = Number(state.month.slice(5, 7));
   $('list-label').textContent = state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : '가까운 일정부터';
-  $('list-footer').textContent = filteredEvents.length
-    ? `${filteredEvents.length}개 행사 · ${new Set(filteredEvents.map(event => event.region)).size}개 지역 · 대한민국 표준시 기준`
-    : '다른 지역이나 기간도 살펴보세요.';
   $('checked-at').textContent = (updatedAt || '').slice(0, 10).replaceAll('-', '.') || '확인 중';
-  const now = parseDate(today);
-  $('art-month').textContent = MONTH_NAMES[now.getUTCMonth()];
-  $('art-year').textContent = now.getUTCFullYear();
   renderList();
   renderCalendar();
   renderMapMarkers();
   updateProvinceStyles();
 }
+function compactDateRange(event) {
+  const start = parseDate(event.start), end = parseDate(event.end);
+  const year = start.getUTCFullYear(), endYear = end.getUTCFullYear();
+  const datePart = date => `${date.getUTCMonth() + 1}.${date.getUTCDate()}`;
+  const showYear = year !== Number(today.slice(0, 4)) || year !== endYear;
+  const first = `${showYear ? year + '.' : ''}${datePart(start)}`;
+  if (event.start === event.end) return first;
+  return `${first} – ${year !== endYear ? endYear + '.' : ''}${datePart(end)}`;
+}
 function cardMarkup(event) {
   const category = CATEGORIES[event.category];
   const status = displayStatus(event);
-  const start = parseDate(event.start);
   const isSaved = saved.has(event.id);
-  return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''}" data-event-card="${escapeHTML(event.id)}" style="--tile-bg:${category.bg};--tile-ink:${category.ink};--category-color:${category.ink}">
-    <button class="date-tile" data-open-event="${escapeHTML(event.id)}" tabindex="-1" aria-hidden="true"><span class="tile-month">${start.getUTCMonth() + 1}월</span><span class="tile-day">${start.getUTCDate()}</span><i class="tile-mark"></i></button>
+  return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''}" data-event-card="${escapeHTML(event.id)}" style="--category-color:${category.ink}">
     <button class="card-main" data-open-event="${escapeHTML(event.id)}" aria-label="${escapeHTML(event.title)} 상세 정보">
       <span class="card-topline"><span class="card-category">${category.label}</span><span class="card-status ${status.key}">${status.label}</span></span>
       <strong class="card-title">${escapeHTML(event.title)}</strong>
-      <span class="card-date">${icon('calendar')}<span>${escapeHTML(formatRange(event))}</span></span>
-      <span class="card-location">${icon('pin')}<span>${escapeHTML([event.region, event.city, event.venue].filter(Boolean).join(' · '))}</span></span>
+      <span class="card-meta"><span class="card-date" title="${escapeHTML(formatRange(event))}">${escapeHTML(compactDateRange(event))}</span><span class="card-location">${escapeHTML([...new Set([event.region, event.city].filter(Boolean))].join(' '))}</span></span>
     </button>
     <button class="card-save ${isSaved ? 'saved' : ''}" data-save-event="${escapeHTML(event.id)}" aria-pressed="${isSaved}" aria-label="${escapeHTML(event.title)} ${isSaved ? '관심 행사에서 해제' : '관심 행사로 저장'}">${icon('bookmark')}</button>
   </article>`;
@@ -425,13 +414,16 @@ function selectPeriod(period) {
   updateState(changes, { fit: true });
 }
 function bindInteractions() {
-  $('region').innerHTML = '<option value="all">전국 모든 지역</option>' + REGIONS.map(region => `<option value="${region}">${region}</option>`).join('');
+  $('region').innerHTML = '<option value="all">전국</option>' + REGIONS.map(region => `<option value="${region}">${region}</option>`).join('');
   $('search').addEventListener('input', () => updateState({ query: $('search').value, selectedDate: '' }, { fit: true }));
   $('region').addEventListener('change', () => updateState({ region: $('region').value, selectedDate: '' }, { fit: true }));
   $('period').addEventListener('change', () => selectPeriod($('period').value));
   $('sort').addEventListener('change', () => updateState({ sort: $('sort').value }));
   $('reset').addEventListener('click', resetFilters);
-  $('saved-toggle').addEventListener('click', () => updateState({ savedOnly: !state.savedOnly, selectedDate: '' }, { fit: true }));
+  $('saved-toggle').addEventListener('click', () => {
+    if (state.savedOnly) { resetFilters(); return; }
+    updateState({ view: 'list', savedOnly: true, query: '', category: 'all', region: 'all', period: 'all', selectedDate: '', from: '', to: '' });
+  });
   ['date-from', 'date-to'].forEach(id => $(id).addEventListener('change', () => {
     const from = $('date-from').value, to = $('date-to').value;
     updateState({ from, to, selectedDate: '', month: (from || to || today).slice(0, 7) }, { fit: true });
@@ -457,10 +449,6 @@ function bindInteractions() {
       case 'close-about': closeAbout(); break;
       case 'close-event': closeEvent(); break;
       case 'clear-date': updateState({ selectedDate: '' }); break;
-      case 'nav-map': updateState({ view: 'map', savedOnly: false }, { fit: true }); break;
-      case 'nav-calendar': updateState({ view: 'calendar', savedOnly: false }); break;
-      case 'nav-saved': updateState({ view: 'list', savedOnly: true, query: '', category: 'all', region: 'all', period: 'all', selectedDate: '', from: '', to: '' }); break;
-      case 'weekend': selectPeriod('weekend'); $('explore').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); break;
       case 'campus-archive': showCampusArchive(); break;
       case 'reset-filters': resetFilters(); break;
       case 'retry-load': void loadEvents(); break;
@@ -715,7 +703,7 @@ function locateUser() {
 async function loadEvents() {
   if (loading) return;
   loading = true;
-  $('event-list').innerHTML = '<div class="loading-state"><div class="loading-ring"></div><p>전국의 즐거운 일정을 불러오고 있어요.</p></div>';
+  $('event-list').innerHTML = '<div class="loading-state"><div class="loading-ring"></div><p>행사를 불러오고 있어요.</p></div>';
   try {
     const response = await fetch(DATA_URL, { cache: 'no-cache' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -742,7 +730,6 @@ async function loadEvents() {
     console.warn('축제일정 데이터 불러오기 실패:', error.message);
     $('event-list').innerHTML = '<div class="empty-state"><span class="empty-symbol">' + icon('info') + '</span><h3>일정을 불러오지 못했어요</h3><p>인터넷 연결을 확인하고 다시 시도해 주세요.</p><button data-action="retry-load">다시 불러오기</button></div>';
     $('result-count').textContent = '—';
-    $('list-footer').textContent = '행사 정보를 불러오면 지도와 캘린더에 함께 표시돼요.';
   }
 }
 
