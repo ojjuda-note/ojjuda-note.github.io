@@ -320,6 +320,83 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(regular.network.escaped, [], 'the browser did not request any unmocked external destination');
     await regular.context.close();
 
+    // Municipal designations remain usable as a separate guide on narrow phones.
+    const localGuide = {
+      provider: 'local-guide', label: '대전광역시 3대 30년 전통음식업소 및 지역대표음식 전문업소 지정',
+      year: 2025, yearType: 'source', sourceAsOf: '2025-05', verifiedAt: '2026-11-03',
+      sourceName: '대전광역시 식품안전과 · 지역대표음식 전문업소 및 전통음식업소 공식 안내 자료',
+      sourceUrl: origin + '/sources/daejeon-designations-2025.pdf',
+      selectionCriteria: '<img src=x onerror="window.localGuideInjected=1"> 맛·지역성 검토 <script>window.localGuideInjected=2</script> & 지자체 지정'
+    };
+    const localRows = [
+      { id: 'municipal-only', name: '가 지자체 지정 식당', category: '한식', region: '대전', district: '중구', address: '대전광역시 중구 테스트로 1', lat: null, lng: null, menu: ['국밥'], guides: [localGuide] },
+      { id: 'municipal-and-ribbon', name: '나 중복 선정 식당', category: '한식', region: '충북', district: '청주시', address: '충청북도 청주시 테스트로 2', lat: null, lng: null, menu: ['국수'], guides: [
+        { ...localGuide, label: '청주시 향토음식점 지정', year: null, yearType: 'selection', sourceAsOf: '2025-12-31', sourceName: '청주시 향토음식점 공식 안내', sourceUrl: origin + '/sources/cheongju-designations', selectionCriteria: '향토성과 음식 맛 등을 심사하여 지자체가 지정한 음식점' },
+        { provider: 'blue-ribbon', label: '1리본', year: 2026, yearType: 'edition', sourceName: '블루리본 서베이 공식 가이드', sourceUrl: origin + '/sources/blue-ribbon-2026', verifiedAt: '2026-11-03' }
+      ] },
+      { id: 'michelin-only', name: '다 미쉐린 선정 식당', category: '한식', region: '대전', district: '유성구', address: '대전광역시 유성구 테스트로 3', lat: null, lng: null, menu: ['정식'], guides: [
+        { provider: 'michelin', label: '빕 구르망', year: 2026, yearType: 'edition', sourceName: '미쉐린 공식 가이드', sourceUrl: origin + '/sources/michelin-2026', verifiedAt: '2026-11-03' }
+      ] }
+    ];
+    for (const width of [320, 370]) {
+      const municipal = await fixture(browser, { viewport: { width, height: 740 }, dataset: { restaurants: localRows } });
+      const municipalPage = municipal.page;
+      await waitForCount(municipalPage, 3); await openFilters(municipalPage);
+      assert.equal(await municipalPage.locator('[data-guide="local-guide"]').textContent(), '지자체 지정');
+      const filterLayout = await municipalPage.locator('#guides').evaluate(container => {
+        const bounds = container.getBoundingClientRect();
+        return [...container.querySelectorAll('button')].map(button => { const rect = button.getBoundingClientRect(); return { text: button.textContent, width: rect.width, height: rect.height, fits: rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && button.scrollWidth <= button.clientWidth + 1 }; });
+      });
+      assert.ok(filterLayout.every(button => button.width > 0 && button.height >= 32 && button.fits), 'every guide filter stays exposed and unclipped at ' + width + ': ' + JSON.stringify(filterLayout));
+      await municipalPage.locator('[data-guide="local-guide"]').click(); await waitForCount(municipalPage, 2);
+      assert.deepEqual(await visibleIds(municipalPage), ['municipal-and-ribbon', 'municipal-only']);
+      assert.equal(await municipalPage.locator('[data-guide="local-guide"]').getAttribute('aria-pressed'), 'true');
+      await municipalPage.locator('#region').selectOption('대전'); await waitForCount(municipalPage, 1);
+      assert.deepEqual(await visibleIds(municipalPage), ['municipal-only'], 'region and municipal guide intersect on a phone');
+      assert.equal(await municipalPage.locator('#filter-summary').textContent(), '대전 · 지자체 지정');
+      await municipalPage.locator('[data-guide="blue-ribbon"]').click(); await waitForCount(municipalPage, 0);
+      assert.deepEqual(await visibleIds(municipalPage), [], 'municipal designations are excluded from blue ribbon unless both sources exist');
+      await municipalPage.locator('#region').selectOption('충북'); await waitForCount(municipalPage, 1);
+      assert.deepEqual(await visibleIds(municipalPage), ['municipal-and-ribbon']);
+      assert.equal(await municipalPage.locator('[data-restaurant-id="municipal-and-ribbon"] .guide-badge').count(), 2, 'the shared restaurant keeps both distinct guide badges');
+      await municipalPage.locator('[data-guide=""]').click();
+      await municipalPage.locator('#region').selectOption(''); await waitForCount(municipalPage, 3);
+      assert.deepEqual(await visibleIds(municipalPage), ids(localRows), 'all guides restores every fixture without duplicating a joint selection');
+      const cardBadgeLayout = await municipalPage.locator('#cards .guide-badge').evaluateAll(badges => badges.map(badge => {
+        const rect = badge.getBoundingClientRect(), owner = badge.closest('.guide-badges').getBoundingClientRect();
+        return { text: badge.textContent, width: rect.width, fits: rect.left >= owner.left - 1 && rect.right <= owner.right + 1 && badge.scrollWidth <= badge.clientWidth + 1 };
+      }));
+      assert.ok(cardBadgeLayout.every(badge => badge.width > 0 && badge.fits), 'long municipal program names wrap inside their card at ' + width + ': ' + JSON.stringify(cardBadgeLayout));
+      assert.equal(await municipalPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'expanded guide filters and long badges do not widen the phone page');
+      await municipalPage.locator('[data-restaurant-id="municipal-only"] .card-main').click();
+      assert.equal(await municipalPage.locator('.source-heading .is-local-guide').textContent(), '지자체 지정 ' + localGuide.label);
+      assert.equal(await municipalPage.locator('.source-year').textContent(), '2025년 자료');
+      assert.doesNotMatch(await municipalPage.locator('.source-list').textContent(), /2025년 선정/);
+      assert.equal(await municipalPage.locator('.source-verified').textContent(), '자료 기준 2025.05 · 출처 확인일 2026.11.03');
+      assert.equal(await municipalPage.locator('.source-link').textContent(), localGuide.sourceName + ' ↗');
+      assert.equal(await municipalPage.locator('.source-link').getAttribute('href'), localGuide.sourceUrl);
+      assert.equal(await municipalPage.locator('.source-criteria').textContent(), localGuide.selectionCriteria);
+      assert.equal(await municipalPage.locator('.source-criteria > *,#detail img,#detail script').count(), 0, 'criteria stay inert text in the real browser');
+      assert.equal(await municipalPage.evaluate(() => window.localGuideInjected), undefined);
+      await municipalPage.locator('.source-link').scrollIntoViewIfNeeded();
+      const sourceLayout = await municipalPage.evaluate(() => {
+        const dialog = document.querySelector('#detail').getBoundingClientRect();
+        const containers = [...document.querySelectorAll('#detail,.detail-shell,.detail-body,.source-item,.source-heading,.source-criteria,.source-verified')].map(node => {
+          const rect = node.getBoundingClientRect();
+          return { className: node.className, left: rect.left, right: rect.right, width: rect.width, scrollWidth: node.scrollWidth, clientWidth: node.clientWidth };
+        });
+        const textBoxes = [...document.querySelectorAll('#detail .guide-badge,#detail .source-link')].flatMap(node => [...node.getClientRects()].map(rect => ({ left: rect.left, right: rect.right, width: rect.width })));
+        return { dialog: { left: dialog.left, right: dialog.right }, containers, textBoxes, viewport: innerWidth };
+      });
+      assert.ok(sourceLayout.dialog.left >= 0 && sourceLayout.dialog.right <= width + 1, 'the source dialog fits the ' + width + 'px viewport');
+      assert.ok(sourceLayout.containers.every(node => node.width > 0 && node.left >= sourceLayout.dialog.left - 1 && node.right <= sourceLayout.dialog.right + 1 && node.scrollWidth <= node.clientWidth + 1), 'source criteria and dates require no horizontal scrolling at ' + width + ': ' + JSON.stringify(sourceLayout));
+      assert.ok(sourceLayout.textBoxes.length >= 2 && sourceLayout.textBoxes.every(rect => rect.width > 0 && rect.left >= sourceLayout.dialog.left - 1 && rect.right <= sourceLayout.dialog.right + 1), 'long program and agency names remain within the dialog at ' + width);
+      await municipalPage.screenshot({ path: path.join(proof, 'restaurants-municipal-' + width + '.png'), fullPage: false });
+      await municipalPage.locator('#close-detail').click();
+      assert.equal(await municipalPage.locator('#detail').evaluate(dialog => dialog.open), false, 'the detail remains dismissible after reading a long official source');
+      assert.deepEqual(municipal.errors, []); assert.deepEqual(municipal.network.escaped, []); await municipal.context.close();
+    }
+
     // Deliberately hostile and missing-coordinate records prove no HTML/link execution or guessed map pin.
     const special = structuredClone(dataset.restaurants[0]);
     special.id = 'fixture-no-coordinates'; special.name = '<img src=x onerror="window.injected=true"> 지점'; special.address = '<svg onload="window.injected=true"> 안전주소'; special.lat = null; special.lng = null; special.menu = ['<script>window.injected=true</script>'];
