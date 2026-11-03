@@ -4,6 +4,11 @@ export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=2
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
+// High bow arcs need time to reach the ground. Event bullets retain their
+// existing timeout as well as their earlier target-plane miss resolution.
+export const ARROW_FLIGHT_LIMIT = 16;
+export const BULLET_FLIGHT_LIMIT = 8;
+export const getFlightTimeLimit = shot => shot?.projectileType === 'bullet' ? BULLET_FLIGHT_LIMIT : ARROW_FLIGHT_LIMIT;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const SCOPES = Object.freeze([
   {magnification:2,name:'2배 조준경',priceMultiplier:.6},
@@ -1207,7 +1212,8 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
     // arrows retain their full falling trajectory beyond the target.
     else if (shot.projectileType === 'bullet' && stage.kind === 'clay') events.push({ t, type: 'miss', score: 0, zone: '표적을 지나쳤어요' });
   }
-  if (shot.elapsed + dt >= 8) events.push({ t: Math.max(0, 8 - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
+  const flightLimit = getFlightTimeLimit(shot);
+  if (shot.elapsed + dt >= flightLimit) events.push({ t: Math.max(0, flightLimit - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
   const eventPriority = { person: 0, obstacle: 1, ground: 2, hit: 3, miss: 4 };
   events.sort((a, b) => a.t - b.t || eventPriority[a.type] - eventPriority[b.type]);
   const event = events[0], usedTime = event ? event.t : dt;
@@ -1324,13 +1330,14 @@ export function stepArrow(shot, dt, stage, worldTime = 0) {
   return shot.result;
 }
 
-export function predictTrajectory(params, stage, worldTime = 0, maxSeconds = 8) {
+export function predictTrajectory(params, stage, worldTime = 0, maxSeconds) {
   const shot = launchArrow(params);
+  const forecastSeconds = maxSeconds === undefined ? getFlightTimeLimit(shot) : maxSeconds;
   const points = [{ ...shot.position }];
   const dt = 1 / 45;
   let time = 0;
-  while (shot.active && time < maxSeconds) {
-    const step = Math.min(dt, maxSeconds - time);
+  while (shot.active && time < forecastSeconds) {
+    const step = Math.min(dt, forecastSeconds - time);
     const beforeBounce = shot.bounceCount;
     stepArrow(shot, step, stage, worldTime + time);
     if (shot.bounceCount > beforeBounce && shot.bouncePoint) points.push({...shot.bouncePoint});
