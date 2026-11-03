@@ -1,10 +1,10 @@
-import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-eagle-dive1';
+import {PLAYER, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-launch-angle1';
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-eagle-dive1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261104-archery-eagle-dive1';
-import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-eagle-dive1';
+import {evaluateCoachShot} from './coach.mjs?v=20261104-archery-launch-angle1';
 import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261104-archery-eagle-layout1';
-import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-eagle-dive1';
+import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, normalizeLaserSettings, traceLaserPoint} from './laser.mjs?v=20261104-archery-launch-angle1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -20,6 +20,8 @@ const SAVE_KEY = 'forest-archer-progress-single-v4';
 const STAGE_CATALOG = 'missions-220-v1';
 const DRAW_LIMIT = 10;
 const AIM_SWAY_SCALE = .68;
+const MAIN_MAX_PITCH = Math.PI / 3;
+const LASER_CLICK_RADIANS = LASER_CLICK_DEGREES * Math.PI / 180;
 const STEADY_SETTLE_SECONDS = .6;
 const STABILIZER_COST = 5;
 const CONSUMABLE_LIMIT = 1e8;
@@ -263,6 +265,17 @@ function activeLaser(id=activeBow().id){
   return !trialBlocked()&&canEquipLaser(item)&&progress.ownedBows.includes(id)&&settings?normalizeLaserSettings(settings):null;
 }
 const laserEnabled=()=>!state.isEvent&&activeLaser()?.enabled===true;
+function sightAngles(aim=state.aim){
+  const settings=laserEnabled()?activeLaser():null;
+  return {yaw:aim.yaw-(settings?.horizontalClicks||0)*LASER_CLICK_RADIANS,
+    pitch:aim.pitch-(settings?.verticalClicks||0)*LASER_CLICK_RADIANS};
+}
+function viewAimAngles(){
+  const sight=sightAngles();
+  // An extreme manual zero can point behind the player. Until it faces the
+  // range again, keep input and explicit zoom on the forward weapon axis.
+  return Math.cos(sight.yaw)*Math.cos(sight.pitch)>1e-8?sight:{...state.aim};
+}
 const laserControlsReady=()=>!trialBlocked()&&!document.hidden&&!state.modal&&!state.isEvent&&state.mode==='ready'&&!ammoLocked()&&!!activeLaser();
 function laserFrame(now=performance.now()){
   // Keep the same physical sight visible before drawing, so its current zero
@@ -322,11 +335,26 @@ function closeLaserAdjustments(restoreFocus=false){
   return wasOpen;
 }
 function updateLaserNumber(prefix,value){
-  const display=$(`${prefix}Value`),digits=String(Math.abs(value)).padStart(4,'0');
+  const display=$(`${prefix}Value`),degrees=value*LASER_CLICK_DEGREES;
   if(display.dataset.value===String(value))return;
-  display.dataset.value=String(value);display.setAttribute('aria-label',`${value}눈금, ${(value*LASER_CLICK_DEGREES).toFixed(2)}도`);
+  const digits=String(Math.round(Math.abs(degrees)*100)).padStart(4,'0');
+  display.dataset.value=String(value);display.dataset.degrees=degrees.toFixed(2);
+  display.setAttribute('aria-label',`${value<0?'−':'+'}${Math.abs(degrees).toFixed(2)}도 보정`);
   $(`${prefix}Sign`).textContent=value<0?'−':'+';
   for(let index=0;index<4;index++)$(`${prefix}Digit${index}`).style.transform=`translateY(-${Number(digits[index])*10}%)`;
+}
+function updateLaunchAngle(now=performance.now()){
+  const hud=$('launchAngleHud');
+  const visible=!trialBlocked()&&!state.isEvent&&(state.mode==='ready'||state.mode==='drawing');
+  hud.hidden=!visible;hud.classList.toggle('hidden',!visible);
+  if(!visible)return;
+  // Read the same elevation that launchVolley receives, including the current
+  // hand movement. This is independent of both target distance and sight zero.
+  const degrees=Number((shotParams(now).pitch*180/Math.PI).toFixed(2)).toFixed(2);
+  for(const id of ['launchAngleValue','laserLaunchAngleValue']){
+    const value=$(id);if(value.dataset.degrees===degrees)continue;
+    value.dataset.degrees=degrees;value.textContent=`${degrees}°`;
+  }
 }
 function updateLaserPanel(){
   const settings=!state.isEvent?activeLaser():null,visible=!!settings,ready=visible&&laserControlsReady();
@@ -344,9 +372,9 @@ function updateLaserPanel(){
   if($('laserStatus').textContent!==status)$('laserStatus').textContent=status;
   for(const step of [1,10]){$(`laserStep${step}Btn`).classList.toggle('active',state.laserStep===step);$(`laserStep${step}Btn`).setAttribute('aria-pressed',String(state.laserStep===step));}
   for(const [axis,prefix,label] of [['horizontalClicks','laserHorizontal','좌우'],['verticalClicks','laserVertical','상하']]){
-    const gear=$(`${prefix}Gear`),value=settings[axis];
-    gear.setAttribute('aria-valuemin',String(-LASER_MAX_CLICKS));gear.setAttribute('aria-valuemax',String(LASER_MAX_CLICKS));
-    gear.setAttribute('aria-valuenow',String(value));gear.setAttribute('aria-valuetext',`${label} ${value}눈금, ${(value*LASER_CLICK_DEGREES).toFixed(2)}도`);
+    const gear=$(`${prefix}Gear`),value=settings[axis],degrees=value*LASER_CLICK_DEGREES;
+    gear.setAttribute('aria-valuemin',String(-LASER_MAX_CLICKS*LASER_CLICK_DEGREES));gear.setAttribute('aria-valuemax',String(LASER_MAX_CLICKS*LASER_CLICK_DEGREES));
+    gear.setAttribute('aria-valuenow',String(Number(degrees.toFixed(2))));gear.setAttribute('aria-valuetext',`${label} 보정 ${value<0?'−':'+'}${Math.abs(degrees).toFixed(2)}도`);
     $(`${prefix}Rotor`).style.transform=`rotate(${laserGearAngles[axis]}deg)`;updateLaserNumber(prefix,value);
   }
 }
@@ -365,10 +393,11 @@ const hasScope=(id=activeBow().id)=>equippedScope(id)>1;
 const maximumZoom=()=>equippedScope();
 function setAimZoom(value){
   if(value!==1&&value!==maximumZoom())return false;
-  const next=value,delta=Math.min(w*1.08,h*1.5)*(next-state.zoom);
-  // Magnify around the current aim, keeping the same world direction under the reticle.
-  state.panX-=Math.tan(state.aim.yaw)*delta;
-  state.panY+=Math.tan(state.aim.pitch)/Math.cos(state.aim.yaw)*delta;
+  const next=value,delta=Math.min(w*1.08,h*1.5)*(next-state.zoom),sight=viewAimAngles();
+  // Explicit zoom keeps the visible sight in place, even when the weapon is
+  // raised well above a manually zeroed laser. It never changes the launch.
+  state.panX-=Math.tan(sight.yaw)*delta;
+  state.panY+=Math.tan(sight.pitch)/Math.cos(sight.yaw)*delta;
   state.zoom=next;state.guide=null;updateCamera(0,true);
   if(state.mode==='ready'||state.mode==='drawing')clampAim();
   return true;
@@ -463,10 +492,14 @@ function scheduleAutoRelease(){
   },Math.max(0,state.drawStarted+DRAW_LIMIT*1000-performance.now()));
 }
 function recenter(){
-  const t=targetAt(state.stage,state.time);
-  state.aim.yaw=0;
-  state.aim.pitch=Math.atan2(t.y-PLAYER.y,state.stage.distance);
-  state.panX=0;state.panY=(state.zoom-1)*Math.min(w*1.08,h*1.5)*Math.tan(state.aim.pitch);
+  const t=targetAt(state.stage,state.time),settings=laserEnabled()?activeLaser():null;
+  // Center the chosen sight with its saved manual zero. No range, weapon or
+  // trajectory calculation supplies a new correction on the player's behalf.
+  state.aim.yaw=(settings?.horizontalClicks||0)*LASER_CLICK_RADIANS;
+  state.aim.pitch=Math.atan2(t.y-PLAYER.y,state.stage.distance)+(settings?.verticalClicks||0)*LASER_CLICK_RADIANS;
+  clampAim(false);
+  const sight=viewAimAngles();
+  state.panX=0;state.panY=(state.zoom-1)*Math.min(w*1.08,h*1.5)*Math.tan(sight.pitch)/Math.cos(sight.yaw);
   if(camera.focal){camera=aimCamera();if(state.mode==='ready'||state.mode==='drawing')clampAim();}
   state.sway=createSway();state.guide=null;
 }
@@ -564,9 +597,9 @@ function aimBounds(){
   return {left,right:w-left,top,bottom:Math.max(top+1,h*2/3-Math.min(14,h*.06))};
 }
 function clampAim(pan=true){
-  state.aim.yaw=clamp(state.aim.yaw,-.48,.48);state.aim.pitch=clamp(state.aim.pitch,-.22,.58);
+  state.aim.yaw=clamp(state.aim.yaw,-.48,.48);state.aim.pitch=clamp(state.aim.pitch,-.22,state.isEvent ? .58 : MAIN_MAX_PITCH);
   if(!pan)return;
-  const x=camera.cx+Math.tan(state.aim.yaw)*camera.focal,bounds=aimBounds();
+  const sight=viewAimAngles(),x=camera.cx+Math.tan(sight.yaw)*camera.focal,bounds=aimBounds();
   // Keep horizontal tracking smooth at the edges. Elevation changes only the
   // firing angle: the ground and target must not rise with an upward aim.
   if(x<bounds.left)state.panX+=bounds.left-x;else if(x>bounds.right)state.panX+=bounds.right-x;
@@ -763,12 +796,14 @@ function moveTouchAim(e){
   const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;
   pointer.x=e.clientX;pointer.y=e.clientY;
   if(!dx&&!dy)return;
-  // Move the projected aiming ray by exactly the finger's CSS-pixel delta.
-  // Inverting the same projection keeps the 1:1 movement at every scope zoom.
-  const x=Math.tan(state.aim.yaw)*camera.focal+dx;
-  const y=Math.tan(state.aim.pitch)/Math.cos(state.aim.yaw)*camera.focal-dy;
-  state.aim.yaw=Math.atan2(x,camera.focal);
-  state.aim.pitch=Math.atan(y/camera.focal*Math.cos(state.aim.yaw));
+  // Move the visible sight by the finger's CSS-pixel delta, then apply that
+  // angular change to the weapon. A large zero must not slow the red dot.
+  const sight=viewAimAngles();
+  const x=Math.tan(sight.yaw)*camera.focal+dx;
+  const y=Math.tan(sight.pitch)/Math.cos(sight.yaw)*camera.focal-dy;
+  const yaw=Math.atan2(x,camera.focal),pitch=Math.atan(y/camera.focal*Math.cos(yaw));
+  state.aim.yaw+=yaw-sight.yaw;
+  state.aim.pitch+=pitch-sight.pitch;
   clampAim();state.guide=null;
 }
 function onPointerDown(e){
@@ -1184,8 +1219,8 @@ async function retryAmmo(){
   onAmmoChange();toast(state.ammoNotice);
 }
 function showHelp(){
-  if(adminTrialActive){openModal('help',`<p class="eyebrow">관리자 아이템 체험</p><h2 id="modalTitle">모든 아이템을 써보세요</h2><div class="help-note"><p><strong>활 10종 · 석궁 10종 · 총기 5종 · 화살 19종</strong><br>무기 상점에서 구매 없이 장착할 수 있어요. 각 무기에서 사용할 수 있는 2·3·6·8배 조준경도 모두 열려 있어요. 상점에서 무료로 바꿔 장착할 수 있어요.</p><p><strong>화면 아래 1/3을 누른 채 끌고, 손을 떼면 발사</strong><br>장비의 성능·흔들림·탄도·탄창·장전 시간은 일반 게임과 같아요. 안정제를 쓰면 이번 판의 흔들림이 절반으로 줄어요.</p><p><strong>레이저 영점도 자유롭게 체험</strong><br>석궁 10종의 레이저가 열려 있어요. 영점 조절을 누르면 톱니를 열 수 있어요. 조준 전에 톱니를 돌려 맞추고, 누른 동안 빨간 점으로 겨눈 뒤 손을 놓으면 발사해요. 레이저 사용 중에는 10초 자동발사와 코치 안내가 쉬어요. 보정값은 체험이 끝나면 저장되지 않아요.</p><p><strong>총알과 안정제 무제한</strong><br>상단의 총기·이벤트 체험에서 1~10단계를 바로 선택해요. 8단계부터는 UFO도 등장해요. 활·석궁 사격장은 메뉴의 전체 단계에서 골라요.</p><p>체험 장비·점수·코인은 저장되지 않으며 계정의 쭈와 총알도 사용하지 않아요. 위쪽 ‘일반 게임으로’ 버튼을 누르면 원래 게임으로 돌아가요.</p></div><button class="button primary-button" data-action="close">체험 계속하기</button>`,true);return;}
-  openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 레이저를 끈 상태에서는 10초 안에 손을 떼지 않으면 자동발사해요. 레이저를 켰다면 누르는 동안 계속 겨눌 수 있고, 손을 놓을 때만 발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>먼 곳은 위로, 움직이면 앞쪽으로</strong><p>발사하면 화면이 날아가는 화살을 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 벽·기둥이 있는 곳에서는 화살이 꽂히는 지점이 보이도록 시점을 보정해요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 1~4단계 기본 고정 과녁 다음에는 5~8단계 높은 고정 과녁으로 위쪽 조준을 익혀요. 이어서 이동 과녁, 바람, 높낮이, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 여덟 단계는 바람이 없어요. 13~16단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 과녁을 60·65·70·80m에 두고 벽 뒤에 충분한 공간을 마련했어요. 충분히 당긴 화살도 벽을 넘어 과녁으로 내려오도록 겨눠보세요. 사람이 나오는 판에서는 한 명이 과녁 바로 앞을 빠르게 왕복하거나 여러 명이 겹쳐 지나가다가 잠깐 틈이 열려요. 화살이 도착할 때 틈이 열리도록 기다렸다 쏘세요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 움직이는 원형 과녁은 이전보다 2배 빠르게 움직여요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 껑충 뛰고 살쾡이는 빨라졌다 느려지며, 사슴은 크게 도약해요. 비둘기는 빠르게 상하로 출렁이고 독수리는 완만하게 활공해요. 치타는 강하게 가속하는 구간이 있어요. 독수리는 천천히 활공하고, 나머지 동물은 뒤에 나올수록 몸집에 비해 더 빠르게 움직여요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요. 동물은 심장 10점, 머리 8점, 몸통 5점, 다리·귀 3점으로 맞힌 부위에 따라 점수가 달라져요. 화면에 그려진 몸에만 맞고 다리 사이나 몸 주변의 빈 공간은 통과해요. 맞힌 점수만큼 피해가 쌓여 토끼 5점, 살쾡이 8점, 사슴 10점, 비둘기 12점, 독수리 15점, 치타 18점에 도달하면 그 자리에서 쓰러져요. 쓰러진 동물에 다시 맞혀도 점수를 얻지 않아요. 명중 안내에서 부위·점수·남은 체력을 확인하세요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종, 특수 2종, 장거리 5종으로 총 19종이 있어요. 장거리 화살은 60·80·100·120·150m에 맞춰 무게와 공기 저항이 단계적으로 줄어들고, 같은 거리에서 더 빠르게 도착해 덜 떨어져요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~20단계는 기본 활, 21~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 106~220단계는 상위 활·석궁을 기준으로 맞췄어요. 기존 마지막 판 뒤에는 과제 순서대로 60·80·100·120·150m 장거리 100개 판이 이어져요. 장거리에서는 거리별 장거리 화살 5종으로 더 빠르고 낮은 탄도로 쏴보세요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 조준경은 2·3·6·8배 네 종류예요. 성장 순서의 무기 1~5번은 2배, 6~10번은 2·3배, 11~15번은 2·3·6배, 16~20번은 네 배율을 모두 사용할 수 있어요. 구매한 배율은 해당 무기에 영구 귀속되고, 보유한 배율끼리 무료로 바꿔 장착할 수 있어요. 확대 버튼은 기본 1배와 현재 장착 배율을 오가요. 조준경이 없으면 1배로 보여요. 빠른 동물이 화면 밖으로 벗어나면 1배로 바꿔 동물과 앞쪽 겨냥점을 함께 보세요. 레이저 포인터는 첫 석궁부터 석궁 10종에 각각 500코인으로 달 수 있어요. 아래의 영점 조절을 누르면 톱니를 열 수 있어요. 조준을 시작하기 전에 좌우·상하 톱니를 돌려 영점을 맞추세요. 시계 방향은 오른쪽·위쪽, 반대 방향은 왼쪽·아래쪽이며 1눈금은 0.05도예요. 1눈금·10눈금 단위를 고를 수 있고 톱니 옆 숫자가 함께 돌아가요. 영점을 조절하면 빨간 점은 반대쪽으로 옮겨져요. 빨간 점을 같은 지점에 다시 겨누면 상하 +는 더 높게, 좌우 +는 더 오른쪽으로 발사돼요. 좌우는 바람에 밀리는 방향의 반대로 직접 맞추세요. 화면 아래를 누르면 흔들리는 빨간 점이 켜지고 보정 장치는 잠겨요. 포인터로 겨눈 뒤 손을 놓으면 화살이 나가며, 레이저를 켠 동안은 10초 자동발사와 코치 안내가 쉬어요. 레이저를 끄면 기존 코치 설정이 돌아와요. 보정이 틀리면 화살도 빗나갈 수 있어요. 레이저와 영점은 해당 무기에 귀속되며 총기에는 달 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발의 점수를 모두 합쳐요. 세 발이 10점에 맞으면 30점이며, 다섯 번 모두 맞히면 150점이에요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 이번 판의 목표 점수를 달성하면 다음 단계로 갈 수 있어요. 부족하면 지금 단계에 다시 도전하거나 이전 단계로 돌아갈 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 준비 화면이 열려요. 총기와 총알을 확인하고 ‘사격 시작’을 눌러야 제한 시간과 표적이 움직여요. 이벤트가 끝나면 직전에 마친 본편을 기준으로 이전·지금·다음 단계를 고를 수 있어요. 다음 단계는 그 본편 판의 목표를 달성했을 때 열려요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 이벤트가 끝나면 안정제 교환과 총기 구매·장착, 이어 할 단계 선택을 한 창에서 보여줘요. 접시 점수 5개로 안정제 1개를 교환하며, 접시 점수가 부족해도 총기를 구매할 수 있어요. 본편 목표를 달성했다면 다음 단계로 이어 갈 수 있어요. 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
+  if(adminTrialActive){openModal('help',`<p class="eyebrow">관리자 아이템 체험</p><h2 id="modalTitle">모든 아이템을 써보세요</h2><div class="help-note"><p><strong>활 10종 · 석궁 10종 · 총기 5종 · 화살 19종</strong><br>무기 상점에서 구매 없이 장착할 수 있어요. 각 무기에서 사용할 수 있는 2·3·6·8배 조준경도 모두 열려 있어요. 상점에서 무료로 바꿔 장착할 수 있어요.</p><p><strong>화면 아래 1/3을 누른 채 끌고, 손을 떼면 발사</strong><br>장비의 성능·흔들림·탄도·탄창·장전 시간은 일반 게임과 같아요. 사격장 위쪽 발사각은 수평 0°를 기준으로 활을 들어 올린 실제 각도예요. 45°처럼 각도를 높여 쏠 수 있고, 같은 각도여도 활·화살·당긴 힘에 따라 날아가는 거리가 달라져요. 각도를 바꿔도 조준 화면의 높이는 그대로예요. 안정제를 쓰면 이번 판의 흔들림이 절반으로 줄어요.</p><p><strong>레이저 영점도 자유롭게 체험</strong><br>석궁 10종의 레이저가 열려 있어요. 영점 조절을 누르면 톱니를 열 수 있어요. 조준 전에 0.05° 또는 0.50°씩 톱니를 돌려 영점을 맞추세요. 톱니의 보정각은 활과 레이저가 벌어진 각도이며, 사격장 위쪽의 실제 발사각과 달라요. 누른 동안 빨간 점으로 겨눈 뒤 손을 놓으면 발사해요. 레이저 사용 중에는 10초 자동발사와 코치 안내가 쉬어요. 보정값은 체험이 끝나면 저장되지 않아요.</p><p><strong>총알과 안정제 무제한</strong><br>상단의 총기·이벤트 체험에서 1~10단계를 바로 선택해요. 8단계부터는 UFO도 등장해요. 활·석궁 사격장은 메뉴의 전체 단계에서 골라요.</p><p>체험 장비·점수·코인은 저장되지 않으며 계정의 쭈와 총알도 사용하지 않아요. 위쪽 ‘일반 게임으로’ 버튼을 누르면 원래 게임으로 돌아가요.</p></div><button class="button primary-button" data-action="close">체험 계속하기</button>`,true);return;}
+  openModal('help',`<p class="eyebrow">MAKE YOUR FIRST SHOT</p><h2 id="modalTitle">손끝으로 배우는 활쏘기</h2><p class="modal-subtitle">한 발씩 쏘다 보면, 바람과 거리의 감각이 생겨요.</p><div class="help-steps"><div class="help-step"><span>01</span><div><strong>화면 아래에서 끌어 조준</strong><p>사격장 화면 아래 3분의 1은 보이지 않는 조작 영역이에요. 그곳을 누른 채 손가락을 움직이면 위쪽 조준점도 같은 방향과 거리만큼 움직여요. 확대해도 손가락과 1:1로 움직이고, 손가락을 멈추면 조준 이동도 멈춰요. 손을 떼면 현재 조준점 방향으로 발사돼요.</p></div></div><div class="help-step"><span>02</span><div><strong>손을 떼는 순간 발사</strong><p>활과 석궁은 길게 당길수록 빠르게 날아요. 총기는 조준하고 놓으면 활·석궁 조합의 최고 속도보다 정확히 2배 빠른 탄환을 발사해요. 누른 뒤 1~10초 사이에 무작위로 한 번 흔들림이 서서히 줄어들어 멈춰요. 안정 시간이 끝나면 바로 다시 흔들려요. 안정 시간은 기본 활 0.5초부터 장비 등급에 따라 길어져 최고급 석궁은 2초예요. 이벤트 총기는 0.5초예요. 레이저를 끈 상태에서는 10초 안에 손을 떼지 않으면 자동발사해요. 레이저를 켰다면 누르는 동안 계속 겨눌 수 있고, 손을 놓을 때만 발사해요.</p></div></div><div class="help-step"><span>03</span><div><strong>발사각을 보며 높이 조절하기</strong><p>사격장 위쪽 발사각은 수평 0°를 기준으로 활을 들어 올린 실제 각도예요. 활과 석궁은 최대 60°까지 올릴 수 있어요. 45°를 들었다면 실제로 그 각도로 발사되고, 활·화살·당긴 힘과 바람에 따라 날아가는 거리가 달라져요. 각도를 올리거나 내려도 조준 화면의 높이는 그대로예요. 발사하면 화면이 날아가는 화살을 따라가고, 맞거나 땅에 떨어진 뒤 돌아와요. 벽·기둥이 있는 곳에서는 화살이 꽂히는 지점이 보이도록 시점을 보정해요. 둥근 과녁의 10점 중앙에 맞으면 실제 마지막 비행을 가까이 다시 보여주고, 금빛 충격파와 파편이 퍼지는 짧은 명중 장면이 나와요. 점수와 코인은 한 번만 받아요. 화살은 날아가며 떨어져요. 1~4단계 기본 고정 과녁 다음에는 5~8단계 높은 고정 과녁으로 위쪽 조준을 익혀요. 이어서 이동 과녁, 바람, 높낮이, 양옆 벽, 기둥 순서로 10·20·30·50m를 연습해요. 처음 여덟 단계는 바람이 없어요. 13~16단계의 바람 읽기에서는 멈춘 과녁을 겨누며 옆으로 밀리는 화살을 느껴보세요. 나뭇잎이 흐르는 쪽으로 화살도 밀리니 바람 반대쪽을 겨누고, 멀수록 더 보정해보세요. 상단의 화살표와 수치로 바람 방향과 세기를 확인할 수 있어요. 처음 3개 사격장에서는 점선으로 궤적을 알려줘요. 담장이 있는 단계는 시작할 때 위에서 과녁을 보여줘요. ‘과녁 보기’로 다시 확인할 수 있어요. 양옆 벽 사이로 과녁이 3/4, 1/2, 1/3 보이는 순서로 익혀요. 기둥 연습에서는 움직이는 과녁이 약 3/4 보이도록 배치돼요. 벽과 과녁의 위치는 함께 달라져 틈이 유지되고, 벽에는 과녁 표시가 없어요. 나중에는 지나는 사람 사이의 과녁, 벽 뒤에 완전히 숨은 고정·이동 과녁, 여러 장애물을 섞은 과제를 만나요. 완전히 가린 벽은 과녁을 60·65·70·80m에 두고 벽 뒤에 충분한 공간을 마련했어요. 충분히 당긴 화살도 벽을 넘어 과녁으로 내려오도록 겨눠보세요. 사람이 나오는 판에서는 한 명이 과녁 바로 앞을 빠르게 왕복하거나 여러 명이 겹쳐 지나가다가 잠깐 틈이 열려요. 화살이 도착할 때 틈이 열리도록 기다렸다 쏘세요. 사람에게 맞으면 이번 발사는 0점이에요. 이동 과녁의 속도도 불규칙하게 바뀌어요. 움직이는 원형 과녁은 이전보다 2배 빠르게 움직여요. 토끼·살쾡이·사슴·비둘기·독수리·치타도 각각 10·20·30·50m에서 만나요. 토끼는 껑충 뛰고 살쾡이는 빨라졌다 느려지며, 사슴은 크게 도약해요. 비둘기는 빠르게 상하로 출렁이고 독수리는 완만하게 활공해요. 치타는 강하게 가속하는 구간이 있어요. 독수리는 천천히 활공하고, 나머지 동물은 뒤에 나올수록 몸집에 비해 더 빠르게 움직여요. 동물은 양쪽 중 무작위 방향에서 나타나 속도를 바꾸며 반대편으로 지나가요. 동물은 심장 10점, 머리 8점, 몸통 5점, 다리·귀 3점으로 맞힌 부위에 따라 점수가 달라져요. 화면에 그려진 몸에만 맞고 다리 사이나 몸 주변의 빈 공간은 통과해요. 맞힌 점수만큼 피해가 쌓여 토끼 5점, 살쾡이 8점, 사슴 10점, 비둘기 12점, 독수리 15점, 치타 18점에 도달하면 그 자리에서 쓰러져요. 쓰러진 동물에 다시 맞혀도 점수를 얻지 않아요. 명중 안내에서 부위·점수·남은 체력을 확인하세요.</p></div></div><div class="help-step"><span>04</span><div><strong>코인을 모아 더 좋은 장비로</strong><p>활은 그립감이 높을수록 덜 흔들리고, 탄성이 높을수록 빠르게 쏴요. 화살은 촉·몸통·깃의 조합으로 성능이 정해져요. 총 무게가 가벼우면 같은 활에서 더 빠르게 출발하고, 가는 몸통은 바람과 공기 저항을 줄여요. 큰 깃은 자세를 빨리 잡지만 저항도 늘어요. 상위 화살은 부품을 함께 개선해 기준 속도와 일관성이 좋아지고, 바람과 감속의 영향은 줄어요. 상점에서 재질·굵기와 전체 성능을 비교해보세요. 화살은 일반 12종, 특수 2종, 장거리 5종으로 총 19종이 있어요. 장거리 화살은 60·80·100·120·150m에 맞춰 무게와 공기 저항이 단계적으로 줄어들고, 같은 거리에서 더 빠르게 도착해 덜 떨어져요. 탄성 화살은 과녁에 못 미쳐 땅에 닿으면 한 번 튕겨 더 날아가고, 튕긴 뒤에는 속도가 줄어요. 자석 화살은 실제 표적 중심 5m 안으로 가까워지면 중앙 쪽으로 조금 휘어요. 크게 빗나간 화살을 되돌리거나 벽·기둥을 통과하지는 않아요. 특수 능력은 활·석궁에서만 작동해요. 코치는 누구나 무료로 쓰는 기본 기능이에요. 구매나 시간 제한 없이 처음부터 켜져 있어요. 낙하·바람·움직이는 표적까지 계산해 명중하기 좋은 순간에 “쏴!” 하고 알려줘요. 좋은 타이밍이 올 때마다 안내하고, 소리를 꺼도 좋은 조준 상태에서는 상단 표시가 계속 켜져요. 게임 메뉴에서 코치를 켜거나 끌 수 있어요. 1~20단계는 기본 활, 21~48단계는 하위 활·석궁, 49~105단계는 중간 활·석궁, 106~220단계는 상위 활·석궁을 기준으로 맞췄어요. 기존 마지막 판 뒤에는 과제 순서대로 60·80·100·120·150m 장거리 100개 판이 이어져요. 장거리에서는 거리별 장거리 화살 5종으로 더 빠르고 낮은 탄도로 쏴보세요. 단계 이름 아래와 단계 목록에 권장 등급이 표시돼요. 상점은 기본 활부터 레어 석궁까지 성장 순서로 배치돼 있어요. 그립감과 탄성이 번갈아 조금씩 높아지고, 이전 단계의 능력치는 떨어지지 않아요. 능력치별 정렬로도 비교할 수 있어요. 상위 장비로 갈수록 가격 차이가 커져요. 조준경은 2·3·6·8배 네 종류예요. 성장 순서의 무기 1~5번은 2배, 6~10번은 2·3배, 11~15번은 2·3·6배, 16~20번은 네 배율을 모두 사용할 수 있어요. 구매한 배율은 해당 무기에 영구 귀속되고, 보유한 배율끼리 무료로 바꿔 장착할 수 있어요. 확대 버튼은 기본 1배와 현재 장착 배율을 오가요. 조준경이 없으면 1배로 보여요. 빠른 동물이 화면 밖으로 벗어나면 1배로 바꿔 동물과 앞쪽 겨냥점을 함께 보세요. 레이저 포인터는 첫 석궁부터 석궁 10종에 각각 500코인으로 달 수 있어요. 아래의 영점 조절을 누르면 톱니를 열 수 있어요. 조준을 시작하기 전에 좌우·상하 톱니를 돌려 영점을 맞추세요. 시계 방향은 오른쪽·위쪽, 반대 방향은 왼쪽·아래쪽 보정이에요. 한 칸에 0.05° 또는 0.50°를 고를 수 있고, 톱니 옆에는 +7.50°처럼 보정각이 표시돼요. 이 숫자는 활과 레이저가 벌어진 각도이며 거리를 입력하는 칸이 아니에요. 활을 들어 올린 실제 발사각은 사격장 위쪽에서 확인하세요. 영점을 조절하면 빨간 점은 반대쪽으로 옮겨져요. 빨간 점을 같은 지점에 다시 겨누면 상하 +는 더 높게, 좌우 +는 더 오른쪽으로 발사돼요. 좌우는 바람에 밀리는 방향의 반대로 직접 맞추세요. 빨간 점은 발사 전과 영점 조절 중에도 보여요. 화면 아래를 누르면 보정 장치는 잠기고, 빨간 점으로 조준할 수 있어요. 포인터로 겨눈 뒤 손을 놓으면 화살이 나가며, 레이저를 켠 동안은 10초 자동발사와 코치 안내가 쉬어요. 레이저를 끄면 기존 코치 설정이 돌아와요. 보정이 틀리면 화살도 빗나갈 수 있어요. 레이저와 영점은 해당 무기에 귀속되며 총기에는 달 수 없어요. 본편에는 활 10종·석궁 10종이 있어요. 총기 5종은 별도의 접시 사격 이벤트 전용이에요. 일반 석궁은 단발, 레어 석궁만 3연발이에요. 레어 등급이 높으면 집탄성이 좋아져 3발이 더 가깝게 모여요. 3연발의 첫 화살은 조준한 방향으로, 나머지 두 발은 그 주변으로 나가요. 발사 기회를 한 번 쓰고 세 발의 점수를 모두 합쳐요. 세 발이 10점에 맞으면 30점이며, 다섯 번 모두 맞히면 150점이에요. 한 발이라도 사람에게 닿으면 이번 발사는 0점이에요. 석궁도 활과 같은 탄도 규칙을 써요. 상위 장비로 바꿔도 그립감이나 탄성이 줄지 않아요. 총기는 전용 탄환을 쓰며 화살 옵션이나 당긴 힘에 영향을 받지 않아요.</p></div></div></div><div class="help-note">본편은 5번 발사하면 한 판이 끝나요. 이번 판의 목표 점수를 달성하면 다음 단계로 갈 수 있어요. 부족하면 지금 단계에 다시 도전하거나 이전 단계로 돌아갈 수 있어요. 총 ${STAGES.length}개 미션에 도전해보세요. 본편을 5판 마칠 때마다 접시 사격 준비 화면이 열려요. 총기와 총알을 확인하고 ‘사격 시작’을 눌러야 제한 시간과 표적이 움직여요. 이벤트가 끝나면 직전에 마친 본편을 기준으로 이전·지금·다음 단계를 고를 수 있어요. 다음 단계는 그 본편 판의 목표를 달성했을 때 열려요. 초반에는 접시 2개가 천천히 나오고, 단계가 높아지면 최대 10개가 빠르게 나오며 후반에는 UFO도 등장해요. 보유 총알이 있으면 탄창을 비운 뒤 자동으로 장전돼요. 누적 5·10·15·…·50판 첫 달성 때 총알 20발을 받아요. 첫 달성 다음 날부터 하루 한 번, 총알이 19발 이하면 20발로 채워져요. 20발 이상이면 그대로이고, 같은 날 다시 지급하지 않아요. 구매한 총알도 잔량에 포함돼요. 추가 총알은 10발에 5쭈예요. 접시나 UFO를 1개 깨면 접시 점수 1개를 받아요. 이벤트가 끝나면 안정제 교환과 총기 구매·장착, 이어 할 단계 선택을 한 창에서 보여줘요. 접시 점수 5개로 안정제 1개를 교환하며, 접시 점수가 부족해도 총기를 구매할 수 있어요. 본편 목표를 달성했다면 다음 단계로 이어 갈 수 있어요. 상단 안정제 버튼에서 직접 사용하면 이번 판 남은 발사의 떨림이 절반으로 줄어요. 한 판에 한 번만 사용하며, 다음 판·다시 시작·새로고침에는 효과가 이어지지 않아요.<br>총알·쭈는 계정에, 장비·게임 코인·사격 기록·접시 점수·보유 안정제·코치 켜기/끄기는 현재 브라우저에 저장돼요.<br>PC: 방향키로 조준 · SPACE를 누르고 있다 놓으면 발사</div><button class="button primary-button" style="width:100%;margin-top:21px" data-action="close">시위 당기러 가기 ${icon('arrow')}</button>`,true);}
 let shopTab='bow',shopWeaponFilter='all',shopSort='progression';
 const formatCoins=value=>value.toLocaleString('ko-KR');
 const formatStat=value=>String(Number(value.toFixed(2)));
@@ -1621,6 +1656,7 @@ function updateGunReload(reloading){
   gunReloadUi={phase,time,percent};
 }
 function updatePower(){
+  updateLaunchAngle();
   updateLaserPanel();
   if(state.modal==='stabilizer')renderStabilizers();
   const eventWaiting=state.isEvent&&!state.eventStarted;

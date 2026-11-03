@@ -211,7 +211,10 @@ function baseAimScreen(app, angles = app.api.state.aim) {
 function moveHeldAim(app, yaw, pitch) {
   const { state, pointer } = app.api;
   assert.ok(pointer && state.mode === 'drawing', 'an actual held lower-area touch is required');
-  const pad = app.getElement('aimTouchpad'), current = baseAimScreen(app), target = baseAimScreen(app, { yaw, pitch });
+  const zero = app.api.laserEnabled() ? app.api.activeLaser() : null;
+  const toSight = angles => ({ yaw: angles.yaw - (zero?.horizontalClicks || 0) * .05 * Math.PI / 180,
+    pitch: angles.pitch - (zero?.verticalClicks || 0) * .05 * Math.PI / 180 });
+  const pad = app.getElement('aimTouchpad'), current = baseAimScreen(app, toSight(state.aim)), target = baseAimScreen(app, toSight({ yaw, pitch }));
   const coordinates = { clientX: pointer.x + target.x - current.x, clientY: pointer.y + target.y - current.y };
   pad.emit('pointermove', coordinates);
   assert.ok(Math.abs(state.aim.yaw - yaw) < 1e-9 && Math.abs(state.aim.pitch - pitch) < 1e-9,
@@ -749,15 +752,15 @@ test('elevation touch and arrow keys change pitch without raising the view in no
       const before = enabled ? app.api.laserFrame().point.y : null;
       pad.emit('pointerdown', down);
       pad.emit('pointermove', {...down, clientY: down.clientY - 10000});app.frames();
-      assert.ok(Math.abs(state.aim.pitch - .58) < 1e-12, 'the full high launch angle remains available');fixedView();
+      assert.ok(Math.abs(state.aim.pitch - Math.PI / 3) < 1e-12, 'main weapons can be raised to a real sixty-degree launch angle');fixedView();
       if (enabled) assert.ok(app.api.laserFrame().point.y > before, 'only the aiming ray rises');
       pad.emit('pointermove', {...down, clientY: down.clientY + 10000});app.frames();
       assert.ok(Math.abs(state.aim.pitch + .22) < 1e-12, 'the full low launch angle remains available');fixedView();
       if (enabled) assert.ok(app.api.laserFrame().point.y < before, 'only the aiming ray drops');
       pad.emit('pointercancel');assert.equal(state.mode, 'ready');
-      for (const [code, pitch] of [['ArrowUp', .58], ['ArrowDown', -.22]]) {
+      for (const [code, pitch] of [['ArrowUp', Math.PI / 3], ['ArrowDown', -.22]]) {
         app.document.emit('keydown', {code});
-        for (let step = 0; step < 20; step++) app.advanceTo(app.now + 250);
+        for (let step = 0; step < 30; step++) app.advanceTo(app.now + 250);
         app.document.emit('keyup', {code});
         assert.ok(Math.abs(state.aim.pitch - pitch) < 1e-12);fixedView();
       }
@@ -2290,7 +2293,7 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
   horizontal.emit('pointerup', { pointerId: 81, clientX: 180, clientY: 100 });
   assert.equal(app.api.activeLaser().horizontalClicks, 6, 'a clockwise quarter turn advances six 15-degree detents');
   assert.equal(app.getElement('laserHorizontalValue').dataset.value, '6');
-  assert.equal(horizontal.getAttribute('aria-valuenow'), '6');
+  assert.equal(horizontal.getAttribute('aria-valuenow'), '0.3', 'the accessible slider reports degrees rather than click counts');
   assert.equal(app.getElement('laserHorizontalRotor').style.transform, 'rotate(90deg)');
   const step = app.getElement('laserStep10Btn');step.tagName = 'BUTTON';step.dataset.laserStep = '10';
   app.document.emit('click', { target: step });assert.equal(app.api.state.laserStep, 10);
@@ -2305,6 +2308,176 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
   assert.equal(app.api.state.shot, null);assert.ok(app.api.laserFrame(), 'the adjusted sight remains visible while the gears are available');
   const reloaded = await appHarness(app.snapshot());
   assert.deepEqual({ ...reloaded.api.activeLaser() }, { enabled: true, horizontalClicks: 16, verticalClicks: 70 });
+});
+
+test('laser degree readouts preserve saved clicks and never confuse sight correction with actual launch elevation', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+    ownedBows: [0, 19], bow: 19, laserLoadouts: { 19: { enabled: true, horizontalClicks: -6, verticalClicks: 150 } } });
+  const state = app.api.state;
+  state.aim.pitch = Math.PI / 4;app.frames();
+  assert.equal(app.api.openLaserAdjustments(), true);
+  const aim = {...state.aim}, pan = [state.panX, state.panY], requests = app.ammo.requests.length;
+  const horizontal = app.getElement('laserHorizontalValue');
+  assert.equal(horizontal.dataset.value, '-6');assert.equal(horizontal.dataset.degrees, '-0.30');
+  assert.equal(app.getElement('laserHorizontalSign').textContent, '−');
+  assert.equal(app.getElement('laserHorizontalGear').getAttribute('aria-valuenow'), '-0.3');
+  for (const [clicks, degrees, digits] of [[150, '7.50', [0, 7, 5, 0]], [900, '45.00', [4, 5, 0, 0]], [-150, '-7.50', [0, 7, 5, 0]]]) {
+    assert.equal(app.api.setLaserSettings({ verticalClicks: clicks }), true);
+    const display = app.getElement('laserVerticalValue'), gear = app.getElement('laserVerticalGear');
+    assert.equal(display.dataset.value, String(clicks), 'stored detents retain their previous physical calibration');
+    assert.equal(display.dataset.degrees, degrees);
+    for (const [index, digit] of digits.entries())
+      assert.equal(app.getElement(`laserVerticalDigit${index}`).style.transform, `translateY(-${digit * 10}%)`, 'the visible drum digits show degrees');
+    assert.equal(gear.getAttribute('aria-valuenow'), String(Number(degrees)));
+    assert.equal(gear.getAttribute('aria-valuemin'), '-60');assert.equal(gear.getAttribute('aria-valuemax'), '60');
+    assert.match(gear.getAttribute('aria-valuetext'), new RegExp(`${degrees.replace('-', '[−-]').replace('.', '\\.')}도`));
+    assert.deepEqual({...state.aim}, aim);assert.deepEqual([state.panX, state.panY], pan);
+    const actual = (app.api.shotParams().pitch * 180 / Math.PI).toFixed(2);
+    assert.equal(app.getElement('launchAngleValue').textContent, `${actual}°`, 'the separate HUD follows the physical bow, not the zeroing dial');
+    assert.equal(app.getElement('laserLaunchAngleValue').textContent, `${actual}°`, 'the open calibration panel keeps the same actual angle visible on small screens');
+    assert.equal(app.getElement('launchAngleHud').classList.contains('hidden'), false);
+    assert.equal(app.snapshot().laserLoadouts[19].verticalClicks, clicks);
+  }
+  assert.equal(app.api.setLaserSettings({ verticalClicks: 150 }), true);
+  app.getElement('laserVerticalGear').emit('keydown', {code: 'ArrowUp'});
+  assert.equal(app.api.activeLaser().verticalClicks, 151);assert.equal(app.getElement('laserVerticalValue').dataset.degrees, '7.55');
+  assert.equal(app.api.setLaserStep(10), true);
+  app.getElement('laserVerticalGear').emit('wheel', {deltaY: -1});
+  assert.equal(app.api.activeLaser().verticalClicks, 161);assert.equal(app.getElement('laserVerticalValue').dataset.degrees, '8.05');
+  assert.equal(state.used, 0);assert.equal(state.shot, null);assert.equal(app.ammo.requests.length, requests);
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual({...reloaded.api.activeLaser()}, {enabled: true, horizontalClicks: -6, verticalClicks: 161});
+  assert.equal(reloaded.getElement('laserVerticalValue').dataset.degrees, '8.05');
+});
+
+test('visible launch degrees match real forty-five-degree releases for ordinary bows and laser crossbows in both play modes', async () => {
+  for (const adminTrial of [false, true]) for (const loadout of [{bow: 3, laser: false}, {bow: 19, laser: false}, {bow: 19, laser: true}]) {
+    const fixture = {version: 1, stageCatalog: STAGE_CATALOG, sound: false, bow: loadout.bow,
+      ownedBows: [0, loadout.bow], laserLoadouts: loadout.bow === 19 ? {19: {enabled: loadout.laser, verticalClicks: 900}} : {}};
+    const app = await appHarness(fixture, {adminTrial});
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(loadout.bow);app.api.closeModal();await app.flush();
+      if (loadout.bow === 19) assert.equal(app.api.setLaserSettings({enabled: loadout.laser, verticalClicks: 900}), true);
+    }
+    app.resize(390, 480);assert.equal(app.api.setAimZoom(1), true);
+    const state = app.api.state, pad = app.getElement('aimTouchpad');
+    const target = app.engine.targetAt(state.stage, state.time), targetScreen = app.api.project(target);
+    const panY = state.panY, horizon = app.api.camera.horizon;
+    pad.emit('pointerdown');const coordinates = moveHeldAim(app, 0, Math.PI / 4);
+    holdFor(app, 1300);
+    assert.ok(Math.abs(state.aim.pitch - Math.PI / 4) < 1e-12, 'the held touch reaches a physical forty-five-degree bow angle');
+    assert.equal(state.panY, panY);assert.equal(app.api.camera.horizon, horizon);
+    assert.deepEqual(app.api.project(target), targetScreen, 'raising the weapon never raises the aiming camera or fixed target');
+    const hud = app.getElement('launchAngleHud'), value = app.getElement('launchAngleValue');
+    const expectedDegrees = app.api.shotParams().pitch * 180 / Math.PI;
+    assert.equal(hud.classList.contains('hidden'), false);
+    assert.equal(value.textContent, `${expectedDegrees.toFixed(2)}°`);
+    assert.equal(value.dataset.degrees, expectedDegrees.toFixed(2));
+    const displayed = Number.parseFloat(value.textContent);
+    pad.emit('pointerup', coordinates);await app.flush();
+    const velocity = state.shot.velocity, launched = Math.atan2(velocity.y, Math.hypot(velocity.x, velocity.z)) * 180 / Math.PI;
+    assert.ok(Math.abs(launched - displayed) <= .00500001, 'the visible angle matches the released arrow to the displayed precision');
+    assert.equal(state.mode, 'flight');assert.equal(state.used, 1);
+    assert.equal(hud.classList.contains('hidden'), true, 'a falling arrow cannot be misreported as a new launch angle');
+    app.frames(15);assert.equal(hud.classList.contains('hidden'), true);
+    if (adminTrial) assert.deepEqual(app.storageOperations, [], 'angle display and trial releases never write normal progress');
+  }
+});
+
+test('launch degree display depends on the physical angle rather than a ten- or hundred-fifty-metre mission', async () => {
+  const values = [];
+  for (const stage of [1, lessonStageId('long-fixed-intro', 150)]) {
+    const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      lastStage: stage, bow: 19, ownedBows: [0, 19], laserLoadouts: {19: {enabled: true, verticalClicks: 150}}}));
+    assert.equal(app.api.setAimZoom(1), true);
+    app.api.state.aim.pitch = Math.PI / 4;app.frames();
+    const displayed = app.getElement('launchAngleValue').textContent;
+    assert.equal(displayed, `${(app.api.shotParams().pitch * 180 / Math.PI).toFixed(2)}°`);
+    assert.equal(app.getElement('laserVerticalValue').dataset.degrees, '7.50');
+    assert.notEqual(displayed, `${app.api.state.stage.distance.toFixed(2)}°`);
+    values.push(displayed);
+  }
+  assert.equal(values[0], values[1], 'changing target distance does not turn distance into a launch angle');
+});
+
+test('a forty-five-degree laser zero keeps touch tracking, scope zoom and horizontal edge panning on the visible sight', async () => {
+  for (const adminTrial of [false, true]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+      bow: 19, ownedBows: [0, 19], scopeLoadouts: {19: {owned: [8], equipped: 8}},
+      laserLoadouts: {19: {enabled: true, horizontalClicks: 200, verticalClicks: 900}}}, {adminTrial});
+    if (adminTrial) {
+      app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();await app.flush();
+      assert.equal(app.api.setLaserSettings({horizontalClicks: 200, verticalClicks: 900}), true);
+    }
+    app.resize(390, 480);const state = app.api.state, pad = app.getElement('aimTouchpad');
+    const sight = () => app.api.project(app.api.laserFrame().point);
+    for (const zoom of [1, 8]) {
+      assert.equal(app.api.setAimZoom(zoom), true);app.getElement('recenterBtn').emit('click');
+      pad.emit('pointerdown');state.sway.x = state.sway.y = 0;
+      const before = sight(), panY = state.panY, horizon = app.api.camera.horizon;
+      let coordinates = {clientX: app.api.pointer.x, clientY: app.api.pointer.y};
+      for (const [dx, dy] of [[18, -12], [-7, 5], [-11, 7]]) {
+        const prior = sight();coordinates = {clientX: coordinates.clientX + dx, clientY: coordinates.clientY + dy};
+        pad.emit('pointermove', coordinates);const after = sight();
+        assert.ok(Math.abs(after.x - prior.x - dx) < 1e-8 && Math.abs(after.y - prior.y - dy) < 1e-8,
+          `${zoom}x: the high-angle red dot follows each finger displacement in both axes`);
+        assert.equal(state.panY, panY);assert.equal(app.api.camera.horizon, horizon);
+      }
+      assert.ok(Math.hypot(sight().x - before.x, sight().y - before.y) < 1e-8);
+      assert.ok(state.aim.pitch > Math.PI / 5, 'the sight remains near the target while the real bow is elevated');
+      pad.emit('pointercancel');state.sway.x = state.sway.y = 0;
+      const point = sight(), aim = {...state.aim};
+      assert.equal(app.api.setAimZoom(zoom === 1 ? 8 : 1), true);
+      assert.ok(Math.hypot(sight().x - point.x, sight().y - point.y) < 1e-8, 'explicit scope zoom is anchored at the red sight, not the offscreen bow axis');
+      assert.deepEqual({...state.aim}, aim);
+    }
+    assert.equal(app.api.setAimZoom(8), true);app.getElement('recenterBtn').emit('click');
+    pad.emit('pointerdown');state.sway.x = state.sway.y = 0;
+    const bounds = app.api.aimBounds(), camera = app.api.camera, current = sight();
+    const sightYaw = Math.atan2(bounds.right - .01 - camera.cx, camera.focal);
+    const sightPitch = Math.atan((camera.horizon - current.y) / camera.focal * Math.cos(sightYaw));
+    const coordinates = moveHeldAim(app, sightYaw + 10 * Math.PI / 180, sightPitch + Math.PI / 4);
+    const before = sight(), cameraBefore = {...app.api.camera};
+    pad.emit('pointermove', {clientX: coordinates.clientX + .5, clientY: coordinates.clientY});
+    const after = sight();
+    assert.ok(Math.abs(app.api.camera.cx - cameraBefore.cx + .49) < 1e-8, 'horizontal edge overflow pans by its exact subpixel amount');
+    assert.ok(Math.abs(after.x - before.x) < .02);assert.equal(app.api.camera.horizon, cameraBefore.horizon);
+    pad.emit('pointercancel');assert.equal(state.used, 0);assert.equal(state.shot, null);
+    if (adminTrial) assert.deepEqual(app.storageOperations, []);
+  }
+});
+
+test('saved forty-five-degree laser calibration remains visible on recenter, new missions and reload without a distance preset', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+    best: {1: STAGE_FIXTURES[0].goal}, bow: 19, ownedBows: [0, 19],
+    laserLoadouts: {19: {enabled: true, horizontalClicks: 100, verticalClicks: 900}}});
+  const centered = instance => {
+    const state = instance.api.state;state.sway.x = state.sway.y = 0;
+    const target = instance.engine.targetAt(state.stage, state.time), ray = instance.api.laserFrame();
+    assert.ok(ray && !ray.blocked);
+    assert.ok(Math.hypot(ray.point.x - target.x, ray.point.y - target.y, ray.point.z - target.z) < 1e-8,
+      'recenter applies the stored sight offset while the red point remains on the visible target');
+    assert.ok(Math.abs(state.aim.pitch - Math.atan2(target.y - instance.engine.PLAYER.y, Math.hypot(target.x, target.z)) - Math.PI / 4) < 1e-12);
+    assert.deepEqual({...instance.api.activeLaser()}, {enabled: true, horizontalClicks: 100, verticalClicks: 900});
+    assert.equal(state.used, 0);assert.equal(state.shot, null);
+  };
+  centered(app);
+  app.api.state.aim.pitch = .15;app.getElement('recenterBtn').emit('click');centered(app);
+  app.api.startStage(2);await app.flush();centered(app);
+  const saved = app.snapshot(), reloaded = await appHarness(saved);centered(reloaded);
+  assert.deepEqual(reloaded.snapshot().laserLoadouts, saved.laserLoadouts, 'opening another distance never computes or replaces the user zero');
+});
+
+test('expanded main launch degrees keep event gun elevation and ammunition behavior unchanged', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false});
+  await enterAndStartEvent(app, 1);
+  const state = app.api.state, pad = app.getElement('aimTouchpad');
+  const down = {clientX: 350, clientY: 500};pad.emit('pointerdown', down);
+  pad.emit('pointermove', {...down, clientY: -10000});app.frames();
+  assert.equal(state.aim.pitch, .58, 'event guns retain the previous elevation cap');
+  assert.equal(app.getElement('launchAngleHud').classList.contains('hidden'), true);
+  pad.emit('pointercancel');assert.equal(state.used, 0);
+  assert.equal(app.ammo.requests.filter(request => request.action === 'spend').length, 0);
 });
 
 test('enabled laser zeroing stays visible before, during and after adjustment without steering or firing in either play mode', async () => {
@@ -2429,7 +2602,19 @@ test('incorrect laser zeroing moves only the sight and leaves the real arrow tra
     app.until(() => state.mode === 'settling');
     shots.push({ aim, velocity, result: JSON.parse(JSON.stringify(state.shot.result)), score: state.score });
   }
-  assert.equal(shots[0].score, 10);assert.deepEqual(shots[1], shots[0], 'the sight must never supply a ballistic correction or change a real result');
+  const [ordinaryShot, sightShot] = shots;
+  assert.equal(ordinaryShot.score, 10);assert.equal(sightShot.score, ordinaryShot.score);
+  // Returning a rotated sight to the same aim adds round-off at machine
+  // precision. Compare physical directions/positions tightly, while retaining
+  // exact scoring and target metadata checks.
+  for (const axis of ['yaw', 'pitch']) assert.ok(Math.abs(sightShot.aim[axis] - ordinaryShot.aim[axis]) < 1e-12);
+  for (const axis of ['x', 'y', 'z']) {
+    assert.ok(Math.abs(sightShot.velocity[axis] - ordinaryShot.velocity[axis]) < 1e-10);
+    assert.ok(Math.abs(sightShot.result.point[axis] - ordinaryShot.result.point[axis]) < 1e-10);
+  }
+  assert.ok(Math.abs(sightShot.result.flightTime - ordinaryShot.result.flightTime) < 1e-12);
+  assert.deepEqual({...sightShot.result, point: ordinaryShot.result.point, flightTime: ordinaryShot.result.flightTime}, ordinaryShot.result,
+    'the sight must never supply a ballistic correction or change a real result');
 });
 
 test('an enabled laser suppresses coach prediction, firing cues and voice while preserving the saved coaching preference', async () => {

@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow} from './engine.mjs?v=20261104-archery-eagle-dive1';
+import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow, getFlightTimeLimit} from './engine.mjs?v=20261104-archery-launch-angle1';
 
 export const COACH_REACTION_SECONDS = .10;
 const CHARGE_SECONDS = 1.25;
@@ -8,6 +8,7 @@ const identity = target => `${target?.kind || 'target'}:${target?.passId ?? 'fix
 const finitePoint = point => point && ['x','y','z'].every(axis => Number.isFinite(point[axis]));
 
 function forecastShot(input,stage,worldTime,shot = launchArrow({...input})) {
+  const flightLimit = getFlightTimeLimit(shot);
   if (shot.ability?.type === 'magnetic') {
     // Guidance cannot reach a target while its plane is farther than the
     // activation radius. Skip only that provably unguided prefix, using the
@@ -20,7 +21,7 @@ function forecastShot(input,stage,worldTime,shot = launchArrow({...input})) {
       const ratio = distance*drag/forward;
       entryTime = drag < 1e-8 ? distance/forward : ratio >= 1 ? Infinity : -Math.log1p(-ratio)/drag;
     } else if (forward <= 0) entryTime = Infinity;
-    const prefix = entryTime >= 8 ? 8 : Math.max(0,Math.floor((entryTime-1e-10)*240)/240);
+    const prefix = entryTime >= flightLimit ? flightLimit : Math.max(0,Math.floor((entryTime-1e-10)*240)/240);
     if (prefix > 0) {
       const ability = shot.ability;
       shot.ability = null;
@@ -29,7 +30,7 @@ function forecastShot(input,stage,worldTime,shot = launchArrow({...input})) {
       if (!shot.active) return {shot,result:shot.result};
     }
   }
-  const result = stepArrow(shot,8-shot.elapsed,stage,worldTime+shot.elapsed);
+  const result = stepArrow(shot,flightLimit-shot.elapsed,stage,worldTime+shot.elapsed);
   return {shot,result};
 }
 

@@ -1,5 +1,5 @@
 /** A manually zeroed sight only. This module never aims or fires an arrow. */
-import {PLAYER, BOWS} from './engine.mjs?v=20261104-archery-eagle-dive1';
+import {PLAYER, BOWS} from './engine.mjs?v=20261104-archery-launch-angle1';
 
 export const LASER_PRICE = 500;
 export const LASER_CLICK_DEGREES = .05;
