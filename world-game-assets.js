@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261103-festival-undecided1';
+ const revision='20261103-arcade-new1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   festival:'1.1.0',
   restaurants:'1.4.2',
   recommendations:'1.3.0',
-  archery:'2.0.0',
+  archery:'2.0.1',
   roulette:'1.8.0',
   bang:'1.9.0',
   poker:'1.5.0',
