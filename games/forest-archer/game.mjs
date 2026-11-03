@@ -1,18 +1,16 @@
-import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261103-stage-clear-gates1';
+import {PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, CLAY_EVENT, createClayEvent, eventTargetsAt, prepareStage, passersAt, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261103-stage-clear-gates1';
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261103-stage-clear-gates1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261103-stage-clear-gates1';
 import {createBullseyeCinematic, sampleBullseyeCinematic, desiredBullseyeCamera} from './cinematic.mjs?v=20261103-stage-clear-gates1';
 import {evaluateCoachShot} from './coach.mjs?v=20261103-stage-clear-gates1';
-import {createAmmoClient, createRequestId} from './ammo-client.mjs?v=20261103-stage-clear-gates1';
+import {createAmmoClient, createRequestId, LAUNCH_EPOCH} from './ammo-client.mjs?v=20261103-archery-single1';
 
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), touchpad = $('aimTouchpad');
-// Preserve all current records while moving them to the new lesson order. A
-// separate key prevents a still-open old game from restoring old stage numbers.
-const SAVE_KEY = 'forest-archer-progress-v4';
-const PREVIOUS_SAVE_KEY = 'forest-archer-progress-v3';
-const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
+// The single-player launch starts a new journey. Never import test progress,
+// equipment or recovery requests, including later writes from an old open tab.
+const SAVE_KEY = 'forest-archer-progress-single-v4';
 const STAGE_CATALOG = 'missions-220-v1';
 const DRAW_LIMIT = 10;
 const AIM_SWAY_SCALE = .68;
@@ -20,15 +18,23 @@ const STEADY_SETTLE_SECONDS = .6;
 const STABILIZER_COST = 5;
 const CONSUMABLE_LIMIT = 1e8;
 const ANIMAL_NAMES = Object.freeze({rabbit:"토끼",wildcat:"살쾡이",deer:"사슴",pigeon:"비둘기",eagle:"독수리",cheetah:"치타",bird:"새"});
-const defaults = () => ({version:1,stageCatalog:STAGE_CATALOG,coins:0,clayCredits:0,stabilizers:0,coachEnabled:true,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
+const defaults = () => ({version:1,launchEpoch:LAUNCH_EPOCH,stageCatalog:STAGE_CATALOG,coins:0,clayCredits:0,stabilizers:0,coachEnabled:true,bow:0,arrow:0,eventGun:20,eventBest:0,eventBestByLevel:{},eventPlays:0,mainRounds:0,ownedBows:[0,20],ownedArrows:[0],scopedBows:[],unlocked:STAGES.length,lastStage:1,best:{},sound:true,shots:0,hits:0});
 let persistence = true;
+function removeTestSaves(){
+  const keys=new Set([1,2,3,4].map(version=>`forest-archer-progress-v${version}`));
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(/^forest-archer-ammo-(?:pending|recovery)-v[123]:/.test(key||''))keys.add(key);
+    }
+  }catch{}
+  for(const key of keys){try{localStorage.removeItem(key);}catch{}}
+}
 function loadProgress(){
+  removeTestSaves();
   try {
-    const current = localStorage.getItem(SAVE_KEY);
-    const previous = current === null ? localStorage.getItem(PREVIOUS_SAVE_KEY) : null;
-    const importAssetsOnly = current === null && previous === null;
-    const raw = JSON.parse((current ?? previous ?? localStorage.getItem(LEGACY_SAVE_KEY)) || 'null');
-    if(!raw || raw.version!==1) return defaults();
+    const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    if(!raw || raw.version!==1 || raw.launchEpoch!==LAUNCH_EPOCH || raw.stageCatalog!==STAGE_CATALOG) return defaults();
     const base=defaults(), finite=(v,f=0)=>Number.isFinite(v)?v:f;
     const ids=(arr,catalog)=>[...new Set([0,...(Array.isArray(arr)?arr:[]).filter(x=>Number.isInteger(x)&&catalog.some(item=>item.id===x))])];
     base.coins=clamp(Math.floor(finite(raw.coins)),0,1e8);
@@ -39,24 +45,16 @@ function loadProgress(){
     base.scopedBows=ids(raw.scopedBows,BOWS).filter(id=>base.ownedBows.includes(id)&&BOWS.find(item=>item.id===id)?.scopeCompatible);
     base.bow=base.ownedBows.includes(raw.bow)&&BOWS[raw.bow]?.weaponType!=='gun'?raw.bow:0;base.arrow=base.ownedArrows.includes(raw.arrow)?raw.arrow:0;
     base.eventGun=base.ownedBows.includes(raw.eventGun)&&BOWS[raw.eventGun]?.weaponType==='gun'?raw.eventGun:20;
-    if(!importAssetsOnly){
-      base.eventBest=clamp(Math.floor(finite(raw.eventBest)),0,300);base.eventPlays=Math.max(0,Math.floor(finite(raw.eventPlays)));
-      base.mainRounds=clamp(Math.floor(finite(raw.mainRounds)),0,1e7);
-      for(let level=1;level<=10;level++)if(Number.isFinite(raw.eventBestByLevel?.[level]))base.eventBestByLevel[level]=clamp(Math.floor(raw.eventBestByLevel[level]),0,createClayEvent(level).maxScore);
-      const previousCatalog=raw.stageCatalog==='missions-120-v1';
-      const previousOrderedCatalog=raw.stageCatalog==='missions-120-v2';
-      const legacyStages=raw.stageCatalog!==STAGE_CATALOG&&!previousOrderedCatalog&&!previousCatalog;
-      const stageMap=previousCatalog?CATALOG_V1_STAGE_MAP:legacyStages?LEGACY_STAGE_MAP:null;
-      const sourceLimit=legacyStages?50:previousCatalog||previousOrderedCatalog?120:base.unlocked;
-      const savedStage=clamp(Math.floor(finite(raw.lastStage,1)),1,sourceLimit);
-      base.lastStage=stageMap?(stageMap[savedStage]||1):savedStage;
-      for(const [key,score] of Object.entries(raw.best||{})){
-        const oldId=Number(key),id=stageMap?stageMap[oldId]:oldId;
-        if(Number.isInteger(oldId)&&oldId>=1&&oldId<=sourceLimit&&Number.isInteger(id)&&id>=1&&id<=STAGES.length&&Number.isFinite(score))
-          base.best[id]=clamp(Math.floor(score),0,50);
-      }
-      base.shots=Math.max(0,finite(raw.shots));base.hits=Math.max(0,finite(raw.hits));
+    base.eventBest=clamp(Math.floor(finite(raw.eventBest)),0,300);base.eventPlays=Math.max(0,Math.floor(finite(raw.eventPlays)));
+    base.mainRounds=clamp(Math.floor(finite(raw.mainRounds)),0,1e7);
+    for(let level=1;level<=10;level++)if(Number.isFinite(raw.eventBestByLevel?.[level]))base.eventBestByLevel[level]=clamp(Math.floor(raw.eventBestByLevel[level]),0,createClayEvent(level).maxScore);
+    base.lastStage=clamp(Math.floor(finite(raw.lastStage,1)),1,STAGES.length);
+    for(const [key,score] of Object.entries(raw.best||{})){
+      const id=Number(key);
+      if(Number.isInteger(id)&&id>=1&&id<=STAGES.length&&Number.isFinite(score))
+        base.best[id]=clamp(Math.floor(score),0,50);
     }
+    base.shots=Math.max(0,finite(raw.shots));base.hits=Math.max(0,finite(raw.hits));
     base.sound=raw.sound!==false;
     return base;
   }catch{persistence=false;return defaults();}
@@ -85,7 +83,7 @@ function reportFinishedMainRound(){
 window.addEventListener('message',event=>{
   if(window.parent===window||event.source!==window.parent||event.origin!==window.location.origin)return;
   const message=event.data;
-  if(message?.source!=='ojjuda-archery-world'||message.type!=='init'||!resultUUID.test(message.sessionId||''))return;
+  if(message?.source!=='ojjuda-archery-world'||message.type!=='init'||message.launchEpoch!==LAUNCH_EPOCH||!resultUUID.test(message.sessionId||''))return;
   if(message.owner!==null&&(typeof message.owner!=='string'||!message.owner))return;
   // Keep completion tied to this iframe's first account/session handshake.
   // A late finish must not consume the trial of a different signed-in owner.
@@ -106,7 +104,7 @@ function guardAmmoAction(){
   toast(state.roundSaving?'완료한 판을 저장하고 있어요.':state.pendingAmmoShot?'이번 발사 확인을 마친 뒤 이동할 수 있어요.':'이전 처리 결과를 먼저 확인해 주세요. 총알 충전에서 다시 확인할 수 있어요.');return true;
 }
 function ammoError(result){
-  const messages={ammo_empty:'남은 총알이 없어요. 총알을 충전해 주세요.',coins:'쭈가 부족해요. 지갑을 확인해 주세요.',limit:'총알 보유 한도에 도달했어요.',round_too_soon:'완료 시간을 확인하지 못했어요. 사격장을 다시 시작해 주세요.',sign_in:'로그인한 오락실에서 총알을 사용할 수 있어요.',wallet_unavailable:'계정 연결을 확인해 주세요.',unavailable:'계정 연결을 확인해 주세요.',insufficient_funds:'쭈가 부족해요. 지갑을 확인해 주세요.',insufficient_coins:'쭈가 부족해요. 지갑을 확인해 주세요.',insufficient_ammo:'남은 총알이 없어요. 총알을 충전해 주세요.',no_ammo:'남은 총알이 없어요. 총알을 충전해 주세요.',pending:'처리 결과를 확인하고 있어요. 다시 확인을 눌러 주세요.',network:'연결을 확인한 뒤 다시 눌러 주세요.',banned:'이 계정에서는 현재 구매할 수 없어요.',request_conflict:'이전 요청 결과를 먼저 확인해 주세요.',recovered_spend:'현재 잔량을 확인했어요. 이전 발사를 다시 실행하지 않아요.',storage_unavailable:'브라우저 저장을 허용한 뒤 다시 확인해 주세요.'};
+  const messages={progress_reset:'이전 테스트 기록은 초기화됐어요. 새 판에서 시작해 주세요.',update_required:'게임이 새로 시작됐어요. 오락실을 새로고침해 주세요.',ammo_empty:'남은 총알이 없어요. 총알을 충전해 주세요.',coins:'쭈가 부족해요. 지갑을 확인해 주세요.',limit:'총알 보유 한도에 도달했어요.',round_too_soon:'완료 시간을 확인하지 못했어요. 사격장을 다시 시작해 주세요.',sign_in:'로그인한 오락실에서 총알을 사용할 수 있어요.',wallet_unavailable:'계정 연결을 확인해 주세요.',unavailable:'계정 연결을 확인해 주세요.',insufficient_funds:'쭈가 부족해요. 지갑을 확인해 주세요.',insufficient_coins:'쭈가 부족해요. 지갑을 확인해 주세요.',insufficient_ammo:'남은 총알이 없어요. 총알을 충전해 주세요.',no_ammo:'남은 총알이 없어요. 총알을 충전해 주세요.',pending:'처리 결과를 확인하고 있어요. 다시 확인을 눌러 주세요.',network:'연결을 확인한 뒤 다시 눌러 주세요.',banned:'이 계정에서는 현재 구매할 수 없어요.',request_conflict:'이전 요청 결과를 먼저 확인해 주세요.',recovered_spend:'현재 잔량을 확인했어요. 이전 발사를 다시 실행하지 않아요.',storage_unavailable:'브라우저 저장을 허용한 뒤 다시 확인해 주세요.'};
   return messages[result?.reason]||'처리를 확인하지 못했어요. 다시 확인해 주세요.';
 }
 function updateAmmoPanel(){
@@ -677,7 +675,7 @@ async function saveFinishedMainRound(record,registration=null){
   const started=registration||await record.startPromise;
   if(state.roundEpoch!==record.epoch)return;
   if(started?.ok)record.serverRunId=started.run_id;
-  const result=started?.ok?await ammo.completeRound(started.run_id,record.stage):started;
+  const result=started?.ok?await ammo.completeRound(started.run_id,record.stage,record.score):started;
   if(state.roundEpoch!==record.epoch)return;
   state.roundSaving=false;
   if(result?.ok){applyMainCompletion(record,result);return;}
@@ -707,7 +705,7 @@ function finishRound(){
   progress.best[state.stage.id]=Math.max(previous,state.score);
   let bonus=0;
   if(passed){bonus=previous<state.stage.goal?25:12;progress.coins+=bonus;state.earned+=bonus;sound('clear');}
-  const record={epoch:state.roundEpoch,stage:state.stage.id,passed,bonus,startPromise:state.roundStart,serverRunId:state.serverRunId};
+  const record={epoch:state.roundEpoch,stage:state.stage.id,score:state.score,passed,bonus,startPromise:state.roundStart,serverRunId:state.serverRunId};
   state.awaitingRoundSave=record;save();saveFinishedMainRound(record);
 }
 

@@ -11,18 +11,19 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  w.D={online:true,user:{id:'member'}};w.OjjudaMatgoAccess={visible:()=>true};w.eval(registry);
  const games=w.worldRankGames();assert.equal(Object.keys(games).filter(x=>/^(billiards|janggi|chess)$/.test(x)).length,3);
  assert.equal(Object.keys(games).filter(x=>/_(easy|normal|hard|online)$/.test(x)).length,0);
+ assert.equal(games.archery.rankingBasis,'stage_score');assert.equal(games.archery.unit,'점');
  assert.equal(games.tour.unit,'연승');assert.equal(games.tank.unit,'연승');
  assert.equal(games.matgo.rankingBasis,'best_round_gain');assert.equal(games.poker.rankingBasis,'best_round_gain');
- const rows={sacheonseong:{nick:'사천성친구',score:1999994000,stage:3},mines:{nick:'먼저 달성',score:69940},billiards:{nick:'당구친구',score:3,difficulty:'hard',variant:'pool8'},
+ const rows={archery:{nick:'궁수친구',score:45,stage:17},sacheonseong:{nick:'사천성친구',score:1999994000,stage:3},mines:{nick:'먼저 달성',score:69940},billiards:{nick:'당구친구',score:3,difficulty:'hard',variant:'pool8'},
   janggi:{nick:'장기친구',score:2,difficulty:'normal'},chess:{nick:'<img onerror=alert(1)>',score:7,difficulty:'online'},
   bang:{nick:'뱅친구',score:5},tour:{nick:'마블친구',score:4},tank:{nick:'탱크친구',score:2,opponents:11},ttang:{nick:'땅친구',score:3},spot:{nick:'그림친구',score:12},matgo:{nick:'맞고친구',score:900},poker:{nick:'포커친구',score:800},roulette:{nick:'룰렛친구',score:1200},photo_ttang:{nick:'사진친구',score:4}};
  const host=w.document.querySelector('main');
  const reads=[];
  w.OjjudaGameRankings.mount(host,{owner:'member',client:{rpc:async(name,args)=>{reads.push({name,args});return {data:name==='community_game_monthly_history'?{month:args.p_month?.slice(0,7)||'2026-10',currentMonth:'2026-10',closed:!!args.p_month,months:[{month:'2026-10'},{month:'2026-09'}],leaders:rows}:rows};}},games,onOpenGame(){}});
  await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
- const categories={solo:['sacheonseong','saetbyeol','mines','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
+ const categories={solo:['archery','sacheonseong','saetbyeol','mines','screw_box','screw_flat','spot','mole','runner','stacker','breakout'],multi:['bang','tank','tour','billiards','janggi','chess','ttang'],adult:['matgo','poker','roulette','photo_ttang']};
  const historyPages={
-  solo:[['sacheonseong','saetbyeol','mines'],['screw_box','screw_flat','spot'],['mole','runner','stacker'],['breakout']],
+  solo:[['archery','sacheonseong','saetbyeol'],['mines','screw_box','screw_flat'],['spot','mole','runner'],['stacker','breakout']],
   multi:[['bang','tank','tour'],['billiards','janggi','chess'],['ttang']],
   adult:[['matgo','poker','roulette'],['photo_ttang']]
  };
@@ -68,6 +69,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  }
  selectCategory('solo');assert.equal(reads.length,1,'paging every current game requires no additional RPC');
  const row=id=>host.querySelector(`[data-game="${id}"]`),value=id=>row(id).querySelector('.board-leader-score').textContent;
+ assert.equal(value('archery'),'45점');assert.equal(row('archery').querySelector('.board-game-difficulty').textContent,'17단계');assert.match(row('archery').querySelector('th').title,/최고 통과 단계 → 같은 단계 최고 점수/);
  assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
  assert.equal(value('janggi'),'2연승');assert.equal(value('chess'),'7연승');assert.match(row('chess').textContent,/회원대결/);
@@ -90,6 +92,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  const month=host.querySelector('.board-rank-month');month.value='2026-09';month.dispatchEvent(new w.Event('change'));await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
  assert.equal(host.querySelector('.board-rank-month').value,'2026-09','the response month, rather than the local clock, controls the archive');
  assert.equal(value('sacheonseong'),'01:00.00');assert.equal(row('sacheonseong').querySelector('.board-game-difficulty').textContent,'3단계');
+ assert.equal(value('archery'),'45점');assert.equal(row('archery').querySelector('.board-game-difficulty').textContent,'17단계');assert.match(row('archery').querySelector('th').title,/최고 통과 단계 → 같은 단계 최고 점수/);
  assert.equal(value('mines'),'1분 0초');assert.match(row('mines').textContent,/고급/);
  assert.equal(value('billiards'),'3연승');assert.match(row('billiards').textContent,/포켓볼 · 어려움/);
  assert.match(row('chess').textContent,/회원대결/);assert.match(row('tank').textContent,/11명 상대/);
@@ -114,7 +117,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   assert.equal(group.dataset.rankPage,String(pages.length-1),'previous from the first page opens the remaining games on the last page');
   group.querySelector('.board-rank-controls button:last-child').click();
  }
- assert.equal(reads.length,readsBeforePaging,'paging all 21 archived games requires no additional RPC');
+ assert.equal(reads.length,readsBeforePaging,'paging all archived games requires no additional RPC');
  rows.billiards.score='0';await w.OjjudaGameRankings.refresh();
  assert.equal(host.querySelector('.board-rank-month').value,'2026-09','hiding a zero archive record preserves the selected month');
  assert.equal(value('billiards'),'—');assert.equal(row('billiards').querySelector('.board-leader-nick').textContent,'기록 없음');

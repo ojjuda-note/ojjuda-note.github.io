@@ -1,6 +1,7 @@
 /* Local archery play shares server-approved event ammo and legacy receipt recovery with the arcade. */
 (() => {
  'use strict';
+ const launchEpoch=4;
  let active=null;
  const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
  const actions=new Set(['status','round-start','round-complete','spend','buy','coach-buy','receipt']);
@@ -13,8 +14,8 @@
    const wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
-   dialog.setAttribute('aria-label','바람의 궁수 · 테스트게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>테스트게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261103-game-results1" allow="autoplay; fullscreen; web-share"></iframe>';
+   dialog.setAttribute('aria-label','바람의 궁수 · 싱글 게임');
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>싱글 게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261103-archery-single1" allow="autoplay; fullscreen; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null,finished=false;
@@ -22,7 +23,7 @@
    const callbacks={
     status:()=>onAmmoStatus?.(),
     'round-start':message=>onRoundStart?.(message.requestId,message.stage),
-    'round-complete':message=>onRoundComplete?.(message.requestId,message.runId,message.stage),
+    'round-complete':message=>onRoundComplete?.(message.requestId,message.runId,message.stage,message.score),
     spend:message=>onAmmoSpend?.(message.requestId),
     buy:message=>onAmmoBuy?.(message.requestId),
     'coach-buy':message=>onCoachBuy?.(message.requestId),
@@ -30,15 +31,15 @@
    };
    const available={status:onAmmoStatus,'round-start':onRoundStart,'round-complete':onRoundComplete,spend:onAmmoSpend,buy:onAmmoBuy,'coach-buy':onCoachBuy,receipt:onAmmoReceipt};
    function send(message){if(current())frame.contentWindow.postMessage({source:'ojjuda-archery-world',owner,sessionId,...message},location.origin);}
-   function initialize(){send({type:'init',available:!!owner&&Object.values(available).every(fn=>typeof fn==='function')});}
+   function initialize(){send({type:'init',launchEpoch,available:!!owner&&Object.values(available).every(fn=>typeof fn==='function')});}
    function reply(message,result){send({type:'ammo-response',action:message.action,requestId:message.requestId,result});}
    function validRequest(message){
-    if(!actions.has(message.action)||!uuid(message.requestId))return false;
-    const allowed=new Set(['source','type','action','owner','sessionId','requestId']);
+    if(message.launchEpoch!==launchEpoch||!actions.has(message.action)||!uuid(message.requestId))return false;
+    const allowed=new Set(['source','type','action','owner','sessionId','requestId','launchEpoch']);
     if(message.action==='round-start'||message.action==='round-complete'){
      allowed.add('stage');if(!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return false;
     }
-    if(message.action==='round-complete'){allowed.add('runId');if(!uuid(message.runId))return false;}
+    if(message.action==='round-complete'){allowed.add('runId');allowed.add('score');if(!uuid(message.runId)||!Number.isInteger(message.score)||message.score<0||message.score>50)return false;}
     if(message.action==='receipt'){
      allowed.add('receiptId');allowed.add('originalAction');
      if(!uuid(message.receiptId)||!receiptActions.has(message.originalAction))return false;
@@ -52,7 +53,7 @@
     if(!validRequest(message)){if(uuid(message.requestId))reply(message,{ok:false,reason:'invalid'});return;}
     if(!owner){reply(message,{ok:false,reason:'sign_in'});return;}
     if(typeof available[message.action]!=='function'){reply(message,{ok:false,reason:'unavailable'});return;}
-    const fingerprint=JSON.stringify([message.action,message.stage??null,message.runId??null,message.receiptId??null,message.originalAction??null]);
+    const fingerprint=JSON.stringify([message.action,message.stage??null,message.runId??null,message.score??null,message.receiptId??null,message.originalAction??null]);
     let entry=requests.get(message.requestId);
     if(entry&&entry.fingerprint!==fingerprint){reply(message,{ok:false,reason:'request_conflict'});return;}
     if(inFlight&&inFlight!==message.requestId){reply(message,{ok:false,reason:'busy'});return;}

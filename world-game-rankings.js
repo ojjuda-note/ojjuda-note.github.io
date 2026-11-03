@@ -17,6 +17,7 @@ const streakCondition='해당 월에 연속으로 이긴 횟수 중 가장 높�
 const boardCondition='회원 대결 → 어려움 → 보통 → 쉬움 순으로 우선하고, 같은 조건에서는 해당 월 최고 연승으로 정해요.';
 const scoreCondition='해당 월에 기록한 가장 높은 점수로 정해요.';
 const rankingConditions={
+ archery:'통과한 단계가 높은 순, 같은 단계에서는 해당 월 최고 점수, 점수도 같으면 먼저 달성한 순으로 정해요. 이벤트 사격 기록은 제외돼요.',
  bang:streakCondition,
  sacheonseong:'완료한 단계가 높은 순, 같은 단계에서는 완료 시간이 짧은 순으로 정해요.',
  tank:'상대 수가 많은 대전 기록을 우선하고, 같은 상대 수에서는 해당 월 최고 연승으로 정해요.',
@@ -148,7 +149,7 @@ function labelGame(target,game,detail=''){
 function makeRow(id,game,token,playable=true,openState=null){
  const row=el('tr','','board-leader');row.dataset.game=id;
  const period=playable?'이번 달':'해당 월';
- const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
+ const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_score'?' · 최고 통과 단계 → 같은 단계 최고 점수 → 먼저 달성한 순':game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
  labelGame(name,game);
  if(playable&&typeof onOpenGame==='function'){
   const opening=openState||{busy:false,buttons:new Set()};
@@ -175,7 +176,9 @@ function paintRecord(target,id,game,top,period='이번 달'){
  nick.textContent=top.nick||'익명';
  nick.title=period+(['picture_clears','photo_clears'].includes(game.rankingBasis)?' 완료 장수 1등 · ':game.rankingBasis==='best_round_gain'?' 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak','opponents_streak'].includes(game.rankingBasis)?' 최고 연승 1등 · ':' 1등 · ')+(top.nick||'익명');
  let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
- if(game.rankingBasis==='stage_time'){
+ if(game.rankingBasis==='stage_score'){
+  const stage=Number(top.stage);if(Number.isInteger(stage)&&stage>=1&&stage<=220)detail=stage+'단계';
+ }else if(game.rankingBasis==='stage_time'){
   value=window.OjjudaSacheonseongRanking.format(Number(top.score));
   const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계';
  }else if(game.rankingBasis==='difficulty_time'){
