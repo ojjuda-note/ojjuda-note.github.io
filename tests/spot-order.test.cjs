@@ -126,7 +126,9 @@ test('all unresolved receipts survive reentry without moving their pictures or r
  assert.equal(f.state().current,1);assert.deepEqual(f.state().order,expectedOrder);assert.deepEqual(f.state().rounds[61].pending,receiptA);assert.deepEqual(f.state().rounds[49].pending,receiptB);
  assert.equal(f.state().rounds[61].rankOwner,originalOwner);assert.equal(f.state().rounds[49].rankOwner,other,'a receipt supplies the owner only when the old round had none');
  assert.equal(f.state().rounds[61].totalMs,60000);assert.deepEqual(f.state().rounds[61].paid,[],'only unresolved purchases recover into a new attempt');
- f.select(2);assert.equal(f.round().status,'payment');assert.equal(f.$('retry-level-choice').hidden,true);assert.deepEqual(f.charges,[],'opening a receipt destination does not spend ZU or auto-confirm');
+ f.select(2);assert.equal(f.round().status,'payment');assert.equal(f.$('retry-level-choice').closest('dialog'),f.$('spot-failure'));assert.equal(f.$('spot-failure').open,false,'result choices remain inside the closed failure popup during receipt recovery');assert.deepEqual(f.charges,[],'opening a receipt destination does not spend ZU or auto-confirm');
+ for(const id of ['retry-previous','retry-current','retry-next','celebration-previous','celebration-current','celebration-next'])f.$(id).onclick();
+ assert.equal(f.state().current,2);assert.deepEqual(f.round().pending,receiptA,'hidden result handlers cannot abandon or replace the unresolved receipt');assert.deepEqual(f.charges,[]);
  f.$('original').onerror();assert.deepEqual(f.round().pending,receiptA,'a failed image load keeps the exact receipt');f.load();
  const open=f.registered.find(tool=>tool.name==='open_game_stage');assert.throws(()=>open.execute({stage:1}),/구매 결과/);f.select(3);assert.equal(f.state().current,2,'hidden menu handlers cannot abandon an unresolved purchase');
  f.$('start').click();await flush();assert.deepEqual(f.charges,[{...receiptA,stage:61}]);assert.equal(f.uuidCalls(),0,'receipt recovery must not issue a replacement request UUID');assert.equal(f.round().rankOwner,originalOwner);

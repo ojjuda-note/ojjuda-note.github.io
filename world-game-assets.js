@@ -27,7 +27,7 @@
   janggi:'1.4.0',
   chess:'1.4.0',
   billiards:'1.4.0',
-  matgo:'1.4.0'
+  matgo:'1.4.1'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
