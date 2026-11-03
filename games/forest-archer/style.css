@@ -34,6 +34,44 @@
 .item-scope>small{font-size:9px;line-height:1.7;color:#8b9780}
 .scope-button{font-size:10px;padding:9px 8px;border-radius:8px;background:#edf2e4;justify-content:center}
 .scope-button svg{width:14px;height:14px}
+.scope-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.scope-options .scope-button{min-width:0;min-height:48px;flex-direction:column;gap:3px;padding:8px 5px;line-height:1.35;white-space:normal;border:1px solid #d7e0cb}
+.scope-options .scope-button strong{font-size:11px;font-weight:700;color:#3e5a32}
+.scope-options .scope-button small{font-size:9px;font-weight:400;color:#76856a;overflow-wrap:anywhere}
+.scope-options .scope-button[aria-pressed="true"]{background:#dfeccf;border-color:#92ab77;opacity:1;box-shadow:inset 0 0 0 1px #92ab7733}
+.scope-options .scope-button[aria-pressed="true"] small{color:#456333;font-weight:700}
+.scope-options .scope-button:disabled:not([aria-pressed="true"]){opacity:.55}
+.laser-shop-button{min-height:43px;margin-top:9px;justify-content:center;flex-wrap:wrap;font-size:10px;line-height:1.5;background:#f6e9df;border:1px solid #ddbdab;color:#835441}
+
+/* Two tactile sight turrets with rolling values; calibration precedes aiming. */
+.laser-panel{margin:12px 0 0;padding:13px 14px;border:1px solid #c7d1ba;border-radius:12px;background:linear-gradient(135deg,#f1f3e9,#e8ede0);box-shadow:inset 0 1px 0 #ffffffb3;color:#41543a}
+.laser-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.laser-panel-heading strong{font-size:12px;line-height:1.4}
+#laserWeaponLabel{display:block;margin-top:2px;font-size:10px;color:#75836b;overflow-wrap:anywhere}
+#laserToggleBtn{flex-shrink:0;min-height:32px;padding:6px 11px;border:1px solid #a7b595;border-radius:7px;background:#f7f8f0;font-size:10px;font-weight:700;color:#4f6740}
+#laserToggleBtn[aria-pressed="true"]{background:#dbe6cf;border-color:#88a36f;color:#355325}
+.laser-status{margin:7px 0 9px;font-size:10px;line-height:1.6;color:#69765e}
+.laser-step-control{display:flex;align-items:center;gap:5px;margin-bottom:9px;font-size:9px;color:#7d886f}
+.laser-step-control button{min-height:29px;padding:5px 10px;border:1px solid #c1ccb2;border-radius:6px;background:#f7f8ef;color:#617452;font-size:9px}
+.laser-step-control button[aria-pressed="true"]{background:#4d6340;border-color:#4d6340;color:#fff9e8}
+.laser-adjustments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.laser-axis{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:5px 7px;min-width:0;padding:8px;border:1px solid #ccd5bf;border-radius:10px;background:#f8f8ef9c;box-shadow:0 2px 5px #45513b08}
+.laser-axis>strong,.laser-axis>label,.laser-axis-title,.laser-axis-label{grid-column:1/-1;font-size:10px;letter-spacing:.02em;font-weight:700;color:#526547}
+.laser-gear{display:grid;place-items:center;width:64px;height:64px;padding:0;border:0;border-radius:50%;background:radial-gradient(circle at 38% 30%,#f2eddb 0,#d9d5c2 44%,#b0b4a1 64%,#dce1d2 66%,transparent 70%);color:#58664c;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 3px 2px #34432c26);outline-offset:3px}
+.laser-gear:active{cursor:grabbing}
+.laser-gear:focus-visible{outline:2px solid #7f9b61}
+.laser-gear-rotor{display:block;width:62px;height:62px;transform-origin:50% 50%;will-change:transform;pointer-events:none;filter:drop-shadow(0 1px 0 #ffffff9c)}
+.laser-odometer{display:flex;align-items:center;justify-content:center;gap:1px;min-width:0;padding:6px 4px;border-radius:6px;border:1px solid #263421;background:linear-gradient(#23331f,#3d4d32 53%,#263621);box-shadow:inset 0 2px 4px #0004,0 1px 0 #fff8;color:#f4eac9;font:600 15px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";text-shadow:0 1px 1px #0009;user-select:none}
+.laser-value-sign{flex-shrink:0;width:.65em;text-align:center;color:#c6d0aa}
+.laser-digit{display:block;position:relative;flex:0 0 .66em;height:1.35em;overflow:hidden;text-align:center;border-left:1px solid #ffffff0a}
+.laser-digit-strip{display:block;transition:transform .15s cubic-bezier(.2,.65,.25,1);will-change:transform}
+.laser-digit-strip>span{display:block;height:1.35em;line-height:1.35em}
+.laser-reset-button{display:block;margin:9px 0 0 auto;min-height:30px;padding:5px 10px;border:1px solid #bdc8ae;border-radius:6px;background:#f5f6eb;font-size:10px;color:#6a795d}
+.laser-note{margin:8px 0 0;font-size:9px;line-height:1.6;color:#849076}
+.laser-panel button:disabled{cursor:default;opacity:.46}
+.laser-panel .laser-gear:disabled{filter:grayscale(.6) drop-shadow(0 1px 1px #34432c15)}
+@media(max-width:480px){.laser-panel{padding:10px}.laser-adjustments{gap:6px}.laser-axis{grid-template-columns:52px minmax(0,1fr);gap:5px;padding:6px}.laser-gear{width:52px;height:52px}.laser-gear-rotor{width:50px;height:50px}.laser-odometer{font-size:12px;padding:6px 2px}.laser-panel-heading strong{font-size:11px}.laser-note{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.laser-digit-strip{transition:none}}
 
 /* Fifty stages stay easy to scan without making the play area taller. */
 .journey-steps{grid-template-columns:repeat(10,minmax(0,1fr));max-height:160px;overflow-y:auto;gap:7px;padding:3px 4px 7px;scrollbar-width:thin;scrollbar-color:#b3c0a2 transparent}

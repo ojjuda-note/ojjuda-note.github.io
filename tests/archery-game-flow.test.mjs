@@ -20,6 +20,7 @@ const animalSource = await readFile(new URL('../games/forest-archer/animal-zones
 const viewSource = await readFile(new URL('../games/forest-archer/view.mjs', import.meta.url), 'utf8');
 const cinematicSource = await readFile(new URL('../games/forest-archer/cinematic.mjs', import.meta.url), 'utf8');
 const coachSource = await readFile(new URL('../games/forest-archer/coach.mjs', import.meta.url), 'utf8');
+const laserSource = await readFile(new URL('../games/forest-archer/laser.mjs', import.meta.url), 'utf8');
 const gameSource = await readFile(new URL('../games/forest-archer/game.mjs', import.meta.url), 'utf8');
 const ammoSource = await readFile(new URL('../games/forest-archer/ammo-client.mjs', import.meta.url), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
@@ -62,7 +63,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
           clientX: canvasOrigin.left + viewport.width * .35,
           clientY: canvasOrigin.top + viewport.height * .8
         };
-        const event = { button: 0, pointerId, ...point, currentTarget: el, target: el, preventDefault: noop, ...properties };
+        const event = { button: 0, pointerId, ...point, currentTarget: el, target: el, preventDefault: noop, stopPropagation: noop, ...properties };
         if (type.startsWith('pointer')) pointerPositions.set(pointerId, { clientX: event.clientX, clientY: event.clientY });
         for (const fn of listeners.get(type) || []) fn(event);
       },
@@ -147,18 +148,19 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const view = new vm.SourceTextModule(viewSource, { context, identifier: 'view.mjs' });
   const cinematic = new vm.SourceTextModule(cinematicSource, { context, identifier: 'cinematic.mjs' });
   const coach = new vm.SourceTextModule(coachSource, { context, identifier: 'coach.mjs' });
+  const laser = new vm.SourceTextModule(laserSource, { context, identifier: 'laser.mjs' });
   const ammoModule = new vm.SourceTextModule(ammoSource, { context, identifier: 'ammo-client.mjs' });
   const sceneryNames = ['drawScenery', 'drawAnimal', 'drawClay', 'drawUfo', 'drawObstacle', 'drawPasser', 'drawEquipmentIcon', 'drawFirstPersonBow', 'drawBullseyeImpact', 'drawBullseyeVignette'];
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawAnimal' ? (...args) => animalFrames.push(args.slice(1)) : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, startEvent, exitEvent, finishRound, showShop, equipItem, installScope, closeModal, activeBow, activeArrow, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, showTrialEvents, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
-  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, enterEvent, startEvent, exitEvent, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, closeModal, activeBow, activeArrow, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, onEventImpact, showAmmoShop, buyAmmo, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, showTrialEvents, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
   api = game.namespace.testApi;
   return {
-    api, engine: engine.namespace, animals: animals.namespace, view: view.namespace, cinematic: cinematic.namespace, coach: coach.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, animalFrames, speech, flush,
+    api, engine: engine.namespace, animals: animals.namespace, view: view.namespace, cinematic: cinematic.namespace, coach: coach.namespace, laser: laser.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, animalFrames, speech, flush,
     ammo: { account, receipts, runs, requests: ammoRequests, held: heldActions, reply: replyAmmo, execute: executeAmmo, snapshot: accountSnapshot },
     finishedRounds, storageOperations, sendInit,
     get animationScheduled() { return !!nextFrame; },
@@ -621,7 +623,7 @@ test('only the lower-third touchpad can start a shot, and captured bottom gestur
 });
 
 test('the invisible lower touchpad anchors at the touched point without jumping aim and keeps reticle and bullet ray aligned at every zoom', async () => {
-  for (const [width, height] of [[1000, 600], [390, 480], [844, 235]]) for (const zoom of [1, 2, 3]) {
+  for (const [width, height] of [[1000, 600], [390, 480], [844, 235]]) for (const zoom of [1, 3]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
     const origin = { left: 17, top: 83 };
     app.resize(width, height, origin);await enterAndStartEvent(app, 1);
@@ -660,7 +662,7 @@ test('the invisible lower touchpad anchors at the touched point without jumping 
 });
 
 test('touch movement follows every small relative pixel delta and holding a finger still never drifts', async () => {
-  for (const zoom of [1, 2, 3]) {
+  for (const zoom of [1, 3]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20, 22], scopedBows: [22], eventGun: 22, sound: false });
     app.resize(390, 480);await enterAndStartEvent(app, 1);
     for (let i = 0; i < 3 && app.api.state.zoom !== zoom; i++) app.getElement('zoomBtn').emit('click');
@@ -1785,7 +1787,7 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, ownedBows: [0, 3, 7, 10], ownedArrows: [0], bow: 3, arrow: 0 });
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [], 'legacy saves have no scopes installed');
   app.api.showShop('bow');
-  for (const id of [0, 9, -1, 12, '3']) app.api.installScope(id);
+  for (const [id, zoom] of [[0, 3], [9, 2], [-1, 2], [12, 6], ['3', 3], [3, undefined], [3, '3'], [3, 4], [3, 5], [3, 7]]) app.api.installScope(id, zoom);
   assert.equal(app.api.progress.coins, 10000, 'incompatible, unowned and invalid bows cannot receive a scope');
   assert.deepEqual(Array.from(app.api.progress.scopedBows), []);
   let coins = 10000;
@@ -1793,16 +1795,15 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
     app.api.equipItem(id);
     assert.ok(!app.api.progress.scopedBows.includes(id), 'another bow must purchase its own scope');
     assert.match(app.getElement('modalContent').innerHTML, new RegExp(`data-install-scope="${id}"`));
-    app.api.installScope(id);coins -= app.engine.BOWS[id].scopePrice;
+    app.api.installScope(id, 3);coins -= app.engine.BOWS[id].scopePrice;
     assert.equal(app.api.progress.coins, coins);
     assert.equal(app.api.progress.bow, id, 'mounting a scope keeps the selected bow');
     assert.equal(app.api.state.zoom, 3, 'buying a scope immediately activates its threefold view');
     assert.equal(app.getElement('zoomBtn').textContent, '조준경 3×');
     const html = app.getElement('modalContent').innerHTML;
     const card = Array.from(html.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(app.engine.BOWS[id].name));
-    assert.match(card, /이 장비에 장착됨/);
-    assert.doesNotMatch(card, /data-install-scope=/, 'an installed scope cannot be purchased twice');
-    app.api.installScope(id);
+    assert.match(card, /장착 중/);
+    app.api.installScope(id, 3);
     assert.equal(app.api.progress.coins, coins);
     assert.equal(app.api.progress.scopedBows.filter(value => value === id).length, 1);
   }
@@ -1811,11 +1812,102 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
   assert.equal(reloaded.api.progress.coins, coins);assert.equal(reloaded.api.activeBow().id, 10);
   assert.equal(reloaded.api.state.zoom, 3, 'a saved scoped weapon starts with the scope active');
   const sanitized = await appHarness({ ...saved, scopedBows: [0, 3, 7, 10, 10, 9, 11, -1, 12, '3', null] });
-  assert.deepEqual(Array.from(sanitized.api.progress.scopedBows), [3, 7, 10], 'invalid and unowned scope bindings are discarded');
+  assert.deepEqual(Array.from(sanitized.api.progress.scopedBows), [3, 7, 10], 'the canonical scope map never imports the legacy summary again');
   const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: app.engine.BOWS[10].scopePrice - 1, ownedBows: [0, 10], bow: 10 });
-  poor.api.installScope(10);
+  poor.api.installScope(10, 3);
   assert.deepEqual(Array.from(poor.api.progress.scopedBows), []);
   assert.equal(poor.api.progress.coins, app.engine.BOWS[10].scopePrice - 1, 'insufficient coins never install or partly charge for a scope');
+});
+
+test('all four scope lenses can be bought once, switched for free through shop buttons and restored after reload', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100000, ownedBows: [0, 19], bow: 19 });
+  const select = zoom => {
+    const button = app.getElement(`scope-19-${zoom}`);button.tagName = 'BUTTON';
+    button.dataset.installScope = '19';button.dataset.scopeZoom = String(zoom);
+    app.document.emit('click', { target: button });
+  };
+  let coins = 100000;
+  for (const zoom of [2, 3, 6, 8]) {
+    app.api.showShop('bow');
+    const card = Array.from(app.getElement('modalContent').innerHTML.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(app.engine.BOWS[19].name));
+    assert.deepEqual(Array.from(card.matchAll(/data-scope-zoom="(\d+)"/g), match => Number(match[1])), [2, 3, 6, 8]);
+    select(zoom);coins -= app.engine.getScopePrice(19, zoom);
+    assert.equal(app.api.progress.coins, coins);assert.equal(app.api.equippedScope(19), zoom);
+    assert.equal(app.api.state.zoom, zoom);assert.equal(app.getElement('zoomBtn').textContent, `조준경 ${zoom}×`);
+    select(zoom);assert.equal(app.api.progress.coins, coins, 'the same lens is never charged twice');
+    if (zoom === 2) {
+      const firstReload = await appHarness(app.snapshot());
+      assert.deepEqual([...firstReload.api.progress.scopeLoadouts[19].owned], [2], 'a newly saved summary must not grant an unbought legacy 3× scope');
+      assert.equal(firstReload.api.equippedScope(), 2);
+    }
+  }
+  assert.deepEqual([...app.api.progress.scopeLoadouts[19].owned], [2, 3, 6, 8]);
+  assert.deepEqual([...app.api.progress.scopedBows], [19]);
+  for (const zoom of [3, 8, 2, 6]) {
+    select(zoom);assert.equal(app.api.progress.coins, coins);
+    assert.equal(app.api.state.zoom, zoom);assert.equal(app.api.maximumZoom(), zoom);
+    app.api.closeModal();await app.flush();
+    const aim = { ...app.api.state.aim };
+    for (const invalid of [0, 4, 5, 7, '6', NaN, ...[2, 3, 6, 8].filter(value => value !== zoom)]) {
+      assert.equal(app.api.setAimZoom(invalid), false, 'only the equipped lens can magnify the view');
+      assert.equal(app.api.state.zoom, zoom);
+    }
+    app.getElement('zoomBtn').emit('click');assert.equal(app.api.state.zoom, 1);
+    app.getElement('zoomBtn').emit('click');assert.equal(app.api.state.zoom, zoom);
+    assert.deepEqual({ ...app.api.state.aim }, aim);
+  }
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.api.progress.scopeLoadouts)), { 19: { owned: [2, 3, 6, 8], equipped: 6 } });
+  assert.equal(reloaded.api.state.zoom, 6);assert.equal(reloaded.api.progress.coins, coins);
+});
+
+test('legacy scope purchases migrate once without granting scopes to starter, newly compatible or unowned weapons', async () => {
+  const legacy = { version: 1, stageCatalog: STAGE_CATALOG, coins: 37, ownedBows: [0, 2, 3, 19, 20, 21, 22], bow: 19,
+    scopedBows: [0, 2, 3, 3, 19, 20, 21, 22, 24, -1, '3', null] };
+  const app = await appHarness(legacy);
+  const expected = { 3: { owned: [3], equipped: 3 }, 19: { owned: [3], equipped: 3 }, 22: { owned: [3], equipped: 3 } };
+  assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.scopeLoadouts)), expected);
+  assert.deepEqual([...app.api.progress.scopedBows], [3, 19, 22]);assert.equal(app.api.progress.coins, 37);
+  assert.equal(app.api.equippedScope(0), 1);assert.equal(app.api.equippedScope(2), 1);
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.api.progress.scopeLoadouts)), expected);
+  for (const scopeLoadouts of [{}, null, [], 'invalid']) {
+    const canonical = await appHarness({ ...legacy, scopeLoadouts });
+    assert.deepEqual([...canonical.api.progress.scopedBows], [], 'an existing new-format field must never re-import the legacy summary');
+    assert.equal(canonical.api.state.zoom, 1);
+  }
+});
+
+test('saved scope loadouts discard invalid magnifications and ownership while preserving each valid equipped lens', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 5, ownedBows: [0, 2, 3, 19, 20, 22], bow: 19,
+    scopedBows: [3, 24], scopeLoadouts: {
+      0: { owned: [2, 2, 3, 6, '2', null], equipped: 8 },
+      2: { owned: [3, 2, 2, 6], equipped: 3 },
+      3: { owned: [4, 5, 7], equipped: 3 },
+      19: { owned: [8, 6, 3, 2, 5, '6'], equipped: 6 },
+      20: { owned: [3], equipped: 3 },
+      22: { owned: [2, 3, 6, 8], equipped: 8 },
+      24: { owned: [3], equipped: 3 },
+      '03': { owned: [3], equipped: 3 },
+      bad: { owned: [8], equipped: 8 }
+    } });
+  const expected = { 0: { owned: [2], equipped: 2 }, 2: { owned: [2, 3], equipped: 3 }, 19: { owned: [2, 3, 6, 8], equipped: 6 }, 22: { owned: [3], equipped: 3 } };
+  assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.scopeLoadouts)), expected);
+  assert.deepEqual([...app.api.progress.scopedBows], [0, 2, 19, 22]);
+  assert.equal(app.api.state.zoom, 6);assert.equal(app.api.progress.coins, 5);
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.api.progress.scopeLoadouts)), expected);
+});
+
+test('a failed scope save leaves both the coin balance and equipped optics unchanged', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, ownedBows: [0, 3], bow: 3,
+    scopeLoadouts: { 3: { owned: [2], equipped: 2 } } });
+  const before = app.snapshot(), camera = { ...app.api.camera };
+  app.store.set = () => { throw new Error('storage denied'); };
+  assert.equal(app.api.installScope(3, 3), false);
+  assert.equal(app.api.progress.coins, 10000);assert.equal(app.api.state.zoom, 2);
+  assert.deepEqual([...app.api.progress.scopeLoadouts[3].owned], [2]);assert.equal(app.api.equippedScope(), 2);
+  assert.deepEqual(app.snapshot(), before);assert.deepEqual({ ...app.api.camera }, camera);
 });
 
 test('mounted scopes provide real threefold zoom only on the bow that owns them', async () => {
@@ -1830,28 +1922,30 @@ test('mounted scopes provide real threefold zoom only on the bow that owns them'
   assert.equal(app.api.camera.focal, baseFocal * 3);
   assert.equal(zoom.textContent, '조준경 3×');
   assert.equal(app.getElement('gameCanvas').dataset.scope, 'active');
-  clickZoom(1);clickZoom(2);clickZoom(3);
+  clickZoom(1);clickZoom(3);
   app.api.showShop('bow');
   zoom.emit('click');assert.equal(app.api.state.zoom, 3, 'shop interactions cannot change the aiming zoom');
   app.api.equipItem(7);app.frames();
-  assert.equal(app.api.state.zoom, 2, 'equipping an unscoped bow clamps a previous 3× view');
-  assert.equal(app.api.camera.focal, baseFocal * 2);
+  assert.equal(app.api.state.zoom, 1, 'equipping an unscoped bow restores the unaided view');
+  assert.equal(app.api.camera.focal, baseFocal);
   assert.equal(app.getElement('gameCanvas').dataset.scope, 'none');
+  assert.equal(app.getElement('gameCanvas').dataset.scopeMagnification, '1');
+  assert.equal(app.getElement('zoomBtn').disabled, true);
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 10], 'the scope does not move with equipment selection');
-  app.api.closeModal();await app.flush();clickZoom(1);clickZoom(2);clickZoom(1);
+  app.api.closeModal();await app.flush();clickZoom(1);clickZoom(1);
   app.api.showShop('bow');app.api.equipItem(10);app.api.closeModal();await app.flush();
   app.frames();assert.equal(app.api.state.zoom, 3);
   assert.equal(app.api.camera.focal, baseFocal * 3);
   assert.equal(app.getElement('gameCanvas').dataset.scope, 'active', 'a separately scoped crossbow restores its own 3× view');
   app.api.showShop('bow');app.api.equipItem(0);app.api.closeModal();await app.flush();
-  assert.equal(app.api.state.zoom, 2);
-  clickZoom(1);clickZoom(2);clickZoom(1);
+  assert.equal(app.api.state.zoom, 1);
+  clickZoom(1);clickZoom(1);
 });
 
-for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
-  test(`scope purchase triples the visible target radius and preserves aim and controls in a ${width}×${height} view`, async () => {
-    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, ownedBows: [0, 3], ownedArrows: [0, 1], bow: 3 });
-    const staticStage = app.engine.STAGES.find(stage => stage.kind === 'target' && !stage.motion?.amplitudeX && !stage.motion?.amplitudeY && !stage.obstacles.length && stage.distance >= 28);
+for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) for (const magnification of [2, 3, 6, 8]) {
+  test(`a ${magnification}× scope enlarges the target and preserves aim, reticle and controls in a ${width}×${height} view`, async () => {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100000, ownedBows: [0, 19], ownedArrows: [0, 1], bow: 19 });
+    const staticStage = app.engine.STAGES.find(stage => stage.kind === 'target' && !stage.motion?.amplitudeX && !stage.motion?.amplitudeY && !stage.obstacles.length && stage.distance >= 150);
     assert.ok(staticStage, 'the range includes an unobstructed static target for checking magnification');
     app.resize(width, height);app.api.startStage(staticStage.id);await app.flush();
     const {state} = app.api, originalAim = {...state.aim};
@@ -1866,17 +1960,24 @@ for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
     };
     const close = (actual, expected, message) => assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: ${actual} versus ${expected}`);
     const original = dimensions();
-    app.api.showShop('bow');app.api.installScope(3);
+    app.api.showShop('bow');app.api.installScope(19, magnification);
     const enlarged = dimensions();
-    assert.equal(state.zoom, 3);
-    close(enlarged.rx, original.rx * 3, 'the target is three times wider on the screen');
-    close(enlarged.ry, original.ry * 3, 'the target is three times taller on the screen');
+    assert.equal(state.zoom, magnification);
+    close(enlarged.rx, original.rx * magnification, 'the target width matches the mounted magnification');
+    close(enlarged.ry, original.ry * magnification, 'the target height matches the mounted magnification');
     close(enlarged.x, original.x, 'the aimed target stays at the same horizontal point');
     close(enlarged.y, original.y, 'the aimed target stays at the same vertical point');
     assert.deepEqual({...state.aim}, originalAim, 'magnification never changes the physical firing direction');
     assert.ok(enlarged.x - enlarged.rx > 0 && enlarged.x + enlarged.rx < width);
     assert.ok(enlarged.y - enlarged.ry > 0 && enlarged.y + enlarged.ry < height);
     app.api.closeModal();await app.flush();
+    app.canvasText.length = 0;app.canvasArcs.length = 0;app.frames();
+    assert.equal(app.getElement('zoomBtn').textContent, `조준경 ${magnification}×`);
+    assert.equal(app.getElement('gameCanvas').dataset.scope, 'active');
+    assert.equal(app.getElement('gameCanvas').dataset.scopeMagnification, String(magnification));
+    assert.equal(app.getElement('gameCanvas').dataset.scopeZoom, String(magnification));
+    assert.ok(app.canvasText.includes(`${magnification}×`), 'the drawn scope reticle labels its actual magnification');
+    assert.ok(app.canvasArcs.some(arc => arc.radius === 43), 'every mounted magnification draws the scope ring');
     const pad = app.getElement('aimTouchpad'), expectedYaw = state.aim.yaw + .04, expectedPitch = state.aim.pitch + .02;
     pad.emit('pointerdown', { clientX: width * .51, clientY: height * .68 });
     moveHeldAim(app, expectedYaw, expectedPitch);pad.emit('pointercancel');
@@ -1884,20 +1985,25 @@ for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
     close(state.aim.pitch, expectedPitch, 'the scoped joystick preserves vertical control');
     const aimPoint = {x: Math.tan(state.aim.yaw) * target.z, y: app.engine.PLAYER.y + Math.tan(state.aim.pitch) / Math.cos(state.aim.yaw) * target.z, z: target.z};
     const anchor = app.api.project(aimPoint), zoom = app.getElement('zoomBtn');
-    for (const value of [1, 2, 3]) {
+    for (const value of [1, magnification]) {
       zoom.emit('click');
-      assert.equal(state.zoom, value, 'manual onefold, twofold and threefold views remain available');
+      assert.equal(state.zoom, value, 'the control toggles between the unaided view and the mounted scope');
+      app.canvasText.length = 0;app.frames();
+      assert.equal(app.getElement('gameCanvas').dataset.scopeZoom, String(value));
+      assert.equal(app.getElement('gameCanvas').dataset.scopeMagnification, String(magnification));
+      assert.equal(app.getElement('gameCanvas').dataset.scope, value === 1 ? 'mounted' : 'active');
+      assert.equal(app.canvasText.includes(`${magnification}×`), value === magnification);
       const point = app.api.project(aimPoint);
       close(point.x, anchor.x, 'zoom keeps the current aim at its horizontal screen position');
       close(point.y, anchor.y, 'zoom keeps the current aim at its vertical screen position');
     }
     app.getElement('recenterBtn').emit('click');
-    close(dimensions().x, original.x, 'recentring restores the target horizontally at threefold zoom');
-    close(dimensions().y, original.y, 'recentring restores the target vertically at threefold zoom');
+    close(dimensions().x, original.x, 'recentring restores the target horizontally at the mounted zoom');
+    close(dimensions().y, original.y, 'recentring restores the target vertically at the mounted zoom');
     zoom.emit('click');app.api.showShop('arrow');app.api.equipItem(1);
     assert.equal(state.zoom, 1, 'changing an arrow preserves a manually selected zoom');
-    app.api.showShop('bow');app.api.equipItem(3);
-    assert.equal(state.zoom, 3, 'selecting the scoped weapon again activates its scope');
+    app.api.showShop('bow');app.api.equipItem(19);
+    assert.equal(state.zoom, magnification, 'selecting the scoped weapon again activates its scope');
     assert.equal(state.used, 0, 'scope and drag-cancel interactions never consume a shot');
   });
 }
@@ -1905,7 +2011,7 @@ for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) {
 test('installing a scope on an unequipped weapon leaves the current weapon and view unchanged', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 10000, ownedBows: [0, 3, 7], ownedArrows: [0], bow: 0 });
   const originalCamera = {...app.api.camera};
-  app.api.showShop('bow');app.api.installScope(3);
+  app.api.showShop('bow');app.api.installScope(3, 3);
   assert.equal(app.api.activeBow().id, 0);assert.equal(app.api.state.zoom, 1);
   assert.deepEqual({...app.api.camera}, originalCamera);
   app.api.equipItem(7);assert.equal(app.api.state.zoom, 1, 'an unscoped weapon cannot borrow another weapon’s scope');
@@ -1923,6 +2029,196 @@ test('new main rounds and event rounds automatically activate only their equippe
   app.api.exitEvent();await app.flush();assert.equal(app.api.state.zoom, 3);
   assert.equal(app.api.activeBow().id, 3);
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 22], 'round changes never transfer or duplicate a scope');
+});
+
+test('laser purchases charge once per main weapon and preserve independent manual settings across reload', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 2000, ownedBows: [0, 3, 20, 22], bow: 0 });
+  assert.equal(app.api.activeLaser(), null);assert.equal(app.getElement('laserPanel').classList.contains('hidden'), true);
+  for (const id of [-1, 25, '0', 10, 20, 22]) assert.equal(app.api.installLaser(id), false);
+  assert.equal(app.api.progress.coins, 2000);
+  const buy = id => {
+    app.api.showShop('bow');
+    const button = app.getElement(`buy-laser-${id}`);button.tagName = 'BUTTON';button.dataset.installLaser = String(id);
+    app.document.emit('click', { target: button });
+  };
+  buy(0);assert.equal(app.api.progress.coins, 1500);assert.equal(app.api.activeBow().id, 0);
+  assert.equal(app.api.setLaserSettings({ horizontalClicks: 12, verticalClicks: -7 }), true);
+  assert.equal(app.api.installLaser(0), true);assert.equal(app.api.progress.coins, 1500);
+  assert.deepEqual({ ...app.api.activeLaser() }, { enabled: true, horizontalClicks: 12, verticalClicks: -7 });
+  buy(3);assert.equal(app.api.progress.coins, 1000);assert.equal(app.api.activeBow().id, 3);
+  assert.equal(app.api.setLaserSettings({ enabled: false, horizontalClicks: -30, verticalClicks: 9, autoFire: true, targetId: 1 }), true);
+  assert.equal(app.api.setLaserSettings({ horizontalClicks: 99 }, 0), false, 'a callback cannot change an unequipped weapon');
+  const expected = { 0: { enabled: true, horizontalClicks: 12, verticalClicks: -7 }, 3: { enabled: false, horizontalClicks: -30, verticalClicks: 9 } };
+  assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.laserLoadouts)), expected);
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.api.progress.laserLoadouts)), expected);
+  assert.equal(reloaded.api.progress.coins, 1000);assert.equal(reloaded.api.laserEnabled(), false);
+  reloaded.api.showShop('bow');reloaded.api.equipItem(0);reloaded.api.closeModal();await reloaded.flush();
+  assert.deepEqual({ ...reloaded.api.activeLaser() }, expected[0]);assert.equal(reloaded.api.laserEnabled(), true);
+  assert.equal(reloaded.api.laserFrame(), null, 'ready mode permits calibration without showing a sight dot');
+  const poor = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 499 });
+  assert.equal(poor.api.installLaser(0), false);assert.equal(poor.api.progress.coins, 499);assert.equal(poor.api.activeLaser(), null);
+});
+
+test('laser save loading keeps only owned main weapons and finite manual zeroing values', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 3, 20, 22], bow: 3,
+    laserLoadouts: {
+      0: { enabled: false, horizontalClicks: 2000, verticalClicks: -2000, autoFire: true },
+      3: { horizontalClicks: '20', verticalClicks: 3.6, targetPoint: { x: 0, y: 0, z: 10 } },
+      19: { enabled: true }, 20: { enabled: true }, 22: { enabled: true }, '03': { enabled: true }, bad: {}, '-1': {}
+    } });
+  assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress.laserLoadouts)), {
+    0: { enabled: false, horizontalClicks: 1200, verticalClicks: -1200 },
+    3: { enabled: true, horizontalClicks: 0, verticalClicks: 4 }
+  });
+  for (const id of [19, 20, 22]) assert.equal(app.api.activeLaser(id), null);
+  const original = app.snapshot(), settings = { ...app.api.activeLaser() };
+  app.store.set = () => { throw new Error('storage denied'); };
+  assert.equal(app.api.setLaserSettings({ horizontalClicks: 44 }), false);
+  assert.deepEqual({ ...app.api.activeLaser() }, settings);assert.deepEqual(app.snapshot(), original);
+});
+
+test('laser rotary gears use fifteen-degree detents and one or ten-click steps without aiming or firing', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, laserLoadouts: { 0: { enabled: true } } });
+  const aim = { ...app.api.state.aim }, horizontal = app.getElement('laserHorizontalGear'), vertical = app.getElement('laserVerticalGear');
+  for (const gear of [horizontal, vertical]) gear.getBoundingClientRect = () => ({ left: 100, top: 60, width: 80, height: 80 });
+  horizontal.emit('pointerdown', { pointerId: 81, clientX: 140, clientY: 60 });
+  horizontal.emit('pointermove', { pointerId: 81, clientX: 180, clientY: 100 });
+  horizontal.emit('pointerup', { pointerId: 81, clientX: 180, clientY: 100 });
+  assert.equal(app.api.activeLaser().horizontalClicks, 6, 'a clockwise quarter turn advances six 15-degree detents');
+  assert.equal(app.getElement('laserHorizontalValue').dataset.value, '6');
+  assert.equal(horizontal.getAttribute('aria-valuenow'), '6');
+  assert.equal(app.getElement('laserHorizontalRotor').style.transform, 'rotate(90deg)');
+  const step = app.getElement('laserStep10Btn');step.tagName = 'BUTTON';step.dataset.laserStep = '10';
+  app.document.emit('click', { target: step });assert.equal(app.api.state.laserStep, 10);
+  vertical.emit('pointerdown', { pointerId: 82, clientX: 140, clientY: 60 });
+  vertical.emit('pointermove', { pointerId: 82, clientX: 180, clientY: 100 });
+  vertical.emit('pointerup', { pointerId: 82, clientX: 180, clientY: 100 });
+  assert.equal(app.api.activeLaser().verticalClicks, 60, 'clockwise upper gear motion raises the zeroing value');
+  assert.equal(app.getElement('laserVerticalValue').dataset.value, '60');
+  horizontal.emit('keydown', { key: 'ArrowRight', code: 'ArrowRight' });assert.equal(app.api.activeLaser().horizontalClicks, 16);
+  vertical.emit('wheel', { deltaY: -1 });assert.equal(app.api.activeLaser().verticalClicks, 70);
+  assert.deepEqual({ ...app.api.state.aim }, aim);assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
+  assert.equal(app.api.state.shot, null);assert.equal(app.api.laserFrame(), null);
+  const reloaded = await appHarness(app.snapshot());
+  assert.deepEqual({ ...reloaded.api.activeLaser() }, { enabled: true, horizontalClicks: 16, verticalClicks: 70 });
+});
+
+test('a held laser follows manual aim, never fires on target overlap or after ten seconds and fires once on release', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
+    laserLoadouts: { 0: { enabled: true } }, scopeLoadouts: { 0: { owned: [2], equipped: 2 } } });
+  const { state } = app.api, pad = app.getElement('aimTouchpad');
+  app.frames();assert.equal(app.getElement('gameCanvas').dataset.laser, 'off');
+  pad.emit('pointerdown');app.frames(90);
+  const target = app.engine.targetAt(state.stage, state.time), angles = app.api.aimAngles();
+  const desiredYaw = Math.atan2(target.x, target.z), desiredPitch = Math.atan2(target.y - app.engine.PLAYER.y, Math.hypot(target.x, target.z));
+  moveHeldAim(app, state.aim.yaw + desiredYaw - angles.yaw, state.aim.pitch + desiredPitch - angles.pitch);
+  const point = app.api.laserFrame().point, aim = { ...state.aim };
+  assert.ok(Math.hypot(point.x - target.x, point.y - target.y, point.z - target.z) < 1e-8, 'the visible dot really overlaps the target centre');
+  assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);assert.equal(state.shot, null);
+  app.canvasText.length = 0;app.frames();
+  assert.equal(app.getElement('gameCanvas').dataset.laser, 'drawing');
+  assert.equal(app.canvasText.includes('2×'), false, 'the laser replaces the ordinary scope reticle during the hold');
+  const rendered = app.api.laserFrame().point;
+  for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(Number(app.getElement('gameCanvas').dataset[`laser${axis.toUpperCase()}`]) - rendered[axis]) < .001);
+  holdFor(app, 12000);await app.flush();
+  assert.equal(state.mode, 'drawing');assert.equal(state.used, 0);assert.equal(state.shot, null);
+  assert.deepEqual({ ...state.aim }, aim, 'holding the laser never steers the real firing direction toward a target');
+  pad.emit('pointerup');await app.flush();
+  assert.equal(state.mode, 'flight');assert.equal(state.used, 1);assert.ok(state.shot);assert.equal(app.api.laserFrame(), null);
+  pad.emit('pointerup');await app.flush();assert.equal(state.used, 1);
+  app.until(() => state.mode === 'ready');pad.emit('pointerup');await app.flush();assert.equal(state.used, 1);
+});
+
+test('laser zeroing controls and forged callbacks stay locked throughout a drawn or flying shot', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 1000,
+    laserLoadouts: { 0: { enabled: true, horizontalClicks: 8, verticalClicks: -4 } } });
+  const pad = app.getElement('aimTouchpad'), horizontal = app.getElement('laserHorizontalGear');
+  const settings = { ...app.api.activeLaser() }, saved = app.snapshot();
+  pad.emit('pointerdown');app.frames(30);
+  const assertLocked = () => {
+    assert.equal(app.getElement('laserPanel').dataset.locked, 'true');assert.equal(horizontal.disabled, true);
+    for (const call of [() => app.api.setLaserSettings({ horizontalClicks: 500 }), () => app.api.adjustLaser('verticalClicks', 10),
+      () => app.api.toggleLaser(), () => app.api.resetLaser(), () => app.api.setLaserStep(10), () => app.api.installLaser(0)]) assert.equal(call(), false);
+    for (const action of ['toggle', 'reset']) {
+      const button = app.getElement(`forged-laser-${action}`);button.tagName = 'BUTTON';button.dataset.laserAction = action;
+      app.document.emit('click', { target: button });
+    }
+    horizontal.emit('pointerdown', { pointerId: 82, clientX: 100, clientY: 100 });
+    horizontal.emit('pointermove', { pointerId: 82, clientX: 200, clientY: 200 });horizontal.emit('pointerup', { pointerId: 82 });
+    horizontal.emit('wheel', { deltaY: -1 });horizontal.emit('keydown', { key: 'ArrowRight', code: 'ArrowRight' });
+    assert.deepEqual({ ...app.api.activeLaser() }, settings);assert.equal(app.api.state.laserStep, 1);
+  };
+  assertLocked();assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.used, 0);
+  assert.deepEqual(app.snapshot(), saved, 'forged calibration does not write during a held shot');
+  pad.emit('pointerup');await app.flush();assert.equal(app.api.state.used, 1);assertLocked();
+});
+
+test('laser cancellation, lost capture, blur and hidden-page recovery never release an arrow', async () => {
+  for (const action of ['cancel', 'lost-capture', 'blur', 'hidden']) {
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, laserLoadouts: { 0: { enabled: true } } });
+    const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(20);
+    if (action === 'cancel') pad.emit('pointercancel');
+    if (action === 'lost-capture') pad.emit('lostpointercapture');
+    if (action === 'blur') app.window.emit('blur');
+    if (action === 'hidden') { app.document.hidden = true;app.document.emit('visibilitychange'); }
+    app.advanceTo(app.now + 12000);await app.flush();pad.emit('pointerup');await app.flush();
+    assert.equal(app.api.state.used, 0, action);assert.equal(app.api.state.shot, null, action);assert.equal(app.api.laserFrame(), null, action);
+    if (action === 'hidden') { app.document.hidden = false;app.document.emit('visibilitychange');await app.flush(); }
+    assert.equal(app.api.state.mode, 'ready');assert.equal(app.api.state.used, 0);
+  }
+});
+
+test('incorrect laser zeroing moves only the sight and leaves the real arrow trajectory and score unchanged', async () => {
+  const fixture = { version: 1, stageCatalog: STAGE_CATALOG, sound: false };
+  const ordinary = await appHarness(fixture), laser = await appHarness({ ...fixture,
+    laserLoadouts: { 0: { enabled: true, horizontalClicks: 600, verticalClicks: 80 } } });
+  const shots = [];
+  for (const app of [ordinary, laser]) {
+    const { pad, coords } = preciseMainDraw(app), { state } = app.api;
+    if (app === laser) {
+      const dot = app.api.laserFrame().targetPoint, target = app.engine.targetAt(state.stage, state.time);
+      assert.ok(Math.abs(dot.x - target.x) > target.radius * 2, 'a deliberately wrong zero places the sight well away from the actual aim');
+    }
+    const aim = { ...state.aim };pad.emit('pointerup', coords);await app.flush();
+    const velocity = { ...state.shot.velocity };
+    app.until(() => state.mode === 'settling');
+    shots.push({ aim, velocity, result: JSON.parse(JSON.stringify(state.shot.result)), score: state.score });
+  }
+  assert.equal(shots[0].score, 10);assert.deepEqual(shots[1], shots[0], 'the sight must never supply a ballistic correction or change a real result');
+});
+
+test('an enabled laser suppresses coach prediction, firing cues and voice while preserving the saved coaching preference', async () => {
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: true, sound: true,
+    laserLoadouts: { 0: { enabled: false } } });
+  const { state } = app.api;
+  let draw = preciseMainDraw(app, { x: 0, y: 0 }, { missDuringHold: true });
+  app.until(() => app.speech.utterances.length === 1, 20);assertCoachCue(app, true);
+  assert.equal(state.coachReady, true, 'the held real-shot fixture qualifies for an ordinary coach cue');
+  draw.pad.emit('pointercancel');assert.equal(app.api.setLaserSettings({ enabled: true }), true);
+  assertCoachCue(app, false);assert.equal(state.coachReady, false);assert.equal(state.coachCueUntil, 0);
+  app.getElement('menuBtn').emit('click');
+  const coachButton = app.getElement('modalContent').innerHTML.match(/<button\b[^>]*data-action="toggle-coach"[^>]*>[\s\S]*?<\/button>/)?.[0];
+  assert.ok(coachButton);assert.match(coachButton, /disabled/);
+  modalAction(app, 'toggle-coach');assert.equal(app.api.progress.coachEnabled, true, 'the temporarily unavailable toggle never changes the user preference');
+  app.api.closeModal();await app.flush();
+  draw = preciseMainDraw(app, { x: 0, y: 0 }, { missDuringHold: true });
+  holdFor(app, 1600);
+  assert.equal(state.mode, 'drawing');assert.equal(state.coachLastCheck, -Infinity, 'laser aiming never evaluates the firing prediction');
+  assert.equal(state.coachReady, false);assert.equal(state.coachSaid, false);assert.equal(state.coachCueUntil, 0);
+  assertCoachCue(app, false);assert.equal(app.speech.utterances.length, 1);assert.equal(state.used, 0);
+  assert.equal(app.api.progress.coachEnabled, true);assert.equal(app.snapshot().coachEnabled, true);
+  draw.pad.emit('pointercancel');assert.equal(app.api.setLaserSettings({ enabled: false }), true);
+  draw = preciseMainDraw(app, { x: 0, y: 0 }, { missDuringHold: true });
+  app.until(() => app.speech.utterances.length === 2, 20);assertCoachCue(app, true);
+  assert.equal(state.coachReady, true);assert.ok(Number.isFinite(state.coachLastCheck));
+  draw.pad.emit('pointercancel');
+  const quiet = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coachEnabled: false, sound: true,
+    laserLoadouts: { 0: { enabled: true } } });
+  assert.equal(quiet.api.setLaserSettings({ enabled: false }), true);
+  preciseMainDraw(quiet, { x: 0, y: 0 }, { missDuringHold: true });holdFor(quiet, 800);
+  assert.equal(quiet.api.progress.coachEnabled, false);assert.equal(quiet.snapshot().coachEnabled, false);
+  assert.equal(quiet.api.state.coachLastCheck, -Infinity);assert.equal(quiet.speech.utterances.length, 0);assertCoachCue(quiet, false);
 });
 
 test('rare crossbows sum all three delayed arrow scores while retaining one reward and round slot per trigger', async () => {
@@ -3320,8 +3616,10 @@ for (const fixture of [
 ]) test(`a real eight-point ${fixture.bow === 19 ? 'burst' : 'hit'} on ${fixture.lessonKey} at ${fixture.distance}m stays visible through approach and impact without changing its award`, async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100,
     lastStage: lessonStageId(fixture.lessonKey, fixture.distance),
-    ownedBows: [0, fixture.bow], bow: fixture.bow, ownedArrows: [0, fixture.arrow], arrow: fixture.arrow, sound: false });
+    ownedBows: [0, fixture.bow], bow: fixture.bow, scopeLoadouts: { [fixture.bow]: { owned: [2], equipped: 2 } },
+    ownedArrows: [0, fixture.arrow], arrow: fixture.arrow, sound: false });
   const { state } = app.api;
+  app.api.setAimZoom(1);
   app.until(() => state.mode === 'ready');
   if (fixture.time !== undefined) state.time = fixture.time;
   app.getElement('zoomBtn').emit('click');assert.equal(state.zoom, 2);
@@ -3379,9 +3677,9 @@ for (const fixture of [
 
 for (const reducedMotion of [false, true]) test(`a wall-stage bullseye keeps its real shaft visible with reduced motion ${reducedMotion} and restores the exact aim`, async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, lastStage: lessonStageId('fixed-gap-1/3', 20),
-    ownedBows: [0, 8], bow: 8, ownedArrows: [0, 2], arrow: 2, sound: false }, { reducedMotion });
+    ownedBows: [0, 8], bow: 8, scopeLoadouts: { 8: { owned: [2], equipped: 2 } }, ownedArrows: [0, 2], arrow: 2, sound: false }, { reducedMotion });
   const { state } = app.api;
-  app.until(() => state.mode === 'ready');app.getElement('zoomBtn').emit('click');
+  app.until(() => state.mode === 'ready');assert.equal(state.zoom, 2);
   const { pad, coords } = preciseMainDraw(app), originalCamera = { ...app.api.camera }, originalAim = { ...state.aim };
   const originalPan = [state.panX, state.panY], walls = JSON.stringify(state.stage.obstacles);
   pad.emit('pointerup', coords);await app.flush();inspectFinalApproach(app, originalCamera);
@@ -3591,8 +3889,7 @@ test('real wall and person collisions keep the ordinary failure camera and never
 
 for (const outcome of ['hit', 'ground']) {
   test(`main view follows a ${outcome}, holds its landing, then restores the saved aim and zoom`, async () => {
-    const app = await appHarness();
-    app.getElement('zoomBtn').emit('click');
+    const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, scopeLoadouts: { 0: { owned: [2], equipped: 2 } } });
     assert.equal(app.api.state.zoom, 2);
     const { pad, coords } = outcome === 'hit' ? preciseMainDraw(app, {x: .3, y: 0}) : startHighMiss(app);
     const originalCamera = { ...app.api.camera }, originalAim = { ...app.api.state.aim };
@@ -4175,10 +4472,11 @@ test('stages without obstacles stay immediately playable and do not expose an ov
 });
 
 test('manual overview cancels a drawn arrow, allows an early return, preserves pan/zoom and is disabled in flight', async () => {
-  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false });
+  const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false,
+    scopeLoadouts: { 0: { owned: [2], equipped: 2 } } });
   await enterScene(app, 'wall');
   app.until(() => app.api.state.mode === 'ready');
-  app.getElement('zoomBtn').emit('click');
+  assert.equal(app.api.state.zoom, 2);
   const pad = app.getElement('aimTouchpad'), preview = app.getElement('previewBtn');
   pad.emit('pointerdown');moveHeldAim(app, .4, .3);app.frames(18);
   assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.state.zoom, 2);
@@ -4266,12 +4564,22 @@ test('administrators can equip the full catalog, use consumables and visit all e
   assert.equal(app.engine.BOWS.length,25);assert.equal(app.engine.ARROWS.length,19);
   assert.deepEqual([...app.api.progress.ownedBows],Array.from(app.engine.BOWS,item=>item.id));
   assert.deepEqual([...app.api.progress.ownedArrows],Array.from(app.engine.ARROWS,item=>item.id));
-  assert.equal(app.api.progress.scopedBows.length,17);
+  assert.equal(app.api.progress.scopedBows.length,23);
   assert.deepEqual([...app.api.progress.scopedBows],Array.from(app.engine.BOWS.filter(item=>item.scopeCompatible),item=>item.id));
+  assert.deepEqual(Object.keys(app.api.progress.laserLoadouts).map(Number),Array.from({length:20},(_,id)=>id));
   for(const item of app.engine.BOWS.filter(item=>item.weaponType!=='gun')){
     app.api.showShop('bow');app.api.equipItem(item.id);
     assert.equal(app.api.activeBow().id,item.id,`${item.name} is usable without buying it`);
-    if(item.scopeCompatible)assert.equal(state.zoom,3,`${item.name} has its working scope`);
+    assert.equal(state.zoom,Math.max(...item.scopeMagnifications),`${item.name} starts with its highest supported scope`);
+    assert.deepEqual([...app.api.progress.scopeLoadouts[item.id].owned],[...item.scopeMagnifications]);
+    const coins=app.api.progress.coins;
+    for(const zoom of item.scopeMagnifications){
+      assert.equal(app.api.installScope(item.id,zoom),true);assert.equal(state.zoom,zoom);
+      assert.equal(app.api.progress.coins,coins,'all supported trial lenses can be selected without a purchase');
+    }
+    app.api.closeModal();await app.flush();
+    assert.equal(app.api.setLaserSettings({horizontalClicks:item.id,verticalClicks:-item.id}),true);
+    assert.equal(app.api.activeLaser().horizontalClicks,item.id);assert.equal(app.api.progress.coins,coins);
   }
   for(const arrow of app.engine.ARROWS){
     app.api.showShop('arrow');app.api.equipItem(arrow.id);assert.equal(app.api.activeArrow().id,arrow.id);
@@ -4297,6 +4605,7 @@ test('administrators can equip the full catalog, use consumables and visit all e
   for(const gun of app.engine.BOWS.filter(item=>item.weaponType==='gun')){
     app.api.showShop('bow');app.api.equipItem(gun.id);assert.equal(app.api.activeBow().id,gun.id);
     if(gun.scopeCompatible)assert.equal(state.zoom,3);
+    assert.equal(app.api.activeLaser(),null);assert.equal(app.getElement('laserPanel').classList.contains('hidden'),true);
   }
   app.api.showShop('bow');app.api.equipItem(20);app.api.closeModal();await app.flush();
   await startPreparedEvent(app);
@@ -4311,6 +4620,7 @@ test('administrators can equip the full catalog, use consumables and visit all e
   const resumed=await appHarness(null,{store,remaining:17,coins:23,mainRounds:7});
   assert.deepEqual([resumed.api.progress.coins,resumed.api.progress.clayCredits,resumed.api.progress.stabilizers,resumed.api.progress.bow,resumed.api.progress.arrow,resumed.api.progress.lastStage],[321,9,4,3,2,17]);
   assert.deepEqual([...resumed.api.progress.ownedBows],[0,3,20]);assert.deepEqual([...resumed.api.progress.ownedArrows],[0,2]);
+  assert.equal(resumed.api.activeLaser(),null,'trial laser ownership and zeroing never leak into normal progress');
   assert.equal(resumed.api.adminTrialActive,false);assert.ok(resumed.ammo.requests.some(request=>request.action==='status'));
 });
 

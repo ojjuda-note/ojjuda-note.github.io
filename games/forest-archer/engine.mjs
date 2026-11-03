@@ -1,10 +1,16 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-target-speed2x1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-target-speed2x1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-scope-laser1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-scope-laser1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+export const SCOPES = Object.freeze([
+  {magnification:2,name:'2배 조준경',priceMultiplier:.6},
+  {magnification:3,name:'3배 조준경',priceMultiplier:1},
+  {magnification:6,name:'6배 조준경',priceMultiplier:2},
+  {magnification:8,name:'8배 조준경',priceMultiplier:3}
+].map(Object.freeze));
 
 // Game ratings: grip controls aiming; elasticity controls stored launch energy.
 const bowSway = grip => 0.008 + 0.0006 * (100 - clamp(grip, 0, 100));
@@ -12,7 +18,6 @@ const bowSpeed = elasticity => 32 + 0.30 * clamp(elasticity, 0, 100);
 export const REFERENCE_ARROW_MASS = 24; // grams, used for bow speed comparisons
 const bow = (id, name, tag, description, grip, elasticity, color) => {
   const weaponType = id >= 10 && id < 20 ? 'crossbow' : 'bow';
-  const scopeCompatible = [3, 7, 8, 9].includes(id) || id >= 10;
   const burstTier = id >= 15 && id < 20 ? id - 15 : -1;
   return {
     id, name, tag, description, grip, elasticity, color, weaponType,
@@ -23,7 +28,7 @@ const bow = (id, name, tag, description, grip, elasticity, color) => {
     burstSpread: burstTier >= 0 ? [.024, .018, .012, .008, .0045][burstTier] : 0,
     grouping: burstTier >= 0 ? [35, 50, 70, 84, 96][burstTier] : 100,
     rarity: burstTier >= 0 ? '레어' : '일반',
-    scopeCompatible, scopePrice: 0,
+    scopeCompatible: true, scopePrice: 0,
     sway: bowSway(grip), speed: bowSpeed(elasticity)
   };
 };
@@ -41,6 +46,7 @@ const gun = (id, name, tag, description, price, grip, power, mass, windFactor, d
   id, name, tag, description, price, grip, power, muzzleSpeed: 0, color, weaponType: 'gun',
   speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
   grouping: 100, rarity: '일반', scopeCompatible: id >= 22, scopePrice: id >= 22 ? 240 : 0,
+  scopeMagnifications: Object.freeze(id >= 22 ? [3] : []),
   magazineSize: [2, 4, 6, 8, 10][id - 20],
   reloadSeconds: [3, 2.5, 2, 1.5, 1][id - 20],
   reloadLabel: ['느림', '보통', '보통', '빠름', '빠름'][id - 20],
@@ -70,7 +76,10 @@ function equipmentCatalog(items, kind) {
         item.familyRank <= (item.weaponType === 'bow' ? 4 : 3) ? 'lower' : item.familyRank <= 7 ? 'middle' : 'upper';
       item.gearLabel = {starter:'기본',lower:'하위',middle:'중간',upper:'상위'}[item.gearTier];
       item.steadyDuration = Math.round((.5 + 1.5 * rank / (ranked.length - 1)) * 100) / 100;
-      item.scopePrice = item.scopeCompatible ? Math.max(500, Math.ceil(item.price * .2 / 50) * 50) : 0;
+      // Scope tiers follow the released shop order, never the inventory ID.
+      item.scopeMagnifications = Object.freeze(SCOPES.slice(0, 1 + Math.floor(rank / 5)).map(scope => scope.magnification));
+      // Keep the released three-power price as the base for every option.
+      item.scopePrice = Math.max(500, Math.ceil(item.price * .2 / 50) * 50);
     }
   });
   // Event guns have their own shop and retain their separate economy and timing.
@@ -126,6 +135,16 @@ export const BOWS = equipmentCatalog([
   gun(23, '장거리 소총', '장거리 사격총', '안정형 소총보다 그립과 장전이 좋아지고, 탄환의 공기 저항도 줄었어요.', 1750, 90, 70, 7, .12, .065, '#9c8e73'),
   gun(24, '정밀 사격총', '정밀 사격총', '최고 그립과 가장 빠른 장전, 10발 탄창으로 정밀하게 겨눠요.', 2200, 100, 80, 8, .08, .050, '#a8b1bf')
 ], 'weapon');
+
+/** Return a supported scope's price without treating an invalid weapon as the starter bow. */
+export function getScopePrice(weaponOrId, magnification) {
+  const weapon = typeof weaponOrId === 'number' ? BOWS.find(item => item.id === weaponOrId) : weaponOrId;
+  const scope = SCOPES.find(item => item.magnification === magnification);
+  if (!scope || !weapon?.scopeCompatible || !Array.isArray(weapon.scopeMagnifications) || !weapon.scopeMagnifications.includes(magnification) ||
+      !Number.isFinite(weapon.scopePrice) || weapon.scopePrice <= 0) return null;
+  // Event guns retain their exact 240-coin price instead of rounding it to 250.
+  return magnification === 3 ? weapon.scopePrice : Math.max(50, Math.ceil(weapon.scopePrice * scope.priceMultiplier / 50) * 50);
+}
 
 export const ARROWS = equipmentCatalog([
   arrow(0, '나무 화살', '입문', '강철 촉과 목재 몸통, 넓은 천연 깃으로 바람과 비행 편차를 익혀요.', 4, 19.4,

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, MAX_MAIN_PROJECTILE_SPEED, BULLET_SPEED, getArrowMass, getWindResponse, getArrowDragRate, getArrowConsistency, getArrowVariance, prepareStage, passersAt, BOWS, ARROWS, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getAnimalAimPoint, applyAnimalHit, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway, sortEquipment } from '../games/forest-archer/engine.mjs';
+import { PLAYER, GRAVITY, WIND_RESPONSE, REFERENCE_ARROW_MASS, MAX_MAIN_PROJECTILE_SPEED, BULLET_SPEED, getArrowMass, getWindResponse, getArrowDragRate, getArrowConsistency, getArrowVariance, prepareStage, passersAt, BOWS, ARROWS, SCOPES, getScopePrice, STAGES, CLAY_EVENT, createClayEvent, eventTargetsAt, targetAt, getAnimalAimPoint, applyAnimalHit, getSpeed, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway, sortEquipment } from '../games/forest-archer/engine.mjs';
 import { windLeafAt, windLeafCount } from '../games/forest-archer/scenery.mjs';
 import { getAnimalGeometry } from '../games/forest-archer/animal-zones.mjs';
 
@@ -558,12 +558,50 @@ test('all twenty main weapon tiers progressively extend the steady opportunity f
   assert.ok(BOWS.filter(item => item.weaponType === 'gun').every(item => item.steadyDuration === .5), 'the event guns retain their separate aiming rules');
 });
 
+test('the four scope tiers follow released shop ranks rather than weapon IDs and keep event guns separate', () => {
+  assert.deepEqual(SCOPES.map(scope => scope.magnification), [2, 3, 6, 8]);
+  assert.deepEqual(SCOPES.map(scope => scope.priceMultiplier), [.6, 1, 2, 3]);
+  const groups = [
+    { ids: [0, 4, 5, 6, 1], magnifications: [2] },
+    { ids: [2, 8, 7, 9, 3], magnifications: [2, 3] },
+    { ids: [13, 12, 10, 14, 11], magnifications: [2, 3, 6] },
+    { ids: [15, 16, 17, 18, 19], magnifications: [2, 3, 6, 8] }
+  ];
+  for (const [groupIndex, group] of groups.entries()) for (const [offset, id] of group.ids.entries()) {
+    assert.equal(BOWS[id].shopRank, groupIndex * 5 + offset + 1);
+    assert.deepEqual(BOWS[id].scopeMagnifications, group.magnifications, `weapon ${id} uses shop rank ${BOWS[id].shopRank}`);
+    assert.equal(BOWS[id].scopeCompatible, true);
+  }
+  for (const id of [20, 21]) {
+    assert.deepEqual(BOWS[id].scopeMagnifications, []);
+    assert.equal(BOWS[id].scopeCompatible, false);
+  }
+  for (const id of [22, 23, 24]) assert.deepEqual(BOWS[id].scopeMagnifications, [3]);
+  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), [...Array.from({ length: 20 }, (_, id) => id), 22, 23, 24]);
+});
+
+test('scope prices retain bought threefold values, round other tiers to fifty coins and reject unsupported options', () => {
+  const legacyThreefoldPrices = { 3: 1650, 7: 1150, 8: 900, 9: 1400, 10: 2550, 11: 3250, 12: 2200, 13: 1900, 14: 2900, 15: 3600, 16: 4000, 17: 4450, 18: 4900, 19: 5350, 22: 240, 23: 240, 24: 240 };
+  for (const [id, price] of Object.entries(legacyThreefoldPrices)) assert.equal(getScopePrice(Number(id), 3), price);
+  for (const [id, magnification, price] of [[0, 2, 300], [2, 2, 450], [2, 3, 700], [13, 2, 1150], [13, 6, 3800], [19, 2, 3250], [19, 6, 10700], [19, 8, 16050]]) {
+    assert.equal(getScopePrice(id, magnification), price, `weapon ${id}, ${magnification}×`);
+    assert.equal(getScopePrice(BOWS[id], magnification), price, 'catalog objects and IDs address the same scope');
+  }
+  for (const item of BOWS) for (const magnification of [1, 2, 3, 4, 5, 6, 7, 8, 9, '2', null, undefined]) {
+    const price = getScopePrice(item, magnification);
+    if (item.scopeMagnifications.includes(magnification)) {
+      assert.ok(Number.isInteger(price) && price > 0);
+      if (magnification !== 3) assert.equal(price % 50, 0);
+    } else assert.equal(price, null, `weapon ${item.id} cannot buy ${magnification}×`);
+  }
+  for (const invalid of [-1, 25, 1.5, NaN, Infinity, '0', '19', null, undefined, {}]) assert.equal(getScopePrice(invalid, 2), null);
+});
+
 test('all main weapon upgrades preserve speed and range with bounded gains, including the first crossbow', () => {
   assert.equal(BOWS.filter(bow => bow.weaponType === 'bow').length, 10);
   const crossbows = BOWS.filter(bow => bow.weaponType === 'crossbow');
   assert.equal(crossbows.length, 10);
   assert.ok(crossbows.every(bow => bow.name.includes('석궁')));
-  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), [3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24]);
   assert.ok(BOWS.filter(bow => bow.scopeCompatible).every(bow => bow.scopePrice > 0));
   const weapons = sortEquipment(BOWS.filter(bow => bow.weaponType !== 'gun'));
   for (const item of ARROWS) for (const charge of [.5, 1]) for (const pitch of [.15, .30, .55]) {
