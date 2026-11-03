@@ -7,7 +7,7 @@
  function open({owner=null,onScore=null,onRanking=null,onBuy=null,authorized=()=>true}={}){
   if(active){active.dialog.focus();return;}
   const previous=document.activeElement,dialog=document.createElement('dialog');
-  dialog.className='tour-game-dialog sacheonseong-game-dialog';
+  dialog.className='tour-game-dialog sacheonseong-game-dialog arcade-game-view';
   dialog.setAttribute('aria-label','사천성');
   dialog.innerHTML=`<div class="tour-game-header sacheonseong-game-header"><strong>사천성</strong><button type="button" class="sacheonseong-back">← 게임 목록</button></div>
    <div class="sacheonseong-entry-wrap"><section class="game-entry" data-entry-key="sacheonseong">

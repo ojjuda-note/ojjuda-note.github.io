@@ -1,0 +1,329 @@
+/* These game views fill the visual viewport. Ordinary dialogs keep their sizing. */
+#gov.gov.world-game-screen:has(#gcv),
+#modal-root > .modal-bg.world-board-screen {
+  top: var(--app-viewport-top, 0px);
+  bottom: auto;
+  width: 100%;
+  height: var(--app-viewport-height, 100dvh);
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--game-screen-background, var(--surface));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* The canvas ID keeps lazy game and entry styles from restoring a small card. */
+#gov.gov.world-game-screen:has(#gcv) > .gbox {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: max(6px, var(--app-safe-top, env(safe-area-inset-top, 0px))) max(8px, env(safe-area-inset-right, 0px)) max(6px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px))) max(8px, env(safe-area-inset-left, 0px));
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#gov.gov.world-game-screen:has(#gcv) > .gbox:has(> #gctrl:empty) {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+#gov.world-game-screen[data-game="mole"] {
+  --game-screen-background: #edf2e3;
+}
+
+#gov.world-game-screen[data-game="runner"] {
+  --game-screen-background: radial-gradient(ellipse at 25% 12%, #f8e9c8, #c4d6bf 55%, #829877);
+}
+
+#gov.gov.world-game-screen:has(#gcv) .ghead {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  margin: 0;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .ghead .gt {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .ghead .gsc {
+  flex: none;
+  white-space: nowrap;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .gx {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .gcan {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#gov.gov.world-game-screen:has(#gcv) #gcv {
+  position: absolute;
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  max-height: none;
+  transform: translate(-50%, -50%);
+  border-radius: 16px;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .gscreen {
+  align-items: flex-start;
+  padding: 12px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: transparent;
+}
+
+#gov.gov.world-game-screen:has(#gcv) #gscreen > .gcard {
+  flex-shrink: 0;
+  max-width: 430px;
+  max-height: none;
+  margin: auto;
+  overflow: visible;
+}
+
+#gov.gov.world-game-screen:has(#gcv) #gctrl {
+  justify-self: center;
+  width: var(--world-canvas-width, 100%);
+  max-width: 100%;
+}
+
+#gov.gov.world-game-screen:has(#gcv) .breakout-touchpad {
+  flex: none;
+  height: 80px;
+  min-height: 80px;
+}
+
+body:has(.world-board-screen) {
+  overflow: hidden;
+}
+
+#modal-root > .modal-bg.world-board-screen {
+  display: flex;
+  flex-direction: column;
+  padding: var(--app-safe-top, env(safe-area-inset-top, 0px)) env(safe-area-inset-right, 0px) var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px);
+}
+
+#modal-root > .modal-bg.world-board-screen > .modal {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 0;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: none;
+}
+
+/* The shared multiplayer entrance keeps its toolbar above the scrollable card. */
+#modal-root > .modal-bg.world-board-screen.mp-board-host {
+  overflow: hidden !important;
+}
+
+#modal-root > .modal-bg.world-board-screen.mp-board-host > .modal {
+  flex: 1 1 0;
+  width: 100% !important;
+  padding: 8px 10px !important;
+  overflow: hidden !important;
+}
+
+.world-board-screen #bd-menu {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 12px 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.world-board-screen #bd-menu > .ge-board-entry {
+  flex: none;
+  width: min(100%, 420px);
+  margin: auto;
+}
+
+.world-board-screen #bd-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+}
+
+.world-board-screen #bd-root > .mhead {
+  flex: none;
+  min-height: 44px;
+  margin: 0;
+}
+
+.world-board-screen #bd-root > .mhead h3 {
+  min-width: 0;
+  font-size: clamp(15px, 2.5vw, 20px);
+}
+
+.world-board-screen .bd-headbtns {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.world-board-screen .bd-headbtns .btn,
+.world-board-screen .bd-acts .btn {
+  min-height: 44px;
+}
+
+.world-board-screen .bd-match {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 8px;
+}
+
+.world-board-screen .bd-table {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 4px;
+}
+
+.world-board-screen .bd-who {
+  justify-self: center;
+  width: var(--world-board-width, 100%);
+  max-width: 100%;
+  min-width: 0;
+  gap: 6px;
+}
+
+.world-board-screen .bd-who b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-board-screen .bd-who .note {
+  flex: none;
+  font-size: 11px;
+}
+
+.world-board-screen .bd-play {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.world-board-screen .bd-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  margin: 0;
+  transform: translate(-50%, -50%);
+}
+
+.world-board-screen .bd-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.world-board-screen .bd-tools {
+  flex: none;
+  min-width: 0;
+}
+
+.world-board-screen .bd-status {
+  margin: 0 0 6px;
+}
+
+.world-board-screen #bd-root.bd-result-root {
+  display: flex;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px 0;
+}
+
+.world-board-screen #bd-root.bd-result-root > .game-result-card {
+  flex: none;
+  margin: auto;
+}
+
+@media (min-width: 640px) and (orientation: landscape) {
+  .world-board-screen .bd-match {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+    gap: 18px;
+  }
+
+  .world-board-screen .bd-tools {
+    align-self: center;
+    max-height: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-height: 500px) {
+  #gov.gov.world-game-screen:has(#gcv) .gscreen {
+    padding: 6px;
+  }
+
+  .world-board-screen #bd-root,
+  .world-board-screen .bd-match {
+    gap: 4px;
+  }
+
+  .world-board-screen .bd-who {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+}

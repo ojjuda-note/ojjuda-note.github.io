@@ -16,7 +16,7 @@ function fixture() {
   win.console.error = () => {};
   win.ln = kinds => new Promise((resolve, reject) => requests.push({kind: kinds[0], resolve, reject}));
   win.eval(`
-    var D={online:true,user:{id:'member-a'}},g={},En={};
+    var D={online:true,user:{id:'member-a'}},g={},En={},worldBoardScreenStop=null;
     var Xe={chess:{name:'체스',emoji:'♟️',first:'w',second:'b',side:{w:'백',b:'흑'}},janggi:{name:'장기',emoji:'🀄',first:'c',second:'h',side:{c:'초',h:'한'}}};
     var Rp=[['normal','보통']];
     var z=selector=>document.querySelector(selector),Pr=(selector,root)=>[...root.querySelectorAll(selector)],w=value=>String(value);
