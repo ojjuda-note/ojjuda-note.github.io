@@ -27,7 +27,7 @@
    const ratings=recommendations?.ratings;
    const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
    const ratingRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-ratings1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-ratings2&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();

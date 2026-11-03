@@ -180,6 +180,7 @@ function fixture(options = {}) {
   assert.ok([...actual.document.querySelectorAll('#detail a:not(.rating-login-link)')].every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer') && link.target === '_blank'));
   assert.equal(actual.$('.rating-login-link').origin, actual.window.location.origin, 'standalone ratings lead to the existing member app');
   assert.equal(actual.$('.rating-login-link').target, '_top');
+  assert.equal(actual.$('.rating-login-link').pathname + actual.$('.rating-login-link').search, '/?auth=login&next=world', 'the prompt opens the existing sign-in route without re-entering the guest directory');
   assert.ok(decodeURIComponent(actual.$('.detail-links a').href).includes(combined.address));
   if (coordinates(combined)) assert.ok(actual.$('.route-link').href.endsWith(',' + combined.lat + ',' + combined.lng));
   actual.click('#close-detail'); assert.equal(actual.$('#detail').open, false);
