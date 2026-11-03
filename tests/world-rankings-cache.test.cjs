@@ -62,14 +62,23 @@ function fixture(t, options = {}) {
   };
   const pickMonth = async month => { const select = host.querySelector('.board-rank-month'); select.value = month; select.dispatchEvent(new w.Event('change', { bubbles: true })); await tick(); };
   const category = () => host.querySelector('.board-rank-groups')?.dataset.rankCategory || null;
-  const selectCategory = key => {
-    for (let i = 0; category() !== key && i < 3; i++) host.querySelector('[aria-label="다음 분류 순위"]').click();
-    assert.equal(category(), key, 'select the category before operating its game pager');
+  const next = () => host.querySelector('.board-rank-carousel-controls [aria-label="다음 게임 순위"]').click();
+  const previous = () => host.querySelector('.board-rank-carousel-controls [aria-label="이전 게임 순위"]').click();
+  const selectPage = (key, page = 0) => {
+    const selected = () => category() === key && host.querySelector(`[data-rank-group=${key}]`).dataset.rankPage === String(page);
+    for (let i = 0; !selected() && i <= host.querySelectorAll('[data-game]').length; i++) next();
+    assert.equal(selected(), true, 'reach the requested page using only the shared next button');
   };
-  const scrollCategory = key => {
-    const group = host.querySelector(`[data-rank-group=${key}]`), viewport = group.parentElement;
-    viewport.scrollLeft = group.offsetLeft - viewport.firstElementChild.offsetLeft;
-    viewport.dispatchEvent(new w.Event('scroll'));
+  const selectCategory = key => selectPage(key);
+  const swipe = (dx, dy = 0, { cancel = false, target = host.querySelector('.board-rank-groups') } = {}) => {
+    const pointer = (type, x, y) => {
+      const event = new w.Event(type, { bubbles: true, cancelable: true });
+      Object.assign(event, { pointerId: 7, isPrimary: true, pointerType: 'touch', button: 0, clientX: x, clientY: y });
+      target.dispatchEvent(event); return event;
+    };
+    pointer('pointerdown', 200, 100);
+    pointer('pointermove', 200 + dx, 100 + dy);
+    pointer(cancel ? 'pointercancel' : 'pointerup', 200 + dx, 100 + dy);
   };
   const resize = async width => {
     rankingWidth = width;
@@ -79,7 +88,7 @@ function fixture(t, options = {}) {
     }
     await new Promise(resolve => w.requestAnimationFrame(resolve)); await tick();
   };
-  return { w, client, requests, mount, reply, historyReply, pickMonth, category, selectCategory, scrollCategory, resize,
+  return { w, client, requests, mount, reply, historyReply, pickMonth, category, selectCategory, selectPage, next, previous, swipe, resize,
     score: () => host.querySelector('[data-game=tank] .board-leader-score')?.textContent,
     clock: value => { now = value; }, advance: value => { now += value; }, actor: value => { actor = value; },
     reduced: value => { motion.matches = value; for (const listener of motionListeners) listener({ matches: value }); },
@@ -110,7 +119,7 @@ test('passive remounts briefly reuse successful data; explicit refresh and expir
   await f.reply(2, 11); assert.equal(f.score(), '11연승');
 });
 
-test('three ranking cards share one read, page independently and keep their pages through history and Back', async t => {
+test('one shared pager traverses solo, multi and adult pages and retains records through history and Back', async t => {
   const f = fixture(t);
   const catalog = {
     runner: { name: '쭈 달리기', unit: '점' }, tank: games.tank, matgo: adultGames.matgo,
@@ -160,15 +169,31 @@ test('three ranking cards share one read, page independently and keep their page
     const cardPages = [...group(key).querySelectorAll('.board-rank-page')];
     assert.equal(cardPages.length, 2); assert.deepEqual(cardPages.map(page => page.querySelectorAll('[data-game]').length), [3, 1]);
   }
-  group('solo').querySelector('.board-rank-controls button:last-child').click();
-  assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '0' });
-  f.selectCategory('multi');
-  group('multi').querySelector('.board-rank-controls button:last-child').click();
-  f.selectCategory('adult');
-  group('adult').querySelector('.board-rank-controls button:last-child').click();
-  assert.deepEqual(pages(), { solo: '1', multi: '1', adult: '1' });
-  f.selectCategory('multi'); group('multi').querySelector('.board-rank-controls button:first-child').click();
-  assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '1' });
+  const controls = () => f.host().querySelector('.board-rank-carousel-controls');
+  const counter = () => controls().querySelector('.board-rank-position').textContent;
+  const assertSharedControls = () => {
+    assert.equal(f.host().querySelectorAll('.board-rank-controls').length, 1, 'all categories share exactly one pager');
+    assert.equal(f.host().querySelectorAll('.board-rank-group .board-rank-controls').length, 0, 'category cards have no nested pager');
+    assert.equal(f.host().querySelector('[aria-label="다음 분류 순위"]'), null, 'there is no separate category skip button');
+    assert.ok(controls().querySelector('[aria-label="이전 게임 순위"]'));
+    assert.ok(controls().querySelector('[aria-label="다음 게임 순위"]'));
+  };
+  assertSharedControls();
+  const traversal = Object.entries(expected).flatMap(([key, ids]) => [0, 1].map(page => ({ key, page, ids: ids.slice(page * 3, page * 3 + 3) })));
+  const seen = [];
+  for (const [index, entry] of traversal.entries()) {
+    assert.equal(f.category(), entry.key); assert.equal(group(entry.key).dataset.rankPage, String(entry.page));
+    assert.equal(counter(), `${index + 1} / 6`, 'the one counter includes every page across all categories');
+    const visible = [...group(entry.key).querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')].map(row => row.dataset.game);
+    assert.deepEqual(visible, entry.ids); seen.push(...visible); checkGroups(); f.next();
+  }
+  assert.deepEqual(seen, Object.values(expected).flat(), 'manual next visits every game once in category order');
+  assert.equal(f.category(), 'solo'); assert.equal(group('solo').dataset.rankPage, '0'); assert.equal(counter(), '1 / 6');
+  f.previous(); assert.equal(f.category(), 'adult'); assert.equal(group('adult').dataset.rankPage, '1'); assert.equal(counter(), '6 / 6');
+  f.previous(); assert.equal(group('adult').dataset.rankPage, '0');
+  f.previous(); assert.equal(f.category(), 'multi'); assert.equal(group('multi').dataset.rankPage, '1'); assert.equal(counter(), '4 / 6');
+  f.next(); assert.equal(f.category(), 'adult'); assert.equal(group('adult').dataset.rankPage, '0');
+  f.next(); assert.equal(group('adult').dataset.rankPage, '1'); checkGroups();
   for (const key of Object.keys(expected)) {
     const cardPages = [...group(key).querySelectorAll('.board-rank-page')], selected = Number(group(key).dataset.rankPage);
     assert.equal(group(key).querySelector('.board-rank-track').style.transform, `translateX(-${selected * 100}%)`);
@@ -176,35 +201,45 @@ test('three ranking cards share one read, page independently and keep their page
     cardPages.forEach((page, i) => assert.equal(page.inert, i !== selected, 'only the selected page is interactive in ' + key));
   }
   assert.equal(f.requests.length, 1, 'paging never reads ranking data again');
-  f.scrollCategory('adult'); await tick();
-  assert.equal(f.category(), 'adult', 'native horizontal scrolling selects the nearest category');
-  checkGroups(); assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '1' }, 'category scrolling does not page games');
+  const beforeSavedRecord = pages();
 
   f.w.dispatchEvent(new f.w.CustomEvent('ojjuda:game-record-saved', { detail: { owner: 'member-a', game: 'runner' } }));
   await f.reply(1, null, { data: records });
   assert.equal(f.requests.length, 2, 'a saved record refreshes the combined catalog once');
   assert.equal(f.category(), 'solo', 'a saved record selects its game category');
-  assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '1' }, 'record focus changes only the recorded game category');
-  f.selectCategory('adult');
+  assert.deepEqual(pages(), { ...beforeSavedRecord, solo: '0' }, 'record focus changes only the recorded game category');
+  f.selectPage('adult', 1);
+  const currentPages = pages();
   const historyButton = f.host().querySelector('.board-rank-history-open'); historyButton.click();
   await f.historyReply(2, { leaders: records });
   assert.equal(f.requests.length, 3); assert.deepEqual(Array.from(f.requests[2].args.p_games), Object.keys(catalog));
-  checkGroups(); assert.equal(f.host().querySelectorAll('.board-rank-group .board-rank-controls').length, 3, 'each monthly category has independent controls');
+  checkGroups(); assertSharedControls();
   assert.equal(f.category(), 'adult', 'opening monthly history keeps the selected category');
   assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '0' }, 'history starts each category on its first page');
-  f.selectCategory('solo'); group('solo').querySelector('.board-rank-controls button:last-child').click();
-  assert.deepEqual(pages(), { solo: '1', multi: '0', adult: '0' }); checkGroups();
-  f.selectCategory('adult'); group('adult').querySelector('.board-rank-controls button:first-child').click();
-  f.selectCategory('multi'); group('multi').querySelector('.board-rank-controls button:last-child').click();
-  assert.deepEqual(pages(), { solo: '1', multi: '1', adult: '1' }); checkGroups();
+  assert.equal(counter(), '5 / 6');
+  f.selectCategory('solo');
+  const archivedRows = new Map([...f.host().querySelectorAll('[data-game]')].map(row => [row.dataset.game, row]));
+  const archivedSeen = [];
+  for (const [index, entry] of traversal.entries()) {
+    assert.equal(f.category(), entry.key); assert.equal(group(entry.key).dataset.rankPage, String(entry.page));
+    assert.equal(counter(), `${index + 1} / 6`); checkGroups();
+    for (const row of group(entry.key).querySelectorAll('[data-game]:not([hidden])')) {
+      archivedSeen.push(row.dataset.game); assert.equal(row, archivedRows.get(row.dataset.game), 'history paging keeps the original row');
+    }
+    f.next();
+  }
+  assert.deepEqual(archivedSeen, Object.values(expected).flat(), 'monthly next visits every game exactly once');
+  f.previous(); assert.equal(f.category(), 'adult'); assert.equal(group('adult').dataset.rankPage, '1'); assert.equal(counter(), '6 / 6');
+  f.selectPage('multi', 1); checkGroups();
+  const historyPages = pages();
   f.advance(6000); f.fireTimers(); await tick();
-  assert.deepEqual(pages(), { solo: '1', multi: '1', adult: '1' }, 'monthly pages never advance automatically');
+  assert.deepEqual(pages(), historyPages, 'monthly pages never advance automatically');
   assert.equal(f.requests.length, 3, 'monthly page changes do not query the server');
   await f.pickMonth('2026-09'); await f.historyReply(3, { month: '2026-09', closed: true, leaders: records });
   checkGroups(); assert.equal(f.host().querySelector('.board-rank-month').value, '2026-09');
   assert.equal(f.category(), 'multi', 'changing month keeps the selected category');
   assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '0' }, 'choosing another month resets every history page');
-  group('multi').querySelector('.board-rank-controls button:last-child').click(); checkGroups();
+  f.next(); checkGroups();
   const helpButton = f.host().querySelector('.board-rank-help-button'); helpButton.click();
   const help = f.w.document.querySelector('.board-rank-help-dialog');
   assert.ok(help.open); assert.equal(helpButton.getAttribute('aria-expanded'), 'true');
@@ -217,9 +252,56 @@ test('three ranking cards share one read, page independently and keep their page
   assert.equal(f.w.OjjudaGameRankings.back(), true); await tick(); await tick();
   assert.equal(f.w.OjjudaGameRankings.isHistoryOpen(), false); checkGroups();
   assert.equal(f.category(), 'multi', 'Back keeps the category selected in history');
-  assert.deepEqual(pages(), { solo: '0', multi: '0', adult: '1' }, 'Back restores every category page');
+  assert.deepEqual(pages(), currentPages, 'Back restores every current-ranking page');
   assert.equal(f.requests.length, 4, 'returning to the current ranking reuses the shared current-month response');
   assert.equal(f.w.document.activeElement, f.host().querySelector('.board-rank-history-open'));
+});
+
+test('swipes and arrow keys follow every game page and ignore vertical, short or canceled gestures in current and monthly rankings', async t => {
+  const f = fixture(t), opened = [];
+  const catalog = {
+    runner: { name: '달리기', unit: '점' }, mines: { name: '지뢰찾기', unit: '점' },
+    mole: { name: '두더지', unit: '점' }, stacker: { name: '탑', unit: '층' },
+    ...games, tour: { name: '마블', unit: '연승' }, billiards: { name: '당구', unit: '연승' }, ...adultGames
+  };
+  const records = Object.fromEntries(Object.keys(catalog).map(id => [id, { nick: '회원', score: 1 }]));
+  f.mount({ games: catalog, onOpenGame: id => opened.push(id) }); await f.reply(0, null, { data: records });
+  const position = () => [f.category(), f.host().querySelector(`[data-rank-group=${f.category()}]`).dataset.rankPage];
+  for (const history of [false, true]) {
+    if (history) { f.host().querySelector('.board-rank-history-open').click(); await f.historyReply(1, { leaders: records }); }
+    f.selectCategory('solo');
+    f.swipe(-120); assert.deepEqual(position(), ['solo', '1'], 'one swipe reveals the remaining solo games before multiplayer');
+    f.swipe(-120); assert.deepEqual(position(), ['multi', '0'], 'the next swipe crosses the category boundary');
+    f.swipe(120); assert.deepEqual(position(), ['solo', '1'], 'reverse swipe opens the previous category last page');
+    f.swipe(120); assert.deepEqual(position(), ['solo', '0']);
+    f.swipe(120); assert.deepEqual(position(), ['adult', '1'], 'reverse swipe wraps into the final adult page');
+    const before = position();
+    for (const [dx, dy] of [[8, 120], [-70, 130], [-10, 0]]) {
+      f.swipe(dx, dy); assert.deepEqual(position(), before, 'vertical scrolling and taps do not change the ranking page');
+    }
+    f.swipe(-120, 0, { cancel: true }); assert.deepEqual(position(), before, 'a canceled gesture does not turn a page');
+    const viewport = f.host().querySelector('.board-rank-groups');
+    for (const [key, expected] of [['ArrowRight', ['solo', '0']], ['ArrowLeft', ['adult', '1']]]) {
+      const event = new f.w.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      viewport.dispatchEvent(event); assert.deepEqual(position(), expected, 'keyboard and swipe use the same ordered pages');
+      assert.equal(event.defaultPrevented, true, 'handled horizontal arrows do not also scroll the document');
+    }
+    const down = new f.w.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+    viewport.dispatchEvent(down); assert.equal(down.defaultPrevented, false); assert.deepEqual(position(), before);
+    if (!history) {
+      f.selectCategory('solo');
+      const swipedButton = f.host().querySelector('[data-game=runner] .board-game-open');
+      f.swipe(-120, 0, { target: swipedButton });
+      assert.deepEqual(position(), ['solo', '1'], 'a swipe that starts on a game button still turns the page');
+      swipedButton.click(); await tick();
+      assert.deepEqual(opened, [], 'the synthetic click after a swipe does not launch the touched game');
+      const tappedButton = f.host().querySelector('[data-game=stacker] .board-game-open');
+      f.swipe(0, 0, { target: tappedButton }); tappedButton.click(); await tick();
+      assert.deepEqual(opened, ['stacker'], 'a fresh intentional tap immediately after a swipe can open its game');
+    }
+    assert.equal(f.requests.length, history ? 2 : 1, 'swiping and keyboard paging never reread current or archived rankings');
+  }
+  assert.deepEqual(opened, ['stacker'], 'only the deliberate game tap launches a game');
 });
 
 test('automatic traversal respects reading, pointer, visibility and gameplay pauses without extra reads', async t => {
@@ -248,7 +330,7 @@ test('automatic traversal respects reading, pointer, visibility and gameplay pau
   assert.equal(multi.dataset.rankPage, '0', 'keyboard focus pauses the selected category');
   focused.blur(); f.advance(5280); f.fireTimers();
   assert.equal(solo.dataset.rankPage, '1'); assert.equal(multi.dataset.rankPage, '1');
-  f.selectCategory('solo'); f.advance(5280); f.fireTimers();
+  f.selectPage('solo', 1); f.advance(5280); f.fireTimers();
   assert.equal(f.category(), 'multi', 'the last solo page advances to the next category');
   assert.equal(solo.dataset.rankPage, '1'); assert.equal(multi.dataset.rankPage, '0', 'entering another category starts at its first page');
   const position = () => [f.category(), solo.dataset.rankPage, multi.dataset.rankPage];
@@ -289,7 +371,7 @@ test('automatic traversal visits all twenty-one games once across categories at 
     const traversal = Object.entries(expected).flatMap(([key, games]) => Array.from({ length: Math.ceil(games.length / capacity) }, (_, page) => ({ key, page, games: games.slice(page * capacity, (page + 1) * capacity) })));
     const seen = [];
     assert.equal(f.host().querySelector('.board-rank-autoplay').getAttribute('aria-pressed'), 'true');
-    assert.equal(f.host().querySelector('.board-rank-category-controls .board-rank-position').getAttribute('aria-live'), 'off');
+    assert.equal(f.host().querySelector('.board-rank-carousel-controls .board-rank-position').getAttribute('aria-live'), 'off');
     for (const expectedPage of traversal) {
       assert.equal(f.category(), expectedPage.key, 'category order at width ' + width);
       assert.equal(Number(group(expectedPage.key).dataset.rankPage), expectedPage.page);
@@ -302,7 +384,7 @@ test('automatic traversal visits all twenty-one games once across categories at 
     assert.equal(f.requests.length, 1, 'a full automatic cycle has no additional RPCs');
     if (capacity === 3) {
       f.host().querySelector('.board-rank-history-open').click(); await f.historyReply(1, { leaders: records });
-      f.selectCategory('multi'); group('multi').querySelector('.board-rank-controls button:last-child').click();
+      f.selectCategory('multi'); f.next();
       const pages = () => [f.category(), ...Object.keys(expected).map(key => group(key).dataset.rankPage)];
       const before = pages();
       for (let i = 0; i < traversal.length; i++) { f.advance(5280); f.fireTimers(); await tick(); }
@@ -352,7 +434,7 @@ test('autoplay starts paused for reduced motion, honors an explicit override and
   assert.equal(f.category(), 'solo', 'an explicit play choice survives OS motion preference changes');
   autoplay.click(); const before = f.category();
   assert.equal(autoplay.getAttribute('aria-pressed'), 'false'); assert.equal(autoplay.getAttribute('aria-label'), '자동 넘김');
-  assert.equal(f.host().querySelector('.board-rank-category-controls .board-rank-position').getAttribute('aria-live'), 'polite');
+  assert.equal(f.host().querySelector('.board-rank-carousel-controls .board-rank-position').getAttribute('aria-live'), 'polite');
   f.advance(20000); f.fireTimers(); assert.equal(f.category(), before, 'explicit pause cancels further traversal');
   assert.equal(f.requests.length, 1);
 });
@@ -371,16 +453,21 @@ test('ranking widths retain 3, 6 or 9 capacity and show each game once per cycle
   const rows = key => [...page(key).querySelectorAll('[data-game]:not([hidden])')];
   const exerciseSizes = async requestCount => {
     for (const [width, capacity] of [[639, 3], [640, 6], [959, 6], [960, 9], [1200, 9], [390, 3]]) {
-      f.selectCategory('solo');
+      f.selectPage('solo', Number(group('solo').dataset.rankPage));
       const anchor = rows('solo')[0].dataset.game;
       await f.resize(width);
       assert.equal(f.category(), 'solo', 'resizing keeps the selected category');
       assert.ok(rows('solo').some(row => row.dataset.game === anchor), 'resizing keeps the first visible game in view');
+      const totalPages = Object.values(expected).reduce((total, games) => total + Math.ceil(games.length / capacity), 0);
+      let globalPage = 0;
       for (const [key, categoryIds] of Object.entries(expected)) {
         f.selectCategory(key);
         const pageCount = Math.ceil(categoryIds.length / capacity), seen = [];
         for (let turn = 0; turn < pageCount; turn++) {
+          assert.equal(f.category(), key, 'the shared pager stays within this category until its last page');
           const index = Number(group(key).dataset.rankPage), activeRows = rows(key), activeIds = activeRows.map(row => row.dataset.game);
+          assert.equal(index, turn);
+          assert.equal(f.host().querySelector('.board-rank-carousel-controls .board-rank-position').textContent, `${++globalPage} / ${totalPages}`, 'the global page counter follows the responsive capacity');
           const expectedIds = categoryIds.slice(index * capacity, (index + 1) * capacity), count = expectedIds.length;
           assert.deepEqual(activeIds, expectedIds, key + ' keeps page order at width ' + width);
           assert.equal(activeRows.length, count); assert.equal(new Set(activeIds).size, count, 'one page never repeats a game');
@@ -394,8 +481,11 @@ test('ranking widths retain 3, 6 or 9 capacity and show each game once per cycle
             assert.equal(row.querySelector('.board-leader-nick').textContent, records[id].nick);
             assert.equal(row.querySelector('.board-leader-score').textContent, records[id].score + '점');
           }
-          if (pageCount > 1) group(key).querySelector('.board-rank-controls button:last-child').click();
+          f.next();
         }
+        const nextKey = Object.keys(expected)[(Object.keys(expected).indexOf(key) + 1) % Object.keys(expected).length];
+        assert.equal(f.category(), nextKey, 'the final page advances to the following category at every width');
+        assert.equal(group(nextKey).dataset.rankPage, '0');
         assert.deepEqual([...seen].sort(), [...categoryIds].sort(), 'a complete cycle shows every game exactly once at width ' + width);
         assert.equal(new Set(seen).size, seen.length, 'later pages never repeat an earlier game');
         const all = [...f.host().querySelectorAll('[data-game]')].map(row => row.dataset.game);
@@ -404,18 +494,22 @@ test('ranking widths retain 3, 6 or 9 capacity and show each game once per cycle
       }
       assert.equal(f.requests.length, requestCount, 'resizing and paging do not reread the rankings');
       f.selectCategory('solo');
-      if (Math.ceil(expected.solo.length / capacity) > 1) group('solo').querySelector('.board-rank-controls button:last-child').click();
+      if (Math.ceil(expected.solo.length / capacity) > 1) f.next();
     }
   };
   f.mount({ games: catalog }); await f.reply(0, null, { data: records });
   await exerciseSizes(1);
-  f.selectCategory('adult'); f.host().querySelector('.board-rank-history-open').click();
+  f.selectCategory('adult');
+  const savedSoloRows = rows('solo').map(row => row.dataset.game);
+  f.host().querySelector('.board-rank-history-open').click();
   await f.historyReply(1, { leaders: records });
   assert.equal(f.category(), 'adult', 'responsive history retains the selected category');
   await exerciseSizes(2);
   assert.deepEqual(Array.from(f.requests[0].args.p_games), ids); assert.deepEqual(Array.from(f.requests[1].args.p_games), ids);
   assert.equal(f.w.OjjudaGameRankings.back(), true); await tick(); await tick();
-  assert.equal(f.category(), 'solo'); assert.equal(rows('solo').length, 3); assert.equal(f.requests.length, 2);
+  assert.equal(f.category(), 'solo');
+  assert.deepEqual(rows('solo').map(row => row.dataset.game), savedSoloRows, 'Back restores the exact current-ranking page last visited during shared navigation');
+  assert.equal(f.requests.length, 2);
 });
 
 test('a forced refresh invalidates an older pending response and its cached result', async t => {
@@ -515,7 +609,7 @@ test('unique rows keep retry, score details and game actions across paging and r
   assert.equal(tank.querySelector('.board-leader-retry'), null);
   const panel = f.host().querySelector('[data-rank-group=multi]');
   panel.querySelector('.board-rank-page[aria-hidden=false] [data-game=tank] .board-game-open').click(); await tick();
-  panel.querySelector('.board-rank-controls button:last-child').click();
+  f.next();
   const activeRows = [...panel.querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')];
   assert.deepEqual(activeRows.map(row => row.dataset.game), ['billiards']);
   activeRows[0].querySelector('.board-game-open').click(); await tick();
