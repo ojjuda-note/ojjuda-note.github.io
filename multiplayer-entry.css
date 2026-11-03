@@ -1,14 +1,15 @@
-/* One full-screen entrance; all playing layouts retain their existing styles. */
-html:has(.mp-entry-host[data-mp-active="true"]),body:has(.mp-entry-host[data-mp-active="true"]){overflow:hidden!important}
+/* Entrances and game views keep the surrounding page still; children own play. */
+html:has(.mp-entry-host[data-mp-active="true"]),body:has(.mp-entry-host[data-mp-active="true"]),html:has(.arcade-game-view[open]),body:has(.arcade-game-view[open]){overflow:hidden!important}
 .mp-entry-host[data-mp-active="true"]{position:fixed!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:#f5f3f9!important;color:#302d43;overflow:hidden!important;box-sizing:border-box;display:flex;flex-direction:column}
-/* Matgo's bridge owns the visual viewport and system insets in both views. */
-.mp-entry-host[data-mp-active="true"]:not(#matgo-overlay){inset:0!important;height:100dvh!important;padding:0!important}
+/* Matgo and marked game views own the viewport and insets in both views. */
+.mp-entry-host[data-mp-active="true"]:not(#matgo-overlay):not(.arcade-game-view){inset:0!important;height:100dvh!important;padding:0!important}
 .mp-entry-bar{display:none;box-sizing:border-box;flex:none;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:7px max(20px,env(safe-area-inset-right)) 7px max(20px,env(safe-area-inset-left));padding-top:max(7px,env(safe-area-inset-top));border-bottom:1px solid #e9e5f0;background:#fff;color:#797487;font:12px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.02em;z-index:2}
+.arcade-game-view>.mp-entry-bar{padding:7px 20px;min-width:0}
 .mp-entry-host[data-mp-active="true"]>.mp-entry-bar,body[data-mp-entry="true"]>.mp-entry-bar{display:flex}
 .mp-entry-back{display:inline-flex;align-items:center;min-height:42px;padding:9px 12px;border:1px solid #e9e5f0;border-radius:12px;background:#f7f5fa;color:#625574;box-shadow:none;font:600 13px/1.5 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;cursor:pointer;white-space:nowrap}
 .mp-entry-back:hover{background:#eee9f6}.mp-entry-back:focus-visible{outline:3px solid #ac97dc;outline-offset:2px}
 .mp-entry-host[data-mp-active="true"]>:is(.tour-game-header,#matgo-loading-bar,header:not(.mp-entry-bar)){display:none!important}
-.mp-entry-host[data-mp-active="true"]>iframe{display:block;flex:1;width:100%;height:0;min-height:0;border:0;background:#f5f3f9}
+.mp-entry-host[data-mp-active="true"]>iframe{display:block;flex:1 1 0;width:100%;height:0;min-width:0;min-height:0;border:0;background:#f5f3f9}
 .mp-board-host[data-mp-active="true"]{overflow-y:auto!important;align-items:center;justify-content:flex-start!important}
 .mp-board-host>.mp-entry-bar{position:sticky;top:0;width:100%}
 .mp-board-host>.modal{flex:none;width:min(100%,468px)!important;max-width:none!important;max-height:none!important;margin:0!important;padding:24px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}

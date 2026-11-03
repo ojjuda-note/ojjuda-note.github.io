@@ -4,15 +4,31 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
-world=world.replace('<script type="module">','<script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
+world=world.replace('<script type="module">','<script src="/mobile-viewport.js"></script><script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
 // Advanced physics fixtures choose a stage explicitly. Normal entry uses saved progress.
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R,resume(){R.last=performance.now();sf()}};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const qa=process.env.SCREW_MODES_QA_DIR;if(qa)fs.mkdirSync(qa,{recursive:true});
 const font=process.env.SCREW_QA_FONT;
 if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans KR";src:url("/fixture-korean.ttf")}body,button{font-family:"Noto Sans KR",sans-serif}</style></head>');
+const screenSizes=[{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:344,height:882},{width:673,height:841},{width:1280,height:900}];
+async function assertFullscreen(page,size,playing=false){
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ for(const selector of ['#gov','#gov > .gbox']){
+  const rect=await page.locator(selector).boundingBox();
+  assert.ok(rect&&Math.abs(rect.x)<1&&Math.abs(rect.y)<1&&Math.abs(rect.width-size.width)<1&&Math.abs(rect.height-size.height)<1,`${selector} fills ${size.width}×${size.height}: ${JSON.stringify(rect)}`);
+ }
+ if(playing){
+  const canvas=await page.locator('#gcv').boundingBox(),header=await page.locator('#gov .ghead').boundingBox();
+  assert.ok(canvas&&canvas.width>0&&canvas.height>0&&Math.abs(canvas.width/canvas.height-2/3)<.003,'resizing preserves the logical 360×540 board proportions');
+  assert.ok(canvas.x>=0&&canvas.x+canvas.width<=size.width+1&&canvas.y>=header.y+header.height-1&&canvas.y+canvas.height<=size.height+1,'the fitted canvas is below the toolbar and inside the viewport');
+ }
+ const close=page.locator('#gov .ghead [data-g=close]');
+ assert.equal(await close.evaluate(node=>{const r=node.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return r.top>=0&&r.bottom<=innerHeight&&(hit===node||node.contains(hit));}),true,'the visible Back control remains reachable');
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'fullscreen never adds horizontal page scrolling');
+}
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage'],executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined});
  try{
@@ -29,8 +45,9 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.deepEqual(engineRequests,[],'the World does not request game engines before play');
   if(font)await page.evaluate(()=>document.fonts.ready);
   await page.evaluate(()=>{localStorage.setItem('ojjuda-screw-stage','5');localStorage.removeItem('ojjuda-screw-last-stage-v1');localStorage.removeItem('ojjuda-screw-flat-stage-v1');localStorage.removeItem('ojjuda-screw-flat-last-stage-v1');localStorage.removeItem('ojjuda-screw-flat-pictures-v1')});
-  for(const size of [{width:320,height:568},{width:390,height:844},{width:1280,height:900}]){
+  for(const size of screenSizes){
    await page.setViewportSize(size);await page.evaluate(()=>screwWorld.open('screw'));
+   await assertFullscreen(page,size);
    assert.equal(await page.locator('[data-g=screw-start]').count(),2,'the existing game opens exactly two version choices');
    assert.equal(await page.evaluate(()=>screwWorld.current().running),false,'the chooser does not start a game');
    assert.equal(await page.locator('[data-g=screw-modes]').isVisible(),false);
@@ -49,6 +66,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
     await page.getByRole('button',{name:'다시 시도',exact:true}).click();
    }else await page.locator('[data-mode=flat]').click();
    await page.waitForFunction(()=>screwWorld.current()?.game?.state);
+   await assertFullscreen(page,size,true);
    await page.waitForFunction(()=>{const img=OjjudaFlatPictures.preload(screwWorld.current().game.state.level.picture).img;return img.complete&&img.naturalWidth>0;});
    assert.deepEqual(await page.evaluate(()=>screwWorld.current().game.state.level.holes.filter(h=>h.owner===null).map(h=>h.y)),[100,100,100],'only the three top spare holes appear; none flank the picture');
    assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
@@ -67,6 +85,7 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
    if(size.width===320)assert.equal(engineRequests.includes('/screw3d.js'),false,'flat play does not download the box engine');
    await page.locator('[data-mode=box]').click();
    await page.waitForFunction(()=>screwWorld.current()?.running&&window.__ojjScrew3d);
+   await assertFullscreen(page,size,true);
    assert.equal(await page.evaluate(()=>window.__ojjScrew3d.L),5,'normal box entry resumes the saved level');
    assert.equal(await page.evaluate(()=>localStorage.getItem('ojjuda-screw-stage')),'5','the unlocked milestone is retained');
    assert.match(await page.locator('.ghead .gt').innerText(),/박스형/);
@@ -93,6 +112,26 @@ if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans 
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'loose','the released top plate remains supported by another metal plate');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.score),0,'a supported plate never clears on a timer');
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.physics.engine.pairs.list.some(pair=>pair.isActive)),true);
+  // Fold, unfold and rotate a real partly solved round. Resizing must not
+  // recreate its engine, spend moves, clear selection or advance the stage.
+  const beforeResize=await page.evaluate(()=>{
+   const r=screwWorld.current();cancelAnimationFrame(r.raf);
+   window.screwResizeIdentity={session:r,game:r.game,physics:r.game.state.physics};
+   const st=r.game.state;
+   return {stage:st.L,moves:st.moves,score:st.score,selected:st.selected,holes:st.level.screws.map(s=>s.hole.id),plates:st.level.plates.map(p=>({state:p.state,angle:p.angle})),view:{...st.view}};
+  });
+  for(const size of [{width:344,height:882},{width:673,height:841},{width:844,height:390},{width:390,height:844}]){
+   await page.setViewportSize(size);await assertFullscreen(page,size,true);
+   assert.deepEqual(await page.evaluate(()=>{
+    const r=screwWorld.current(),st=r.game.state;
+    if(r!==screwResizeIdentity.session||r.game!==screwResizeIdentity.game||st.physics!==screwResizeIdentity.physics)throw Error('resize replaced the active round');
+    return {stage:st.L,moves:st.moves,score:st.score,selected:st.selected,holes:st.level.screws.map(s=>s.hole.id),plates:st.level.plates.map(p=>({state:p.state,angle:p.angle})),view:{...st.view}};
+   }),beforeResize,'fold/unfold keeps the exact active puzzle and physics state');
+   const target=await page.evaluate(()=>{const game=screwWorld.current().game,level=game.state.level,screw=level.screws.find(s=>OjjudaScrewGames.canUnscrew(level,s)&&OjjudaScrewGames.canAccessHole(level,s.hole));return {id:screw.id,point:game.screenPoint(screw.hole)};});
+   await touch(target.point);assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),target.id,'the visible screw remains selectable after each resize');
+   await touch(target.point);assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),null);
+  }
+  await page.evaluate(()=>screwWorld.resume());
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-supported.png')});
   assert.equal((await drawnText()).includes('되돌리기'),false,'the flat game has no undo button');
   await touch({x:82,y:514});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.plates[0].state),'loose','the former undo area cannot restore its pivot');

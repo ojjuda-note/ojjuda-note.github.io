@@ -206,6 +206,7 @@ function overlayFixture(t, { shareModule = false } = {}) {
     function E2(){} function A2(){} function C2(){} function requestArcadeClose(){El();} function nf(){}
     function worldRewardOwner(){return null;} function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
     async function tf(game,score){return {ok:true,best:score,guest:true};}
+    ${world.slice(world.indexOf('function installWorldGameScreen('),world.indexOf('var worldBoardScreenStop='))}
     ${entrance}\n${controls}\n${preview}\n${rounds}\n${close}
   `);
   w.eval(guestSource); w.OjjudaGuestAccess.configure(() => true);

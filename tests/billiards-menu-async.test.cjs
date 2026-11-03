@@ -15,7 +15,7 @@ function fixture() {
   win.console.error = () => {};
   win.ln = (_kinds, kind) => new Promise((resolve, reject) => requests.push({kind, resolve, reject}));
   win.eval(`
-    var D={online:true,user:{id:'member-a'}},g={},hn={};
+    var D={online:true,user:{id:'member-a'}},g={},hn={},worldBoardScreenStop=null;
     var Zo={carom4:{name:'4구',rules:'4구 규칙'},carom3:{name:'3구',rules:'3구 규칙'},pool8:{name:'포켓볼',rules:'포켓볼 규칙'}};
     var J0=[['easy','쉬움'],['normal','보통'],['hard','어려움']];
     var z=selector=>document.querySelector(selector),Pr=(selector,root)=>[...root.querySelectorAll(selector)],w=value=>String(value);
