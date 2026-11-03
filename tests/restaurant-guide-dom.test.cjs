@@ -177,7 +177,7 @@ function fixture(options = {}) {
     const type = guide.yearType || (guide.provider === 'blue-ribbon' ? 'edition' : guide.provider === 'post-office' ? 'publication' : 'selection');
     assert.equal(actualYears[index], guide.year + { edition: '년판', selection: '년 선정', publication: '년 발행', source: '년 자료', listing: '년 수록' }[type], 'each real source retains its recorded year meaning');
   });
-  assert.ok([...actual.document.querySelectorAll('#detail a[target="_blank"]')].every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer')));
+  assert.ok([...actual.document.querySelectorAll('#detail a:not(.rating-login-link)')].every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer') && link.target === '_blank'));
   assert.equal(actual.$('.rating-login-link').origin, actual.window.location.origin, 'standalone ratings lead to the existing member app');
   assert.equal(actual.$('.rating-login-link').target, '_top');
   assert.ok(decodeURIComponent(actual.$('.detail-links a').href).includes(combined.address));
