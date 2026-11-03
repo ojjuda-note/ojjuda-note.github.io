@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import { STAGES as STAGE_FIXTURES } from '../games/forest-archer/engine.mjs';
 import { drawPasser } from '../games/forest-archer/scenery.mjs';
 
-const SAVE_KEY = 'forest-archer-progress-v4';
+const SAVE_KEY = 'forest-archer-progress-single-v4';
 const PREVIOUS_SAVE_KEY = 'forest-archer-progress-v3';
 const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
 const STAGE_CATALOG = 'missions-220-v1';
@@ -36,7 +36,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   let viewport = { width: 1000, height: 600 }, canvasOrigin = { left: 0, top: 0 }, sceneryFrame, firstPersonFrame;
   const timers = new Map(), canvasText = [], canvasArcs = [], bullseyeFrames = [], vignetteFrames = [], animalFrames = [];
   const speech = {utterances: [], times: [], cancellations: 0, overlaps: 0, activeUntil: 0};
-  const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify(saved)]] : []);
+  const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify({launchEpoch: 4, stageCatalog: STAGE_CATALOG, ...saved})]] : []);
   const noop = () => {};
   const gradient = { addColorStop: noop };
   const drawing = new Proxy({}, { get(target, key) {
@@ -100,7 +100,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const ammoRequests = [], finishedRounds = [], heldActions = new Set(ammoOptions.hold || []), receipts = ammoOptions.server?.receipts || new Map(), runs = ammoOptions.server?.runs || new Map();
   const account = ammoOptions.server?.account || { remaining: ammoOptions.remaining ?? 10000, coins: ammoOptions.coins ?? 100, main_rounds: ammoOptions.mainRounds ?? saved?.mainRounds ?? 0, revision: 1,
     coach_expires_at: ammoOptions.coachExpiresAt ?? (ammoOptions.coachActive ? new Date(SERVER_EPOCH + 86400000).toISOString() : null) };
-  const accountSnapshot = extra => ({ ok: true, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+  const accountSnapshot = extra => ({ ok: true, launch_epoch: 4, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
     server_now: new Date(SERVER_EPOCH + now).toISOString(), coach_expires_at: account.coach_expires_at ?? null,
     coach_active: Date.parse(account.coach_expires_at) > SERVER_EPOCH + now, coach_price: 10, coach_duration_seconds: 86400, ...extra });
   const executeAmmo = request => {
@@ -125,7 +125,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const replyAmmo = (request, result = executeAmmo(request)) => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'ammo-response', owner, sessionId, requestId: request.requestId, action: request.action, result } });
   const parentBridge = { postMessage(data, targetOrigin) {
     assert.equal(targetOrigin, origin);
-    if (data.type === 'ready') Promise.resolve().then(() => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'init', owner, sessionId, available: !ammoOptions.guest } }));
+    if (data.type === 'ready') Promise.resolve().then(() => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner, sessionId, available: !ammoOptions.guest } }));
     if (data.type === 'ammo-request') { ammoRequests.push(data);if (!heldActions.has(data.action)) Promise.resolve().then(() => replyAmmo(data)); }
     if (data.type === 'round-finished') finishedRounds.push(JSON.parse(JSON.stringify(data)));
   } };
@@ -134,7 +134,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const context = vm.createContext({
     document, Math: fakeMath, console, performance: { now: () => now }, devicePixelRatio: 1, crypto: { randomUUID: uuid },
     navigator: { vibrate: noop }, window, matchMedia: window.matchMedia,
-    localStorage: { getItem: key => store.get(key) ?? null, setItem: (key, value) => store.set(key, String(value)), removeItem: key => store.delete(key) },
+    localStorage: { get length(){return store.size;}, key: i => [...store.keys()][i] ?? null, getItem: key => store.get(key) ?? null, setItem: (key, value) => store.set(key, String(value)), removeItem: key => store.delete(key) },
     requestAnimationFrame(fn) { nextFrame = fn; return ++frameId; },
     setTimeout(fn, delay = 0) { const id = ++timerId; timers.set(id, { due: now + Math.max(0, delay), fn }); return id; }, clearTimeout: id => timers.delete(id),
     ResizeObserver: class { constructor(fn) { this.fn = fn; } observe() {} }
@@ -390,7 +390,7 @@ async function resolvedEventShot(app, kind = 'clay') {
   return shot;
 }
 
-test('the reordered game starts fresh once and never restores the previous journey or pending shot', async () => {
+test('the single launch starts fresh once and never restores the previous journey or pending shot', async () => {
   const old = { version: 1, coins: 99999, ownedBows: [0, 3, 19, 24], ownedArrows: [0, 11],
     bow: 19, arrow: 11, eventGun: 24, scopedBows: [19, 24], lastStage: 50,
     best: { 1: 50, 50: 50 }, eventBest: 300, eventBestByLevel: { 10: 300 },
@@ -419,7 +419,7 @@ test('the reordered game starts fresh once and never restores the previous journ
   const resumed = await appHarness(null, { store, remaining: 0 });
   assert.equal(resumed.api.progress.coins, 600 - upgrade.price);
   assert.equal(resumed.api.progress.bow, upgrade.id, 'only the release transition resets progress, not every visit');
-  assert.deepEqual(JSON.parse(store.get('forest-archer-progress-v1')), old);
+  assert.equal(store.has('forest-archer-progress-v1'), false);
 });
 
 const preResetProgress = () => ({version: 1, stageCatalog: PREVIOUS_STAGE_CATALOG, coins: 7654,
@@ -429,174 +429,67 @@ const preResetProgress = () => ({version: 1, stageCatalog: PREVIOUS_STAGE_CATALO
   lastStage: 120, unlocked: 120, best: {1: 50, 50: 42, 120: 48},
   eventBest: 280, eventBestByLevel: {2: 60, 10: 280}, eventPlays: 14,
   mainRounds: 70, shots: 420, hits: 330});
-const retainedInventory = value => {
-  const plain = JSON.parse(JSON.stringify(value));
-  return Object.fromEntries(['coins', 'clayCredits', 'stabilizers', 'coachEnabled', 'sound',
-    'ownedBows', 'ownedArrows', 'bow', 'arrow', 'eventGun', 'scopedBows'].map(key => [key, plain[key]]));
-};
-
-test('v3 records migrate all 120 bests and boundary stages once without resetting progress, inventory or options', async () => {
-  const destination = id => id >= 41 && id <= 44 ? id - 36 : id >= 5 && id <= 40 ? id + 4 : id;
-  const best = Object.fromEntries(Array.from({ length: PREVIOUS_STAGE_COUNT }, (_, index) => [index + 1, index % 50 + 1]));
-  const movedBest = Object.fromEntries(Object.entries(best).map(([id, score]) => [destination(Number(id)), score]));
-  for (const lastStage of [1, 4, 5, 8, 40, 41, 42, 43, 44, 45, 104, 120]) {
-    const old = { ...preResetProgress(), lastStage, best }, backup = JSON.stringify(old);
-    const legacy = JSON.stringify({ ...preResetProgress(), coins: 99999, lastStage: 1, best: { 1: 1 } });
-    const store = new Map([[PREVIOUS_SAVE_KEY, backup], [LEGACY_SAVE_KEY, legacy]]);
-    const app = await appHarness(null, { store, mainRounds: old.mainRounds, remaining: 37, coins: 23 });
-    const expected = { ...old, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: destination(lastStage), best: movedBest };
-    assert.deepEqual(app.snapshot(), expected, `all saved fields survive the migration from old stage ${lastStage}`);
-    assert.equal(app.api.state.stage.id, destination(lastStage));
-    assert.equal(Object.keys(app.api.progress.best).length, PREVIOUS_STAGE_COUNT);
-    assert.equal(Object.keys(app.engine.CATALOG_V1_STAGE_MAP).length, PREVIOUS_STAGE_COUNT);
-    assert.equal(new Set(Object.values(app.engine.CATALOG_V1_STAGE_MAP)).size, PREVIOUS_STAGE_COUNT);
-    for (let id = 1; id <= PREVIOUS_STAGE_COUNT; id++) assert.equal(app.engine.CATALOG_V1_STAGE_MAP[id], destination(id));
-    for (let id = PREVIOUS_STAGE_COUNT + 1; id <= STAGE_COUNT; id++) assert.equal(app.api.progress.best[id], undefined, 'new missions never inherit unrelated old records');
-    if (lastStage >= 41 && lastStage <= 44) assert.equal(app.api.state.stage.lessonKey, 'elevated-fixed');
-    if (lastStage === 5 || lastStage === 8) assert.equal(app.api.state.stage.lessonKey, 'tracking-intro');
-    assert.equal(app.ammo.account.main_rounds, old.mainRounds);assert.equal(app.ammo.account.remaining, 37);assert.equal(app.ammo.account.coins, 23);
-    assert.equal(app.ammo.requests.filter(request => ['round-complete', 'buy', 'spend'].includes(request.action)).length, 0);
-    assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);assert.equal(store.get(LEGACY_SAVE_KEY), legacy);
-    const resumed = await appHarness(null, { store, server: app.ammo });
-    assert.deepEqual(resumed.snapshot(), expected, 'the v4 catalog is not permuted a second time');
-    assert.equal(resumed.api.state.stage.id, destination(lastStage));
-    assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);assert.equal(store.get(LEGACY_SAVE_KEY), legacy);
-  }
-});
-
-test('the expanded catalog preserves already reordered 120-mission records from either save key without another permutation', async () => {
-  const best = Object.fromEntries(Array.from({ length: PREVIOUS_STAGE_COUNT }, (_, index) => [index + 1, index % 50 + 1]));
-  for (const sourceKey of [SAVE_KEY, PREVIOUS_SAVE_KEY]) for (const lastStage of [5, 8, 9, 44, 120]) {
-    const old = { ...preResetProgress(), stageCatalog: REORDERED_STAGE_CATALOG, best, lastStage }, backup = JSON.stringify(old);
-    const store = new Map([[sourceKey, backup]]);
-    const app = await appHarness(null, { store, mainRounds: old.mainRounds, remaining: 37, coins: 23 });
-    const expected = { ...old, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT };
-    assert.deepEqual(app.snapshot(), expected);
-    assert.equal(app.api.state.stage.id, lastStage);assert.equal(Object.keys(app.api.progress.best).length, PREVIOUS_STAGE_COUNT);
-    if (lastStage === 5 || lastStage === 8) assert.equal(app.api.state.stage.lessonKey, 'elevated-fixed');
-    if (lastStage === 9) assert.equal(app.api.state.stage.lessonKey, 'tracking-intro');
-    for (let id = PREVIOUS_STAGE_COUNT + 1; id <= STAGE_COUNT; id++) assert.equal(app.api.progress.best[id], undefined);
-    const resumed = await appHarness(null, { store, server: app.ammo });
-    assert.deepEqual(resumed.snapshot(), expected);assert.equal(resumed.api.state.stage.id, lastStage);
-    assert.equal(app.ammo.requests.filter(request => ['buy', 'spend', 'round-complete'].includes(request.action)).length, 0);
-    if (sourceKey === PREVIOUS_SAVE_KEY) assert.equal(store.get(sourceKey), backup);
-  }
-});
-
-test('each old 120-mission catalog clamps invalid stages and cannot supply records for the hundred new missions', async () => {
-  for (const stageCatalog of [PREVIOUS_STAGE_CATALOG, REORDERED_STAGE_CATALOG]) for (const [lastStage, expectedStage] of [[0, 1], [121, 120], [999, 120]]) {
-    const old = { ...preResetProgress(), stageCatalog, lastStage,
-      best: { 0: 50, 5: 28, 41: 32, 120: 44, 121: 50, 220: 50, 221: 50 } };
-    const backup = JSON.stringify(old), store = new Map([[PREVIOUS_SAVE_KEY, backup]]);
-    const app = await appHarness(null, { store, mainRounds: old.mainRounds });
-    assert.equal(app.api.state.stage.id, expectedStage);assert.equal(app.snapshot().lastStage, expectedStage);
-    assert.deepEqual(app.snapshot().best, stageCatalog === PREVIOUS_STAGE_CATALOG ? { 5: 32, 9: 28, 120: 44 } : { 5: 28, 41: 32, 120: 44 });
-    assert.equal(app.api.progress.unlocked, STAGE_COUNT);assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);
-  }
-});
-
-test('a failed v4 migration save leaves its v3 source intact for a later successful retry', async () => {
-  const old = { ...preResetProgress(), lastStage: 41, best: { 5: 28, 41: 32, 120: 44 } }, backup = JSON.stringify(old);
-  const store = new Map([[PREVIOUS_SAVE_KEY, backup]]), write = store.set.bind(store);
-  let fail = true;
-  store.set = (key, value) => { if (fail && key === SAVE_KEY) throw new Error('storage unavailable');return write(key, value); };
-  const app = await appHarness(null, { store, mainRounds: old.mainRounds });
-  const expected = { ...old, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 5, best: { 5: 32, 9: 28, 120: 44 } };
-  assert.equal(app.api.state.stage.id, 5);assert.deepEqual(JSON.parse(JSON.stringify(app.api.progress)), expected);
-  assert.equal(store.has(SAVE_KEY), false);assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);
-  fail = false;
-  const retry = await appHarness(null, { store, server: app.ammo });
-  assert.deepEqual(retry.snapshot(), expected);assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);
-  const resumed = await appHarness(null, { store, server: retry.ammo });
-  assert.deepEqual(resumed.snapshot(), expected, 'a successful retry is not mapped again on the following load');
-});
-
-test('a stale v3 tab cannot overwrite migrated or newly earned v4 records', async () => {
-  const old = { ...preResetProgress(), lastStage: 41, best: { 5: 28, 41: 32, 120: 44 }, mainRounds: 7 };
-  const store = new Map([[PREVIOUS_SAVE_KEY, JSON.stringify(old)]]);
-  const app = await appHarness(null, { store, mainRounds: old.mainRounds });
-  assert.equal(app.api.state.stage.id, 5);assert.deepEqual(app.snapshot().best, { 5: 32, 9: 28, 120: 44 });
-  app.api.state.score = 40;app.api.state.used = 5;app.api.state.hits = 4;
-  app.api.finishRound();await app.flush();
-  assert.equal(app.api.progress.best[5], 40);assert.equal(app.api.progress.mainRounds, 8);
-  app.api.startStage(lessonStageId('tracking-intro', 20));await app.flush();
-  const saved = app.snapshot(), stale = JSON.stringify({ ...old, coins: 99999, lastStage: 5, best: { 5: 50 }, mainRounds: 999 });
-  store.set(PREVIOUS_SAVE_KEY, stale);
-  const resumed = await appHarness(null, { store, server: app.ammo });
-  assert.deepEqual(resumed.snapshot(), saved, 'v4 remains authoritative after the old tab writes different v3 stage numbers');
-  assert.equal(resumed.api.state.stage.id, lessonStageId('tracking-intro', 20));
-  assert.deepEqual(resumed.snapshot().best, { 5: 40, 9: 28, 120: 44 });assert.equal(store.get(PREVIOUS_SAVE_KEY), stale);
-});
-
-test('catalog migration keeps pending account request IDs, run IDs, original stages and recovery records intact', async () => {
-  const owner = '11111111-1111-4111-8111-111111111111', requestId = '33333333-3333-4333-8333-333333333333';
-  const runId = '44444444-4444-4444-8444-444444444444', pendingKey = `forest-archer-ammo-pending-v2:${owner}`;
-  const recoveryKey = `forest-archer-ammo-recovery-v2:${owner}`;
-  for (const action of ['round-start', 'round-complete']) {
-    const old = { ...preResetProgress(), lastStage: 41 }, backup = JSON.stringify(old);
-    const payload = action === 'round-start' ? { stage: 41 } : { stage: 41, runId };
-    const pending = JSON.stringify({ version: 1, owner, action, requestId, payload, localRunId: null });
-    const recovery = JSON.stringify([{ requestId: '55555555-5555-4555-8555-555555555555', action: 'spend', confirmed: true }]);
-    const store = new Map([[PREVIOUS_SAVE_KEY, backup], [pendingKey, pending], [recoveryKey, recovery]]);
-    const server = { account: { remaining: 37, coins: 23, main_rounds: old.mainRounds, revision: 1, coach_expires_at: null },
-      runs: new Map([[runId, { stage: 41, complete: false }]]), receipts: new Map() };
-    const app = await appHarness(null, { store, server });
-    assert.equal(app.api.state.stage.id, 5);assert.equal(app.api.ammo.pending.stage, 41);
-    assert.equal(app.api.ammo.pending.requestId, requestId);assert.equal(store.get(pendingKey), pending);
-    assert.ok(app.ammo.requests.some(request => request.action === 'receipt' && request.receiptId === requestId));
-    assert.equal(app.ammo.requests.filter(request => request.action === action).length, 0, 'opening the new catalog does not replay an old mutation');
-    await app.api.retryAmmo();await app.flush();
-    const original = app.ammo.requests.filter(request => request.requestId === requestId);
-    assert.equal(original.length, 1);assert.equal(original[0].action, action);assert.equal(original[0].stage, 41);
-    if (action === 'round-complete') assert.equal(original[0].runId, runId);
-    const newRound = app.ammo.requests.filter(request => request.action === 'round-start' && request.requestId !== requestId);
-    assert.equal(newRound.length, 1);assert.equal(newRound[0].stage, 5, 'only the newly registered round uses the new mission number');
-    assert.equal(app.api.ammo.pending, null);assert.ok(app.api.state.serverRunId);
-    assert.equal(app.ammo.account.main_rounds, old.mainRounds + (action === 'round-complete' ? 1 : 0));
-    assert.equal(app.ammo.account.remaining, 37);assert.equal(app.ammo.account.coins, 23);
-    await app.api.retryAmmo();await app.flush();
-    assert.equal(app.ammo.requests.filter(request => request.requestId === requestId).length, 1);
-    assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);assert.equal(store.get(recoveryKey), recovery);
-    assert.equal(app.api.progress.best[120], old.best[120]);
-  }
-});
-
-test('v2 record reset preserves all inventory and options while clearing both old and expanded mission records', async () => {
-  for (const stageCatalog of [undefined, PREVIOUS_STAGE_CATALOG]) {
-    const old = {...preResetProgress(), stageCatalog, lastStage: stageCatalog ? 120 : 50};
-    const backup = JSON.stringify(old), pendingKey = 'forest-archer-ammo-pending-v2:other-account';
-    const recoveryKey = 'forest-archer-ammo-recovery-v2:11111111-1111-4111-8111-111111111111';
-    const store = new Map([[LEGACY_SAVE_KEY, backup], [pendingKey, 'pending-purchase'],
-      [recoveryKey, 'recovery-receipts'], ['another-game-progress', 'unrelated-record']]);
-    const app = await appHarness(null, {store, remaining: 55, coachActive: true});
+test('the single launch clears every test-era record, purchased item, local currency and abandoned operation', async () => {
+  const owner = '11111111-1111-4111-8111-111111111111';
+  for (const version of [1, 2, 3, 4]) for (const stageCatalog of [undefined, PREVIOUS_STAGE_CATALOG, REORDERED_STAGE_CATALOG, STAGE_CATALOG]) {
+    const old = {...preResetProgress(), stageCatalog, lastStage: 120};
+    const oldKey = `forest-archer-progress-v${version}`;
+    const pendingKey = `forest-archer-ammo-pending-v2:${owner}`;
+    const otherKey = 'forest-archer-ammo-pending-v2:other-account';
+    const recoveryKey = `forest-archer-ammo-recovery-v2:${owner}`;
+    const store = new Map([[oldKey, JSON.stringify(old)], [pendingKey, JSON.stringify({version: 1, owner, action: 'buy', requestId: owner, payload: {}})],
+      [otherKey, 'old request'], [recoveryKey, 'old receipts'], ['another-game-progress', 'unrelated-record']]);
+    const app = await appHarness(null, {store, remaining: 0, mainRounds: 0, coins: 23});
     const saved = app.snapshot();
-    assert.deepEqual(retainedInventory(saved), retainedInventory(old));
     assert.deepEqual({lastStage: saved.lastStage, best: saved.best, eventBest: saved.eventBest,
-      eventBestByLevel: saved.eventBestByLevel, eventPlays: saved.eventPlays,
-      mainRounds: saved.mainRounds, shots: saved.shots, hits: saved.hits},
-    {lastStage: 1, best: {}, eventBest: 0, eventBestByLevel: {}, eventPlays: 0, mainRounds: 0, shots: 0, hits: 0});
-    assert.equal(app.api.state.stage.id, 1);
-    assert.equal(saved.stageCatalog, STAGE_CATALOG);assert.equal(saved.unlocked, STAGE_COUNT);
-    assert.equal(app.api.ammo.snapshot.remaining, 55, 'account ammunition is outside the local record reset');
-    assert.equal(app.api.ammo.snapshot.coach_expires_at, new Date(SERVER_EPOCH + 86400000).toISOString(), 'the historical account entitlement remains available for receipt recovery');
-    assert.equal(store.get(LEGACY_SAVE_KEY), backup, 'the previous journey remains an untouched backup');
-    assert.equal(store.get(pendingKey), 'pending-purchase');assert.equal(store.get(recoveryKey), 'recovery-receipts');
+      eventBestByLevel: saved.eventBestByLevel, eventPlays: saved.eventPlays, mainRounds: saved.mainRounds,
+      shots: saved.shots, hits: saved.hits, coins: saved.coins, clayCredits: saved.clayCredits,
+      stabilizers: saved.stabilizers, bow: saved.bow, arrow: saved.arrow, eventGun: saved.eventGun,
+      ownedBows: saved.ownedBows, ownedArrows: saved.ownedArrows, scopedBows: saved.scopedBows},
+    {lastStage: 1, best: {}, eventBest: 0, eventBestByLevel: {}, eventPlays: 0, mainRounds: 0,
+      shots: 0, hits: 0, coins: 0, clayCredits: 0, stabilizers: 0, bow: 0, arrow: 0, eventGun: 20,
+      ownedBows: [0, 20], ownedArrows: [0], scopedBows: []});
+    assert.equal(saved.launchEpoch, 4);assert.equal(saved.stageCatalog, STAGE_CATALOG);
+    assert.equal(app.api.state.stage.id, 1);assert.equal(app.api.progress.unlocked, STAGE_COUNT);
+    for (const key of [oldKey, pendingKey, otherKey, recoveryKey]) assert.equal(store.has(key), false);
+    assert.equal(app.api.ammo.pending, null);assert.equal(app.api.ammo.snapshot.remaining, 0);
+    assert.equal(app.ammo.account.coins, 23, 'the shared 쭈 wallet is untouched');
     assert.equal(store.get('another-game-progress'), 'unrelated-record');
+    assert.equal(app.ammo.requests.some(request => ['buy', 'spend', 'receipt', 'round-complete'].includes(request.action)), false);
   }
 });
 
-test('new shots, scores and selected stage survive the second visit after the one-time v2 reset', async () => {
-  const backup = JSON.stringify({version: 1, stageCatalog: PREVIOUS_STAGE_CATALOG, coins: 4500,
-    lastStage: 33, best: {1: 20, 33: 45}, mainRounds: 20, shots: 100, hits: 85, sound: false});
-  const store = new Map([[LEGACY_SAVE_KEY, backup]]), app = await appHarness(null, {store});
+test('new scores, equipment and selected stage survive reopening after the one-time launch reset', async () => {
+  const store = new Map([[PREVIOUS_SAVE_KEY, JSON.stringify(preResetProgress())]]);
+  const app = await appHarness(null, {store, remaining: 0});
   for (let shot = 0; shot < 5; shot++) await centeredShot(app);
+  app.api.progress.coins += 600;
+  const upgrade = app.engine.BOWS.find(item => item.shopRank === 2 && item.weaponType === 'bow');
+  app.api.showShop('bow');app.api.equipItem(upgrade.id);
   app.api.startStage(2);await app.flush();
   const saved = app.snapshot();
   assert.deepEqual([saved.lastStage, saved.mainRounds, saved.shots, saved.hits], [2, 1, 5, 5]);
-  assert.deepEqual(saved.best, {1: 50});assert.equal(saved.coins, 4575);
+  assert.deepEqual(saved.best, {1: 50});assert.equal(saved.coins, 675 - upgrade.price);
+  assert.equal(saved.bow, upgrade.id);
+  const completion = app.ammo.requests.filter(request => request.action === 'round-complete');
+  assert.equal(completion.length, 1);assert.equal(completion[0].score, 50);assert.equal(completion[0].stage, 1);
+  store.set('forest-archer-progress-v4', JSON.stringify({...preResetProgress(), coins: 99999, mainRounds: 999}));
   const resumed = await appHarness(null, {store, server: app.ammo});
-  assert.deepEqual(resumed.snapshot(), saved, 'the new journey resumes without another record reset');
-  assert.equal(resumed.api.state.stage.id, 2);assert.equal(store.get(LEGACY_SAVE_KEY), backup);
+  assert.deepEqual(resumed.snapshot(), saved, 'a still-open test tab cannot restore old records or items');
+  assert.equal(resumed.api.state.stage.id, 2);assert.equal(store.has('forest-archer-progress-v4'), false);
+});
+
+test('a denied local save keeps fresh practice state and never imports test inventory on retry', async () => {
+  const store = new Map([[PREVIOUS_SAVE_KEY, JSON.stringify(preResetProgress())]]), write = store.set.bind(store);
+  let fail = true;
+  store.set = (key, value) => {if (fail && key === SAVE_KEY) throw new Error('storage unavailable');return write(key, value);};
+  const app = await appHarness(null, {store, offline: true});
+  assert.equal(app.api.progress.coins, 0);assert.equal(app.api.progress.lastStage, 1);
+  assert.deepEqual(Array.from(app.api.progress.ownedBows), [0, 20]);assert.equal(store.has(SAVE_KEY), false);
+  fail = false;
+  const reopened = await appHarness(null, {store, offline: true});
+  assert.equal(reopened.snapshot().coins, 0);assert.deepEqual(reopened.snapshot().best, {});
+  assert.equal(reopened.snapshot().launchEpoch, 4);
 });
 
 test('the wind HUD distinguishes calm, either direction and tiny nonzero wind without rounding to zero', async () => {
@@ -658,7 +551,7 @@ test('a corrupt or incompatible current save never falls back to pre-reset recor
     const saved = app.snapshot();
     assert.deepEqual([saved.lastStage, saved.coins, saved.mainRounds, saved.shots, saved.hits], [1, 0, 0, 0, 0]);
     assert.deepEqual(saved.best, {});assert.deepEqual(saved.ownedBows, [0, 20]);
-    assert.deepEqual(saved.ownedArrows, [0]);assert.equal(store.get(PREVIOUS_SAVE_KEY), backup);assert.equal(store.get(LEGACY_SAVE_KEY), backup);
+    assert.deepEqual(saved.ownedArrows, [0]);assert.equal(store.has(PREVIOUS_SAVE_KEY), false);assert.equal(store.has(LEGACY_SAVE_KEY), false);
   }
 });
 
@@ -1201,12 +1094,12 @@ test('basic coaching works with no rental, an empty wallet, expired legacy acces
   }
 });
 
-test('a saved legacy coach receipt recovers its balance without another charge or changing an off preference', async () => {
+test('a saved current-epoch coach receipt recovers its balance without another charge or changing an off preference', async () => {
   const original = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, coins: 777, coachEnabled: false, sound: false}, {coins: 20});
   const owner = '11111111-1111-4111-8111-111111111111', requestId = '33333333-3333-4333-8333-333333333333';
   const purchased = original.ammo.execute({action: 'coach-buy', requestId});
   assert.equal(purchased.coins, 10);
-  original.store.set('forest-archer-ammo-pending-v2:' + owner, JSON.stringify({version: 1, owner, action: 'coach-buy', requestId, payload: {}, localRunId: null}));
+  original.store.set('forest-archer-ammo-pending-v4:' + owner, JSON.stringify({version: 1, launchEpoch: 4, owner, action: 'coach-buy', requestId, payload: {}, localRunId: null}));
   const app = await appHarness(original.snapshot(), {store: new Map(original.store), server: original.ammo});
   await app.flush();assert.equal(app.api.ammo.pending.action, 'coach-buy');
   assert.equal(app.api.ammo.pending.status, 'confirmed');
@@ -1463,41 +1356,6 @@ test('current-journey saves retain bought gear, selected IDs and bound scopes', 
   assert.deepEqual(Array.from(reloaded.api.progress.scopedBows), [19]);
   assert.equal(reloaded.api.progress.coins, 5);assert.equal(reloaded.api.progress.lastStage, 23);
   assert.deepEqual({ ...reloaded.api.progress.best }, { 12: 41 });
-});
-
-test('all fifty old bests migrate to their matching missions once while purchased gear, currency and coach preferences survive', async () => {
-  const old = {version: 1, coins: 4567, lastStage: 50, unlocked: 50,
-    best: Object.fromEntries(Array.from({length: 51}, (_, index) => [index + 1, index + 1])),
-    ownedBows: [0, 3, 19, 20], ownedArrows: [0, 6, 12, 13], bow: 19, arrow: 13,
-    scopedBows: [19], eventGun: 20, eventBest: 80, eventBestByLevel: {2: 80},
-    mainRounds: 55, eventPlays: 11, clayCredits: 7, stabilizers: 3, shots: 277, hits: 196,
-    coachEnabled: false, sound: false};
-  const backup = JSON.stringify(old), store = new Map([[PREVIOUS_SAVE_KEY, backup]]);
-  const app = await appHarness(null, { store, mainRounds: old.mainRounds });
-  const expected = Object.fromEntries(Array.from({ length: 50 }, (_, index) => {
-    const oldId = index + 1;
-    const id = oldId <= 4 ? oldId : oldId <= 8 ? oldId + 4 : oldId <= 20 ? oldId + 12 : oldId <= 24 ? oldId + 16 : oldId <= 48 ? oldId + 24 : oldId === 49 ? 100 : 104;
-    return [id, oldId];
-  }));
-  assert.equal(app.api.state.stage.id, 104, 'the old hidden moving finale resumes at its corresponding new lesson');
-  assert.equal(app.api.progress.stageCatalog, STAGE_CATALOG);
-  assert.equal(app.api.progress.unlocked, STAGE_COUNT);
-  assert.deepEqual({...app.api.progress.best}, expected, 'all fifty records survive on their real successor; old out-of-range records are discarded');
-  const preserved = progress => ({coins: progress.coins, ownedBows: Array.from(progress.ownedBows), ownedArrows: Array.from(progress.ownedArrows),
-    bow: progress.bow, arrow: progress.arrow, scopedBows: Array.from(progress.scopedBows), eventGun: progress.eventGun,
-    eventBest: progress.eventBest, eventBestByLevel: {...progress.eventBestByLevel}, mainRounds: progress.mainRounds,
-    eventPlays: progress.eventPlays, clayCredits: progress.clayCredits, stabilizers: progress.stabilizers,
-    shots: progress.shots, hits: progress.hits, coachEnabled: progress.coachEnabled, sound: progress.sound});
-  assert.deepEqual(preserved(app.api.progress), preserved(old));
-  assert.equal(store.get(PREVIOUS_SAVE_KEY), backup, 'a legacy fifty-stage v3 save remains an untouched migration source');
-  const reloaded = await appHarness(app.snapshot());
-  assert.equal(reloaded.api.state.stage.id, 104);
-  assert.deepEqual({...reloaded.api.progress.best}, expected, 'migration is not applied a second time');
-  assert.deepEqual(preserved(reloaded.api.progress), preserved(old));
-  reloaded.api.startStage(STAGE_COUNT);await reloaded.flush();
-  const final = await appHarness(reloaded.snapshot());
-  assert.equal(final.api.state.stage.id, STAGE_COUNT, 'a newly chosen mission above one hundred survives another visit');
-  assert.deepEqual({...final.api.progress.best}, expected);
 });
 
 test('new equipment purchases survive reload within the fresh journey', async () => {
@@ -3007,7 +2865,7 @@ test('event completion and result redraws never duplicate the main round guest n
 test('a late completion retains its original account and iframe session identity', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false }, { guest: true });
   app.window.emit('message', { source: app.window.parent, origin: app.window.location.origin,
-    data: { source: 'ojjuda-archery-world', type: 'init', owner: 'another-owner', sessionId: '33333333-3333-4333-8333-333333333333', available: false } });
+    data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: 'another-owner', sessionId: '33333333-3333-4333-8333-333333333333', available: false } });
   app.api.state.used = 5;app.api.finishRound();await app.flush();
   assert.equal(app.finishedRounds.length, 1);assert.equal(app.finishedRounds[0].owner, null);
   assert.equal(app.finishedRounds[0].sessionId, '22222222-2222-4222-8222-222222222222',

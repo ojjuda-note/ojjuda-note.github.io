@@ -1,13 +1,15 @@
 /** Authenticated parent bridge. This module never calculates grants or wallet prices. */
 const CHILD = 'ojjuda-archery-game', PARENT = 'ojjuda-archery-world';
-const STORAGE_PREFIX = 'forest-archer-ammo-pending-v2:';
+export const LAUNCH_EPOCH = 4;
+const STORAGE_PREFIX = 'forest-archer-ammo-pending-v4:';
 const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy', 'coach-buy']);
-const SNAPSHOT_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price', 'server_now', 'coach_expires_at', 'coach_active', 'coach_price', 'coach_duration_seconds'];
-const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'coach_basic', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid']);
+const SNAPSHOT_FIELDS = ['launch_epoch', 'remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price', 'server_now', 'coach_expires_at', 'coach_active', 'coach_price', 'coach_duration_seconds'];
+const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'coach_basic', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid', 'progress_reset']);
 const COUNTER_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'main_rounds', 'milestones_granted'];
 const validStage = stage => Number.isInteger(stage) && stage >= 1 && stage <= 220;
+const validScore = score => Number.isInteger(score) && score >= 0 && score <= 50;
 const fail = (reason, extra = {}) => ({ ok: false, reason, ...extra });
 
 export function createRequestId() {
@@ -49,7 +51,7 @@ export function createAmmoClient({ onChange } = {}) {
   };
   function storage() { return globalThis.localStorage || host?.localStorage; }
   function persist(operation) {
-    const record = { version: 1, owner: operation.owner, action: operation.action, requestId: operation.requestId, payload: operation.payload, localRunId: operation.localRunId || null };
+    const record = { version: 1, launchEpoch: LAUNCH_EPOCH, owner: operation.owner, action: operation.action, requestId: operation.requestId, payload: operation.payload, localRunId: operation.localRunId || null };
     try {
       const value = JSON.stringify(record), target = storage();
       target.setItem(keyFor(operation.owner), value);
@@ -64,7 +66,7 @@ export function createAmmoClient({ onChange } = {}) {
   }
   function archiveSpend(operation, confirmed) {
     try {
-      const target = storage(), key = 'forest-archer-ammo-recovery-v2:' + encodeURIComponent(operation.owner);
+      const target = storage(), key = 'forest-archer-ammo-recovery-v4:' + encodeURIComponent(operation.owner);
       const previous = JSON.parse(target.getItem(key) || '[]');
       const history = Array.isArray(previous) ? previous.filter(item => item?.requestId !== operation.requestId) : [];
       target.setItem(key, JSON.stringify([...history, { requestId: operation.requestId, action: 'spend', confirmed }].slice(-8)));
@@ -72,16 +74,19 @@ export function createAmmoClient({ onChange } = {}) {
   }
   function restore(owner) {
     try {
+      for(const version of [1,2,3])for(const kind of ['pending','recovery']){
+        try{storage().removeItem(`forest-archer-ammo-${kind}-v${version}:`+encodeURIComponent(owner));}catch{}
+      }
       const record = JSON.parse(storage().getItem(keyFor(owner)) || 'null');
-      if (record?.version !== 1 || record.owner !== owner || !MUTATIONS.has(record.action) || !UUID.test(record.requestId)) return null;
+      if (record?.version !== 1 || record.launchEpoch !== LAUNCH_EPOCH || record.owner !== owner || !MUTATIONS.has(record.action) || !UUID.test(record.requestId)) return null;
       const source = record.payload || {}, payload = {};
       if (record.action === 'round-start' || record.action === 'round-complete') {
         if (!validStage(source.stage)) return null;
         payload.stage = source.stage;
       }
       if (record.action === 'round-complete') {
-        if (!UUID.test(source.runId)) return null;
-        payload.runId = source.runId;
+        if (!UUID.test(source.runId) || !validScore(source.score)) return null;
+        payload.runId = source.runId;payload.score = source.score;
       }
       return { owner, action: record.action, requestId: record.requestId, payload, localRunId: typeof record.localRunId === 'string' ? record.localRunId : null, status: 'unknown', recovered: true, settled: null, promise: null };
     } catch { return null; }
@@ -89,7 +94,7 @@ export function createAmmoClient({ onChange } = {}) {
   function applySnapshot(result) {
     // A definitive business decline still contains the account's authoritative
     // state. Generic transport errors and incomplete snapshots do not.
-    if (!result || !(result.ok === true || result.ok === false && SNAPSHOT_DECLINES.has(result.reason)) ||
+    if (!result || result.launch_epoch !== LAUNCH_EPOCH || !(result.ok === true || result.ok === false && SNAPSHOT_DECLINES.has(result.reason)) ||
       !SNAPSHOT_FIELDS.every(field => Object.prototype.hasOwnProperty.call(result, field)) ||
       !COUNTER_FIELDS.every(field => Number.isSafeInteger(result[field]) && result[field] >= 0) ||
       !['pack_ammo', 'pack_price', 'coach_price', 'coach_duration_seconds'].every(field => Number.isSafeInteger(result[field]) && result[field] > 0) ||
@@ -161,7 +166,7 @@ export function createAmmoClient({ onChange } = {}) {
         else { connection = 'unavailable';finishRequest(entry, fail('unavailable')); }
         notify();
       }, TIMEOUT);
-      try { parent.postMessage({ source: CHILD, type: 'ammo-request', action, owner: context.owner, sessionId: context.sessionId, requestId: id, ...payload }, origin); }
+      try { parent.postMessage({ source: CHILD, type: 'ammo-request', launchEpoch: LAUNCH_EPOCH, action, owner: context.owner, sessionId: context.sessionId, requestId: id, ...payload }, origin); }
       catch {
         if (operation && pending === operation) { operation.status = 'unknown';operation.promise = null;finishRequest(entry, fail('pending', { requestId: id }), true); }
         else finishRequest(entry, fail('unavailable'));
@@ -202,6 +207,10 @@ export function createAmmoClient({ onChange } = {}) {
     if (pending !== operation) return fail('stale');
     const response = await send('receipt', { receiptId: operation.requestId, originalAction: operation.action });
     if (pending !== operation) return fail('stale');
+    if (response.reason === 'progress_reset' || response.reason === 'update_required') {
+      pending = null;forget(operation);notify();
+      return originalResult(operation, response, { receiptOnly: true });
+    }
     if (operation.recovered && operation.action === 'spend' && response.ok === true && response.found === false) {
       // Never replay an abandoned shot. An old authorized RPC may still finish;
       // every future operation refreshes the authoritative balance regardless.
@@ -245,7 +254,7 @@ export function createAmmoClient({ onChange } = {}) {
     const data = event.data;
     if (!data || data.source !== PARENT) return;
     if (data.type === 'init') {
-      if (!UUID.test(data.sessionId) || (data.owner !== null && (typeof data.owner !== 'string' || !data.owner))) return;
+      if (data.launchEpoch !== LAUNCH_EPOCH || !UUID.test(data.sessionId) || (data.owner !== null && (typeof data.owner !== 'string' || !data.owner))) return;
       if (identity?.sessionId === data.sessionId && identity.owner === data.owner && data.available === true) return;
       for (const entry of requests.values()) finishRequest(entry, fail('identity_changed'));
       if (pending) persist(pending);
@@ -265,7 +274,7 @@ export function createAmmoClient({ onChange } = {}) {
     if (data.type !== 'ammo-response' || !identity || data.owner !== identity.owner || data.sessionId !== identity.sessionId) return;
     const entry = requests.get(data.requestId);
     if (!entry || entry.owner !== data.owner || entry.sessionId !== data.sessionId || entry.action !== data.action) return;
-    const result = data.result;
+    const result = data.result?.ok === true && data.result.launch_epoch !== LAUNCH_EPOCH ? fail('update_required') : data.result;
     applySnapshot(result);
     if (entry.operation) acceptMutation(entry, result);
     else { finishRequest(entry, typeof result?.ok === 'boolean' ? result : fail('unavailable'));if (!snapshot && result?.ok !== true) connection = 'unavailable';notify(); }
@@ -277,7 +286,7 @@ export function createAmmoClient({ onChange } = {}) {
     get pending() { return describePending(); },
     refresh,
     startRound(requestId, stage) { return UUID.test(requestId) && validStage(stage) ? mutate('round-start', { stage }, requestId) : Promise.resolve(fail('invalid')); },
-    completeRound(runId, stage) { return UUID.test(runId) && validStage(stage) ? mutate('round-complete', { stage, runId }) : Promise.resolve(fail('invalid')); },
+    completeRound(runId, stage, score) { return UUID.test(runId) && validStage(stage) && validScore(score) ? mutate('round-complete', { stage, runId, score }) : Promise.resolve(fail('invalid')); },
     spend(runId) { return typeof runId === 'string' && runId ? mutate('spend', {}, undefined, runId) : Promise.resolve(fail('invalid')); },
     buy() { return mutate('buy', {}); },
     buyCoach() { return mutate('coach-buy', {}); },

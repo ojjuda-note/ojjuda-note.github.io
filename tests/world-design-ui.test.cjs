@@ -22,13 +22,15 @@ world=world.slice(0,boot)+`
  const fits=async(label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,label+' fits viewport');
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='classic');await fits('desktop arcade');
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
- const soloGames=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
+ const soloGames=['archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
  assert.deepEqual(await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),soloGames.map(id=>({id,images:1})),'solo cards retain exactly their intended games and cover images');
  assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi','test'],'test games follow every regular category visible to guests');
- assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'festival',images:1},{id:'restaurants',images:1},{id:'archery',images:1}],'Festival, certified restaurants, and Archery retain their covers in the dedicated test category');
+ assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'festival',images:1},{id:'restaurants',images:1}],'Festival and certified restaurants retain their covers in the dedicated test category');
  assert.equal(await page.locator('[data-arcade-games] [data-v=recommendations]').count(),0,'member recommendations are reached through the certified directory');
  assert.equal(await page.locator('[data-arcade-games] [data-v=archery]').count(),1,'Archery appears once across all game categories');
- assert.match(await page.locator('[data-arcade-games=test] [data-v=archery] .game-test-badge').innerText(),/테스트게임/);
+ assert.equal(await page.locator('[data-arcade-games=solo] [data-v=archery] .game-test-badge').count(),0,'released archery has no test badge');
+ assert.equal(await page.locator('[data-arcade-test-heading] h2').innerText(),'테스트');
+ assert.deepEqual(await page.locator('[data-arcade-games=test] .game-test-badge').allTextContents(),['테스트','테스트']);
  assert.equal(await page.locator('[data-arcade-adult]').count(),0,'guests have no adult section');
  assert.equal(await page.getByRole('button',{name:'사천성',exact:true}).count(),1);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);

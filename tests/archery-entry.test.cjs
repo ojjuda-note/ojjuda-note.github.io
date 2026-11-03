@@ -54,25 +54,25 @@ assert.equal(f.document.body.classList.contains('gaming'),true,'unrelated game s
 const registrySource=world.slice(world.indexOf('var _r='),world.indexOf(',Z=360',world.indexOf('var _r=')));
 const ctx=vm.createContext({window:{},D:{online:false},g:{tab:'arcade'},worldGameEntryGate:()=>true,M:()=>{}});
 vm.runInContext(registrySource,ctx);
-assert.equal(ctx._r.archery.name,'바람의 궁수');assert.equal(ctx._r.archery.test,true);
-const solo=Object.entries(ctx._r).filter(([id,game])=>!['bang','ttang'].includes(id)&&!(game.age>=19));
+assert.equal(ctx._r.archery.name,'바람의 궁수');assert.equal(ctx._r.archery.test,undefined);assert.equal(ctx._r.archery.rankingBasis,'stage_score');
+const solo=Object.entries(ctx._r).filter(([id,game])=>!['bang','ttang'].includes(id)&&!(game.age>=19)&&!game.test);
 assert.ok(solo.some(([id])=>id==='archery'));assert.ok(fs.existsSync(path.join(root,'assets/design/games/archery.svg')));
-assert.match(world,/<small class="game-test-badge">테스트게임<\/small>/);
-let opened;
-ctx.window.OjjudaArcheryGame={open:options=>{opened=options;}};
+assert.match(world,/<small class="game-test-badge">테스트<\/small>/);
+let launchOptions;
+ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(opened).sort(),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and coach rental use explicit parent callbacks without adding ranked score hooks');
-assert.equal(opened.owner,null);assert.ok(!('client' in opened),'the authenticated client stays in the arcade');
-assert.equal(opened.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(opened.authorized(),false);
+ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
+assert.equal(launchOptions.owner,null);assert.ok(!('client' in launchOptions),'the authenticated client stays in the arcade');
+assert.equal(launchOptions.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(launchOptions.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
 vm.runInContext(world.slice(rankStart,world.indexOf('function openWorldBoardGame(',rankStart)),ctx);
-ctx.D.online=false;assert.equal(ctx.worldRankGames().archery,undefined,'test scores are absent from production rankings');
+ctx.D.online=false;assert.equal(ctx.worldRankGames().archery,ctx._r.archery,'released archery appears in production rankings');
 assert.match(world,/for\(const bridge of \[window\.OjjudaArcheryGame,/,'global teardown closes the new game');
 assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct entry must wait for account and arcade initialization');
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'1.12.0');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.0.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -93,8 +93,9 @@ for(const file of ['engine.mjs','scenery.mjs']) {
  const source=read('games/forest-archer/'+file);
  assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'painted anatomy and collision shapes load the same release');
 }
-for(const file of ['scenery','ammo-client'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene and stage-range client retain their matching module revision');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'event preparation and result styles load with their markup');
+for(const file of ['scenery'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene retains its matching physics revision');
+assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the epoch-bound ammo client loads with the released game');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261103-game-results1','unchanged result styles retain their independent cache revision');
 
 assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the game loads the wall-aware follow camera');
 assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the replay receives the same camera release');
@@ -103,6 +104,30 @@ assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mj
 // A cold direct link must load against the initialized arcade route. Starting
 // before my() changes g.tab/place causes Al() to discard its own pending load.
 (async()=>{
+ const rpcCalls=[],savedEvents=[];
+ ctx.window.OjjudaGameAssets={ready:()=>true};
+ ctx.D.online=true;ctx.D.user={id:'member'};
+ ctx.worldRewardRequest=()=>({owner:ctx.D.user?.id});
+ ctx.vl=async(rpc,args,request)=>{rpcCalls.push({rpc,args,request});return {ok:true,stage:17};};
+ ctx.CustomEvent=class{constructor(type,options){this.type=type;this.detail=options.detail;}};
+ ctx.window.dispatchEvent=event=>savedEvents.push(event);
+ ctx.Al('archery');const memberOptions=launchOptions;
+ await memberOptions.onAmmoStatus();
+ await memberOptions.onRoundStart('start-request',17);
+ await memberOptions.onRoundComplete('finish-request','run',17,45);
+ await memberOptions.onAmmoReceipt('finish-request','round-complete');
+ assert.deepEqual(JSON.parse(JSON.stringify(rpcCalls.map(({rpc,args})=>({rpc,args})))),[
+  {rpc:'archery_single_action',args:{p_action:'status',p_epoch:4}},
+  {rpc:'archery_single_action',args:{p_action:'round-start',p_epoch:4,p_request_id:'start-request',p_stage:17}},
+  {rpc:'archery_single_action',args:{p_action:'round-complete',p_epoch:4,p_request_id:'finish-request',p_run_id:'run',p_stage:17,p_score:45}},
+  {rpc:'archery_single_receipt',args:{p_epoch:4,p_request_id:'finish-request',p_action:'round-complete'}}
+ ],'released callbacks use the epoch-bound API and include the exact stage score');
+ assert.equal(savedEvents.length,2,'new and recovered completed rounds refresh the rankings');
+ assert.ok(savedEvents.every(event=>event.type==='ojjuda:game-record-saved'&&event.detail.game==='archery'&&event.detail.owner==='member'));
+ ctx.D.user={id:'other'};
+ assert.equal((await memberOptions.onRoundComplete('stale','run',17,50)).reason,'sign_in');
+ assert.equal(rpcCalls.length,4,'old account callbacks cannot submit another score');
+ ctx.D.online=false;
  let assetsReady=false,completeLoad,opened=0,rendered=0;
  const boot=vm.createContext({URL,Promise,console,
   window:{OjjudaGameAssets:{ready:()=>assetsReady,load:()=>new Promise(resolve=>{completeLoad=()=>{assetsReady=true;resolve();};})},
@@ -120,5 +145,5 @@ assert.equal(read('games/forest-archer/cinematic.mjs').match(/from '\.\/view\.mj
  assert.equal(opened,1,'a cold direct link survives the route guards and opens once');
  boot.my();assert.equal(opened,1,'ordinary shell refresh does not reopen a dismissed direct-link game');
  assert.equal(rendered,1);
- console.log('PASS: single-player test registration, same-origin launch, isolated ammo callbacks, no ranked score hooks, lifecycle cleanup, game-only revision and initialized cold direct entry');
+ console.log('PASS: single-player released registration, same-origin launch, isolated ammo callbacks, ranked completion hooks, lifecycle cleanup, game-only revision and initialized cold direct entry');
 })().catch(error=>{console.error(error);process.exitCode=1;});

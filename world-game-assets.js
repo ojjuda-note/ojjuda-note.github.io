@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261103-restaurants-map-clean1';
+ const revision='20261103-archery-single1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   festival:'1.0.2',
   restaurants:'1.4.2',
   recommendations:'1.3.0',
-  archery:'1.12.0',
+  archery:'2.0.0',
   roulette:'1.8.0',
   bang:'1.9.0',
   poker:'1.5.0',
@@ -38,7 +38,7 @@
   festival:['/world-festival-schedule.css?v=20261103-festival-polish1','/world-festival-schedule.js?v=20261103-festival-polish1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-map-clean1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-map-pick1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261103-restaurants-map-pick1'],
-  archery:['/world-tour-game.css?v=20261012-marble-invite1','/world-archery-game.css?v=20261102-archery-fit-screen1','/world-archery-game.js?v=20261103-game-results1'],
+  archery:['/world-tour-game.css?v=20261012-marble-invite1','/world-archery-game.css?v=20261102-archery-fit-screen1','/world-archery-game.js?v=20261103-archery-single1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261103-game-results1'],
   bang:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261103-game-results1'],
   sacheonseong:['/world-sacheonseong-game.css?v=20261028-games-check1','/world-sacheonseong-game.js?v=20261103-game-results1'],

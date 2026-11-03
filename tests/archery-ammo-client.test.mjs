@@ -11,7 +11,7 @@ const ORIGIN = 'https://ojjuda.test';
 const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 let fixtureSequence = 0;
-const snapshot = (extra = {}) => ({ ok: true, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+const snapshot = (extra = {}) => ({ ok: true, launch_epoch: 4, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
   server_now: new Date(SERVER_EPOCH).toISOString(), coach_expires_at: null, coach_active: false, coach_price: 10, coach_duration_seconds: 86400, ...extra });
 
 // Real client, isolated browser globals and fake parent messages. No RPC or wallet
@@ -31,7 +31,7 @@ async function fixture({ store = new Map(), initialize = true, owner = OWNER, se
     client, store, messages, changes, module, synchronousChanges: changes.length,
     requests: () => messages.filter(item => item.data.type === 'ammo-request').map(item => item.data),
     emit(data, options = {}) { for (const receive of [...listeners]) receive({ data, source: options.source ?? parent, origin: options.origin ?? ORIGIN }); },
-    init(values = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'init', owner, sessionId, available: true, ...values }); },
+    init(values = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner, sessionId, available: true, ...values }); },
     reply(request, result, options = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'ammo-response', action: request.action, owner: request.owner, sessionId: request.sessionId, requestId: request.requestId, result, ...options.envelope }, options); },
     flush: tick,
     advance(ms) { const end = now + ms;for (;;) { const next = [...timers].filter(([, timer]) => timer.due <= end).sort((a,b) => a[1].due - b[1].due)[0];if (!next) break;now = next[1].due;timers.delete(next[0]);next[1].fn(); }now = end; }
@@ -44,8 +44,8 @@ test('handshake and callbacks are deferred and only the exact parent, origin, ow
   const f = await fixture({ initialize: false });
   assert.equal(f.synchronousChanges, 0);assert.equal(f.client.connection, 'connecting');
   await f.flush();assert.equal(f.messages[0].data.type, 'ready');assert.equal(f.messages[0].origin, ORIGIN);
-  f.emit({ source: 'ojjuda-archery-world', type: 'init', owner: OWNER, sessionId: SESSION, available: true }, { source: {} });
-  f.emit({ source: 'ojjuda-archery-world', type: 'init', owner: OWNER, sessionId: SESSION, available: true }, { origin: 'https://wrong.test' });
+  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: OWNER, sessionId: SESSION, available: true }, { source: {} });
+  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: OWNER, sessionId: SESSION, available: true }, { origin: 'https://wrong.test' });
   assert.equal(f.requests().length, 0);
   f.init();await f.flush();const request = f.requests()[0];
   for (const envelope of [{ owner: OTHER }, { sessionId: OTHER }, { requestId: OTHER }, { action: 'buy' }, { source: 'another-parent' }]) f.reply(request, snapshot({ remaining: 999 }), { envelope });
@@ -67,15 +67,15 @@ test('stage 220 registration, refresh and completion serialize with the parent a
     f.reply(request, snapshot({ run_id: SESSION, revision: i + 1 }));await f.flush();
   }
   assert.equal((await started).run_id, SESSION);
-  const completion = f.client.completeRound(SESSION, 220);await f.flush();const request = f.requests().at(-1);
-  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 220);
+  const completion = f.client.completeRound(SESSION, 220, 48);await f.flush();const request = f.requests().at(-1);
+  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 220);assert.equal(request.score, 48);assert.equal(request.launchEpoch, 4);
   f.reply(request, snapshot({ main_rounds: 6, revision: 3 }));assert.equal((await completion).main_rounds, 6);f.client.dispose();
 });
 
 test('pending high-stage registration and completion survive reopening and recover their original receipts', async () => {
   for (const [action, stage] of [['round-start', 121], ['round-complete', 220]]) {
     const original = await fixture();
-    const operation = action === 'round-start' ? original.client.startRound(OTHER, stage) : original.client.completeRound(SESSION, stage);
+    const operation = action === 'round-start' ? original.client.startRound(OTHER, stage) : original.client.completeRound(SESSION, stage, 44);
     await original.flush();const request = original.requests().at(-1);
     original.reply(request, {ok: false, reason: 'pending'});assert.equal((await operation).reason, 'pending');
     original.client.dispose();
@@ -157,7 +157,7 @@ test('older revisions cannot restore spent ammo and daily or milestone balances 
   const f = await fixture();
   for (const data of [snapshot({ remaining: 80, revision: 4, milestones_granted: 4 }), snapshot({ remaining: 80, revision: 5, day: '2026-11-03' }), snapshot({ remaining: 19, revision: 6, day: '2026-11-03' }), snapshot({ remaining: 20, revision: 7, day: '2026-11-04' })]) {
     const result = f.client.refresh();await f.flush();const request = f.requests().at(-1);
-    assert.deepEqual(Object.keys(request).sort(), ['action','owner','requestId','sessionId','source','type'].sort());
+    assert.deepEqual(Object.keys(request).sort(), ['action','launchEpoch','owner','requestId','sessionId','source','type'].sort());
     f.reply(request, data);await result;assert.equal(f.client.snapshot.remaining, data.remaining);
   }
   const stale = f.client.refresh();await f.flush();f.reply(f.requests().at(-1), snapshot({ remaining: 80, revision: 4 }));await stale;
@@ -182,7 +182,8 @@ test('invalid inputs and unavailable durable storage never submit a financial re
     assert.equal((await f.client.startRound(OTHER, stage)).reason, 'invalid');
     assert.equal((await f.client.completeRound(OTHER, stage)).reason, 'invalid');
   }
-  assert.equal((await f.client.completeRound('bad', 1)).reason, 'invalid');
+  assert.equal((await f.client.completeRound('bad', 1, 40)).reason, 'invalid');
+  for (const score of [-1, 51, 30.5, '40', undefined]) assert.equal((await f.client.completeRound(OTHER, 1, score)).reason, 'invalid');
   assert.equal((await f.client.spend('')).reason, 'invalid');assert.equal(f.requests().length, count);
   assert.match(f.module.namespace.createRequestId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/);
   f.client.dispose();
@@ -193,7 +194,7 @@ test('coach rental requests share one UUID, accept only server terms and cannot 
   const first = f.client.buyCoach(), second = f.client.buyCoach();await f.flush();
   assert.equal(f.requests().length, before + 1);
   const request = f.requests().at(-1);assert.equal(request.action, 'coach-buy');
-  assert.deepEqual(Object.keys(request).sort(), ['action', 'owner', 'requestId', 'sessionId', 'source', 'type'].sort());
+  assert.deepEqual(Object.keys(request).sort(), ['action', 'launchEpoch', 'owner', 'requestId', 'sessionId', 'source', 'type'].sort());
   assert.equal((await f.client.buy()).reason, 'busy');assert.equal((await f.client.spend('event')).reason, 'busy');
   const expires = new Date(SERVER_EPOCH + 86400000).toISOString();
   f.reply(request, snapshot({coins: 90, revision: 2, coach_active: true, coach_expires_at: expires}));
@@ -289,4 +290,44 @@ test('an expired recovered rental uses current outer snapshot fields instead of 
   assert.equal(result.ok, true);assert.equal(result.coach_active, false);assert.equal(result.coach_expires_at, expires);
   assert.equal(f.requests().length, count);assert.equal(f.requests().some(item => item.action === 'coach-buy'), false);
   assert.equal(f.client.pending, null);f.client.dispose();
+});
+
+
+test('test-era snapshots and handshakes cannot restore pre-launch ammunition or rounds', async () => {
+  const f = await fixture({initialize: false});
+  f.init({launchEpoch: 3});await f.flush();assert.equal(f.requests().length, 0);
+  f.init();await f.flush();const first = f.requests().at(-1);
+  f.reply(first, snapshot({launch_epoch: 3, remaining: 999, main_rounds: 999}));await f.flush();
+  assert.equal(f.client.snapshot, null);assert.equal(f.client.connection, 'unavailable');
+  const refreshed = f.client.refresh();await f.flush();f.reply(f.requests().at(-1), snapshot({remaining: 0, main_rounds: 0}));
+  assert.equal((await refreshed).ok, true);assert.equal(f.client.snapshot.remaining, 0);assert.equal(f.client.snapshot.main_rounds, 0);
+  const stale = f.client.refresh();await f.flush();f.reply(f.requests().at(-1), snapshot({launch_epoch: undefined, remaining: 888, main_rounds: 888}));
+  assert.equal((await stale).reason, 'update_required');assert.equal(f.client.snapshot.remaining, 0);assert.equal(f.client.snapshot.main_rounds, 0);
+  f.client.dispose();
+});
+
+test('old pending purchases are removed and never become new-era purchases or receipt lookups', async () => {
+  const oldKey = 'forest-archer-ammo-pending-v2:' + OWNER;
+  const recoveryKey = 'forest-archer-ammo-recovery-v2:' + OWNER;
+  const store = new Map([[oldKey, JSON.stringify({version: 1, owner: OWNER, action: 'buy', requestId: OTHER, payload: {}})], [recoveryKey, 'old receipts']]);
+  const f = await fixture({store});await f.flush();
+  assert.equal(f.client.pending, null);assert.equal(store.has(oldKey), false);assert.equal(store.has(recoveryKey), false);
+  assert.deepEqual(f.requests().map(request => request.action), ['status']);
+  const purchase = f.client.buy();await f.flush();const request = f.requests().at(-1);
+  assert.notEqual(request.requestId, OTHER);assert.equal(request.launchEpoch, 4);
+  f.reply(request, snapshot({remaining: 30, coins: 95}));assert.equal((await purchase).ok, true);
+  f.client.dispose();
+});
+
+
+test('a definitively reset receipt cannot trap a recovered purchase or replay it into the new launch', async () => {
+  const original = await fixture(), buying = original.client.buy();await original.flush();
+  const request = original.requests().at(-1);original.reply(request, {ok: false, reason: 'pending'});await buying;original.client.dispose();
+  const reopened = await fixture({store: original.store, sessionId: OTHER});await reopened.flush();
+  const lookup = reopened.requests().find(item => item.action === 'receipt');assert.ok(lookup);
+  reopened.reply(lookup, snapshot({ok: false, reason: 'progress_reset', remaining: 0, free_remaining: 0, main_rounds: 0, found: false, receipt: null}));
+  await reopened.flush();assert.equal(reopened.client.pending, null);assert.equal(reopened.client.snapshot.remaining, 0);
+  assert.equal((await reopened.client.retryPending()).reason, 'nothing_pending');
+  assert.deepEqual(reopened.requests().map(item => item.action), ['status', 'receipt']);
+  reopened.client.dispose();
 });
