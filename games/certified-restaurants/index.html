@@ -7,9 +7,9 @@
   <meta name="description" content="미쉐린·블루리본 가이드 선정 식당과 우체국 추천 맛집을 음식 종류와 지역별로 찾아보는 오쭈다 맛집 지도.">
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants3">
+  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-nearby1">
   <script src="./vendor/leaflet.js" defer></script>
-  <script src="./app.js?v=20261103-restaurants3" defer></script>
+  <script src="./app.js?v=20261103-restaurants-nearby1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
@@ -22,7 +22,9 @@
     <section class="search-area" aria-label="맛집 검색과 필터">
       <form id="search-form" class="search-row" role="search">
         <label class="search-box"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="sr-only">가게 이름, 주소, 음식 검색</span><input id="search" type="search" placeholder="가게 이름, 지역, 음식 검색" autocomplete="off" maxlength="160"></label>
+        <button id="nearby" class="nearby-button" aria-pressed="false" type="button"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span id="nearby-label">내 주변</span></button>
       </form>
+      <div id="location-bar" class="location-bar" hidden><p id="location-status" role="status"></p><button id="choose-region" type="button" hidden>지역 선택</button></div>
       <div id="categories" class="category-row" role="group" aria-label="음식 종류">
         <button type="button" class="category is-active" data-category="" aria-pressed="true">전체</button>
         <button type="button" class="category" data-category="한식" aria-pressed="false">한식</button>
@@ -53,7 +55,6 @@
       </div>
       <div class="toolbar-actions">
         <button id="saved-only" class="utility-button" type="button" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>저장한 곳</button>
-        <button id="nearby" class="utility-button" type="button"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>내 주변</button>
       </div>
     </section>
 
@@ -67,6 +68,7 @@
       </div>
       <div id="results" class="results-panel" tabindex="-1" aria-label="선정 식당 목록">
         <div id="cards" class="cards"><div class="loading-state"><span class="loading-ring" aria-hidden="true"></span><p>확인된 맛집을 불러오고 있어요.</p></div></div>
+        <button id="load-more" class="load-more" type="button" hidden>더 보기</button>
       </div>
     </section>
 
