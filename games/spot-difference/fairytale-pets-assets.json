@@ -1,0 +1,1551 @@
+{
+  "version": 1,
+  "generation": "AI-generated original fairy-tale illustrations and photorealistic cat and dog scenes created for these puzzles.",
+  "difficulty": "slightly-hard",
+  "totalPuzzles": 70,
+  "differencesPerPuzzle": 10,
+  "normalPerPuzzle": 6,
+  "zoomPerPuzzle": 4,
+  "puzzles": [
+    {
+      "id": 83,
+      "number": 1,
+      "title": "토끼의 숲속 빵집",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/01-original.webp",
+          "bytes": 250338,
+          "sha256": "029101bba5fe7f7e773a66f35f2df84c07295089baefc906c1dfad374dc0b2d2",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/01-changes.webp",
+          "bytes": 29556,
+          "sha256": "e1e998b979543091253ea144fdff0d628e3f2874d3b1c3d875f1ae49ecb4ad66",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 84,
+      "number": 2,
+      "title": "여우 사서와 작은 독서 친구",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/02-original.webp",
+          "bytes": 286622,
+          "sha256": "307947c06a5fb608d042b134c572cd7e7c53fb42fc508d60260a9269a137ba16",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/02-changes.webp",
+          "bytes": 30816,
+          "sha256": "56264d669bed01e0d5c7d6cf431098ed7b95d0ffacbd55561556246eb4ae03b7",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 85,
+      "number": 3,
+      "title": "수달의 바닷가 조개 가게",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/03-original.webp",
+          "bytes": 303644,
+          "sha256": "028a0247732b1ce61be6dc668c88394f9d34e65deb6321c1ca4bdbcbdab5101d",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/03-changes.webp",
+          "bytes": 32228,
+          "sha256": "174b7006595937c942d7c90a85f2ba3d0485ef7c0dc1d2673b7204cd14f25a19",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 86,
+      "number": 4,
+      "title": "아기 사슴의 딸기 정원",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/04-original.webp",
+          "bytes": 304162,
+          "sha256": "fc171bd3acdac091311a8cdbd70963f236b8dc2732456725de1f51822996d2e5",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/04-changes.webp",
+          "bytes": 27972,
+          "sha256": "8874d58331d8f8cecfcba26c0833999c94c8102fe9be42dc457f7f93d1144684",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 87,
+      "number": 5,
+      "title": "생쥐 남매의 따뜻한 부엌",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/05-original.webp",
+          "bytes": 259846,
+          "sha256": "2d845b8063c1cd9cc54ad3747f88f56f579a87cd6dff3bc7782b5c4e4aec1b02",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/05-changes.webp",
+          "bytes": 30632,
+          "sha256": "1af6bea15d925059aadbc7b98b6b38e4a8a470f8113b3c1ae3870f0a68136fa6",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 88,
+      "number": 6,
+      "title": "강아지와 회전목마",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/06-original.webp",
+          "bytes": 259646,
+          "sha256": "840da83c3156f3060a29361c669932b2720d5097140398323037ec2703b03019",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/06-changes.webp",
+          "bytes": 44296,
+          "sha256": "5d3ec1f1c5faa81168d2413b9c6c9971bfd68b3b35cc5ce889dddd9b8c4a9ddf",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 89,
+      "number": 7,
+      "title": "고양이의 옥상 정원",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/07-original.webp",
+          "bytes": 277046,
+          "sha256": "3c69524b976691ebd603b39d884feaff349310d75e435770fb953e609ed43fda",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/07-changes.webp",
+          "bytes": 37668,
+          "sha256": "c8779a144a8f574d29d98b771867b4a3f23df37d58565735494df4d5e96cb423",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 90,
+      "number": 8,
+      "title": "바닷속 조개 카페",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/08-original.webp",
+          "bytes": 263308,
+          "sha256": "59881e5b018fd746a3cd198b6fcfe0936135d20f04d9a7cefb1f5182f1322c20",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/08-changes.webp",
+          "bytes": 46434,
+          "sha256": "c779ec583e4137c40821c69915114c9a972598b785460884bcea08d51078f2d4",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 91,
+      "number": 9,
+      "title": "아기 곰의 장난감 공방",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/09-original.webp",
+          "bytes": 256032,
+          "sha256": "3968cf7439d7f92cf41f29b8babaa7b5872f7f8016ede3959c3a13e2548b5c06",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/09-changes.webp",
+          "bytes": 49264,
+          "sha256": "a9324a0d09361a76cd30806e0900ffd4fb585c96850978b00b6ba8e195b7bcec",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 92,
+      "number": 10,
+      "title": "부엉이의 작은 기차역",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/10-original.webp",
+          "bytes": 257988,
+          "sha256": "e6d3cc509014035cc14f0878f2e3a822c79f90e3fc823b83b76f01dad5b96b86",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/10-changes.webp",
+          "bytes": 32004,
+          "sha256": "66d7678ee23c3d1c68623be6afd842a1e8d5cd3da79e26909d614a9f7aaee1c3",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 93,
+      "number": 11,
+      "title": "펭귄의 바닷가 아이스크림 가게",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/11-original.webp",
+          "bytes": 263692,
+          "sha256": "61fcd764d73abee8835d6c6690aef1d1aa11152a9d5fb01c4820ade0877f9400",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/11-changes.webp",
+          "bytes": 32632,
+          "sha256": "f2f9344c9bcf92f4bba8fbff56605d8f92acefdb8befacab7c6035a2913dc4df",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 94,
+      "number": 12,
+      "title": "아기용의 햇살 가득 화원",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/12-original.webp",
+          "bytes": 260310,
+          "sha256": "33cf98c0ff3d51785029728aefeb53013fae2d5423d49674451422d358155471",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/12-changes.webp",
+          "bytes": 29690,
+          "sha256": "bc0dfe7d7f06bf56cad73b9a07f93431b322b9de5103f0ee8a5d0aca58277032",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 95,
+      "number": 13,
+      "title": "다람쥐의 시계 공방",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/13-original.webp",
+          "bytes": 286726,
+          "sha256": "71ae11527623956a7ba65aec7d2227ae39f85abf1609cc4398885d59717d6a75",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/13-changes.webp",
+          "bytes": 25826,
+          "sha256": "6ea91892e73b461b2fc2ebe09c0f49565272a53124ac4ecfbe6c85d36953b041",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 96,
+      "number": 14,
+      "title": "수달의 작은 수상시장",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/14-original.webp",
+          "bytes": 289346,
+          "sha256": "f8b5efa587c347e3ddee0e8b93af873c7c1fc55925d88335a8726ea239afca7f",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/14-changes.webp",
+          "bytes": 22728,
+          "sha256": "a485471e0ec70ee975d7122eed4372c264afa472b9f2b1af0ff0c33591c39fe7",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 97,
+      "number": 15,
+      "title": "너구리의 햇살 캠핑",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/15-original.webp",
+          "bytes": 317228,
+          "sha256": "e35c59b63d4a4a1f0c8b035b6c716f02c777f720ac2c0a0bb6c7ba6badfb5c7e",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/15-changes.webp",
+          "bytes": 39808,
+          "sha256": "a87bc3bcbd2334b52caa269ed6346b2b30bd00ac4c31e70315b21e5ed5e98335",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 98,
+      "number": 16,
+      "title": "요정의 버섯 마을",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/16-original.webp",
+          "bytes": 326514,
+          "sha256": "5a2d927659dd65921c33a916b8d97bfc0cf0b3b841aa49a7b0f0a89aeebde1e3",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/16-changes.webp",
+          "bytes": 18832,
+          "sha256": "b8f83d91cd02e83eff4f99a9c891f89730a71c0d6f78b62e0570186d05eba703",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 99,
+      "number": 17,
+      "title": "아기 코끼리의 기차역",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/17-original.webp",
+          "bytes": 273348,
+          "sha256": "6545a149d955a59da8de85b583f1b771ffde194971122bfceb9526437ef28f1c",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/17-changes.webp",
+          "bytes": 21242,
+          "sha256": "91cf510cf396f510a8aa56811544972663421d35ae8351a4b865b2307de9c647",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 100,
+      "number": 18,
+      "title": "고슴도치의 아늑한 도서관",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/18-original.webp",
+          "bytes": 300146,
+          "sha256": "3b32056aed5785b27646e0f0f4792bc541a0a3e82a16225a1f4497bc011b7f1c",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/18-changes.webp",
+          "bytes": 22916,
+          "sha256": "f3f2929e91c29e2e9ab7efbf9f4566c6f9731a968ebcf86145bac42ca083fd0c",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 101,
+      "number": 19,
+      "title": "고양이의 마법 학교",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/19-original.webp",
+          "bytes": 248564,
+          "sha256": "62599752ac97469280895a5ff5f394f6caa72e0618bfc68a2e25398a4a4a1510",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/19-changes.webp",
+          "bytes": 37380,
+          "sha256": "7bd4312b456dcaa1be55adee69471bc5f5ed6c155872ef760c10d73cb97c2505",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 102,
+      "number": 20,
+      "title": "판다의 작은 찻집",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/20-original.webp",
+          "bytes": 258618,
+          "sha256": "2f7e0c4a2ee6fedfab48e6f76ffb0d2348bc1f3ca0216f6b8d56cc9d5de27aba",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/20-changes.webp",
+          "bytes": 29468,
+          "sha256": "208d5790cadc8031573c4271beb8c6140e6935cb554125e40955c3d3763f2bd9",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 103,
+      "number": 21,
+      "title": "병아리의 딸기농장",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/21-original.webp",
+          "bytes": 307310,
+          "sha256": "e0e4d806566ba97c76845f486865374cf996908969db4b3d9ac948b07496ed9f",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/21-changes.webp",
+          "bytes": 41114,
+          "sha256": "9e6cde2d17fa149dd75288f18fa645ba4ce05969dd5550eaac9094bdf5586323",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 104,
+      "number": 22,
+      "title": "작은 곰의 별 관측소",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/22-original.webp",
+          "bytes": 272060,
+          "sha256": "aa2c39760e6d15a9379b0649d3c2a8507c9d37892743e7ea782b4c1fee118e9c",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/22-changes.webp",
+          "bytes": 31384,
+          "sha256": "318e12fa6cc905863d6483d9104e3edff341ba543a46a8411cd6a9ad3d35f095",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 105,
+      "number": 23,
+      "title": "해마의 산호 우체국",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/23-original.webp",
+          "bytes": 238830,
+          "sha256": "0f64984128d62a29f9f5a1bbf8fdd956ddcece30e6462f9318e4ef0fe7c38ea3",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/23-changes.webp",
+          "bytes": 24398,
+          "sha256": "b1d51f0546f85c857791ea577aacecb26fa07271650fe8baee92350c0ee11359",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 106,
+      "number": 24,
+      "title": "토끼의 눈마을 축제",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/24-original.webp",
+          "bytes": 260340,
+          "sha256": "dee620012bfb943afa759ba10501245cec693156d58934c26554509b598ebd77",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/24-changes.webp",
+          "bytes": 33030,
+          "sha256": "d56884e3e29c95a15b08da4e046ab8296e9f6e53dff9d1210f96081a7c15d243",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 107,
+      "number": 25,
+      "title": "여우의 풍선 축제",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/25-original.webp",
+          "bytes": 284986,
+          "sha256": "7217ecff76b1da53712d3b0f5d38e75260b2e737722c3a37ae5ab3015e830600",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/25-changes.webp",
+          "bytes": 34062,
+          "sha256": "6720d61b4ced95167c1ebe084bec314defcb784df23bc41878ba7bd4048f11b8",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 108,
+      "number": 26,
+      "title": "사슴 친구들의 봄 소풍",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/26-original.webp",
+          "bytes": 297300,
+          "sha256": "f1c34976b86e3fe8b44e18a2242e73c74e4f8261a06910f7fd6334404b2809ea",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/26-changes.webp",
+          "bytes": 23284,
+          "sha256": "d2f7942886f6844410ae6fec741797c5fcb22b2e681ac9df75ddfd98541a3e29",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 109,
+      "number": 27,
+      "title": "생쥐의 재봉 공방",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/27-original.webp",
+          "bytes": 279412,
+          "sha256": "b9dd20e9dba01e83e8eaef2a5bd24cf70952e3722840ac22f66a541cce37a0a5",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/27-changes.webp",
+          "bytes": 34372,
+          "sha256": "2fe93a667ba9e8b86dd41a411bf6ec2fb82ec55f251e86b1d79446c959bc694c",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 110,
+      "number": 28,
+      "title": "아기 용의 하늘 배",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/28-original.webp",
+          "bytes": 252002,
+          "sha256": "e0296913037a5276072e11a3603d66bbe2dc46589db4e8f4405649f4f755134d",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/28-changes.webp",
+          "bytes": 34226,
+          "sha256": "d63c2edc05b4aa159f88f0da48b999c448edd5b5445d34938ec71a159eecd6aa",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 111,
+      "number": 29,
+      "title": "오리들의 연꽃 연못",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/29-original.webp",
+          "bytes": 229364,
+          "sha256": "7a54089e9354347783e23ac05751ea21fb10c09ad6cbc7269314bbe73d854c29",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/29-changes.webp",
+          "bytes": 29262,
+          "sha256": "c198b09f81d6f6a4df755256cf20171a5d3be43b4b9d131806f9ff3e5823220f",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 112,
+      "number": 30,
+      "title": "숲속 친구들의 생일잔치",
+      "category": "fairytale",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/30-original.webp",
+          "bytes": 275942,
+          "sha256": "f56ee897c1d65c607ced9f30c13ff920f85c9e13a0d1fb57d5829633669ab673",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/30-changes.webp",
+          "bytes": 37684,
+          "sha256": "420777056081cac7621f7ba828a0b62ed2aed7a08371893cf7b4d5fb3a288a42",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 113,
+      "number": 31,
+      "title": "햇살 창가의 치즈고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/31-original.webp",
+          "bytes": 286976,
+          "sha256": "ba7865b968f99f77aa5e377f56cbda3b61e3cf53187daa2a665bc441ec4f0cd2",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/31-changes.webp",
+          "bytes": 78752,
+          "sha256": "53e00ebcdbbfeb72f6c6306f5b51db9601d5d5fc8766b35e2538c8b204336c27",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 114,
+      "number": 32,
+      "title": "책이 있는 카페의 랙돌",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/32-original.webp",
+          "bytes": 203302,
+          "sha256": "525553cfe3544c9c2ace8e43426f4b0cd3e66c1a7d624f74bb328c45c26e14ec",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/32-changes.webp",
+          "bytes": 55880,
+          "sha256": "347a33faff6f2fa5f7283c1d6babf8a08f9df6a7da47aeb87615eff887b6fb43",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 115,
+      "number": 33,
+      "title": "온실의 브리티시쇼트헤어",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/33-original.webp",
+          "bytes": 326712,
+          "sha256": "0f37dc4babba191086921809446334af6509f0a42db403240316cc24d51dcce8",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/33-changes.webp",
+          "bytes": 87842,
+          "sha256": "b467d4230a31d6362b817ce4df7f5a0ffdd72a8ba91d098451a34aae43d8136b",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 116,
+      "number": 34,
+      "title": "피크닉 자리의 검정흰고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/34-original.webp",
+          "bytes": 242998,
+          "sha256": "6ed6341140178bbda30dd0e41a6c3d27f976f0790ff6ca1d38ff2254055d33d1",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/34-changes.webp",
+          "bytes": 122348,
+          "sha256": "d95db7a936a61b29728dadaacba121038dca870348afd256c8ea2a697537dca8",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 117,
+      "number": 35,
+      "title": "재봉방의 샴고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/35-original.webp",
+          "bytes": 164810,
+          "sha256": "cd84b401ff03bcb6cc7e10e619698107f03b32b72137dba97784e5b74572023b",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/35-changes.webp",
+          "bytes": 62530,
+          "sha256": "b91bafdfd4c2aedb8f1ac150077fb14bedd2df60acf8ce86931bdb56980069a3",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 118,
+      "number": 36,
+      "title": "음악방의 하얀 페르시안",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/36-original.webp",
+          "bytes": 171962,
+          "sha256": "1bb6fa5f128ee8e92cbcb9865c28d616ae4960253bbd7e77a3d8b171130632e4",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/36-changes.webp",
+          "bytes": 76210,
+          "sha256": "6b8143a062c360309d351c6afac9fd28a80197bdeabaaad9f18a0240f6174f3e",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 119,
+      "number": 37,
+      "title": "발코니 화분 옆 회색태비",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/37-original.webp",
+          "bytes": 266042,
+          "sha256": "f64fefd7dee093e7d41ab82a2895ca166fee04b3e8070c4af3602f264eceeada",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/37-changes.webp",
+          "bytes": 77622,
+          "sha256": "bb5eb181613a7745d09cbbf4125ec080f007948710e61f04251754b416705a97",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 120,
+      "number": 38,
+      "title": "우체통 정원의 삼색고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/38-original.webp",
+          "bytes": 254594,
+          "sha256": "418e59de1eba7268dd9c2d1d11173c2adc76f9d9620237bcf3c60bccdff7e391",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/38-changes.webp",
+          "bytes": 52606,
+          "sha256": "47601048875f2948bd3724adea8a05458cfc2ebf2772d3a7088f10260758dee0",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 121,
+      "number": 39,
+      "title": "베이킹 테이블의 아비시니안",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/39-original.webp",
+          "bytes": 225290,
+          "sha256": "d71c9a287429438e4dc568c0143c1b404c248c1df65a7ec803f8f2efc4c8e2ba",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/39-changes.webp",
+          "bytes": 82114,
+          "sha256": "865d8987d6f0a211b21bd32b146b3ebee92275e7e4cd2ccb89e7f6f9982f78f9",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 122,
+      "number": 40,
+      "title": "벽난로 방의 턱시도고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/40-original.webp",
+          "bytes": 248884,
+          "sha256": "d4d3d2811bb5cc934d795c7a4b7bd47aa5b2098482665f5c925b602d1623b90f",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/40-changes.webp",
+          "bytes": 66260,
+          "sha256": "fd1f4c23044a2fb1d926b78087cf2d2103ceb40afda0df8e1b0fc112a00fcd89",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 123,
+      "number": 41,
+      "title": "작은 서점의 메인쿤",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/41-original.webp",
+          "bytes": 259034,
+          "sha256": "6dd9eebb4b4329e7ce7090fff456b47c070789537b8e03f56ec105e693bd7850",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/41-changes.webp",
+          "bytes": 92182,
+          "sha256": "6ce454d4fb5a7d7e1a6811a747b0c48518a7baa290bd3110569f6a8f5fb115ea",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 124,
+      "number": 42,
+      "title": "꽃가게의 러시안블루",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/42-original.webp",
+          "bytes": 252934,
+          "sha256": "2b857df1bb736e23474a2ee71b45319881d4093ebbfc847af2ddbf31de9e45c2",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/42-changes.webp",
+          "bytes": 64222,
+          "sha256": "dae161d30f207e19c14d7759dacdd6b1d31292ace5423e82fe328139e642247f",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 125,
+      "number": 43,
+      "title": "장난감 방의 벵갈고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/43-original.webp",
+          "bytes": 202602,
+          "sha256": "68252d4bb5743878a35ba30fbb9543f6015b2a054b60204bfd49d9fc0b00afbc",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/43-changes.webp",
+          "bytes": 49520,
+          "sha256": "f998681fd083373e8c294228c193facdb0ec8065e236c81914e55b92317f1183",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 126,
+      "number": 44,
+      "title": "한옥 마루의 노랑고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/44-original.webp",
+          "bytes": 215518,
+          "sha256": "a91296130539d0aa727a2a21ee01a2de6961c3f27f53903e2da2ad680fa5d009",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/44-changes.webp",
+          "bytes": 101254,
+          "sha256": "b7d6a3e7f7b37b8cf207a1b8362c79b23f5cac84fab38f786d0d616d8c5cedec",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 127,
+      "number": 45,
+      "title": "다락방 창가의 하얀고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/45-original.webp",
+          "bytes": 246842,
+          "sha256": "eabf3c549b699d3a06bc02d0599a4bfbe2edff1e4f18be5f8fb7c6243192329b",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/45-changes.webp",
+          "bytes": 45444,
+          "sha256": "2944f79b444e4394abf365f6dbcddf0c198f7084c6407a6a5826035c8a4fcf25",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 128,
+      "number": 46,
+      "title": "카페 테라스의 태비고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/46-original.webp",
+          "bytes": 236854,
+          "sha256": "d345b0b76738ead80f0429dcf74bfeedfe5572657602c840ff8685b56c21b443",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/46-changes.webp",
+          "bytes": 57706,
+          "sha256": "811076c2bfedbece04a795e89e07b140e18c463a0a1821fc7e18a0ae94eb6617",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 129,
+      "number": 47,
+      "title": "생일 식탁의 브리티시쇼트헤어",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/47-original.webp",
+          "bytes": 200516,
+          "sha256": "44af5629628ac9a83aebcc9be66b6c1e0dc779682b30466468ae11aa97378a0d",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/47-changes.webp",
+          "bytes": 100230,
+          "sha256": "624bc803df80cc81b40d0b144aeb4345bb29f544697998c3961d2a86fe67c09c",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 130,
+      "number": 48,
+      "title": "세탁바구니 속의 랙돌",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/48-original.webp",
+          "bytes": 197588,
+          "sha256": "f3e8c5a931567b8c9f47acdb3e76721d71e509527c474f71f392054941e8b444",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/48-changes.webp",
+          "bytes": 56280,
+          "sha256": "4c84b5a00b0d63b1dbecc3ce45c830fa9ec1c08ba9177b780b5bc6e1b3b28ef1",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 131,
+      "number": 49,
+      "title": "수공예 책상의 삼색고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/49-original.webp",
+          "bytes": 234972,
+          "sha256": "0ef4250de7a68ed34ee848e3205432ea303b65b4a2c561e43218fea53aee4e47",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/49-changes.webp",
+          "bytes": 107636,
+          "sha256": "87c3ca0561d34484183104e8297061df299bf6aeb8154b01a880ff9e17ae6c05",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 132,
+      "number": 50,
+      "title": "해변 별장의 샴고양이",
+      "category": "cat",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/50-original.webp",
+          "bytes": 224422,
+          "sha256": "dd42e045acfab5d1afe2048efe74def3e73d0de5edc6b89b58cd585341575227",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/50-changes.webp",
+          "bytes": 42946,
+          "sha256": "095cf461e2cb7ec8314f69f712fe216880e59c96bab1af624dc3b80bea92e9af",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 133,
+      "number": 51,
+      "title": "햇살 거실의 골든리트리버",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/51-original.webp",
+          "bytes": 236056,
+          "sha256": "0fb6cde12f07d620d240dea295a2eac0ae029b8f79dfc91d1c66c8994c2b3e8b",
+          "width": 886,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/51-changes.webp",
+          "bytes": 25684,
+          "sha256": "90b9c4a498ccbb5cf2d727a4ee72f67bb712737c3bff9345c6308cafe9d718e7",
+          "width": 886,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 134,
+      "number": 52,
+      "title": "정원 벤치의 코기",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/52-original.webp",
+          "bytes": 263382,
+          "sha256": "4cca5e836424af6f8144e438f6fd9c7e38401439f4508113df667a451100cb4a",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/52-changes.webp",
+          "bytes": 31250,
+          "sha256": "9e52232942fac3495291b6ebed922da500712e8115b34f4c2a82a944474f1ba6",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 135,
+      "number": 53,
+      "title": "햇살 카페의 말티즈",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/53-original.webp",
+          "bytes": 199608,
+          "sha256": "8657c891a01f4169cd33d16096ec0d245adf5199e54389f8a24f511f0862244f",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/53-changes.webp",
+          "bytes": 20586,
+          "sha256": "856fa8457424abcbf44002c60ee59c8b8cad7cf835c4bb781964e87f909aa5a5",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 136,
+      "number": 54,
+      "title": "푸들의 포근한 공방",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/54-original.webp",
+          "bytes": 226076,
+          "sha256": "6ec8aca2262746713940ca94cf21cd4fbd8731cac9292be9ee04f5d18e2401f6",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/54-changes.webp",
+          "bytes": 25430,
+          "sha256": "260b96203170c41ecd7dc80fda3c5564892021e68dbd77046e69b6af514b092e",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 137,
+      "number": 55,
+      "title": "비글의 봄날 피크닉",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/55-original.webp",
+          "bytes": 261800,
+          "sha256": "4f5e16d45801e0989037d0fc3a72341687c278e2ab561c3bf7eb50f5c8ab9e50",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/55-changes.webp",
+          "bytes": 29874,
+          "sha256": "1d80f6b50a126c7d866467b31965afd2b5e81b94ec54dff0aea3d2187bb842a5",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 138,
+      "number": 56,
+      "title": "시바견의 햇살 현관",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/56-original.webp",
+          "bytes": 256218,
+          "sha256": "10592f1a102f9bfb15ee19e1ba37ee5ab2ab91b9fa0bebf0a493ae31484311fd",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/56-changes.webp",
+          "bytes": 16978,
+          "sha256": "2b148a417644484f5b3d7728e316cb894a7e331cc946a99943aa0d1e97d340c6",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 139,
+      "number": 57,
+      "title": "사모예드의 포근한 겨울방",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/57-original.webp",
+          "bytes": 258656,
+          "sha256": "00b891167feab516193cebd0a568d5b010ccff57b06e54497298e23b4eddb2fa",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/57-changes.webp",
+          "bytes": 34712,
+          "sha256": "8b4f360a61162b67c2c48c846c217c8787b2d69303f13a20ec8c62cc5b79e0a0",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 140,
+      "number": 58,
+      "title": "닥스훈트의 조용한 서재",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/58-original.webp",
+          "bytes": 210512,
+          "sha256": "4b96eb5d8a7e019e7bf57852e1ddfe4e0bdc3e5b843932a9119c090638c8402a",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/58-changes.webp",
+          "bytes": 16172,
+          "sha256": "b8178a7459e2aa7ba72fba02b3e11bc74da3dc459b97f2a2328cc0ba46f0bae9",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 141,
+      "number": 59,
+      "title": "보더콜리의 햇살 농가",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/59-original.webp",
+          "bytes": 170470,
+          "sha256": "d6e588495f7bd7dea78b7acb4bdc3ec0e97655c95f5b02fc758a8e1fc17c8cc8",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/59-changes.webp",
+          "bytes": 23796,
+          "sha256": "cf348be64453026c5a7792b91cd030b76757ef15ad875146b90f980fd12bcc04",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 142,
+      "number": 60,
+      "title": "포메라니안의 꽃빛 발코니",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/60-original.webp",
+          "bytes": 252940,
+          "sha256": "e26f235c86a76a930abcbdaff8886feb6ad10a11c7e85e476657ac684f6f9173",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/60-changes.webp",
+          "bytes": 27494,
+          "sha256": "9ba2d8b8bb16fed58cc1b52807b0050cadada5cb5faadceb84c028479a5219a2",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 143,
+      "number": 61,
+      "title": "산장 창가의 허스키",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/61-original.webp",
+          "bytes": 201042,
+          "sha256": "ecb824b903621682c720d1df0d99e6021eb18dc84adcbb9917423498456588d2",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/61-changes.webp",
+          "bytes": 30612,
+          "sha256": "34f3ebcbde7bc886772fcf682810ae1e1bb5cfe1168e90b62668f2ba191ce720",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 144,
+      "number": 62,
+      "title": "꽃가게의 슈나우저",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/62-original.webp",
+          "bytes": 254958,
+          "sha256": "9e9fedbdb7960d08af2e1a0769082eb3dea9c46fcea0a4477dbaec14d6ff3097",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/62-changes.webp",
+          "bytes": 20660,
+          "sha256": "9c13ef32f3cad9f33d714551e79859b3217d26c0e1980babdbc96594325dc4be",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 145,
+      "number": 63,
+      "title": "바닷가 소풍의 코기",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/63-original.webp",
+          "bytes": 232726,
+          "sha256": "5a03ef83d0ebf9a841dc48495ec7d11ff07432a5f72c0a04c315b8f36b2e1a3b",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/63-changes.webp",
+          "bytes": 37392,
+          "sha256": "b849fd66d25835241aeb92163909f637c91c5f284cddcd37972ef70324cb455d",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 146,
+      "number": 64,
+      "title": "장난감 방의 골든 강아지",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/64-original.webp",
+          "bytes": 174282,
+          "sha256": "c2536c736295bfc19bc4abc4d4e71670dfc847bef180f1d47187d2099d62a3e6",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/64-changes.webp",
+          "bytes": 21338,
+          "sha256": "3b5abb1fdffcfb394fac4e225f32cb559e87265935d805360997bb591610de12",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 147,
+      "number": 65,
+      "title": "캠핑장의 래브라도",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/65-original.webp",
+          "bytes": 197868,
+          "sha256": "cd7b703729fb2f71a791eb60bdfb0113cebffd81dc7279c5df1c7bf0f426900b",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/65-changes.webp",
+          "bytes": 44058,
+          "sha256": "cbb17247be811d9ece5a5e574e8d3f7596cd1d24711d85a5debecb7d9b8f3805",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 148,
+      "number": 66,
+      "title": "햇살 창가의 시츄",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/66-original.webp",
+          "bytes": 188326,
+          "sha256": "a63103ef44f59cfc697cc805ebf5e78670c6891d56385b9929a54294ff178fcc",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/66-changes.webp",
+          "bytes": 53174,
+          "sha256": "204491b754853012273d76ed024d6e0d9878187ce28b4f9a40c4af2081f3b00e",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 149,
+      "number": 67,
+      "title": "베이킹 방의 푸들",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/67-original.webp",
+          "bytes": 183362,
+          "sha256": "2da696ddd5575c75c14572bcce5c8d0966af9fea245c37bebfb98908a188c13a",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/67-changes.webp",
+          "bytes": 42958,
+          "sha256": "b4b5fceba6372ca6a79dd3f454d4fc4772fb8e0ffd1604bfd2fdb4fd0c58f78f",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 150,
+      "number": 68,
+      "title": "자전거 정원의 잭 러셀",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/68-original.webp",
+          "bytes": 267210,
+          "sha256": "681455364e15e3d1fbcc2d75e29f9fda95dddcbb2b22dd0ed027eeb059fbf9e4",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/68-changes.webp",
+          "bytes": 38168,
+          "sha256": "8b679caa71c8240dc8e71b0bd577157389f060a61f061f7d0f7a4fd081937878",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 151,
+      "number": 69,
+      "title": "생일 테이블의 비숑",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/69-original.webp",
+          "bytes": 189566,
+          "sha256": "de7e372e8316a56dd66fe7cdd78ebef374f3139fd5a065e2fbdd6ceb1bde4bb8",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/69-changes.webp",
+          "bytes": 34724,
+          "sha256": "d74855650d42e32a84916404bb5be5d1c98114726f002bf9ff8879252c50ce13",
+          "width": 887,
+          "height": 887
+        }
+      }
+    },
+    {
+      "id": 152,
+      "number": 70,
+      "title": "한옥 마루의 진돗개",
+      "category": "dog",
+      "files": {
+        "original": {
+          "path": "assets/fairytale-pets/70-original.webp",
+          "bytes": 181572,
+          "sha256": "310039f13aa062c8e9d893084f08155081a6a06eb0342ed0f59e4fafa8b79397",
+          "width": 887,
+          "height": 887
+        },
+        "changes": {
+          "path": "assets/fairytale-pets/70-changes.webp",
+          "bytes": 30104,
+          "sha256": "04ebf87bdda478f8903c0f876e8e183374cdc76857565d348f6ad0c0a59f7391",
+          "width": 887,
+          "height": 887
+        }
+      }
+    }
+  ]
+}
