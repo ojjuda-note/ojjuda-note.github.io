@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const origin = 'https://fullscreen.test';
 const safe = {top:24, bottom:48, left:8, right:8};
+let activeCheck = 'fixture boot';
 const insets = source => source.replace(/env\(safe-area-inset-(top|bottom|left|right)(?:,[^)]*)?\)/g, (_, side) => `${safe[side]}px`);
 const viewports = [{width:390,height:844},{width:1280,height:900},{width:844,height:390},{width:344,height:882},{width:673,height:841}];
 
@@ -62,6 +63,11 @@ async function settle(page) {
 async function bounds(page) {
   return page.evaluate(() => ({width:innerWidth, top:auditViewport.top, height:auditViewport.height}));
 }
+async function checkpoint(page, label) {
+  const {width,height,top}=await bounds(page);
+  activeCheck=`${label} · ${width}×${height} · top ${top}`;
+  console.log('CHECK: '+activeCheck);
+}
 async function fullscreen(page, selector, label) {
   await settle(page);
   const expected=await bounds(page), actual=await page.locator(selector).boundingBox();
@@ -78,7 +84,8 @@ async function safeControl(page, selector) {
     actual.x+actual.width<=expected.width-safe.right+1 && actual.y>=expected.top+safe.top-1 &&
     actual.y+actual.height<=expected.top+expected.height-safe.bottom+1,
     `${selector} stays inside safe insets: ${JSON.stringify({actual,expected})}`);
-  assert.equal(await control.evaluate(node=>{const rect=node.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return node===hit||node.contains(hit);}), true, selector+' is not covered');
+  const hit=await control.evaluate(node=>{const rect=node.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return {reachable:node===hit||node.contains(hit),cover:hit?`${hit.tagName.toLowerCase()}#${hit.id}.${String(hit.className?.baseVal??hit.className).replace(/\s+/g,'.')}`:'none'};});
+  assert.equal(hit.reachable,true,`${selector} remains clickable during ${activeCheck}; hit ${hit.cover}`);
 }
 async function frameFits(page, selector) {
   await settle(page);
@@ -131,22 +138,29 @@ async function resize(page, size, shortened=false) {
     // The fixed logical board remains centered in a fullscreen host; entry and
     // result content can scroll without hiding the persistent close control.
     for(const size of viewports){
-      await resize(page,size);await page.evaluate(()=>fullscreenFixture.open('stacker'));
+      await resize(page,size);await checkpoint(page,'stacker entry');await page.evaluate(()=>fullscreenFixture.open('stacker'));
       await fullscreen(page,'#gov','inline entry');await fullscreen(page,'#gov > .gbox','inline box');
       await safeControl(page,'#gov .ghead [data-g=close]');await safeControl(page,'#gov [data-g=start]');
       await page.locator('#gov [data-g=start]').click();await page.evaluate(()=>cancelAnimationFrame(fullscreenFixture.current().raf));
+      await checkpoint(page,'stacker play');
       await fullscreen(page,'#gov > .gbox','inline play');
       const canvas=await page.locator('#gcv').boundingBox();
       assert.ok(Math.abs(canvas.width/canvas.height-2/3)<.003,'fixed logical canvas is not stretched');
       await safeControl(page,'#gcv');
       await page.evaluate(()=>fullscreenFixture.finish());await page.locator('#gscreen .game-result-card').waitFor();
-      await fullscreen(page,'#gov > .gbox','inline result');await safeControl(page,'#gscreen [data-g=start]');
+      await checkpoint(page,'stacker result');
+      await fullscreen(page,'#gov > .gbox','inline result');
+      await safeControl(page,'#gov .ghead [data-g=close]');
+      await safeControl(page,'#gscreen [data-g=start]');
+      // Scrolling a long result must not move an overlay over the toolbar.
+      await safeControl(page,'#gov .ghead [data-g=close]');
       await page.locator('#gov .ghead [data-g=close]').click();
       assert.equal(await page.locator('#gov').count(),0,'inline close removes the fullscreen host');
+      console.log(`PASS: stacker entry/play/result and header close · ${size.width}×${size.height}`);
     }
 
     for(const kind of ['chess','janggi']){
-      await resize(page,viewports[0]);await page.evaluate(kind=>fullscreenFixture.board(kind),kind);
+      await resize(page,viewports[0]);await checkpoint(page,kind+' entry');await page.evaluate(kind=>fullscreenFixture.board(kind),kind);
       await page.locator('.ge-board-entry').waitFor();await settle(page);
       await fullscreen(page,'.world-board-screen','board entry');
       await safeControl(page,'.world-board-screen .mp-entry-back');
@@ -154,7 +168,7 @@ async function resize(page, size, shortened=false) {
       await page.locator('#bd-root .bd-svg').waitFor();
       const sameBoard=await page.evaluate(()=>{window.savedBoard=fullscreenFixture.boardState();return JSON.stringify(savedBoard.s);});
       for(const size of viewports){
-        await resize(page,size);
+        await resize(page,size);await checkpoint(page,kind+' play');
         await fullscreen(page,'.world-board-screen','board game');await boardContentFits(page);
         await safeControl(page,'#bd-root [data-act=close]');await safeControl(page,'#bd-root .bd-svg');
         const ratio=await page.locator('#bd-root .bd-svg').evaluate(svg=>{const rect=svg.getBoundingClientRect(),view=svg.viewBox.baseVal;return [rect.width/rect.height,view.width/view.height];});
@@ -171,16 +185,18 @@ async function resize(page, size, shortened=false) {
         assert.equal(await page.evaluate(()=>fullscreenFixture.boardState().sel),-1,'input still maps to the same piece after folding');
       }
       await page.evaluate(()=>fullscreenFixture.finishBoard());await page.locator('#bd-root.bd-result-root').waitFor();
+      await checkpoint(page,kind+' result');
       await fullscreen(page,'.world-board-screen','board result');await boardContentFits(page);await safeControl(page,'#bd-root [data-act=close]');
       await page.locator('#bd-root [data-act=close]').click();
       assert.equal(await page.locator('.world-board-screen').count(),0,'board result closes normally');
+      console.log('PASS: '+kind+' entry/play/result, fold preservation and close');
     }
 
     for(const [api,selector,multiplayer] of [
       ['OjjudaTourGame','.tour-game-dialog',true],['OjjudaBangGame','.bang-game-dialog',true],
       ['OjjudaMinesGame','.mines-game-dialog',false],['OjjudaSpotGame','.spot-game-dialog',false]
     ]){
-      await resize(page,viewports[0]);await page.evaluate(api=>window[api].open({owner:'layout-fixture'}),api);
+      await resize(page,viewports[0]);await checkpoint(page,api+' entry');await page.evaluate(api=>window[api].open({owner:'layout-fixture'}),api);
       await page.locator(selector).waitFor();const game=await frameFits(page,selector);await game.waitForFunction(()=>window.childReady);
       if(multiplayer)await page.waitForFunction(selector=>document.querySelector(selector)?.dataset.mpActive==='true',selector);
       await fullscreen(page,selector,api+' entry');
@@ -189,17 +205,18 @@ async function resize(page, size, shortened=false) {
       if(multiplayer)await page.waitForFunction(selector=>document.querySelector(selector)?.dataset.mpActive==='false',selector);
       const round=await game.evaluate(()=>({...window.round}));
       for(const size of viewports){
-        await resize(page,size);await fullscreen(page,selector,api+' play');
+        await resize(page,size);await checkpoint(page,api+' play');await fullscreen(page,selector,api+' play');
         await frameFits(page,selector);await safeControl(page,`${selector} > :is(.tour-game-header,.spot-game-header) button`);
         assert.deepEqual(await game.evaluate(()=>({...window.round})),round,'folding does not reload the game or lose moves');
       }
-      await game.locator('#finish').click();await fullscreen(page,selector,api+' result');await frameFits(page,selector);
+      await game.locator('#finish').click();await checkpoint(page,api+' result');await fullscreen(page,selector,api+' result');await frameFits(page,selector);
       assert.equal(await game.locator('#result').isVisible(),true,'result remains in the original frame');
-      await resize(page,viewports[0],true);await fullscreen(page,selector,api+' shortened visual viewport');await frameFits(page,selector);
+      await resize(page,viewports[0],true);await checkpoint(page,api+' shortened visual viewport');await fullscreen(page,selector,api+' shortened visual viewport');await frameFits(page,selector);
       if(api==='OjjudaSpotGame'){
         // The viewport sheet may be cached or loaded after a lazy game sheet.
         await page.addStyleTag({content:insets(read('mobile-viewport.css'))});
         for(const open of [true,false]){
+          await checkpoint(page,`spot zoom ${open?'open':'closed'} with viewport CSS loaded last`);
           await game.evaluate(open=>parent.postMessage({type:'ojjuda:spot-zoom',open},location.origin),open);
           await page.waitForFunction(open=>document.querySelector('.spot-game-dialog').classList.contains('spot-game-zooming')===open,open);
           await fullscreen(page,selector,'spot zoom with viewport CSS loaded last');await frameFits(page,selector);
@@ -209,22 +226,23 @@ async function resize(page, size, shortened=false) {
       await page.locator(`${selector} > :is(.tour-game-header,.spot-game-header) button`).click();
       await page.locator(selector).waitFor({state:'detached'});
       assert.equal(await page.evaluate(()=>document.body.classList.contains('gaming')),false,'iframe close restores the surrounding page');
+      console.log('PASS: '+api+' entry/play/result, safe viewport and close');
     }
 
     // Sacheonseong creates its iframe only after Start and then uses the child
     // toolbar. Both sides of that transition must retain the full viewport.
-    await resize(page,viewports[1]);await page.evaluate(()=>OjjudaSacheonseongGame.open({owner:'layout-fixture'}));
+    await resize(page,viewports[1]);await checkpoint(page,'sacheonseong entry');await page.evaluate(()=>OjjudaSacheonseongGame.open({owner:'layout-fixture'}));
     await fullscreen(page,'.sacheonseong-game-dialog','sacheonseong entry');await safeControl(page,'.sacheonseong-back');
     await page.locator('.sacheonseong-game-dialog .ge-primary').click();
     const sacheon=await frameFits(page,'.sacheonseong-game-dialog');await sacheon.waitForFunction(()=>window.childReady);
     for(const size of [viewports[0],viewports[2],viewports[4]]){
-      await resize(page,size);await fullscreen(page,'.sacheonseong-game-dialog','sacheonseong play');await frameFits(page,'.sacheonseong-game-dialog');
+      await resize(page,size);await checkpoint(page,'sacheonseong play');await fullscreen(page,'.sacheonseong-game-dialog','sacheonseong play');await frameFits(page,'.sacheonseong-game-dialog');
       assert.equal(await page.locator('.sacheonseong-back').isVisible(),false,'child toolbar replaces the parent toolbar');
     }
     await sacheon.locator('#home').click();await page.locator('.sacheonseong-game-dialog').waitFor({state:'detached'});
 
     // Scope protection: an unrelated settings dialog stays a dialog.
-    await resize(page,viewports[1]);await page.evaluate(()=>fullscreenFixture.ordinary());
+    await resize(page,viewports[1]);await checkpoint(page,'ordinary dialog scope protection');await page.evaluate(()=>fullscreenFixture.ordinary());
     const ordinary=await page.locator('#modal-root .modal').boundingBox();
     assert.ok(ordinary.width<viewports[1].width-100&&ordinary.height<viewports[1].height-100,'ordinary dialogs retain their existing dimensions');
     await page.locator('#modal-root [data-act=close]').click();
@@ -232,4 +250,4 @@ async function resize(page, size, shortened=false) {
     await context.close();
     console.log('PASS: real inline/board/iframe hosts fill phone, desktop, landscape and foldable viewports through entry/play/results; safe insets, shortened viewport, frame/round preservation, input and Back remain intact.');
   } finally {await browser.close();}
-})().catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error('FAIL: '+activeCheck);console.error(error);process.exitCode=1;});

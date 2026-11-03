@@ -119,7 +119,7 @@ const root=path.resolve(__dirname,'..');
   assert.ok(await b.embedded().evaluate(()=>G.log.some(x=>x.includes('시간 초과'))));
   await b.frame.getByRole('button',{name:'기권',exact:true}).click();
   for(const p of [a,b,c]){
-   await p.frame.getByRole('button',{name:'온라인 로비로',exact:true}).waitFor({timeout:60000});
+   await p.frame.getByRole('button',{name:'대기실',exact:true}).waitFor({timeout:60000});
    assert.equal(await p.page.evaluate(()=>window.localScores),0,'online results never use the casual local score bridge');
    assert.equal(await p.frame.locator('body').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'no horizontal overflow');
   }

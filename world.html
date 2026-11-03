@@ -1101,7 +1101,8 @@ function installWorldGameScreen(session){
   canvas.style.width=width+'px';canvas.style.height=height+'px';
   session.ov.style.setProperty('--world-canvas-width',width+'px');
   if(session.id!=='runner'){
-   const dpr=Math.min(2,window.devicePixelRatio||1),pixelWidth=Math.max(1,Math.round(width*dpr)),pixelHeight=Math.max(1,Math.round(height*dpr));
+   // Keep the original 2x rendering budget while CSS fills larger viewports.
+   const renderScale=Math.min(2,scale*(window.devicePixelRatio||1)),pixelWidth=Math.max(1,Math.round(Z*renderScale)),pixelHeight=Math.max(1,Math.round(he*renderScale));
    if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){
     canvas.width=pixelWidth;canvas.height=pixelHeight;
     session.ctx.setTransform(pixelWidth/Z,0,0,pixelHeight/he,0,0);
