@@ -336,7 +336,7 @@
     const ratingSection = el('section', 'detail-ratings');
     if (!memberRatings) {
       ratingSection.append(el('h3', 'detail-section-label', '회원 별점'), el('p', 'rating-login-copy', '로그인하면 1점부터 5점까지, 0.5점 간격으로 별점을 남길 수 있어요.'));
-      const login = el('a', 'rating-login-link', '로그인하고 별점 남기기'); login.href = '/world.html?game=restaurants'; login.target = '_top'; ratingSection.append(login);
+      const login = el('a', 'rating-login-link', '로그인하고 별점 남기기'); login.href = '/?auth=login&next=world'; login.target = '_top'; ratingSection.append(login);
     }
     body.append(ratingSection);
     if (!hasCoordinates(item)) body.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
