@@ -243,7 +243,8 @@ async function fixture(browser, options = {}) {
     await page.locator('.card-main').click();
     assert.equal(await page.locator('#detail-title').textContent(), combined.name);
     assert.deepEqual(await page.locator('.source-link').evaluateAll(links => links.map(link => link.href)), combined.guides.map(guide => new URL(guide.sourceUrl).href), 'source links point to the exact recorded sources');
-    assert.ok((await page.locator('#detail a').evaluateAll(links => links.map(link => ({ protocol: new URL(link.href).protocol, rel: link.rel, target: link.target })))).every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer') && link.target === '_blank'), 'all detail destinations use safe external links');
+    assert.ok((await page.locator('#detail a:not(.rating-login-link)').evaluateAll(links => links.map(link => ({ protocol: new URL(link.href).protocol, rel: link.rel, target: link.target })))).every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer') && link.target === '_blank'), 'source and map destinations use safe external links');
+    assert.deepEqual(await page.locator('.rating-login-link').evaluate(link => ({ origin: link.origin, path: link.pathname, query: link.search, target: link.target })), { origin, path: '/world.html', query: '?game=restaurants', target: '_top' }, 'ratings use the existing same-origin member entry');
     assert.match(await page.locator('.source-list').textContent(), /출처 확인일/);
     const actualYears = await page.locator('.source-year').allTextContents();
     combined.guides.forEach((guide, index) => {

@@ -1,4 +1,4 @@
-/* Verified restaurant directory. Ratings and locations come only from the source dataset. */
+/* Source-backed guide selections and locations, with separate member ratings. */
 (() => {
   'use strict';
 
@@ -9,6 +9,12 @@
   const LOCATION_CHOICE_KEY = 'ojjuda-certified-restaurants-location-v1';
   const VIEW_KEY = 'ojjuda-certified-restaurants-view-v1';
   const LIST_PAGE_SIZE = 50, MAP_PAGE_SIZE = 50;
+  const entryParams = new URLSearchParams(location.search);
+  const embedded = entryParams.get('embedded') === '1';
+  const ratingUI = window.OjjudaRestaurantRatings;
+  const memberRatings = !!ratingUI && embedded && entryParams.get('member-ratings') === '1' && window.parent !== window;
+  const ratingCache = new Map(), ratingRequests = new Map(), ratingVersions = new Map();
+  let ratingSequence = 0, ratingEditor = null;
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const state = { restaurants: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', loading: true, loadError: false };
@@ -21,6 +27,47 @@
     if (text !== undefined) node.textContent = text;
     return node;
   }
+  function requestRating(action, payload) {
+    if (!memberRatings) return Promise.reject(new Error('로그인 후 별점을 남길 수 있어요.'));
+    const requestId = 'rating-' + Date.now().toString(36) + '-' + (++ratingSequence);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { ratingRequests.delete(requestId); reject(new Error('연결이 지연되고 있어요. 다시 시도해 주세요.')); }, 20000);
+      ratingRequests.set(requestId, { resolve, reject, timer });
+      try { window.parent.postMessage({ type: 'ojjuda:restaurants:ratings', requestId, action, ...payload }, location.origin); }
+      catch (error) { clearTimeout(timer); ratingRequests.delete(requestId); reject(error); }
+    });
+  }
+  window.addEventListener('message', event => {
+    if (!memberRatings || event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'ojjuda:restaurants:rating-result') return;
+    const pending = ratingRequests.get(event.data.requestId);
+    if (!pending) return;
+    ratingRequests.delete(event.data.requestId); clearTimeout(pending.timer);
+    if (event.data.error) pending.reject(new Error(String(event.data.error).slice(0, 160)));
+    else pending.resolve(event.data.data);
+  });
+  function updateRating(summary) {
+    if (!summary || !state.restaurants.some(item => item.id === summary.id)) return;
+    ratingCache.set(summary.id, summary);
+    document.querySelectorAll('[data-rating-id]').forEach(node => { if (node.dataset.ratingId === summary.id) ratingUI.renderSummary(node, summary); });
+  }
+  async function loadCardRatings(items) {
+    if (!memberRatings) return;
+    const ids = items.filter(item => !ratingCache.get(item.id)).map(item => item.id);
+    if (!ids.length) return;
+    const versions = new Map(ids.map(id => [id, ratingVersions.get(id) || 0]));
+    try {
+      const rows = await requestRating('summary', { ids });
+      if (!Array.isArray(rows)) throw new Error('Invalid ratings');
+      rows.forEach(row => { if (versions.get(row.id) === (ratingVersions.get(row.id) || 0)) updateRating(row); });
+      const received = new Set(rows.map(row => row.id));
+      ids.filter(id => !received.has(id)).forEach(id => {
+        document.querySelectorAll('[data-rating-id]').forEach(node => { if (node.dataset.ratingId === id) ratingUI.renderSummary(node, null); });
+      });
+    } catch {
+      document.querySelectorAll('[data-rating-id]').forEach(node => { if (ids.includes(node.dataset.ratingId) && !ratingCache.has(node.dataset.ratingId)) ratingUI.renderSummary(node, null); });
+    }
+  }
+  function disposeRatingEditor() { ratingEditor?.dispose(); ratingEditor = null; }
   function safeHttps(value) {
     try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; }
   }
@@ -138,6 +185,7 @@
       main.append(kicker, el('h2', 'card-name', item.name));
       if (item.menu.length) main.append(el('p', 'card-menu', item.menu.slice(0, 2).join(' · ')));
       const badges = el('div', 'guide-badges'); item.guides.forEach(g => badges.append(badge(g, false))); main.append(badges);
+      if (memberRatings) { const summary = el('span', 'card-rating'); summary.dataset.ratingId = item.id; ratingUI.renderSummary(summary, ratingCache.get(item.id)); main.append(summary); }
       main.addEventListener('click', () => selectRestaurant(item.id, true)); card.append(main, saveButton(item)); fragment.append(card);
     });
     container.append(fragment);
@@ -145,6 +193,7 @@
     $('load-more').hidden = end >= state.visible.length;
     $('load-more').textContent = '더 보기 · ' + end + ' / ' + state.visible.length + '곳';
     updateResultCount();
+    void loadCardRatings(state.visible.slice(start, end));
   }
   function syncPressed() {
     $('categories').querySelectorAll('[data-category]').forEach(button => { const active = button.dataset.category === state.category; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
@@ -275,6 +324,7 @@
     if (openDetail) showDetail(item);
   }
   function showDetail(item) {
+    disposeRatingEditor();
     const content = $('detail-content'); content.replaceChildren();
     const cover = el('div', 'detail-cover'), body = el('div', 'detail-body');
     cover.append(el('p', 'detail-kicker', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
@@ -283,6 +333,12 @@
     facts.append(el('dt', '', '주소'), el('dd', 'detail-address', item.address || '출처에서 주소를 확인해 주세요.'));
     if (item.menu.length) facts.append(el('dt', '', '대표 메뉴'), el('dd', 'detail-menu', item.menu.join(' · ')));
     body.append(facts);
+    const ratingSection = el('section', 'detail-ratings');
+    if (!memberRatings) {
+      ratingSection.append(el('h3', 'detail-section-label', '회원 별점'), el('p', 'rating-login-copy', '로그인하면 1점부터 5점까지, 0.5점 간격으로 별점을 남길 수 있어요.'));
+      const login = el('a', 'rating-login-link', '로그인하고 별점 남기기'); login.href = '/world.html?game=restaurants'; login.target = '_top'; ratingSection.append(login);
+    }
+    body.append(ratingSection);
     if (!hasCoordinates(item)) body.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
     body.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
     const sources = el('ul', 'source-list');
@@ -306,6 +362,20 @@
     links.append(link(hasCoordinates(item) ? '길찾기 ↗' : '주소로 길찾기 검색 ↗', route, 'route-link')); body.append(links);
     content.append(cover, body);
     if (!$('detail').open) $('detail').showModal();
+    if (memberRatings) ratingEditor = ratingUI.mountEditor(ratingSection, {
+      name: item.name,
+      load: async () => {
+        const version = ratingVersions.get(item.id) || 0;
+        const rows = await requestRating('summary', { ids: [item.id] });
+        const summary = Array.isArray(rows) && rows.find(row => row.id === item.id);
+        if (!summary) throw new Error('별점을 불러오지 못했어요.');
+        if ($('detail').open && state.selected === item.id && ratingSection.isConnected && version === (ratingVersions.get(item.id) || 0)) updateRating(summary);
+        return summary;
+      },
+      save: async score => requestRating('save', { id: item.id, score }),
+      isCurrent: () => $('detail').open && state.selected === item.id && ratingSection.isConnected,
+      onChange: summary => { ratingVersions.set(item.id, (ratingVersions.get(item.id) || 0) + 1); updateRating(summary); }
+    });
     $('close-detail').focus({ preventScroll: true });
   }
   function setView(view, persist = false) {
@@ -405,9 +475,23 @@
   }
 
   readSaved(); setView(readView());
-  const entryParams = new URLSearchParams(location.search);
-  const embedded = entryParams.get('embedded') === '1';
   if (embedded) $('back-link').hidden = true;
+  $('detail').addEventListener('close', disposeRatingEditor);
+  window.addEventListener('pagehide', () => {
+    disposeRatingEditor();
+    ratingRequests.forEach(pending => { clearTimeout(pending.timer); pending.reject(new Error('화면을 닫았어요.')); });
+    ratingRequests.clear(); ratingCache.clear(); ratingVersions.clear();
+  });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted || !memberRatings) return;
+    const shown = new Set([...document.querySelectorAll('[data-rating-id]')].map(node => {
+      ratingUI.renderSummary(node, undefined); return node.dataset.ratingId;
+    }));
+    const items = state.restaurants.filter(item => shown.has(item.id));
+    void (async () => { for (let start = 0; start < items.length; start += LIST_PAGE_SIZE) await loadCardRatings(items.slice(start, start + LIST_PAGE_SIZE)); })();
+    const selected = state.restaurants.find(item => item.id === state.selected);
+    if ($('detail').open && selected) showDetail(selected);
+  });
   if (embedded && entryParams.get('member-menu') === '1' && window.parent !== window) {
     $('recommendations-link')?.addEventListener('click', event => {
       if (event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

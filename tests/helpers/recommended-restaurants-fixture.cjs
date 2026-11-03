@@ -6,13 +6,21 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
   const photoBytes = new Uint8Array([255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1, 255, 217]);
   const state = {
     member, secondMember, user: options.user === undefined ? { id: member } : copy(options.user),
-    rows: copy(options.rows || []), calls: [], notices: [], files: new Map(),
+    rows: copy(options.rows || []), calls: [], notices: [], files: new Map(), ratings: new Map(),
     hooks: { rpc: {}, storage: {} }, listeners: new Set(), clock: 0
   };
   const user = () => state.user ? copy(state.user) : null;
   const response = data => ({ data: copy(data), error: null });
   const failure = message => ({ data: null, error: { message, code: 'P0001' } });
   const view = (row, owner) => row ? { ...copy(row), is_owner: row.owner_id === owner } : null;
+  const ratingKey = (kind, id, owner) => JSON.stringify([kind, id, owner]);
+  const ratingTargetExists = (kind, id) => kind === 'certified' || state.rows.some(row => row.id === id && !row.deleted_at);
+  const ratingSummary = (kind, id, owner) => {
+    const entries = [...state.ratings.values()].filter(rating => rating.kind === kind && rating.id === id);
+    const count = entries.length, total = entries.reduce((sum, rating) => sum + rating.score, 0);
+    return { id, average: count ? Math.round(total / count * 100) / 100 : null, count, my_rating: state.ratings.get(ratingKey(kind, id, owner))?.score ?? null };
+  };
+  for (const rating of options.ratings || []) state.ratings.set(ratingKey(rating.kind, rating.id, rating.user_id), copy(rating));
   for (const row of state.rows) {
     for (const photo of row.photos || []) state.files.set(photo, new target.Blob([photoBytes], { type: 'image/jpeg' }));
   }
@@ -35,6 +43,19 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
       if (state.hooks.rpc[name]) {
         const intercepted = await state.hooks.rpc[name](parameters, owner);
         if (intercepted !== undefined) return intercepted;
+      }
+      if (name === 'get_restaurant_rating_summaries' || name === 'set_restaurant_rating') {
+        const kind = parameters.p_kind;
+        if (!['certified', 'recommended'].includes(kind)) return failure('restaurant_rating_invalid_input');
+        if (name === 'get_restaurant_rating_summaries') {
+          if (!Array.isArray(parameters.p_ids) || parameters.p_ids.length > 100 || parameters.p_ids.some(id => typeof id !== 'string' || !id || id.length > 120)) return failure('restaurant_rating_invalid_input');
+          return response([...new Set(parameters.p_ids)].filter(id => ratingTargetExists(kind, id)).map(id => ratingSummary(kind, id, owner)));
+        }
+        const id = parameters.p_id, score = parameters.p_score;
+        if (typeof id !== 'string' || !id || id.length > 120 || typeof score !== 'number' || !Number.isFinite(score) || score < 1 || score > 5 || !Number.isInteger(score * 2)) return failure('restaurant_rating_invalid_input');
+        if (!ratingTargetExists(kind, id)) return failure('restaurant_rating_target_unavailable');
+        state.ratings.set(ratingKey(kind, id, owner), { kind, id, user_id: owner, score });
+        return response(ratingSummary(kind, id, owner));
       }
       if (name === 'list_restaurant_recommendations') {
         const query = String(parameters.p_query || '').toLowerCase();
@@ -72,6 +93,7 @@ function installRecommendedRestaurantsFixture(target, options = {}) {
         if (previous.owner_id !== owner) return failure('recommendation_not_owner');
         if (parameters.p_expected_updated_at !== previous.updated_at) return failure('recommendation_conflict');
         state.rows = state.rows.filter(row => row.id !== parameters.p_id);
+        for (const [key, rating] of state.ratings) if (rating.kind === 'recommended' && rating.id === parameters.p_id) state.ratings.delete(key);
         return response({ id: previous.id, deleted: true, removed_paths: previous.photos });
       }
       throw new Error('Unexpected recommendation RPC: ' + name);

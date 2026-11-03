@@ -171,6 +171,10 @@ svg { display:block; flex-shrink:0; }
 .detail-save { position:static; flex-shrink:0; }.detail-body { padding:23px 26px 25px; }
 .detail-facts { display:grid; grid-template-columns:82px minmax(0,1fr); gap:16px 8px; margin:0 0 20px; font-size:14px; line-height:1.75; }
 .detail-facts dt { color:#7b8d7f; }.detail-facts dd { margin:0; overflow-wrap:anywhere; }.detail-menu,.detail-address { color:#52685a; }
+.card-rating { display:block; margin-top:8px; }
+.detail-ratings { margin:20px 0; }
+.rating-login-copy { color:#65786b; font-size:14px; line-height:1.6; }
+.rating-login-link { display:inline-flex; align-items:center; min-height:44px; padding:10px 14px; border:1px solid #c6d6c9; border-radius:9px; color:var(--green); font-size:14px; font-weight:600; }
 .coord-note { font-size:12px; line-height:1.6; color:var(--muted); margin:-6px 0 18px; }
 .detail-section-label { font-size:13px; font-weight:650; color:#607665; margin:0 0 11px; }
 .source-list { list-style:none; padding:0; margin:0 0 18px; display:flex; flex-direction:column; gap:12px; }

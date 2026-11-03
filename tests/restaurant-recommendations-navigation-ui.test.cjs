@@ -4,24 +4,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright');
+const { installRecommendedRestaurantsFixture } = require('./helpers/recommended-restaurants-fixture.cjs');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const origin = 'https://nesting.test';
 const owner = '11111111-1111-4111-8111-111111111111';
 const shell = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="/world-restaurant-guide.css"><link rel="stylesheet" href="/recommended-restaurants.css">
-<button id="open">인증맛집</button><script>${read('recommended-restaurants.js')}\n${read('world-restaurant-guide.js')}</script>
+<link rel="stylesheet" href="/world-restaurant-guide.css"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css">
+<button id="open">인증맛집</button><script>${read('restaurant-ratings.js')}\n${read('recommended-restaurants.js')}\n${read('world-restaurant-guide.js')}</script>
 <script>
- const user={id:${JSON.stringify(owner)}},calls=[];
- const client={auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}};}},
-  rpc:async(name,args)=>{calls.push({name,args,owner:user.id});if(name!=='list_restaurant_recommendations')throw Error('Unexpected navigation mutation');return{data:{rows:[],total:0,offset:0,limit:24},error:null};},
-  storage:{from(){throw Error('Navigation must not touch photo storage');}}};
- const member=OjjudaRecommendedRestaurants.create({client,getUser:()=>user,returnLabel:'인증맛집'});
- window.nestingFixture={member,guide:OjjudaRestaurantGuide,calls};
- document.getElementById('open').onclick=()=>OjjudaRestaurantGuide.open({owner:user.id,authorized:()=>user.id===${JSON.stringify(owner)},recommendations:member});
+ (${installRecommendedRestaurantsFixture.toString()})(window,{user:{id:${JSON.stringify(owner)}}});
+ const member=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,returnLabel:'인증맛집'});
+ window.nestingFixture={member,guide:OjjudaRestaurantGuide,calls:rrFixture.calls};
+ document.getElementById('open').onclick=()=>OjjudaRestaurantGuide.open({owner:${JSON.stringify(owner)},authorized:()=>rrFixture.getUser()?.id===${JSON.stringify(owner)},recommendations:member});
 </script>`;
 
-test('370px nested member view preserves the actual directory filters, list, scroll and dirty draft', { timeout: 60000 }, async () => {
+test('370px nested member view preserves directory state and half-point ratings share the authenticated parent', { timeout: 90000 }, async () => {
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage'],...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{})});
  try {
   const context=await browser.newContext({viewport:{width:370,height:740},reducedMotion:'reduce'});
@@ -32,7 +30,7 @@ test('370px nested member view preserves the actual directory filters, list, scr
    if(url.origin!==origin){escaped.push(url.href);return route.abort();}
    if(url.pathname==='/fixture.html')return route.fulfill({contentType:'text/html',body:shell});
    if(url.pathname==='/games/certified-restaurants/index.html')directoryLoads++;
-   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/world-restaurant-guide.css','/recommended-restaurants.css'].includes(url.pathname))return route.abort();
+   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/world-restaurant-guide.css','/recommended-restaurants.css','/restaurant-ratings.js','/restaurant-ratings.css'].includes(url.pathname))return route.abort();
    const file=path.resolve(root,'.'+url.pathname);
    if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.abort();
    return route.fulfill({path:file});
@@ -41,6 +39,7 @@ test('370px nested member view preserves the actual directory filters, list, scr
   await page.goto(origin+'/fixture.html');await page.locator('#open').click();
   const directory=page.frameLocator('.restaurant-guide-dialog iframe');
   await directory.locator('#cards .card-main').first().waitFor();
+  assert.equal(new URL(await page.locator('.restaurant-guide-dialog iframe').getAttribute('src'),origin).searchParams.get('member-ratings'),'1','authenticated ratings are explicitly enabled on the actual directory frame');
   assert.equal(await directory.locator('#back-link').isVisible(),false);
   assert.equal(await directory.locator('#recommendations-link').getAttribute('href'),'/world.html?game=restaurants&restaurantView=recommendations');
   for(const width of [320,370]){
@@ -75,6 +74,44 @@ test('370px nested member view preserves the actual directory filters, list, scr
   assert.deepEqual(await snapshot(),before,'return preserves the actual search, category, region, expanded filters, list and scroll');
   assert.equal(directoryLoads,1,'opening and closing the member view does not reload the directory');
   assert.equal(await page.evaluate(()=>document.body.classList.contains('gaming')),true);
+  const ratedId=await directory.locator('#cards [data-restaurant-id]').first().getAttribute('data-restaurant-id');
+  await directory.locator('#cards .card-main').first().click();
+  const ratingEditor=directory.locator('#detail .detail-ratings');
+  await ratingEditor.locator('.orr-fieldset:not([disabled])').waitFor();
+  assert.deepEqual(await ratingEditor.locator('[data-orr="choice"]').evaluateAll(inputs=>inputs.map(input=>Number(input.value))),[1,1.5,2,2.5,3,3.5,4,4.5,5]);
+  await ratingEditor.getByText('1.5점',{exact:true}).click();await ratingEditor.locator('[data-orr="save"]').click();
+  await ratingEditor.locator('.orr-status').filter({hasText:'1.5점으로 저장했어요'}).waitFor();
+  assert.equal(await ratingEditor.locator('.orr-average').textContent(),'1.5');
+  assert.equal(await ratingEditor.locator('.orr-count').textContent(),'· 1명');
+  await ratingEditor.getByText('4.5점',{exact:true}).click();await ratingEditor.locator('[data-orr="save"]').click();
+  await ratingEditor.locator('.orr-status').filter({hasText:'4.5점으로 저장했어요'}).waitFor();
+  assert.equal(await ratingEditor.locator('.orr-average').textContent(),'4.5');
+  assert.equal(await ratingEditor.locator('.orr-count').textContent(),'· 1명','a second save updates the same member vote through the frame bridge');
+  assert.deepEqual(await page.evaluate(id=>nestingFixture.calls.filter(call=>call.name==='set_restaurant_rating'&&call.parameters.p_id===id).map(call=>({kind:call.parameters.p_kind,score:call.parameters.p_score,owner:call.owner})),ratedId),[1.5,4.5].map(score=>({kind:'certified',score,owner})));
+  for(const width of [320,370]){
+   await page.setViewportSize({width,height:740});
+   await ratingEditor.locator('.orr-choices').scrollIntoViewIfNeeded();
+   assert.equal(await ratingEditor.evaluate(editor=>{const dialog=document.querySelector('#detail'),rect=editor.getBoundingClientRect(),bounds=dialog.getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&dialog.scrollWidth<=dialog.clientWidth+1&&editor.scrollWidth<=editor.clientWidth+1&&bounds.left>=-1&&bounds.right<=innerWidth+1&&rect.left>=-1&&rect.right<=innerWidth+1;}),true,'directory rating choices stay inside the '+width+'px frame and detail dialog');
+  }
+  await directory.locator('#close-detail').click();
+  assert.equal(await directory.locator('[data-rating-id="'+ratedId+'"] .orr-average').textContent(),'4.5','saving immediately updates the directory card summary');
+  await directory.locator('#cards .card-main').first().click();
+  await ratingEditor.locator('[data-orr="choice"][value="4.5"]:checked').waitFor({state:'attached'});
+  assert.equal(await ratingEditor.locator('.orr-count').textContent(),'· 1명','reopening the same directory detail restores the saved score');
+  await directory.locator('body').evaluate(()=>{
+   window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+   window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+  });
+  await ratingEditor.locator('.orr-fieldset:not([disabled])').waitFor();
+  assert.equal(await ratingEditor.locator('[data-orr="choice"][value="4.5"]').isChecked(),true,'restoring a cached page remounts the editor with the saved score');
+  await directory.locator('#close-detail').click();
+  const unexpectedWrites=await page.evaluate(async id=>{
+   const before=nestingFixture.calls.filter(call=>call.name==='set_restaurant_rating').length,requestId='wrong-source-rating';
+   await new Promise(resolve=>{const received=event=>{if(event.data?.requestId!==requestId)return;window.removeEventListener('message',received);resolve();};window.addEventListener('message',received);window.postMessage({type:'ojjuda:restaurants:ratings',requestId,action:'save',id,score:5},location.origin);});
+   return nestingFixture.calls.filter(call=>call.name==='set_restaurant_rating').length-before;
+  },ratedId);
+  assert.equal(unexpectedWrites,0,'a same-origin message from the parent instead of the owned frame cannot save a rating');
+  assert.equal(directoryLoads,1,'rating edits do not replace the preserved directory frame');
   await directory.locator('#recommendations-link').evaluate(link=>link.click());await page.getByRole('button',{name:'+ 맛집 추천하기',exact:true}).waitFor();
   await page.evaluate(()=>nestingFixture.guide.back());await page.locator('[data-rr=dialog]').waitFor({state:'detached'});
   assert.equal(await page.locator('.restaurant-guide-dialog').isVisible(),true);

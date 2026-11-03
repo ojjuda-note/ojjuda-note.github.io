@@ -1,13 +1,13 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261103-restaurants-map50-2';
+ const revision='20261103-restaurants-ratings1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   festival:'1.0.2',
-  restaurants:'1.3.1',
-  recommendations:'1.1.0',
+  restaurants:'1.4.0',
+  recommendations:'1.2.0',
   archery:'1.12.0',
   roulette:'1.8.0',
   bang:'1.9.0',
@@ -32,10 +32,11 @@
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
+ const restaurantRatings=['/restaurant-ratings.css?v=20261103-restaurants-ratings1','/restaurant-ratings.js?v=20261103-restaurants-ratings1'];
  const groups={
   festival:['/world-festival-schedule.css?v=20261103-festival-polish1','/world-festival-schedule.js?v=20261103-festival-polish1'],
-  restaurants:['/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-map50-2','/recommended-restaurants.css?v=20261103-restaurants-fit2','/recommended-restaurants.js?v=20261103-restaurants-fit2'],
-  recommendations:['/recommended-restaurants.css?v=20261103-restaurants-fit2','/recommended-restaurants.js?v=20261103-restaurants-fit2'],
+  restaurants:[...restaurantRatings,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-ratings1','/recommended-restaurants.css?v=20261103-restaurants-fit2','/recommended-restaurants.js?v=20261103-restaurants-ratings1'],
+  recommendations:[...restaurantRatings,'/recommended-restaurants.css?v=20261103-restaurants-fit2','/recommended-restaurants.js?v=20261103-restaurants-ratings1'],
   archery:['/world-tour-game.css?v=20261012-marble-invite1','/world-archery-game.css?v=20261102-archery-fit-screen1','/world-archery-game.js?v=20261103-game-results1'],
   roulette:[session,'/world-roulette-game.css?v=20261031-roulette-multi2','/world-roulette-game.js?v=20261103-game-results1'],
   bang:[session,'/world-tour-game.css?v=20261012-marble-invite1','/world-bang-game.js?v=20261103-game-results1'],
