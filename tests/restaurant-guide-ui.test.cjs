@@ -24,6 +24,9 @@ async function resetFilters(page) { await page.locator('#reset').click(); }
 
 async function assertMapListLayout(page, width) {
   await page.setViewportSize({ width, height: 900 });
+  // Viewport changes can reach the page before its responsive flex layout has painted.
+  // Keep the geometry assertions below, but measure only after the map has a canvas.
+  await page.waitForFunction(expected => innerWidth === expected && document.querySelector('#map').getBoundingClientRect().height > 0, width);
   assert.equal(await page.locator('#map-panel').isVisible(), true, 'the map remains visible at ' + width);
   assert.equal(await page.locator('#results').isVisible(), true, 'map mode also exposes the restaurant list at ' + width);
   await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth + 1);
