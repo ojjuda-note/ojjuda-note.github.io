@@ -34,7 +34,6 @@
       "duplicateNameAndAddressCount": 0,
       "officeNumberSequencesComplete": true,
       "currentOperatingStatusCheckedCount": 0,
-      "verifiedCoordinateCount": 0,
       "contactNumbersMaskedInSourceCount": 9,
       "layoutCorrections": [
         "PDF13쪽 LAB 이흥용과자점 두실점 제목의 겹친 두 텍스트 레이어를 원문 이미지와 대조해 단일 상호로 정리",
@@ -42,26 +41,294 @@
       ],
       "notes": [
         "240개는 2026년6월 발행 자료의 추천 이력이며 현재 영업 여부는 개별 확인하지 않음",
-        "원문에는 위도·경도 없음. 카카오 공개폴더 주소는 확인했지만 장소좌표는 조회하지 못하여 null 유지",
-        "집배원 개인 이름이나 연락처는 수집하지 않음. phoneText는 가게 카드에 공개된 업소 연락처만 포함"
-      ]
+        "집배원 개인 이름이나 연락처는 수집하지 않음. phoneText는 가게 카드에 공개된 업소 연락처만 포함",
+        "위치는 상호·도로명·건물번호가 일치하는 공개 주소좌표 자료로 보강. 주소 변경 뒤 이전 좌표가 승계된 기록 및 근사 좌표는 제외. 원본 지도 API의 응답주소가 재확인되었다는 뜻은 아님."
+      ],
+      "coordinatesInPublicationCount": 0,
+      "mappedCoordinateCount": 149
     },
     "notes": [
       "Only restaurant identification facts and basic menu names are reproduced; no guide photography or editorial descriptions.",
       "Postal records are a June 2026 publication snapshot, not verification of current operating status.",
-      "Coordinates not stated in a verified source remain null. The publisher supplies a separate Kakao Map folder.",
       "Cuisine categories are editorial classifications based on representative dishes."
     ]
   },
   "michelin": {
-    "selectionUrl": "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants",
-    "coverage": "12 individually checked restaurant pages; not the complete selection",
-    "editionYearPolicy": "Only explicitly dated annual announcements are assigned an edition year. Current listings without a stated year have null year."
+    "publisher": "MICHELIN Guide",
+    "checkedAt": "2026-11-03",
+    "coverage": "현재 한국 공개 선정 목록 전체 237곳",
+    "recordCount": 237,
+    "regionCounts": {
+      "서울": 180,
+      "부산": 57
+    },
+    "distinctionCounts": {
+      "1스타": 35,
+      "셀렉티드": 120,
+      "2스타": 10,
+      "빕 구르망": 71,
+      "3스타": 1
+    },
+    "categoryCounts": {
+      "중식": 14,
+      "양식": 69,
+      "한식": 101,
+      "일식": 39,
+      "기타": 14
+    },
+    "officialListSources": [
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants/page/2",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants/page/3",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants/page/4",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants/page/5"
+    ],
+    "annualSources": [
+      "https://guide.michelin.com/kr/ko/article/michelin-guide-ceremony/all-the-stars-michelin-guide-seoul-busan-2026",
+      "https://guide.michelin.com/kr/ko/article/michelin-guide-ceremony/korea-bib-gourmand-2026"
+    ],
+    "yearPolicy": "2026 공식 스타 전체명단 46곳과 신규 빕 구르망 8곳만 연도 2026. 나머지는 현재 공개목록 확인일만 표시하고 선정 연도는 null.",
+    "annualYearVerifiedCount": 54,
+    "addressVerifiedCount": 237,
+    "coordinatesVerifiedCount": 13,
+    "coordinatesMissingCount": 224,
+    "coordinateMethod": "기존 공식 미쉐린 지도 링크에서 확인한 12곳 좌표를 주소 일치 확인 후 보존하고 유 유안 1곳을 추가. Google embed q의 공개 좌표만 이용하며 API 키를 저장하거나 재사용하지 않음.",
+    "coordinateAddressMismatch": [],
+    "categoryPolicy": "7개 음식 구분은 공식 요리분류와 공식 식당 소개를 바탕으로 편집 매핑한 값. 원문 요리분류는 cuisines에 보존.",
+    "menuPolicy": "기존 12곳의 확인한 메뉴만 보존. 다른 매장의 상세 메뉴는 추정하지 않아 menu=[]로 저장.",
+    "addressNormalization": "city를 서울/부산으로 앞에 표시하고 우편번호·국가 후미를 제거. 번호가 들어간 도로명 내부의 공백만 제거. 공식 원문 addressOriginal을 보존.",
+    "currentOperatingStatusVerifiedCount": 0,
+    "remarks": [
+      "2026년 3월 발표 233곳과 현재 237곳을 구분함. 237곳을 모두 2026년판으로 표시하지 않음.",
+      "원문 식당명 중 본 앤 브레드는 서울과 부산 두 지점이 있어 URL과 주소로 구분함.",
+      "직접 HTTP의 기존 차단 및 Google 403을 우회하거나 대량 반복하지 않음. 공개 검색 도구의 정상 페이지를 사용.",
+      "배경 사진·가이드 소개 원문·로고를 복제하지 않음. 사실 항목과 출처 URL만 수록."
+    ]
   },
   "blueRibbon": {
-    "coverage": "6 source-verified entries including historical selections; not the complete selection",
-    "seoulEditionSource": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
-    "editionYear": 2027
+    "verifiedAt": "2026-11-03",
+    "recordCount": 114,
+    "coordinatesCount": 48,
+    "buildCounts": {
+      "existingRecords": 6,
+      "highestMatchedMichelin": 32,
+      "ktoAdded": 35,
+      "jeju2022": 42,
+      "highestExtraKto": 2
+    },
+    "exclusions": [
+      {
+        "name": "바래온",
+        "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=5046b437-5e79-485c-8bfb-d3d967a432a0",
+        "reason": "음식점이 아닌 특산물판매점이며 블루리본 문구가 제품 수제어묵을 수식하므로 매장 선정 사실로 처리하지 않음"
+      },
+      {
+        "name": "밤가시버거",
+        "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=d374ab0b-1911-4d0d-a0c6-36a350bc8d83",
+        "reason": "검색색인에는 블루리본이 있으나 현재 상세본문에는 선정 언급이 없음"
+      },
+      {
+        "name": "이도림 블로트커피",
+        "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=5bf281df-c327-4b45-b9aa-36a80a9b7c4e",
+        "reason": "상세주소 응답 503; 주소 미확보"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+        "type": "publisher_book_description",
+        "edition": 2027,
+        "scope": "서울",
+        "includedRestaurants": 1602,
+        "threeRibbons": 42,
+        "twoRibbons": 314,
+        "oneRibbon": 685,
+        "note": "수록 수 전체가 1리본 이상 인증 업소 수는 아님"
+      },
+      {
+        "url": "https://www.ypbooks.co.kr/books/202605181049540708",
+        "type": "publisher_book_description",
+        "edition": 2026,
+        "scope": "서울 제외 전국",
+        "includedRestaurants": 3771,
+        "threeRibbons": 4,
+        "twoRibbons": 161,
+        "oneRibbon": 1544
+      },
+      {
+        "url": "https://korean.visitkorea.or.kr/search/search_list.do?keyword=%EB%B8%94%EB%A3%A8%EB%A6%AC%EB%B3%B8",
+        "type": "official_tourism_search",
+        "reportedFoodResults": 38,
+        "note": "공개 페이지 JS에서 관찰한 비인증 검색/상세 요청만 이용. 주소·좌표는 각 식당 원문에 귀속. 현재 리본 등급을 확인한 것으로 처리하지 않음"
+      },
+      {
+        "url": "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229",
+        "type": "official_tourism_blue_ribbon_cooperation",
+        "publishedAt": "2022-10-20",
+        "namedRestaurants": 43,
+        "addressConfirmedRestaurants": 42,
+        "note": "블루리본서베이에 등록된 세계요리 목록. 리본 수와 판년도 미공개. 라이터스블럭은 주소 누락으로 제외. 현재 수상·영업으로 해석하지 않음"
+      }
+    ],
+    "officialFullBrowse": {
+      "url": "https://app.catchtable.co.kr/ct/map/search-map?exhibitionFilterKeys=261008_blueribbon_all",
+      "linkedFrom": "https://litt.ly/blueribbonsurvey",
+      "purpose": "공식 제휴 전국 전체 탐색",
+      "localImportComplete": false
+    },
+    "coverageLimit": "최신 서울2027·전국2026 도서 수록 합계 5373곳 중 공개적으로 이름·주소와 선정/수록 근거를 확인한 일부만 수집. 사이트/제휴지도 전체 데이터는 확보하지 못함. bluer.co.kr과 Catchtable 공개 페이지 JS에서 관찰한 검색 요청이403을 반환하여 해당 경로를 중단. 인증·유료·봇 제한 우회 없음.",
+    "yearSemantics": {
+      "edition": "출판사 명시 도서 판년도",
+      "selection": "공식 소개문에 명시된 선정/수록 연도. 연속 기간만 있는 경우 임의로 최근 연도 계산하지 않음",
+      "source": "기사/자료 발행 시점은 sourceAsOf로 보존. 수상 연도로 추정하지 않음"
+    },
+    "coordinatesPolicy": "확인한 공식 페이지의 mapX/mapY 또는 미쉐린 지도 좌표만 사용. 좌표를 추정하거나 구/동 중심으로 대체하지 않음.",
+    "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
+    "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
+    "recordCountIncludingCollaborations": 311,
+    "displayLabels": {
+      "3리본": 42,
+      "선정 이력": 35,
+      "수록 이력": 62,
+      "공동선정": 172
+    },
+    "busanCollaboration": {
+      "title": "부산의 노포, 부산의 식문화",
+      "publisher": "부산관광공사",
+      "collaborator": "블루리본서베이",
+      "producer": "비알미디어(주)",
+      "publicationDate": "2025-07-22",
+      "printedDate": "2025-07-15",
+      "sourceAsOf": "2025-04",
+      "verifiedAt": "2026-11-03",
+      "recordCount": 71,
+      "categoryCounts": {
+        "한식": 63,
+        "중식": 8
+      },
+      "sourceDocumentUrl": "https://www.k-traveler.com/guides/file/15113892/6?dl=1",
+      "sourceDocumentHostRole": "공공 관광가이드 재배포처. PDF 판권에 부산관광공사 발행·비알미디어 제작 명시.",
+      "officialListingUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002004000",
+      "officialCatalogUrl": "https://www.data.go.kr/data/15113892/fileData.do?recommendDataYn=Y",
+      "catalogDataId": "15113892",
+      "officialCatalogNote": "이 ID는 부산광역시 관광지도 자료의 배포목록을 가리키며 71곳 식당 전용 데이터셋 ID는 아님.",
+      "documentPageCount": 28,
+      "documentTextLineCount": 1340,
+      "recognitionPolicy": "블루리본 리본 개수는 수록되어 있지 않아 추정하지 않고 부산관광공사·블루리본 공동선정2025로 표시.",
+      "yearEvidence": "PDF 판권 28쪽에 2025년7월22일 초판발행과2025년4월작성기준이 직접 명시됨.",
+      "extraction": "공개 PDF 검색도구 텍스트를 1340개 연속 행으로 확보. 71개 이름·71개 메뉴·71개 주소를 연결.",
+      "columnContinuations": "60년전통할매국밥·동화반점·신흥반점·원조전복죽집의 지면 흐름 때문에 분리된 필드를 연결. 4곳 모두 VisitBusan 공식 개별 페이지 검색 결과에서 이름/주소가 일치함을 재확인.",
+      "menuPolicy": "2025가격과 중량을 제거한 요리 이름만 보존. 급행장 마지막 메뉴 원문의 불완전 표기 후식냉과 제일장횟집의 식사별도 요금 문구는 제외.",
+      "coordinateVerifiedCount": 0,
+      "currentOperatingStatusVerifiedCount": 0,
+      "duplicateNameAndAddressCount": 0,
+      "privacyAndContent": "식당 기본 사실만 사용. 소개 문장과 사진을 앱 데이터로 복제하지 않음."
+    },
+    "additional": {
+      "recordCount": 26,
+      "coordinatesCount": 12,
+      "verifiedAt": "2026-11-03",
+      "groups": [
+        {
+          "count": 7,
+          "type": "2027 서울 3리본",
+          "yearType": "edition",
+          "gradeSourceUrl": "https://kobic.net/book/bookInfo/view.do?isbn=9788993508703",
+          "addressSources": "각 식당/호텔 공식 주소 또는 서울관광재단. 주소와 등급 출처를 별도 보존."
+        },
+        {
+          "count": 10,
+          "type": "제주관광공사 2025 기사",
+          "sourceUrl": "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013659",
+          "details": "2025 선정8곳은 ribbons와 yearType selection으로 보존. 커피템플은 명시된 최초연도2013만 보존. 델문도는 삼성생명×블루리본 인생카페 공동선정이며 리본등급과 선정연도는 확인되지 않아null."
+        },
+        {
+          "count": 9,
+          "type": "한국관광공사 공식 여행기사",
+          "details": "기사에서 블루리본을 명시한 업소만 추가. 기사 수정일을 수상 연도로 추정하지 않음. 주소는 기사에 명시된 것, 좌표는 개별 공식 상세정보에서 동일 도로명/건물번호를 확인했을 때만 보강."
+        }
+      ],
+      "coordinateConflict": {
+        "name": "연리지가든",
+        "reason": "같은 도로명 주소의 KTO/JTO 공식 좌표가 약1km 다름. 임의로 고르지 않고 lat/lng null로 남김. coordinateConflict에 두 원문근거 보존."
+      },
+      "articleRouting": "관광공사 여행기사는 rem_detail.do, 음식점 개별정보는 ms_detail.do로 출처URL분리",
+      "unknownCoordinatesPolicy": "행정구역 중심/임의지도추정/주소의 대략 위치를 채우지 않음",
+      "notIncludedHighest": [
+        "다이닝마",
+        "도원S",
+        "오공공구일일",
+        "화이트크리스마스"
+      ],
+      "notIncludedHighestReason": "최고등급 선정은 출판사에서확인되었으나 본수집에서 식별주소의 공식1차확인을 완료하지 못해 상호만 숫자에추가하지 않음",
+      "redRibbonPublicLinks": {
+        "officialSource": "https://www.coca-cola.com/kr/ko/brands/coca-cola/coke-and-meal",
+        "overview": "https://linktr.ee/cocacolaredribbon",
+        "naverRegions": "https://linktr.ee/cocacolaredribbon_N",
+        "kakaoRegions": "https://linktr.ee/cocacolaredribbon_K",
+        "localImported": 0,
+        "accessResult": "관측된공개링크로 네이버/카카오지도를열었으나접근실패. API추측/차단우회없이종료."
+      }
+    },
+    "sejongCollaboration": {
+      "publisher": "세종시문화관광재단",
+      "collaborator": "블루리본서베이",
+      "checkedAt": "2026-11-03",
+      "recordCount": 100,
+      "yearCounts": {
+        "2025": 46,
+        "2026": 54
+      },
+      "categoryCounts": {
+        "한식": 46,
+        "기타": 6,
+        "양식": 19,
+        "디저트": 22,
+        "일식": 4,
+        "중식": 3
+      },
+      "programCounts": {
+        "세종사랑 맛집": 98,
+        "서부내륙권 맛집": 14,
+        "두 사업 모두 선정": 12,
+        "서부내륙권만 선정": 2
+      },
+      "yearEvidence": "공식 선정연도 필터(sc_slctnYr=2025 또는2026)의 공개 목록 페이지 각각6개를 전부 수집. 2025년46곳중세종사랑44·서부내륙권전용2, 2026년54곳은모두세종사랑.",
+      "announcementEvidence": "2026-09-22 공식 공지에서2025년44개소에이어2026년54개소선정명시.",
+      "jointSelectionSourceUrl": "https://www.sjcf.or.kr/foodtrip/content.do?key=2608120001",
+      "announcementSourceUrl": "https://www.sjcf.or.kr/foodtrip/bbsctt/view.do?bbscttSn=2609220001&key=2508080005",
+      "officialListUrl": "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001",
+      "officialCoordinateSourceUrl": "https://www.sjcf.or.kr/foodtrip/bluer/near.do?key=2608120002",
+      "coordinateSourceHtmlSha256": "9438d6c33ce448f4e274377671a35c4b8803228869994ebee988137b4215841e",
+      "coordinateSourceStructure": "공개 HTML 내부의 places.push({sn,nm,addr,lat:Number(...),lng:Number(...),food,ty}) 배열 100개. 해당 페이지 자체가 이 좌표로 위치 지도와 거리순 목록을 그림.",
+      "coordinateVerifiedCount": 100,
+      "coordinateCrosscheck": "공식 목록과 지도 배열의 식당ID·이름100곳 일치, 전체 상세주소가 지도 기본주소로 시작함을 확인. 지역범위 검증 통과.",
+      "noExternalGeocoding": true,
+      "recognitionPolicy": "블루리본 정규책자의 리본개수가 아니라 공식 공동선정 사업이므로 label=공동선정으로구분. 리본등급추정없음.",
+      "categoryPolicy": "공식 음식종류를한식중식일식양식분식디저트기타로매핑. cafes/bakeries는디저트, 다이닝바는양식, 아시안·칵테일바·복숭아와인은기타.",
+      "districtPolicy": "주소에읍·면·동이명시되면그대로사용. 도로명만있어동이확인되지않은곳은세종시로표기하며임의동명추정없음.",
+      "currentOperatingStatusVerifiedCount": 0,
+      "selectionListSources": [
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=1",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=2",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=3",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=4",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=5",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2025&pageIndex=6",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=1",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=2",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=3",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=4",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=5",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001&sc_slctnYr=2026&pageIndex=6"
+      ],
+      "remarks": [
+        "정상공개HTTP200페이지의데이터를사용. 로그인·봇보호우회없음.",
+        "기본홈HTML에서알려준bluerMap.do에첫정상조회가404로나와반복하지않음. 실제좌표는정상GET주변맛집찾기페이지의공개배열에서읽음.",
+        "선정연도와현재정보확인일을분리. 개인위치를사이트에전송하지않았음.",
+        "메뉴목록은별도공개사실로확인된2종만기록하고, 그외98곳은빈배열. 소개문·사진·공개페이지키를복제하지않음."
+      ]
+    }
   },
   "mapBackground": {
     "provider": "KOSTAT",
@@ -71,5 +338,80 @@
     "sha256": "ea600815c81b9b0f95777e6ac0715d34753998e0876a7f223142ed2d5d1b40f6",
     "attributionFile": "map-attribution.txt",
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
+  },
+  "coverage": {
+    "uniqueRestaurants": 749,
+    "providerCounts": {
+      "michelin": 237,
+      "blue-ribbon": 311,
+      "post-office": 240
+    },
+    "coordinatesAvailable": 369,
+    "coordinatesMissing": 380,
+    "regionalCounts": {
+      "강원": 6,
+      "경기": 9,
+      "경남": 133,
+      "대구": 2,
+      "부산": 221,
+      "서울": 200,
+      "세종": 100,
+      "울산": 18,
+      "인천": 2,
+      "전남": 1,
+      "전북": 2,
+      "제주": 52,
+      "충남": 1,
+      "충북": 2
+    },
+    "categoryCounts": {
+      "한식": 413,
+      "중식": 51,
+      "일식": 66,
+      "기타": 24,
+      "양식": 118,
+      "분식": 5,
+      "디저트": 72
+    }
+  },
+  "coordinateEnrichment": {
+    "checkedAt": "2026-11-03",
+    "addedCount": 198,
+    "matchedMethods": {
+      "exact-name-and-road-address; unchanged-address-history": 143,
+      "exact-name-and-road-address; public-tourism-data": 55
+    },
+    "originalTourismSource": "한국관광공사·부산관광공사 공개 위치정보",
+    "tourismDataMirror": "https://github.com/jk-ayaan/food_trip",
+    "postalCoordinateData": "https://github.com/jk-ayaan/usulleng",
+    "matchingPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
+    "postalHistoryPolicy": "전체 5개 Git 이력에서 최초 좌표와 현재 주소가 유지되는 geo=address 항목만 사용. 원 API의 반환주소 검증을 의미하지 않음.",
+    "knownStaleCoordinatesExcluded": [
+      "우리이모집",
+      "효성갈비",
+      "진미추어탕",
+      "청미추어탕",
+      "외양간구시"
+    ],
+    "privacy": "사용자 위치는 브라우저 메모리에서만 거리 계산에 사용하고 저장·전송하지 않음.",
+    "conflictingOfficialCoordinatesExcluded": [
+      {
+        "id": "blue-add-연리지가든",
+        "name": "연리지가든",
+        "reason": "conflicting_official_coordinates",
+        "evidence": [
+          {
+            "lat": 33.34464930657684,
+            "lng": 126.20278243837885,
+            "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=fdb8adc0-aa31-4f61-8303-755289cf24dd"
+          },
+          {
+            "lat": 33.336132,
+            "lng": 126.1989307,
+            "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009858"
+          }
+        ]
+      }
+    ]
   }
 }

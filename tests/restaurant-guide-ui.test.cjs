@@ -14,7 +14,8 @@ const entry = origin + '/games/certified-restaurants/index.html?embedded=1';
 const hasCoordinates = item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng);
 const ids = items => items.map(item => item.id).sort();
 const visibleIds = page => page.locator('#cards [data-restaurant-id]').evaluateAll(cards => cards.map(card => card.dataset.restaurantId).sort());
-const waitForCount = (page, count) => page.waitForFunction(expected => document.querySelectorAll('#cards [data-restaurant-id]').length === expected, count);
+const waitForTotal = (page, count) => page.waitForFunction(expected => Number(document.querySelector('#result-count').dataset.total) === expected, count);
+async function waitForCount(page, count) { await waitForTotal(page, count); while (await page.locator('#cards [data-restaurant-id]').count() < count) await page.locator('#load-more').click(); }
 async function openFilters(page) { if (await page.locator('#filter-toggle').getAttribute('aria-expanded') !== 'true') await page.locator('#filter-toggle').click(); }
 async function resetFilters(page) { await openFilters(page); await page.locator('#reset').click(); }
 
@@ -22,14 +23,16 @@ async function fixture(browser, options = {}) {
   const context = await browser.newContext({ viewport: options.viewport || { width: 1280, height: 1000 }, reducedMotion: 'reduce' });
   const network = { geography: 0, escaped: [], data: 0 };
   const records = options.dataset || dataset;
-  await context.addInitScript(({ denyLocation, blockStorage }) => {
+  await context.addInitScript(({ permission, position, locationChoice, blockStorage }) => {
     window.fixtureLocationRequests = 0;
-    if (denyLocation) Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(success, failure) { window.fixtureLocationRequests++; queueMicrotask(() => failure({ code: 1, message: 'Fixture denied' })); } } });
+    Object.defineProperty(navigator, 'permissions', { configurable: true, value: { query: async () => ({ state: permission }) } });
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(success, failure) { window.fixtureLocationRequests++; queueMicrotask(() => position ? success({ coords: { latitude: position.lat, longitude: position.lng } }) : failure({ code: 1, message: 'Fixture denied' })); } } });
+    if (locationChoice) localStorage.setItem('ojjuda-certified-restaurants-location-v1', locationChoice);
     if (blockStorage) {
       Storage.prototype.getItem = () => { throw new DOMException('Fixture disabled', 'SecurityError'); };
       Storage.prototype.setItem = () => { throw new DOMException('Fixture full', 'QuotaExceededError'); };
     }
-  }, { denyLocation: !!options.denyLocation, blockStorage: !!options.blockStorage });
+  }, { permission: options.permission || 'denied', position: options.position || null, locationChoice: options.locationChoice || '', blockStorage: !!options.blockStorage });
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
     if (url.origin !== origin) { network.escaped.push(url.href); return route.abort(); }
@@ -58,11 +61,15 @@ async function fixture(browser, options = {}) {
   try {
     const regular = await fixture(browser, { denyLocation: true });
     const { page } = regular;
+    await waitForTotal(page, dataset.restaurants.length);
+    assert.equal(await page.locator('#cards [data-restaurant-id]').count(), Math.min(50, dataset.restaurants.length), 'first render is a bounded batch');
     await waitForCount(page, dataset.restaurants.length);
     assert.deepEqual(await visibleIds(page), ids(dataset.restaurants), 'every real dataset record appears once');
     assert.equal(await page.locator('#back-link').isVisible(), false, 'the embedded page leaves navigation to the arcade shell');
     assert.deepEqual(await page.locator('#categories [data-category]').evaluateAll(nodes => nodes.map(node => node.dataset.category)), ['', '한식', '중식', '일식', '양식', '분식', '디저트', '기타']);
-    assert.equal(await page.evaluate(() => window.fixtureLocationRequests), 0, 'location is never requested on entry');
+    assert.equal(await page.evaluate(() => window.fixtureLocationRequests), 0, 'a known denied permission is not requested again on entry');
+    assert.equal(await page.locator('#nearby').isVisible(), true, 'nearby is a primary control');
+    assert.equal(await page.locator('#filter-options #nearby').count(), 0);
     assert.equal(await page.locator('#workspace').getAttribute('data-view'), 'list', 'every screen starts with the complete list');
     assert.equal(await page.locator('#results').isVisible(), true);
     assert.equal(await page.locator('#map-panel').isVisible(), false);
@@ -74,7 +81,7 @@ async function fixture(browser, options = {}) {
     await page.locator('#show-map').click();
     await page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(regular.network.geography, 1);
-    assert.equal(await page.locator('.restaurant-pin').count(), dataset.restaurants.filter(hasCoordinates).length);
+    assert.equal(await page.locator('.restaurant-pin').count(), Math.min(300, dataset.restaurants.filter(hasCoordinates).length));
     await page.locator('#show-list').click(); await page.locator('#show-map').click();
     assert.equal(regular.network.geography, 1, 'view changes reuse the existing local map');
     assert.equal(await page.locator('#map.leaflet-container').count(), 1);
@@ -124,7 +131,12 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(await page.locator('.source-link').evaluateAll(links => links.map(link => link.href)), combined.guides.map(guide => new URL(guide.sourceUrl).href), 'source links point to the exact recorded sources');
     assert.ok((await page.locator('#detail a').evaluateAll(links => links.map(link => ({ protocol: new URL(link.href).protocol, rel: link.rel, target: link.target })))).every(link => link.protocol === 'https:' && link.rel.includes('noopener') && link.rel.includes('noreferrer') && link.target === '_blank'), 'all detail destinations use safe external links');
     assert.match(await page.locator('.source-list').textContent(), /출처 확인일/);
-    for (const guide of combined.guides) if (guide.year) assert.match(await page.locator('.source-list').textContent(), new RegExp(guide.year + (guide.provider === 'blue-ribbon' ? '년판' : guide.provider === 'post-office' ? '년 발행' : '년 선정')));
+    const actualYears = await page.locator('.source-year').allTextContents();
+    combined.guides.forEach((guide, index) => {
+      if (!guide.year) return;
+      const type = guide.yearType || (guide.provider === 'blue-ribbon' ? 'edition' : guide.provider === 'post-office' ? 'publication' : 'selection');
+      assert.equal(actualYears[index], guide.year + { edition: '년판', selection: '년 선정', publication: '년 발행', source: '년 자료', listing: '년 수록' }[type], 'each source uses its recorded year meaning');
+    });
     assert.ok(await page.locator('.detail-links a').first().getAttribute('href').then(href => decodeURIComponent(href).includes(combined.address)), 'map search includes the actual branch address');
     if (hasCoordinates(combined)) assert.ok((await page.locator('.route-link').getAttribute('href')).endsWith(',' + combined.lat + ',' + combined.lng), 'directions use the sourced destination coordinates');
     await page.keyboard.press('Escape');
@@ -133,10 +145,13 @@ async function fixture(browser, options = {}) {
 
     // Geography is explicit opt-in, and denial keeps the list usable.
     await openFilters(page); await page.locator('#nearby').click();
-    await page.waitForFunction(() => document.querySelector('#status').textContent.includes('허용되지'));
+    await page.waitForFunction(() => document.querySelector('#location-status').textContent.includes('허용되지'));
     assert.equal(await page.evaluate(() => window.fixtureLocationRequests), 1);
     assert.equal(await page.locator('#nearby').isDisabled(), false);
+    await waitForCount(page, dataset.restaurants.length);
     assert.deepEqual(await visibleIds(page), ids(dataset.restaurants), 'location denial does not hide otherwise valid results');
+    await page.locator('#choose-region').click();
+    assert.equal(await page.locator('#region').evaluate(node => node === document.activeElement), true, 'denial offers a direct path to region selection');
     await resetFilters(page);
 
     // Responsive layout and actual map/list presentation at narrow phone widths.
@@ -192,7 +207,7 @@ async function fixture(browser, options = {}) {
     await waitForCount(hostile.page, dataset.restaurants.length + 1);
     assert.equal(await hostile.page.locator('[data-restaurant-id="fixture-unsafe-only"]').count(), 0, 'records without an accepted source are not represented as verified');
     await hostile.page.locator('#show-map').click();
-    assert.equal(await hostile.page.locator('.restaurant-pin').count(), dataset.restaurants.filter(hasCoordinates).length, 'null coordinates never create an invented map pin');
+    assert.equal(await hostile.page.locator('.restaurant-pin').count(), Math.min(300, dataset.restaurants.filter(hasCoordinates).length), 'null coordinates never create an invented map pin');
     await hostile.page.locator('#show-list').click();
     const hostileCard = hostile.page.locator('[data-restaurant-id="fixture-no-coordinates"]');
     assert.equal(await hostileCard.locator('img,script').count(), 0, 'card fields stay plain text');
@@ -253,6 +268,98 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(temporarySave.errors, []);
     await temporarySave.context.close();
 
-    console.log('PASS: list-first browsing, folded filters, lazy local geography, real data/search intersections, retained favorites, exact source and route links, opt-in denied location, 320–1280px layouts and all eight categories, postal publication labels, null-coordinate exclusion, inert malicious text and URLs, data/geography retry and temporary saving; no external map requests.');
+    // Cross-provider year types ensure these labels come from recorded semantics.
+    const yearRecord = { ...structuredClone(dataset.restaurants[0]), id: 'year-types', name: '연도 유형 확인', guides: [
+      { provider: 'michelin', year: 2027, yearType: 'edition' },
+      { provider: 'blue-ribbon', year: 2026, yearType: 'selection' },
+      { provider: 'michelin', year: 2025, yearType: 'publication' },
+      { provider: 'post-office', year: 2024, yearType: 'source' },
+      { provider: 'michelin', year: 2023, yearType: 'listing' }
+    ].map(guide => ({ ...guide, label: '자료 표기 확인', sourceUrl: 'https://fixture.test/sources/' + guide.yearType, verifiedAt: '2026-11-03' })) };
+    const missingYearRecord = { ...structuredClone(yearRecord), id: 'year-types-missing', name: '미확인 연도 유형', guides: yearRecord.guides.map(guide => ({ ...guide, year: null })) };
+    const years = await fixture(browser, { dataset: { restaurants: [yearRecord, missingYearRecord] } });
+    await waitForCount(years.page, 2);
+    await years.page.locator('[data-restaurant-id="year-types"] .card-main').click();
+    assert.deepEqual(await years.page.locator('.source-year').allTextContents(), ['2027년판', '2026년 선정', '2025년 발행', '2024년 자료', '2023년 수록']);
+    assert.ok((await years.page.locator('.source-verified').allTextContents()).every(text => text === '출처 확인일 2026.11.03'), 'verification dates stay separate');
+    await years.page.locator('#close-detail').click(); await years.page.locator('[data-restaurant-id="year-types-missing"] .card-main').click();
+    assert.deepEqual(await years.page.locator('.source-year').allTextContents(), ['판본 연도 미확인', '선정 연도 미확인', '발행 연도 미확인', '자료 연도 미확인', '수록 연도 미확인']);
+    assert.deepEqual(years.errors, []); await years.context.close();
+
+    const near = { ...structuredClone(dataset.restaurants[0]), id: 'near', name: '하 가까운 식당', region: '서울', lat: 37.5665, lng: 126.978, coordinateSource: { name: '관광공사 공개 위치', url: 'https://korean.visitkorea.or.kr/fixture', method: '동일 상호·주소 확인', checkedAt: '2026-11-03' } };
+    const far = { ...structuredClone(near), id: 'far', name: '가 먼 식당', region: '부산', lat: 35.1796, lng: 129.0756, coordinateSource: { name: 'unsafe location', url: 'javascript:window.injected=1' } };
+    const unknown = { ...structuredClone(near), id: 'unknown', name: '가가 거리 없는 식당', region: '제주', lat: null, lng: null };
+    const nearbyData = { restaurants: [unknown, far, near] };
+    const granted = await fixture(browser, { dataset: nearbyData, permission: 'granted', position: { lat: 37.5665, lng: 126.978 } });
+    await waitForCount(granted.page, 3);
+    await granted.page.waitForFunction(() => document.querySelector('#nearby').getAttribute('aria-pressed') === 'true');
+    assert.equal(await granted.page.evaluate(() => window.fixtureLocationRequests), 1, 'existing browser permission locates immediately on entry');
+    assert.deepEqual(await granted.page.locator('[data-restaurant-id]').evaluateAll(nodes => nodes.map(node => node.dataset.restaurantId)), ['near', 'far', 'unknown']);
+    assert.equal(await granted.page.locator('[data-restaurant-id=unknown] .distance').count(), 0);
+    assert.match(await granted.page.locator('[data-restaurant-id=unknown] .distance-unknown').textContent(), /미확인/);
+    assert.match(await granted.page.locator('.list-section-title').textContent(), /전국 목록/);
+    await granted.page.locator('[data-restaurant-id=near] .card-main').click();
+    assert.equal(await granted.page.locator('.coordinate-source-link').getAttribute('href'), near.coordinateSource.url);
+    assert.match(await granted.page.locator('.coordinate-source-link').textContent(), /위치 출처: 관광공사 공개 위치/);
+    await granted.page.locator('#close-detail').click(); await granted.page.locator('[data-restaurant-id=far] .card-main').click();
+    assert.equal(await granted.page.locator('.coordinate-source-link').count(), 0); await granted.page.locator('#close-detail').click();
+    assert.deepEqual(await granted.page.evaluate(() => ({ keys: Object.keys(localStorage), value: localStorage.getItem('ojjuda-certified-restaurants-location-v1') })), { keys: ['ojjuda-certified-restaurants-location-v1'], value: 'enabled' }, 'location persistence stores only a preference');
+    await openFilters(granted.page); await granted.page.locator('#region').selectOption('제주');
+    await waitForCount(granted.page, 1); assert.match(await granted.page.locator('#location-status').textContent(), /거리 정보가 없어 전국 목록/);
+    await resetFilters(granted.page); await waitForCount(granted.page, 3);
+    assert.equal(await granted.page.locator('#nearby').getAttribute('aria-pressed'), 'true', 'filter reset keeps location mode');
+    assert.deepEqual(granted.errors, []); await granted.context.close();
+
+    const firstVisit = await fixture(browser, { dataset: nearbyData, permission: 'prompt' });
+    await waitForCount(firstVisit.page, 3);
+    await firstVisit.page.waitForFunction(() => window.fixtureLocationRequests === 1 && !document.querySelector('#nearby').disabled);
+    assert.equal(await firstVisit.page.evaluate(() => localStorage.getItem('ojjuda-certified-restaurants-location-v1')), 'denied');
+    await firstVisit.page.reload(); await waitForCount(firstVisit.page, 3);
+    assert.equal(await firstVisit.page.evaluate(() => window.fixtureLocationRequests), 0, 'reentry does not repeat a declined automatic prompt');
+    await firstVisit.page.locator('#choose-region').click();
+    assert.equal(await firstVisit.page.locator('#region').evaluate(node => node === document.activeElement), true);
+    await firstVisit.page.locator('#nearby').click();
+    await firstVisit.page.waitForFunction(() => window.fixtureLocationRequests === 1 && !document.querySelector('#nearby').disabled);
+    assert.deepEqual(firstVisit.errors, []); await firstVisit.context.close();
+
+    const many = Array.from({ length: 800 }, (_, index) => ({ ...structuredClone(near), id: 'many-' + index, name: '성능확인' + String(index).padStart(4, '0'), lat: 37.5665 + index / 10000, lng: 126.978 }));
+    const performance = await fixture(browser, { dataset: { restaurants: many }, permission: 'granted', position: { lat: 37.5665, lng: 126.978 } });
+    await waitForTotal(performance.page, many.length);
+    await performance.page.waitForFunction(() => document.querySelector('#nearby').getAttribute('aria-pressed') === 'true');
+    assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
+    assert.equal(performance.network.geography, 0, 'nearby entry does not force map loading');
+    await performance.page.evaluate(() => { window.fixtureFirstCard = document.querySelector('.restaurant-card'); });
+    await performance.page.locator('#load-more').click();
+    assert.equal(await performance.page.locator('.restaurant-card').count(), 100);
+    assert.equal(await performance.page.evaluate(() => window.fixtureFirstCard === document.querySelector('.restaurant-card')), true, 'more results append instead of rebuilding previous rows');
+    await performance.page.locator('#search').fill('성능확인000'); await performance.page.locator('#search').press('Enter');
+    await waitForTotal(performance.page, 10); assert.equal(await performance.page.locator('.restaurant-card').count(), 10);
+    assert.equal(await performance.page.locator('#load-more').isVisible(), false);
+    await resetFilters(performance.page); assert.equal(await performance.page.locator('.restaurant-card').count(), 50);
+    while (await performance.page.locator('.restaurant-card').count() < 700) await performance.page.locator('#load-more').click();
+    assert.equal(await performance.page.locator('.restaurant-card').count(), 700, 'successive batches expose cards beyond the map limit');
+    await performance.page.locator('#show-map').click();
+    await performance.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
+    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300);
+    assert.match(await performance.page.locator('#map-caption-text').textContent(), /800곳 중 300곳/);
+    assert.deepEqual(await performance.page.locator('.restaurant-pin').evaluateAll(pins => pins.map(pin => pin.title)), many.slice(0, 300).map(item => item.name), 'nearby maps the nearest 300 first');
+    await performance.page.locator('#show-list').click(); await performance.page.locator('[data-restaurant-id="many-650"] .card-main').click();
+    assert.equal(await performance.page.locator('#detail-title').textContent(), many[650].name);
+    await performance.page.locator('#close-detail').click(); await performance.page.locator('#show-map').click();
+    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[650].name, 'list selection outside the cap receives a pin when the map opens');
+    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300);
+    assert.equal(await performance.page.locator('.restaurant-pin[title="' + many[699].name + '"]').count(), 0);
+    // The two views are exclusive; dispatch a retained-card event to cover selection while the map is active.
+    await performance.page.locator('[data-restaurant-id="many-699"] .card-main').evaluate(node => node.click());
+    assert.equal(await performance.page.locator('#workspace').getAttribute('data-view'), 'map');
+    assert.equal(await performance.page.locator('#detail-title').textContent(), many[699].name);
+    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').getAttribute('title'), many[699].name, 'an unregistered selection creates its pin immediately');
+    assert.equal(await performance.page.locator('.restaurant-pin.is-selected').count(), 1);
+    assert.equal(await performance.page.locator('.restaurant-pin').count(), 300, 'selection replaces a pin while preserving the rendering limit');
+    assert.equal(await performance.page.locator('.restaurant-pin[title="' + many[650].name + '"]').count(), 0);
+    assert.equal(performance.network.geography, 1, 'selection reuses the local background');
+    assert.deepEqual(performance.network.escaped, []); assert.deepEqual(performance.errors, []); await performance.context.close();
+
+    console.log('PASS: location-first entry and declined reentry preference, truthful distance ordering, 50-row progressive append, 300-pin cap with out-of-cap selection, real data filters, saved state, exact sources, 320–1280px layout, edition/selection/publication/source/listing labels, safe rendering and recovery; no real location permission or external map requests.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
