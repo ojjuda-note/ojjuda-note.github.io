@@ -17,7 +17,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label',adminTrial?'바람의 궁수 · 관리자 체험':'바람의 궁수 · 싱글 게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>'+(adminTrial?'관리자 체험':'싱글 게임')+'</small></span><button type="button" data-archery-trial-toggle hidden>'+(adminTrial?'일반 게임으로':'아이템 체험')+'</button></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261104-archery-admin-trial1'+(adminTrial?'&adminTrial=1':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>'+(adminTrial?'관리자 체험':'싱글 게임')+'</small></span><button type="button" data-archery-trial-toggle hidden>'+(adminTrial?'일반 게임으로':'아이템 체험')+'</button></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261104-archery-burst-sum1'+(adminTrial?'&adminTrial=1':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const modeButton=dialog.querySelector('[data-archery-trial-toggle]');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
@@ -42,7 +42,7 @@
     if(message.action==='round-start'||message.action==='round-complete'){
      allowed.add('stage');if(!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return false;
     }
-    if(message.action==='round-complete'){allowed.add('runId');allowed.add('score');if(!uuid(message.runId)||!Number.isInteger(message.score)||message.score<0||message.score>50)return false;}
+    if(message.action==='round-complete'){allowed.add('runId');allowed.add('score');if(!uuid(message.runId)||!Number.isInteger(message.score)||message.score<0||message.score>150)return false;}
     if(message.action==='receipt'){
      allowed.add('receiptId');allowed.add('originalAction');
      if(!uuid(message.receiptId)||!receiptActions.has(message.originalAction))return false;

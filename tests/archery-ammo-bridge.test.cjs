@@ -102,15 +102,15 @@ test('initialization reveals no auth client and only the live same-origin owner/
 test('only allowlisted argument shapes reach callbacks, with no client price/count or arbitrary RPC',async()=>{
  const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();},onCoachBuy:async(...args)=>{calls.push(['coach-buy',...args]);return snapshot();}});
  try{
-  for(const [action,fields]of [['status',{launchEpoch:3}],['round-complete',{stage:5,runId:owner,score:51}],['round-complete',{stage:5,runId:owner,score:2.5}],['round-start',{stage:0}],['round-start',{stage:221}],['round-start',{stage:220.5}],['round-start',{stage:'220'}],['round-complete',{stage:221,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
+  for(const [action,fields]of [['status',{launchEpoch:3}],['round-complete',{stage:5,runId:owner,score:151}],['round-complete',{stage:5,runId:owner,score:2.5}],['round-start',{stage:0}],['round-start',{stage:221}],['round-start',{stage:220.5}],['round-start',{stage:'220'}],['round-complete',{stage:221,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
    await f.request(action,fields);assert.equal(f.responses().at(-1).result.reason,'invalid');
   }
   assert.equal(calls.length,0);
   const start=await f.request('round-start',{stage:220});
-  const complete=await f.request('round-complete',{stage:220,runId:owner,score:48});
+  const complete=await f.request('round-complete',{stage:220,runId:owner,score:150});
   const buy=await f.request('buy');
   const coach=await f.request('coach-buy');
-  assert.deepEqual(calls,[['start',start.requestId,220],['complete',complete.requestId,owner,220,48],['buy',buy.requestId],['coach-buy',coach.requestId]]);
+  assert.deepEqual(calls,[['start',start.requestId,220],['complete',complete.requestId,owner,220,150],['buy',buy.requestId],['coach-buy',coach.requestId]]);
  }finally{f.close();}
 });
 
@@ -244,7 +244,7 @@ test('trial sessions reject every real account action and return to a fresh norm
   const trialFrame=f.dialog.frame,init=trialFrame.sent[0].data;
   assert.equal(init.adminTrial,true);assert.equal(init.available,false);
   assert.match(f.dialog.trialButton.textContent,/일반 게임/);
-  for(const [action,fields]of [['status',{}],['round-start',{stage:220}],['round-complete',{stage:220,runId:randomUUID(),score:50}],['spend',{}],['buy',{}],['coach-buy',{}],['receipt',{receiptId:randomUUID(),originalAction:'buy'}]]){
+  for(const [action,fields]of [['status',{}],['round-start',{stage:220}],['round-complete',{stage:220,runId:randomUUID(),score:150}],['spend',{}],['buy',{}],['coach-buy',{}],['receipt',{receiptId:randomUUID(),originalAction:'buy'}]]){
    await f.request(action,fields);
   }
   assert.equal(calls.length,0,'neither purchases, progress, claims nor receipt recovery can reach an account callback');

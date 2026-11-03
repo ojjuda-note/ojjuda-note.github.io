@@ -1925,7 +1925,7 @@ test('new main rounds and event rounds automatically activate only their equippe
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3, 22], 'round changes never transfer or duplicate a scope');
 });
 
-test('only rare crossbows burst, with delayed arrows and one score, reward and round slot per trigger', async () => {
+test('rare crossbows sum all three delayed arrow scores while retaining one reward and round slot per trigger', async () => {
   const ordinary = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100000, sound: false });
   const single = ordinary.engine.BOWS.find(item => item.weaponType === 'crossbow' && item.burstCount === 1);
   ordinary.api.showShop('bow');ordinary.api.equipItem(single.id);ordinary.api.closeModal();await ordinary.flush();
@@ -1959,18 +1959,32 @@ test('only rare crossbows burst, with delayed arrows and one score, reward and r
   assert.equal(app.api.progress.shots, 0);assert.equal(app.api.progress.coins, initialCoins, 'partial arrivals cannot award a trigger twice');
   app.until(() => state.mode === 'ready');
   assert.ok(volley.shots.every(shot => !shot.active && shot.result.type === 'hit'));
-  assert.equal(state.score, Math.max(...volley.shots.map(shot => shot.result.score)));
-  assert.equal(state.score, 10);assert.equal(state.targetMarks.length, 3);
+  assert.equal(state.score, volley.shots.reduce((total,shot) => total + shot.result.score,0));
+  assert.equal(state.score, 30);assert.equal(state.targetMarks.length, 3);
+  assert.deepEqual(Array.from(volley.shots,shot=>shot.result.score),[10,10,10],'each physical hit stays on its original ten-point scale');
+  assert.equal(state.shot.result.score,10);assert.equal(state.cinematic?.shot.result.score??10,10);
+  assert.match(app.getElement('feedbackTitle').textContent,/합계.*30점/);
   assertAttachedArrows(app, state.targetMarks.map(mark => ({ x: mark.x, y: mark.y })), state.targetMarks.map(mark => mark.velocity));
   assert.equal(app.api.progress.shots, 1);assert.equal(app.api.progress.hits, 1);
   assert.equal(app.api.progress.coins, initialCoins + 10);assert.equal(app.api.progress.unlocked, STAGE_COUNT);
   app.api.onImpact();pad.emit('pointerup', coords);await app.flush();
   assert.equal(state.used, 1);assert.equal(app.api.progress.coins, initialCoins + 10);
   for (let trigger = 1; trigger < 5; trigger++) await centeredShot(app);
-  assert.equal(state.mode, 'finished');assert.equal(state.used, 5);assert.equal(state.score, 50);
+  assert.equal(state.mode, 'finished');assert.equal(state.used, 5);assert.equal(state.score, 150);
   assert.equal(state.targetMarks.length, 15, 'all three impacts from every trigger stay attached');
+  assert.equal(state.arrowHits,15);assert.deepEqual([...state.shotMaxScores],[30,30,30,30,30]);
   assert.equal(app.api.progress.shots, 5);assert.equal(app.api.progress.hits, 5);
   assert.equal(app.api.progress.coins, initialCoins + 75);assert.equal(app.api.progress.unlocked, STAGE_COUNT);
+  assert.equal(app.api.progress.best[1],150);assert.equal(app.snapshot().best[1],150);
+  const completions=()=>app.ammo.requests.filter(request=>request.action==='round-complete');
+  assert.equal(completions().length,1);assert.equal(completions()[0].score,150);
+  app.api.onImpact();app.api.finishRound();await app.flush();
+  assert.equal(completions().length,1);assert.equal(app.api.progress.coins,initialCoins+75,'duplicate finishes cannot duplicate score rewards or bonus');
+  app.api.showShop('bow');app.api.equipItem(0);app.api.closeModal();
+  assert.match(app.getElement('modalContent').innerHTML,/<strong>150<\/strong><em>\/ 150<\/em>/,'changing to a normal bow keeps the completed burst maximum');
+  assert.match(app.getElement('modalContent').innerHTML,/<strong>15<\/strong><em>\/ 15발<\/em>/);
+  const resumed=await appHarness(app.snapshot(),{server:app.ammo});
+  assert.equal(resumed.api.progress.bow,0);assert.equal(resumed.api.progress.best[1],150);assert.equal(resumed.snapshot().best[1],150,'a real burst record is not clamped back to fifty on reload');
 });
 
 test('event preparation pauses targets and accounting until the explicit start button and never starts on dismissal', async () => {
@@ -3266,7 +3280,7 @@ for (const fixture of [
   assert.equal(state.targetMarks.length, count);
   const accounting = shotAccounting(app), physics = arrows.map(arrow => JSON.stringify({ velocity: arrow.velocity, elapsed: arrow.elapsed, result: arrow.result }));
   const marks = JSON.stringify(state.targetMarks), firstTarget = app.engine.targetAt(state.stage, state.time);
-  assert.deepEqual(accounting, [1, 8, 1, 1, 1, 109, 10000]);
+  assert.deepEqual(accounting, [1, 8 * count, 1, 1, 1, 109, 10000]);
   let heldFrames = 0;
   while (state.mode === 'settling' && state.settle <= app.view.IMPACT_HOLD) {
     assertClearDisplayedArrow(app);
@@ -3486,7 +3500,8 @@ test('the close pillar crowd leaves a real opening through the last burst arrow 
   assert.deepEqual(Array.from(state.volley.shots, shot => shot.launchDelay), [0, .08, .16]);
   app.until(() => state.mode === 'settling');
   assert.ok(state.volley.shots.every(shot => shot.result.type === 'hit'));
-  assert.equal(state.used, 1);assert.equal(state.score, 10);assert.equal(state.hits, 1);
+  assert.equal(state.used, 1);assert.equal(state.score,30);assert.equal(state.hits, 1);
+  assert.equal(state.arrowHits,3);assert.equal(state.shot.result.score,10);
   assert.equal(state.targetMarks.length, 3);assert.equal(app.api.progress.coins, 110);assert.equal(app.api.progress.shots, 1);
   app.api.onImpact();assert.equal(app.api.progress.coins, 110);assert.equal(app.api.progress.shots, 1);
 });
@@ -3860,7 +3875,7 @@ test('animal damage accumulates to each species threshold once and the next pass
   }
 });
 
-test('a fatal first burst arrow disables that animal for the two later arrows while the trigger pays only its best hit', async () => {
+test('a fatal first burst arrow disables that animal so only its actual hit contributes to the sum', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 19], ownedArrows: [0, 11],
     bow: 19, arrow: 11, coins: 100, sound: false });
   await enterScene(app, 'rabbit');prepareAnimalCrossing(app);
@@ -4244,4 +4259,66 @@ test('an accepted trial stays temporary and blocks a later account or session ch
     app.api.startStage(220);app.api.enterEvent(10);await app.flush();
     assert.equal(app.api.state.mode,'blocked');assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.storageOperations,[]);
   }
+});
+
+test('a real partial burst adds ten and eight while a single person collision invalidates the entire trigger',async()=>{
+  for(const blocker of ['obstacle','person']){
+    const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,ownedBows:[0,15],bow:15,coins:100,sound:false});
+    const {state}=app.api,engine=app.engine;
+    app.api.resetRound({...engine.STAGES[0],radius:.6,obstacles:[],passers:[]});await app.flush();
+    const draw=preciseMainDraw(app),params=app.api.shotParams(),side=engine.launchVolley(params)[2],z=5;
+    const flightTime=-Math.log1p(-side.dragRate*z/side.velocity.z)/side.dragRate;
+    const sideX=side.velocity.x*-Math.expm1(-side.dragRate*flightTime)/side.dragRate;
+    if(blocker==='obstacle')state.stage.obstacles=[{x:sideX,z,width:.02,height:10,depth:.01}];
+    else{
+      const config={id:0,z,width:.02,height:10,depth:.01,passDuration:1e6,phase:.5};
+      const person=engine.passersAt({...state.stage,passers:[config]},state.time+side.launchDelay+flightTime)[0];
+      config.phase+=(sideX-person.x)/(person.velocityX*config.passDuration);state.stage.passers=[config];
+    }
+    const expected=Array.from(engine.launchVolley(params),shot=>engine.stepArrow(shot,8,state.stage,state.time+shot.launchDelay));
+    assert.deepEqual(expected.map(result=>[result.type,result.score]),[['hit',10],['hit',8],[blocker,0]],'the fixture uses actual distinct collision trajectories');
+    draw.pad.emit('pointerup',draw.coords);await app.flush();app.until(()=>state.mode==='settling');
+    assert.deepEqual(Array.from(state.volley.shots,shot=>[shot.result.type,shot.result.score]),[['hit',10],['hit',8],[blocker,0]]);
+    assert.equal(state.score,blocker==='person'?0:18);assert.deepEqual([...state.shotScores],[blocker==='person'?0:18]);
+    assert.equal(state.used,1);assert.equal(state.arrowHits,2);assert.equal(state.hits,blocker==='person'?0:1);
+    assert.equal(app.api.progress.coins,blocker==='person'?101:110,'the representative-arrow reward remains unchanged');
+    if(blocker==='person'){assert.equal(state.shot.result.type,'person');assert.equal(state.cinematic,null);}
+    else{assert.equal(state.shot.result.score,10);assert.ok(state.cinematic);assert.match(app.getElement('feedbackTitle').textContent,/합계.*18점/);}
+    const results=JSON.stringify(Array.from(state.volley.shots,shot=>shot.result)),accounting=shotAccounting(app);
+    app.api.onImpact();app.api.onImpact();assert.equal(JSON.stringify(Array.from(state.volley.shots,shot=>shot.result)),results);
+    assert.deepEqual(shotAccounting(app),accounting,'a second impact callback cannot add any score or reward');
+  }
+});
+
+test('mixing normal and three-arrow weapons keeps the actual 110-point maximum after equipment changes',async()=>{
+  const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,ownedBows:[0,19],coins:100,sound:false});
+  const {state}=app.api;
+  for(const weapon of [19,0,19,0,19]){
+    app.api.showShop('bow');app.api.equipItem(weapon);app.api.closeModal();await centeredShot(app);
+  }
+  assert.equal(state.mode,'finished');assert.equal(state.score,110);assert.equal(state.arrowHits,11);
+  assert.deepEqual([...state.shotMaxScores],[30,10,30,10,30]);
+  assert.equal(app.api.progress.coins,175);assert.equal(app.api.progress.best[1],110);
+  const completion=app.ammo.requests.filter(request=>request.action==='round-complete');
+  assert.equal(completion.length,1);assert.equal(completion[0].score,110);
+  app.api.showShop('bow');app.api.equipItem(0);app.api.closeModal();
+  assert.match(app.getElement('modalContent').innerHTML,/<strong>110<\/strong><em>\/ 110<\/em>/);
+  assert.match(app.getElement('modalContent').innerHTML,/<strong>11<\/strong><em>\/ 11발<\/em>/);
+  const resumed=await appHarness(app.snapshot(),{server:app.ammo});
+  assert.equal(resumed.api.progress.bow,0);assert.equal(resumed.api.progress.best[1],110);
+});
+
+test('a real 150-point administrator burst round never submits a ranking or changes normal account storage',async()=>{
+  const normal={version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,ownedBows:[0,20],ownedArrows:[0],bow:0,coins:321,lastStage:17,best:{17:44},sound:false};
+  const store=new Map([[SAVE_KEY,JSON.stringify(normal)],['forest-archer-ammo-pending-v4:11111111-1111-4111-8111-111111111111','preserve original pending receipt']]);
+  const before=new Map(store),app=await appHarness(null,{store,adminTrial:true,remaining:17,coins:23,mainRounds:7});
+  const account=JSON.stringify(app.ammo.account);
+  app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();
+  for(let trigger=0;trigger<5;trigger++)await centeredShot(app);
+  assert.equal(app.api.state.mode,'finished');assert.equal(app.api.state.score,150);assert.equal(app.api.state.arrowHits,15);
+  assert.match(app.getElement('modalContent').innerHTML,/<strong>150<\/strong><em>\/ 150<\/em>/);
+  app.api.finishRound();app.api.onImpact();await app.flush();
+  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
+  assert.deepEqual(store,before);assert.equal(JSON.stringify(app.ammo.account),account);
+  assert.equal(app.api.progress.coins,75,'trial rewards use the ordinary economy without touching real savings');
 });
