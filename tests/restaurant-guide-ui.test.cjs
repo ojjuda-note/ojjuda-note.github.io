@@ -30,7 +30,9 @@ async function assertMapListLayout(page, width) {
   const layout = await page.evaluate(() => {
     const rect = selector => { const value = document.querySelector(selector).getBoundingClientRect(); return { left: value.left, right: value.right, top: value.top, bottom: value.bottom, width: value.width, height: value.height }; };
     return {
-      map: rect('#map-panel'), list: rect('#results'),
+      map: rect('#map-panel'), mapCanvas: rect('#map'), list: rect('#results'),
+      pager: { ...rect('#map-pagination'), visible: document.querySelector('#map-pagination').getClientRects().length > 0 },
+      pagerControls: ['#map-prev', '#map-page-status', '#map-next'].map(selector => ({ selector, ...rect(selector) })),
       controls: ['#search-form', '#region', '#nearby', '#reset', '#saved-only', '#recommendations-link', '#categories', '#filter-toggle', '#result-count', '.view-switch'].map(selector => ({ selector, ...rect(selector) })),
       categories: [...document.querySelectorAll('#categories [data-category]')].map(button => { const value = button.getBoundingClientRect(); return { left: value.left, right: value.right, top: value.top }; }),
       scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth, viewportHeight: innerHeight, scrollY,
@@ -41,10 +43,20 @@ async function assertMapListLayout(page, width) {
   layout.controls.forEach(control => assert.ok(control.width > 0 && control.left >= -1 && control.right <= width + 1, control.selector + ' fits within the ' + width + 'px viewport'));
   assert.equal(layout.categories.length, 8, 'all seven cuisines and the all category stay exposed');
   assert.ok(layout.categories.every(button => button.left >= 0 && button.right <= width + 1), 'no category requires horizontal scrolling at ' + width);
+  if (layout.pager.visible) {
+    assert.ok(layout.pager.height > 0 && layout.pager.left >= layout.map.left - 1 && layout.pager.right <= layout.map.right + 1 && layout.pager.bottom <= layout.map.bottom + 1, 'the visible pager stays inside the map panel at ' + width);
+    assert.ok(Math.abs(layout.mapCanvas.bottom - layout.pager.top) <= 1, 'the pager follows the map canvas without covering it or leaving a gap at ' + width);
+    layout.pagerControls.forEach(control => assert.ok(control.width > 0 && control.height > 0 && control.left >= layout.pager.left - 1 && control.right <= layout.pager.right + 1 && control.top >= layout.pager.top - 1 && control.bottom <= layout.pager.bottom + 1, control.selector + ' fits inside the visible pager at ' + width));
+  } else {
+    assert.ok(Math.abs(layout.mapCanvas.bottom - layout.map.bottom) <= 2, 'a hidden pager leaves no empty footer below the map at ' + width);
+  }
   if (width <= 760) {
     assert.ok(layout.map.bottom <= layout.list.top + 1, 'the phone list follows the map without overlap');
     assert.ok(Math.abs(layout.map.left - layout.list.left) <= 1 && Math.abs(layout.map.width - layout.list.width) <= 1, 'phone map and list share the same content edges');
-    assert.ok(layout.map.height >= 220 && layout.map.height <= 261, 'the phone map leaves room for the restaurant list');
+    const mapHeightWithoutPager = layout.map.height - (layout.pager.visible ? layout.pager.height : 0);
+    assert.ok(mapHeightWithoutPager >= 220 && mapHeightWithoutPager <= 261, 'the phone map keeps its original height after subtracting the visible pager: ' + JSON.stringify({ width, panel: layout.map.height, canvas: layout.mapCanvas.height, pager: layout.pager.height, pagerVisible: layout.pager.visible }));
+    assert.ok(layout.mapCanvas.height >= 218 && layout.mapCanvas.height <= 261 && Math.abs(mapHeightWithoutPager - layout.mapCanvas.height) <= 2, 'the actual phone map canvas retains approximately 220–260px, allowing for its panel border');
+    assert.ok(layout.map.height <= (layout.pager.visible ? 311 : 261), 'the phone map and its optional pager leave room for the restaurant list');
     const rows = new Map();
     layout.categories.forEach(button => { const top = Math.round(button.top); rows.set(top, (rows.get(top) || 0) + 1); });
     assert.deepEqual([...rows.values()], [4, 4], 'phone categories form two complete four-item rows');

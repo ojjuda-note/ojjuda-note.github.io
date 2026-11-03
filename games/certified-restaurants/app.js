@@ -226,10 +226,9 @@
   }
   function syncMap(fit) {
     if (!mapIsVisible()) return;
-    if (!ensureMap()) { $('map-pagination').hidden = true; $('map-panel').classList.remove('has-map-pages'); updateResultCount(); return; }
+    if (!ensureMap()) { $('map-pagination').hidden = true; updateResultCount(); return; }
     const { allLocated, start, end, located } = currentMapPage();
     $('map-pagination').hidden = allLocated.length <= MAP_PAGE_SIZE;
-    $('map-panel').classList.toggle('has-map-pages', allLocated.length > MAP_PAGE_SIZE);
     $('map-prev').disabled = start === 0;
     $('map-next').disabled = end >= allLocated.length;
     $('map-next').textContent = end < allLocated.length ? '더 보기 · ' + Math.min(MAP_PAGE_SIZE, allLocated.length - end) + '곳' : '마지막';
