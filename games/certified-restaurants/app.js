@@ -169,7 +169,7 @@
     state.visible = filteredRestaurants();
     if (state.selected && !state.visible.some(item => item.id === state.selected)) state.selected = '';
     const locatedCount = state.visible.filter(hasCoordinates).length;
-    if (state.position) setLocationStatus(locatedCount ? '가까운 순 · 거리 미확인 식당은 뒤에 표시' : '이 조건의 식당은 거리 정보가 없어 전국 목록으로 표시해요.', false);
+    if (state.position) setLocationStatus(locatedCount ? '가까운 순 · 거리 미확인 식당은 뒤에 표시' : '이 조건의 식당은 거리 정보가 없어 맛집 목록으로 표시해요.', false);
     if (mobile.matches && !state.visible.some(hasCoordinates)) setView('list');
     syncPressed(); renderCollections(); renderCards(); syncMap(fit);
   }
@@ -308,7 +308,7 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const response = await fetch('./restaurants.json?v=20261103-restaurants-map-photos1', { signal: controller.signal, cache: 'no-cache' });
+      const response = await fetch('./restaurants.json?v=20261103-restaurants-fit2', { signal: controller.signal, cache: 'no-cache' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json(); if (!data || !Array.isArray(data.restaurants)) throw new Error('Invalid dataset');
       const ids = new Set(); state.restaurants = data.restaurants.map(normalize).filter(item => item && !ids.has(item.id) && ids.add(item.id));
@@ -348,7 +348,7 @@
     $('nearby').setAttribute('aria-pressed', String(!!state.position)); $('nearby-label').textContent = '내 주변';
   }
   function requestLocation() {
-    if (!navigator.geolocation) { setLocationStatus('위치를 사용할 수 없어 전국 목록을 보여드려요.'); return; }
+    if (!navigator.geolocation) { setLocationStatus('위치를 사용할 수 없어 맛집 목록을 보여드려요.'); return; }
     const request = ++locationRequest;
     saveLocationChoice('asked');
     $('nearby').disabled = true; $('nearby').setAttribute('aria-busy', 'true'); $('nearby-label').textContent = '확인 중';
@@ -360,7 +360,7 @@
         if (userMarker) { userMarker.remove(); userMarker = null; }
       }
       finishLocationRequest(); render(true);
-      setLocationStatus(state.position ? '위치를 갱신하지 못해 이전 위치 기준으로 표시해요.' : error?.code === 1 ? '위치 사용이 허용되지 않아 전국 목록을 보여드려요.' : '위치를 확인하지 못해 전국 목록을 보여드려요.');
+      setLocationStatus(state.position ? '위치를 갱신하지 못해 이전 위치 기준으로 표시해요.' : error?.code === 1 ? '위치 사용이 허용되지 않아 맛집 목록을 보여드려요.' : '위치를 확인하지 못해 맛집 목록을 보여드려요.');
     };
     try {
       navigator.geolocation.getCurrentPosition(position => {
@@ -377,10 +377,10 @@
     let permission = '';
     try { if (navigator.permissions?.query) permission = (await navigator.permissions.query({ name: 'geolocation' })).state; } catch {}
     if (requestBeforeCheck !== locationRequest) return;
-    if (permission === 'denied') { saveLocationChoice('denied'); setLocationStatus('위치 사용이 꺼져 있어 전국 목록을 보여드려요.'); return; }
+    if (permission === 'denied') { saveLocationChoice('denied'); setLocationStatus('위치 사용이 꺼져 있어요. 지역을 선택해 주세요.'); return; }
     const choice = readLocationChoice();
     if (permission === 'granted' || !choice || choice === 'enabled') requestLocation();
-    else setLocationStatus('전국 목록을 보고 있어요. 내 주변을 누르면 위치를 다시 확인해요.');
+    else setLocationStatus('내 주변을 누르면 위치를 확인해 가까운 맛집을 보여드려요.');
   }
 
   readSaved(); setView(readView());

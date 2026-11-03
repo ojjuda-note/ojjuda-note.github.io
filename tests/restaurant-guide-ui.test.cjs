@@ -31,7 +31,8 @@ async function assertMapListLayout(page, width) {
       map: rect('#map-panel'), list: rect('#results'),
       controls: ['#search-form', '#region', '#nearby', '#reset', '#saved-only', '#recommendations-link', '#categories', '#filter-toggle', '#result-count', '.view-switch'].map(selector => ({ selector, ...rect(selector) })),
       categories: [...document.querySelectorAll('#categories [data-category]')].map(button => { const value = button.getBoundingClientRect(); return { left: value.left, right: value.right, top: value.top }; }),
-      scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
+      scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth, viewportHeight: innerHeight, scrollY,
+      filtersFolded: document.querySelector('#filter-options').hidden
     };
   });
   assert.ok(layout.scrollWidth <= width + 1, 'no horizontal page overflow at ' + width);
@@ -46,6 +47,7 @@ async function assertMapListLayout(page, width) {
     layout.categories.forEach(button => { const top = Math.round(button.top); rows.set(top, (rows.get(top) || 0) + 1); });
     assert.deepEqual([...rows.values()], [4, 4], 'phone categories form two complete four-item rows');
   } else {
+    if (layout.filtersFolded) assert.ok(layout.map.bottom + layout.scrollY <= layout.viewportHeight + 1, 'the complete desktop map fits in the first viewport with optional filters folded');
     assert.ok(layout.map.right <= layout.list.left + 1, 'the desktop map sits to the left of the list');
     assert.ok(Math.abs(layout.map.top - layout.list.top) <= 1, 'desktop panels start on the same row');
     assert.ok(Math.abs(layout.map.height - layout.list.height) <= 1, 'desktop panels share one bounded viewport');
@@ -412,7 +414,7 @@ async function fixture(browser, options = {}) {
     assert.equal(await granted.page.locator('.coordinate-source-link').count(), 0); await granted.page.locator('#close-detail').click();
     assert.deepEqual(await granted.page.evaluate(key => ({ keys: Object.keys(localStorage).sort(), location: localStorage.getItem('ojjuda-certified-restaurants-location-v1'), view: localStorage.getItem(key) }), viewKey), { keys: ['ojjuda-certified-restaurants-location-v1', viewKey].sort(), location: 'enabled', view: 'list' }, 'location and view persistence contain preferences only, never coordinates');
     await openFilters(granted.page); await granted.page.locator('#region').selectOption('제주');
-    await waitForCount(granted.page, 1); assert.match(await granted.page.locator('#location-status').textContent(), /거리 정보가 없어 전국 목록/);
+    await waitForCount(granted.page, 1); assert.match(await granted.page.locator('#location-status').textContent(), /거리 정보가 없어 맛집 목록/);
     await resetFilters(granted.page); await waitForCount(granted.page, 3);
     assert.equal(await granted.page.locator('#nearby').getAttribute('aria-pressed'), 'true', 'filter reset keeps location mode');
     assert.deepEqual(granted.errors, []); await granted.context.close();

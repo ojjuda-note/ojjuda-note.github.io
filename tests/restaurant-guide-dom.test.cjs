@@ -305,7 +305,7 @@ function fixture(options = {}) {
   granted.click('#close-detail'); granted.click('[data-restaurant-id="far"] .card-main');
   assert.equal(granted.$('.coordinate-source-link'), null, 'unsafe coordinate-source URLs are not rendered'); granted.click('#close-detail');
   granted.filters(); granted.change('#region', '제주');
-  assert.deepEqual(granted.order(), ['unknown']); assert.match(granted.$('#location-status').textContent, /거리 정보가 없어 전국 목록/);
+  assert.deepEqual(granted.order(), ['unknown']); assert.match(granted.$('#location-status').textContent, /거리 정보가 없어 맛집 목록/);
   granted.click('#reset'); assert.deepEqual(granted.order(), ['near', 'far', 'unknown'], 'clearing filters preserves the chosen location mode');
   assert.deepEqual(granted.errors, []); granted.dom.window.close();
 
@@ -313,7 +313,7 @@ function fixture(options = {}) {
   await ready(firstVisit, 3);
   await until(() => firstVisit.calls.location === 1 && !firstVisit.$('#nearby').disabled, 'a first visit makes one browser location request');
   const deniedChoice = firstVisit.window.localStorage.getItem(locationKey);
-  assert.equal(deniedChoice, 'denied'); assert.match(firstVisit.$('#location-status').textContent, /전국 목록/);
+  assert.equal(deniedChoice, 'denied'); assert.match(firstVisit.$('#location-status').textContent, /맛집 목록/);
   firstVisit.click('#choose-region'); assert.equal(firstVisit.document.activeElement.id, 'region');
   firstVisit.click('#reset'); assert.equal(firstVisit.calls.location, 1, 'filtering does not prompt again');
   firstVisit.dom.window.close();
