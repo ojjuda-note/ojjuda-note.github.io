@@ -1,7 +1,9 @@
 /* Shared World/Note withdrawal: remove actual files before deleting the account. */
 (function (root) {
   'use strict';
-  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos']);
+  const buckets = new Set(['media', 'note-card-photos', 'note-event-photos', 'restaurant-recommendations']);
+  const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+  const recommendationPhoto = new RegExp('^' + uuid + '/' + uuid + '/' + uuid + '\\.jpg$');
   async function run({ client, userId, isCurrent = () => true }) {
     const current = () => {
       if (!userId || !isCurrent()) throw new Error('account_changed');
@@ -23,7 +25,8 @@
         if (!buckets.has(file.bucket_id) || typeof file.photo_path !== 'string'
             || !file.photo_path.startsWith(userId + '/')
             || file.photo_path.split('/').some(part => !part || part === '.' || part === '..')
-            || /[\\\x00]/.test(file.photo_path)) throw new Error('account_storage_manual_review');
+            || /[\\\x00]/.test(file.photo_path)
+            || (file.bucket_id === 'restaurant-recommendations' && !recommendationPhoto.test(file.photo_path))) throw new Error('account_storage_manual_review');
       }
       const inventory = JSON.stringify(files);
       if (inventory === previous) throw new Error('account_storage_remaining');

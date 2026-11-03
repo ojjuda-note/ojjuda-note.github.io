@@ -78,7 +78,7 @@ function routeFixture(){
  const boot=vm.createContext({URL,Promise,console,document,
   window:{OjjudaFestivalSchedule:{open:options=>{opens.push(options);assert.equal(boot.g.tab,'place');assert.equal(boot.g.place.id,'arcade');},close:()=>{closed++;}}},
   location:{href:'https://ojjuda.kr/world.html?game=festival'},D:{online:false},g:{tab:'arcade',place:null},
-  worldGameAssetRequest:0,worldClosingGames:null,R:null,worldEntryRouted:false,worldGameEntryGate:()=>true,M:()=>{},
+  worldGameAssetRequest:0,worldClosingGames:null,worldRecommendedRestaurants:null,R:null,worldEntryRouted:false,worldGameEntryGate:()=>true,M:()=>{},
   py:()=>{},H:()=>{rendered++;},sr:{tab:({tab})=>{boot.g.tab='place';boot.g.place={id:tab};}},
   worldParkNotes:null,resolveWorldProfilePhoto:()=>{},m1:()=>{},x1:()=>Promise.resolve(),bm:true});
  vm.runInContext(assets,boot);vm.runInContext(launch,boot);vm.runInContext(route,boot);vm.runInContext(teardown,boot);

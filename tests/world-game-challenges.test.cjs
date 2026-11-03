@@ -25,7 +25,7 @@ function fixture(id = 'stacker', options = {}) {
     R: { id, running: false, loading: false, game: null, ctx: {}, ov: { querySelector: selector => selector === '#gres' ? receipt : controls, remove() { events.push(['closed']); } } },
     G2: { [id]: () => game }, _r: { [id]: { unit: id === 'stacker' ? '층' : '점' } },
     gt: { arcadeEnd() {} },
-    worldGameAssetRequest: 0, worldClosingGames: null,
+    worldGameAssetRequest: 0, worldClosingGames: null, worldRecommendedRestaurants: null,
     requestAnimationFrame: () => 1, cancelAnimationFrame() {},
     worldRewardRequest: () => ({}), worldRewardCurrent: () => true,
     ti: html => screens.push(html), Ja() {}, nf() {}, w: value => String(value),
@@ -198,7 +198,7 @@ function overlayFixture(t, { shareModule = false } = {}) {
   w.__event = (...event) => events.push(event);
   w.eval(`
     var R=null,Z=360,he=540,D={online:false,user:null},g={tab:'place',place:{id:'arcade'}},S={};
-    var worldGameAssetRequest=0,worldClosingGames=null;
+    var worldGameAssetRequest=0,worldClosingGames=null,worldRecommendedRestaurants=null;
     var _r={stacker:{name:'탑 쌓기',unit:'층',emoji:'🏗️',bg:'#fff'},mole:{name:'두더지 잡기',unit:'점',emoji:'🔨',bg:'#fff'},runner:{name:'달리기',unit:'점',emoji:'🏃',bg:'#fff'}};
     var G2=Object.fromEntries(Object.keys(_r).map(id=>[id,()=>({update(){},draw(){}})]));
     var gt={arcadeEnd(){}};

@@ -105,7 +105,7 @@ for(const id of ['breakout','screw'])test(id+': a lower-stage clear is success w
 });
 test('all public game links use their existing entry functions and cannot select a locked stage',()=>{
  const calls=[],c=vm.createContext({window:{openMatgo:()=>calls.push(['matgo'])},Al:(...args)=>calls.push(['arcade',...args]),xn:id=>calls.push(['billiards',id]),vn:id=>calls.push(['board',id])});vm.runInContext(routes,c);
- const arcade=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival','restaurants'];
+ const arcade=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival','restaurants','recommendations'];
  for(const id of arcade){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['arcade',id]);}
  for(const id of ['carom4','carom3','pool8']){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['billiards',id]);}
  for(const id of ['janggi','chess']){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['board',id]);}

@@ -3,6 +3,10 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const cleanup=require('../account-deletion.js');
 const owner='00000000-0000-4000-8000-000000000001';
 const buckets=['media','note-card-photos','note-event-photos'];
+const recommendationBucket='restaurant-recommendations';
+const recommendationPost='10000000-0000-4000-8000-000000000001';
+const recommendationPhoto='20000000-0000-4000-8000-000000000001';
+const recommendationPath=`${owner}/${recommendationPost}/${recommendationPhoto}.jpg`;
 function fixture(files=[]){
  const state={files:files.slice(),calls:[],current:true,failBucket:null,noProgress:false,deleted:false};
  const client={
@@ -30,6 +34,33 @@ function fixture(files=[]){
  retry.state.failBucket=null;await retry.run();assert.equal(retry.state.deleted,true,'retry drains remaining files before finalizing');
  const stuck=fixture(files.slice(0,1));stuck.state.noProgress=true;
  await assert.rejects(stuck.run(),/account_storage_remaining/);assert.equal(stuck.state.deleted,false,'silent Storage no-op cannot report withdrawal success');
+ const recommended={bucket_id:recommendationBucket,photo_path:recommendationPath};
+ const mixed=fixture([...buckets.map(bucket_id=>({bucket_id,photo_path:owner+'/legacy/nested.jpg'})),recommended]);
+ await mixed.run();assert.equal(mixed.state.deleted,true,'withdrawal drains recommendation photos alongside the three existing buckets');
+ assert.deepEqual(mixed.state.calls.find(call=>call[0]==='remove'&&call[1]===recommendationBucket),['remove',recommendationBucket,[recommendationPath]]);
+ const recommendationRetry=fixture([{bucket_id:'media',photo_path:owner+'/legacy.jpg'},recommended]);
+ recommendationRetry.state.failBucket=recommendationBucket;
+ await assert.rejects(recommendationRetry.run(),/storage unavailable/);
+ assert.equal(recommendationRetry.state.deleted,false,'a failed recommendation photo removal cannot finalize account deletion');
+ assert.deepEqual(recommendationRetry.state.files,[recommended]);
+ recommendationRetry.state.failBucket=null;await recommendationRetry.run();
+ assert.equal(recommendationRetry.state.deleted,true,'retry resumes at the remaining recommendation bucket');
+ for(const photo_path of [
+  `${owner}/${recommendationPhoto}.jpg`,
+  `${owner}/not-a-post-uuid/${recommendationPhoto}.jpg`,
+  `${owner}/${recommendationPost}/not-a-photo-uuid.jpg`,
+  `${owner}/${recommendationPost}/nested/${recommendationPhoto}.jpg`,
+  `${owner}/${recommendationPost}/${recommendationPhoto}.png`,
+  `${owner}/${recommendationPost}/${recommendationPhoto}.jpg?download=1`,
+  `${owner}/${recommendationPost}/../${recommendationPhoto}.jpg`,
+  `${owner}/${recommendationPost}%2f${recommendationPhoto}.jpg`,
+  `00000000-0000-4000-8000-000000000002/${recommendationPost}/${recommendationPhoto}.jpg`
+ ]){
+  const invalid=fixture([{bucket_id:'media',photo_path:owner+'/keep.jpg'},{bucket_id:recommendationBucket,photo_path}]);
+  await assert.rejects(invalid.run(),/account_storage_manual_review/);
+  assert.equal(invalid.state.calls.some(call=>call[0]==='remove'),false,'a forged recommendation path rejects the entire inventory before any removal');
+  assert.equal(invalid.state.deleted,false);
+ }
  for(const file of [{bucket_id:'media',photo_path:'other/photo.jpg'},
   {bucket_id:'other-bucket',photo_path:owner+'/photo.jpg'},
   {bucket_id:'media',photo_path:owner+'/../other/photo.jpg'}]){
@@ -59,5 +90,5 @@ function fixture(files=[]){
   else{assert.equal(signedOut,0);assert.equal(reset,0);assert.deepEqual(removed,[]);assert.equal(app.innerHTML,'');}
   if(mode==='failure'){assert.equal(button.disabled,false);assert.match(messages.at(-1),/남은 사진 정리/);}
  }
- console.log('PASS: three buckets, nested paths, 205-file batches, partial failure and retry, no-progress rejection, foreign paths, account switches, and actual World completion/failure UI.');
+ console.log('PASS: four buckets, strict recommendation photo paths, legacy nested paths, 205-file batches, partial failure and retry, no-progress rejection, foreign/forged paths, account switches, and actual World completion/failure UI.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
