@@ -48,7 +48,7 @@ function crossing(params, stage, worldTime = 0, forcedPassId) {
   const aim = animalKinds.includes(target.kind) ? getAnimalAimPoint(target) : target;
   return {
     t, x: v.x * velocityTime + stage.wind * WIND_RESPONSE * shot.windFactor * accelerationTime - aim.x,
-    y: PLAYER.y + v.y * velocityTime - GRAVITY * accelerationTime - aim.y
+    y: PLAYER.y + v.y * velocityTime - GRAVITY * (shot.gravityScale ?? 1) * accelerationTime - aim.y
   };
 }
 function centeredAim(stage, charge, bow, arrow, worldTime = 0, forcedPassId) {
@@ -102,7 +102,7 @@ function wallClearance(params, stage) {
   for(const wall of stage.obstacles)for(const z of[wall.z-wall.depth/2,wall.z+wall.depth/2]) {
     const ratio=k*z/v.z;if(ratio>=1)continue;
     const t=k>1e-8?-Math.log1p(-ratio)/k:z/v.z,b=k>1e-8?-Math.expm1(-k*t)/k:t,c=k>1e-8?(t-b)/k:t*t/2;
-    const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*c;
+    const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*(shot.gravityScale??1)*c;
     if(x>=wall.x-wall.width/2&&x<=wall.x+wall.width/2)margin=Math.min(margin,y-wall.height);
   }
   return margin;
@@ -130,14 +130,14 @@ function passerClearance(params,stage,time) {
     for(const wall of stage.obstacles)for(const z of[wall.z-wall.depth/2,wall.z+wall.depth/2]) {
       const ratio=k*z/v.z;if(ratio>=1)continue;
       const t=k>1e-8?-Math.log1p(-ratio)/k:z/v.z,b=k>1e-8?-Math.expm1(-k*t)/k:t,c=k>1e-8?(t-b)/k:t*t/2;
-      const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*c;
+      const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*(shot.gravityScale??1)*c;
       margin=Math.min(margin,Math.max(Math.abs(x-wall.x)-wall.width/2,y-wall.height));
     }
     for(const person of stage.passers) {
     for(const z of[person.z-person.depth/2,person.z+person.depth/2]) {
       const ratio=k*z/v.z;if(ratio>=1)continue;
       const t=k>1e-8?-Math.log1p(-ratio)/k:z/v.z,b=k>1e-8?-Math.expm1(-k*t)/k:t,c=k>1e-8?(t-b)/k:t*t/2;
-      const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*c;
+      const x=v.x*b+stage.wind*WIND_RESPONSE*shot.windFactor*c,y=PLAYER.y+v.y*b-GRAVITY*(shot.gravityScale??1)*c;
       if(y<0||y>person.height)continue;
       for(const offset of[-.08,0,.08]) {
         const subject=passersAt(stage,time+shot.launchDelay+t+offset).find(entry=>entry.id===person.id);
@@ -380,7 +380,7 @@ test('moving targets are sampled at the exact plane-crossing time', () => {
   const crossingTime = 0.5, worldTime = 1.2;
   const target = targetAt(stage, worldTime + crossingTime);
   const shot = launchArrow({ arrow: dragFree });
-  shot.velocity = { x: target.x / crossingTime, y: (target.y - PLAYER.y + GRAVITY * crossingTime ** 2 / 2) / crossingTime, z: 20 };
+  shot.velocity = { x: target.x / crossingTime, y: (target.y - PLAYER.y + GRAVITY * (shot.gravityScale ?? 1) * crossingTime ** 2 / 2) / crossingTime, z: 20 };
   const result = stepArrow(shot, 1.0, stage, worldTime);
   assert.equal(result.type, 'hit');
   assert.equal(result.score, 10);
@@ -434,13 +434,13 @@ test('better arrows reduce speed spread without cancelling gravity', () => {
   close(shot.velocity.y, vy - GRAVITY * 0.2);
 });
 
-test('twenty-five weapons and nineteen arrows preserve old identities and independent equipment choices', () => {
-  assert.equal(BOWS.length, 25); assert.equal(ARROWS.length, 19);
-  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 25 }, (_, id) => id));
+test('twenty-one weapons and nineteen arrows preserve bow and arrow identities after consolidating guns', () => {
+  assert.equal(BOWS.length, 21); assert.equal(ARROWS.length, 19);
+  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 21 }, (_, id) => id));
   assert.deepEqual(ARROWS.map(item => item.id), Array.from({ length: 19 }, (_, id) => id));
   assert.deepEqual(BOWS.slice(0, 4).map(item => item.name), ['숲길 목궁', '단풍나무 활', '바람결 활', '달빛 명궁']);
   assert.deepEqual(ARROWS.slice(0, 4).map(item => item.name), ['나무 화살', '깃털 화살', '탄소 화살', '은빛 화살']);
-  assert.equal(new Set(BOWS.map(item => item.name)).size, 25);
+  assert.equal(new Set(BOWS.map(item => item.name)).size, 21);
   assert.equal(new Set(ARROWS.slice(0, 12).map(item => item.fletching.name)).size, 12);
   assert.ok(ARROWS[1].tipMass > ARROWS[2].tipMass, 'different arrow points remain independently selectable');
   for (const bow of BOWS) for (const arrow of ARROWS) {
@@ -513,7 +513,7 @@ test('shop progression keeps released ranks and prices while adding small stat i
   for (const weapon of weapons.filter(item => item.scopeCompatible)) {
     assert.ok(weapon.scopePrice >= 500 && weapon.scopePrice >= weapon.price * .2, 'a permanent scope also requires meaningful savings');
   }
-  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [0, 950, 1250, 1750, 2200], 'event weapon prices remain outside this main-gear change');
+  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [29000], 'guns continue the main-gear price curve after the last crossbow');
 });
 
 test('ability sorting uses the selected actual stat without mutating saved equipment identities', () => {
@@ -540,7 +540,7 @@ test('ability sorting uses the selected actual stat without mutating saved equip
   assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1);
   assert.deepEqual(sortEquipment(weapons, 'unknown').map(item => item.id), sortEquipment(weapons).map(item => item.id));
   assert.deepEqual(weapons.map(item => item.id), weaponIds);
-  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 25 }, (_, id) => id));
+  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 21 }, (_, id) => id));
   assert.deepEqual(ARROWS.map(item => item.id), arrowIds);
 });
 
@@ -555,10 +555,10 @@ test('all twenty main weapon tiers progressively extend the steady opportunity f
     assert.ok(weapons[index].steadyDuration > weapons[index - 1].steadyDuration);
     assert.ok(weapons[index].steadyDuration <= 2);
   }
-  assert.ok(BOWS.filter(item => item.weaponType === 'gun').every(item => item.steadyDuration === .5), 'the event guns retain their separate aiming rules');
+  assert.ok(BOWS.filter(item => item.weaponType === 'gun').every(item => item.steadyDuration === 2), 'promoted guns retain the top crossbow steady opportunity');
 });
 
-test('the four scope tiers follow released shop ranks rather than weapon IDs and keep event guns separate', () => {
+test('the four scope tiers follow released shop ranks and promoted guns support every tier', () => {
   assert.deepEqual(SCOPES.map(scope => scope.magnification), [2, 3, 6, 8]);
   assert.deepEqual(SCOPES.map(scope => scope.priceMultiplier), [.6, 1, 2, 3]);
   const groups = [
@@ -572,16 +572,15 @@ test('the four scope tiers follow released shop ranks rather than weapon IDs and
     assert.deepEqual(BOWS[id].scopeMagnifications, group.magnifications, `weapon ${id} uses shop rank ${BOWS[id].shopRank}`);
     assert.equal(BOWS[id].scopeCompatible, true);
   }
-  for (const id of [20, 21]) {
-    assert.deepEqual(BOWS[id].scopeMagnifications, []);
-    assert.equal(BOWS[id].scopeCompatible, false);
+  for (const id of [20]) {
+    assert.deepEqual(BOWS[id].scopeMagnifications, [2, 3, 6, 8]);
+    assert.equal(BOWS[id].scopeCompatible, true);
   }
-  for (const id of [22, 23, 24]) assert.deepEqual(BOWS[id].scopeMagnifications, [3]);
-  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), [...Array.from({ length: 20 }, (_, id) => id), 22, 23, 24]);
+  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), Array.from({ length: 21 }, (_, id) => id));
 });
 
 test('scope prices retain bought threefold values, round other tiers to fifty coins and reject unsupported options', () => {
-  const legacyThreefoldPrices = { 3: 1650, 7: 1150, 8: 900, 9: 1400, 10: 2550, 11: 3250, 12: 2200, 13: 1900, 14: 2900, 15: 3600, 16: 4000, 17: 4450, 18: 4900, 19: 5350, 22: 240, 23: 240, 24: 240 };
+  const legacyThreefoldPrices = { 3: 1650, 7: 1150, 8: 900, 9: 1400, 10: 2550, 11: 3250, 12: 2200, 13: 1900, 14: 2900, 15: 3600, 16: 4000, 17: 4450, 18: 4900, 19: 5350, 20: 5800 };
   for (const [id, price] of Object.entries(legacyThreefoldPrices)) assert.equal(getScopePrice(Number(id), 3), price);
   for (const [id, magnification, price] of [[0, 2, 300], [2, 2, 450], [2, 3, 700], [13, 2, 1150], [13, 6, 3800], [19, 2, 3250], [19, 6, 10700], [19, 8, 16050]]) {
     assert.equal(getScopePrice(id, magnification), price, `weapon ${id}, ${magnification}×`);
@@ -594,7 +593,7 @@ test('scope prices retain bought threefold values, round other tiers to fifty co
       if (magnification !== 3) assert.equal(price % 50, 0);
     } else assert.equal(price, null, `weapon ${item.id} cannot buy ${magnification}×`);
   }
-  for (const invalid of [-1, 25, 1.5, NaN, Infinity, '0', '19', null, undefined, {}]) assert.equal(getScopePrice(invalid, 2), null);
+  for (const invalid of [-1, 21, 22, 23, 24, 25, 1.5, NaN, Infinity, '0', '19', null, undefined, {}]) assert.equal(getScopePrice(invalid, 2), null);
 });
 
 test('all main weapon upgrades preserve speed and range with bounded gains, including the first crossbow', () => {
@@ -818,17 +817,17 @@ test('only rare crossbows launch three distinct arrows and better tiers tighten 
   }
 });
 
-test('five guns fire at exactly twice the actual maximum archery speed regardless of arrows, charge or random bias', () => {
+test('the single main gun fires at exactly twice the actual maximum archery speed regardless of arrows, charge or random bias', () => {
   const guns = BOWS.filter(weapon => weapon.weaponType === 'gun');
   const mainSpeeds = BOWS.filter(weapon => weapon.weaponType !== 'gun').flatMap(bow => ARROWS.map(arrow =>
     getSpeed({ bow, arrow, charge: 1, velocityBias: 1 })));
   assert.equal(mainSpeeds.length, 20 * 19);
   assert.equal(MAX_MAIN_PROJECTILE_SPEED, Math.max(...mainSpeeds));
   assert.equal(BULLET_SPEED, Math.max(...mainSpeeds) * 2);
-  assert.equal(guns.length, 5);
-  assert.deepEqual(guns.map(gun => gun.magazineSize), [2, 4, 6, 8, 10]);
-  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [3, 2.5, 2, 1.5, 1]);
-  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['느림', '보통', '보통', '빠름', '빠름']);
+  assert.equal(guns.length, 1);
+  assert.deepEqual(guns.map(gun => gun.magazineSize), [10]);
+  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [1]);
+  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['빠름']);
   for (const gun of guns) {
     assert.ok(gun.power > 0 && !Object.hasOwn(gun, 'elasticity'));
     assert.equal(gun.muzzleSpeed, BULLET_SPEED);assert.equal(gun.speed, BULLET_SPEED);assert.equal(gun.ammo.variance, 0);
@@ -851,29 +850,24 @@ test('five guns fire at exactly twice the actual maximum archery speed regardles
   assert.equal(launchArrow({ bow: BOWS[0] }).projectileType, 'arrow');
 });
 
-test('event gun upgrades retain aiming, ammunition and reload performance with gradually better ballistics', () => {
-  const guns = sortEquipment(BOWS.filter(weapon => weapon.weaponType === 'gun'));
-  for (let index = 1; index < guns.length; index++) {
-    const before = guns[index - 1], after = guns[index];
-    for (const key of ['grip', 'power']) assert.ok(after[key] >= before[key] && after[key] <= before[key] + 10, `${after.name} gradually improves ${key}`);
-    assert.ok(after.magazineSize >= before.magazineSize && after.magazineSize <= before.magazineSize + 2, 'an upgrade adds at most two magazine rounds');
-    assert.ok(after.reloadSeconds < before.reloadSeconds && after.reloadSeconds >= before.reloadSeconds - .5, 'each step shortens the reload by at most half a second');
-    assert.ok(after.sway <= before.sway);
-  }
+test('the sole main gun retains precision-gun handling, one-second reload and its actual wind response', () => {
+  const guns = BOWS.filter(weapon => weapon.weaponType === 'gun');
+  assert.equal(guns.length, 1);
+  const gun = guns[0];
+  assert.deepEqual([gun.id, gun.name, gun.grip, gun.power, gun.magazineSize, gun.reloadSeconds, gun.ammo.mass, gun.ammo.windFactor],
+    [20, '정밀 사격총', 100, 80, 10, 1, 8, .08]);
+  assert.equal(gun.visualTier, 24, 'the consolidated item retains the precision rifle appearance');
   for (const distance of [10, 30, 50]) {
-    let previous = null;
-    for (const bow of guns) {
-      const shot = launchArrow({ bow, pitch: .15 });
-      const result = stepArrow(shot, 8, { ...emptyRange, distance, radius: 100, wind: 1.3 });
-      assert.equal(result.type, 'hit');
-      if (previous) {
-        assert.ok(result.flightTime <= previous.flightTime + 1e-8, `${bow.name} keeps travel time at ${distance}m`);
-        assert.ok(result.point.x <= previous.drift + 1e-8, `${bow.name} keeps wind resistance at ${distance}m`);
-        assert.ok(shot.velocity.z >= previous.forwardSpeed - 1e-8, `${bow.name} keeps downrange speed at ${distance}m`);
-        assert.ok(shot.velocity.z <= previous.forwardSpeed * 1.02, `${bow.name} adds at most 2% downrange speed at ${distance}m`);
-      }
-      previous = { flightTime: result.flightTime, drift: result.point.x, forwardSpeed: shot.velocity.z };
-    }
+    const shot = launchArrow({bow:gun, pitch:.15}), calm = launchArrow({bow:gun, pitch:.15});
+    const result = stepArrow(shot, 16, {...emptyRange, distance, radius:100, wind:1.3});
+    const calmResult = stepArrow(calm, 16, {...emptyRange, distance, radius:100, wind:0});
+    assert.equal(result.type, 'hit');assert.equal(calmResult.type, 'hit');
+    const t = result.flightTime, drag = shot.dragRate;
+    const accelerationTime = (t + Math.expm1(-drag * t) / drag) / drag;
+    close(result.point.x, 1.3 * WIND_RESPONSE * .08 * accelerationTime);
+    assert.ok(result.point.x > 0);
+    close(result.point.y, calmResult.point.y);close(result.flightTime, calmResult.flightTime);
+    close(shot.velocity.z, calm.velocity.z);
   }
 });
 
@@ -907,7 +901,6 @@ test('ten timed event levels progress from two to ten simultaneous targets in th
   assert.ok(!STAGES.includes(CLAY_EVENT));
   assert.deepEqual(CLAY_EVENT, createClayEvent(1));
   assert.equal(CLAY_EVENT.shots, null); assert.equal(CLAY_EVENT.goal, 30);
-  assert.equal(BOWS[20].price, 0, 'the first event gun is free');
   assert.equal(createClayEvent(-4).eventLevel, 1); assert.equal(createClayEvent(99).eventLevel, 10);
   let previousDuration = Infinity, previousFlight = Infinity;
   for (let level = 1; level <= 10; level++) {
@@ -1013,7 +1006,7 @@ test('event collision resolves one of several targets exactly and breaking it le
     const shot = launchArrow({ bow: BOWS[20] }), k = shot.dragRate;
     const b = -Math.expm1(-k * duration) / k, c = (duration - b) / k;
     shot.velocity = { x: (target.x - stage.wind * WIND_RESPONSE * shot.windFactor * c) / b,
-      y: (target.y - PLAYER.y + GRAVITY * c) / b, z: stage.distance / b };
+      y: (target.y - PLAYER.y + GRAVITY * (shot.gravityScale ?? 1) * c) / b, z: stage.distance / b };
     return shot;
   };
   for (const target of [targets[0], targets[5], targets[9]]) {
@@ -1037,7 +1030,7 @@ test('event collision resolves one of several targets exactly and breaking it le
   const target = eventTargetsAt(overlapping, 3)[2], shot = launchArrow({ bow: BOWS[20] });
   const k = shot.dragRate, b = -Math.expm1(-k * duration) / k, c = (duration - b) / k;
   shot.velocity = { x: (target.x - overlapping.wind * WIND_RESPONSE * shot.windFactor * c) / b,
-    y: (target.y - PLAYER.y + GRAVITY * c) / b, z: overlapping.distance / b };
+    y: (target.y - PLAYER.y + GRAVITY * (shot.gravityScale ?? 1) * c) / b, z: overlapping.distance / b };
   const result = stepArrow(shot, 1, overlapping, 2.5);
   assert.equal(result.type, 'hit'); assert.equal(result.score, 10); assert.equal(result.targetCenter.passId, target.passId);
   assert.equal(shot.active, false, 'one bullet cannot score against every overlapping plate');
@@ -1288,7 +1281,7 @@ test('passing people are seeded offscreen arrivals with independent directions a
 });
 
 test('continuous moving-person collision catches thin blockers and is independent of timestep', () => {
-  for (const boundary of [false, true]) for (const bow of [BOWS[0], BOWS[24]]) {
+  for (const boundary of [false, true]) for (const bow of [BOWS[0], BOWS[20]]) {
     const stage = { ...emptyRange, distance: 30, radius: 100, wind: .4, encounterSeed: 777,
       passers: [{ id: 9, z: 20, width: .02, height: 3, depth: .02, passDuration: 2, phase: 0 }] };
     const worldTime = boundary ? 1.8 : .4, impactTime = .4;
@@ -1298,7 +1291,7 @@ test('continuous moving-person collision catches thin blockers and is independen
       const shot = launchArrow({ bow }), k = shot.dragRate;
       const b = -Math.expm1(-k * impactTime) / k, c = (impactTime - b) / k;
       shot.velocity = { x: (person.x - stage.wind * WIND_RESPONSE * shot.windFactor * c) / b,
-        y: (1.3 - PLAYER.y + GRAVITY * c) / b, z: person.z / b };
+        y: (1.8 - PLAYER.y + GRAVITY * (shot.gravityScale ?? 1) * c) / b, z: person.z / b };
       return shot;
     };
     const whole = makeShot(), pieces = makeShot();

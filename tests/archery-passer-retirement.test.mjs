@@ -22,7 +22,7 @@ function aimedAtPerson(stage, personId, worldTime, bow = BOWS[0]) {
     const acceleration = drag ? (arrival - travel) / drag : arrival * arrival / 2;
     shot.velocity = {
       x: (person.x - PLAYER.x - stage.wind * WIND_RESPONSE * shot.windFactor * acceleration) / travel,
-      y: (1.3 - PLAYER.y + GRAVITY * acceleration) / travel,
+      y: (1.8 - PLAYER.y + GRAVITY * (shot.gravityScale ?? 1) * acceleration) / travel,
       z: (person.z - PLAYER.z) / travel
     };
     return shot;
@@ -88,7 +88,7 @@ test('a retry or fresh stage restores its complete roster without sharing retire
 });
 
 test('retired people no longer collide, including later reversals and exact large or small physics steps', () => {
-  for (const behavior of ['shuttle', 'crowd', undefined]) for (const bow of [BOWS[0], BOWS[24]]) {
+  for (const behavior of ['shuttle', 'crowd', undefined]) for (const bow of [BOWS[0], BOWS[20]]) {
     const stage = prepareStage({...range, passers: [{...blocker, behavior}]}, 777);
     const reference = prepareStage(stage, 777);
     for (const worldTime of [.4, 1.8, 6.4]) {

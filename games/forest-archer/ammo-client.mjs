@@ -5,6 +5,7 @@ const STORAGE_PREFIX = 'forest-archer-ammo-pending-v4:';
 const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy', 'coach-buy']);
+const FINANCIAL_ACTIONS = new Set(['spend', 'buy', 'coach-buy']);
 const SNAPSHOT_FIELDS = ['launch_epoch', 'remaining', 'free_remaining', 'paid_remaining', 'coins', 'revision', 'main_rounds', 'milestones_granted', 'daily_eligible', 'day', 'daily_checked', 'pack_ammo', 'pack_price', 'server_now', 'coach_expires_at', 'coach_active', 'coach_price', 'coach_duration_seconds'];
 const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'coach_basic', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid', 'progress_reset']);
 const COUNTER_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'main_rounds', 'milestones_granted'];
@@ -23,7 +24,7 @@ export function createRequestId() {
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 }
 
-export function createAmmoClient({ onChange } = {}) {
+export function createAmmoClient({ onChange, recordsOnly = false } = {}) {
   const host = globalThis.window, parent = host?.parent;
   const origin = host?.location?.origin || globalThis.location?.origin;
   const usable = !!(host?.addEventListener && parent && parent !== host && origin && origin !== 'null');
@@ -72,6 +73,28 @@ export function createAmmoClient({ onChange } = {}) {
       const history = Array.isArray(previous) ? previous.filter(item => item?.requestId !== operation.requestId) : [];
       target.setItem(key, JSON.stringify([...history, { requestId: operation.requestId, action: 'spend', confirmed }].slice(-8)));
     } catch { /* History is advisory; future balances always come from the server. */ }
+  }
+  function archiveRetiredRequest(operation, response = null) {
+    try {
+      const target = storage(), key = 'forest-archer-ammo-recovery-v4:' + encodeURIComponent(operation.owner);
+      const previous = JSON.parse(target.getItem(key) || '[]'), history = Array.isArray(previous) ? previous : [];
+      const entry = { ...history.find(item => item?.requestId === operation.requestId),
+        requestId: operation.requestId, action: operation.action, retired: true };
+      if (response?.ok === true && typeof response.found === 'boolean') {
+        entry.receiptFound = response.found;
+        if (response.found && typeof response.receipt?.ok === 'boolean') entry.confirmed = response.receipt.ok;
+      }
+      target.setItem(key, JSON.stringify([...history.filter(item => item?.requestId !== operation.requestId), entry].slice(-8)));
+      return true;
+    } catch { return false; /* A stored receipt remains authoritative if local history is unavailable. */ }
+  }
+  async function reconcileRetiredRequest(operation, initializedIdentity) {
+    // The removed ammunition economy must never issue a new spend or purchase,
+    // even when an older tab left a request with an unknown outcome. This read
+    // is separate from pending so it cannot replace a new round's saved intent.
+    const response = await send('receipt', { receiptId: operation.requestId, originalAction: operation.action });
+    if (disposed || identity !== initializedIdentity) return;
+    if (archiveRetiredRequest(operation, response)) forget(operation);
   }
   function restore(owner) {
     try {
@@ -192,6 +215,7 @@ export function createAmmoClient({ onChange } = {}) {
     operation.promise = promise;notify();return promise;
   }
   async function mutate(action, payload, requestId, localRunId) {
+    if (recordsOnly && FINANCIAL_ACTIONS.has(action)) return fail('ammo_retired');
     if (!await ensureIdentity()) return fail('unavailable');
     if (pending) {
       const same = pending.action === action && JSON.stringify(pending.payload) === JSON.stringify(payload) && (!requestId || pending.requestId === requestId) && (action !== 'spend' || pending.localRunId === localRunId);
@@ -263,11 +287,17 @@ export function createAmmoClient({ onChange } = {}) {
       clearTimeout(initTimer);
       if (data.available !== true || !data.owner) { identity = null;connection = 'unavailable';settleReady(false);notify();return; }
       identity = { owner: data.owner, sessionId: data.sessionId };connection = 'connecting';pending = restore(data.owner);
+      const retired = recordsOnly && FINANCIAL_ACTIONS.has(pending?.action) ? pending : null;
+      if (retired) {
+        if (archiveRetiredRequest(retired)) forget(retired);
+        pending = null;
+      }
       settleReady(true);notify();
       const initializedIdentity = identity;
       defer(async () => {
         if (disposed || identity !== initializedIdentity) return;
         await refresh();
+        if (!disposed && identity === initializedIdentity && retired) await reconcileRetiredRequest(retired, initializedIdentity);
         if (!disposed && identity === initializedIdentity && pending?.recovered) lookup(pending, true);
       });
       return;

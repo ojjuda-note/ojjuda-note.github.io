@@ -66,7 +66,7 @@ const gameButton=id=>{
  assert.ok(match,'the production catalog renders '+id);return match[1];
 };
 assert.doesNotMatch(gameButton('archery'),/game-test-badge/,'released archery has no trial badge');
-assert.match(gameButton('star'),/<small class="game-test-badge">회원 전용<\/small>/);
+assert.equal(ctx._r.star,undefined,'the retired Star helper stays out of the production catalog');
 assert.match(gameButton('festival'),/<small class="game-test-badge">테스트<\/small>/);
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.3.0');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.4.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -96,10 +96,10 @@ releaseFixture.api.close();
 assert.ok(archeryRevision,'the iframe has its independent game revision');
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
-// Refresh round-only passer retirement while retaining unchanged
+// Refresh main gun play and its record-only bridge while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,'20261104-archery-passer-retire1','every consumer loads the same round-only passer state');
+assert.equal(moduleRevision,'20261104-archery-main-firearms1','every consumer loads the same single-gun ballistics');
 assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
 assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the live game and coach share the remaining people');
@@ -108,7 +108,7 @@ const anatomyRevision=read('games/forest-archer/engine.mjs').match(/from '\.\/an
 assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-dive1','the unchanged scene keeps its cache revision');
-assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-layout1','the unchanged ammo client retains its released three-arrow support');
+assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-main-firearms1','the client disables retired ammo purchases and keeps record recovery');
 assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-laser-touch1','the unchanged touch and angle styles retain their released cache URL');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
