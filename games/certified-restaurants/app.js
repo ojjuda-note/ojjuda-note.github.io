@@ -362,7 +362,18 @@
   }
 
   readSaved();
-  if (new URLSearchParams(location.search).get('embedded') === '1') $('back-link').hidden = true;
+  const entryParams = new URLSearchParams(location.search);
+  const embedded = entryParams.get('embedded') === '1';
+  if (embedded) $('back-link').hidden = true;
+  if (embedded && entryParams.get('member-menu') === '1' && window.parent !== window) {
+    $('recommendations-link')?.addEventListener('click', event => {
+      if (event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      try {
+        window.parent.postMessage({ type: 'ojjuda:restaurants:recommendations' }, location.origin);
+        event.preventDefault();
+      } catch { /* The canonical top-level link remains available if messaging fails. */ }
+    });
+  }
   document.querySelector('.skip-link').addEventListener('click', () => setView('list'));
   $('search-form').addEventListener('submit', event => { event.preventDefault(); clearTimeout(searchTimer); state.query = $('search').value; render(true); });
   $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.query = $('search').value; render(true); }, 130); });

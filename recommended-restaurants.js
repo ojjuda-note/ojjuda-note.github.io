@@ -98,7 +98,7 @@
     }
   }
 
-  function create({ client, getUser, notify = () => {}, onLogin } = {}) {
+  function create({ client, getUser, notify = () => {}, onLogin, returnLabel = '' } = {}) {
     let current = null, destroyed = false, authSubscription = null;
     const photoUrls = new Map();
     const cleanupQueues = new Map(), cleanupLocks = new Set();
@@ -583,6 +583,7 @@
       const dialog = hook(node('dialog', 'recommended-restaurants-dialog'), 'dialog'); dialog.setAttribute('aria-label', '회원 추천맛집');
       const header = node('header', 'rr-header'), backButton = button('←', 'rr-header-button', 'back'), heading = node('h1', '', '추천맛집'), closeButton = button('×', 'rr-header-button', 'close');
       backButton.setAttribute('aria-label', '이전 화면으로'); closeButton.setAttribute('aria-label', '추천맛집 닫기');
+      if (returnLabel) { closeButton.textContent = '← ' + returnLabel; closeButton.classList.add('rr-return-button'); closeButton.setAttribute('aria-label', returnLabel + '으로 돌아가기'); }
       header.append(backButton, heading, closeButton);
       const cleanupStatus = hook(node('aside', 'rr-cleanup-status'), 'cleanup-status'); cleanupStatus.hidden = true; cleanupStatus.setAttribute('role', 'status');
       const body = node('main', 'rr-body'); dialog.append(header, cleanupStatus, body);

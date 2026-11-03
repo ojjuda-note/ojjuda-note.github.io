@@ -105,8 +105,11 @@ for(const id of ['breakout','screw'])test(id+': a lower-stage clear is success w
 });
 test('all public game links use their existing entry functions and cannot select a locked stage',()=>{
  const calls=[],c=vm.createContext({window:{openMatgo:()=>calls.push(['matgo'])},Al:(...args)=>calls.push(['arcade',...args]),xn:id=>calls.push(['billiards',id]),vn:id=>calls.push(['board',id])});vm.runInContext(routes,c);
- const arcade=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival','restaurants','recommendations'];
+ const arcade=['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'];
  for(const id of arcade){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['arcade',id]);}
+ c.openWorldGameLink('restaurants');assert.equal(calls.at(-1)[0],'arcade');assert.equal(calls.at(-1)[1],'restaurants');assert.equal(Object.keys(calls.at(-1)[2]).length,0);
+ c.openWorldGameLink('recommendations');assert.equal(calls.at(-1)[1],'restaurants');assert.equal(calls.at(-1)[2].openRecommendations,true,'legacy recommendation links open the directory and its member child');
+ c.openWorldGameLink('restaurants',{openRecommendations:true});assert.equal(calls.at(-1)[1],'restaurants');assert.equal(calls.at(-1)[2].openRecommendations,true,'canonical nested options reach the directory');
  for(const id of ['carom4','carom3','pool8']){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['billiards',id]);}
  for(const id of ['janggi','chess']){c.openWorldGameLink(id);assert.deepEqual(calls.at(-1),['board',id]);}
  c.openWorldGameLink('matgo');assert.deepEqual(calls.at(-1),['matgo']);
