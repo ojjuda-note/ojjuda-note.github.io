@@ -449,7 +449,7 @@ async function fixture(browser, options = {}) {
     assert.deepEqual(coverage.errors, []); assert.deepEqual(coverage.network.escaped, []); await coverage.context.close();
     const unavailableMap = await fixture(browser, { dataset: { restaurants: coverageRows }, noMap: true });
     await waitForTotal(unavailableMap.page, 12); await unavailableMap.page.locator('#show-map').click();
-    assert.equal(await unavailableMap.page.locator('#result-coverage').textContent(), '지도 표시 0곳 / 위치 확인 4곳 · 위치 확인 중 8곳');
+    assert.equal(await unavailableMap.page.locator('#result-coverage').textContent(), '지도 표시 0 / 4곳 · 위치 확인 중 8곳');
     assert.equal(await unavailableMap.page.locator('.restaurant-pin').count(), 0); assert.equal(await unavailableMap.page.locator('#map-message').isVisible(), true);
     assert.deepEqual(unavailableMap.errors, []); assert.deepEqual(unavailableMap.network.escaped, []); await unavailableMap.context.close();
 
@@ -477,7 +477,7 @@ async function fixture(browser, options = {}) {
     await performance.page.locator('#show-map').click();
     await performance.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(await performance.page.locator('.restaurant-pin').count(), 300);
-    assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 표시 300곳 / 위치 확인 800곳');
+    assert.equal(await performance.page.locator('#result-coverage').textContent(), '지도 표시 300 / 800곳');
     assert.match(await performance.page.locator('#map-caption-text').textContent(), /800곳 중 300곳/);
     assert.deepEqual(await performance.page.locator('.restaurant-pin').evaluateAll(pins => pins.map(pin => pin.title)), many.slice(0, 300).map(item => item.name), 'nearby maps the nearest 300 first');
     await performance.page.locator('#show-list').click(); await performance.page.locator('[data-restaurant-id="many-650"] .card-main').click();
@@ -513,7 +513,7 @@ async function fixture(browser, options = {}) {
     await mixedMap.page.locator('#show-map').click();
     await mixedMap.page.waitForFunction(() => !!document.querySelector('.leaflet-overlay-pane canvas,.leaflet-overlay-pane svg path'));
     assert.equal(await mixedMap.page.locator('.restaurant-pin').count(), 300);
-    assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 300곳 / 위치 확인 305곳 · 위치 확인 중 7곳');
+    assert.equal(await mixedMap.page.locator('#result-coverage').textContent(), '지도 표시 300 / 305곳 · 위치 확인 중 7곳');
     assert.equal(await mixedMap.page.locator('#map-caption-text').textContent(), '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인');
     await mixedMap.page.setViewportSize({ width: 320, height: 844 });
     assert.equal(await mixedMap.page.locator('#result-coverage').evaluate(node => { const rect = node.getBoundingClientRect(); return rect.left >= 0 && rect.right <= innerWidth + 1 && node.scrollWidth <= node.clientWidth + 1 && rect.height <= parseFloat(getComputedStyle(node).lineHeight) + 1; }), true, 'the cap and missing locations remain separate in one compact phone line');

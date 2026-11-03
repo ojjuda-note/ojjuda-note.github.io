@@ -111,9 +111,10 @@
     $('result-count').dataset.total = String(total);
     $('result-count').replaceChildren(document.createTextNode('등록 '), el('strong', '', String(total)), document.createTextNode('곳'), shown);
     const coverage = state.view === 'map'
-      ? '지도 표시 ' + mapped + '곳' + (located > mapped ? ' / 위치 확인 ' + located + '곳' : '')
+      ? '지도 표시 ' + mapped + (located > mapped ? ' / ' + located : '') + '곳'
       : '지도 가능 ' + located + '곳';
     $('result-coverage').textContent = coverage + (total > located ? ' · 위치 확인 중 ' + (total - located) + '곳' : '');
+    $('result-coverage').title = state.view === 'map' ? '위치 확인 ' + located + '곳 중 지도 ' + mapped + '곳 표시' : '위치가 확인되어 지도에 표시할 수 있는 식당 ' + located + '곳';
     $('result-coverage').hidden = false;
   }
   function renderCards(append = false) {

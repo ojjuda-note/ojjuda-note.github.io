@@ -345,7 +345,7 @@ function fixture(options = {}) {
   assert.deepEqual(coverage.errors, []); coverage.dom.window.close();
   const unavailableMap = fixture({ dataset: { restaurants: coverageRows }, noMap: true });
   await ready(unavailableMap, 12, false); unavailableMap.click('#show-map');
-  assert.equal(unavailableMap.$('#result-coverage').textContent, '지도 표시 0곳 / 위치 확인 4곳 · 위치 확인 중 8곳', 'an unavailable map never claims that eligible locations are actually displayed');
+  assert.equal(unavailableMap.$('#result-coverage').textContent, '지도 표시 0 / 4곳 · 위치 확인 중 8곳', 'an unavailable map never claims that eligible locations are actually displayed');
   assert.equal(unavailableMap.calls.markers.size, 0); assert.equal(unavailableMap.$('#map-message').hidden, false);
   assert.deepEqual(unavailableMap.errors, []); unavailableMap.dom.window.close();
 
@@ -369,7 +369,7 @@ function fixture(options = {}) {
   assert.equal(performance.records().length, 700, 'successive batches expose cards beyond the map limit');
   performance.click('#show-map'); await until(() => performance.calls.geoLayers === 1, 'the performance sample map loads locally');
   assert.equal(performance.document.querySelectorAll('.restaurant-pin').length, 300, 'large maps cap the visible markers');
-  assert.equal(performance.$('#result-coverage').textContent, '지도 표시 300곳 / 위치 확인 800곳');
+  assert.equal(performance.$('#result-coverage').textContent, '지도 표시 300 / 800곳');
   assert.match(performance.$('#map-caption-text').textContent, /800곳 중 300곳/);
   assert.deepEqual([...performance.document.querySelectorAll('.restaurant-pin')].map(pin => pin.title), many.slice(0, 300).map(item => item.name), 'location mode initially maps the nearest 300 restaurants');
   performance.click('#show-list'); performance.click('[data-restaurant-id="many-650"] .card-main');
@@ -396,7 +396,7 @@ function fixture(options = {}) {
   assert.equal(mixedMap.$('#result-coverage').textContent, '지도 가능 305곳 · 위치 확인 중 7곳'); mixedMap.click('#show-map');
   await until(() => mixedMap.calls.geoLayers === 1, 'mixed-coordinate fixture map loads');
   assert.equal(mixedMap.document.querySelectorAll('.restaurant-pin').length, 300);
-  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 300곳 / 위치 확인 305곳 · 위치 확인 중 7곳');
+  assert.equal(mixedMap.$('#result-coverage').textContent, '지도 표시 300 / 305곳 · 위치 확인 중 7곳');
   assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 확인 305곳 중 300곳 표시 · 위치 미확인 7곳은 목록에서 확인', 'the pin cap and missing coordinates are independent facts');
   mixedMap.search('지도미확인');
   assert.equal(mixedMap.$('#map-caption-text').textContent, '지역 개요도 · 위치 미확인 7곳은 목록에서 확인');
