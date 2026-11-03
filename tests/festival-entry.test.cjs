@@ -89,6 +89,8 @@ function routeFixture(){
 }
 (async()=>{
  const cold=routeFixture(),{boot}=cold;
+ const archeryVersion=boot.window.OjjudaGameAssets.version('archery');
+ assert.match(archeryVersion,/^\d+\.\d+\.\d+$/,'archery declares its own game release');
  assert.equal(cold.resources.length,0,'festival assets do not load on ordinary shell startup');
  assert.equal(boot.window.OjjudaGameAssets.ready('festival'),false);
  boot.my();assert.equal(cold.resources.length,2);assert.equal(cold.opens.length,0,'direct entry waits for both lazy assets');
@@ -114,7 +116,7 @@ function routeFixture(){
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
  assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.1.1');
- assert.equal(boot.window.OjjudaGameAssets.version('archery'),'2.0.4','archery retains its independent game release');
+ assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
  assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalRevision,'iframe and bridge use the same independent cache revision');
