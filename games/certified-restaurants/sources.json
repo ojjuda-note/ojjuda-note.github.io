@@ -185,9 +185,9 @@
     "coordinatesPolicy": "확인한 공식 페이지의 mapX/mapY 또는 미쉐린 지도 좌표만 사용. 좌표를 추정하거나 구/동 중심으로 대체하지 않음.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 311,
+    "recordCountIncludingCollaborations": 315,
     "displayLabels": {
-      "3리본": 42,
+      "3리본": 46,
       "선정 이력": 35,
       "수록 이력": 62,
       "공동선정": 172
@@ -225,7 +225,7 @@
       "privacyAndContent": "식당 기본 사실만 사용. 소개 문장과 사진을 앱 데이터로 복제하지 않음."
     },
     "additional": {
-      "recordCount": 26,
+      "recordCount": 30,
       "coordinatesCount": 12,
       "verifiedAt": "2026-11-03",
       "groups": [
@@ -246,6 +246,17 @@
           "count": 9,
           "type": "한국관광공사 공식 여행기사",
           "details": "기사에서 블루리본을 명시한 업소만 추가. 기사 수정일을 수상 연도로 추정하지 않음. 주소는 기사에 명시된 것, 좌표는 개별 공식 상세정보에서 동일 도로명/건물번호를 확인했을 때만 보강."
+        },
+        {
+          "count": 4,
+          "type": "2027 서울·2026 전국 정규 3리본 누락 4곳 보강",
+          "yearType": "edition",
+          "gradeSourceUrls": [
+            "https://www.ypbooks.co.kr/books/202610162885083156",
+            "https://www.ypbooks.co.kr/books/202605181049540708"
+          ],
+          "addressSources": "다이닝마/오공공구일일 채용 기업 제공 사업장 주소, 도원S 운영사 더플라자다이닝 안내, 화이트크리스마스 청주시 문화관광 공식 업소목록. 상세 주소는 각 레코드 addressSourceUrl.",
+          "coordinatePolicy": "식당명·도로명·건물번호에 일치하는 공개 좌표를 확인하지 못하여 4곳은 null 유지. 오공공구일일 1층/지하층 자료 충돌로 층수 기입하지 않음."
         }
       ],
       "coordinateConflict": {
@@ -254,13 +265,8 @@
       },
       "articleRouting": "관광공사 여행기사는 rem_detail.do, 음식점 개별정보는 ms_detail.do로 출처URL분리",
       "unknownCoordinatesPolicy": "행정구역 중심/임의지도추정/주소의 대략 위치를 채우지 않음",
-      "notIncludedHighest": [
-        "다이닝마",
-        "도원S",
-        "오공공구일일",
-        "화이트크리스마스"
-      ],
-      "notIncludedHighestReason": "최고등급 선정은 출판사에서확인되었으나 본수집에서 식별주소의 공식1차확인을 완료하지 못해 상호만 숫자에추가하지 않음",
+      "notIncludedHighest": [],
+      "notIncludedHighestReason": "기존 미등록 정규 3리본 네 식당의 상호·주소를 확인해 모두 등록. 블루리본 1·2리본 및 도서 수록 식당은 여전히 일부만 수록.",
       "redRibbonPublicLinks": {
         "officialSource": "https://www.coca-cola.com/kr/ko/brands/coca-cola/coke-and-meal",
         "overview": "https://linktr.ee/cocacolaredribbon",
@@ -268,7 +274,8 @@
         "kakaoRegions": "https://linktr.ee/cocacolaredribbon_K",
         "localImported": 0,
         "accessResult": "관측된공개링크로 네이버/카카오지도를열었으나접근실패. API추측/차단우회없이종료."
-      }
+      },
+      "highestVerifiedAt": "2026-11-03"
     },
     "sejongCollaboration": {
       "publisher": "세종시문화관광재단",
@@ -340,21 +347,21 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 749,
+    "uniqueRestaurants": 753,
     "providerCounts": {
       "michelin": 237,
-      "blue-ribbon": 311,
+      "blue-ribbon": 315,
       "post-office": 240
     },
     "coordinatesAvailable": 369,
-    "coordinatesMissing": 380,
+    "coordinatesMissing": 384,
     "regionalCounts": {
       "강원": 6,
       "경기": 9,
       "경남": 133,
-      "대구": 2,
+      "대구": 3,
       "부산": 221,
-      "서울": 200,
+      "서울": 202,
       "세종": 100,
       "울산": 18,
       "인천": 2,
@@ -362,14 +369,14 @@
       "전북": 2,
       "제주": 52,
       "충남": 1,
-      "충북": 2
+      "충북": 3
     },
     "categoryCounts": {
       "한식": 413,
-      "중식": 51,
-      "일식": 66,
+      "중식": 53,
+      "일식": 67,
       "기타": 24,
-      "양식": 118,
+      "양식": 119,
       "분식": 5,
       "디저트": 72
     }
