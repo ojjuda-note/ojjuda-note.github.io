@@ -22,10 +22,21 @@ async function fixture(t, options = {}) {
     URL.createObjectURL = blob => { const url = create(blob); rrObjectURLs.add(url); return url; };
     URL.revokeObjectURL = url => { rrObjectURLs.delete(url); return revoke(url); };
   });
-  const escaped = [], errors = [], tiles = [];
+  const escaped = [], errors = [], tiles = [], reverseLookups = [];
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
     if (url.origin === 'https://tile.openstreetmap.org' && /^\/\d+\/\d+\/\d+\.png$/.test(url.pathname)) { tiles.push(url.href); return route.fulfill({ contentType: 'image/svg+xml', body: mapTile }); }
+    if (url.origin === 'https://photon.komoot.io' && url.pathname === '/reverse') {
+      const latitude = Number(url.searchParams.get('lat')), longitude = Number(url.searchParams.get('lon'));
+      assert.ok(Number.isFinite(latitude) && Number.isFinite(longitude));
+      assert.equal(url.searchParams.get('radius'), '0.1'); assert.equal(url.searchParams.get('limit'), '1'); assert.equal(url.searchParams.get('lang'), 'default');
+      const returnedPoint = [longitude + .00001, latitude - .00001];
+      reverseLookups.push({ latitude, longitude, returnedPoint });
+      return route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({
+        type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: returnedPoint },
+          properties: { countrycode: 'KR', city: '서울특별시', district: '명동', locality: '태평로1가', street: '세종대로', housenumber: '110', name: '서울도서관', type: 'house' } }]
+      }) });
+    }
     if (url.origin !== origin) { escaped.push(url.href); return route.abort(); }
     if (url.pathname === '/fixture') return route.fulfill({ contentType: 'text/html', body: markup });
     if (!['/recommended-restaurants.js', '/recommended-restaurants.css', '/restaurant-ratings.js', '/restaurant-ratings.css', '/restaurant-location-picker.js', '/restaurant-location-picker.css', '/games/certified-restaurants/vendor/leaflet.js', '/games/certified-restaurants/vendor/leaflet.css'].includes(url.pathname)) return route.abort();
@@ -50,7 +61,7 @@ async function fixture(t, options = {}) {
   const rr = name => page.locator('[data-rr="' + name + '"]');
   let sequence = 0;
   return {
-    page, rr, context, tiles,
+    page, rr, context, tiles, reverseLookups,
     async choose(count) {
       await rr('photo-input').setInputFiles(Array.from({ length: count }, () => ({ name: '사용자원본사진-' + (++sequence) + '.png', mimeType: 'image/png', buffer: png })));
     },
@@ -221,21 +232,31 @@ test('the inline Leaflet picker saves a tapped point, restores it on edit and pr
       return { horizontal: dialog.scrollWidth <= dialog.clientWidth + 1, page: document.documentElement.scrollWidth <= innerWidth + 1, contained: rect.left >= -1 && rect.right <= innerWidth + 1 && rect.top >= -1 && rect.bottom <= innerHeight + 1, map: map.width >= 200 && map.height >= 180 && map.left >= rect.left && map.right <= rect.right + 1, confirm: confirm.height >= 40 && confirm.top >= 0 && confirm.bottom <= innerHeight + 1 };
     }), { horizontal: true, page: true, contained: true, map: true, confirm: true }, 'the map and confirmation button fit a ' + width + 'px phone');
   }
+  await picker('region').selectOption('서울');
+  await page.locator('[data-rlp="center"]:enabled').waitFor();
+  assert.equal(await rr('field-region').inputValue(), '대전', 'map navigation does not change the unconfirmed editor region');
   const mapBox = await picker('map').boundingBox();
   await picker('map').click({ position: { x: mapBox.width * .62, y: mapBox.height * .45 } });
   await picker('map').locator('.rlp-marker').waitFor();
   await page.locator('[data-rlp="confirm"]:enabled').waitFor();
   assert.equal(await picker('confirm').isEnabled(), true);
+  assert.equal(f.reverseLookups.length, 1, 'a selected pin makes one locally fulfilled address lookup');
+  assert.match(await picker('selection').textContent(), /서울특별시 세종대로 110/);
+  assert.equal(await rr('field-address').inputValue(), '대전 중구 중교로 45-5', 'address lookup changes only the picker draft until confirmation');
   await picker('confirm').click(); await picker('dialog').waitFor({ state: 'detached' });
   assert.match(await rr('location-status').textContent(), /선택 완료/);
   assert.equal(await rr('field-name').inputValue(), '직접 추천한 식당');
-  assert.equal(await rr('field-address').inputValue(), '대전 중구 중교로 45-5');
+  assert.equal(await rr('field-region').inputValue(), '서울');
+  assert.equal(await rr('field-address').inputValue(), '서울특별시 세종대로 110', 'confirmation fills the returned Korean address without inventing a district');
   assert.equal(await rr('photo-remove').count(), 1, 'choosing a pin keeps the pending photo');
   await f.fits(); await rr('submit').click();
   await page.waitForFunction(() => rrFixture.rows.length === 1 && !document.querySelector('[data-rr="editor"]'));
   const first = await page.evaluate(() => ({ row: rrFixture.rows[0], call: rrFixture.calls.find(call => call.name === 'save_restaurant_recommendation_with_location') }));
   const point = { latitude: first.row.latitude, longitude: first.row.longitude };
   assert.ok(Number.isFinite(point.latitude) && point.latitude > 33 && point.latitude < 39 && Number.isFinite(point.longitude) && point.longitude > 124 && point.longitude < 132, 'a real map tap produces a plausible Korean coordinate pair');
+  assert.deepEqual(point, { latitude: f.reverseLookups[0].latitude, longitude: f.reverseLookups[0].longitude }, 'reverse geocoding preserves the exact tapped coordinates');
+  assert.notDeepEqual([point.longitude, point.latitude], f.reverseLookups[0].returnedPoint, 'the nearby address feature does not replace the selected point');
+  assert.equal(first.row.region, '서울'); assert.equal(first.row.address, '서울특별시 세종대로 110');
   assert.deepEqual(first.call.parameters.p_location, point, 'the selected coordinates travel in the same post save as its fields and photos');
   assert.equal(first.row.photos.length, 1);
   assert.ok((await page.locator('.rr-detail-content .rr-map-link').getAttribute('href')).endsWith(',' + point.latitude + ',' + point.longitude), 'the published detail links to the exact saved point');

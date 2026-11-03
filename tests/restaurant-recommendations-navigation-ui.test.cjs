@@ -49,11 +49,11 @@ test('370px nested member view preserves directory state and half-point ratings 
    assert.deepEqual(fit,{page:true,link:true,text:true},'the directory member entry fits '+width+'px without clipping');
    assert.equal(await page.locator('.restaurant-guide-header').evaluate(header=>{const r=header.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&header.scrollWidth<=header.clientWidth+1;}),true);
   }
-  await directory.locator('[data-category="한식"]').click();await directory.locator('#filter-toggle').click();
+  await directory.locator('#category').selectOption('한식');await directory.locator('#filter-toggle').click();
   await directory.locator('#region').selectOption('서울');await directory.locator('#search').fill('서울');await directory.locator('#search').press('Enter');
   await directory.locator('body').evaluate(()=>scrollTo(0,180));
   const snapshot=()=>directory.locator('body').evaluate(()=>({query:document.querySelector('#search').value,region:document.querySelector('#region').value,
-   category:document.querySelector('[data-category][aria-pressed=true]').dataset.category,filters:document.querySelector('#filter-toggle').getAttribute('aria-expanded'),
+   category:document.querySelector('#category').value,filters:document.querySelector('#filter-toggle').getAttribute('aria-expanded'),
    total:document.querySelector('#result-count').dataset.total,ids:[...document.querySelectorAll('#cards [data-restaurant-id]')].map(node=>node.dataset.restaurantId),scroll:scrollY}));
   const before=await snapshot();assert.ok(Number(before.total)>0);assert.ok(before.scroll>0,'the preserved position is a scrolled directory');
   await page.evaluate(()=>{nestingFixture.frame=document.querySelector('.restaurant-guide-dialog iframe');});
