@@ -114,7 +114,7 @@ function routeFixture(){
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
  assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.1.0');
- assert.equal(boot.window.OjjudaGameAssets.version('archery'),'2.0.2','archery retains its independent game release');
+ assert.equal(boot.window.OjjudaGameAssets.version('archery'),'2.0.3','archery retains its independent game release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
  assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalRevision,'iframe and bridge use the same independent cache revision');

@@ -138,6 +138,42 @@ test('370px member composer decodes real images, enforces one to twelve photos a
   assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.type === 'upload').length), 1, 'discarded new edit photos never upload');
 });
 
+test('four saved photos and editor previews become visible without forcing image decode', { timeout: 60000 }, async t => {
+  const item = recommendation();
+  item.photos = Array.from({ length: 4 }, (_, index) => item.owner_id + '/' + item.id + '/30000000-0000-4000-8000-' + String(index + 1).padStart(12, '0') + '.jpg');
+  const f = await fixture(t, { rows: [item] }), { page, rr } = f;
+  const picturesReady = async (selector, count) => {
+    await page.locator(selector).first().scrollIntoViewIfNeeded();
+    // Observe native image loading; decode() would force a hidden lazy image to load and mask this regression.
+    await page.waitForFunction(({ selector, count }) => {
+      const frames = [...document.querySelectorAll(selector)];
+      return frames.length === count && frames.every(frame => {
+        const image = frame.querySelector('img'), status = frame.querySelector('.rr-picture-status');
+        if (!image || !image.complete || image.naturalWidth <= 0 || image.hidden || !status?.hidden) return false;
+        const bounds = image.getBoundingClientRect();
+        return getComputedStyle(image).display !== 'none' && bounds.width > 0 && bounds.height > 0;
+      });
+    }, { selector, count }, { timeout: 10000 });
+  };
+  await page.locator('#world-entry').click(); await rr('card').waitFor();
+  await picturesReady('.rr-card-picture', 1);
+  await rr('card').click(); await rr('detail').waitFor();
+  await picturesReady('.rr-gallery-hero .rr-picture', 1);
+  await picturesReady('.rr-thumbnails .rr-picture', 4);
+  const displayed = new Set();
+  for (let index = 1; index <= 4; index++) {
+    assert.equal(await page.locator('.rr-gallery-counter').textContent(), index + ' / 4');
+    await picturesReady('.rr-gallery-hero .rr-picture', 1);
+    displayed.add(await rr('gallery-image').locator('img').getAttribute('src'));
+    if (index < 4) await rr('gallery-next').click();
+  }
+  assert.equal(displayed.size, 4, 'every saved photo naturally displays through the carousel');
+  await rr('edit').click(); await rr('editor').waitFor(); await f.photos(4);
+  await picturesReady('.rr-edit-photo .rr-picture', 4);
+  await f.choose(1); await f.photos(5);
+  await picturesReady('.rr-edit-photo .rr-picture', 5);
+});
+
 test('native account change clears private image URLs and the guest prompt never fetches member records', { timeout: 60000 }, async t => {
   const item = recommendation(), f = await fixture(t, { rows: [item] }), { page, rr } = f;
   await page.locator('#world-entry').click(); await rr('card').waitFor(); await rr('card').click(); await rr('edit').waitFor();

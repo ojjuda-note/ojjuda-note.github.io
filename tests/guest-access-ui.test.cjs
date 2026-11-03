@@ -2,12 +2,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8'),origin='https://guest-access.test';
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
 let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-const helpers=['game-session.js', 'guest-access.js','game-results.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
+const helpers=['game-session.js','world-navigation.js','guest-access.js','game-results.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};
 window.OjjudaGuestScores={submit:async()=>({ok:false}),ranking:async()=>[]};
-enterWorldGuest(()=>{g.tab='arcade';H()});`+world.slice(world.indexOf('</script>',boot));
+gm(()=>sr.tab({tab:'arcade'}));enterWorldGuest(()=>{g.tab='arcade';H()});`+world.slice(world.indexOf('</script>',boot));
 const note=read('note/preview.js'),noteBoot=note.lastIndexOf('\nif (client) {\n  client.auth.onAuthStateChange');assert.ok(noteBoot>0);
 const portal=read('index.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/portal\.js|signup-identity\.js|signup-referral\.js|config\.js/.test(tag)?tag:'');
 const cardId='00000000-0000-4000-8000-000000000001';
@@ -38,6 +38,7 @@ const cardId='00000000-0000-4000-8000-000000000001';
   for(const game of ['stacker','mole']){
    await enter();await page.evaluate(game=>guestFixture.open(game),game);await page.locator('[data-g=start]').click();
    assert.equal(new URL(page.url()).pathname,'/world.html','a guest gets the first round');
+   await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
    await page.evaluate(()=>guestFixture.finish(0));
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.guest-round-completed.v1')),'1','zero-score loss immediately consumes the round even when save fails');
    await login('world');

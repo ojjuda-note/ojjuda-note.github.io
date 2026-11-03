@@ -28,12 +28,24 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   adult:[['matgo','poker','roulette'],['photo_ttang']]
  };
  const groupIds=key=>[...host.querySelectorAll(`[data-rank-group=${key}] [data-game]`)].map(item=>item.dataset.game);
+ const category=()=>host.querySelector('.board-rank-groups').dataset.rankCategory;
+ const next=()=>host.querySelector('.board-rank-carousel-controls [aria-label="다음 게임 순위"]').click();
+ const previous=()=>host.querySelector('.board-rank-carousel-controls [aria-label="이전 게임 순위"]').click();
  const selectCategory=key=>{
-  for(let i=0;host.querySelector('.board-rank-groups').dataset.rankCategory!==key&&i<3;i++)host.querySelector('[aria-label="다음 분류 순위"]').click();
-  assert.equal(host.querySelector('.board-rank-groups').dataset.rankCategory,key);
+  const selected=()=>category()===key&&host.querySelector(`[data-rank-group=${key}]`).dataset.rankPage==='0';
+  for(let i=0;!selected()&&i<=Object.keys(games).length;i++)next();
+  assert.ok(selected(),'the shared pager reaches the first page of '+key);
+ };
+ const totalPages=Object.values(historyPages).reduce((total,pages)=>total+pages.length,0);
+ const checkCounter=(key,page)=>{
+  const preceding=Object.keys(categories).slice(0,Object.keys(categories).indexOf(key)).reduce((total,id)=>total+historyPages[id].length,0);
+  assert.equal(host.querySelector('.board-rank-carousel-controls .board-rank-position').textContent,`${preceding+page+1} / ${totalPages}`,'one counter includes every category page');
  };
  const checkGroups=()=>{
   const history=!!host.querySelector('.board-rank-history');
+  assert.equal(host.querySelectorAll('.board-rank-controls').length,1,'all game pages use exactly one shared pager');
+  assert.equal(host.querySelectorAll('.board-rank-group .board-rank-controls').length,0,'category cards have no inner pager');
+  assert.equal(host.querySelector('[aria-label="다음 분류 순위"]'),null,'category-only navigation is removed');
   assert.deepEqual([...host.querySelectorAll('[data-rank-group]')].map(group=>group.dataset.rankGroup),Object.keys(categories),'all ranking groups keep the requested order');
   assert.deepEqual([...host.querySelectorAll('.board-rank-group-head h4')].map(heading=>heading.textContent),['혼자하는 플레이','함께하는 플레이','어른들 플레이']);
   assert.equal(host.querySelectorAll('[data-rank-group][aria-hidden=false]').length,1,'only the selected category is exposed');
@@ -58,14 +70,16 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   selectCategory(key);
   const group=host.querySelector(`[data-rank-group=${key}]`),seen=new Set(),pageCount=Math.ceil(ids.length/3);
   for(let page=0;page<pageCount;page++){
-   assert.equal(group.dataset.rankPage,String(page));checkGroups();
+   assert.equal(category(),key);assert.equal(group.dataset.rankPage,String(page));checkCounter(key,page);checkGroups();
    for(const visible of group.querySelectorAll('.board-rank-page[aria-hidden=false] [data-game]')){
     assert.equal(seen.has(visible.dataset.game),false,'a current game appears only once in a full paging round');seen.add(visible.dataset.game);
    }
-   group.querySelector('.board-rank-controls button:last-child').click();
+   next();
   }
   assert.deepEqual([...seen].sort(),[...ids].sort(),'every '+key+' current game appears exactly once');
-  assert.equal(group.dataset.rankPage,'0','the home pager wraps only after all games have appeared');
+  const nextKey=Object.keys(categories)[(Object.keys(categories).indexOf(key)+1)%3];
+  assert.equal(category(),nextKey,'the last page continues into the next category');
+  assert.equal(host.querySelector(`[data-rank-group=${nextKey}]`).dataset.rankPage,'0','the next category starts at its first game');
  }
  selectCategory('solo');assert.equal(reads.length,1,'paging every current game requires no additional RPC');
  const row=id=>host.querySelector(`[data-game="${id}"]`),value=id=>row(id).querySelector('.board-leader-score').textContent;
@@ -104,18 +118,21 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
   selectCategory(key);
   const group=host.querySelector(`[data-rank-group=${key}]`),seen=new Set();
   for(let page=0;page<pages.length;page++){
-   assert.equal(group.dataset.rankPage,String(page));checkGroups();
+   assert.equal(category(),key);assert.equal(group.dataset.rankPage,String(page));checkCounter(key,page);checkGroups();
    for(const visible of group.querySelectorAll('[data-game]:not([hidden])')){
     const id=visible.dataset.game;assert.equal(seen.has(id),false,'an archived game appears only once in a full paging round');seen.add(id);assert.equal(visible,historyRows.get(id).node,'paging reuses each unique history row');
     assert.equal(visible.textContent,historyRows.get(id).text,'paging preserves the visible record and condition');
    }
-   group.querySelector('.board-rank-controls button:last-child').click();
+   next();
   }
   assert.deepEqual([...seen].sort(),[...categories[key]].sort(),'every '+key+' archived game is reachable');
-  assert.equal(group.dataset.rankPage,'0','the history pager wraps to its first page');
-  group.querySelector('.board-rank-controls button:first-child').click();checkGroups();
-  assert.equal(group.dataset.rankPage,String(pages.length-1),'previous from the first page opens the remaining games on the last page');
-  group.querySelector('.board-rank-controls button:last-child').click();
+  const nextKey=Object.keys(categories)[(Object.keys(categories).indexOf(key)+1)%3];
+  assert.equal(category(),nextKey,'the archive continues into the next category');
+  assert.equal(host.querySelector(`[data-rank-group=${nextKey}]`).dataset.rankPage,'0');
+  previous();checkGroups();
+  assert.equal(category(),key,'previous crosses back into the preceding category');
+  assert.equal(group.dataset.rankPage,String(pages.length-1),'previous opens the preceding category last page');checkCounter(key,pages.length-1);
+  next();assert.equal(category(),nextKey);
  }
  assert.equal(reads.length,readsBeforePaging,'paging all archived games requires no additional RPC');
  rows.billiards.score='0';await w.OjjudaGameRankings.refresh();
@@ -124,5 +141,5 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  assert.equal(row('billiards').querySelector('.board-game-difficulty'),null);
  checkGroups();
  for(const [key,ids]of Object.entries(categories))assert.deepEqual(groupIds(key),ids,'the archive keeps catalog order within '+key);
- console.log('PASS: unique games in every current/archive paging round, bounded last pages, real catalog, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
+ console.log('PASS: one shared ordered pager, reverse category boundaries, global page counts, unique games in every current/archive paging round, bounded last pages, real catalog, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
 }finally{dom.window.OjjudaGameRankings?.mount(null);dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -3,7 +3,7 @@
   'use strict';
   window.OjjudaWorldNavigation = {
     install(options) {
-      let initialized = false, returning = false, handling = false;
+      let initialized = false, returning = false, handling = false, departing = false;
       let gesture = null, suppressClickUntil = 0, edgeReturn = null;
       const state = page => ({...(history.state || {}), ojjudaWorld: page});
       const pushMenu = () => history.pushState(state('menu'), '', location.href);
@@ -15,6 +15,9 @@
         return true;
       };
       const sync = () => {
+        // Page teardown also removes game overlays. Do not turn that cleanup
+        // into Back: it can cancel the navigation to the guest login screen.
+        if (departing) return;
         if (!initialized) {
           history.replaceState(state('main'), '', location.href);
           initialized = true;
@@ -28,6 +31,7 @@
         }
       };
       window.addEventListener('popstate', () => {
+        if (departing) return;
         const programmatic = returning;
         returning = false;
         handling = true;
@@ -36,6 +40,8 @@
         if (needsEntry()) pushMenu();
         else history.replaceState(state('main'), '', location.href);
       });
+      window.addEventListener('pagehide', () => { departing = true; returning = false; reset(); }, { capture: true });
+      window.addEventListener('pageshow', () => { departing = false; returning = false; });
       // Games mount independently of the menu renderer, including iframe games.
       // Keep one return entry while an overlay is open, and consume it when the
       // game closes by its own button. A cancelled exit keeps the same guard.

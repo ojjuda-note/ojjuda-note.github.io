@@ -6,3 +6,12 @@
 .tour-game-header button:focus-visible{outline:3px solid #ac97dc;outline-offset:1px}
 .tour-game-dialog iframe{display:block;flex:1;min-height:0;width:100%;height:100%;border:0;background:#f5f3f9}
 @media(max-width:760px){.tour-game-dialog{width:100%;height:100dvh;border:0;border-radius:0}.tour-game-header{padding-top:env(safe-area-inset-top,0px);padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}}
+
+/* Game views keep the entire visible viewport through entry, play and results.
+   Information dialogs sharing the older tour shell do not opt in. */
+.tour-game-dialog.arcade-game-view,
+.tour-game-dialog.arcade-game-view.poker-game-dialog.poker-table-open{position:fixed;inset:var(--app-viewport-top,0px) 0 auto;margin:0;width:100%;height:100vh;height:var(--app-viewport-height,100dvh);max-width:none;max-height:none;box-sizing:border-box;padding:var(--app-safe-top,env(safe-area-inset-top,0px)) env(safe-area-inset-right,0px) var(--app-safe-bottom,env(safe-area-inset-bottom,0px)) env(safe-area-inset-left,0px);border:0;border-radius:0;box-shadow:none;overflow:hidden;overscroll-behavior:none}
+.tour-game-dialog.arcade-game-view>.tour-game-header:not(.sacheonseong-game-header){min-width:0;padding:6px 14px}
+.tour-game-dialog.arcade-game-view>.tour-game-header>span{min-width:0;overflow-wrap:anywhere}
+.tour-game-dialog.arcade-game-view>.tour-game-header>button{flex:0 0 auto}
+.tour-game-dialog.arcade-game-view>iframe{display:block;flex:1 1 0;min-width:0;min-height:0;width:100%;height:0;border:0}

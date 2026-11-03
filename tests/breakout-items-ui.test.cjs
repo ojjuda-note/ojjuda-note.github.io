@@ -270,12 +270,12 @@ g.tab='friends';H();
        times.sort((a,b)=>a-b);frames[count]=times[Math.floor(times.length*.95)];
       }
      }finally{Math.random=originalRandom}
-     return {before,after,frames};
+     return {before,after,frames,bitmap:{width:r.cv.width,height:r.cv.height}};
     });
     assert.notDeepEqual(metrics.before,metrics.after,'destroyed bricks disappear from the cached layer');
     for(const [count,p95] of Object.entries(metrics.frames)){
-     assert.ok(p95<40,`1000-brick, ${count}-ball update and draw stay within the regression frame budget`);
-     console.log('1000 bricks / '+count+' balls: p95 '+p95.toFixed(2)+' ms');
+     console.log('1000 bricks / '+count+' balls: p95 '+p95.toFixed(2)+' ms; canvas '+metrics.bitmap.width+'×'+metrics.bitmap.height);
+     assert.ok(p95<40,`1000-brick, ${count}-ball update and draw stay within the regression frame budget: ${p95.toFixed(2)} ms must be below 40 ms`);
     }
    }
    await page.evaluate(()=>{while(breakoutTest.current.running)breakoutTest.finishStage()});
