@@ -13,6 +13,8 @@
   <link rel="canonical" href="https://ojjuda.kr/star/">
   <link rel="icon" type="image/svg+xml" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site/favicon.svg">
   <link rel="stylesheet" href="https://hanusan-booking-helper.mj830417686850.chatgpt.site/star-client/star-app.css?v=20261101-restored1">
+  <link rel="stylesheet" href="/star/browser-guide.css?v=20261103-star-browser-guide1">
+  <script defer src="/star/browser-guide.js?v=20261103-star-browser-guide1"></script>
   <script defer src="https://hanusan-booking-helper.mj830417686850.chatgpt.site/star-client/star-app.js?v=20261101-restored1"></script>
 </head>
 <body style="margin:0;background:#0d1725;color:#f5f5ed">
@@ -24,5 +26,26 @@
       <noscript>이 페이지를 이용하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
     </main>
   </div>
+  <dialog id="star-browser-guide" aria-labelledby="star-guide-title" aria-describedby="star-guide-description">
+    <p class="star-guide-badge">실행 전 꼭 확인!</p>
+    <svg class="star-guide-icon" width="62" height="52" viewBox="0 0 62 52" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="56" height="43" rx="9" stroke="#FFCD70" stroke-width="2.5"/>
+      <path d="M4 16h54" stroke="#FFCD70" stroke-width="2"/>
+      <circle cx="11" cy="10" r="1.6" fill="#FFCD70"/><circle cx="17" cy="10" r="1.6" fill="#FFCD70"/>
+      <path d="M23 31h16m-6-6 6 6-6 6" stroke="#FFCD70" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2 id="star-guide-title" tabindex="-1">브라우저로 접속해 주세요</h2>
+    <p id="star-guide-description" class="star-guide-description">인터넷·크롬·사파리 브라우저를 열고,<br>아래 주소로 접속해 실행해 주세요.</p>
+    <ul class="star-guide-browsers" aria-label="이용할 브라우저">
+      <li>인터넷 브라우저</li><li>크롬 브라우저</li><li>사파리 브라우저</li>
+    </ul>
+    <div class="star-guide-address">
+      <label for="star-guide-url">별천지 예약 도우미 접속 주소</label>
+      <input id="star-guide-url" type="text" value="ojjuda.kr/star" readonly inputmode="none" spellcheck="false">
+      <button type="button" class="star-guide-copy" data-star-guide-copy>주소 복사</button>
+    </div>
+    <p class="star-guide-status" data-star-guide-status role="status" aria-live="polite"></p>
+    <button type="button" class="star-guide-confirm" data-star-guide-confirm>확인했어요</button>
+  </dialog>
 </body>
 </html>
