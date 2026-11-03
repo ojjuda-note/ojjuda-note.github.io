@@ -30,13 +30,14 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const assertTestGamesLast=()=>{
    const grids=[...w.document.querySelectorAll('[data-arcade-games]')];
    assert.equal(grids.at(-1).dataset.arcadeGames,'test','test games follow every regular game category');
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['star','festival','restaurants']);
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['festival','restaurants']);
+   assert.equal(w.document.querySelector('[data-v=star]'),null,'the retired reservation helper has no menu entry');
    assert.equal(w.document.querySelector('[data-arcade-games] [data-v=recommendations]'),null,'member recommendations belong inside the certified directory');
    assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'released archery appears exactly once');
    assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'테스트');
    assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'),null);
    assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=archery]'));
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용','테스트','테스트'],'Star advertises member-only access while the other trial entries retain their test badges');
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['테스트','테스트'],'the remaining trial entries retain their test badges');
   };
   assert.equal(active(),'arcade','the initial page opens the arcade');
   for(const selector of ['.bottomnav','.sidenav']){
@@ -65,7 +66,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
    solo:['archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang'],
-   test:['star','festival','restaurants']
+   test:['festival','restaurants']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'test games follow solo, multiplayer and adult games');
   assertTestGamesLast();
@@ -135,7 +136,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.deepEqual(removed,[channel],'entering settings removes the live presence channel exactly once');
   t.render();await tick();assert.deepEqual(removed,[channel],'rerendering settings does not repeat presence cleanup');
  }finally{dom.window.close();}
- for(const [query,expected] of [['?tab=arcade','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','arcade'],['?tab=home','arcade']]){
+ for(const [query,expected] of [['?tab=arcade','arcade'],['?game=star','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','arcade'],['?tab=home','arcade']]){
   dom=fixture('https://ojjuda.kr/world.html'+query);
   try{const t=dom.window.worldTest;t.start();assert.equal(t.state.tab==='place'?t.state.place.id:t.state.tab,expected,'initial link '+query);}finally{dom.window.close();}
  }

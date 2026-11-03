@@ -1,11 +1,10 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261104-archery-passer-retire1';
+ const revision='20261104-star-removed1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
-  star:'1.1.0',
   festival:'1.1.1',
   restaurants:'1.8.2',
   recommendations:'1.5.2',

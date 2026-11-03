@@ -201,92 +201,19 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await photoConfirmed.flush(); photoConfirmed.fill(); await photoConfirmed.submit();
   assert.deepEqual(photoConfirmed.navigations, ['/photo-ttang.html']);
 
-  const starMember = { id: 'star-member', email: 'member@example.invalid', is_anonymous: false };
-  const starQuery = 'startDate=2026-11-14&endDate=2026-11-16&guests=2&room=12345';
-  const starMemberEntry = setup('?auth=login&next=star', { user: starMember });
-  await starMemberEntry.flush();
-  assert.deepEqual(starMemberEntry.navigations, ['/star/'], 'a server-verified member returns to the reservation helper');
-  const starDates = setup('?next=star&' + starQuery + '&redirect=https://example.invalid', { user: starMember });
-  await starDates.flush();
-  assert.deepEqual(starDates.navigations, ['/star/?' + starQuery], 'only the validated reservation fields survive login');
-  for (const query of [
-    'startDate=2026-02-30&endDate=2026-03-02',
-    'startDate=2026-11-14&endDate=2026-11-20',
-    'startDate=2026-11-14&endDate=2026-11-14',
-    starQuery + '&startDate=2026-11-15',
-    starQuery.replace('guests=2', 'guests=9'),
-    starQuery.replace('room=12345', 'room=0123'),
-    starQuery.replace('room=12345', 'room=123456789012345678901'),
-    'guests=2&room=12345'
-  ]) {
-    const app = setup('?auth=login&next=star&' + query, { user: starMember });
-    await app.flush();
-    assert.deepEqual(app.navigations, ['/star/'], 'invalid or duplicated reservation data is discarded: ' + query);
+  for (const query of ['?next=star', '?auth=login&next=star&startDate=2026-11-14&endDate=2026-11-16',
+    '?auth=login&next=https://example.invalid/star/']) {
+    const retired = setup(query, { user: reader });
+    await retired.flush();
+    assert.deepEqual(retired.navigations, [], 'retired or external destinations are not reopened');
   }
-  const starGuest = setup('?auth=login&next=star&' + starQuery);
-  await starGuest.flush();
-  assert.equal(starGuest.element('auth-dialog').open, true);
-  assert.deepEqual(starGuest.navigations, []);
-  starGuest.element('email').value = starMember.email;
-  starGuest.element('password').value = 'test-password';
-  await starGuest.submit();
-  assert.equal(starGuest.signins.length, 1);
-  assert.deepEqual(starGuest.navigations, ['/star/?' + starQuery], 'password login keeps the intended reservation');
-  const anonymousStar = setup('?auth=login&next=star', { user: { id: 'guest-session', is_anonymous: true } });
-  await anonymousStar.flush();
-  assert.equal(anonymousStar.element('auth-dialog').open, true);
-  assert.deepEqual(anonymousStar.navigations, [], 'anonymous Auth users do not automatically resume Star');
-  const anonymousSignup = setup('?auth=signup&next=star', { user: { id: 'guest-session', is_anonymous: true } });
-  await anonymousSignup.flush();
-  assert.equal(anonymousSignup.element('signup-tab').attributes['aria-selected'], 'true', 'anonymous users can still choose member signup');
-  for (const response of [
-    { data: { user: null } },
-    { data: { user: { ...starMember, is_anonymous: true } } },
-    { data: { user: { ...starMember, id: 'different-member' } } },
-    { data: { user: null }, error: { status: 401, message: 'session_not_found' } }
-  ]) {
-    const app = setup('?next=star', { user: starMember, userResponse: () => response });
-    await app.flush();
-    assert.deepEqual(app.navigations, [], 'cached membership cannot replace current server verification');
-    assert.equal(app.element('auth-dialog').open, true);
-    await app.emit('SIGNED_IN', { user: starMember });
-    assert.deepEqual(app.navigations, [], 'replayed stale sign-in events cannot cause a return loop');
-  }
-  let starOffline = true;
-  const starNetwork = setup('?auth=login&next=star', { user: starMember, userResponse: user => {
-    if (starOffline) throw new Error('network offline');
-    return { data: { user } };
-  } });
-  await starNetwork.flush();
-  assert.deepEqual(starNetwork.navigations, []);
-  assert.equal(starNetwork.element('auth-dialog').open, true);
-  assert.match(starNetwork.element('auth-feedback').textContent, /인터넷 연결/);
-  starOffline = false;
-  starNetwork.element('email').value = starMember.email;
-  starNetwork.element('password').value = 'test-password';
-  await starNetwork.submit();
-  assert.deepEqual(starNetwork.navigations, ['/star/'], 'a failed verification can be retried through login');
-
-  const starSignup = setup('?auth=signup&next=star&' + starQuery);
-  await starSignup.flush(); starSignup.fill(); await starSignup.submit();
-  assert.equal(starSignup.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/?next=star&' + starQuery);
-  const savedStar = JSON.parse(starSignup.storage.get('ojjuda_post_confirm_destination'));
-  assert.equal(savedStar.destination, 'star'); assert.equal(savedStar.starQuery, starQuery);
-  const starConfirmed = setup('?auth=signup&next=star&' + starQuery, { confirmed: true });
-  await starConfirmed.flush(); starConfirmed.fill(); await starConfirmed.submit();
-  assert.deepEqual(starConfirmed.navigations, ['/star/?' + starQuery], 'signup with a confirmed member session returns to Star');
-  const starEmailConfirmation = setup('?next=star&' + starQuery, { user: starMember });
-  await starEmailConfirmation.flush();
-  assert.deepEqual(starEmailConfirmation.navigations, ['/star/?' + starQuery], 'an email confirmation URL restores the reservation');
-  const savedStarConfirmation = setup('?code=confirmation');
-  await savedStarConfirmation.flush();
-  savedStarConfirmation.storage.set('ojjuda_post_confirm_destination', JSON.stringify({ ...savedStar, email: starMember.email }));
-  await savedStarConfirmation.emit('SIGNED_IN', { user: starMember });
-  assert.deepEqual(savedStarConfirmation.navigations, ['/star/?' + starQuery], 'same-browser confirmation restores only a validated saved reservation');
-  assert.equal(savedStarConfirmation.storage.has('ojjuda_post_confirm_destination'), false);
-  const starExternalReturn = setup('?auth=login&next=https://example.invalid/star/', { user: starMember });
-  await starExternalReturn.flush();
-  assert.deepEqual(starExternalReturn.navigations, [], 'external URLs are never valid return destinations');
+  const retiredConfirmation = setup('?code=confirmation');
+  await retiredConfirmation.flush();
+  retiredConfirmation.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
+    destination: 'star', email: reader.email, expiresAt: Date.now() + 60000
+  }));
+  await retiredConfirmation.emit('SIGNED_IN', { user: reader });
+  assert.deepEqual(retiredConfirmation.navigations, [], 'a saved retired destination cannot reopen the helper');
 
   const returnToCard = setup(`?auth=login&next=note&card=${cardId}`, { user: reader });
   await returnToCard.flush();
@@ -369,41 +296,6 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   closed.element('recovery-reset-button').listeners.click();
   assert.equal(closed.recoveries.length, 1); assert.equal(closed.element('recovery-reset-button').hidden, true);
   const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
-  const slowStarIdentity = deferred(); let starVerificationBlocked = true;
-  const starTimeout = setup('?next=star', { user: starMember, userResponse: user => starVerificationBlocked ? slowStarIdentity.promise : { data: { user } } });
-  await starTimeout.flush(); starTimeout.advance(11999); await starTimeout.flush();
-  assert.equal(starTimeout.element('auth-dialog').open, false);
-  assert.deepEqual(starTimeout.navigations, []);
-  starTimeout.advance(1); await starTimeout.flush();
-  assert.equal(starTimeout.element('auth-dialog').open, true, 'a hanging verification becomes a retryable login error after 12 seconds');
-  assert.match(starTimeout.element('auth-feedback').textContent, /다시 로그인/);
-  slowStarIdentity.resolve({ data: { user: starMember } }); await starTimeout.flush();
-  assert.deepEqual(starTimeout.navigations, [], 'an identity received after timeout cannot navigate');
-  starVerificationBlocked = false;
-  starTimeout.element('email').value = starMember.email; starTimeout.element('password').value = 'test-password';
-  await starTimeout.submit(); assert.deepEqual(starTimeout.navigations, ['/star/']);
-  const oldStarIdentity = deferred();
-  const starSignoutRace = setup('?next=star', { user: starMember, userResponse: () => oldStarIdentity.promise });
-  await starSignoutRace.flush();
-  starSignoutRace.emitNow('SIGNED_OUT', null);
-  oldStarIdentity.resolve({ data: { user: starMember } });
-  await starSignoutRace.flush();
-  assert.deepEqual(starSignoutRace.navigations, [], 'sign-out invalidates in-flight verification before deferred auth UI work');
-  assert.equal(starSignoutRace.element('auth-dialog').open, true);
-  const oldStarAccount = deferred(), newStarAccount = deferred();
-  const replacementMember = { ...starMember, id: 'replacement-member' };
-  const starAccountRace = setup('?next=star', { user: starMember, userResponse: user => user.id === starMember.id ? oldStarAccount.promise : newStarAccount.promise });
-  await starAccountRace.flush();
-  await starAccountRace.emit('SIGNED_IN', { user: replacementMember });
-  oldStarAccount.resolve({ data: { user: starMember } }); await starAccountRace.flush();
-  assert.deepEqual(starAccountRace.navigations, [], 'the previous account cannot complete the new account entry');
-  newStarAccount.resolve({ data: { user: replacementMember } }); await starAccountRace.flush();
-  assert.deepEqual(starAccountRace.navigations, ['/star/']);
-  const refreshedStarIdentity = deferred();
-  const starRefresh = setup('?next=star', { user: starMember, userResponse: () => refreshedStarIdentity.promise });
-  await starRefresh.flush(); await starRefresh.emit('TOKEN_REFRESHED', { user: starMember });
-  refreshedStarIdentity.resolve({ data: { user: starMember } }); await starRefresh.flush();
-  assert.deepEqual(starRefresh.navigations, ['/star/'], 'same-member token refresh does not strand a valid entry');
   const oldSession = deferred();
   const sessionRace = setup('?auth=login', { sessionResponse: () => oldSession.promise });
   await sessionRace.emit('SIGNED_IN', { user: reader });
@@ -440,5 +332,5 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   assert.equal(signupRace.element('login-tab').attributes['aria-selected'], 'true');
   assert.equal(signupRace.element('auth-form').hidden, false, 'a previous signup response cannot replace a reopened login form');
   assert.equal(signupRace.element('password').value, 'replacement-password');
-  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation destinations, verified member-only Star entry, reservation query allowlist, anonymous/stale sessions and account races');
+  console.log('PASS: verified recovery, unified signup entry, required inputs, confirmation destinations, retired destination rejection and account races');
 })().catch(error => { console.error(error); process.exitCode = 1; });
