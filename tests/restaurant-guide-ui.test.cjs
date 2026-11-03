@@ -361,11 +361,13 @@ async function fixture(browser, options = {}) {
       const municipalPage = municipal.page;
       await waitForCount(municipalPage, 3); await openFilters(municipalPage);
       assert.equal(await municipalPage.locator('[data-guide="local-guide"]').textContent(), '지자체 지정');
+      assert.equal(await municipalPage.locator('#guide-recommended').isVisible(), false, 'the guest directory keeps the member-only recommendation filter hidden');
       const filterLayout = await municipalPage.locator('#guides').evaluate(container => {
         const bounds = container.getBoundingClientRect();
-        return [...container.querySelectorAll('button')].map(button => { const rect = button.getBoundingClientRect(); return { text: button.textContent, width: rect.width, height: rect.height, fits: rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && button.scrollWidth <= button.clientWidth + 1 }; });
+        return [...container.querySelectorAll('button:not(#guide-recommended)')].map(button => { const rect = button.getBoundingClientRect(); return { guide: button.dataset.guide, text: button.textContent, width: rect.width, height: rect.height, fits: rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && button.scrollWidth <= button.clientWidth + 1 }; });
       });
-      assert.ok(filterLayout.every(button => button.width > 0 && button.height >= 32 && button.fits), 'every guide filter stays exposed and unclipped at ' + width + ': ' + JSON.stringify(filterLayout));
+      assert.deepEqual(filterLayout.map(button => button.guide), ['', 'michelin', 'blue-ribbon', 'post-office', 'local-guide', 'both'], 'all public guide filters remain present');
+      assert.ok(filterLayout.every(button => button.width > 0 && button.height >= 32 && button.fits), 'every public guide filter stays exposed and unclipped at ' + width + ': ' + JSON.stringify(filterLayout));
       await municipalPage.locator('[data-guide="local-guide"]').click(); await waitForCount(municipalPage, 2);
       assert.deepEqual(await visibleIds(municipalPage), ['municipal-and-ribbon', 'municipal-only']);
       assert.equal(await municipalPage.locator('[data-guide="local-guide"]').getAttribute('aria-pressed'), 'true');
