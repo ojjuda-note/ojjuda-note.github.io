@@ -113,7 +113,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.0.1');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.0.2');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),'1.11.2','adding the page does not advance archery');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
