@@ -9,7 +9,7 @@ function fixture(pos=48,allDone=false){
  w.eval(fs.readFileSync(path.join(root,'../../game-results.js'),'utf8'));
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const puzzles=w.JJUDA_PUZZLES,order=Array.from(w.JjudaGame.difficultyOrder(puzzles)),position=pos==='last'?order.length-1:pos,current=order[position];
- w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current,order:[...order].reverse(),completed:allDone?puzzles.filter((_,i)=>i!==current).map(p=>p.id):[]}));
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current,order:[...order].reverse(),completed:allDone?puzzles.filter((_,i)=>i!==current).map(p=>p.id):order.slice(0,position).map(index=>puzzles[index].id)}));
  w.eval(read('app.js'));
  const state=()=>JSON.parse(w.localStorage.getItem('jjuda-spot-six-v1')),round=()=>{const s=state();return s.rounds[puzzles[s.current].id];};
  const load=()=>{for(const im of d.querySelectorAll('img'))if(im.onload)im.onload();};
@@ -85,7 +85,10 @@ const replay=fixture();try{
  assert.equal(replay.state().completed.includes(replay.puzzles[completed].id),true);
  for(const id of ['next','continue','retry-next']){assert.equal(replay.$(id).disabled,true);replay.$(id).onclick();assert.equal(replay.state().current,completed,'historical completion cannot unlock Next after a failed replay');}
  const choice=replay.order[replay.position+3];replay.$('stage-picker').value=choice;replay.$('stage-picker').dispatchEvent(new replay.w.Event('change'));
- assert.equal(replay.state().current,choice,'explicit picture selection keeps the existing free-selection policy');
- assert.equal(Object.hasOwn(replay.state(),'unlockedStage'),false,'Next gating introduces no new progress or unlock field');
+ assert.equal(replay.state().current,completed,'explicit picture selection cannot jump over uncleared pictures');
+ assert.equal(replay.$('stage-picker').value,String(completed),'a rejected selection restores the current menu value');
+ const unlocked=replay.order[replay.position+1];replay.$('stage-picker').value=unlocked;replay.$('stage-picker').dispatchEvent(new replay.w.Event('change'));
+ assert.equal(replay.state().current,unlocked,'the actual first uncleared picture stays selectable after a failed replay');
+ assert.equal(Object.hasOwn(replay.state(),'unlockedStage'),false,'available pictures are derived from actual completion history');
 }finally{replay.w.close();}
-console.log('PASS: Next requires the current clear from every handler; failure allows previous/current; historical clears and stale clicks cannot skip; explicit selection, timer, scores and purchases retain their behavior.');
+console.log('PASS: Next requires the current clear from every handler; failure allows previous/current; historical clears and stale clicks cannot skip; explicit selection respects sequential locks; timer, scores and purchases retain their behavior.');

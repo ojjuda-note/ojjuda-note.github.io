@@ -1,10 +1,15 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {chromium}=require('playwright');const root=path.join(__dirname,'..');
+const catalogContext=vm.createContext({window:{}});
+for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','fairytale-pets-puzzles.js'])vm.runInContext(fs.readFileSync(path.join(root,'games/spot-difference',file),'utf8'),catalogContext);
+const fixtureCatalog=JSON.parse(JSON.stringify(catalogContext.window.JJUDA_PUZZLES));
+const fixtureOrder=require(path.join(root,'games/spot-difference/game-core.js')).difficultyOrder(fixtureCatalog);
+const completedBefore=index=>fixtureOrder.slice(0,fixtureOrder.indexOf(index)).map(i=>fixtureCatalog[i].id);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{
   const gameUrl='https://fixture.test/games/spot-difference/index.html';
-  async function fixture(viewport={width:390,height:844},initialIndex=null){
+  async function fixture(viewport={width:390,height:844},initialIndex=null,completed=initialIndex===null?[]:completedBefore(initialIndex)){
    const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[],imageGates=[];
    function holdImages(matches=()=>true){
     let release,seen;const waiting=new Promise(resolve=>release=resolve),started=new Promise(resolve=>seen=resolve);
@@ -14,7 +19,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
     imageGates.push(gate);return gate;
    }
    page.on('pageerror',e=>errors.push(e.message));
-   await page.addInitScript(initialIndex=>{if(initialIndex!==null&&!localStorage.getItem('jjuda-spot-six-v1'))localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:initialIndex}));window.spotScores=[];window.JjudaWallet={getState:()=>({ready:true,userId:'member-a',coins:0}),subscribe:fn=>fn({ready:true,userId:'member-a',coins:0}),recordClear:async(owner,stage)=>{spotScores.push({owner,stage});return {ok:true}},refresh:async()=>{},buy:()=>{throw Error('unexpected payment')}};},initialIndex);
+   await page.addInitScript(({initialIndex,completed})=>{if(initialIndex!==null&&!localStorage.getItem('jjuda-spot-six-v1'))localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:initialIndex,completed}));window.spotScores=[];window.JjudaWallet={getState:()=>({ready:true,userId:'member-a',coins:0}),subscribe:fn=>fn({ready:true,userId:'member-a',coins:0}),recordClear:async(owner,stage)=>{spotScores.push({owner,stage});return {ok:true}},refresh:async()=>{},buy:()=>{throw Error('unexpected payment')}};},{initialIndex,completed});
    await page.route('**/*',async route=>{
     const url=new URL(route.request().url());
     if(url.origin!=='https://fixture.test'||/\/(wallet|supabase)\.js$/.test(url.pathname))return route.fulfill({body:'',contentType:'text/javascript'});
@@ -189,7 +194,7 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
    }finally{await notice.context.close();}
   }
   // Existing artwork assets and hit targets retain their original data IDs.
-  const photos=await fixture(),totalStages=await photos.page.evaluate(()=>JJUDA_PUZZLES.length);
+  const photos=await fixture(undefined,48,completedBefore(62)),totalStages=await photos.page.evaluate(()=>JJUDA_PUZZLES.length);
   assert.equal(totalStages,152);
   assert.deepEqual(await photos.page.evaluate(()=>JJUDA_PUZZLES.map(p=>p.id)),Array.from({length:152},(_,i)=>i+1));
   for(let id=49;id<=62;id++){
@@ -257,9 +262,10 @@ const {chromium}=require('playwright');const root=path.join(__dirname,'..');
   await p.reload();await freshMenu(p,2);
   assert.deepEqual(f.errors,[]);await f.context.close();
 
-  // Loading callbacks from an abandoned picture cannot enable or start a newer
-  // picture. Navigation uses the existing menu event, without progress injection.
-  const stale=await fixture(),sp=stale.page;
+  // Loading callbacks from a replayed picture cannot enable or start a newer
+  // picture. Stages 1 and 2 were cleared before entry; navigation does not alter
+  // completion history or bypass the common selection guard.
+  const stale=await fixture(undefined,0,[1,2]),sp=stale.page;
   await solve(sp);
   const assetPaths=async id=>sp.evaluate(id=>{
    const p=JJUDA_PUZZLES.find(p=>p.id===id),layers=p.layers||(p.contrast?[p.contrast]:[]);

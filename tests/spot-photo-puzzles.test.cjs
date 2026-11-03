@@ -37,6 +37,9 @@ try{
   for(const file of [p.original,...Array.from(p.layers,layer=>layer.image)])assert.ok(Object.values(assets).some(f=>f.path===file),'all rendered photo assets are hash-verified');
   for(const f of Object.values(assets)){const bytes=fs.readFileSync(path.join(root,f.path));assert.equal(bytes.length,f.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),f.sha256);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(f.width,1536);assert.equal(f.height,1024);}
  }
+ // Asset/interaction coverage replays an already completed catalog; selecting
+ // these fixtures never disables the production progression guards.
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:0,completed:Array.from(puzzles,p=>p.id)}));
  w.eval(read('app.js'));
  const $=id=>w.document.getElementById(id);
  const groups=Array.from($('stage-picker').children,g=>[g.label,g.children.length]);
@@ -71,7 +74,7 @@ try{
   assert.equal($('found-count').textContent,'6');assert.equal($('celebration').open,true);$('celebration').close();
  }
  assert.deepEqual(scores,Array.from({length:14},(_,i)=>49+i));
- assert.equal($('solved-total').textContent,'14');
+ assert.equal($('solved-total').textContent,'82','replaying photo stages preserves the existing completion history');
  const progress=registered.find(t=>t.name==='read_game_progress'),open=registered.find(t=>t.name==='open_game_stage');
  assert.equal(progress.execute().totalStages,82);assert.equal(open.inputSchema.properties.stage.maximum,82);
  assert.equal(open.execute({stage:82}).stage,82);assert.throws(()=>open.execute({stage:83}),/1~82/);

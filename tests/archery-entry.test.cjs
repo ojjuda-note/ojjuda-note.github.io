@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.2.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -109,7 +109,7 @@ for(const file of ['engine.mjs','scenery.mjs']) {
  assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'painted anatomy and collision shapes load the same release');
 }
 for(const file of ['scenery'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene retains its matching physics revision');
-assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the updated ammo client accepts the released three-arrow total');
+assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-eagle-layout1','the unchanged ammo client retains its released three-arrow support');
 assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-eagle-layout1','the compact aiming controls load their new styles');
 
 assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the game loads the wall-aware follow camera');

@@ -11,7 +11,8 @@ function fixture(){
  w.JjudaWallet={getState:()=>({userId:'member-a',coins}),subscribe:fn=>fn({userId:'member-a',coins}),refresh:async()=>{},recordClear:async()=>({ok:true}),buy:(request,stage)=>{requests.push({...request,stage});return new Promise((yes,no)=>{resolve=yes;reject=no;});}};
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const fresh=w.JjudaGame.freshRound;w.JjudaGame.freshRound=()=>({...fresh(),remainingMs:9000});
- const clean=w.JjudaGame.cleanProgress;w.JjudaGame.cleanProgress=(raw,puzzles)=>({...clean(raw,puzzles),current:48});
+ const order=Array.from(w.JjudaGame.difficultyOrder(w.JJUDA_PUZZLES));
+ w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current:48,completed:order.slice(0,order.indexOf(48)).map(index=>w.JJUDA_PUZZLES[index].id)}));
  w.eval(read('app.js'));
  for(const im of w.document.querySelectorAll('img'))if(im.onload)im.onload();
  $('start').click();$('zoom').click();$('zoom-level').value='2';$('zoom-level').dispatchEvent(new w.Event('change'));
