@@ -471,8 +471,9 @@ test('Back dismisses an open confirmation without discarding or navigating away 
   assert.ok(f.rr('editor')); assert.equal(f.photoCount(), 3);
 });
 
-test('a chosen map point survives cancel, photo and text edits, saving and reopening', async t => {
-  const initial = { latitude: 36.3504, longitude: 127.3845 }, selected = { latitude: 36.3612, longitude: 127.3917 };
+test('a confirmed map location fills region and address, survives edits, and saves only its coordinate pair', async t => {
+  const initial = { latitude: 36.3504, longitude: 127.3845 }, selected = { latitude: 37.5665, longitude: 126.978 };
+  const address = '서울특별시 중구 세종대로 110', resolved = { ...selected, region: '서울', address: '  ' + address + '  ', addressStatus: 'resolved' };
   const item = recommendation(initial), f = fixture(t, { rows: [item] });
   await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the edit form opens');
   f.fill('name', '지도와 함께 수정한 국수집');
@@ -482,15 +483,22 @@ test('a chosen map point survives cancel, photo and text edits, saving and reope
   assert.equal(f.pickers[0].settings.name, '지도와 함께 수정한 국수집');
   f.pickers[0].picker.close(); await until(() => !f.rr('location-open').disabled, 'cancel returns control to the same editor');
   assert.equal(f.rr('field-name').value, '지도와 함께 수정한 국수집');
+  assert.equal(f.rr('field-region').value, item.region); assert.equal(f.rr('field-address').value, item.address, 'cancelling leaves manual address fields unchanged');
   assert.equal(f.photoCount(), 3); assert.match(f.rr('location-status').textContent, /선택 완료/);
-  f.clickRR('location-open'); f.pickers[1].resolve(selected);
+  f.rr('field-region').setCustomValidity('지역을 선택해 주세요.'); f.rr('field-address').setCustomValidity('주소를 입력해 주세요.');
+  f.clickRR('location-open'); f.pickers[1].resolve(resolved);
   await until(() => !f.rr('location-open').disabled, 'a selected point returns to the form');
+  assert.equal(f.rr('field-region').value, '서울'); assert.equal(f.rr('field-address').value, address);
+  assert.equal(f.rr('field-region').validity.customError, false); assert.equal(f.rr('field-address').validity.customError, false);
+  assert.match(f.rr('location-status').textContent, /지역·주소를 자동으로 입력/);
   f.fill('menu', '수정한 손칼국수'); f.choose(1); await f.photos(4);
   f.clickRR('submit');
   await until(() => f.state.rows[0].updated_at !== item.updated_at && !f.rr('editor'), 'photo, fields and location are saved together');
   const saved = f.state.rows[0], request = f.rpc('save_restaurant_recommendation_with_location')[0].parameters;
   assert.deepEqual({ latitude: saved.latitude, longitude: saved.longitude }, selected);
-  assert.deepEqual(request.p_location, selected);
+  assert.deepEqual(request.p_location, selected, 'address helper fields never enter the persisted coordinate object');
+  assert.equal(request.p_region, '서울'); assert.equal(request.p_address, address);
+  assert.equal(saved.region, '서울'); assert.equal(saved.address, address);
   assert.equal(saved.photos.length, 4); assert.equal(saved.menu, '수정한 손칼국수');
   assert.ok(f.$('.rr-map-link').href.endsWith(',' + selected.latitude + ',' + selected.longitude), 'detail opens the selected coordinates rather than another address search');
   f.clickRR('edit'); await until(() => f.rr('editor'), 'the saved record can be edited again'); f.clickRR('location-open');
@@ -498,6 +506,56 @@ test('a chosen map point survives cancel, photo and text edits, saving and reope
   await f.ui.back(); await until(() => !f.rr('location-open').disabled, 'Back closes the picker first');
   assert.ok(f.rr('editor')); assert.equal(f.rr('confirm-dialog'), null); assert.equal(f.photoCount(), 4);
   assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 1, 'map cancellation and Back do not submit another write');
+});
+
+test('unavailable or partial map addresses preserve valid manual fields and allow manual correction', async t => {
+  const item = recommendation(), f = fixture(t, { rows: [item] });
+  const point = { latitude: 37.5665, longitude: 126.978 };
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the edit form opens');
+  f.fill('address', '직접 입력한 대전 중구 주소 123, 2층');
+  const manualAddress = f.rr('field-address').value;
+  f.clickRR('location-open'); f.pickers.at(-1).resolve({ ...point, addressStatus: 'unavailable' });
+  await until(() => !f.rr('location-open').disabled, 'a lookup failure still selects the coordinate');
+  assert.equal(f.rr('field-region').value, item.region); assert.equal(f.rr('field-address').value, manualAddress);
+  assert.match(f.rr('location-status').textContent, /지역·주소를 직접 입력/);
+  assert.equal(f.rr('field-region').disabled, false); assert.equal(f.rr('field-address').disabled, false);
+
+  f.rr('field-region').setCustomValidity('지역 확인'); f.rr('field-address').setCustomValidity('주소 확인');
+  f.clickRR('location-open'); f.pickers.at(-1).resolve({ ...point, region: '서울', address: '   ', addressStatus: 'partial' });
+  await until(() => !f.rr('location-open').disabled, 'a region-only lookup returns');
+  assert.equal(f.rr('field-region').value, '서울'); assert.equal(f.rr('field-address').value, manualAddress);
+  assert.equal(f.rr('field-region').validity.customError, false); assert.equal(f.rr('field-address').validity.customError, true, 'missing address data does not mask existing validation');
+  assert.match(f.rr('form-status').textContent, /주소는 직접 입력/);
+
+  f.clickRR('location-open'); f.pickers.at(-1).resolve({ ...point, region: '경기도', address: '경기도 수원시 팔달구 효원로 241', addressStatus: 'partial' });
+  await until(() => !f.rr('location-open').disabled, 'an address-only lookup returns');
+  assert.equal(f.rr('field-region').value, '서울', 'a noncanonical region cannot clear a valid selection');
+  assert.equal(f.rr('field-address').value, '경기도 수원시 팔달구 효원로 241');
+  assert.equal(f.rr('field-address').validity.customError, false);
+  assert.match(f.rr('form-status').textContent, /지역은 직접 선택/);
+
+  for (const address of ['서울', '가'.repeat(201)]) {
+    f.clickRR('location-open'); f.pickers.at(-1).resolve({ ...point, region: '', address });
+    await until(() => !f.rr('location-open').disabled, 'an invalid address leaves the previous input available');
+    assert.equal(f.rr('field-region').value, '서울'); assert.equal(f.rr('field-address').value, '경기도 수원시 팔달구 효원로 241');
+  }
+  f.fill('region', '경기'); f.fill('address', '경기도 수원시 팔달구 효원로 241, 1층');
+  assert.equal(f.rr('field-region').value, '경기'); assert.equal(f.rr('field-address').validity.valid, true);
+  assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0, 'selecting locations never auto-publishes the draft');
+  f.clickRR('close'); await until(() => f.rr('confirm-dialog'), 'map selection keeps the editor dirty until explicitly saved');
+  f.clickRR('confirm-cancel');
+});
+
+test('a map address resolving while its editor closes cannot change a replacement editor', async t => {
+  const item = recommendation(), f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the original editor opens');
+  const region = f.rr('field-region'), address = f.rr('field-address');
+  f.clickRR('location-open'); f.pickers[0].resolve({ latitude: 37.5665, longitude: 126.978, region: '서울', address: '서울특별시 중구 세종대로 110', addressStatus: 'resolved' });
+  f.ui.close(true);
+  await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'a replacement editor opens for the same member');
+  assert.equal(region.value, item.region); assert.equal(address.value, item.address, 'detached fields ignore the late lookup result');
+  assert.equal(f.rr('field-region').value, item.region); assert.equal(f.rr('field-address').value, item.address);
+  assert.equal(f.rr('location-clear').hidden, true); assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
 });
 
 test('clearing a map point explicitly saves a null pair while preserving the recommendation', async t => {
@@ -515,12 +573,15 @@ test('clearing a map point explicitly saves a null pair while preserving the rec
 test('a map result resolving during an account change cannot repopulate or save the previous draft', async t => {
   const item = recommendation({ latitude: 36.3504, longitude: 127.3845 }), f = fixture(t, { rows: [item] });
   await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the owner opens an edit');
+  const region = f.rr('field-region'), address = f.rr('field-address');
   f.clickRR('location-open');
-  f.pickers[0].resolve({ latitude: 37.5665, longitude: 126.978 });
+  f.pickers[0].resolve({ latitude: 37.5665, longitude: 126.978, region: '서울', address: '서울특별시 중구 세종대로 110', addressStatus: 'resolved' });
   f.state.setUser({ id: f.state.secondMember });
   await until(() => !f.ui.isOpen(), 'the account change closes the parent and picker'); await f.settle();
   assert.ok(f.pickers[0].closeCount > 0); assert.equal(f.rr('editor'), null);
   assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
   assert.equal(f.state.rows[0].latitude, item.latitude); assert.equal(f.state.rows[0].longitude, item.longitude);
+  assert.equal(region.value, item.region); assert.equal(address.value, item.address, 'the previous member fields never receive the lookup result');
+  assert.equal(f.state.rows[0].region, item.region); assert.equal(f.state.rows[0].address, item.address);
   assert.equal(f.pickers[0].settings.isCurrent(), false, 'the stale map session loses authorization');
 });
