@@ -9,7 +9,8 @@ const { installRecommendedRestaurantsFixture, recommendation } = require('./help
 const root = path.resolve(__dirname, '..');
 const origin = 'https://fixture.test';
 const proof = process.env.RECOMMENDED_RESTAURANTS_PROOF_DIR;
-const markup = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css"><style>body{margin:0;overflow:auto;font:16px system-ui}#world-content{min-height:1800px;padding:12px}#world-entry{min-height:44px}</style></head><body><main id="world-content"><button id="world-entry">회원 추천맛집 열기</button><p>아지트 배경 화면</p></main><script src="/restaurant-ratings.js"></script><script src="/recommended-restaurants.js"></script><script>rrFixture.loginRequests=0;window.rrUI=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,notify:rrFixture.notify,onLogin:()=>rrFixture.loginRequests++});document.getElementById('world-entry').onclick=()=>rrUI.open();</script></body></html>`;
+const markup = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/games/certified-restaurants/vendor/leaflet.css"><link rel="stylesheet" href="/restaurant-location-picker.css"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css"><style>body{margin:0;overflow:auto;font:16px system-ui}#world-content{min-height:1800px;padding:12px}#world-entry{min-height:44px}</style></head><body><main id="world-content"><button id="world-entry">회원 추천맛집 열기</button><p>아지트 배경 화면</p></main><script src="/games/certified-restaurants/vendor/leaflet.js"></script><script src="/restaurant-location-picker.js"></script><script src="/restaurant-ratings.js"></script><script src="/recommended-restaurants.js"></script><script>rrFixture.loginRequests=0;window.rrUI=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,notify:rrFixture.notify,onLogin:()=>rrFixture.loginRequests++});document.getElementById('world-entry').onclick=()=>rrUI.open();</script></body></html>`;
+const mapTile = '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><path fill="#edf0e4" d="M0 0h256v256H0z"/><path stroke="#fff" stroke-width="10" d="M0 125h256M128 0v256"/><path stroke="#c9d8bc" stroke-width="2" d="M0 80h256M0 190h256M50 0v256M210 0v256"/></svg>';
 
 async function fixture(t, options = {}) {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'], ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}) });
@@ -21,12 +22,13 @@ async function fixture(t, options = {}) {
     URL.createObjectURL = blob => { const url = create(blob); rrObjectURLs.add(url); return url; };
     URL.revokeObjectURL = url => { rrObjectURLs.delete(url); return revoke(url); };
   });
-  const escaped = [], errors = [];
+  const escaped = [], errors = [], tiles = [];
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
+    if (url.origin === 'https://tile.openstreetmap.org' && /^\/\d+\/\d+\/\d+\.png$/.test(url.pathname)) { tiles.push(url.href); return route.fulfill({ contentType: 'image/svg+xml', body: mapTile }); }
     if (url.origin !== origin) { escaped.push(url.href); return route.abort(); }
     if (url.pathname === '/fixture') return route.fulfill({ contentType: 'text/html', body: markup });
-    if (!['/recommended-restaurants.js', '/recommended-restaurants.css', '/restaurant-ratings.js', '/restaurant-ratings.css'].includes(url.pathname)) return route.abort();
+    if (!['/recommended-restaurants.js', '/recommended-restaurants.css', '/restaurant-ratings.js', '/restaurant-ratings.css', '/restaurant-location-picker.js', '/restaurant-location-picker.css', '/games/certified-restaurants/vendor/leaflet.js', '/games/certified-restaurants/vendor/leaflet.css'].includes(url.pathname)) return route.abort();
     return route.fulfill({ path: path.join(root, url.pathname.slice(1)) });
   });
   const page = await context.newPage();
@@ -48,7 +50,7 @@ async function fixture(t, options = {}) {
   const rr = name => page.locator('[data-rr="' + name + '"]');
   let sequence = 0;
   return {
-    page, rr, context,
+    page, rr, context, tiles,
     async choose(count) {
       await rr('photo-input').setInputFiles(Array.from({ length: count }, () => ({ name: '사용자원본사진-' + (++sequence) + '.png', mimeType: 'image/png', buffer: png })));
     },
@@ -198,4 +200,71 @@ test('member ratings use nine half-point choices, update one vote, survive reent
   await page.locator('#world-entry').click(); await rr('card').waitFor(); await rr('card').click();
   await page.waitForFunction(() => document.querySelector('.orr-editor [data-orr="choice"][value="4.5"]')?.checked === true);
   assert.equal(await editor.locator('.orr-count').textContent(), '· 2명', 'closing the whole menu also preserves the vote');
+});
+
+test('the inline Leaflet picker saves a tapped point, restores it on edit and preserves drafts on Cancel and Back', { timeout: 90000 }, async t => {
+  const f = await fixture(t), { page, rr } = f;
+  const picker = name => page.locator('[data-rlp="' + name + '"]');
+  const openMap = async () => {
+    await rr('location-open').click(); await picker('dialog').waitFor();
+    await picker('map').locator('.leaflet-tile-loaded').first().waitFor();
+  };
+  await page.locator('#world-entry').click(); await rr('list').waitFor(); await rr('compose').first().click(); await rr('editor').waitFor();
+  await f.fields(); await f.choose(1); await f.photos(1);
+  await openMap();
+  assert.equal(await picker('confirm').isEnabled(), false, 'opening the map alone does not invent a restaurant location');
+  assert.equal(f.context.pages().length, 1, 'the composer map button opens an embedded picker without a new tab');
+  for (const width of [370, 320]) {
+    await page.setViewportSize({ width, height: 740 });
+    assert.deepEqual(await picker('dialog').evaluate(dialog => {
+      const rect = dialog.getBoundingClientRect(), map = dialog.querySelector('[data-rlp="map"]').getBoundingClientRect(), confirm = dialog.querySelector('[data-rlp="confirm"]').getBoundingClientRect();
+      return { horizontal: dialog.scrollWidth <= dialog.clientWidth + 1, page: document.documentElement.scrollWidth <= innerWidth + 1, contained: rect.left >= -1 && rect.right <= innerWidth + 1 && rect.top >= -1 && rect.bottom <= innerHeight + 1, map: map.width >= 200 && map.height >= 180 && map.left >= rect.left && map.right <= rect.right + 1, confirm: confirm.height >= 40 && confirm.top >= 0 && confirm.bottom <= innerHeight + 1 };
+    }), { horizontal: true, page: true, contained: true, map: true, confirm: true }, 'the map and confirmation button fit a ' + width + 'px phone');
+  }
+  const mapBox = await picker('map').boundingBox();
+  await picker('map').click({ position: { x: mapBox.width * .62, y: mapBox.height * .45 } });
+  await picker('map').locator('.rlp-marker').waitFor();
+  await page.locator('[data-rlp="confirm"]:enabled').waitFor();
+  assert.equal(await picker('confirm').isEnabled(), true);
+  await picker('confirm').click(); await picker('dialog').waitFor({ state: 'detached' });
+  assert.match(await rr('location-status').textContent(), /선택 완료/);
+  assert.equal(await rr('field-name').inputValue(), '직접 추천한 식당');
+  assert.equal(await rr('field-address').inputValue(), '대전 중구 중교로 45-5');
+  assert.equal(await rr('photo-remove').count(), 1, 'choosing a pin keeps the pending photo');
+  await f.fits(); await rr('submit').click();
+  await page.waitForFunction(() => rrFixture.rows.length === 1 && !document.querySelector('[data-rr="editor"]'));
+  const first = await page.evaluate(() => ({ row: rrFixture.rows[0], call: rrFixture.calls.find(call => call.name === 'save_restaurant_recommendation_with_location') }));
+  const point = { latitude: first.row.latitude, longitude: first.row.longitude };
+  assert.ok(Number.isFinite(point.latitude) && point.latitude > 33 && point.latitude < 39 && Number.isFinite(point.longitude) && point.longitude > 124 && point.longitude < 132, 'a real map tap produces a plausible Korean coordinate pair');
+  assert.deepEqual(first.call.parameters.p_location, point, 'the selected coordinates travel in the same post save as its fields and photos');
+  assert.equal(first.row.photos.length, 1);
+  assert.ok((await page.locator('.rr-detail-content .rr-map-link').getAttribute('href')).endsWith(',' + point.latitude + ',' + point.longitude), 'the published detail links to the exact saved point');
+  await rr('edit').click(); await rr('editor').waitFor(); await f.photos(1);
+  await rr('field-name').fill('지도 취소 뒤에도 남는 이름');
+  await openMap(); await picker('map').locator('.rlp-marker').waitFor();
+  await page.locator('[data-rlp="confirm"]:enabled').waitFor();
+  assert.equal(await picker('confirm').isEnabled(), true, 'the saved pin is restored without another tap');
+  assert.equal(await picker('map').locator('.rlp-marker').evaluate(pin => {
+    const rect = pin.getBoundingClientRect(), map = pin.closest('[data-rlp="map"]').getBoundingClientRect();
+    return Math.abs(rect.left + rect.width / 2 - map.left - map.width / 2) < 48 && Math.abs(rect.top + rect.height / 2 - map.top - map.height / 2) < 48;
+  }), true, 'reediting centers the map on the saved pin');
+  const changedBox = await picker('map').boundingBox();
+  await picker('map').click({ position: { x: changedBox.width * .30, y: changedBox.height * .65 } });
+  await picker('cancel').click(); await picker('dialog').waitFor({ state: 'detached' });
+  assert.equal(await rr('field-name').inputValue(), '지도 취소 뒤에도 남는 이름');
+  assert.equal(await rr('photo-remove').count(), 1); assert.match(await rr('location-status').textContent(), /선택 완료/);
+  await rr('field-menu').fill('사진과 함께 수정한 메뉴'); await f.choose(1); await f.photos(2); await rr('submit').click();
+  await page.waitForFunction(previous => rrFixture.rows[0].updated_at !== previous && !document.querySelector('[data-rr="editor"]'), first.row.updated_at);
+  const edited = await page.evaluate(() => rrFixture.rows[0]);
+  assert.deepEqual({ latitude: edited.latitude, longitude: edited.longitude }, point, 'Cancel rejects the unconfirmed second tap while later text and photo edits preserve the saved point');
+  assert.equal(edited.name, '지도 취소 뒤에도 남는 이름'); assert.equal(edited.menu, '사진과 함께 수정한 메뉴'); assert.equal(edited.photos.length, 2);
+  await rr('edit').click(); await rr('editor').waitFor(); await rr('field-reason').fill('뒤로가기를 눌러도 남아야 하는 추천 초안');
+  await openMap(); await page.evaluate(() => rrUI.back()); await picker('dialog').waitFor({ state: 'detached' });
+  assert.equal(await rr('editor').isVisible(), true); assert.equal(await rr('confirm-dialog').count(), 0, 'Back closes only the picker before asking about the outer draft');
+  assert.equal(await rr('field-reason').inputValue(), '뒤로가기를 눌러도 남아야 하는 추천 초안');
+  await openMap(); await page.evaluate(() => rrFixture.setUser({ id: rrFixture.secondMember }));
+  await picker('dialog').waitFor({ state: 'detached' }); await rr('dialog').waitFor({ state: 'detached' });
+  assert.deepEqual(await page.evaluate(() => ({ latitude: rrFixture.rows[0].latitude, longitude: rrFixture.rows[0].longitude })), point);
+  assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.name === 'save_restaurant_recommendation_with_location').length), 2, 'cancel, Back and account changes never create unintended post saves');
+  assert.ok(f.tiles.length > 0, 'the real Leaflet layer rendered only locally fulfilled tile responses');
 });
