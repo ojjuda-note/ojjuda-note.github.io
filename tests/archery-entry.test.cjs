@@ -11,10 +11,10 @@ function fixture(){
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};if(tag==='iframe')this.contentWindow={postMessage(){}};}
   setAttribute(name,value){this.attributes[name]=value;}
   set innerHTML(html){this.html=html;if(this.tagName==='dialog'){
-   this.button=new Element('button');this.frame=new Element('iframe');
+   this.button=new Element('button');this.trialButton=new Element('button');this.trialButton.hidden=true;this.frame=new Element('iframe');
    this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];
   }}
-  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:null;}
+  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:selector==='[data-archery-trial-toggle]'?this.trialButton:null;}
   showModal(){this.open=true;}
   close(){this.open=false;}
   remove(){this.isConnected=false;}
@@ -71,7 +71,7 @@ assert.match(gameButton('festival'),/<small class="game-test-badge">테스트<\/
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
+ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','canAdminTrial','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
 assert.equal(launchOptions.owner,null);assert.ok(!('client' in launchOptions),'the authenticated client stays in the arcade');
 assert.equal(launchOptions.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(launchOptions.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.0.4');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.1.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -90,7 +90,9 @@ assert.ok(world.includes('/world-game-assets.js?v='+revision));
 // A bridge-only change does not reload unchanged game and ammo modules.
 const bridgeRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
 assert.ok(bridgeRevision,'the archery bridge has its own cache revision');
-const archeryRevision=bridge.match(/src="\/games\/forest-archer\/index\.html\?v=([^"]+)"/)?.[1];
+const releaseFixture=fixture();releaseFixture.api.open();
+const archeryRevision=new URL(releaseFixture.nodes.at(-1).frame.src,'https://ojjuda.kr').searchParams.get('v');
+releaseFixture.api.close();
 assert.ok(archeryRevision,'the iframe has its independent game revision');
 const game=read('games/forest-archer/game.mjs'),coach=read('games/forest-archer/coach.mjs');
 assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^"]+)"/)?.[1],archeryRevision);
@@ -105,8 +107,8 @@ for(const file of ['engine.mjs','scenery.mjs']) {
  assert.equal(source.match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'painted anatomy and collision shapes load the same release');
 }
 for(const file of ['scenery'])assert.equal(game.match(new RegExp("from '\\.\\/"+file+"\\.mjs\\?v=([^']+)'"))?.[1],moduleRevision,'scene retains its matching physics revision');
-assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the epoch-bound ammo client loads with the released game');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261103-game-results1','unchanged result styles retain their independent cache revision');
+assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],archeryRevision,'the updated ammo client accepts the released three-arrow total');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-admin-trial1','the trial controls load their new styles');
 
 assert.equal(game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the game loads the wall-aware follow camera');
 assert.equal(game.match(/from '\.\/cinematic\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the replay receives the same camera release');

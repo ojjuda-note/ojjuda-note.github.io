@@ -1212,7 +1212,7 @@ function Al(t,options={}){
    if(result?.ok&&authorized()&&args.p_action==='round-complete')window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'archery',stage:args.p_stage??result.stage}}));
    return result;
   };
-  window.OjjudaArcheryGame.open({owner,authorized,
+  window.OjjudaArcheryGame.open({owner,authorized,canAdminTrial:()=>!!owner&&authorized()&&D.isAdmin===true,
    onAmmoStatus:()=>ammoCall('archery_single_action',{p_action:'status',p_epoch:4}),
    onRoundStart:(requestId,stage)=>ammoCall('archery_single_action',{p_action:'round-start',p_epoch:4,p_request_id:requestId,p_stage:stage}),
    onRoundComplete:(requestId,runId,stage,score)=>ammoCall('archery_single_action',{p_action:'round-complete',p_epoch:4,p_request_id:requestId,p_run_id:runId,p_stage:stage,p_score:score}),

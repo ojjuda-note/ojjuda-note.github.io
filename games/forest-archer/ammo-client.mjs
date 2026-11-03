@@ -9,7 +9,8 @@ const SNAPSHOT_FIELDS = ['launch_epoch', 'remaining', 'free_remaining', 'paid_re
 const SNAPSHOT_DECLINES = new Set(['coins', 'coach_active', 'coach_basic', 'ammo_empty', 'limit', 'request_conflict', 'run_not_found', 'run_conflict', 'round_too_soon', 'invalid', 'progress_reset']);
 const COUNTER_FIELDS = ['remaining', 'free_remaining', 'paid_remaining', 'coins', 'main_rounds', 'milestones_granted'];
 const validStage = stage => Number.isInteger(stage) && stage >= 1 && stage <= 220;
-const validScore = score => Number.isInteger(score) && score >= 0 && score <= 50;
+// Five three-bolt triggers can each land three ten-point arrows.
+const validScore = score => Number.isInteger(score) && score >= 0 && score <= 150;
 const fail = (reason, extra = {}) => ({ ok: false, reason, ...extra });
 
 export function createRequestId() {

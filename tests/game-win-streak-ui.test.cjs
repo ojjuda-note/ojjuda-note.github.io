@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');const root=path.join(__dirname,'..');
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/game-results.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 window.streakTest={auth:D,actions:Qp,save:savePracticeStreak,registry:worldRankGames,
@@ -27,9 +27,13 @@ g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
  await page.evaluate(()=>streakTest.boardResult('janggi','ai','normal','draw'));assert.equal(await page.evaluate(()=>saved.at(-1).p_outcome),'draw');
  const before=await page.evaluate(()=>saved.length);
  await page.evaluate(()=>{streakTest.boardResult('chess','local','normal','w');streakTest.billiardResult('pool8','online','normal','p1');});assert.equal(await page.evaluate(()=>saved.length),before,'shared-device and server-owned online games are not self-reported');
- await page.evaluate(()=>{window.fail=true;streakTest.boardResult('janggi','ai','hard','c')});await page.getByRole('button',{name:'연승 기록 다시 저장',exact:true}).waitFor();
- const failedId=await page.evaluate(()=>saved.at(-1).p_round);await page.evaluate(()=>window.fail=false);await page.getByRole('button',{name:'연승 기록 다시 저장',exact:true}).click();await page.waitForFunction(()=>streakTest.board().streakRound.saved);
+ await page.evaluate(()=>{window.fail=true;streakTest.boardResult('janggi','ai','hard','c')});
+ const retry=page.locator('#bd-root .game-result-card .game-result-extra').getByRole('button',{name:'기록 다시 저장',exact:true});
+ await retry.waitFor();assert.equal(await retry.count(),1,'a failed save offers one retry inside the result card');
+ const failedId=await page.evaluate(()=>saved.at(-1).p_round);await page.evaluate(()=>window.fail=false);await retry.click();await page.waitForFunction(()=>streakTest.board().streakRound.saved);
  assert.equal(await page.evaluate(()=>saved.at(-1).p_round),failedId,'retry uses the same round id');
+ assert.equal(await page.evaluate(id=>saved.filter(call=>call.p_round===id).length,failedId),2,'one failed save and one successful retry share the round');
+ assert.equal(await retry.count(),0,'the successful retry clears its result-card action');
  const count=await page.evaluate(()=>saved.length);
  await page.evaluate(()=>{const old=streakTest.board();old.streakRound.saved=false;streakTest.auth.user={id:'member-b'};streakTest.save(old,'c')});assert.equal(await page.evaluate(()=>saved.length),count,'old account result cannot be saved into a new account');
  await page.evaluate(()=>{streakTest.auth.user={id:'member-a'};return streakTest.verified('game_move',{p_id:'server-game'})});assert.equal(await page.evaluate(()=>events.at(-1)),'member-a','confirmed online completion refreshes the board');

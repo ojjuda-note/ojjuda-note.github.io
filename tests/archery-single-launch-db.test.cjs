@@ -147,5 +147,69 @@ test('archery single launch resets every item once and ranks current cleared ser
    await login(null);await assert.rejects(()=>rpc('archery_single_action',['status',4]),/permission denied/);
    assert.ok(Array.isArray(await rpc('guest_game_ranking',['archery','month',null])));
   });
+  const scoreMigration=()=>migration('_archery_burst_score_sum.sql');
+  const preservedState=async()=>({
+   accounts:(await admin('select to_jsonb(a) item from ojjuda_archery_internal.accounts a order by user_id')).rows,
+   runs:(await admin('select to_jsonb(r) item from ojjuda_archery_internal.runs r order by run_id')).rows,
+   receipts:(await admin('select to_jsonb(r) item from ojjuda_archery_internal.receipts r order by request_id')).rows,
+   wallet:(await admin('select user_id,coins from public.user_private order by user_id')).rows,
+   backups:(await admin('select to_jsonb(b) item from ojjuda_archery_internal.release_backups b order by release_key')).rows,
+   archives:(await admin('select to_jsonb(a) item from ojjuda_ranking_internal.archives a order by month_start')).rows
+  });
+  await t.test('raising the burst score ceiling preserves existing progress, receipts, wallets and rankings',async()=>{
+   await login(A);
+   const before=await preservedState(),ranks=await rpc('community_game_monthly_ranking',['archery']);
+   const permissions=(await admin("select p.proacl,p.prosecdef,p.proconfig from pg_proc p where p.oid='ojjuda_archery_internal.single_operate(text,integer,uuid,uuid,integer,integer)'::regprocedure")).rows;
+   await db.exec('reset role');await db.exec(scoreMigration());await patchClocks();
+   assert.deepEqual(await preservedState(),before);
+   assert.deepEqual(await rpc('community_game_monthly_ranking',['archery']),ranks);
+   assert.deepEqual((await admin("select p.proacl,p.prosecdef,p.proconfig from pg_proc p where p.oid='ojjuda_archery_internal.single_operate(text,integer,uuid,uuid,integer,integer)'::regprocedure")).rows,permissions);
+  });
+  let burstRound;
+  await t.test('150-point rounds save and recover exactly while over-limit scores and replay changes are rejected',async()=>{
+   await login(A);await tick();const run=await start(220);await tick();
+   const before=await preservedState();
+   for(const score of [-1,151,null])assert.equal((await complete(run.run_id,220,score)).reason,'invalid');
+   assert.deepEqual(await preservedState(),before,'rejected scores do not complete a run or create a receipt');
+   const id=randomUUID(),result=await complete(run.run_id,220,150,id);
+   assert.equal(result.ok,true);assert.equal(result.score,150);assert.equal(result.ranked,true);assert.equal(result.completed_now,true);
+   burstRound={run:run.run_id,id};
+   const stored=(await admin('select score,cleared,launch_epoch from ojjuda_archery_internal.runs where run_id=$1',[run.run_id])).rows[0];
+   assert.deepEqual(stored,{score:150,cleared:true,launch_epoch:4});
+   const receipt=await rpc('archery_single_receipt',[id,'round-complete',4]);assert.equal(receipt.receipt.score,150);assert.equal(receipt.receipt.ranked,true);
+   const repeat=await complete(run.run_id,220,150,id);assert.equal(repeat.ok,true);assert.equal(repeat.score,150);assert.equal(repeat.replayed,true);
+   assert.equal((await complete(run.run_id,220,149,id)).reason,'request_conflict');
+   assert.equal((await complete(run.run_id,220,149)).reason,'request_conflict');
+   const secondId=await complete(run.run_id,220,150);assert.equal(secondId.score,150);assert.equal(secondId.completed_now,false);
+   await assert.rejects(()=>admin('update ojjuda_archery_internal.runs set score=151 where run_id=$1',[run.run_id]),/runs_score_check/);
+   await login(B);assert.equal((await complete(run.run_id,220,150)).reason,'run_not_found');
+   assert.equal((await rpc('archery_single_receipt',[id,'round-complete',4])).found,false);
+  });
+  await t.test('all ranking views retain scores above 50 and normal administrator play remains ranked',async()=>{
+   await login(B);
+   await admin('create table public.app_admins(user_id uuid primary key references auth.users(id))');
+   await admin('insert into public.app_admins(user_id) values($1)',[B]);
+   await round(220,51);
+   let ranks=await rpc('community_game_monthly_ranking',['archery']);
+   assert.equal(ranks[0].nick,'Alpha');assert.equal(ranks[0].score,150);assert.equal(ranks[1].nick,'Beta');assert.equal(ranks[1].score,51);
+   await round(219,150);
+   ranks=await rpc('community_game_monthly_ranking',['archery']);assert.equal(ranks[1].stage,220);assert.equal(ranks[1].score,51,'higher stage remains more important than a lower-stage burst score');
+   await round(220,150);
+   ranks=await rpc('community_game_monthly_ranking',['archery']);assert.equal(ranks[0].nick,'Alpha','equal stage and score retain the earlier completion');assert.equal(ranks[1].nick,'Beta');assert.equal(ranks[1].score,150,'ordinary administrator records are not excluded');
+   for(const [name,args]of [['community_game_ranking',['archery']],['guest_game_ranking',['archery','month',null]],['guest_game_ranking',['archery','all',null]]]){
+    const view=await rpc(name,args);assert.equal(view[0].score,150,name);assert.equal(view[1].score,150,name);
+   }
+   const leaders=await rpc('community_game_monthly_leaders',[['archery']]);assert.equal(leaders.archery.score,150);assert.equal(leaders.archery.stage,220);
+   const history=await rpc('community_game_monthly_history',[['archery'],null]);assert.equal(history.leaders.archery.score,150);
+   await login(A);assert.equal((await rpc('archery_single_receipt',[burstRound.id,'round-complete',4])).receipt.score,150);
+  });
+  await t.test('the score migration is repeatable and cannot downgrade existing 150-point records',async()=>{
+   const before=await preservedState();
+   await db.exec('reset role');await db.exec(scoreMigration());await patchClocks();
+   assert.deepEqual(await preservedState(),before);
+   const definition=(await admin("select pg_get_functiondef('ojjuda_archery_internal.single_operate(text,integer,uuid,uuid,integer,integer)'::regprocedure) body")).rows[0].body;
+   assert.match(definition,/p_score not between 0 and 150/);
+   assert.equal((await rpc('community_game_monthly_ranking',['archery']))[0].score,150);
+  });
  }finally{await db.close()}
 });

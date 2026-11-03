@@ -183,7 +183,7 @@ test('invalid inputs and unavailable durable storage never submit a financial re
     assert.equal((await f.client.completeRound(OTHER, stage)).reason, 'invalid');
   }
   assert.equal((await f.client.completeRound('bad', 1, 40)).reason, 'invalid');
-  for (const score of [-1, 51, 30.5, '40', undefined]) assert.equal((await f.client.completeRound(OTHER, 1, score)).reason, 'invalid');
+  for (const score of [-1, 151, 30.5, '40', undefined]) assert.equal((await f.client.completeRound(OTHER, 1, score)).reason, 'invalid');
   assert.equal((await f.client.spend('')).reason, 'invalid');assert.equal(f.requests().length, count);
   assert.match(f.module.namespace.createRequestId(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-8[0-9a-f]{3}-[0-9a-f]{12}$/);
   f.client.dispose();
@@ -329,5 +329,22 @@ test('a definitively reset receipt cannot trap a recovered purchase or replay it
   await reopened.flush();assert.equal(reopened.client.pending, null);assert.equal(reopened.client.snapshot.remaining, 0);
   assert.equal((await reopened.client.retryPending()).reason, 'nothing_pending');
   assert.deepEqual(reopened.requests().map(item => item.action), ['status', 'receipt']);
+  reopened.client.dispose();
+});
+
+test('a 150-point round survives pending receipt recovery without resubmitting a completion',async()=>{
+  const original=await fixture();
+  const completing=original.client.completeRound(SESSION,220,150);await original.flush();
+  const request=original.requests().at(-1);
+  assert.equal(request.action,'round-complete');assert.equal(request.score,150);
+  const stored=JSON.parse(original.store.get('forest-archer-ammo-pending-v4:'+OWNER));
+  assert.equal(stored.payload.score,150);
+  original.reply(request,{ok:false,reason:'pending'});assert.equal((await completing).reason,'pending');original.client.dispose();
+  const reopened=await fixture({store:original.store,sessionId:OTHER});await reopened.flush();
+  const lookup=reopened.requests().find(item=>item.action==='receipt');assert.ok(lookup);
+  assert.equal(lookup.receiptId,request.requestId);assert.equal(lookup.originalAction,'round-complete');
+  reopened.reply(lookup,snapshot({found:true,receipt:{ok:true,run_id:SESSION,score:150},main_rounds:6,revision:2}));await reopened.flush();
+  assert.equal((await reopened.client.retryPending()).ok,true);assert.equal(reopened.client.pending,null);
+  assert.deepEqual(reopened.requests().map(item=>item.action),['status','receipt']);
   reopened.client.dispose();
 });

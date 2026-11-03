@@ -18,12 +18,13 @@ function fixture(options={},fakeTimers=false){
  class Element extends EventTarget{
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.sent=[];if(tag==='iframe')this.contentWindow={postMessage:(data,targetOrigin)=>this.sent.push({data:JSON.parse(JSON.stringify(data)),targetOrigin})};}
   setAttribute(){}
-  set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
-  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:null;}
+  set innerHTML(html){this.html=html;this.button=new Element('button');this.trialButton=new Element('button');this.trialButton.hidden=true;this.trialButton.textContent=html.match(/data-archery-trial-toggle[^>]*>([^<]*)</)?.[1]||'';this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
+  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:selector==='[data-archery-trial-toggle]'?this.trialButton:null;}
   showModal(){this.open=true;}
   close(){this.open=false;}
   remove(){this.isConnected=false;}
   focus(){}
+  click(){this.dispatchEvent(new Event('click'));}
  }
  const previous=new Element('button');previous.isConnected=true;
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
@@ -31,14 +32,14 @@ function fixture(options={},fakeTimers=false){
  vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
  const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onCoachBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
  const api={
-  open(overrides={}){window.OjjudaArcheryGame.open({...defaults,...options,...overrides});return nodes.at(-1).frame;},
+  open(overrides={}){window.OjjudaArcheryGame.open({...defaults,...options,...overrides});return nodes.at(-1)?.frame;},
   close(){window.OjjudaArcheryGame.close();},
   expireRequests(){for(const callback of [...timers.values()])callback();timers.clear();},
   setAuthorized(value){authorized=value;},
   get dialog(){return nodes.at(-1);},
   emit(data,{frame=nodes.at(-1).frame,source=frame.contentWindow,messageOrigin=origin}={}){for(const receive of [...(listeners.get('message')||[])])receive({data,source,origin:messageOrigin});},
   ready(frame=nodes.at(-1).frame){api.emit({source:'ojjuda-archery-game',type:'ready'},{frame});return frame.sent.at(-1)?.data;},
-  finishes,
+  finishes,nodes,
   finish(fields={},overrides={}){
    const frame=overrides.frame||nodes.at(-1).frame,init=frame.sent.find(entry=>entry.data.type==='init')?.data;
    const data={source:'ojjuda-archery-game',type:'round-finished',kind:'main',owner:init?.owner,sessionId:init?.sessionId,runId:randomUUID(),stage:1,...fields};
@@ -51,7 +52,7 @@ function fixture(options={},fakeTimers=false){
   },
   responses(frame=nodes.at(-1).frame){return frame.sent.filter(entry=>entry.data.type==='ammo-response').map(entry=>entry.data);}
  };
- api.open();api.ready();return api;
+ api.open();if(api.dialog)api.ready();return api;
 }
 
 test('a completed guest main round requests automatic login once while event and stale messages do not',()=>{
@@ -101,15 +102,15 @@ test('initialization reveals no auth client and only the live same-origin owner/
 test('only allowlisted argument shapes reach callbacks, with no client price/count or arbitrary RPC',async()=>{
  const calls=[];const f=fixture({onRoundStart:async(...args)=>{calls.push(['start',...args]);return snapshot({run_id:owner});},onRoundComplete:async(...args)=>{calls.push(['complete',...args]);return snapshot();},onAmmoBuy:async(...args)=>{calls.push(['buy',...args]);return snapshot();},onCoachBuy:async(...args)=>{calls.push(['coach-buy',...args]);return snapshot();}});
  try{
-  for(const [action,fields]of [['status',{launchEpoch:3}],['round-complete',{stage:5,runId:owner,score:51}],['round-complete',{stage:5,runId:owner,score:2.5}],['round-start',{stage:0}],['round-start',{stage:221}],['round-start',{stage:220.5}],['round-start',{stage:'220'}],['round-complete',{stage:221,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
+  for(const [action,fields]of [['status',{launchEpoch:3}],['round-complete',{stage:5,runId:owner,score:151}],['round-complete',{stage:5,runId:owner,score:2.5}],['round-start',{stage:0}],['round-start',{stage:221}],['round-start',{stage:220.5}],['round-start',{stage:'220'}],['round-complete',{stage:221,runId:owner}],['round-complete',{stage:5,runId:'invalid'}],['buy',{price:0}],['buy',{quantity:10000}],['coach-buy',{price:0}],['coach-buy',{duration:999999}],['coach-buy',{coach_expires_at:'2099-01-01'}],['spend',{count:0}],['status',{rpc:'daily_checkin'}],['receipt',{receiptId:owner,originalAction:'status'}]]){
    await f.request(action,fields);assert.equal(f.responses().at(-1).result.reason,'invalid');
   }
   assert.equal(calls.length,0);
   const start=await f.request('round-start',{stage:220});
-  const complete=await f.request('round-complete',{stage:220,runId:owner,score:48});
+  const complete=await f.request('round-complete',{stage:220,runId:owner,score:150});
   const buy=await f.request('buy');
   const coach=await f.request('coach-buy');
-  assert.deepEqual(calls,[['start',start.requestId,220],['complete',complete.requestId,owner,220,48],['buy',buy.requestId],['coach-buy',coach.requestId]]);
+  assert.deepEqual(calls,[['start',start.requestId,220],['complete',complete.requestId,owner,220,150],['buy',buy.requestId],['coach-buy',coach.requestId]]);
  }finally{f.close();}
 });
 
@@ -208,6 +209,7 @@ test('the real archery launch branch routes all seven RPCs through the existing 
  const context=vm.createContext({D,Promise,M:()=>{},CustomEvent:class {constructor(type,values){this.type=type;this.detail=values?.detail;}},window:{dispatchEvent(){},OjjudaArcheryGame:{open:options=>{opened=options;}}},worldRewardRequest:()=>({owner:D.online?D.user?.id:null,version:++version}),vl:async(rpc,args,request)=>{calls.push({rpc,args:JSON.parse(JSON.stringify(args)),request});return snapshot();}});
  const launch=()=>vm.runInContext(`(function(t){${world.slice(start,end)}})('archery');`,context);
  launch();assert.equal(opened.owner,owner);assert.ok(!('client' in opened));
+ assert.equal(opened.canAdminTrial(),false);D.isAdmin=true;assert.equal(opened.canAdminTrial(),true);D.isAdmin=false;assert.equal(opened.canAdminTrial(),false);
  const requestId=randomUUID(),runId=randomUUID();
  await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7,48);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onCoachBuy(requestId);await opened.onAmmoReceipt(requestId,'coach-buy');
  assert.deepEqual(calls.map(call=>[call.rpc,call.args]),[
@@ -216,4 +218,58 @@ test('the real archery launch branch routes all seven RPCs through the existing 
  assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6,7]);
  D.user={id:'another-owner'};assert.equal((await opened.onCoachBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,7);
  D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,7);
+});
+
+test('only a live signed-in administrator sees or can enter the item trial',()=>{
+ for(const options of [{canAdminTrial:()=>false},{owner:null,canAdminTrial:()=>true},{owner:'',canAdminTrial:()=>true},{authorized:()=>false,canAdminTrial:()=>true}]){
+  const f=fixture({...options,adminTrial:true},true);
+  try{assert.equal(f.nodes.length,0,'a requested URL mode cannot override account authorization');}finally{f.close();}
+ }
+ let administrator=false;const f=fixture({canAdminTrial:()=>administrator},true);
+ try{
+  assert.equal(f.dialog.trialButton.hidden,true);
+  f.dialog.trialButton.click();assert.equal(f.nodes.length,1,'even a synthetic click of the hidden control is denied');
+  administrator=true;f.expireRequests();
+  assert.equal(f.dialog.trialButton.hidden,false,'late completion of the existing admin lookup reveals the control');
+  f.dialog.trialButton.click();f.ready();
+  assert.equal(f.nodes.length,2);assert.match(f.dialog.frame.src,/[?&]adminTrial=1(?:&|$)/);
+  assert.equal(f.dialog.frame.sent.at(-1).data.adminTrial,true);
+ }finally{f.close();}
+});
+
+test('trial sessions reject every real account action and return to a fresh normal session',async()=>{
+ const calls=[],callbacks=Object.fromEntries(['onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].map(name=>[name,async()=>{calls.push(name);return snapshot();}]));
+ const f=fixture({...callbacks,canAdminTrial:()=>true,adminTrial:true},true);
+ try{
+  const trialFrame=f.dialog.frame,init=trialFrame.sent[0].data;
+  assert.equal(init.adminTrial,true);assert.equal(init.available,false);
+  assert.match(f.dialog.trialButton.textContent,/일반 게임/);
+  for(const [action,fields]of [['status',{}],['round-start',{stage:220}],['round-complete',{stage:220,runId:randomUUID(),score:150}],['spend',{}],['buy',{}],['coach-buy',{}],['receipt',{receiptId:randomUUID(),originalAction:'buy'}]]){
+   await f.request(action,fields);
+  }
+  assert.equal(calls.length,0,'neither purchases, progress, claims nor receipt recovery can reach an account callback');
+  assert.ok(f.responses().every(reply=>reply.result.ok===false));
+  f.finish();assert.equal(f.finishes.length,0);
+  f.dialog.trialButton.click();const normalInit=f.ready();
+  assert.equal(trialFrame.src,'about:blank');assert.equal(normalInit.adminTrial,false);assert.equal(normalInit.available,true);
+  assert.notEqual(normalInit.sessionId,init.sessionId);assert.doesNotMatch(f.dialog.frame.src,/[?&]adminTrial=1/);
+  assert.match(f.dialog.trialButton.textContent,/아이템 체험/);
+  await f.request('buy',{}, {frame:trialFrame});assert.equal(calls.length,0,'the prior trial iframe has no account access after mode switching');
+  await f.request('status');assert.deepEqual(calls,['onAmmoStatus'],'normal play still uses the authenticated account path');
+ }finally{f.close();}
+});
+
+test('trial authorization loss closes an idle iframe and prevents stale actions',async()=>{
+ for(const loss of ['administrator','account']){
+  let administrator=true;const calls=[];
+  const f=fixture({adminTrial:true,canAdminTrial:()=>administrator,onAmmoSpend:async()=>{calls.push('spend');return snapshot();}},true);
+  try{
+   const frame=f.dialog.frame,dialog=f.dialog;
+   if(loss==='administrator')administrator=false;else f.setAuthorized(false);
+   f.expireRequests();
+   assert.equal(dialog.isConnected,false,`${loss} loss closes without waiting for another child message`);
+   assert.equal(frame.src,'about:blank');
+   await f.request('spend',{}, {frame});assert.deepEqual(calls,[]);
+  }finally{f.close();}
+ }
 });

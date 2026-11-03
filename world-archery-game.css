@@ -4,4 +4,7 @@
 .archery-game-dialog>.tour-game-header button{min-height:44px;min-width:44px;padding:6px;color:#315945;white-space:nowrap}
 .archery-game-dialog>.tour-game-header>span{display:flex;align-items:center;gap:6px;min-width:0;font-weight:700;white-space:nowrap}
 .archery-game-dialog>.tour-game-header small{padding:3px 7px;border-radius:6px;background:#e1eadc;color:#4b6548;font-size:10px;font-weight:600;white-space:nowrap}
+.archery-game-dialog>.tour-game-header>[data-archery-trial-toggle]{flex:0 0 auto;padding:6px 9px;border:1px solid #aac1a0;background:#e6efdf;font-weight:700}
+.archery-game-dialog>.tour-game-header>[hidden]{display:none}
+@media(max-width:420px){.archery-game-dialog>.tour-game-header{gap:5px;padding-inline:6px}.archery-game-dialog>.tour-game-header>span{flex:1;flex-direction:column;gap:2px;font-size:12px}.archery-game-dialog>.tour-game-header button{font-size:12px}.archery-game-dialog>.tour-game-header small{padding:2px 5px;font-size:9px}}
 .tour-game-dialog.archery-game-dialog>iframe{display:block;flex:1 1 0;min-width:0;min-height:0;width:100%;height:0;border:0;background:#f5f4ed}

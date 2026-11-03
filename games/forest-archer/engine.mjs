@@ -1,6 +1,6 @@
 /** Deterministic metre/second archery simulation. Coordinates: x right, y up, z forward. */
-import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261103-stage-clear-gates1';
-export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261103-stage-clear-gates1';
+import {isAnimalKind,scoreAnimalPoint,getAnimalGroundHeight} from './animal-zones.mjs?v=20261104-archery-burst-sum1';
+export {getAnimalAimPoint,getAnimalAttachmentPoint} from './animal-zones.mjs?v=20261104-archery-burst-sum1';
 export const PLAYER = Object.freeze({ x: 0, y: 1.65, z: 0 });
 export const GRAVITY = 9.81;
 export const WIND_RESPONSE = 2.5;
@@ -115,7 +115,7 @@ export const BOWS = equipmentCatalog([
   bow(12, '가죽그립 석궁', '안정 석궁', '사냥꾼 석궁의 탄성을 유지하고 그립을 한 단계 높였어요.', 80, 80, '#709e95'),
   bow(13, '사냥꾼 석궁', '강성 석궁', '달빛 명궁의 그립을 이어받고 탄성을 조금 높인 첫 석궁.', 75, 80, '#a79679'),
   bow(14, '은빛 정밀석궁', '정밀 석궁', '장인의 석궁보다 그립이 좋아져 더 차분하게 겨눠요.', 85, 85, '#bcafcf'),
-  bow(15, '레어 연발석궁', '레어 3연발', '천둥 석궁보다 안정적인 그립. 첫 발은 조준한 방향, 두 발은 주변으로 쏘고 최고점을 기록해요.', 90, 90, '#718ea2'),
+  bow(15, '레어 연발석궁', '레어 3연발', '천둥 석궁보다 안정적인 그립. 첫 발은 조준한 방향, 두 발은 주변으로 쏘고 세 발의 점수를 합쳐요.', 90, 90, '#718ea2'),
   bow(16, '레어 속사석궁', '레어 속사 3연발', '첫 연발석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 90, 95, '#598f83'),
   bow(17, '레어 정밀석궁', '레어 정밀 3연발', '속사석궁의 탄성에 더 좋은 그립과 정밀한 레일을 더했어요.', 95, 95, '#a79679'),
   bow(18, '레어 매눈석궁', '레어 고급 3연발', '정밀석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 95, 100, '#b1a471'),

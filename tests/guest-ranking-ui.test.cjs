@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://guest.test';
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/guest-game-scores.js')||tag.includes('/world-game-assets.js')||tag.includes('/game-entry.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/guest-game-scores.js')||tag.includes('/world-game-assets.js')||tag.includes('/game-entry.js')||tag.includes('/game-results.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,login:()=>nr('login'),member:()=>{D.online=true;D.user={id:'member-a'};},finish:score=>{R.game={draw(){}};R.running=true;return S2(score)}};enterWorldGuest(()=>{g.tab='friends';H()});`+world.slice(world.indexOf('</script>',boot));
 (async()=>{
@@ -30,14 +30,24 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/world.html?place=park&guest=1');await page.waitForFunction(()=>window.guestFixture);
-  await page.evaluate(()=>guestFixture.open('breakout'));
-  await page.locator('#gov summary').filter({hasText:'오늘의 랭킹'}).click();
-  await page.getByRole('heading',{name:'오늘의 랭킹',exact:true}).waitFor();
-  assert.equal((await page.locator('#grank li.me').innerText()).replace(/\s/g,''),'손님20','real World ranking displays and highlights the guest');
+  const ranking=await page.evaluate(()=>guestFixture.ranking('breakout'));
+  assert.deepEqual(ranking,[{nick:'손님',score:20,me:true,source:'guest_record'}],'the World ranking reader preserves the guest identity');
+  const daily=await page.evaluate(()=>calls.find(c=>c.name==='guest_game_ranking'));
+  assert.equal(daily.args.p_game,'breakout');assert.equal(daily.args.p_period,'day');assert.equal(daily.guest,true);
+  // Rankings moved out of the game-entry accordion. Current score results use
+  // the guest's monthly ranking before and after saving the finished round.
+  await page.evaluate(()=>guestFixture.open('mole'));
+  await page.locator('#gov .game-entry').waitFor();
   await page.evaluate(()=>guestFixture.finish(20));
-  await page.waitForFunction(()=>document.querySelector('#gres')?.textContent.includes('손님으로 기록했어요'));
+  const result=page.locator('#gov .game-result-card[data-result-game="mole"]');
+  await result.waitFor();
+  assert.equal(await result.locator('.game-result-metric').innerText(),'20점 · 이번 달 1등과 0점 차이','the real result card uses the confirmed monthly guest ranking');
+  assert.equal(await result.locator('#gres').innerText(),'','a successful guest save leaves no pending or failure message');
+  const monthly=await page.evaluate(()=>calls.filter(c=>c.name==='guest_game_ranking'&&c.args.p_game==='mole'&&c.args.p_period==='month'));
+  assert.equal(monthly.length,2,'the result compares rankings before and after settlement');assert.ok(monthly.every(c=>c.guest));
   const call=await page.evaluate(()=>calls.find(c=>c.name==='submit_guest_game_score'));
-  assert.equal(call.args.p_score,20);assert.equal(call.args.p_game,'breakout');assert.match(call.args.p_guest_token,/^[a-f0-9]{64}$/);assert.match(call.args.p_request_id,/^[a-f0-9-]{36}$/);assert.equal(call.guest,true);
+  assert.equal(call.args.p_score,20);assert.equal(call.args.p_game,'mole');assert.match(call.args.p_guest_token,/^[a-f0-9]{64}$/);assert.match(call.args.p_request_id,/^[a-f0-9-]{36}$/);assert.equal(call.guest,true);
+  assert.equal(daily.args.p_guest_token,call.args.p_guest_token);assert.ok(monthly.every(c=>c.args.p_guest_token===call.args.p_guest_token),'daily reads, monthly reads and score writes share the same guest identity');
   const options=await page.evaluate(()=>clientOptions.find(c=>c?.auth?.storageKey==='ojjuda-guest-ranking-api'));
   assert.deepEqual(options.auth,{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'ojjuda-guest-ranking-api'});
   await page.reload();await page.waitForFunction(()=>window.guestFixture);await page.evaluate(()=>guestFixture.submit('mole',3));
@@ -62,6 +72,6 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await browse.click();await page.waitForURL(origin+'/world.html?place=park&guest=1');
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: real World guest score submission and ranking, persistent browser identity, isolated API session, Ttang/Spot bridges, unchanged member submission and login browse link');
+  console.log('PASS: real World guest score submission, daily reader and monthly result UI, persistent browser identity, isolated API session, Ttang/Spot bridges, unchanged member submission and login browse link');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});
