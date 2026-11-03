@@ -39,6 +39,8 @@ jobs:
           node-version: '22'
       - run: node games/festival-schedule/validate.mjs
       - run: node tests/festival-core.test.mjs
+      - run: npm --prefix tests ci --ignore-scripts
+      - run: node --test tests/festival-app-dom.test.cjs
       - run: node tests/festival-entry.test.cjs
       - run: node tests/game-release-refresh.test.cjs
       - run: node --check games/festival-schedule/app.js

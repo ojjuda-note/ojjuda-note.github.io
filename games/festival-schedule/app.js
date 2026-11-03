@@ -1,8 +1,8 @@
 import {
   CATEGORIES, REGIONS, todayKST, parseDate, isoDate, addDays,
   monthRange, periodRange, overlaps, eventStatus, filterEvents,
-  formatRange, createICS
-} from './core.js?v=20261103-festival-polish1';
+  formatRange, createICS, hasEventDates, isDateUndecided
+} from './core.js?v=20261103-festival-undecided1';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'ojjuda.festival.saved.v1';
@@ -10,9 +10,9 @@ const DATA_URL = new URL('./events.json', import.meta.url);
 const MAP_URL = new URL('./assets/korea-provinces.json', import.meta.url);
 const NATIONAL_BOUNDS = [[33.0, 124.7], [38.65, 131.95]];
 const VIEW_MODES = ['map', 'calendar', 'list'];
-const PERIODS = ['upcoming', 'weekend', 'month', 'all', 'custom'];
+const PERIODS = ['upcoming', 'weekend', 'month', 'undecided', 'all', 'custom'];
 const OWN_QUERY_KEYS = ['q', 'region', 'category', 'period', 'from', 'to', 'date', 'view', 'month', 'saved', 'sort', 'event'];
-const STATUS_LABELS = { ongoing: '진행 중', upcoming: '예정', ended: '종료', cancelled: '취소', postponed: '연기' };
+const STATUS_LABELS = { ongoing: '진행 중', upcoming: '예정', undecided: '일정 미정', ended: '종료', cancelled: '취소', postponed: '연기' };
 const paths = {
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/>',
   pin: '<path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
@@ -76,7 +76,7 @@ function readRoute() {
     from: validDate(p.get('from')) ? p.get('from') : '',
     to: validDate(p.get('to')) ? p.get('to') : '',
     selectedDate,
-    view: VIEW_MODES.includes(p.get('view')) ? p.get('view') : 'map',
+    view: p.get('period') === 'undecided' && p.get('view') !== 'map' ? 'list' : VIEW_MODES.includes(p.get('view')) ? p.get('view') : 'map',
     month: selectedDate ? selectedDate.slice(0, 7) : validMonth(p.get('month')) ? p.get('month') : today.slice(0, 7),
     savedOnly: p.get('saved') === '1',
     sort: ['date', 'name', 'region'].includes(p.get('sort')) ? p.get('sort') : 'date'
@@ -114,7 +114,7 @@ function writeRoute({ push = false } = {}) {
     region: state.region === 'all' ? '' : state.region,
     period: state.period === 'upcoming' ? '' : state.period,
     from: state.period === 'custom' ? state.from : '', to: state.period === 'custom' ? state.to : '',
-    date: state.selectedDate, view: state.view === 'map' ? '' : state.view,
+    date: state.selectedDate, view: state.view === 'map' && state.period !== 'undecided' ? '' : state.view,
     month: state.month === today.slice(0, 7) ? '' : state.month,
     saved: state.savedOnly ? '1' : '', sort: state.sort === 'date' ? '' : state.sort,
     event: currentEventId
@@ -197,14 +197,22 @@ function getVisibleEvents() {
 function render() {
   if (loading) return;
   filteredEvents = getVisibleEvents();
-  const heading = state.savedOnly ? '저장한 행사' : state.region !== 'all' ? `${state.region} 행사` : '전국 행사';
+  const heading = state.period === 'undecided' ? '일정 미정' : state.savedOnly ? '저장한 행사' : state.region !== 'all' ? `${state.region} 행사` : '전국 행사';
   $('results-heading').firstChild.textContent = `${heading} `;
   $('result-count').textContent = filteredEvents.length;
   const savedCount = events.filter(event => saved.has(event.id)).length;
   $('saved-count').textContent = savedCount;
   $('saved-count').hidden = savedCount === 0;
   const month = Number(state.month.slice(5, 7));
-  $('list-label').textContent = state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : '가까운 일정부터';
+  $('list-label').textContent = state.period === 'undecided' ? '개최 예정 · 날짜 발표 전' : state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : '가까운 일정부터';
+  const undecidedCount = filterEvents(events, { ...state, period: 'undecided', selectedDate: '', from: '', to: '', saved }, today).length;
+  $('planning-bar').hidden = undecidedCount === 0 && state.period !== 'undecided';
+  $('planning-note').textContent = state.period === 'undecided' ? '날짜가 발표되면 캘린더에 표시해요.' : '날짜 발표를 기다리는 행사도 있어요.';
+  $('undecided-toggle').textContent = state.period === 'undecided' ? '전체 일정 보기' : `일정 미정 ${undecidedCount}개 보기`;
+  $('undecided-toggle').setAttribute('aria-pressed', String(state.period === 'undecided'));
+  const unlocatedCount = filteredEvents.filter(event => !Number.isFinite(event.lat) || !Number.isFinite(event.lng)).length;
+  $('location-note').hidden = state.view !== 'map' || unlocatedCount === 0;
+  $('location-note').textContent = `지도 위치 확인 전 ${unlocatedCount}개는 목록에서 확인할 수 있어요.`;
   $('checked-at').textContent = (updatedAt || '').slice(0, 10).replaceAll('-', '.') || '확인 중';
   renderList();
   renderCalendar();
@@ -212,6 +220,7 @@ function render() {
   updateProvinceStyles();
 }
 function compactDateRange(event) {
+  if (isDateUndecided(event)) return event.dateNote;
   const start = parseDate(event.start), end = parseDate(event.end);
   const year = start.getUTCFullYear(), endYear = end.getUTCFullYear();
   const datePart = date => `${date.getUTCMonth() + 1}.${date.getUTCDate()}`;
@@ -224,7 +233,7 @@ function cardMarkup(event) {
   const category = CATEGORIES[event.category];
   const status = displayStatus(event);
   const isSaved = saved.has(event.id);
-  return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''}" data-event-card="${escapeHTML(event.id)}" style="--category-color:${category.ink}">
+  return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''} ${isDateUndecided(event) ? 'is-undecided' : ''}" data-event-card="${escapeHTML(event.id)}" style="--category-color:${category.ink}">
     <button class="card-main" data-open-event="${escapeHTML(event.id)}" aria-label="${escapeHTML(event.title)} 상세 정보">
       <span class="card-topline"><span class="card-category">${category.label}</span><span class="card-status ${status.key}">${status.label}</span></span>
       <strong class="card-title">${escapeHTML(event.title)}</strong>
@@ -238,10 +247,10 @@ function renderList() {
     $('event-list').innerHTML = filteredEvents.map(cardMarkup).join('');
     return;
   }
-  const archive = state.category === 'campus' && events.some(event => event.category === 'campus' && event.end < today);
+  const archive = state.period !== 'undecided' && state.category === 'campus' && events.some(event => event.category === 'campus' && hasEventDates(event) && event.end < today);
   const reversed = state.period === 'custom' && state.from && state.to && state.from > state.to;
   const title = reversed ? '선택한 날짜를 확인해 주세요' : state.savedOnly ? '저장한 행사가 보이지 않아요' : '조건에 맞는 행사가 없어요';
-  const description = reversed ? '종료일이 시작일보다 앞서 있어요.' : state.savedOnly ? '행사의 책갈피를 눌러 저장하거나, 선택한 검색 조건을 바꿔보세요.' : archive ? '대학축제는 주로 학기 중에 열려요. 확인된 지난 축제도 볼 수 있어요.' : '지역·날짜·종류를 바꾸면 다른 즐거움을 찾을 수 있어요.';
+  const description = reversed ? '종료일이 시작일보다 앞서 있어요.' : state.savedOnly ? '행사의 책갈피를 눌러 저장하거나, 선택한 검색 조건을 바꿔보세요.' : state.period === 'undecided' ? '이 조건에서 공식 개최 예고가 확인된 일정 미정 행사는 아직 없어요.' : archive ? '대학축제는 주로 학기 중에 열려요. 확인된 지난 축제도 볼 수 있어요.' : '지역·날짜·종류를 바꾸면 다른 즐거움을 찾을 수 있어요.';
   $('event-list').innerHTML = `<div class="empty-state"><span class="empty-symbol">${icon('calendar')}</span><h3>${title}</h3><p>${description}</p><button data-action="${archive ? 'campus-archive' : 'reset-filters'}">${archive ? '지난 대학축제 보기' : '전체 행사 다시 보기'}</button></div>`;
 }
 function renderCalendar() {
@@ -290,9 +299,11 @@ function renderDetail(event) {
   const sourceURL = safeURL(event.sourceUrl);
   const mapQuery = [event.region, event.city, event.venue].filter(Boolean).join(' ');
   const mapURL = `https://map.naver.com/p/search/${encodeURIComponent(event.address || mapQuery)}`;
-  const unavailable = ['cancelled', 'postponed'].includes(status.key);
+  const undecided = isDateUndecided(event);
+  const hasLocation = Number.isFinite(event.lat) && Number.isFinite(event.lng);
+  const unavailable = undecided || ['cancelled', 'postponed'].includes(status.key);
   const access = Array.isArray(event.accessNote) ? event.accessNote.join(' · ') : event.accessNote || (event.category === 'campus' ? '외부인 출입·공연 관람 조건은 학교 공식 안내를 확인해 주세요.' : '세부 입장 조건은 공식 안내를 확인해 주세요.');
-  const statusNote = status.key === 'cancelled' ? '취소된 행사입니다. 아래 날짜는 기존에 공지된 일정입니다.' : status.key === 'postponed' ? '연기된 행사입니다. 새 일정은 공식 공지를 확인해 주세요. 아래 날짜는 기존 일정입니다.' : event.statusNote || '';
+  const statusNote = status.key === 'cancelled' ? `취소된 행사입니다.${hasEventDates(event) ? ' 아래 날짜는 기존에 공지된 일정입니다.' : ''}` : status.key === 'postponed' ? `연기된 행사입니다. 새 일정은 공식 공지를 확인해 주세요.${hasEventDates(event) ? ' 아래 날짜는 기존 일정입니다.' : ''}` : undecided ? '공식 개최 계획이 발표됐어요. 정확한 날짜는 아직 발표 전이며 예정 시기는 바뀔 수 있어요.' : event.statusNote || '';
   $('event-detail').innerHTML = `<div class="detail-cover" style="--tile-bg:${cat.bg};--tile-ink:${cat.ink}">
     <button class="dialog-close" data-action="close-event" aria-label="행사 상세 닫기">${icon('close')}</button>
     <span class="detail-kind">${icon(cat.icon)}${cat.label}<span>· ${status.label}</span></span>
@@ -304,14 +315,14 @@ function renderDetail(event) {
     <dl class="detail-facts">
       <dt>${icon('calendar')}일정</dt><dd>${escapeHTML(formatRange(event))}</dd>
       <dt>${icon('clock')}시간</dt><dd>${escapeHTML(event.scheduleNote || '공식 안내 확인')}</dd>
-      <dt>${icon('pin')}장소</dt><dd>${escapeHTML(event.venue || '공식 안내 확인')}<small>${escapeHTML(event.address || '')}</small><a class="venue-link" href="${escapeHTML(mapURL)}" target="_blank" rel="noopener noreferrer">네이버 지도에서 보기 ${icon('external-link')}</a></dd>
+      <dt>${icon('pin')}장소</dt><dd>${escapeHTML(event.venue || '장소 미정')}${event.address ? `<small>${escapeHTML(event.address)}</small>` : ''}${hasLocation ? `<a class="venue-link" href="${escapeHTML(mapURL)}" target="_blank" rel="noopener noreferrer">네이버 지도에서 보기 ${icon('external-link')}</a>` : '<small>지도 위치가 확인되면 표시해요.</small>'}</dd>
       <dt>${icon('ticket')}요금</dt><dd>${escapeHTML(event.priceNote || '공식 안내 확인')}</dd>
       <dt>${icon('people')}입장 안내</dt><dd>${escapeHTML(access)}</dd>
     </dl>
     <div class="detail-notice">${event.geoApprox ? '지도는 대표 행사장 부근을 표시해요. ' : ''}방문 전 공식 페이지에서 최신 시간·장소·입장 조건을 확인해 주세요.</div>
     <div class="detail-actions">
       ${officialURL ? `<a class="primary-button" href="${escapeHTML(officialURL)}" target="_blank" rel="noopener noreferrer">공식 안내 보기 ${icon('external-link')}</a>` : ''}
-      <button class="secondary-button" data-download-event="${escapeHTML(event.id)}"${unavailable ? ' disabled title="취소·연기된 행사는 새 일정 확인 후 추가해 주세요."' : ''}>${icon('calendar')}캘린더에 추가</button>
+      <button class="secondary-button" data-download-event="${escapeHTML(event.id)}"${unavailable ? ` disabled title="${undecided ? '날짜가 발표되면 캘린더에 추가할 수 있어요.' : '취소·연기된 행사는 새 일정 확인 후 추가해 주세요.'}"` : ''}>${icon('calendar')}${undecided ? '날짜 발표 후 추가' : '캘린더에 추가'}</button>
       <button class="secondary-button detail-save ${isSaved ? 'saved' : ''}" data-save-event="${escapeHTML(event.id)}" aria-pressed="${isSaved}" aria-label="${isSaved ? '관심 행사에서 해제' : '관심 행사로 저장'}">${icon('bookmark')}</button>
       <button class="secondary-button share-button" data-share-event="${escapeHTML(event.id)}" aria-label="이 행사 공유">${icon('share')}</button>
     </div>
@@ -351,7 +362,7 @@ function closeAbout() {
 }
 function downloadEvent(id) {
   const event = eventById.get(id);
-  if (!event || ['cancelled', 'postponed'].includes(eventStatus(event, today))) return;
+  if (!event || !hasEventDates(event) || ['cancelled', 'postponed'].includes(eventStatus(event, today))) return;
   const url = URL.createObjectURL(new Blob([createICS(event)], { type: 'text/calendar;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url;
@@ -395,7 +406,7 @@ function resetFilters() {
   updateState({ query: '', category: 'all', region: 'all', period: 'upcoming', from: '', to: '', selectedDate: '', savedOnly: false, sort: 'date', month: today.slice(0, 7) }, { fit: true });
 }
 function showCampusArchive() {
-  const campus = events.filter(event => event.category === 'campus').sort((a, b) => b.end.localeCompare(a.end));
+  const campus = events.filter(event => event.category === 'campus' && hasEventDates(event)).sort((a, b) => b.end.localeCompare(a.end));
   const mostRecent = campus.find(event => event.end < today) || campus[0];
   updateState({ category: 'campus', period: 'all', query: '', region: 'all', savedOnly: false, selectedDate: '', from: '', to: '', view: 'calendar', month: (mostRecent?.end || today).slice(0, 7) });
 }
@@ -408,6 +419,7 @@ function shiftMonth(direction) {
 }
 function selectPeriod(period) {
   const changes = { period, selectedDate: '' };
+  if (period === 'undecided') changes.view = 'list';
   if (period === 'weekend') changes.month = periodRange(period, today).start.slice(0, 7);
   else if (period === 'month' || (period === 'upcoming' && state.month < today.slice(0, 7))) changes.month = today.slice(0, 7);
   else if (period === 'custom' && state.from) changes.month = state.from.slice(0, 7);
@@ -442,7 +454,11 @@ function bindInteractions() {
     if (button.dataset.downloadEvent) { downloadEvent(button.dataset.downloadEvent); return; }
     if (button.dataset.shareEvent) { void shareEvent(button.dataset.shareEvent); return; }
     if (button.dataset.category) { updateState({ category: button.dataset.category, selectedDate: '' }, { fit: true }); return; }
-    if (button.dataset.view) { updateState({ view: button.dataset.view }, { fit: button.dataset.view === 'map' }); return; }
+    if (button.dataset.view) {
+      const changes = { view: button.dataset.view };
+      if (changes.view === 'calendar' && state.period === 'undecided') Object.assign(changes, { period: 'upcoming', selectedDate: '' });
+      updateState(changes, { fit: changes.view === 'map' }); return;
+    }
     if (button.dataset.calendarDate) { updateState({ selectedDate: button.dataset.calendarDate, month: button.dataset.calendarDate.slice(0, 7) }); return; }
     switch (button.dataset.action) {
       case 'about': showAbout(); break;
@@ -451,6 +467,7 @@ function bindInteractions() {
       case 'clear-date': updateState({ selectedDate: '' }); break;
       case 'campus-archive': showCampusArchive(); break;
       case 'reset-filters': resetFilters(); break;
+      case 'undecided-events': selectPeriod(state.period === 'undecided' ? 'upcoming' : 'undecided'); break;
       case 'retry-load': void loadEvents(); break;
     }
   });
@@ -711,7 +728,7 @@ async function loadEvents() {
     if (!payload || !Array.isArray(payload.events)) throw new Error('Invalid event data');
     const seen = new Set();
     events = payload.events.filter(event => {
-      if (!event || typeof event.id !== 'string' || !event.title || !Object.hasOwn(CATEGORIES, event.category) || !validDate(event.start) || !validDate(event.end || event.start) || (event.end || event.start) < event.start || seen.has(event.id)) return false;
+      if (!event || typeof event.id !== 'string' || !event.title || !Object.hasOwn(CATEGORIES, event.category) || (!hasEventDates(event) && !isDateUndecided(event)) || seen.has(event.id)) return false;
       seen.add(event.id);
       return true;
     }).map(event => ({ ...event, end: event.end || event.start }));
