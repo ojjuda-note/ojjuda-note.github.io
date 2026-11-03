@@ -28,7 +28,8 @@
     "test:recommended-restaurants": "node restaurant-location-picker-dom.test.cjs && node recommended-restaurant-location-db.test.cjs && node restaurant-rating-bridge.test.cjs && node restaurant-ratings-dom.test.cjs && node restaurant-ratings-db.test.cjs && node recommended-restaurants-entry.test.cjs && node recommended-restaurants-db.test.cjs && node account-deletion.test.cjs && node --test recommended-restaurants-dom.test.cjs recommended-restaurants-ui.test.cjs restaurant-recommendations-navigation-ui.test.cjs",
     "test:results": "npm run test:results:unit && node --test game-results-ui.test.cjs game-results-multiplayer-ui.test.cjs",
     "test:results:unit": "node --experimental-vm-modules --test game-results.test.cjs game-results-arcade.test.cjs game-results-stages.test.cjs game-results-multiplayer.test.cjs sacheonseong-result-ranking.test.cjs matgo-result-receipt-db.test.cjs",
-    "test:star": "node --test star-member-access.test.cjs && node portal-auth-entry.test.cjs && node game-release-refresh.test.cjs"
+    "test:star": "node --test star-member-access.test.cjs && node portal-auth-entry.test.cjs && node game-release-refresh.test.cjs",
+    "test:pwa": "node --test pwa-install.test.cjs pwa-service-worker.test.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

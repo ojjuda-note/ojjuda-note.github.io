@@ -1,0 +1,40 @@
+.pwa-install-banner { display:flex; align-items:center; gap:14px; margin:0 0 22px; padding:13px 14px 13px 17px; border:1px solid var(--line,#dce6dc); border-radius:16px; background:var(--surface,#fff); color:var(--ink,#253d31); }
+.pwa-banner-copy { flex:1; min-width:0; font-size:13px; line-height:1.5; word-break:keep-all; }
+.pwa-banner-copy strong { display:block; font-size:14px; font-weight:700; }
+.pwa-banner-copy span { color:var(--ink-2,#617166); font-size:12px; }
+.pwa-install-button { display:inline-flex; flex:none; align-items:center; justify-content:center; gap:6px; min-height:42px; padding:9px 14px; border:0; border-radius:11px; background:var(--accent-ink,#245a48); color:var(--surface,#fff); font:700 13px/1.3 var(--font-b,system-ui,sans-serif); cursor:pointer; touch-action:manipulation; }
+.pwa-install-button svg { width:17px; height:17px; }
+.pwa-banner-dismiss { flex:none; width:28px; height:36px; padding:0; border:0; border-radius:8px; background:transparent; color:var(--ink-2,#617166); font:24px/1 system-ui,sans-serif; cursor:pointer; }
+html[data-pwa-hide-banner="true"] .pwa-install-banner { display:none; }
+.pwa-install-entry { width:100%; }
+.pwa-install-entry .my-menu-title { display:block; }
+.pwa-install-dialog { box-sizing:border-box; position:fixed; inset:0; width:min(440px,calc(100% - 32px)); max-height:calc(100dvh - 48px); margin:auto; padding:30px 24px 16px; overflow-y:auto; border:1px solid var(--line,#dce6dc); border-radius:24px; background:var(--surface,#fff); color:var(--ink,#253d31); box-shadow:0 24px 90px #142e3529; font:14px/1.7 var(--font-b,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif); text-align:left; }
+.pwa-install-dialog:not([open]) { display:none; }
+.pwa-install-dialog::backdrop { background:#10241bc2; }
+.pwa-install-dialog [hidden] { display:none!important; }
+.pwa-dialog-close { position:absolute; top:12px; right:12px; width:40px; height:40px; border:0; border-radius:50%; background:transparent; color:var(--ink-2,#617166); font:27px/1 system-ui,sans-serif; cursor:pointer; }
+.pwa-app-icon { display:block; border-radius:17px; margin:0 0 16px; }
+.pwa-eyebrow { margin:0 0 5px; color:var(--accent-ink,#245a48); font-size:12px; font-weight:700; }
+.pwa-install-dialog h2 { margin:0 30px 10px 0; font-size:24px; line-height:1.4; font-weight:750; letter-spacing:-.04em; word-break:keep-all; }
+#pwa-install-description { margin:0 0 18px; color:var(--ink-2,#617166); word-break:keep-all; }
+.pwa-install-steps { margin:0 0 20px; padding-left:23px; }
+.pwa-install-steps li { padding-left:3px; margin-bottom:9px; word-break:keep-all; }
+.pwa-install-steps li::marker { color:var(--accent-ink,#245a48); font-weight:700; }
+.pwa-install-note { margin:0 0 20px; padding:12px; border-radius:12px; background:var(--surface-2,#f1f5ef); color:var(--ink-2,#617166); font-size:12px; word-break:keep-all; }
+.pwa-dialog-actions { display:flex; gap:8px; }
+.pwa-dialog-actions button { flex:1; min-height:46px; padding:10px; border:1px solid var(--line,#dce6dc); border-radius:12px; font-family:inherit; font-size:14px; font-weight:700; line-height:1.4; cursor:pointer; touch-action:manipulation; }
+.pwa-copy-button { background:var(--surface,#fff); color:var(--ink,#253d31); }
+.pwa-dialog-actions .pwa-confirm-button { border-color:transparent; background:var(--accent-ink,#245a48); color:var(--surface,#fff); }
+.pwa-copy-status { min-height:1.5em; margin:12px 0 0; color:var(--ink-2,#617166); font-size:12px; overflow-wrap:anywhere; }
+.pwa-install-banner button:focus-visible,.pwa-install-dialog button:focus-visible { outline:3px solid var(--accent-ink,#245a48); outline-offset:3px; }
+html[data-pwa-prompting="true"] [data-pwa-install] { opacity:.65; cursor:wait; }
+@media(max-width:380px) {
+  .pwa-install-banner { gap:8px; padding:12px; }
+  .pwa-banner-copy strong { font-size:13px; }
+  .pwa-banner-copy span { font-size:11px; }
+  .pwa-install-button { padding:9px 11px; }
+  .pwa-install-button svg { display:none; }
+  .pwa-banner-dismiss { width:22px; }
+  .pwa-install-dialog { padding:26px 19px 14px; }
+  .pwa-install-dialog h2 { font-size:22px; }
+}
