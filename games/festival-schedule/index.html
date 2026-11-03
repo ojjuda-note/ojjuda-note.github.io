@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f7f2">
+  <meta name="description" content="전국 지역축제, 대학축제, 영화제, 박람회의 공식 일정을 지도와 캘린더에서 찾아보세요.">
+  <meta property="og:title" content="축제일정 · 다음 즐거움은, 어디일까요?">
+  <meta property="og:description" content="전국의 축제와 행사를 지도와 캘린더로 한눈에.">
+  <title>축제일정 · 전국 축제 지도와 캘린더</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/vendor/leaflet.css">
+  <link rel="stylesheet" href="./style.css?v=20261103-festival-schedule1">
+  <script src="./assets/vendor/leaflet.js" defer></script>
+  <script src="./app.js?v=20261103-festival-schedule1" type="module"></script>
+</head>
+<body>
+<a class="skip-link" href="#explore">행사 목록으로 건너뛰기</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="./index.html" aria-label="축제일정 홈"><span class="brand-symbol" aria-hidden="true">✳</span><strong>축제일정<span class="brand-dot">.</span></strong></a>
+    <nav class="top-nav" aria-label="주 메뉴">
+      <button class="nav-item active" data-action="nav-map">축제 찾기</button>
+      <button class="nav-item" data-action="nav-calendar">캘린더</button>
+      <button class="nav-item" data-action="nav-saved">저장한 행사 <span id="saved-count">0</span></button>
+    </nav>
+    <button class="about-button" data-action="about"><span class="icon" data-icon="info"></span><span>이용 안내</span></button>
+  </div>
+</header>
+<main>
+  <section class="intro wrap" aria-labelledby="page-heading">
+    <div class="intro-copy"><p class="eyebrow"><span></span> 오쭈다 테스트 · 전국의 즐거운 순간</p><h1 id="page-heading">다음 즐거움은,<br class="mobile-br"> <span>어디일까요?</span></h1><p class="intro-description">동네의 작은 축제부터 마음에 남을 영화제까지.<br class="mobile-br"> 지도 위에서 나만의 다음 일정을 찾아보세요.</p></div>
+    <div class="intro-art" aria-hidden="true">
+      <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+      <span class="spark spark-one">✳</span><span class="spark spark-two">✦</span>
+      <div class="mini-ticket ticket-back"><span>MAKE A LITTLE</span><strong>MEMORY</strong><i></i></div>
+      <div class="mini-ticket ticket-front"><div><span id="art-month">NOV</span><span class="ticket-dot">●</span></div><strong id="art-year">2026</strong><div class="ticket-bottom"><span>LET’S GO SOMEWHERE</span><span>↗</span></div></div>
+    </div>
+  </section>
+  <section class="explore wrap" id="explore" aria-label="축제 검색">
+    <div class="search-bar">
+      <label class="search-input"><span class="icon" data-icon="search"></span><input id="search" type="search" placeholder="어떤 축제를 찾고 있나요?" aria-label="행사명, 지역, 장소 검색" autocomplete="off"><kbd>/</kbd></label>
+      <label class="select-wrap"><span class="icon" data-icon="pin"></span><select id="region" aria-label="지역 선택"><option value="all">전국 모든 지역</option></select><span class="select-chevron">⌄</span></label>
+      <label class="select-wrap period-wrap"><span class="icon" data-icon="calendar"></span><select id="period" aria-label="기간 선택"><option value="upcoming">진행 중 · 예정</option><option value="weekend">이번 주말</option><option value="month">이번 달</option><option value="all">지난 행사 포함</option><option value="custom">기간 직접 선택</option></select><span class="select-chevron">⌄</span></label>
+      <button id="reset" class="reset-button" title="검색 조건 초기화" aria-label="검색 조건 초기화"><span class="icon" data-icon="reset"></span></button>
+    </div>
+    <div id="custom-dates" class="custom-dates" hidden><label>시작일 <input type="date" id="date-from"></label><span>—</span><label>종료일 <input type="date" id="date-to"></label><span id="date-error" role="status"></span></div>
+    <div class="filter-row"><div class="categories" role="group" aria-label="행사 종류"><button class="category-chip active" data-category="all"><span data-icon="sparkles" class="icon"></span>전체<span class="chip-count" id="total-count">…</span></button><button class="category-chip" data-category="local"><span class="category-dot local"></span>지역축제</button><button class="category-chip" data-category="campus"><span class="category-dot campus"></span>대학축제</button><button class="category-chip" data-category="film"><span class="category-dot film"></span>영화제</button><button class="category-chip" data-category="expo"><span class="category-dot expo"></span>박람회·전시</button></div><button id="saved-toggle" class="saved-toggle" aria-pressed="false"><span class="icon" data-icon="bookmark"></span>관심 행사만</button></div>
+    <div class="results-toolbar"><div class="results-title"><h2 id="results-heading">전국의 행사 <span id="result-count">…</span></h2><p id="results-subtitle">공식 안내에서 확인한 일정을 모았어요.</p></div><div class="view-tabs" role="group" aria-label="보기 방식"><button id="view-map" class="active" data-view="map" aria-pressed="true"><span class="icon" data-icon="map"></span>지도</button><button id="view-calendar" data-view="calendar" aria-pressed="false"><span class="icon" data-icon="calendar"></span>캘린더</button><button id="view-list" data-view="list" aria-pressed="false"><span class="icon" data-icon="list"></span><span>목록</span></button></div></div>
+    <div id="selection-bar" class="selection-bar" hidden><span id="selected-date-label"></span><button data-action="clear-date">날짜 선택 해제 ×</button></div>
+    <div id="workspace" class="workspace" data-view="map">
+      <section id="map-panel" class="map-panel" aria-label="전국 행사 지도">
+        <div id="festival-map"></div>
+        <div class="map-caption"><span class="map-caption-dot"></span><div><strong>한눈에 보는 전국 축제</strong><span>지역 또는 마커를 눌러보세요</span></div></div>
+        <div class="map-buttons"><button id="map-fit" title="전국 지도 보기" aria-label="전국 지도 보기"><span class="icon" data-icon="expand"></span></button><button id="map-locate" title="내 위치 주변 보기" aria-label="내 위치 주변 보기"><span class="icon" data-icon="locate"></span></button></div>
+        <button id="map-style" class="map-style"><span class="icon" data-icon="layers"></span><span>상세 지도</span></button>
+        <div class="map-legend"><span><i class="local"></i>지역</span><span><i class="campus"></i>대학</span><span><i class="film"></i>영화</span><span><i class="expo"></i>박람회</span></div>
+        <div id="map-message" class="map-message" role="status" hidden></div>
+      </section>
+      <section id="calendar-panel" class="calendar-panel" aria-label="행사 캘린더" hidden>
+        <div class="calendar-toolbar"><div class="month-title"><span class="calendar-kicker">FESTIVAL CALENDAR</span><h3 id="calendar-month"></h3></div><div class="month-controls"><button id="calendar-today">이번 달</button><button id="month-prev" aria-label="이전 달"><span class="icon" data-icon="chevron-left"></span></button><button id="month-next" aria-label="다음 달"><span class="icon" data-icon="chevron-right"></span></button></div></div>
+        <div class="calendar-weekdays" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div id="calendar-grid" class="calendar-grid" role="group" aria-label="날짜별 행사"></div>
+        <p class="calendar-help"><span class="icon" data-icon="info"></span>날짜를 누르면 그날 열리는 행사를 볼 수 있어요.</p>
+      </section>
+      <aside id="results-panel" class="results-panel" aria-label="검색된 행사"><div class="list-toolbar"><strong id="list-label">가까운 일정부터</strong><label><select id="sort" aria-label="정렬 기준"><option value="date">일정순</option><option value="region">지역순</option><option value="name">이름순</option></select></label></div><div id="event-list" class="event-list" aria-live="polite"><div class="loading-state"><div class="loading-ring"></div><p>전국의 즐거운 일정을 불러오고 있어요.</p></div></div><div id="list-footer" class="list-footer"></div></aside>
+    </div>
+    <div class="data-note"><div><span class="icon" data-icon="shield-check"></span><span>자료 업데이트 <strong id="checked-at">2026.11.03</strong></span></div><p>매일 오후 1시 새 일정·변경 사항 확인 · 방문 전 공식 안내를 확인해 주세요.</p><button data-action="about">수집 기준 보기 <span>↗</span></button></div>
+  </section>
+  <section class="discovery wrap" aria-label="주말 행사 빠른 검색"><div class="discovery-symbol" aria-hidden="true">✳</div><div><p>달력에 작은 설렘 하나</p><h2>이번 주말은 조금 다르게 보내볼까요?</h2></div><button data-action="weekend">이번 주말 행사 보기 <span>↗</span></button></section>
+</main>
+<footer class="site-footer wrap"><a class="brand" href="./index.html">축제일정<span class="brand-dot">.</span></a><p>일상 가까이, 즐거움 가득히.</p><span>전국 축제 · 대학축제 · 영화제 · 박람회</span></footer>
+<dialog id="event-dialog" class="event-dialog"><div id="event-detail"></div></dialog>
+<dialog id="about-dialog" class="about-dialog"><button class="dialog-close" data-action="close-about" aria-label="이용 안내 닫기">×</button><span class="about-symbol">✳</span><h2>전국의 즐거움을,<br>한 곳에서 만나요.</h2><p>축제일정은 지역축제·대학축제·영화제·박람회의 일정을 찾아보는 페이지예요.</p><div class="about-section"><h3>어떤 정보를 모으나요?</h3><p>관광기관, 지자체, 대학, 행사 주최 측이 공개한 공식 안내에서 일정과 장소를 확인합니다. 각 행사 상세 화면에 출처와 확인 날짜를 표시해요. 전국 모든 행사를 담은 목록은 아니며, 매일 오후 1시(한국 시간) 공식 자료에서 새 행사와 일정 변경을 확인해 반영합니다. 각 행사 상세의 확인 날짜는 실제로 검증한 날짜예요.</p></div><div class="about-section"><h3>방문하기 전 확인해 주세요</h3><p>취소·연기, 요금, 출입 조건은 바뀔 수 있어요. 대학축제는 외부인 입장이 제한될 수 있습니다. 지도는 대표 행사장 부근을 표시하며, 정확한 입구와 세부 장소는 공식 안내를 확인해 주세요.</p></div><div class="about-section"><h3>저장과 캘린더</h3><p>관심 행사는 현재 브라우저에 저장됩니다. ‘캘린더에 추가’로 내려받는 일정 파일은 휴대폰이나 PC 캘린더에서 열 수 있어요. 변경된 일정이 자동으로 동기화되지는 않습니다.</p></div><div class="about-source"><p>지도: 통계청 행정구역 자료 · <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">southkorea-maps</a><br>상세 지도: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></div><button class="primary-button" data-action="close-about">좋아요, 둘러볼게요</button></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript><div class="noscript">지도와 캘린더를 사용하려면 브라우저의 JavaScript를 켜 주세요.</div></noscript>
+</body>
+</html>
