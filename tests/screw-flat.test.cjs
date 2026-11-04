@@ -118,15 +118,28 @@ for(let stage=1;stage<=11;stage++){
  if(stage===1){press(game,{x:267,y:514});assert.equal(st.L,2);}
  game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
-// Stage 25 must clear with three free holes and rigid screw collisions intact.
+// Stage 25 is deliberately layered: removing the upper wings first cannot
+// clear them, but the lower-first route needs only the original three holes.
+{
+ const blocked=P.makeFlatLevel(25),top=blocked.plates[6],sim=P.createPhysics(blocked);
+ assert.ok(sim.move(blocked.screws[blocked.holes[top.holeIds[0]].screw],blocked.holes[0]));
+ assert.equal(top.state,'hinged','the first pin alone cannot release a flower wing');
+ assert.ok(sim.move(blocked.screws[blocked.holes[top.holeIds[1]].screw],blocked.holes[1]));
+ step(sim,4,.05);
+ assert.equal(top.state,'loose','an upper wing waits on the fixed wings below');
+ assert.ok(top.y<P.BOARD.y+P.BOARD.h,'the upper wing does not fall through its support');
+ sim.destroy();
+}
 storage.set(STAGE_KEY,'25');
 const safe25=G.flat(api,25),safe25State=safe25.state;
 assert.equal(safe25State.level.plates.length,8);
 assert.equal(safe25State.level.holes.length-safe25State.level.screws.length,3);
 assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
 for(let i=0;i<safe25State.level.order.length;i+=2){
+ clearSupports(safe25);
  for(const spare of safe25State.level.holes.slice(0,2))if(spare.screw!==null){
-  const parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));
+  let parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));
+  if(!parking){clearSupports(safe25);parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));}
   assert.ok(parking,'a fallen petal frees a place for the parked screw');
   relocate(safe25,spare.screw,parking);
  }
@@ -135,10 +148,11 @@ for(let i=0;i<safe25State.level.order.length;i+=2){
  assert.equal(p.pins.length,1,'one remaining screw must hold the petal');
  assert.equal(p.state,'hinged','a petal with one screw must not fall');
  relocate(safe25,safe25State.level.order[i+1],safe25State.level.holes[1]);
+ clearSupports(safe25);
  assert.equal(p.state,'gone','a fully unscrewed petal drops without getting trapped');
 }
 assert.equal(safe25State.complete,true,'stage 25 clears without hints or paid holes');
-assert.equal(safe25State.moves,30);
+assert.ok(safe25State.moves>=34,'the interlocking panels require more than simple two-screw stripping');
 assert.ok(safe25State.moves<=safe25State.moveLimit);
 assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
 safe25.destroy();
