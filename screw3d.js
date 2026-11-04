@@ -618,7 +618,7 @@ function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나�
   const skip = [s.thru, s.into], travel = 0.24;   // 실제 풀림 이동(0.22) + 여유. 멀리 떨어진 물체는 막지 않아요.
   if (Array.isArray(L)) return rayHit(o, a, travel, L, skip);
   return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.staticSpecialNear?.get(s) || L.special, skip)
-    || rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip) || screwHit(s, L, o, a, travel);
+    || (L.generating ? null : rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip)) || screwHit(s, L, o, a, travel);
 }
 const STAGES = 1000;
 // 1~500 retain their established progression; new levels keep growing without a sudden jump.
@@ -640,6 +640,7 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
 }
 function buildLevel(L, alt = false) {
   const M = mapLevel(applyClassicStyle(sizedModel(L, alt))), K = colorCount(L);   // 4판부터 세 색, 이후 네 단계마다 색을 늘려요.
+  M.generating = true; // no falling or hinged parts during the solvability simulation
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
     const av = [...left].filter(s => !blocked(s, M));
