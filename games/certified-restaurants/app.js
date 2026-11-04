@@ -119,6 +119,8 @@
     try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; }
   }
   function text(value, limit = 300) { return typeof value === 'string' ? value.trim().slice(0, limit) : ''; }
+  // Common spelling variants should not hide the same place from map search.
+  function searchKey(value) { return String(value || '').normalize('NFKC').toLocaleLowerCase('ko').replaceAll('부페', '뷔페'); }
   function validDate(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
     const date = new Date(value + 'T00:00:00Z');
@@ -137,7 +139,7 @@
     result.ratingKind = 'certified'; result.ratingId = result.id;
     const coordinateSource = item.coordinateSource;
     if (coordinateSource && text(coordinateSource.name) && safeHttps(coordinateSource.url)) result.coordinateSource = { name: text(coordinateSource.name, 160), url: safeHttps(coordinateSource.url), method: text(coordinateSource.method, 120), checkedAt: validDate(coordinateSource.checkedAt) };
-    result.searchText = [result.name, result.category, result.region, result.district, result.address, ...result.menu].join(' ').normalize('NFKC').toLocaleLowerCase('ko');
+    result.searchText = searchKey([result.name, result.category, result.region, result.district, result.address, ...result.menu].join(' '));
     return result;
   }
   function normalizeRecommendation(item) {
@@ -145,7 +147,7 @@
     const date = validDate(typeof item.created_at === 'string' ? item.created_at.slice(0, 10) : '');
     const timestamp = date && Number.isFinite(Date.parse(item.created_at)) ? Date.parse(item.created_at) : 0;
     const result = { id: 'recommended-' + item.id, recommendationId: item.id, ratingKind: 'recommended', ratingId: item.id, name: text(item.name, 160), category: CATEGORIES.includes(item.category) ? item.category : '기타', region: text(item.region, 40) || '지역 미표기', district: '', address: text(item.address), lat: item.latitude, lng: item.longitude, menu: (Array.isArray(item.menu) ? item.menu : [item.menu]).map(value => text(value, 80)).filter(Boolean).slice(0, 8), guides: [], sourceRegisteredAt: timestamp ? date : '', registrationTime: timestamp };
-    result.searchText = [result.name, result.category, result.region, result.address, ...result.menu].join(' ').normalize('NFKC').toLocaleLowerCase('ko');
+    result.searchText = searchKey([result.name, result.category, result.region, result.address, ...result.menu].join(' '));
     return result;
   }
   function combineRestaurantSources() {
@@ -229,7 +231,7 @@
     const node = el('a', className, label); node.href = safeHttps(href); node.target = '_blank'; node.rel = 'noopener noreferrer'; return node;
   }
   function filteredRestaurants() {
-    const words = state.query.normalize('NFKC').toLocaleLowerCase('ko').trim().split(/\s+/).filter(Boolean);
+    const words = searchKey(state.query).trim().split(/\s+/).filter(Boolean);
     const items = state.restaurants.filter(item => {
       if (state.category && item.category !== state.category) return false;
       if (state.region && item.region !== state.region) return false;
