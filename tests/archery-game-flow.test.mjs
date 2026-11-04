@@ -348,7 +348,7 @@ function coveredGunAim(app) {
   const heightAtTarget = pitch => {
     const shot = engine.launchArrow({...params, pitch});
     let point = {...engine.PLAYER}, velocity = {...shot.velocity}, drag = shot.dragRate;
-    let gravity = engine.GRAVITY * shot.gravityScale;
+    let gravity = engine.GRAVITY * shot.gravityScale, speedRatio = 1, dropRatio = 1;
     const planes = stage.obstacles.map(wall => ({z: wall.z - wall.depth / 2, material: wall.material})).sort((a, b) => a.z - b.z);
     for (const plane of [...planes, {z: stage.distance}]) {
       const dz = plane.z - point.z, dt = drag ? -Math.log1p(-drag * dz / velocity.z) / drag : dz / velocity.z;
@@ -359,7 +359,10 @@ function coveredGunAim(app) {
       if (plane.material) {
         const retention = plane.material === 'wood' ? .8 : .5, drop = plane.material === 'wood' ? 1.2 : 1.5;
         velocity = Object.fromEntries(Object.entries(velocity).map(([axis, value]) => [axis, value * retention]));
-        drag *= retention;gravity *= retention * retention * drop;
+        drag *= retention;speedRatio *= retention;dropRatio *= drop;
+        gravity = shot.gravityScale === 0
+          ? engine.GRAVITY * engine.BULLET_GRAVITY_SCALE * 9 * speedRatio**2 * (dropRatio-1)
+          : gravity * retention * retention * drop;
       }
     }
     return point.y;
@@ -1116,7 +1119,8 @@ test('real bullet releases compound wall losses, preserve exact replay entries a
     {materials: ['stone', 'stone'], speed: .25, drop: 2.25},
     {materials: ['wood', 'stone'], speed: .4, drop: 1.8},
     {materials: ['stone', 'wood'], speed: .4, drop: 1.8},
-    {materials: ['wood', 'stone'], speed: .4, drop: 1.8, bullet: 3, distance: 10}
+    {materials: ['wood', 'stone'], speed: .4, drop: 1.8, bullet: 3, distance: 10},
+    {materials: ['wood', 'stone'], speed: .4, drop: 1.8, bullet: 3, distance: 150}
   ]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
       ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: fixture.bullet || 0, coins: 100,
@@ -1156,7 +1160,7 @@ test('real bullet releases compound wall losses, preserve exact replay entries a
     const feedback = app.getElement('feedbackDetail').textContent;
     assert.match(feedback, new RegExp(`${fixture.materials.length}회 관통`));
     assert.match(feedback, new RegExp(`속도 ${Math.round(fixture.speed * 100)}%`));
-    assert.match(feedback, fixture.bullet === 3 ? /낙차 없음/ : new RegExp(`낙차 ${Math.round(fixture.drop * 100)}%`));
+    assert.match(feedback, fixture.bullet === 3 ? /기본탄 대비 낙차 80%/ : new RegExp(`낙차 ${Math.round(fixture.drop * 100)}%`));
     const physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed,
       result: shot.result, entries: shot.penetrations, frames: shot.replayFrames});
     const saved = JSON.stringify(app.snapshot()), saveCount = app.storageOperations.filter(([action]) => action === 'set').length;

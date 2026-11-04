@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BOWS, ARROWS, BULLETS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, launchVolley, stepArrow, getFlightTimeLimit, targetAt, passersAt} from '../games/forest-archer/engine.mjs';
+import {BOWS, ARROWS, BULLETS, STAGES, PLAYER, GRAVITY, BULLET_GRAVITY_SCALE, WIND_RESPONSE, launchArrow, launchVolley, stepArrow, getFlightTimeLimit, targetAt, passersAt} from '../games/forest-archer/engine.mjs';
 import {evaluateCoachShot} from '../games/forest-archer/coach.mjs';
 
 const timing = {held: 2, steadyStart: 5, steadyDuration: .5};
@@ -33,7 +33,7 @@ function centreAim(stage, worldTime = 0, bow = 0, arrow = 0, bullet = 0) {
 function coveredFlight(params, stage, end = stage.distance) {
   const initial = launchArrow(params);
   let point = {...PLAYER}, velocity = {...initial.velocity}, drag = initial.dragRate;
-  let gravity = GRAVITY * initial.gravityScale, elapsed = 0;
+  let gravity = GRAVITY * initial.gravityScale, elapsed = 0, speedRatio = 1, dropRatio = 1;
   const planes = stage.obstacles.map(wall => ({z: wall.z - wall.depth / 2, material: wall.material}))
     .filter(wall => wall.z < end).sort((a, b) => a.z - b.z);
   for (const plane of [...planes, {z: end}]) {
@@ -46,7 +46,10 @@ function coveredFlight(params, stage, end = stage.distance) {
     if (plane.material) {
       const retention = plane.material === 'wood' ? .8 : .5, drop = plane.material === 'wood' ? 1.2 : 1.5;
       velocity = Object.fromEntries(Object.entries(velocity).map(([axis, value]) => [axis, value * retention]));
-      drag *= retention;gravity *= retention * retention * drop;
+      drag *= retention;speedRatio *= retention;dropRatio *= drop;
+      gravity = initial.gravityScale === 0
+        ? GRAVITY * BULLET_GRAVITY_SCALE * 9 * speedRatio**2 * (dropRatio-1)
+        : gravity * retention * retention * drop;
     }
   }
   return {point, elapsed};
@@ -232,7 +235,7 @@ test('coaching uses the selected bullet trajectory for the original gun and both
     'a cue for a flat bullet cannot silently reuse the dropping basic-bullet prediction');
 });
 
-test('gun coaching compensates the compounded wall drop for every bullet and leaves a straight bullet straight', () => {
+test('gun coaching compensates the compounded wall drop for every bullet including new straight-bullet drop', () => {
   for (const materials of [['wood'], ['stone'], ['wood', 'wood'], ['stone', 'stone'], ['wood', 'stone'], ['stone', 'wood']]) {
     const stage = coveredStage(materials);
     for (const bullet of BULLETS) {
@@ -255,8 +258,9 @@ test('gun coaching compensates the compounded wall drop for every bullet and lea
         assert.ok(params.pitch > oldAim.pitch, 'the valid cue requires the player to raise the gun');
       }
       if (bullet.id === 3) {
-        assert.ok(Math.abs(params.pitch - oldAim.pitch) < 1e-12, 'zero drop needs no invented gravity correction');
-        assert.equal(shot.gravityScale, 0);
+        assert.ok(params.pitch > oldAim.pitch, 'straight bullets also require higher aim after a wall');
+        assert.ok(shot.gravityScale > 0);
+        assert.equal(evaluateCoachShot(oldAim, stage, 0, timing).ready, false);
         assert.ok(shot.elapsed > coveredFlight(params, {...stage, obstacles: []}).elapsed,
           'even the straight bullet takes longer after losing speed');
       }
