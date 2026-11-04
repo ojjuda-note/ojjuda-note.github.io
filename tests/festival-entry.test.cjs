@@ -1,6 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const world=read('world.html'),bridge=read('world-festival-schedule.js'),assets=read('world-game-assets.js');
+assert.match(read('games/festival-schedule/index.html'),/data-category="fireworks">불꽃·불빛<\/button>/,'fireworks category appears in page');
+assert.match(read('games/festival-schedule/core.js'),/fireworks: Object\.freeze\(\{ label: '불꽃·불빛'/,'shared core has fireworks category');
 function section(start,end){
  const from=world.indexOf(start),to=world.indexOf(end,from);
  assert.ok(from>=0&&to>from,'the tested production section exists: '+start);
@@ -115,7 +117,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.2.1');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.3.0');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);

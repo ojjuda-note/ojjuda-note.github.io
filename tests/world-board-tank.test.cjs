@@ -38,7 +38,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
   const currentPage=()=>Number(multi().dataset.rankPage);
   const visibleTank=()=>multi().getAttribute('aria-hidden')==='false'&&tank().closest('.board-rank-page').getAttribute('aria-hidden')==='false';
   function nextPage(){
-   multi().querySelector('.board-rank-controls button:last-child').click();
+   host.querySelector('.board-rank-carousel-controls button:last-child').click();
   }
   assert.ok(host.querySelectorAll('[data-game=tank]').length>=1,'the real game catalog includes Tank');
   assert.equal(host.querySelector('[data-rank-group=solo] [data-game=tank]'),null,'Tank stays in multiplayer even when pages wrap');
@@ -46,17 +46,20 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
   assert.equal(tank().querySelector('.board-leader-score').textContent,'9연승');
   assert.equal(visibleTank(),false,'the initial carousel shows only the solo category');
   const categories=host.querySelector('.board-rank-groups');
-  categories.scrollLeft=400;categories.dispatchEvent(new w.Event('scroll'));await tick();
-  assert.equal(categories.dataset.rankCategory,'multi','native horizontal scrolling opens multiplayer');
+  for(let n=0;n<50&&categories.dataset.rankCategory!=='multi';n++){
+   host.querySelector('.board-rank-carousel-controls button:last-child').click();
+  }
+  assert.equal(categories.dataset.rankCategory,'multi','shared ranking pager opens multiplayer');
   const inner=multi().querySelector('.board-rank-viewport');
   inner.dispatchEvent(new w.MouseEvent('pointerdown',{bubbles:true,button:0,clientX:200,clientY:20}));
-  inner.dispatchEvent(new w.MouseEvent('pointerup',{bubbles:true,button:0,clientX:20,clientY:20}));
+  inner.dispatchEvent(new w.MouseEvent('pointerup',{bubbles:true,button:0,clientX:190,clientY:20}));
   assert.equal(captured,0,'the inner table does not capture horizontal gestures');
-  assert.equal(currentPage(),0,'a horizontal gesture cannot also change the inner game page');
+  assert.equal(currentPage(),0,'a short gesture does not page the shared rankings');
   assert.ok(visibleTank(),'Tank wins appear on the first ranking page');
   tank().querySelector('button').click();await tick();assert.deepEqual(opened,['tank']);
+  const soloPageBefore=host.querySelector('[data-rank-group=solo]').dataset.rankPage;
   nextPage();assert.equal(currentPage(),1);assert.equal(visibleTank(),false);
-  assert.equal(host.querySelector('[data-rank-group=solo]').dataset.rankPage,'0','multiplayer paging leaves the solo card in place');
+  assert.equal(host.querySelector('[data-rank-group=solo]').dataset.rankPage,soloPageBefore,'multiplayer paging leaves the solo page unchanged');
   const before=requests.length;
   w.document.body.classList.add('gaming');await tick();
   wins=10;delay=true;

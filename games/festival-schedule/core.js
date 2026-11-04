@@ -1,6 +1,7 @@
 /** Shared date, filtering and calendar-export rules for 축제일정. */
 export const CATEGORIES = Object.freeze({
   local: Object.freeze({ label: '지역축제', color: '#e97746', bg: '#fff0e7', ink: '#a84e28', icon: 'sparkles' }),
+  fireworks: Object.freeze({ label: '불꽃·불빛', color: '#cf5f81', bg: '#fff0f5', ink: '#973c61', icon: 'sparkles' }),
   campus: Object.freeze({ label: '대학축제', color: '#6d8cdb', bg: '#edf1ff', ink: '#4964ae', icon: 'music' }),
   film: Object.freeze({ label: '영화제', color: '#a278c0', bg: '#f4ecfa', ink: '#805597', icon: 'film' }),
   expo: Object.freeze({ label: '박람회·전시', color: '#419e85', bg: '#e8f6ee', ink: '#25765f', icon: 'grid' })

@@ -57,6 +57,8 @@
     });
   }
   function report(force = false) {
+    // A child game iframe can finish an observer callback after its document is torn down.
+    if (!document.body) return;
     const cards = [...document.querySelectorAll('.game-entry')]; cards.forEach(decorate);
     const active = document.body.hasAttribute('data-mp-entry-pending') || cards.some(visible); if (!force && previous === active) return;
     const wasEntry = previous; previous = active; document.body.dataset.mpEntry = String(active);
