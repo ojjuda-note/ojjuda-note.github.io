@@ -1,0 +1,419 @@
+{
+  "updatedAt": "2026-11-05",
+  "sourceName": "서울관광재단 Visit Seoul 공식 음식점·카페 소개",
+  "sourceUrl": "https://korean.visitseoul.net/",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-seoul-visitseoul-ddm-yeonghwajang",
+      "name": "영화장",
+      "category": "중식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 휘경로 3-8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "탕수육",
+        "백짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-10-23",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r"
+    },
+    {
+      "id": "local-seoul-visitseoul-ddm-green-field",
+      "name": "초록뜰식당",
+      "category": "한식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 망우로18길 36",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "버섯만두전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/GreenFieldRestaurant/KOPk0otw0",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-10-26",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/GreenFieldRestaurant/KOPk0otw0"
+    },
+    {
+      "id": "local-seoul-visitseoul-ddm-andongjip",
+      "name": "안동집 손칼국시",
+      "category": "한식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 고산자로36길 3 (경동시장 신관 지하1층)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "손칼국시"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/andongjip-sonkalguksi/KOP32dncy",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-24",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/andongjip-sonkalguksi/KOP32dncy"
+    },
+    {
+      "id": "local-seoul-visitseoul-jr-chaesundang",
+      "name": "채선당 신내점",
+      "category": "한식",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 용마산로 623 (삼부그린스포츠센터)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "월남쌈샤브"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/etc-area/%EC%B1%84%EC%84%A0%EB%8B%B9%EC%8B%A0%EB%82%B4%EC%A0%90--ChaesundangSinnae/KOP002714",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-06",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/etc-area/%EC%B1%84%EC%84%A0%EB%8B%B9%EC%8B%A0%EB%82%B4%EC%A0%90--ChaesundangSinnae/KOP002714"
+    },
+    {
+      "id": "local-seoul-visitseoul-jr-inggone",
+      "name": "잉꼬네떡볶이",
+      "category": "분식",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 용마산로120길 43",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡볶이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023112/KOPnownn2",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023112/KOPnownn2"
+    },
+    {
+      "id": "local-seoul-visitseoul-jr-dongbu-bakery",
+      "name": "동부고려제과",
+      "category": "디저트",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 망우로 388",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생크림빵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023113/KOPusfd76",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023113/KOPusfd76"
+    },
+    {
+      "id": "local-seoul-visitseoul-sb-cheongsujang",
+      "name": "청수장",
+      "category": "한식",
+      "region": "서울",
+      "district": "성북구",
+      "address": "서울 성북구 정릉로 237-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-05-29",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377"
+    },
+    {
+      "id": "local-seoul-visitseoul-sb-napoleon",
+      "name": "나폴레옹과자점",
+      "category": "디저트",
+      "region": "서울",
+      "district": "성북구",
+      "address": "서울 성북구 성북로 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "빵",
+        "케이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%82%98%ED%8F%B4%EB%A0%88%EC%98%B9/KOP006613",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%82%98%ED%8F%B4%EB%A0%88%EC%98%B9/KOP006613"
+    },
+    {
+      "id": "local-seoul-visitseoul-sb-majeonteo",
+      "name": "마전터",
+      "category": "한식",
+      "region": "서울",
+      "district": "성북구",
+      "address": "서울 성북구 혜화로 82-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소고기국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%A7%88%EC%A0%84%ED%84%B0/KOP011133",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-04",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%A7%88%EC%A0%84%ED%84%B0/KOP011133"
+    },
+    {
+      "id": "local-seoul-visitseoul-gb-seomjingang",
+      "name": "섬진강민물장어",
+      "category": "한식",
+      "region": "서울",
+      "district": "강북구",
+      "address": "서울 강북구 한천로 1151",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물장어"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%84%AC%EC%A7%84%EA%B0%95%EB%AF%BC%EB%AC%BC%EC%9E%A5%EC%96%B4/KOP042376",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-05-29",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%84%AC%EC%A7%84%EA%B0%95%EB%AF%BC%EB%AC%BC%EC%9E%A5%EC%96%B4/KOP042376"
+    },
+    {
+      "id": "local-seoul-visitseoul-db-chilgapsan",
+      "name": "칠갑산",
+      "category": "한식",
+      "region": "서울",
+      "district": "도봉구",
+      "address": "서울 도봉구 노해로 379",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곤드레비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/Chilgapsan/KOPu0txa8",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-01",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Chilgapsan/KOPu0txa8"
+    },
+    {
+      "id": "local-seoul-visitseoul-db-hamsbrot",
+      "name": "함스브로트과자점",
+      "category": "디저트",
+      "region": "서울",
+      "district": "도봉구",
+      "address": "서울 도봉구 도봉로 483",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃다발 케이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023019/KOP042375",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023019/KOP042375"
+    },
+    {
+      "id": "local-seoul-visitseoul-db-hanuso",
+      "name": "하누소",
+      "category": "한식",
+      "region": "서울",
+      "district": "도봉구",
+      "address": "서울 도봉구 노해로 327",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "왕갈비탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-08",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389"
+    },
+    {
+      "id": "local-seoul-visitseoul-db-ssangmun",
+      "name": "쌍문동커피",
+      "category": "디저트",
+      "region": "서울",
+      "district": "도봉구",
+      "address": "서울 도봉구 도봉로116길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-05-11",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756"
+    }
+  ],
+  "notes": [
+    "공식 관광 소개 항목이지 미쉐린·블루리본 선정이나 개별 지정으로 주장하지 않음",
+    "이동·폐업 등 현재 영업상태를 개별 검증하지 않음",
+    "좌표는 해당 업소와 현재 주소 일치 근거가 없어 보류; 추정 좌표를 사용하지 않음"
+  ]
+}
