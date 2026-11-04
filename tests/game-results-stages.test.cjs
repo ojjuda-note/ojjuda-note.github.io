@@ -141,7 +141,7 @@ test('archery completed rounds keep equipment purchases directly beneath the sta
     }
     const receipt={owner:'11111111-1111-4111-8111-111111111111',request_id:'22222222-2222-4222-8222-222222222222',game_coins:500};
     const before=g.progress.coins;assert.equal(g.creditExchangedCoins(receipt),true);assert.equal(g.creditExchangedCoins(receipt),true);
-    const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-single-v4'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
+    const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-single-v5'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
   }finally{w.close();}
 });
 
@@ -157,7 +157,7 @@ test('archery coin shop recovers old hosts and checks stale balances on the serv
   const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const coinTest={get client(){return coinExchange;},get coins(){return progress.coins;}};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
   const game=load('game.mjs');await game.link(specifier=>load(specifier.replace(/^\.\//,'').split('?')[0]));await game.evaluate();await flush();
   const g=game.namespace.coinTest,$=selector=>w.document.querySelector(selector),owner='11111111-1111-4111-8111-111111111111',sessionId='22222222-2222-4222-8222-222222222222';
-  const emit=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-archery-world',owner,sessionId,launchEpoch:4,...data}}));
+  const emit=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-archery-world',owner,sessionId,launchEpoch:5,...data}}));
   try{
     assert.equal($('#modalContent').querySelectorAll('[data-coin-pack]').length,6,'the return URL opens the coin tab');
     emit({type:'init',available:false,coinExchangeAvailable:false});await flush();

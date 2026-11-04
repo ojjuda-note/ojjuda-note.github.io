@@ -71,7 +71,7 @@ assert.match(gameButton('festival'),/<small class="game-test-badge">테스트<\/
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','canAdminTrial','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt','onCoinExchange','onCoinReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
+ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt','onCoinExchange','onCoinReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
 assert.equal(launchOptions.owner,null);assert.ok(!('client' in launchOptions),'the authenticated client stays in the arcade');
 assert.equal(launchOptions.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(launchOptions.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.8.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.0.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -108,8 +108,8 @@ const anatomyRevision=read('games/forest-archer/engine.mjs').match(/from '\.\/an
 assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-bullet-penetration1','unchanged wall colors retain their cache revision');
-assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-main-firearms1','the client disables retired ammo purchases and keeps record recovery');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-coin-shop1','unchanged shop styles keep their cache revision');
+assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-reset5','the client disables retired ammo purchases and keeps record recovery');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261104-archery-reset5','trial-free shop styles load the reset release');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
 assert.equal(cameraRevision,'20261104-archery-eagle-dive1','the unchanged camera keeps its cache revision');
@@ -135,10 +135,10 @@ assert.equal(read('games/forest-archer/bullet-cinematic.mjs').match(/from '\.\/v
  await memberOptions.onRoundComplete('finish-request','run',17,45);
  await memberOptions.onAmmoReceipt('finish-request','round-complete');
  assert.deepEqual(JSON.parse(JSON.stringify(rpcCalls.map(({rpc,args})=>({rpc,args})))),[
-  {rpc:'archery_single_action',args:{p_action:'status',p_epoch:4}},
-  {rpc:'archery_single_action',args:{p_action:'round-start',p_epoch:4,p_request_id:'start-request',p_stage:17}},
-  {rpc:'archery_single_action',args:{p_action:'round-complete',p_epoch:4,p_request_id:'finish-request',p_run_id:'run',p_stage:17,p_score:45}},
-  {rpc:'archery_single_receipt',args:{p_epoch:4,p_request_id:'finish-request',p_action:'round-complete'}}
+  {rpc:'archery_single_action',args:{p_action:'status',p_epoch:5}},
+  {rpc:'archery_single_action',args:{p_action:'round-start',p_epoch:5,p_request_id:'start-request',p_stage:17}},
+  {rpc:'archery_single_action',args:{p_action:'round-complete',p_epoch:5,p_request_id:'finish-request',p_run_id:'run',p_stage:17,p_score:45}},
+  {rpc:'archery_single_receipt',args:{p_epoch:5,p_request_id:'finish-request',p_action:'round-complete'}}
  ],'released callbacks use the epoch-bound API and include the exact stage score');
  assert.equal(savedEvents.length,2,'new and recovered completed rounds refresh the rankings');
  assert.ok(savedEvents.every(event=>event.type==='ojjuda:game-record-saved'&&event.detail.game==='archery'&&event.detail.owner==='member'));

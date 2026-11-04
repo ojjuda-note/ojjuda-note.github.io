@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import { STAGES as STAGE_FIXTURES } from '../games/forest-archer/engine.mjs';
 import { drawPasser } from '../games/forest-archer/scenery.mjs';
 
-const SAVE_KEY = 'forest-archer-progress-single-v4';
+const SAVE_KEY = 'forest-archer-progress-single-v5';
 const PREVIOUS_SAVE_KEY = 'forest-archer-progress-v3';
 const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
 const STAGE_CATALOG = 'missions-220-v1';
@@ -51,7 +51,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const timers = new Map(), canvasText = [], canvasArcs = [], bullseyeFrames = [], vignetteFrames = [], animalFrames = [], storageOperations = [];
   const bulletFlightFrames = [], bulletMarkFrames = [], bulletImpactFrames = [], bulletVignetteFrames = [];
   const speech = {utterances: [], times: [], cancellations: 0, overlaps: 0, activeUntil: 0};
-  const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify({launchEpoch: 4, stageCatalog: STAGE_CATALOG, ...saved})]] : []);
+  const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify({launchEpoch: 5, stageCatalog: STAGE_CATALOG, ...saved})]] : []);
   const noop = () => {};
   const gradient = { addColorStop: noop };
   const drawing = new Proxy({}, { get(target, key) {
@@ -115,7 +115,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const ammoRequests = [], finishedRounds = [], heldActions = new Set(ammoOptions.hold || []), receipts = ammoOptions.server?.receipts || new Map(), runs = ammoOptions.server?.runs || new Map();
   const account = ammoOptions.server?.account || { remaining: ammoOptions.remaining ?? 10000, coins: ammoOptions.coins ?? 100, main_rounds: ammoOptions.mainRounds ?? saved?.mainRounds ?? 0, revision: 1,
     coach_expires_at: ammoOptions.coachExpiresAt ?? (ammoOptions.coachActive ? new Date(SERVER_EPOCH + 86400000).toISOString() : null) };
-  const accountSnapshot = extra => ({ ok: true, launch_epoch: 4, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+  const accountSnapshot = extra => ({ ok: true, launch_epoch: 5, ...account, free_remaining: account.remaining, paid_remaining: 0, milestones_granted: Math.min(10, Math.floor(account.main_rounds / 5)), daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
     server_now: new Date(SERVER_EPOCH + now).toISOString(), coach_expires_at: account.coach_expires_at ?? null,
     coach_active: Date.parse(account.coach_expires_at) > SERVER_EPOCH + now, coach_price: 10, coach_duration_seconds: 86400, ...extra });
   const executeAmmo = request => {
@@ -139,7 +139,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   };
   const replyAmmo = (request, result = executeAmmo(request)) => window.emit('message', { source: parentBridge, origin, data: { source: 'ojjuda-archery-world', type: 'ammo-response', owner, sessionId, requestId: request.requestId, action: request.action, result } });
   const sendInit = (fields = {}, overrides = {}) => window.emit('message', { source: parentBridge, origin,
-    data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner, sessionId,
+    data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 5, owner, sessionId,
       available: !ammoOptions.guest && !ammoOptions.adminTrial, adminTrial: !!ammoOptions.adminTrial, ...fields }, ...overrides });
   const parentBridge = { postMessage(data, targetOrigin) {
     assert.equal(targetOrigin, origin);
@@ -175,7 +175,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const bulletEffects = new vm.SyntheticModule(Object.keys(bulletEffectFrames), function () {
     for (const [name, frames] of Object.entries(bulletEffectFrames)) this.setExport(name, (...args) => frames.push(args.slice(1)));
   }, { context });
-  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
+  const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested:false, adminTrialActive:false, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
   await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : specifier.startsWith('./coin-exchange.mjs') ? coinExchangeModule : scenery);
   await game.evaluate();
   await flush();
@@ -524,7 +524,7 @@ test('the single launch clears every test-era record, purchased item, local curr
     {lastStage: 1, best: {}, eventBest: 0, eventBestByLevel: {}, eventPlays: 0, mainRounds: 0,
       shots: 0, hits: 0, coins: 0, clayCredits: 0, stabilizers: 0, bow: 0, arrow: 0, eventGun: 20,
       ownedBows: [0], ownedArrows: [0], scopedBows: []});
-    assert.equal(saved.launchEpoch, 4);assert.equal(saved.stageCatalog, STAGE_CATALOG);
+    assert.equal(saved.launchEpoch, 5);assert.equal(saved.stageCatalog, STAGE_CATALOG);
     assert.equal(app.api.state.stage.id, 1);assert.equal(app.api.progress.unlocked, 1);
     for (const key of [oldKey, pendingKey, otherKey, recoveryKey]) assert.equal(store.has(key), false);
     assert.equal(app.api.ammo.pending, null);assert.equal(app.api.ammo.snapshot.remaining, 0);
@@ -564,7 +564,7 @@ test('a denied local save keeps fresh practice state and never imports test inve
   fail = false;
   const reopened = await appHarness(null, {store, offline: true});
   assert.equal(reopened.snapshot().coins, 0);assert.deepEqual(reopened.snapshot().best, {});
-  assert.equal(reopened.snapshot().launchEpoch, 4);
+  assert.equal(reopened.snapshot().launchEpoch, 5);
 });
 
 test('the wind HUD distinguishes calm, either direction and tiny nonzero wind without rounding to zero', async () => {
@@ -787,7 +787,7 @@ test('horizontal touch movement pans continuously at the aiming area edges witho
 });
 
 test('elevation touch and arrow keys change pitch without raising the view in normal play or administrator trials', async () => {
-  for (const adminTrial of [false, true]) for (const enabled of [false, true]) {
+  for (const adminTrial of [false]) for (const enabled of [false, true]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
       ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled } } }, { adminTrial });
     if (adminTrial) {
@@ -1475,12 +1475,12 @@ test('a saved coach purchase reconciles by receipt without another charge, a gam
   const owner = '11111111-1111-4111-8111-111111111111', requestId = '33333333-3333-4333-8333-333333333333';
   const purchased = original.ammo.execute({action: 'coach-buy', requestId});
   assert.equal(purchased.coins, 10);
-  original.store.set('forest-archer-ammo-pending-v4:' + owner, JSON.stringify({version: 1, launchEpoch: 4, owner, action: 'coach-buy', requestId, payload: {}, localRunId: null}));
+  original.store.set('forest-archer-ammo-pending-v5:' + owner, JSON.stringify({version: 1, launchEpoch: 5, owner, action: 'coach-buy', requestId, payload: {}, localRunId: null}));
   const app = await appHarness(original.snapshot(), {store: new Map(original.store), server: original.ammo});
   await app.flush();assert.equal(app.api.ammo.pending, null);
   const receipts = app.ammo.requests.filter(request => request.action === 'receipt');
   assert.equal(receipts.length, 1);assert.equal(receipts[0].receiptId, requestId);assert.equal(receipts[0].originalAction, 'coach-buy');
-  const recovered = JSON.parse(app.store.get('forest-archer-ammo-recovery-v4:' + owner));
+  const recovered = JSON.parse(app.store.get('forest-archer-ammo-recovery-v5:' + owner));
   assert.deepEqual(recovered, [{requestId, action: 'coach-buy', retired: true, receiptFound: true, confirmed: true}]);
   await app.api.retryAmmo();await app.flush();
   assert.equal(app.api.ammo.pending, null);assert.equal(app.ammo.account.coins, 10);
@@ -2497,7 +2497,7 @@ test('laser save loading keeps only owned crossbows and finite manual zeroing va
 });
 
 test('old owned bow lasers refund once while crossbow settings and the rest of the saved journey survive', async () => {
-  const original = { version: 1, launchEpoch: 4, stageCatalog: STAGE_CATALOG, coins: 321, bow: 3, arrow: 2,
+  const original = { version: 1, launchEpoch: 5, stageCatalog: STAGE_CATALOG, coins: 321, bow: 3, arrow: 2,
     ownedBows: [0, 3, 13, 20, 22], ownedArrows: [0, 2], stabilizers: 4, clayCredits: 9,
     lastStage: 17, best: { 17: 30 }, mainRounds: 7, shots: 42, hits: 31, sound: false, coachEnabled: false,
     scopeLoadouts: { 3: { owned: [2, 3], equipped: 3 } },
@@ -2519,14 +2519,11 @@ test('old owned bow lasers refund once while crossbow settings and the rest of t
   assert.deepEqual(forged.snapshot().laserLoadouts, {});
 
   const store = new Map([[SAVE_KEY, JSON.stringify(original)]]), before = new Map(store);
-  const trial = await appHarness(null, { store, adminTrial: true });
-  assert.equal(trial.api.adminTrialActive, true);assert.deepEqual(store, before);
-  assert.deepEqual(trial.storageOperations, []);assert.deepEqual(trial.ammo.requests, []);
-  assert.deepEqual(Object.keys(trial.api.progress.laserLoadouts).map(Number), Array.from({length: 10}, (_, id) => id + 10));
+
 });
 
 test('a failed bow laser refund preserves the original save and commits its credit exactly once on retry', async () => {
-  const original = { version: 1, launchEpoch: 4, stageCatalog: STAGE_CATALOG, coins: 123, ownedBows: [0, 13], bow: 13,
+  const original = { version: 1, launchEpoch: 5, stageCatalog: STAGE_CATALOG, coins: 123, ownedBows: [0, 13], bow: 13,
     best: { 1: 44 }, laserLoadouts: { 0: { enabled: true }, 13: { enabled: false, horizontalClicks: 3, verticalClicks: -2 } } };
   const store = new Map([[SAVE_KEY, JSON.stringify(original)]]), write = store.set.bind(store);let failed = true;
   store.set = (key, value) => { if (failed && key === SAVE_KEY) throw new Error('storage unavailable');return write(key, value); };
@@ -2621,7 +2618,7 @@ test('laser rotary gears use fifteen-degree detents and one or ten-click steps w
 });
 
 test('setting a forty-five-degree zero through the gears starts each new laser touch at the visible canvas centre', async () => {
-  for (const adminTrial of [false, true]) for (const [width, height] of [[390, 480], [844, 235]]) for (const zoom of [1, 8]) for (const horizontalClicks of [0, 300]) {
+  for (const adminTrial of [false]) for (const [width, height] of [[390, 480], [844, 235]]) for (const zoom of [1, 8]) for (const horizontalClicks of [0, 300]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
       ownedBows: [0, 19], bow: 19, scopeLoadouts: {19: {owned: [8], equipped: 8}},
       laserLoadouts: {19: {enabled: true}}}, {adminTrial});
@@ -2690,7 +2687,7 @@ test('setting a forty-five-degree zero through the gears starts each new laser t
 });
 
 test('zero- and sixty-degree laser touches clear old sway and recenter within the current zoomed and horizontally panned view', async () => {
-  for (const adminTrial of [false, true]) for (const verticalClicks of [0, 1200]) {
+  for (const adminTrial of [false]) for (const verticalClicks of [0, 1200]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
       ownedBows: [0, 19], bow: 19, scopeLoadouts: {19: {owned: [8], equipped: 8}},
       laserLoadouts: {19: {enabled: true, horizontalClicks: 100, verticalClicks}}}, {adminTrial});
@@ -2819,7 +2816,7 @@ test('laser degree readouts preserve saved clicks and never confuse sight correc
 });
 
 test('visible launch degrees match real forty-five-degree releases for ordinary bows and laser crossbows in both play modes', async () => {
-  for (const adminTrial of [false, true]) for (const loadout of [{bow: 3, laser: false}, {bow: 19, laser: false}, {bow: 19, laser: true}]) {
+  for (const adminTrial of [false]) for (const loadout of [{bow: 3, laser: false}, {bow: 19, laser: false}, {bow: 19, laser: true}]) {
     const fixture = {version: 1, stageCatalog: STAGE_CATALOG, sound: false, bow: loadout.bow,
       ownedBows: [0, loadout.bow], laserLoadouts: loadout.bow === 19 ? {19: {enabled: loadout.laser, verticalClicks: 900}} : {}};
     const app = await appHarness(fixture, {adminTrial});
@@ -2869,7 +2866,7 @@ test('launch degree display depends on the physical angle rather than a ten- or 
 });
 
 test('a forty-five-degree laser zero keeps touch tracking, scope zoom and horizontal edge panning on the visible sight', async () => {
-  for (const adminTrial of [false, true]) {
+  for (const adminTrial of [false]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false,
       bow: 19, ownedBows: [0, 19], scopeLoadouts: {19: {owned: [8], equipped: 8}},
       laserLoadouts: {19: {enabled: true, horizontalClicks: 200, verticalClicks: 900}}}, {adminTrial});
@@ -2951,7 +2948,7 @@ test('the main gun shares real sixty-degree elevation without moving the view or
 });
 
 test('enabled laser zeroing stays visible before, during and after adjustment without steering or firing in either play mode', async () => {
-  for (const adminTrial of [false, true]) {
+  for (const adminTrial of [false]) {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false,
       ownedBows: [0, 13], bow: 13, laserLoadouts: { 13: { enabled: true } } }, {adminTrial});
     if (adminTrial) { app.api.showShop('bow');app.api.equipItem(13);app.api.closeModal();await app.flush(); }
@@ -3212,7 +3209,7 @@ test('rare crossbows sum all three delayed arrow scores while retaining one rewa
 });
 
 test('plate games have no menu, result, administrator or stale-button entry after removal', async () => {
-  for (const adminTrial of [false, true]) {
+  for (const adminTrial of [false]) {
     const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, mainRounds: 4, sound: false}, {adminTrial});
     const {state} = app.api;
     app.getElement('menuBtn').emit('click');
@@ -3915,7 +3912,7 @@ test('ten-shot gun completion and result redraws report the ordinary round exact
 test('a late completion retains its original account and iframe session identity', async () => {
   const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, sound: false }, { guest: true });
   app.window.emit('message', { source: app.window.parent, origin: app.window.location.origin,
-    data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: 'another-owner', sessionId: '33333333-3333-4333-8333-333333333333', available: false } });
+    data: { source: 'ojjuda-archery-world', type: 'init', launchEpoch: 5, owner: 'another-owner', sessionId: '33333333-3333-4333-8333-333333333333', available: false } });
   app.api.state.used = 5;app.api.finishRound();await app.flush();
   assert.equal(app.finishedRounds.length, 1);assert.equal(app.finishedRounds[0].owner, null);
   assert.equal(app.finishedRounds[0].sessionId, '22222222-2222-4222-8222-222222222222',
@@ -5404,212 +5401,6 @@ test('manual overview cancels a drawn arrow, allows an early return, preserves p
   assert.equal(preview.disabled, false);
 });
 
-test('an item-trial URL waits for authenticated parent approval without touching normal saves or recovery', async () => {
-  const owner='11111111-1111-4111-8111-111111111111';
-  const saved=new Map([
-    [SAVE_KEY,JSON.stringify({version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,coins:321,bow:3,ownedBows:[0,3,20]})],
-    [PREVIOUS_SAVE_KEY,'keep the prior journey'],
-    ['forest-archer-ammo-pending-v4:'+owner,'keep the pending account operation'],
-    ['forest-archer-ammo-recovery-v3:'+owner,'keep prior recovery history']
-  ]);
-  const app=await appHarness(null,{store:new Map(saved),adminTrial:true,holdInit:true});
-  assert.equal(app.api.adminTrialRequested,true);assert.equal(app.api.adminTrialActive,false);
-  assert.equal(app.api.ammo,null);assert.equal(app.animationScheduled,false);
-  assert.deepEqual(app.storageOperations,[]);assert.deepEqual(app.store,saved);
-  app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');
-  app.api.startStage(220);staleModalAction(app, 'trial-events');app.api.equipItem(19);await app.flush();
-  assert.equal(app.api.state.mode,'blocked');assert.equal(app.api.state.used,0);
-  const invalid=[
-    [{}, {origin:'https://wrong.test'}],
-    [{}, {source:{}}],
-    [{source:'another-parent'}, {}],
-    [{launchEpoch:3}, {}],
-    [{sessionId:'invalid'}, {}]
-  ];
-  for(const [fields,overrides] of invalid){
-    app.sendInit(fields,overrides);await app.flush();
-    assert.equal(app.api.adminTrialActive,false);assert.equal(app.api.ammo,null);
-    assert.deepEqual(app.storageOperations,[]);assert.deepEqual(app.store,saved);
-  }
-  app.sendInit();await app.flush();
-  assert.equal(app.api.adminTrialActive,true);assert.equal(app.animationScheduled,true);
-  assert.equal(app.api.progress.ownedBows.length,23);assert.match(app.getElement('saveStatus').textContent,/관리자 체험.*기록 저장 안 함/);
-  assert.deepEqual([...app.api.progress.ownedBullets], [0, 1, 2, 3]);
-  assert.deepEqual(app.storageOperations,[]);assert.deepEqual(app.store,saved);assert.deepEqual(app.ammo.requests,[]);
-
-  for(const fields of [{adminTrial:false},{adminTrial:undefined},{owner:null},{owner:''}]){
-    const denied=await appHarness(null,{store:new Map(saved),adminTrial:true,holdInit:true});
-    denied.sendInit(fields);await denied.flush();
-    assert.equal(denied.api.adminTrialActive,false);assert.equal(denied.api.ammo,null);assert.equal(denied.animationScheduled,false);
-    assert.deepEqual(denied.storageOperations,[]);assert.deepEqual(denied.store,saved);assert.deepEqual(denied.ammo.requests,[]);
-  }
-  for(const options of [{offline:true},{holdInit:true}]){
-    const direct=await appHarness(null,{store:new Map(saved),adminTrial:true,...options});
-    direct.advanceTo(11000,{frame:false});await direct.flush();
-    assert.equal(direct.api.adminTrialActive,false);assert.equal(direct.api.ammo,null);assert.equal(direct.animationScheduled,false);
-    assert.deepEqual(direct.storageOperations,[]);assert.deepEqual(direct.store,saved);
-  }
-});
-
-test('administrators can equip every main weapon and use local gun magazines without account or save changes', async () => {
-  const original = {version: 1, launchEpoch: 4, stageCatalog: STAGE_CATALOG, coins: 321, clayCredits: 9, stabilizers: 4,
-    bow: 3, arrow: 2, eventGun: 20, ownedBows: [0, 3, 20], ownedArrows: [0, 2], scopedBows: [3], lastStage: 17, best: {17: 24}, sound: false, mainRounds: 7};
-  const store = new Map([[SAVE_KEY, JSON.stringify(original)], ['forest-archer-progress-v3', 'keep legacy progress']]), beforeStore = new Map(store);
-  const app = await appHarness(null, {store, adminTrial: true, remaining: 0, coins: 23, mainRounds: 7});
-  const {state} = app.api, beforeAccount = JSON.stringify(app.ammo.account);
-  assert.equal(app.api.adminTrialActive, true);
-  assert.deepEqual([...app.api.progress.ownedBows], Array.from(app.engine.BOWS, item => item.id));
-  assert.deepEqual([...app.api.progress.ownedArrows], Array.from(app.engine.ARROWS, item => item.id));
-  assert.deepEqual([...app.api.progress.ownedBullets], Array.from(app.engine.BULLETS, item => item.id));
-  assert.equal(app.api.progress.scopedBows.length, 23);
-  assert.deepEqual(Object.keys(app.api.progress.laserLoadouts).map(Number), Array.from({length: 10}, (_, id) => id + 10));
-  for (const item of app.engine.BOWS) {
-    app.api.showShop('bow');app.api.equipItem(item.id);assert.equal(app.api.activeBow().id, item.id);
-    assert.equal(state.zoom, Math.max(...item.scopeMagnifications));
-    assert.deepEqual([...app.api.progress.scopeLoadouts[item.id].owned], [...item.scopeMagnifications]);
-    const coins = app.api.progress.coins;
-    for (const zoom of item.scopeMagnifications) {
-      assert.equal(app.api.installScope(item.id, zoom), true);assert.equal(state.zoom, zoom);assert.equal(app.api.progress.coins, coins);
-    }
-    app.api.closeModal();await app.flush();
-    if (app.laser.canEquipLaser(item)) {
-      assert.equal(app.api.setLaserSettings({horizontalClicks: item.id, verticalClicks: -item.id}), true);
-      assert.equal(app.api.activeLaser().horizontalClicks, item.id);
-    } else {
-      assert.equal(app.api.activeLaser(), null);assert.equal(app.api.setLaserSettings({enabled: true}), false);
-      assert.equal(app.getElement('laserPanel').classList.contains('hidden'), true);
-    }
-    if (item.weaponType === 'gun') {app.until(() => state.reloadRemaining === 0);assert.equal(state.magazine, 10);}
-  }
-  for (const arrow of app.engine.ARROWS) {app.api.showShop('arrow');app.api.equipItem(arrow.id);assert.equal(app.api.activeArrow().id, arrow.id);}
-  for (const bullet of app.engine.BULLETS) {
-    const coins = app.api.progress.coins;app.api.showShop('bullet');app.api.equipItem(bullet.id);
-    assert.equal(app.api.activeBullet().id, bullet.id);assert.equal(app.api.progress.coins, coins);
-    assert.deepEqual([...app.api.progress.ownedBullets], [0, 1, 2, 3]);
-  }
-  app.api.closeModal();app.api.startStage(220);await app.flush();assert.equal(state.stage.id, 220);
-  assert.equal(app.api.progress.unlocked, 1);assert.deepEqual({...app.api.progress.best}, {});
-  app.api.startStage(1);await app.flush();
-  const stabilizers = app.api.progress.stabilizers;
-  for (let round = 0; round < 3; round++) {
-    app.api.showStabilizers();assert.equal(app.api.useStabilizer(), true);assert.equal(state.stabilizerActive, true);
-    assert.equal(app.api.progress.stabilizers, stabilizers);
-    state.used = 10;state.score = 100;state.hits = 10;app.api.finishRound();await app.flush();
-    assert.equal(state.mode, 'finished');app.api.startStage(1);await app.flush();assert.equal(state.stabilizerActive, false);
-  }
-  app.getElement('menuBtn').emit('click');assert.doesNotMatch(app.getElement('modalContent').innerHTML, /trial-events|data-trial-event|접시|총알 충전/);
-  app.api.closeModal();await equipMainGun(app, 20);
-  for (let index = 0; index < 2; index++) {const bullet = await preciseMainShot(app);assert.equal(bullet.result.score, 10);}
-  assert.equal(state.used, 2);assert.equal(state.magazine, 8);assert.equal(state.reloadRemaining, 0);
-  app.api.resetRound();await app.flush();assert.equal(state.magazine, 0);assert.equal(state.reloadRemaining, 1);
-  app.until(() => state.reloadRemaining === 0);assert.equal(state.magazine, 10);
-  state.used = 10;app.api.finishRound();await app.flush();assert.equal(state.mode, 'finished');
-  assert.deepEqual(app.ammo.requests, []);assert.deepEqual(app.finishedRounds, []);assert.deepEqual(app.storageOperations, []);
-  assert.equal(JSON.stringify(app.ammo.account), beforeAccount);assert.deepEqual(store, beforeStore);
-  const resumed = await appHarness(null, {store, remaining: 17, coins: 23, mainRounds: 7});
-  assert.deepEqual([resumed.api.progress.coins, resumed.api.progress.clayCredits, resumed.api.progress.stabilizers,
-    resumed.api.progress.bow, resumed.api.progress.arrow, resumed.api.progress.lastStage], [321, 9, 4, 3, 2, 17]);
-  assert.deepEqual([...resumed.api.progress.ownedBows], [0, 3, 20]);assert.deepEqual([...resumed.api.progress.ownedArrows], [0, 2]);
-  assert.deepEqual([...resumed.api.progress.ownedBullets], [0]);assert.equal(resumed.api.activeBullet().id, 0, 'trial bullet selections and paid ownership never leak into normal saves');
-  assert.equal(resumed.api.activeLaser(), null);assert.equal(resumed.api.adminTrialActive, false);
-});
-
-test('approved item trials expose all 220 missions through the picker and journey without changing normal progression', async () => {
-  const original={version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,coins:321,bow:3,ownedBows:[0,3,20],
-    lastStage:2,best:{1:STAGE_FIXTURES[0].goal},sound:false};
-  const store=new Map([[SAVE_KEY,JSON.stringify(original)],[PREVIOUS_SAVE_KEY,'preserve legacy progress']]);
-  const beforeStore=new Map(store),app=await appHarness(null,{store,adminTrial:true});
-  const beforeAccount=JSON.stringify(app.ammo.account),state=app.api.state;
-  const expected=Array.from({length:STAGE_COUNT},(_,index)=>index+1);
-  const allOpen=markup=>{
-    const tags=Array.from(markup.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>/g));
-    assert.deepEqual(tags.map(match=>Number(match[1])),expected);
-    assert.ok(tags.every(match=>!/\bdisabled\b/.test(match[0])),'every trial mission is selectable');
-  };
-  allOpen(app.getElement('journeySteps').innerHTML);
-  assert.match(app.getElement('journeyCaption').textContent,/220단계 자유 선택/);
-  app.getElement('menuBtn').emit('click');modalAction(app,'stages');
-  assert.equal(state.modal,'stages');allOpen(app.getElement('modalContent').innerHTML);
-  assert.doesNotMatch(app.getElement('modalContent').innerHTML,/앞 단계를 통과하면 다음 단계가 열려요/);
-  const button=app.getElement('trial-stage-selection');button.tagName='BUTTON';
-  for(const id of[220,65]){
-    button.dataset.stage=String(id);app.document.emit('click',{target:button});await app.flush();
-    assert.equal(state.stage.id,id,'the real picker/journey handler opens the requested trial mission');
-    allOpen(app.getElement('journeySteps').innerHTML);
-  }
-  assert.deepEqual({...app.api.progress.best},{});assert.equal(app.api.progress.unlocked,1);
-  assert.deepEqual(app.storageOperations,[]);assert.deepEqual(store,beforeStore);
-  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);
-  assert.equal(JSON.stringify(app.ammo.account),beforeAccount);
-  const resumed=await appHarness(null,{store});
-  assert.equal(resumed.api.adminTrialActive,false);assert.equal(resumed.api.state.stage.id,2);
-  assert.equal(resumed.api.progress.unlocked,2);assert.deepEqual({...resumed.api.progress.best},original.best);
-  resumed.api.startStage(220);await resumed.flush();assert.equal(resumed.api.state.stage.id,2);
-  assert.equal(resumed.api.progress.coins,321);assert.equal(resumed.api.progress.bow,3);
-});
-
-test('approved item trials can move before clearing or after failing while retaining stage and shot boundaries', async () => {
-  const app=await appHarness(null,{adminTrial:true}),state=app.api.state;
-  app.getElement('menuBtn').emit('click');
-  assert.equal(modalActionDisabled(app,'previous-stage'),true);
-  assert.equal(modalActionDisabled(app,'next-stage'),false,'an unplayed trial can advance from its menu');
-  modalAction(app,'next-stage');await app.flush();assert.equal(state.stage.id,2);
-  app.getElement('menuBtn').emit('click');modalAction(app,'previous-stage');await app.flush();
-  assert.equal(state.stage.id,1);assert.deepEqual({...app.api.progress.best},{});
-  app.api.startStage(65);await app.flush();
-  state.used=5;state.score=0;app.api.finishRound();await app.flush();
-  assert.equal(state.mode,'finished');assert.match(app.getElement('modalContent').innerHTML,/65단계 다시 도전/);
-  assert.equal(app.api.progress.best[65],0);assert.equal(app.api.progress.unlocked,1);
-  assert.equal(modalActionDisabled(app,'previous-stage'),false);
-  assert.equal(modalActionDisabled(app,'next-stage'),false,'failure does not restrict trial navigation');
-  assert.doesNotMatch(app.getElement('journeySteps').innerHTML,/\bdisabled\b/,'finishing a trial cannot relock the catalog');
-  modalAction(app,'next-stage');await app.flush();assert.equal(state.stage.id,66);
-  app.api.startStage(STAGE_COUNT);await app.flush();app.getElement('menuBtn').emit('click');
-  assert.equal(modalActionDisabled(app,'previous-stage'),false);assert.equal(modalActionDisabled(app,'next-stage'),true);
-  staleModalAction(app,'next-stage');
-  for(const id of[0,-1,STAGE_COUNT+1,1.5,NaN])app.api.startStage(id);
-  await app.flush();assert.equal(state.stage.id,STAGE_COUNT,'trial access still respects mission bounds');
-  modalAction(app,'previous-stage');await app.flush();assert.equal(state.stage.id,STAGE_COUNT-1);
-  for(const mode of['flight','settling']){
-    state.mode=mode;app.getElement('menuBtn').emit('click');const epoch=state.roundEpoch;
-    assert.equal(modalActionDisabled(app,'previous-stage'),true);assert.equal(modalActionDisabled(app,'next-stage'),true);
-    staleModalAction(app,'next-stage');app.api.startStage(1);await app.flush();
-    assert.equal(state.stage.id,STAGE_COUNT-1);assert.equal(state.mode,mode);assert.equal(state.roundEpoch,epoch);
-  }
-  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
-});
-
-test('the administrator gun can visit any mission without a clear or a retired event entry', async () => {
-  const app = await appHarness(null, {adminTrial: true, remaining: 0}), {state} = app.api;
-  const beforeAccount = JSON.stringify(app.ammo.account);
-  await equipMainGun(app, 20);app.api.startStage(200);await app.flush();
-  assert.equal(state.stage.id, 200);assert.equal(app.api.activeBow().id, 20);assert.equal(!!state.isEvent, false);
-  app.getElement('menuBtn').emit('click');assert.equal(modalActionDisabled(app, 'next-stage'), false);
-  assert.doesNotMatch(app.getElement('modalContent').innerHTML, /data-trial-event|trial-events|접시/);
-  modalAction(app, 'next-stage');await app.flush();assert.equal(state.stage.id, 201);
-  app.api.startStage(STAGE_COUNT);await app.flush();state.used = 10;state.score = 0;app.api.finishRound();await app.flush();
-  assert.equal(modalActionDisabled(app, 'next-stage'), true);modalAction(app, 'retry');await app.flush();
-  assert.equal(state.stage.id, STAGE_COUNT);assert.equal(!!state.isEvent, false);
-  assert.deepEqual({...app.api.progress.best}, {220: 0});assert.equal(app.api.progress.unlocked, 1);
-  assert.deepEqual(app.ammo.requests, []);assert.deepEqual(app.finishedRounds, []);assert.deepEqual(app.storageOperations, []);
-  assert.equal(JSON.stringify(app.ammo.account), beforeAccount);
-});
-
-test('an accepted trial stays temporary and blocks a later account or session change', async () => {
-  for(const changed of [{owner:'another-owner'},{sessionId:'33333333-3333-4333-8333-333333333333'}]){
-    const app=await appHarness(null,{adminTrial:true});
-    app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();
-    app.api.startStage(200);await app.flush();assert.equal(app.api.state.stage.id,200);
-    app.sendInit();await app.flush();assert.equal(app.api.progress.bow,19,'duplicate init cannot reset the chosen equipment');
-    app.sendInit(changed);await app.flush();
-    assert.equal(app.api.adminTrialActive,false);assert.equal(app.api.state.mode,'blocked');
-    app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');
-    app.api.startStage(220);staleModalAction(app, 'trial-events');await app.flush();
-    assert.equal(app.api.state.mode,'blocked');assert.equal(app.api.state.stage.id,200,'revoked trial access cannot open another mission');
-    assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.storageOperations,[]);
-  }
-});
-
 test('a real partial burst adds ten and eight while a single person collision invalidates the entire trigger',async()=>{
   for(const blocker of ['obstacle','person']){
     const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,ownedBows:[0,15],bow:15,coins:100,sound:false});
@@ -5656,22 +5447,6 @@ test('mixing normal and three-arrow weapons keeps the actual 110-point maximum a
   const resumed=await appHarness(app.snapshot(),{server:app.ammo});
   assert.equal(resumed.api.progress.bow,0);assert.equal(resumed.api.progress.best[1],110);
 });
-
-test('a real 150-point administrator burst round never submits a ranking or changes normal account storage',async()=>{
-  const normal={version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,ownedBows:[0,20],ownedArrows:[0],bow:0,coins:321,lastStage:17,best:{17:44},sound:false};
-  const store=new Map([[SAVE_KEY,JSON.stringify(normal)],['forest-archer-ammo-pending-v4:11111111-1111-4111-8111-111111111111','preserve original pending receipt']]);
-  const before=new Map(store),app=await appHarness(null,{store,adminTrial:true,remaining:17,coins:23,mainRounds:7});
-  const account=JSON.stringify(app.ammo.account);
-  app.api.showShop('bow');app.api.equipItem(19);app.api.closeModal();
-  for(let trigger=0;trigger<5;trigger++)await centeredShot(app);
-  assert.equal(app.api.state.mode,'finished');assert.equal(app.api.state.score,150);assert.equal(app.api.state.arrowHits,15);
-  assert.match(app.getElement('modalContent').innerHTML,/<strong>150<\/strong><em>\/ 150<\/em>/);
-  app.api.finishRound();app.api.onImpact();await app.flush();
-  assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
-  assert.deepEqual(store,before);assert.equal(JSON.stringify(app.ammo.account),account);
-  assert.equal(app.api.progress.coins,175,'trial rewards use the ordinary economy without touching real savings');
-});
-
 
 test('shop category buttons keep weapon, projectile and scope purchases in the correct inventories', async () => {
   const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: 'snipers-bullets-v1',
@@ -5743,4 +5518,26 @@ test('a stale game window cannot erase a coin exchange committed in another wind
  app.api.progress.sound=true;assert.equal(app.api.save(),false);assert.deepEqual(app.snapshot(),credited);
  const reopened=await appHarness(null,{store:app.store});assert.equal(reopened.api.progress.coins,1100);assert.equal(reopened.api.save(),true);
  assert.deepEqual([...reopened.api.progress.coinExchangeReceipts],[receipt]);
+});
+
+
+test('epoch 5 clears all former points, coins, equipment and purchase recovery once without reviving stale saves',async()=>{
+  const owner='11111111-1111-4111-8111-111111111111',old=JSON.stringify({version:1,launchEpoch:4,stageCatalog:STAGE_CATALOG,firearmCatalog:FIREARM_CATALOG,coins:99999,bow:22,ownedBows:[0,20,21,22],ownedArrows:[0,18],ownedBullets:[0,3],lastStage:220,best:clearsBefore(221),mainRounds:99,shots:100,hits:80,coinExchangeReceipts:[owner+':22222222-2222-4222-8222-222222222222']});
+  const store=new Map([['forest-archer-progress-single-v4',old],['forest-archer-ammo-pending-v4:'+owner,'{}'],['forest-archer-ammo-recovery-v4:'+owner,'{}'],['forest-archer-coin-exchange-v1:'+owner,JSON.stringify({requestId:'22222222-2222-4222-8222-222222222222',zu:10})],['another-game-progress','keep']]);
+  const app=await appHarness(null,{store,guest:true});const saved=app.snapshot();
+  assert.equal(saved.launchEpoch,5);assert.deepEqual([saved.coins,saved.mainRounds,saved.shots,saved.hits,saved.lastStage],[0,0,0,0,1]);
+  assert.deepEqual(saved.ownedBows,[0]);assert.deepEqual(saved.ownedArrows,[0]);assert.deepEqual(saved.ownedBullets,[]);assert.deepEqual(saved.best,{});assert.deepEqual(saved.coinExchangeReceipts,[]);
+  assert.equal(store.has('forest-archer-progress-single-v4'),false);assert.equal(store.has('forest-archer-coin-exchange-v1:'+owner),false);assert.equal(store.has('forest-archer-ammo-pending-v4:'+owner),false);assert.equal(store.has('forest-archer-ammo-recovery-v4:'+owner),false);assert.equal(store.get('another-game-progress'),'keep');
+  app.api.showShop('bow');for(const id of [20,21,22])app.api.equipItem(id);assert.equal(app.api.activeBow().id,0);
+  app.api.progress.coins=app.engine.BOWS[20].price;app.api.equipItem(20);assert.equal(app.api.activeBow().id,20);assert.equal(app.api.progress.coins,0);
+  store.set('forest-archer-progress-single-v4',old);
+  const reopened=await appHarness(null,{store,guest:true});assert.equal(reopened.api.activeBow().id,20);assert.equal(reopened.api.progress.coins,0);assert.equal(reopened.api.progress.lastStage,1);assert.equal(store.has('forest-archer-progress-single-v4'),false);
+});
+
+test('retired item-trial URLs cannot create equipment, open every stage or avoid paid purchases',async()=>{
+  const app=await appHarness(null,{adminTrial:true,guest:true});
+  assert.deepEqual(Array.from(app.api.progress.ownedBows),[0]);assert.deepEqual(Array.from(app.api.progress.ownedBullets),[]);
+  assert.equal(app.api.progress.coins,0);app.api.startStage(220);assert.equal(app.api.state.stage.id,1);
+  app.api.showShop('bow');for(const id of [20,21,22])app.api.equipItem(id);assert.equal(app.api.activeBow().id,0);
+  assert.doesNotMatch(gameSource,/startAdminTrial|createTrialAmmoClient|모든 장비 무료 체험/);
 });

@@ -10,7 +10,7 @@ const bridge=fs.readFileSync(path.join(root,'world-archery-game.js'),'utf8');
 const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const origin='https://ojjuda.test',owner='11111111-1111-4111-8111-111111111111';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-const snapshot=(extra={})=>({ok:true,launch_epoch:4,remaining:20,free_remaining:20,paid_remaining:0,coins:100,revision:1,main_rounds:5,milestones_granted:1,daily_eligible:true,day:'2026-11-02',daily_checked:true,pack_ammo:10,pack_price:5,server_now:'2026-11-02T12:00:00.000Z',coach_expires_at:null,coach_active:false,coach_price:10,coach_duration_seconds:86400,...extra});
+const snapshot=(extra={})=>({ok:true,launch_epoch:5,remaining:20,free_remaining:20,paid_remaining:0,coins:100,revision:1,main_rounds:5,milestones_granted:1,daily_eligible:true,day:'2026-11-02',daily_checked:true,pack_ammo:10,pack_price:5,server_now:'2026-11-02T12:00:00.000Z',coach_expires_at:null,coach_active:false,coach_price:10,coach_duration_seconds:86400,...extra});
 
 // Only the bridge and parent callback wiring run here. There is no network client.
 function fixture(options={},fakeTimers=false){
@@ -47,7 +47,7 @@ function fixture(options={},fakeTimers=false){
   },
   async request(action,fields={},overrides={}){
    const frame=overrides.frame||nodes.at(-1).frame,init=frame.sent.find(entry=>entry.data.type==='init')?.data;
-   const data={source:'ojjuda-archery-game',type:'ammo-request',launchEpoch:4,owner:init?.owner,sessionId:init?.sessionId,requestId:randomUUID(),action,...fields};
+   const data={source:'ojjuda-archery-game',type:'ammo-request',launchEpoch:5,owner:init?.owner,sessionId:init?.sessionId,requestId:randomUUID(),action,...fields};
    api.emit(data,{frame,...overrides});await tick();return data;
   },
   responses(frame=nodes.at(-1).frame){return frame.sent.filter(entry=>entry.data.type==='ammo-response').map(entry=>entry.data);}
@@ -218,72 +218,18 @@ test('the real archery launch branch routes record and coin exchange RPCs throug
  const context=vm.createContext({D,Promise,M:()=>{},CustomEvent:class {constructor(type,values){this.type=type;this.detail=values?.detail;}},window:{dispatchEvent(){},OjjudaArcheryGame:{open:options=>{opened=options;}}},worldRewardRequest:()=>({owner:D.online?D.user?.id:null,version:++version}),vl:async(rpc,args,request)=>{calls.push({rpc,args:JSON.parse(JSON.stringify(args)),request});return snapshot();}});
  const launch=()=>vm.runInContext(`(function(t){${world.slice(start,end)}})('archery');`,context);
  launch();assert.equal(opened.owner,owner);assert.ok(!('client' in opened));
- assert.equal(opened.canAdminTrial(),false);D.isAdmin=true;assert.equal(opened.canAdminTrial(),true);D.isAdmin=false;assert.equal(opened.canAdminTrial(),false);
+ assert.equal(opened.canAdminTrial,undefined);D.isAdmin=true;assert.equal(opened.canAdminTrial,undefined);D.isAdmin=false;assert.equal(opened.canAdminTrial,undefined);
  const requestId=randomUUID(),runId=randomUUID();
  await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7,48);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onCoachBuy(requestId);await opened.onAmmoReceipt(requestId,'coach-buy');await opened.onCoinExchange(requestId,5000);await opened.onCoinReceipt(requestId,5000);
  assert.deepEqual(calls.map(call=>[call.rpc,call.args]),[
-  ['archery_single_action',{p_epoch:4,p_action:'status'}],['archery_single_action',{p_epoch:4,p_action:'round-start',p_request_id:requestId,p_stage:7}],['archery_single_action',{p_epoch:4,p_action:'round-complete',p_request_id:requestId,p_run_id:runId,p_stage:7,p_score:48}],['archery_single_action',{p_epoch:4,p_action:'spend',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'buy',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'coach-buy',p_request_id:requestId}],['archery_single_receipt',{p_epoch:4,p_request_id:requestId,p_action:'coach-buy'}],['archery_coin_exchange',{p_request_id:requestId,p_zu:5000,p_action:'exchange'}],['archery_coin_exchange',{p_request_id:requestId,p_zu:5000,p_action:'receipt'}]
+  ['archery_single_action',{p_epoch:5,p_action:'status'}],['archery_single_action',{p_epoch:5,p_action:'round-start',p_request_id:requestId,p_stage:7}],['archery_single_action',{p_epoch:5,p_action:'round-complete',p_request_id:requestId,p_run_id:runId,p_stage:7,p_score:48}],['archery_single_action',{p_epoch:5,p_action:'spend',p_request_id:requestId}],['archery_single_action',{p_epoch:5,p_action:'buy',p_request_id:requestId}],['archery_single_action',{p_epoch:5,p_action:'coach-buy',p_request_id:requestId}],['archery_single_receipt',{p_epoch:5,p_request_id:requestId,p_action:'coach-buy'}],['archery_coin_exchange_v5',{p_epoch:5,p_request_id:requestId,p_zu:5000,p_action:'exchange'}],['archery_coin_exchange_v5',{p_epoch:5,p_request_id:requestId,p_zu:5000,p_action:'receipt'}]
  ]);
  assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6,7,8,9]);
  D.user={id:'another-owner'};assert.equal((await opened.onCoachBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,9);
  D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,9);
 });
 
-test('only a live signed-in administrator sees or can enter the item trial',()=>{
- for(const options of [{canAdminTrial:()=>false},{owner:null,canAdminTrial:()=>true},{owner:'',canAdminTrial:()=>true},{authorized:()=>false,canAdminTrial:()=>true}]){
-  const f=fixture({...options,adminTrial:true},true);
-  try{assert.equal(f.nodes.length,0,'a requested URL mode cannot override account authorization');}finally{f.close();}
- }
- let administrator=false;const f=fixture({canAdminTrial:()=>administrator},true);
- try{
-  assert.equal(f.dialog.trialButton.hidden,true);
-  f.dialog.trialButton.click();assert.equal(f.nodes.length,1,'even a synthetic click of the hidden control is denied');
-  administrator=true;f.expireRequests();
-  assert.equal(f.dialog.trialButton.hidden,false,'late completion of the existing admin lookup reveals the control');
-  f.dialog.trialButton.click();f.ready();
-  assert.equal(f.nodes.length,2);assert.match(f.dialog.frame.src,/[?&]adminTrial=1(?:&|$)/);
-  assert.equal(f.dialog.frame.sent.at(-1).data.adminTrial,true);
- }finally{f.close();}
-});
-
-test('trial sessions reject every real account action and return to a fresh normal session',async()=>{
- const calls=[],callbacks=Object.fromEntries(['onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].map(name=>[name,async()=>{calls.push(name);return snapshot();}]));
- const f=fixture({...callbacks,canAdminTrial:()=>true,adminTrial:true},true);
- try{
-  const trialFrame=f.dialog.frame,init=trialFrame.sent[0].data;
-  assert.equal(init.adminTrial,true);assert.equal(init.available,false);
-  assert.match(f.dialog.trialButton.textContent,/일반 게임/);
-  for(const [action,fields]of [['status',{}],['round-start',{stage:220}],['round-complete',{stage:220,runId:randomUUID(),score:150}],['spend',{}],['buy',{}],['coach-buy',{}],['receipt',{receiptId:randomUUID(),originalAction:'buy'}]]){
-   await f.request(action,fields);
-  }
-  assert.equal(calls.length,0,'neither purchases, progress, claims nor receipt recovery can reach an account callback');
-  assert.ok(f.responses().every(reply=>reply.result.ok===false));
-  f.finish();assert.equal(f.finishes.length,0);
-  f.dialog.trialButton.click();const normalInit=f.ready();
-  assert.equal(trialFrame.src,'about:blank');assert.equal(normalInit.adminTrial,false);assert.equal(normalInit.available,true);
-  assert.notEqual(normalInit.sessionId,init.sessionId);assert.doesNotMatch(f.dialog.frame.src,/[?&]adminTrial=1/);
-  assert.match(f.dialog.trialButton.textContent,/아이템 체험/);
-  await f.request('buy',{}, {frame:trialFrame});assert.equal(calls.length,0,'the prior trial iframe has no account access after mode switching');
-  await f.request('status');assert.deepEqual(calls,['onAmmoStatus'],'normal play still uses the authenticated account path');
- }finally{f.close();}
-});
-
-test('trial authorization loss closes an idle iframe and prevents stale actions',async()=>{
- for(const loss of ['administrator','account']){
-  let administrator=true;const calls=[];
-  const f=fixture({adminTrial:true,canAdminTrial:()=>administrator,onAmmoSpend:async()=>{calls.push('spend');return snapshot();}},true);
-  try{
-   const frame=f.dialog.frame,dialog=f.dialog;
-   if(loss==='administrator')administrator=false;else f.setAuthorized(false);
-   f.expireRequests();
-   assert.equal(dialog.isConnected,false,`${loss} loss closes without waiting for another child message`);
-   assert.equal(frame.src,'about:blank');
-   await f.request('spend',{}, {frame});assert.deepEqual(calls,[]);
-  }finally{f.close();}
- }
-});
-
-test('coin exchange bridge validates all packs, isolates receipts and blocks trial purchases',async()=>{
+test('coin exchange bridge validates all packs, isolates receipts and ignores retired trial options',async()=>{
  const calls=[];const f=fixture({onCoinExchange:async(id,zu)=>{calls.push(['exchange',id,zu]);return {ok:true,coins:990,game_coins:zu*10};},onCoinReceipt:async(id,zu)=>{calls.push(['receipt',id,zu]);return {ok:true,found:false};}});
  try{
   assert.equal(f.ready().coinExchangeAvailable,true);
@@ -294,7 +240,7 @@ test('coin exchange bridge validates all packs, isolates receipts and blocks tri
   const id=randomUUID();await f.request('coin-receipt',{zu:50,receiptId:id});assert.deepEqual(calls.at(-1),['receipt',id,50]);
   const duplicate=await f.request('coin-exchange',{zu:10});await f.request('coin-exchange',{zu:50,requestId:duplicate.requestId});
   assert.equal(f.responses().at(-1).result.reason,'request_conflict');
-  f.close();f.open({adminTrial:true,canAdminTrial:()=>true});assert.equal(f.ready().coinExchangeAvailable,false);
-  const before=calls.length;await f.request('coin-exchange',{zu:10});assert.equal(calls.length,before);assert.equal(f.responses().at(-1).result.reason,'trial_only');
+  f.close();f.open({adminTrial:true,canAdminTrial:()=>true});assert.equal(f.ready().coinExchangeAvailable,true);assert.doesNotMatch(f.dialog.html,/아이템 체험|adminTrial=|data-archery-trial-toggle/);
+  const before=calls.length;await f.request('coin-exchange',{zu:10});assert.equal(calls.length,before+1);
  }finally{f.close();}
 });

@@ -2,7 +2,7 @@
 export const COIN_PACKS=Object.freeze([10,50,100,500,1000,5000]);
 export const COINS_PER_ZU=10;
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-const PREFIX='forest-archer-coin-exchange-v1:';
+const PREFIX='forest-archer-coin-exchange-v2:';
 export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},host=globalThis.window,storage=globalThis.localStorage,timeout=12000}={}){
   const origin=host?.location?.origin,parent=host?.parent;
   let identity=null,pending=null,busy=false,disposed=false,notice='',balance=null;
@@ -23,7 +23,7 @@ export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},hos
     return new Promise(resolve=>{
       const timer=setTimeout(()=>{waiting.delete(requestId);resolve(fail('pending'));},timeout);
       waiting.set(requestId,{context,action,resolve,timer});
-      try{parent.postMessage({source:'ojjuda-archery-game',type:'ammo-request',launchEpoch:4,owner:context.owner,sessionId:context.sessionId,action,requestId,zu:record.zu,...(action==='coin-receipt'?{receiptId:record.requestId}:{})},origin);}
+      try{parent.postMessage({source:'ojjuda-archery-game',type:'ammo-request',launchEpoch:5,owner:context.owner,sessionId:context.sessionId,action,requestId,zu:record.zu,...(action==='coin-receipt'?{receiptId:record.requestId}:{})},origin);}
       catch{clearTimeout(timer);waiting.delete(requestId);resolve(fail('pending'));}
     });
   }
@@ -76,7 +76,7 @@ export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},hos
     if(disposed||event.source!==parent||event.origin!==origin||event.data?.source!=='ojjuda-archery-world')return;
     const data=event.data;
     if(data.type==='init'){
-      if(data.launchEpoch!==4||!UUID.test(data.sessionId||''))return;
+      if(data.launchEpoch!==5||!UUID.test(data.sessionId||''))return;
       const signedIn=UUID.test(data.owner||'');
       connection=data.adminTrial===true?'trial':!signedIn?'guest':data.coinExchangeAvailable===true?'ready':'update';
       const usable=parent&&parent!==host&&connection==='ready';
