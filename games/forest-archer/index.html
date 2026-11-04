@@ -7,7 +7,7 @@
   <meta name="description" content="흔들리는 조준을 잡고, 손을 떼는 순간 발사하세요. 거리·바람·이동·장애물을 익히는 220개 미션, 활 10종·석궁 10종·총 3종과 화살 19종·총알 4종을 조합하는 숲속 사격 게임. 총은 한 판에 10발입니다.">
   <title>바람의 궁수 — 숲속 사격장</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%232d5345'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23ead8a4' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ead8a4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261104-archery-coin-shop1">
+  <link rel="stylesheet" href="style.css?v=20261104-archery-reset5">
   <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
   <script src="/game-results.js?v=20261103-game-results1" defer></script>
 </head>
@@ -42,7 +42,6 @@
       </div>
     </header>
 
-    <div class="admin-trial-banner hidden" id="adminTrialBanner" role="status"><strong>관리자 체험 <small>저장 안 함</small></strong><button type="button" class="button" data-action="weapons">모든 무기</button></div>
     <main>
       <div class="page-heading"><div><p class="eyebrow">A LITTLE FOCUS. A PERFECT SHOT.</p><h1>손끝에서 시작되는 한 발.</h1></div></div>
       <div class="game-layout">
@@ -120,11 +119,10 @@
     </main>
     <footer id="saveFooter" class="visually-hidden"><span id="saveStatus" role="status">진행 상황은 이 기기에 자동 저장됩니다</span></footer>
   </div>
-  <section class="admin-trial-gate hidden" id="adminTrialGate" role="status" aria-live="polite" tabindex="-1"><div><p class="eyebrow">관리자 아이템 체험</p><h1 id="adminTrialGateTitle">관리자 권한을 확인하고 있어요.</h1><p id="adminTrialGateDetail">오락실에서 관리자 체험을 열어 주세요.</p><a class="button soft-button" href="/world.html?game=archery" target="_top">오락실로 돌아가기</a></div></section>
   <div class="modal-backdrop hidden" id="modalBackdrop">
     <section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="icon-button modal-close" id="modalClose" aria-label="닫기"><svg><use href="#i-close"/></svg></button><div id="modalContent"></div></section>
   </div>
   <div id="toast" class="toast hidden" role="status"></div>
-  <script type="module" src="game.mjs?v=20261104-archery-coin-connect1"></script>
+  <script type="module" src="game.mjs?v=20261104-archery-reset5"></script>
 </body>
 </html>

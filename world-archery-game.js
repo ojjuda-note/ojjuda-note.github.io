@@ -1,28 +1,25 @@
 /* Local archery play shares server-approved event ammo and legacy receipt recovery with the arcade. */
 (() => {
  'use strict';
- const launchEpoch=4;
+ const launchEpoch=5;
  let active=null;
  const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
  const actions=new Set(['status','round-start','round-complete','spend','buy','coach-buy','receipt','coin-exchange','coin-receipt']);
  const receiptActions=new Set(['round-start','round-complete','spend','buy','coach-buy']);
  window.OjjudaArcheryGame={
-  open({owner=null,authorized=()=>true,adminTrial=false,canAdminTrial=()=>false,onAmmoStatus=null,onRoundStart=null,onRoundComplete=null,onAmmoSpend=null,onAmmoBuy=null,onCoachBuy=null,onAmmoReceipt=null,onCoinExchange=null,onCoinReceipt=null}={}){
-   adminTrial=adminTrial===true;
-   const trialAllowed=()=>!!owner&&authorized()&&canAdminTrial()===true;
-   if(!authorized()||(adminTrial&&!trialAllowed()))return;
-   if(active){if(active.owner===owner&&active.adminTrial===adminTrial&&active.current()){active.dialog.focus();return;}active.close();}
+  open({owner=null,authorized=()=>true,onAmmoStatus=null,onRoundStart=null,onRoundComplete=null,onAmmoSpend=null,onAmmoBuy=null,onCoachBuy=null,onAmmoReceipt=null,onCoinExchange=null,onCoinReceipt=null}={}){
+   if(!authorized())return;
+   if(active){if(active.owner===owner&&active.current()){active.dialog.focus();return;}active.close();}
    const previous=document.activeElement;
    const wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
-   dialog.setAttribute('aria-label',adminTrial?'바람의 궁수 · 관리자 체험':'바람의 궁수 · 싱글 게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>'+(adminTrial?'관리자 체험':'싱글 게임')+'</small></span><button type="button" data-archery-trial-toggle hidden>'+(adminTrial?'일반 게임으로':'아이템 체험')+'</button></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261104-archery-coin-connect1'+(adminTrial?'&adminTrial=1':/(?:^|[?&])archery_shop=coin(?:&|$)/.test(location.search||'')?'&shop=coin':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
+   dialog.setAttribute('aria-label','바람의 궁수 · 싱글 게임');
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>싱글 게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261104-archery-reset5'+(/(?:^|[?&])archery_shop=coin(?:&|$)/.test(location.search||'')?'&shop=coin':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
-   const modeButton=dialog.querySelector('[data-archery-trial-toggle]');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null,finished=false,accessTimer=null;
-   const current=()=>active?.dialog===dialog&&authorized()&&(!adminTrial||trialAllowed());
+   const current=()=>active?.dialog===dialog&&authorized();
    const callbacks={
     status:()=>onAmmoStatus?.(),
     'round-start':message=>onRoundStart?.(message.requestId,message.stage),
@@ -36,7 +33,7 @@
    };
    const available={status:onAmmoStatus,'round-start':onRoundStart,'round-complete':onRoundComplete,spend:onAmmoSpend,buy:onAmmoBuy,'coach-buy':onCoachBuy,receipt:onAmmoReceipt,'coin-exchange':onCoinExchange,'coin-receipt':onCoinReceipt};
    function send(message){if(current())frame.contentWindow.postMessage({source:'ojjuda-archery-world',owner,sessionId,...message},location.origin);}
-   function initialize(){send({type:'init',launchEpoch,adminTrial,coinExchangeAvailable:!adminTrial&&!!owner&&typeof onCoinExchange==='function'&&typeof onCoinReceipt==='function',available:!adminTrial&&!!owner&&Object.entries(available).filter(([key])=>!key.startsWith('coin-')).every(([,fn])=>typeof fn==='function')});}
+   function initialize(){send({type:'init',launchEpoch,coinExchangeAvailable:!!owner&&typeof onCoinExchange==='function'&&typeof onCoinReceipt==='function',available:!!owner&&Object.entries(available).filter(([key])=>!key.startsWith('coin-')).every(([,fn])=>typeof fn==='function')});}
    function reply(message,result){send({type:'ammo-response',action:message.action,requestId:message.requestId,result});}
    function validRequest(message){
     if(message.launchEpoch!==launchEpoch||!actions.has(message.action)||!uuid(message.requestId))return false;
@@ -59,9 +56,6 @@
     for(const [id,entry]of requests){if(requests.size<=100)break;if(!entry.promise)requests.delete(id);}
    }
    async function request(message){
-    // A trial iframe never reaches account status, purchases, recovery or scores,
-    // even if an outdated or faulty child sends the normal game's messages.
-    if(adminTrial){if(uuid(message.requestId))reply(message,{ok:false,reason:'trial_only'});return;}
     if(!validRequest(message)){if(uuid(message.requestId))reply(message,{ok:false,reason:'invalid'});return;}
     if(!owner){reply(message,{ok:false,reason:'sign_in'});return;}
     if(typeof available[message.action]!=='function'){reply(message,{ok:false,reason:'unavailable'});return;}
@@ -89,7 +83,7 @@
     if(message.type==='ready'){initialize();return;}
     if(message.owner!==owner||message.sessionId!==sessionId)return;
     if(message.type==='round-finished'){
-     if(adminTrial||finished||owner!==null||message.kind!=='main'||!uuid(message.runId)||!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return;
+     if(finished||owner!==null||message.kind!=='main'||!uuid(message.runId)||!Number.isInteger(message.stage)||message.stage<1||message.stage>220)return;
      const allowed=new Set(['source','type','kind','owner','sessionId','runId','stage']);
      if(!Object.keys(message).every(key=>allowed.has(key)))return;
      finished=true;window.OjjudaGuestAccess?.finished();return;
@@ -115,20 +109,12 @@
    function loaded(){if(active?.dialog===dialog){if(!current())close();else initialize();}}
    function checkAccess(){
     if(!current()){close();return;}
-    modeButton.hidden=!trialAllowed();
     if(owner)accessTimer=setTimeout(checkAccess,1000);
    }
-   function switchMode(){
-    if(!current()||(!adminTrial&&!trialAllowed()))return;
-    // Re-create the document rather than moving temporary equipment into the
-    // normal game's save or allowing delayed normal requests in a trial.
-    window.OjjudaArcheryGame.open({owner,authorized,adminTrial:!adminTrial,canAdminTrial,onAmmoStatus,onRoundStart,onRoundComplete,onAmmoSpend,onAmmoBuy,onCoachBuy,onAmmoReceipt,onCoinExchange,onCoinReceipt});
-   }
-   active={dialog,owner,adminTrial,current,close};
+   active={dialog,owner,current,close};
    window.addEventListener('message',receive);
    frame.addEventListener('load',loaded);
    dialog.querySelector('button').addEventListener('click',close);
-   modeButton.addEventListener('click',switchMode);
    dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
    document.body.append(dialog);
    document.body.classList.add('gaming');

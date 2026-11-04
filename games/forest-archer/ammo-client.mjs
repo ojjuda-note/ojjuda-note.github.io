@@ -1,7 +1,7 @@
 /** Authenticated parent bridge. This module never calculates grants or wallet prices. */
 const CHILD = 'ojjuda-archery-game', PARENT = 'ojjuda-archery-world';
-export const LAUNCH_EPOCH = 4;
-const STORAGE_PREFIX = 'forest-archer-ammo-pending-v4:';
+export const LAUNCH_EPOCH = 5;
+const STORAGE_PREFIX = 'forest-archer-ammo-pending-v5:';
 const TIMEOUT = 12000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MUTATIONS = new Set(['round-start', 'round-complete', 'spend', 'buy', 'coach-buy']);
@@ -68,7 +68,7 @@ export function createAmmoClient({ onChange, recordsOnly = false } = {}) {
   }
   function archiveSpend(operation, confirmed) {
     try {
-      const target = storage(), key = 'forest-archer-ammo-recovery-v4:' + encodeURIComponent(operation.owner);
+      const target = storage(), key = 'forest-archer-ammo-recovery-v5:' + encodeURIComponent(operation.owner);
       const previous = JSON.parse(target.getItem(key) || '[]');
       const history = Array.isArray(previous) ? previous.filter(item => item?.requestId !== operation.requestId) : [];
       target.setItem(key, JSON.stringify([...history, { requestId: operation.requestId, action: 'spend', confirmed }].slice(-8)));
@@ -76,7 +76,7 @@ export function createAmmoClient({ onChange, recordsOnly = false } = {}) {
   }
   function archiveRetiredRequest(operation, response = null) {
     try {
-      const target = storage(), key = 'forest-archer-ammo-recovery-v4:' + encodeURIComponent(operation.owner);
+      const target = storage(), key = 'forest-archer-ammo-recovery-v5:' + encodeURIComponent(operation.owner);
       const previous = JSON.parse(target.getItem(key) || '[]'), history = Array.isArray(previous) ? previous : [];
       const entry = { ...history.find(item => item?.requestId === operation.requestId),
         requestId: operation.requestId, action: operation.action, retired: true };

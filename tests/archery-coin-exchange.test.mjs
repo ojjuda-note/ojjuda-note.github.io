@@ -10,7 +10,7 @@ function fixture({store=new Map(),credit=()=>true,reply,timeout=40}={}){
  const host={location:{origin},parent,crypto:{randomUUID},addEventListener:(t,f)=>callbacks.add(f),removeEventListener:(t,f)=>callbacks.delete(f)};
  const client=createCoinExchangeClient({host,storage,timeout,onCredit:credit});
  function emit(data,overrides={}){for(const callback of callbacks)callback({source:parent,origin,data,...overrides});}
- function init(fields={}){emit({source:'ojjuda-archery-world',type:'init',launchEpoch:4,owner,sessionId,coinExchangeAvailable:true,...fields});}
+ function init(fields={}){emit({source:'ojjuda-archery-world',type:'init',launchEpoch:5,owner,sessionId,coinExchangeAvailable:true,...fields});}
  function respond(message,result,fields={}){emit({source:'ojjuda-archery-world',type:'ammo-response',owner,sessionId,requestId:message.requestId,action:message.action,result,...fields});}
  return {client,sent,store,storage,init,respond,emit};
 }

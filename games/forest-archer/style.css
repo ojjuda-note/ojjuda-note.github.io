@@ -140,7 +140,6 @@
 .shop-layout .shop-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px;padding-right:48px}
 .shop-layout .shop-heading>h2{min-width:0;margin:0;font-size:24px;line-height:1.4;white-space:nowrap}
 .shop-layout>h2{max-width:calc(100% - 44px);margin:0;font-size:24px;line-height:1.4}
-.shop-layout .shop-trial-note{margin:4px 0 0;color:#728268;font-size:11px}
 .shop-layout .shop-top{display:block;margin:8px 0 12px;padding:8px 44px 8px 0}
 .shop-layout .shop-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;width:100%;padding:3px;border-radius:10px;min-width:0}
 .shop-layout .shop-tabs button{min-height:44px;padding:8px 5px;font-size:11px;white-space:nowrap}
@@ -519,20 +518,6 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .game-result-card .game-result-extra>.button{width:auto;margin:0;min-height:44px}
 
 /* Trial controls remain outside the aiming area on small phones. */
-.admin-trial-banner{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 9px;border:1px solid #b7ceb2;border-radius:8px;background:#e8f2e1;color:#355b35;min-width:0}
-.admin-trial-banner strong{font-size:11px;line-height:1.5;word-break:keep-all}
-.admin-trial-banner>.button{padding:7px 9px;font-size:10px;line-height:1.4;white-space:nowrap;background:#fffef9;min-height:32px}
-.admin-trial-active .coin-balance,.admin-trial-active .shop-coins{display:none}
-.admin-trial-gate{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:24px;background:#f5f4edf5;text-align:center;overflow:auto}
-.admin-trial-gate>div{max-width:420px;padding:26px 22px;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 45px #263e3412}
-.admin-trial-gate h1{font-size:21px;line-height:1.5;margin:8px 0 14px;word-break:keep-all}
-.admin-trial-gate p:not(.eyebrow){font-size:13px;line-height:1.8;color:#677a64;word-break:keep-all}
-.admin-trial-gate .button{font-size:12px;min-height:42px}
-.trial-event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:18px}
-.trial-event-grid>.button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:82px;padding:13px;text-align:left}
-.trial-event-grid strong{font-size:13px}.trial-event-grid small{font-size:10px;line-height:1.6;color:#6c7e63}
-@media(max-width:360px){.admin-trial-banner{gap:5px;padding:4px 6px}.admin-trial-banner strong{font-size:10px}.admin-trial-banner>.button{font-size:9px;padding:6px}}
-@media(max-height:500px) and (min-width:600px){.admin-trial-banner{padding:3px 8px}.admin-trial-banner>.button{padding:4px 8px;min-height:28px}.trial-event-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 /* Keep instructions in Help and give the remaining viewport to the range. */
 .visually-hidden,.controls>.draw-timing,.control-copy{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -578,10 +563,6 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .laser-popover-actions .text-button{min-height:34px;font-size:11px}
 .laser-popover .laser-reset-button{margin:0;min-height:34px}
 .laser-popover .laser-note{margin:6px 0 0;font-size:10px;text-align:right}
-.admin-trial-banner{min-height:30px;padding:1px 6px;gap:6px;border-radius:6px}
-.admin-trial-banner strong{font-size:10px;white-space:nowrap}
-.admin-trial-banner strong small{margin-left:5px;font-size:9px;font-weight:400;color:#6d8065}
-.admin-trial-banner>.button{min-height:26px;padding:3px 7px;font-size:10px}
 .app-shell>.save-error{min-height:18px;padding:1px 5px;font-size:10px;color:#926333;background:#fff2d9;border-radius:4px}
 @media(max-width:480px){
   .game-card{grid-template-rows:42px auto minmax(0,1fr) auto}

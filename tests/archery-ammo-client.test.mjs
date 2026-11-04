@@ -11,7 +11,7 @@ const ORIGIN = 'https://ojjuda.test';
 const SERVER_EPOCH = Date.parse('2026-11-02T12:00:00.000Z');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 let fixtureSequence = 0;
-const snapshot = (extra = {}) => ({ ok: true, launch_epoch: 4, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
+const snapshot = (extra = {}) => ({ ok: true, launch_epoch: 5, remaining: 20, free_remaining: 20, paid_remaining: 0, coins: 100, revision: 1, main_rounds: 5, milestones_granted: 1, daily_eligible: true, day: '2026-11-02', daily_checked: true, pack_ammo: 10, pack_price: 5,
   server_now: new Date(SERVER_EPOCH).toISOString(), coach_expires_at: null, coach_active: false, coach_price: 10, coach_duration_seconds: 86400, ...extra });
 
 // Real client, isolated browser globals and fake parent messages. No RPC or wallet
@@ -31,7 +31,7 @@ async function fixture({ store = new Map(), initialize = true, owner = OWNER, se
     client, store, messages, changes, module, synchronousChanges: changes.length,
     requests: () => messages.filter(item => item.data.type === 'ammo-request').map(item => item.data),
     emit(data, options = {}) { for (const receive of [...listeners]) receive({ data, source: options.source ?? parent, origin: options.origin ?? ORIGIN }); },
-    init(values = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner, sessionId, available: true, ...values }); },
+    init(values = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 5, owner, sessionId, available: true, ...values }); },
     reply(request, result, options = {}) { f.emit({ source: 'ojjuda-archery-world', type: 'ammo-response', action: request.action, owner: request.owner, sessionId: request.sessionId, requestId: request.requestId, result, ...options.envelope }, options); },
     flush: tick,
     advance(ms) { const end = now + ms;for (;;) { const next = [...timers].filter(([, timer]) => timer.due <= end).sort((a,b) => a[1].due - b[1].due)[0];if (!next) break;now = next[1].due;timers.delete(next[0]);next[1].fn(); }now = end; }
@@ -44,8 +44,8 @@ test('handshake and callbacks are deferred and only the exact parent, origin, ow
   const f = await fixture({ initialize: false });
   assert.equal(f.synchronousChanges, 0);assert.equal(f.client.connection, 'connecting');
   await f.flush();assert.equal(f.messages[0].data.type, 'ready');assert.equal(f.messages[0].origin, ORIGIN);
-  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: OWNER, sessionId: SESSION, available: true }, { source: {} });
-  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 4, owner: OWNER, sessionId: SESSION, available: true }, { origin: 'https://wrong.test' });
+  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 5, owner: OWNER, sessionId: SESSION, available: true }, { source: {} });
+  f.emit({ source: 'ojjuda-archery-world', type: 'init', launchEpoch: 5, owner: OWNER, sessionId: SESSION, available: true }, { origin: 'https://wrong.test' });
   assert.equal(f.requests().length, 0);
   f.init();await f.flush();const request = f.requests()[0];
   for (const envelope of [{ owner: OTHER }, { sessionId: OTHER }, { requestId: OTHER }, { action: 'buy' }, { source: 'another-parent' }]) f.reply(request, snapshot({ remaining: 999 }), { envelope });
@@ -68,7 +68,7 @@ test('stage 220 registration, refresh and completion serialize with the parent a
   }
   assert.equal((await started).run_id, SESSION);
   const completion = f.client.completeRound(SESSION, 220, 48);await f.flush();const request = f.requests().at(-1);
-  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 220);assert.equal(request.score, 48);assert.equal(request.launchEpoch, 4);
+  assert.equal(request.action, 'round-complete');assert.equal(request.runId, SESSION);assert.equal(request.stage, 220);assert.equal(request.score, 48);assert.equal(request.launchEpoch, 5);
   f.reply(request, snapshot({ main_rounds: 6, revision: 3 }));assert.equal((await completion).main_rounds, 6);f.client.dispose();
 });
 
@@ -314,7 +314,7 @@ test('old pending purchases are removed and never become new-era purchases or re
   assert.equal(f.client.pending, null);assert.equal(store.has(oldKey), false);assert.equal(store.has(recoveryKey), false);
   assert.deepEqual(f.requests().map(request => request.action), ['status']);
   const purchase = f.client.buy();await f.flush();const request = f.requests().at(-1);
-  assert.notEqual(request.requestId, OTHER);assert.equal(request.launchEpoch, 4);
+  assert.notEqual(request.requestId, OTHER);assert.equal(request.launchEpoch, 5);
   f.reply(request, snapshot({remaining: 30, coins: 95}));assert.equal((await purchase).ok, true);
   f.client.dispose();
 });
@@ -337,7 +337,7 @@ test('a 150-point round survives pending receipt recovery without resubmitting a
   const completing=original.client.completeRound(SESSION,220,150);await original.flush();
   const request=original.requests().at(-1);
   assert.equal(request.action,'round-complete');assert.equal(request.score,150);
-  const stored=JSON.parse(original.store.get('forest-archer-ammo-pending-v4:'+OWNER));
+  const stored=JSON.parse(original.store.get('forest-archer-ammo-pending-v5:'+OWNER));
   assert.equal(stored.payload.score,150);
   original.reply(request,{ok:false,reason:'pending'});assert.equal((await completing).reason,'pending');original.client.dispose();
   const reopened=await fixture({store:original.store,sessionId:OTHER});await reopened.flush();
@@ -382,8 +382,8 @@ test('records-only mode archives old financial intents and never replays them or
     assert.ok(lookup);assert.equal(lookup.receiptId, original.requestId);assert.equal(lookup.originalAction, action);
     assert.equal(f.client.pending, null, 'a retired financial request cannot keep new records locked');
     assert.equal((await f.client.retryPending()).reason, 'nothing_pending');
-    const recoveryKey = 'forest-archer-ammo-recovery-v4:' + OWNER;
-    const pendingKey = 'forest-archer-ammo-pending-v4:' + OWNER;
+    const recoveryKey = 'forest-archer-ammo-recovery-v5:' + OWNER;
+    const pendingKey = 'forest-archer-ammo-pending-v5:' + OWNER;
     const entry = () => JSON.parse(f.store.get(recoveryKey)).find(item => item.requestId === original.requestId);
     assert.equal(entry().retired, true);assert.equal(entry().action, action);
 
