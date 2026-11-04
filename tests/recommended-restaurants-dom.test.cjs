@@ -558,6 +558,24 @@ test('a map address resolving while its editor closes cannot change a replacemen
   assert.equal(f.rr('location-clear').hidden, true); assert.equal(f.rpc('save_restaurant_recommendation_with_location').length, 0);
 });
 
+test('changing an existing mapped address removes the stale pin but keeps the member recommendation', async t => {
+  const item = recommendation({ latitude: 36.3504, longitude: 127.3845 });
+  const f = fixture(t, { rows: [item] });
+  await f.open(); await f.detail(item.id); f.clickRR('edit');
+  await until(() => f.rr('editor'), 'edit opens with the current map location');
+  assert.match(f.rr('location-status').textContent, /선택 완료/);
+  f.fill('address', '대전광역시 동구 대전로813번길 49, 1층');
+  assert.equal(f.rr('location-clear').hidden, true, 'an edited address removes the old marker');
+  assert.match(f.rr('form-status').textContent, /기존 지도 위치를 해제/);
+  assert.match(f.rr('location-status').textContent, /거리순에서는 맨 뒤/);
+  f.clickRR('submit');
+  await until(() => f.state.rows[0].updated_at !== item.updated_at && !f.rr('editor'), 'the edit saves without a stale pin');
+  const call = f.rpc('save_restaurant_recommendation_with_location')[0].parameters;
+  assert.deepEqual(call.p_location, { latitude: null, longitude: null }, 'the old coordinates are never attached to the new address');
+  assert.equal(f.state.rows[0].address, '대전광역시 동구 대전로813번길 49, 1층');
+  assert.deepEqual(f.state.rows[0].photos, item.photos, 'photos are preserved');
+});
+
 test('clearing a map point explicitly saves a null pair while preserving the recommendation', async t => {
   const item = recommendation({ latitude: 36.3504, longitude: 127.3845 }), f = fixture(t, { rows: [item] });
   await f.open(); await f.detail(item.id); f.clickRR('edit'); await until(() => f.rr('editor'), 'the located record opens for editing');
