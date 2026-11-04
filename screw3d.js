@@ -1303,6 +1303,16 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!st.touched) st.yaw += dt * 0.25;   // 처음엔 천천히 돌며 보여 줘요
     },
     draw(c) {
+      // Fullscreen/tablet canvas may have been reallocated by a resize or
+      // browser graphics reset. Always restore the 360x540 logical scale
+      // before clearing. Otherwise the HUD covers only the top-left quarter
+      // and old 3D frames remain visible outside the painted background.
+      if (c.canvas && c.canvas.width > 0 && c.canvas.height > 0 && typeof c.setTransform === 'function') {
+        c.setTransform(c.canvas.width / W, 0, 0, c.canvas.height / H, 0, 0);
+        c.globalAlpha = 1;
+        c.globalCompositeOperation = 'source-over';
+        c.clearRect(0, 0, W, H);
+      }
       st.coins = coins();
       if (!st.bg) { st.bg = c.createLinearGradient(0, 0, 0, H); st.bg.addColorStop(0, '#FBF3EA'); st.bg.addColorStop(0.55, '#F6E9DD'); st.bg.addColorStop(1, '#EFDFD0'); } c.fillStyle = st.bg; c.fillRect(0, 0, W, H);
       const remaining = st.lvl.screws.reduce((n, screw) => n + (screw.state === 'in' ? 1 : 0), 0);
