@@ -24,14 +24,14 @@
    const dialog=document.createElement('dialog');
    dialog.className='restaurant-guide-dialog';
    dialog.setAttribute('aria-label','인증맛집 · 테스트');
-   dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation"></iframe>';
+   dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation; clipboard-write; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
    const ratings=recommendations?.ratings;
    const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
    const ratingRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-sort1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261104-directory-share1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();

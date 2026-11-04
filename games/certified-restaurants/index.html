@@ -13,6 +13,8 @@
   <script src="./vendor/leaflet.js" defer></script>
   <script src="/restaurant-ratings.js?v=20261103-restaurants-ratings1" defer></script>
   <script src="./app.js?v=20261103-restaurants-sort1" defer></script>
+  <link rel="stylesheet" href="/page-share.css?v=20261104-directory-share1">
+  <script src="/page-share.js?v=20261104-directory-share1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#results">가게 목록으로 이동</a>
@@ -20,6 +22,7 @@
     <div class="header-inner">
       <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3v6m-3-6v4a3 3 0 0 0 6 0V3M6 10v11M17 3c-3 3-4 6-4 10h5V3Zm1 10v8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h1>인증맛집</h1></div>
       <nav class="header-actions" aria-label="맛집 메뉴">
+        <button type="button" class="page-share-button" data-share-page="restaurants" aria-label="인증맛집 페이지 공유"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.5 6.6-4m-6.6 7 6.6 4"/></svg><span>공유</span></button>
         <button id="saved-only" class="saved-toggle" type="button" aria-pressed="false" aria-label="저장한 곳"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 3h10v14l-5-3-5 3V3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span class="saved-label">저장한 곳</span><span class="saved-label-short" aria-hidden="true">저장</span></button>
         <a id="back-link" class="back-link" href="/world.html?tab=arcade" aria-label="오락실로 돌아가기" title="오락실로 돌아가기">←</a>
       </nav>

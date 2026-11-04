@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="./style.css?v=20261103-festival-undecided1">
   <script src="./assets/vendor/leaflet.js" defer></script>
   <script src="./app.js?v=20261103-festival-undecided1" type="module"></script>
+  <link rel="stylesheet" href="/page-share.css?v=20261104-directory-share1">
+  <script src="/page-share.js?v=20261104-directory-share1" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#explore">행사 목록으로 건너뛰기</a>
@@ -20,7 +22,8 @@
   <div class="header-inner">
     <a class="brand" href="./index.html" aria-label="축제일정 홈"><span class="brand-mark" aria-hidden="true"><span class="icon" data-icon="calendar"></span></span><h1 id="page-heading">축제일정</h1></a>
     <div class="header-actions">
-      <button id="saved-toggle" class="saved-toggle" aria-pressed="false"><span class="icon" data-icon="bookmark"></span><span>저장한 행사</span><span id="saved-count" hidden>0</span></button>
+      <button type="button" class="page-share-button" data-share-page="festival" aria-label="축제일정 페이지 공유"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.5 6.6-4m-6.6 7 6.6 4"/></svg><span>공유</span></button>
+      <button id="saved-toggle" class="saved-toggle" aria-label="저장한 행사" aria-pressed="false"><span class="icon" data-icon="bookmark"></span><span>저장한 행사</span><span id="saved-count" hidden>0</span></button>
       <button class="about-button" data-action="about" aria-label="이용 안내"><span class="icon" data-icon="info"></span></button>
     </div>
   </div>
