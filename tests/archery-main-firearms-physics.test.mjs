@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {
-  PLAYER, GRAVITY, WIND_RESPONSE, BOWS, ARROWS, SCOPES, STAGES,
+  PLAYER, GRAVITY, WIND_RESPONSE, BOWS, ARROWS, BULLETS, SCOPES, STAGES,
   BULLET_SPEED, MAX_MAIN_PROJECTILE_SPEED, FASTEST_ARROW_REFERENCE,
-  getSpeed, getScopePrice, sortEquipment, launchArrow, stepArrow, predictTrajectory
+  getSpeed, getBullet, getScopePrice, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, passersAt
 } from '../games/forest-archer/engine.mjs';
 
 const close = (actual, expected, tolerance = 1e-8) =>
@@ -26,20 +26,23 @@ function crossing(shot, distance, wind = 0) {
     y:shot.position.y + shot.velocity.y * u - GRAVITY * (shot.gravityScale ?? 1) * a, z:distance};
 }
 
-test('one precision gun follows the crossbows with a ten-round magazine and its original one-second reload', () => {
+test('the original gun and two snipers follow the crossbows with ten-round magazines and one-second reloads', () => {
   const order = sortEquipment(BOWS);
-  assert.deepEqual(order.slice(20).map(weapon => weapon.id), [20]);
-  assert.deepEqual(order.map(weapon => weapon.shopRank), Array.from({length:21}, (_, index) => index + 1));
-  assert.deepEqual(guns.map(weapon => weapon.price), [29000]);
-  assert.deepEqual(guns.map(weapon => weapon.magazineSize), [10]);
-  assert.deepEqual(guns.map(weapon => weapon.reloadSeconds), [1]);
+  assert.deepEqual(order.slice(20).map(weapon => weapon.id), [20, 21, 22]);
+  assert.deepEqual(order.map(weapon => weapon.shopRank), Array.from({length:23}, (_, index) => index + 1));
+  assert.deepEqual(guns.map(weapon => weapon.price), [29000, 31500, 34100]);
+  assert.deepEqual(guns.map(weapon => weapon.magazineSize), [10, 10, 10]);
+  assert.deepEqual(guns.map(weapon => weapon.reloadSeconds), [1, 1, 1]);
+  assert.deepEqual(guns.map(weapon => weapon.name), ['정밀 사격총', '정밀 저격총', '무진동 저격총']);
+  assert.deepEqual(guns.map(weapon => weapon.handSwayFactor), [1, .25, 0]);
+  assert.equal(sortEquipment(BOWS, 'steady')[0].id, 22, 'permanent zero-shake stability sorts ahead of timed steady windows');
   let previousPrice = order[19].price, previousGap = order[19].price - order[18].price;
   for (const weapon of guns) {
     const gap = weapon.price - previousPrice;
     assert.ok(gap > previousGap, 'prices keep the existing increasing-cost progression');
     previousPrice = weapon.price;previousGap = gap;
     assert.equal(weapon.grip, 100);assert.equal(weapon.steadyDuration, 2);
-    assert.equal(weapon.name, '정밀 사격총');assert.equal(weapon.visualTier, 24);
+    assert.equal(weapon.visualTier, 24);
     assert.equal(weapon.ammo.mass, 8);assert.equal(weapon.ammo.windFactor, .08);
     assert.equal(weapon.gearTier, 'upper');assert.equal(weapon.burstCount, 1);
     assert.deepEqual(weapon.scopeMagnifications, [2, 3, 6, 8]);
@@ -132,5 +135,123 @@ test('bullet drop is used by exact wall collisions and stays identical across ph
     assert.equal(shot.result.type, 'hit');assert.equal(shot.result.score, 10);
     close(shot.result.flightTime, direct.flightTime);
     for (const axis of ['x', 'y', 'z']) close(shot.result.point[axis], direct.point[axis]);
+  }
+});
+
+test('four reusable bullet choices retain exact basic ammunition and never alter bows or special arrows', () => {
+  assert.deepEqual(BULLETS.map(item => item.id), [0, 1, 2, 3]);
+  assert.deepEqual(BULLETS.map(item => item.price), [0, 4000, 12000, 30000]);
+  assert.deepEqual(BULLETS.map(item => item.speedRatio), [1, 1.5, 2, 3]);
+  assert.deepEqual(BULLETS.map(item => item.dropRatio), [1, .6, .25, 0]);
+  assert.equal(getBullet(), BULLETS[0]);assert.equal(getBullet(999), BULLETS[0]);
+  for (const item of BULLETS) {
+    assert.equal(getBullet(item.id), item);assert.equal(getBullet(item), item);
+    assert.equal(item.muzzleSpeed, BULLET_SPEED * item.speedRatio);
+    assert.equal(item.variance, 0);
+  }
+  for (const bow of guns) {
+    const basic = launchArrow({bow, pitch:.15});
+    assert.deepEqual(launchArrow({bow, bullet:0, pitch:.15}), basic);
+    assert.equal(basic.speed, BULLET_SPEED);
+    for (const key of ['mass', 'windFactor', 'dragRate', 'gravityScale']) assert.equal(basic[key], bow.ammo[key]);
+    for (const bullet of BULLETS) {
+      const expected = launchArrow({bow, bullet, pitch:.15});
+      for (const arrow of [0, 12, 13, 18]) for (const charge of [0, .5, 1]) for (const velocityBias of [-1, 0, 1]) {
+        const params = {bow, bullet:bullet.id, arrow, charge, velocityBias, pitch:.15};
+        const shot = launchArrow(params), volley = launchVolley(params);
+        assert.equal(shot.bulletId, bullet.id);assert.equal(shot.ability, null);
+        assert.equal(shot.speed, BULLET_SPEED * bullet.speedRatio);
+        assert.equal(getSpeed(params), shot.speed);assert.deepEqual(shot, expected);
+        assert.equal(volley.length, 1);assert.equal(volley[0].bulletId, bullet.id);
+        assert.equal(volley[0].speed, expected.speed);
+      }
+    }
+  }
+  for (const bow of BOWS.filter(item => item.weaponType !== 'gun')) for (const arrow of [0, 12, 13, 18]) {
+    const params = {bow, arrow, charge:.7, pitch:.15, velocityBias:.4};
+    const normal = launchArrow(params);
+    for (const bullet of BULLETS) assert.deepEqual(launchArrow({...params, bullet}), normal);
+  }
+});
+
+test('upgraded bullets reduce actual same-distance drop to sixty percent, one quarter and zero', () => {
+  for (const bow of guns) for (const distance of [10, 50, 150]) for (const pitch of [0, .25, Math.PI / 4]) for (const yaw of [-.2, 0, .2]) {
+    const params = {bow, yaw, pitch}, basic = launchArrow(params);
+    basic.position.y = 100;
+    const stage = {...range, distance}, rayY = 100 + Math.tan(pitch) * distance / Math.cos(yaw);
+    const reference = stepArrow(basic, 16, stage), baseDrop = rayY - reference.point.y;
+    assert.equal(reference.type, 'hit');assert.ok(baseDrop > 0);
+    let previousDrop = Infinity;
+    for (const bullet of BULLETS) {
+      const shot = launchArrow({...params, bullet});shot.position.y = 100;
+      const result = stepArrow(shot, 16, stage), drop = rayY - result.point.y;
+      assert.equal(result.type, 'hit');close(result.flightTime, reference.flightTime / bullet.speedRatio);
+      close(drop, baseDrop * bullet.dropRatio);assert.ok(drop < previousDrop);
+      close(result.point.x, reference.point.x);
+      previousDrop = drop;
+    }
+  }
+});
+
+test('the highest bullet launches at exactly three times basic speed and stays on a straight ray in strong wind', () => {
+  for (const bow of guns) for (const distance of [10, 50, 150]) for (const wind of [-12, 12]) {
+    const params = {bow, bullet:3, yaw:.17, pitch:.08};
+    const shot = launchArrow(params), basic = launchArrow({...params, bullet:0});
+    assert.equal(shot.speed, basic.speed * 3);assert.equal(shot.gravityScale, 0);assert.equal(shot.windFactor, 0);
+    const ray = z => ({x:PLAYER.x + Math.tan(params.yaw) * z,
+      y:PLAYER.y + Math.tan(params.pitch) * z / Math.cos(params.yaw),z});
+    const expected = ray(distance), stage = {...range, distance, wind, targetX:expected.x, height:expected.y, radius:.61};
+    const result = stepArrow(shot, 16, stage);
+    assert.equal(result.type, 'hit');assert.equal(result.score, 10);
+    for (const axis of ['x', 'y', 'z']) close(result.point[axis], expected[axis]);
+    close(shot.velocity.x / shot.velocity.z, Math.tan(params.yaw));
+    close(shot.velocity.y / shot.velocity.z, Math.tan(params.pitch) / Math.cos(params.yaw));
+    const forecast = predictTrajectory(params, stage);
+    assert.equal(forecast.result.type, 'hit');assert.equal(forecast.result.score, 10);
+    for (const point of forecast.points) {
+      const onRay = ray(point.z);
+      close(point.x, onRay.x);close(point.y, onRay.y);
+    }
+  }
+});
+
+test('straight misses finish at the actual target plane while hits, walls and people retain swept collision priority', () => {
+  const params = {bow:22, bullet:3, pitch:0, yaw:0}, distance = 150;
+  const plain = {...range, distance, height:PLAYER.y, radius:.61, wind:12}, missedStage = {...plain, height:5};
+  const expected = crossing(launchArrow(params), distance), missed = stepArrow(launchArrow(params), 16, missedStage);
+  assert.equal(missed.type, 'miss');close(missed.point.z, distance);close(missed.flightTime, expected.time);
+  assert.ok(missed.flightTime < 1, 'a flat miss must not wait for the sixteen-second timeout');
+  const hit = stepArrow(launchArrow(params), 16, plain);
+  assert.equal(hit.type, 'hit');assert.equal(hit.score, 10);close(hit.flightTime, missed.flightTime);
+
+  // Both blockers begin at precisely the target plane. Their existing tie
+  // priority must still beat a target hit or the new straight-bullet miss.
+  const wall = {x:0, z:distance + .005, width:1, height:3, depth:.01};
+  const config = {id:0, z:distance + .005, width:1, height:3, depth:.01, passDuration:20, phase:.5};
+  const person = passersAt({...plain, passers:[config]}, expected.time)[0];
+  config.phase -= person.x / (person.velocityX * config.passDuration);
+  for (const stage of [plain, missedStage]) {
+    const wallStage = {...stage, obstacles:[wall]}, personStage = {...wallStage, passers:[config]};
+    const blocked = stepArrow(launchArrow(params), 16, wallStage);
+    assert.equal(blocked.type, 'obstacle');close(blocked.point.z, distance);
+    const intercepted = stepArrow(launchArrow(params), 16, personStage);
+    assert.equal(intercepted.type, 'person');assert.equal(intercepted.personId, 0);close(intercepted.point.z, distance);
+    for (const dt of [1 / 30, 1 / 144, .47]) {
+      const shot = launchArrow(params);
+      while (shot.active) stepArrow(shot, dt, personStage, shot.elapsed);
+      assert.equal(shot.result.type, 'person');close(shot.result.flightTime, intercepted.flightTime);
+      for (const axis of ['x', 'y', 'z']) close(shot.result.point[axis], intercepted.point[axis]);
+    }
+  }
+});
+
+test('the three dropping bullet types preserve their falling flight after missing the target plane', () => {
+  const stage = {...range, height:100, radius:.1};
+  for (const bullet of BULLETS.slice(0, 3)) {
+    const shot = launchArrow({bow:20, bullet, pitch:.15}), atPlane = crossing(shot, stage.distance);
+    stepArrow(shot, atPlane.time + .000001, stage);
+    assert.equal(shot.targetPassed, true);assert.equal(shot.active, true);assert.equal(shot.result, null);
+    const result = stepArrow(shot, 16, stage, shot.elapsed);
+    assert.equal(result.type, 'ground');assert.ok(result.flightTime > atPlane.time);
   }
 });

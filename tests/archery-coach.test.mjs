@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BOWS, ARROWS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, launchVolley, stepArrow, targetAt, passersAt} from '../games/forest-archer/engine.mjs';
+import {BOWS, ARROWS, BULLETS, STAGES, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, launchVolley, stepArrow, getFlightTimeLimit, targetAt, passersAt} from '../games/forest-archer/engine.mjs';
 import {evaluateCoachShot} from '../games/forest-archer/coach.mjs';
 
 const timing = {held: 2, steadyStart: 5, steadyDuration: .5};
@@ -8,15 +8,15 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const moving = {id: 5, kind: 'target', distance: 30, radius: 1.2, height: 2.3, wind: 0,
   motion: {amplitudeX: 4, amplitudeY: 0, speed: .7, irregular: false}, obstacles: [], passers: []};
 
-// Independent damped-trajectory interception for deterministic ordinary-arrow
+// Independent damped-trajectory interception for deterministic arrow and bullet
 // fixtures. It aims at the target's future position, with gravity and crosswind.
-function centreAim(stage, worldTime = 0, bow = 0, arrow = 0) {
-  const probe = launchArrow({bow, arrow, charge: 1}), drag = probe.dragRate;
+function centreAim(stage, worldTime = 0, bow = 0, arrow = 0, bullet = 0) {
+  const probe = launchArrow({bow, arrow, bullet, charge: 1}), drag = probe.dragRate;
   const velocity = time => {
     const target = targetAt(stage, worldTime + time), a = drag ? -Math.expm1(-drag * time) / drag : time;
     const b = drag ? (time - a) / drag : time * time / 2;
     return {x: (target.x - PLAYER.x - stage.wind * WIND_RESPONSE * probe.windFactor * b) / a,
-      y: (target.y - PLAYER.y + GRAVITY * b) / a, z: (target.z - PLAYER.z) / a};
+      y: (target.y - PLAYER.y + GRAVITY * (probe.gravityScale ?? 1) * b) / a, z: (target.z - PLAYER.z) / a};
   };
   let lo = .001, hi = 3;
   assert.ok(Math.hypot(...Object.values(velocity(hi))) < probe.speed);
@@ -25,7 +25,7 @@ function centreAim(stage, worldTime = 0, bow = 0, arrow = 0) {
     if (Math.hypot(...Object.values(velocity(mid))) > probe.speed) lo = mid;else hi = mid;
   }
   const v = velocity((lo + hi) / 2);
-  return {bow, arrow, charge: 1, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z))};
+  return {bow, arrow, bullet, charge: 1, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z))};
 }
 
 test('a stable centre shot earns a cue without changing the supplied aim, stage or equipment', () => {
@@ -149,14 +149,144 @@ test('rare burst coaching checks the actual seeded side arrows before allowing a
   assert.equal(later.ready, false);assert.equal(later.reason, 'person');assert.equal(later.probes, 5);
 });
 
-test('event targets and all five guns are excluded from coaching', () => {
-  const params = centreAim(STAGES[0]);
-  for (const gun of BOWS.filter(item => item.weaponType === 'gun')) {
-    const answer = evaluateCoachShot({...params, bow: gun}, STAGES[0], 0, timing);
+test('the main gun earns an accurate cue at 10, 50 and 150 metres without charge or arrow dependencies', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  for (const distance of [10, 50, 150]) {
+    const stage = {...clone(STAGES[0]), distance};
+    const aimed = centreAim(stage, 0, gun.id);
+    for (const [charge, arrow] of [[0, 0], [.2, 12], [1, 13]]) {
+      const params = {...aimed, bow: charge ? gun : gun.id, charge, arrow};
+      const before = clone({stage, params, timing}), actual = launchArrow(params);
+      assert.equal(actual.projectileType, 'bullet');
+      stepArrow(actual, getFlightTimeLimit(actual), stage);
+      assert.equal(actual.result.type, 'hit');assert.equal(actual.result.score, 10);
+      const answer = evaluateCoachShot(params, stage, 0, timing);
+      assert.equal(answer.ready, true, `${distance}m gun cue at charge ${charge}`);
+      assert.equal(answer.nowScore, actual.result.score);assert.equal(answer.laterScore, 10);
+      assert.equal(answer.probes, 2);assert.equal(answer.reactionDelay, .1);
+      assert.deepEqual({stage, params, timing}, before);
+    }
+    const miss = evaluateCoachShot({...aimed, yaw: .4}, stage, 0, timing);
+    assert.equal(miss.ready, false);assert.equal(miss.nowScore, 0);
+  }
+});
+
+test('coaching uses the selected bullet trajectory for the original gun and both snipers', () => {
+  const stage = {...clone(STAGES[0]), distance:150, wind:8};
+  for (const gun of BOWS.filter(item => item.weaponType === 'gun')) for (const bullet of BULLETS) {
+    const params = {...centreAim(stage, 0, gun.id, 13, bullet.id), charge:0};
+    const shot = launchArrow(params), actual = stepArrow(shot, getFlightTimeLimit(shot), stage);
+    assert.equal(actual.type, 'hit');assert.equal(actual.score, 10);
+    const answer = evaluateCoachShot(params, stage, 0, timing);
+    assert.equal(answer.ready, true, `${gun.name} with ${bullet.name}`);
+    assert.equal(answer.nowScore, 10);assert.equal(answer.laterScore, 10);assert.equal(answer.probes, 2);
+    const blocked = evaluateCoachShot(params, {...stage, obstacles:[{x:0, z:5, width:20, height:10, depth:.1}]}, 0, timing);
+    assert.equal(blocked.ready, false);assert.equal(blocked.reason, 'obstacle');
+  }
+  const straightAim = centreAim(stage, 0, 22, 13, 3);
+  assert.equal(evaluateCoachShot({...straightAim, bullet:0}, stage, 0, timing).ready, false,
+    'a cue for a flat bullet cannot silently reuse the dropping basic-bullet prediction');
+});
+
+test('main gun coaching leads moving targets and rejects a hit lost during reaction time', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  const aimed = centreAim(moving, 0, gun.id), answer = evaluateCoachShot(aimed, moving, 0, timing);
+  assert.equal(answer.ready, true);assert.equal(answer.nowScore, 10);assert.ok(answer.laterScore >= 8);
+  const aimedAtCurrentPosition = {...aimed, yaw: Math.atan2(targetAt(moving, 0).x, moving.distance)};
+  assert.equal(evaluateCoachShot(aimedAtCurrentPosition, moving, 0, timing).ready, false);
+  const fast = {...moving, distance: 20, radius: .2, motion: {...moving.motion, speed: 1.5}};
+  const fleetingAim = centreAim(fast, 0, gun.id), fleeting = evaluateCoachShot(fleetingAim, fast, 0, timing);
+  const actual = [0, .1].map(time => {
+    const shot = launchArrow(fleetingAim);return stepArrow(shot, getFlightTimeLimit(shot), fast, time);
+  });
+  assert.equal(actual[0].type, 'hit');assert.equal(actual[0].score, 10);assert.notEqual(actual[1].type, 'hit');
+  assert.equal(fleeting.nowScore, 10);assert.equal(fleeting.laterScore, 0);assert.equal(fleeting.ready, false);
+});
+
+test('main gun coaching rejects real walls and people entering the shot during reaction time', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  const stage = {...clone(STAGES[1]), retiredPasserIds: []}, params = centreAim(stage, 0, gun.id);
+  const wall = {...stage, obstacles: [{x: 0, z: 5, width: 20, height: 10, depth: .1}]};
+  const blocked = evaluateCoachShot(params, wall, 0, timing);
+  assert.equal(blocked.ready, false);assert.equal(blocked.reason, 'obstacle');assert.equal(blocked.probes, 1);
+
+  const shot = launchArrow(params), z = 12;
+  const flightTime = -Math.log1p(-shot.dragRate * z / shot.velocity.z) / shot.dragRate;
+  const bulletX = shot.velocity.x * -Math.expm1(-shot.dragRate * flightTime) / shot.dragRate;
+  for (const delay of [0, .1]) {
+    const config = {id: 0, z, width: .01, height: 10, depth: .01, passDuration: 20, phase: .5};
+    const person = passersAt({...stage, passers: [config]}, delay + flightTime)[0];
+    config.phase += (bulletX - person.x) / (person.velocityX * config.passDuration);
+    const occupied = {...stage, passers: [config]}, before = clone(occupied);
+    const actual = [0, .1].map(time => {
+      const bullet = launchArrow(params);return stepArrow(bullet, getFlightTimeLimit(bullet), occupied, time);
+    });
+    assert.deepEqual(actual.map(result => result.type), delay ? ['hit', 'person'] : ['person', 'hit']);
+    const answer = evaluateCoachShot(params, occupied, 0, timing);
+    assert.equal(answer.ready, false);assert.equal(answer.reason, 'person');assert.equal(answer.probes, delay ? 2 : 1);
+    assert.deepEqual(occupied, before, 'a forecast neither retires a person nor mutates the stage');
+  }
+});
+
+test('main gun coaching keeps minimum hold, release-limit and steady-transition guards', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  const stage = STAGES[0], params = {...centreAim(stage, 0, gun.id), charge: 0};
+  for (const options of [{held: .1}, {held: 9.95}, {held: 1.45, steadyStart: 1.5, steadyDuration: 2}, {held: 3.45, steadyStart: 1.5, steadyDuration: 2}]) {
+    const answer = evaluateCoachShot(params, stage, 0, options);
     assert.equal(answer.ready, false);assert.equal(answer.probes, 0);
   }
-  for (const kind of ['clay', 'ufo']) {
-    const answer = evaluateCoachShot(params, {...STAGES[0], kind}, 0, timing);
+  assert.equal(evaluateCoachShot(params, stage, 0, {...timing, held: .25}).ready, true);
+  const steady = evaluateCoachShot(params, stage, 0, {held: 2.5, steadyStart: 1.5, steadyDuration: 2});
+  assert.equal(steady.ready, true);assert.equal(steady.steady, true);
+});
+
+test('manual-release laser coaching stays accurate after ten seconds while automatic draws keep their limit', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  const stage = STAGES[0];
+  for (const bow of [0, 10, gun.id]) {
+    const params = centreAim(stage, 0, bow);
+    for (const held of [9.95, 10.25, 30]) {
+      const automatic = evaluateCoachShot(params, stage, 0, {...timing, held});
+      assert.equal(automatic.ready, false);assert.equal(automatic.reason, 'release-limit');assert.equal(automatic.probes, 0);
+      const manual = evaluateCoachShot(params, stage, 0, {...timing, held, releaseLimitSeconds: Infinity});
+      const actual = [0, .1].map(time => {
+        const shot = launchArrow(params);return stepArrow(shot, getFlightTimeLimit(shot), stage, time);
+      });
+      assert.equal(manual.ready, true, `manual weapon ${bow} held for ${held}s`);assert.equal(manual.probes, 2);
+      assert.deepEqual(actual.map(result => [result.type, result.score]), [['hit', 10], ['hit', 10]]);
+      assert.equal(manual.nowScore, actual[0].score);assert.equal(manual.laterScore, actual[1].score);
+    }
+  }
+});
+
+test('manual laser holds still require a real arrow hit and a stable reaction window', () => {
+  const stage = {...clone(STAGES[0]), distance: 50}, params = centreAim(stage, 0, 10);
+  const manual = {...timing, held: 20, releaseLimitSeconds: Infinity};
+  assert.equal(evaluateCoachShot(params, stage, 0, manual).ready, true);
+  const target = targetAt(stage, 0), straightRay = {...params, pitch: Math.atan2(target.y - PLAYER.y, target.z - PLAYER.z)};
+  const uncompensated = launchArrow(straightRay);stepArrow(uncompensated, getFlightTimeLimit(uncompensated), stage);
+  assert.notEqual(uncompensated.result.type, 'hit', 'a straight laser ray on the target does not compensate arrow drop');
+  assert.equal(evaluateCoachShot(straightRay, stage, 0, manual).ready, false);
+  const wall = {...stage, obstacles: [{x: 0, z: 5, width: 20, height: 10, depth: .1}]};
+  const blocked = evaluateCoachShot(params, wall, 0, manual);
+  assert.equal(blocked.ready, false);assert.equal(blocked.reason, 'obstacle');
+  for (const options of [
+    {held: .1, reason: 'early'},
+    {held: 10.95, steadyStart: 11, steadyDuration: .5, reason: 'steady-transition'},
+    {held: 11.45, steadyStart: 11, steadyDuration: .5, reason: 'steady-transition'}
+  ]) {
+    const {reason, ...window} = options;
+    const answer = evaluateCoachShot(params, stage, 0, {...window, releaseLimitSeconds: Infinity});
+    assert.equal(answer.ready, false);assert.equal(answer.reason, reason);assert.equal(answer.probes, 0);
+  }
+});
+
+test('retired event targets remain excluded from coaching for bows and the main gun', () => {
+  const gun = BOWS.find(item => item.weaponType === 'gun');
+  for (const bow of [0, gun.id]) for (const event of [{kind: 'clay'}, {kind: 'ufo'}, {eventLevel: 1}, {isEvent: true}]) {
+    const params = centreAim(STAGES[0], 0, bow);
+    const answer = evaluateCoachShot(params, {...STAGES[0], ...event}, 0, timing);
+    assert.equal(answer.reason, 'event');
     assert.equal(answer.ready, false);assert.equal(answer.probes, 0);
   }
 });

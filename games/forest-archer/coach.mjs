@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow, getFlightTimeLimit} from './engine.mjs?v=20261104-archery-main-firearms1';
+import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow, getFlightTimeLimit} from './engine.mjs?v=20261104-archery-sniper-bullets1';
 
 export const COACH_REACTION_SECONDS = .10;
 const CHARGE_SECONDS = 1.25;
@@ -37,8 +37,9 @@ function forecastShot(input,stage,worldTime,shot = launchArrow({...input})) {
 /**
  * Predict the current shot and a short human reaction later. A cue describes
  * the supplied aim at this instant, not a promise about later hand movement.
+ * Manually released draws, such as laser aiming, pass releaseLimitSeconds: Infinity.
  */
-export function evaluateCoachShot(params = {}, stage = {}, worldTime = 0, {held,steadyStart,steadyDuration} = {}) {
+export function evaluateCoachShot(params = {}, stage = {}, worldTime = 0, {held,steadyStart,steadyDuration,releaseLimitSeconds = DRAW_LIMIT} = {}) {
   let probes = 0, nowScore = 0, laterScore = 0;
   const reactionDelay = COACH_REACTION_SECONDS;
   const charge = clamp(Number.isFinite(params.charge) ? params.charge : 0,0,1);
@@ -50,10 +51,10 @@ export function evaluateCoachShot(params = {}, stage = {}, worldTime = 0, {held,
   if (!Number.isFinite(worldTime) || !Number.isFinite(stage.distance) || stage.distance <= 0 ||
     !Number.isFinite(params.yaw ?? 0) || !Number.isFinite(params.pitch ?? 0)) return answer(false,'invalid');
   const weapon = typeof params.bow === 'number' ? BOWS[params.bow] : params.bow || BOWS[0];
-  if (!weapon || weapon.weaponType === 'gun') return answer(false,'gun');
+  if (!weapon) return answer(false,'invalid');
   if (stage.kind === 'clay' || stage.kind === 'ufo' || stage.eventLevel || stage.isEvent) return answer(false,'event');
-  if (charge <= 0 || heldSeconds < .25) return answer(false,'early');
-  if (heldSeconds+reactionDelay >= DRAW_LIMIT) return answer(false,'release-limit');
+  if ((weapon.weaponType !== 'gun' && charge <= 0) || heldSeconds < .25) return answer(false,'early');
+  if (heldSeconds+reactionDelay >= releaseLimitSeconds) return answer(false,'release-limit');
   if (Number.isFinite(steadyEnd) && steady !== isSteady(heldSeconds+reactionDelay)) return answer(false,'steady-transition');
 
   const current = targetAt(stage,worldTime), afterReaction = targetAt(stage,worldTime+reactionDelay);
