@@ -57,6 +57,7 @@ function frame(n, u) { const w = cross(u, n); return [u[0], n[0], w[0], u[1], n[
 function mkScrew(M, thru, into, p, a) { const s = { p, a, thru, into, color: 0, state: 'in', t: 0 }; M.screws.push(s); return s; }
 const face = (b, n) => add(b.c, mul(n, GRID / 2));
 const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+const CUBE_FACE_DIRS = [[-1, 0, 0], [1, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1]]; // boxGeom face order
 // ---------- 새 블럭 모양: 피자 조각(부채꼴), 원뿔, 곡선 튜브(여러 마디) ----------
 function wedgeGeom(r, hh, a0, a1, seg = 6) {
   const v = [[0, hh, 0], [0, -hh, 0]];
@@ -742,14 +743,30 @@ function subtractPoly(poly, cut) {
 const bounds2 = p => [Math.min(...p.map(q => q.x)), Math.min(...p.map(q => q.y)), Math.max(...p.map(q => q.x)), Math.max(...p.map(q => q.y))];
 const boundsOverlap = (a, b) => a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
 function maskScrews(items, xrayOn) {
+  // Screen-space buckets avoid checking every visible face for every screw.
   const faces = items.filter(it => !it.owner.p && it.owner !== xrayOn && it.alpha > 0.5)
     .flatMap(it => it.polys.filter(pg => pg.depth).map(pg => ({ pg, bb: bounds2(pg.pts) })));
+  const TILE = 48, cols = Math.ceil(W / TILE), rows = Math.ceil(H / TILE);
+  const tiles = Array.from({ length: cols * rows }, () => []);
+  const tileRange = bb => {
+    if (bb[2] < 0 || bb[0] > W || bb[3] < 0 || bb[1] > H) return null;
+    return [Math.max(0, Math.floor(bb[0] / TILE)), Math.min(cols - 1, Math.floor(bb[2] / TILE)),
+      Math.max(0, Math.floor(bb[1] / TILE)), Math.min(rows - 1, Math.floor(bb[3] / TILE))];
+  };
+  faces.forEach((f, i) => {
+    const box = tileRange(f.bb); if (!box) return;
+    for (let y = box[2]; y <= box[3]; y++) for (let x = box[0]; x <= box[1]; x++)
+      tiles[y * cols + x].push(i);
+  });
   for (const it of items) if (it.owner.p) for (const pg of it.polys) {
     pg.visible = [pg.pts]; if (!pg.depth) continue;
-    const bb = bounds2(pg.pts);
-    for (const other of faces) {
-      if (!boundsOverlap(bb, other.bb)) continue;
-      const d = other.pg.depth.map((v, i) => v - pg.depth[i]);
+    const bb = bounds2(pg.pts), box = tileRange(bb); if (!box) continue;
+    const neighbors = new Set();
+    for (let y = box[2]; y <= box[3]; y++) for (let x = box[0]; x <= box[1]; x++)
+      for (const id of tiles[y * cols + x]) neighbors.add(id);
+    for (const i of [...neighbors].sort((a, b) => a - b)) {
+      const other = faces[i]; if (!boundsOverlap(bb, other.bb)) continue;
+      const d = other.pg.depth.map((v, j) => v - pg.depth[j]);
       const front = clipHalf(other.pg.pts, p => depthAt(d, p) - 1e-6);
       if (front.length < 3) continue;
       pg.visible = pg.visible.flatMap(p => subtractPoly(p, front)); if (!pg.visible.length) break;
@@ -824,6 +841,8 @@ function screw3d(api,startStage=loadResumeStage()) {
   const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
   function say(m, t) { st.msg = m; st.msgT = t; }
   function start(L) { ended = false; st.over = 0; st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
+    // Start big objects in fast mode so the first rendered frame does not lag.
+    st.big = st.lvl.screws.length + st.lvl.els.length > 420;
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
   }
@@ -946,7 +965,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     if (blocker) { st.shake = { s, t: 0.35 }; say(blocker.p ? '앞의 나사를 먼저 풀어 주세요' : '다른 조각이 막고 있어요', 0.9); if (st.ms.id === 'nomiss') st.ms.bad = true; return; }
     const h = st.heads.get(s) || { x, y };
     if (!send(s, h.x, h.y)) {
-      const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 3, canBox = st.boxes.length < BOX_MAX && balance >= 10 && st.qi < st.lvl.queue.length;
+      const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 1, canBox = st.boxes.length < BOX_MAX && balance >= 3 && st.qi < st.lvl.queue.length;
       if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (1 ZU)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (3 ZU)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
       st.over = 1.3; say('보관 칸이 가득 찼어요', 1.3); return;
     }
@@ -1047,10 +1066,11 @@ function screw3d(api,startStage=loadResumeStage()) {
       drawBoxes(c, st); drawBuffer(c, st);
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
-      const solid = (geom, R, pc, color, alpha, owner, bias, out) => {   // 볼록한 도형 하나: 보이는 면만
+      const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
-        for (const [fi, f] of geom.faces.entries()) { const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
+        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !exposedFaces[fi]) continue; const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+        if (!polys.length) return; // nothing visible; skip sorting and painting entirely
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv, planes, bb: [x0, y0, x1, y1], pv, hull: st.big ? null : hull2d(pv) });
       };
       st.heads = new Map();
@@ -1066,7 +1086,13 @@ function screw3d(api,startStage=loadResumeStage()) {
       const fwd = mv(tr(V), [0, 0, 1]);
       for (const E of st.lvl.els) {
         if (E.state === 'gone') continue;
-        if (lv.gridEls.has(E) && !E.dyn && lv.grid && DIRS.every(n => alive(lv.grid.get([E.cell[0] + n[0], E.cell[1] + n[1], E.cell[2] + n[2]].join(','))))) continue;   // 사방이 막힌 안쪽 블럭
+        // Only prepare graphics for exposed cube faces; interior puzzle state
+        // still exists for collision, screw order and scoring. When a neighbouring
+        // cube falls, its previously hidden faces appear on the following frame.
+        const exposedFaces = lv.gridEls.has(E) && !E.dyn && !E.fall && !E.hinge && E.cell
+          ? CUBE_FACE_DIRS.map(n => !alive(lv.grid.get([E.cell[0] + n[0], E.cell[1] + n[1], E.cell[2] + n[2]].join(','))))
+          : null;
+        if (exposedFaces && !exposedFaces.some(Boolean)) continue;
         if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
           if (E.kind === 'plate' && !E.dyn) {   // 블럭 밑에 깔린 판(쪽마다): 네 모서리 쪽 점이 모두 블럭 안이면 숨어요. 덮은 블럭을 투시하면 드러나요
@@ -1074,7 +1100,7 @@ function screw3d(api,startStage=loadResumeStage()) {
             for (const a of [0.6, -0.6]) for (const b2 of [0.5, -0.5]) cs.push(coverOf(add(sh.c, add(mul(u, a * hh[0]), mul(w, b2 * hh[2]))), E));
             if (cs.every(cv => cv.length)) { if (!(st.xrayOn && cs.some(cv => cv.every(o => o === st.xrayOn)))) continue; found.add(E); }
           }
-          solid(sh.geom, sh.R, sh.c, sh.color, E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E, E.kind === 'block' ? 0 : 0.012, items);
+          solid(sh.geom, sh.R, sh.c, sh.color, E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E, E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
         }
       }
       for (const s of st.lvl.screws) {   // 나사: 3D 머리(원기둥) + 십자 홈, 빠질 때는 돌며 솟아오르고 나삿대가 보여요
@@ -1103,7 +1129,9 @@ function screw3d(api,startStage=loadResumeStage()) {
         const hp = project(add(hcs, mul(a, HEAD_H / 2)), V); if (s.state === 'in' && top[2] > 0.12) st.heads.set(s, hp); else if (s.state === 'out') st.heads.set(s, hp);
       }
       // 조각이 많으면(340개 넘으면 켜고 290개 아래면 꺼요: 오가며 깜빡이지 않게) 거리순으로 빠르게 그려요
-      st.big = st.big ? items.length > 290 : items.length > 340; const order = st.big ? items.sort((a, b) => a.z - b.z) : paintOrder(items, mv(tr(V), [0, 0, F * st.sc])); st.drawn = []; st.order = order; st.cam = mv(tr(V), [0, 0, F * st.sc]); st.hiddenN = hiddenN; st.foundN = found.size; for (const f of found) if (f.p && st.ms) st.ms.found.add(f);
+      const activePieces = lv.els.reduce((n,e) => n + (e.state === 'on'), 0)
+        + lv.screws.reduce((n,s) => n + (s.state === 'in' || s.state === 'out'), 0);
+      st.big = activePieces > 420 || (st.big ? items.length > 240 : items.length > 290); const order = st.big ? items.sort((a, b) => a.z - b.z) : paintOrder(items, mv(tr(V), [0, 0, F * st.sc])); st.drawn = []; st.order = order; st.cam = mv(tr(V), [0, 0, F * st.sc]); st.hiddenN = hiddenN; st.foundN = found.size; for (const f of found) if (f.p && st.ms) st.ms.found.add(f);
       const lens = st.lens; let target = null;
       if (lens) { let nearest = -Infinity, front = null; for (const it of order) for (const pg of it.polys) if (pg.depth && inPoly(lens.x, lens.y, pg.pts)) { const z = depthAt(pg.depth, lens); if (z > nearest) { nearest = z; front = it; } } if (front && !front.owner.p && !front.owner.dyn) target = front; }   // 실제 가장 앞에 있는 조각 하나만
       const tg = target ? target.owner : null; if (!st.xr || st.xr.o !== tg) st.xr = { o: tg, t0: st.t };
