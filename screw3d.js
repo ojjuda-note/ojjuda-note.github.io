@@ -1,5 +1,6 @@
 import { createPremiumModels } from './screw3d-premium-models.js?v=20261104-screw-v2';
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
+import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
@@ -54,12 +55,15 @@ const GRID = 0.42, T = 0.05;   // 블럭 한 칸, 판 두께
 const WOOD = ['#F4C28F', '#F9C9D8', '#C6E6FF', '#FFE3A6', '#CDEFD9', '#E0D4FF', '#E9B07A', '#FFD3C4'];
 const PLATE = '#D9DEEE';
 function el(kind, geom, c, R, color, o = {}) { return { kind, geom, c, R: R || I3, color, state: 'on', hinge: null, fall: null, ...o }; }
-function cube(x, y, z, color) { return el('block', boxGeom([GRID / 2, GRID / 2, GRID / 2]), [(x + 0.5) * GRID, (y + 0.5) * GRID, (z + 0.5) * GRID], I3, color, { cell: [x, y, z] }); }
+function cube(x, y, z, color) { return el('block', SOFT_CUBE, [(x + 0.5) * GRID, (y + 0.5) * GRID, (z + 0.5) * GRID], I3, color, { cell: [x, y, z], material:'paint' }); }
 function frame(n, u) { const w = cross(u, n); return [u[0], n[0], w[0], u[1], n[1], w[1], u[2], n[2], w[2]]; }   // 로컬 x→u, y→n(바깥), z→w
 function mkScrew(M, thru, into, p, a) { const s = { p, a, thru, into, color: 0, state: 'in', t: 0 }; M.screws.push(s); return s; }
 const face = (b, n) => add(b.c, mul(n, GRID / 2));
 const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 const CUBE_FACE_DIRS = [[-1, 0, 0], [1, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1]]; // boxGeom face order
+const SOFT_CUBE = createSoftCubeGeometry(GRID / 2, true);
+const SOFT_CUBE_FAST = createSoftCubeGeometry(GRID / 2, false);
+const SOFT_RADIUS = GRID / 2 * 0.29;
 // ---------- 새 블럭 모양: 피자 조각(부채꼴), 원뿔, 곡선 튜브(여러 마디) ----------
 function wedgeGeom(r, hh, a0, a1, seg = 6) {
   const v = [[0, hh, 0], [0, -hh, 0]];
@@ -494,7 +498,7 @@ function pose(E) {
 const held = (E, screws) => screws.some(s => s.state === 'in' && (s.thru === E || s.into === E));
 // 여러 조각으로 된 블럭(곡선 튜브 등)은 E.parts = [{ geom, pc, pR, color }], 한 덩어리면 geom 하나
 function shapes(E) { const q = pose(E); if (!E.parts) return [{ geom: E.geom, R: q.R, c: q.c, color: E.color }]; return E.parts.map(p => ({ geom: p.geom, R: mm(q.R, p.pR), c: add(q.c, mv(q.R, p.pc)), color: p.color || E.color })); }
-const obbs = E => shapes(E).map(sh => ({ c: add(sh.c, mv(sh.R, sh.geom.cen || [0, 0, 0])), R: sh.R, h: sh.geom.half }));
+const obbs = E => shapes(E).map(sh => ({ c: add(sh.c, mv(sh.R, sh.geom.cen || [0, 0, 0])), R: sh.R, h: sh.geom.half, rounding: sh.geom.soft ? SOFT_RADIUS : 0 }));
 const planeCache = new WeakMap();
 function geomPlanes(geom) {
   if (!planeCache.has(geom)) planeCache.set(geom, geom.faces.map(f => {
@@ -531,8 +535,9 @@ function obbHit(A, B) {   // 겹치면 { n: B→A 쪽 방향, d: 깊이, p: 닿�
   const a = axesOf(A.R), b = axesOf(B.R), T = sub(A.c, B.c); let best = null;
   const test = L => {
     const l = Math.hypot(L[0], L[1], L[2]); if (l < 1e-6) return true; L = mul(L, 1 / l);
-    const ra = A.h[0] * Math.abs(dot(a[0], L)) + A.h[1] * Math.abs(dot(a[1], L)) + A.h[2] * Math.abs(dot(a[2], L));
-    const rb = B.h[0] * Math.abs(dot(b[0], L)) + B.h[1] * Math.abs(dot(b[1], L)) + B.h[2] * Math.abs(dot(b[2], L));
+    const rA = A.rounding || 0, rB = B.rounding || 0;
+    const ra = rA + Math.max(0,A.h[0]-rA)*Math.abs(dot(a[0],L)) + Math.max(0,A.h[1]-rA)*Math.abs(dot(a[1],L)) + Math.max(0,A.h[2]-rA)*Math.abs(dot(a[2],L));
+    const rb = rB + Math.max(0,B.h[0]-rB)*Math.abs(dot(b[0],L)) + Math.max(0,B.h[1]-rB)*Math.abs(dot(b[1],L)) + Math.max(0,B.h[2]-rB)*Math.abs(dot(b[2],L));
     const d = dot(T, L), ov = ra + rb - Math.abs(d); if (ov <= 0) return false;
     if (!best || ov < best.d) best = { n: d < 0 ? mul(L, -1) : L, d: ov }; return true;
   };
@@ -544,9 +549,38 @@ function obbHit(A, B) {   // 겹치면 { n: B→A 쪽 방향, d: 깊이, p: 닿�
     if (Math.abs(dot(l, Qax[0])) <= Q.h[0] + 1e-3 && Math.abs(dot(l, Qax[1])) <= Q.h[1] + 1e-3 && Math.abs(dot(l, Qax[2])) <= Q.h[2] + 1e-3) pts.push(v); } return pts; };
   let pts = inside(A, a, B, b); if (!pts.length) pts = inside(B, b, A, a);
   best.p = pts.length ? mul(pts.reduce((q, v) => add(q, v), [0, 0, 0]), 1 / pts.length) : mul(add(A.c, B.c), 0.5);
+  if ((A.rounding || 0) || (B.rounding || 0)) {
+    // Closest points of the inner OBB cores. Rounded cuboids are exactly
+    // those cores inflated by their corner radii: no phantom corner hits.
+    const closest = (Q, p) => {
+      const axes = axesOf(Q.R), d = sub(p,Q.c), rad = Q.rounding || 0;
+      let out = Q.c;
+      for(let i=0;i<3;i++) {
+        const q=dot(axes[i],d), half=Math.max(0,Q.h[i]-rad);
+        out=add(out,mul(axes[i],Math.max(-half,Math.min(half,q))));
+      }
+      return out;
+    };
+    let pa=closest(A,B.c), pb=closest(B,pa);
+    for(let i=0;i<12;i++) {
+      const nextA=closest(A,pb), nextB=closest(B,nextA);
+      const delta=dot(sub(nextA,pa),sub(nextA,pa))+dot(sub(nextB,pb),sub(nextB,pb));
+      pa=nextA;pb=nextB;
+      if(delta<1e-12) break;
+    }
+    const v=sub(pa,pb), distance=Math.hypot(...v), combined=(A.rounding||0)+(B.rounding||0);
+    if(distance>0 && distance>=combined-1e-6) return null;
+    if(distance>1e-7){
+      best.n=mul(v,1/distance);
+      best.d=Math.max(1e-5,combined-distance);
+      const contactA=add(pa,mul(best.n,-(A.rounding||0)));
+      const contactB=add(pb,mul(best.n, B.rounding||0));
+      best.p=mul(add(contactA,contactB),0.5);
+    }
+  }
   return best;
 }
-const box = E => { const q = pose(E); return { c: add(q.c, mv(q.R, E.geom.cen || [0, 0, 0])), R: q.R, h: E.geom.half }; };
+const box = E => { const q = pose(E); return { c: add(q.c, mv(q.R, E.geom.cen || [0, 0, 0])), R: q.R, h: E.geom.half, rounding: E.geom.soft ? SOFT_RADIUS : 0 }; };
 const hitAny = (A, Q) => { for (const b of obbs(Q)) { const h = obbHit(A, b); if (h) return h; } return null; };
 function stepDyn(E, others, g, h) {   // 중력으로 떨어지고, 박힌 조각에 부딪히면 밀려나고 튕기고 미끄러져요
   const D = E.dyn; D.t += h; if (D.sleep > 0.6) return;
@@ -556,7 +590,7 @@ function stepDyn(E, others, g, h) {   // 중력으로 떨어지고, 박힌 조�
   for (const Q of others) {
     const rq = Q.rad || (Q.rad = Math.hypot(...Q.geom.half) + Math.hypot(...(Q.geom.cen || [0, 0, 0]))), re = E.rad || (E.rad = Math.hypot(...E.geom.half) + Math.hypot(...(E.geom.cen || [0, 0, 0]))), qc = pose(Q).c;
     if (Math.hypot(qc[0] - D.c[0], qc[1] - D.c[1], qc[2] - D.c[2]) > rq + re) continue;
-    const hit = hitAny({ c: add(D.c, mv(D.R, E.geom.cen || [0, 0, 0])), R: D.R, h: E.geom.half }, Q); if (!hit) continue;
+    const hit = hitAny({ c: add(D.c, mv(D.R, E.geom.cen || [0, 0, 0])), R: D.R, h: E.geom.half, rounding: E.geom.soft ? SOFT_RADIUS : 0 }, Q); if (!hit) continue;
     touch = true; const n = hit.n, r = sub(hit.p, D.c); D.c = add(D.c, mul(n, hit.d * 0.8 + 0.0005));
     const vr = add(D.v, cross(D.w, r)), vn = dot(vr, n);
     if (vn < 0) {
@@ -682,8 +716,58 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
   if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * (L <= 30 ? 2.2 : 2.45) < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
+// Place functional 45-degree screws on rounded-cube bevels in EVERY stage,
+// including the three tutorials. Normal collision and solvability rules apply.
+function addAngledScrews(M, L) {
+  const cubes=M.els.filter(e => e.kind==='block' && e.cell && e.geom.soft);
+  // Use actual world centres because a pedestal may shift its sculpted model
+  // while the original cell coordinates remain unchanged.
+  const key=v=>v.map(q=>Math.round(q*100000)).join(',');
+  const occupied=new Map(cubes.map(e=>[key(e.c),e])),candidates=[];
+  const outer=GRID/2-SOFT_RADIUS+SOFT_RADIUS/Math.SQRT2;
+  const dirs=[[0,2],[0,1],[1,2]]; // XZ bevels, XY bevels, then YZ bevels
+  for(const E of cubes)for(const [i,j] of dirs)for(const si of [-1,1])for(const sj of [-1,1]){
+    const offsetI=[0,0,0],offsetJ=[0,0,0];
+    offsetI[i]=si*GRID;offsetJ[j]=sj*GRID;
+    // Both adjacent sides must be unoccupied, so the entire bevel is real
+    // exterior surface rather than an invisible inter-block seam.
+    if(occupied.has(key(add(E.c,offsetI)))||occupied.has(key(add(E.c,offsetJ))))continue;
+    const normal=[0,0,0],point=[0,0,0],up=[0,0,0];
+    normal[i]=si;normal[j]=sj;
+    point[i]=si*outer;point[j]=sj*outer;
+    up[3-i-j]=1; // perpendicular to the screw's 45-degree direction
+    const a=norm(normal),p=add(E.c,point);
+    const priority=E.c[1]+(i===0&&j===2 ? .16 : i===0 ? .09 : .03);
+    candidates.push({E,a,p,up,priority});
+  }
+  candidates.sort((a,b)=>b.priority-a.priority);
+  const chosen=new Set(),limit=L>=250?6:3;
+  let done=0;
+  for(const {E,a,p,up} of candidates){
+    if(done>=limit)break;
+    if(L>3&&chosen.has(E))continue;
+    // Keep the head and washer clear of existing fasteners and solid parts.
+    if(M.screws.some(s=>Math.hypot(...sub(s.p,p))<.14))continue;
+    if(rayHit(add(p,mul(a,.06)),a,.15,M.els,[E]))continue;
+    const washer=el('plate',cylGeom(.077,.018,10),add(p,mul(a,.018)),
+      frame(a,up),'#C1D2DD',{badge:true,diagonal:true,material:'metal'});
+    M.els.push(washer);
+    const screw=pin(M,washer,E,add(p,mul(a,.036)),a);
+    screw.diagonal=true;
+    chosen.add(E);done++;
+  }
+  // Extra screws must always complete a trio, including the tutorial levels.
+  for(let k=0;k<done%3;k++){
+    const screw=M.screws.pop();
+    M.els.splice(M.els.indexOf(screw.thru),1);
+    M.hold.pop();
+  }
+  if(done-(done%3)<3)throw new Error('대각선 나사 설치 공간이 부족해요');
+}
 function buildLevel(L, alt = false) {
-  const M = mapLevel(applyClassicStyle(sizedModel(L, alt))), K = colorCount(L);   // 색상 수는 단계별 난이도 구간에 맞게 서서히 증가
+  const raw=applyClassicStyle(sizedModel(L,alt));
+  addAngledScrews(raw,L);
+  const M=mapLevel(raw), K=colorCount(L);   // 색상 수는 단계별 난이도 구간에 맞게 서서히 증가
   M.generating = true; // no falling or hinged parts during the solvability simulation
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
@@ -1164,7 +1248,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
-        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !exposedFaces[fi]) continue; const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
+        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)), soft: !!geom.soft, softCenter: !!f.center }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         if (!polys.length) return; // nothing visible; skip sorting and painting entirely
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv, planes, bb: [x0, y0, x1, y1], pv, hull: st.big ? null : hull2d(pv) });
@@ -1196,7 +1280,8 @@ function screw3d(api,startStage=loadResumeStage()) {
             for (const a of [0.6, -0.6]) for (const b2 of [0.5, -0.5]) cs.push(coverOf(add(sh.c, add(mul(u, a * hh[0]), mul(w, b2 * hh[2]))), E));
             if (cs.every(cv => cv.length)) { if (!(st.xrayOn && cs.some(cv => cv.every(o => o === st.xrayOn)))) continue; found.add(E); }
           }
-          solid(sh.geom, sh.R, sh.c, sh.color, E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E, E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
+          const geom = E.geom.soft && sh.geom === E.geom && st.big ? SOFT_CUBE_FAST : sh.geom;
+          solid(geom, sh.R, sh.c, sh.color, E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E, E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
         }
       }
       for (const s of st.lvl.screws) {   // 나사: 3D 머리(원기둥) + 십자 홈, 빠질 때는 돌며 솟아오르고 나삿대가 보여요
@@ -1245,7 +1330,7 @@ function screw3d(api,startStage=loadResumeStage()) {
           // Fine surface cues for the original models. Gameplay and hit boxes
           // remain unchanged; avoid extra strokes in fast high-level scenes.
           const mat = it.owner.material;
-          if (!st.big && mat && pg.pts.length === 4 && pg.lit > 0.18) {
+          if (!st.big && mat && (!pg.soft || pg.softCenter) && pg.pts.length === 4 && pg.lit > 0.18) {
             const [p0, p1, p2, p3] = pg.pts;
             const mix = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
             const strokeDetail = (col, x, y, xx, yy, width = 1) => {
@@ -1268,7 +1353,7 @@ function screw3d(api,startStage=loadResumeStage()) {
             material === 'paint' || material === 'polished' ||
             material === 'glass' || material === 'ceramic' || material === 'metal' ||
             /스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name));
-          if (showGloss && pg.lit > 0.4 && pg.pts.length >= 3 && it.owner.kind !== 'plate') {
+          if (showGloss && (!pg.soft || pg.softCenter) && pg.lit > 0.4 && pg.pts.length >= 3 && it.owner.kind !== 'plate') {
             const p0 = pg.pts[0], p1 = pg.pts[Math.floor(pg.pts.length / 2)];
             if (Math.hypot(p1.x - p0.x, p1.y - p0.y) > 1) {
               const g = c.createLinearGradient(p0.x, p0.y, p1.x, p1.y);
@@ -1280,8 +1365,8 @@ function screw3d(api,startStage=loadResumeStage()) {
           }
           if (!st.big && it.owner.flat && pg.up !== undefined && pg.pts.length === 4 && pg.lit > 0.2) {   // 판: 금속 빛 번짐
             const g2 = c.createLinearGradient(pg.pts[0].x, pg.pts[0].y, pg.pts[2].x, pg.pts[2].y); g2.addColorStop(0, 'rgba(255,255,255,0.45)'); g2.addColorStop(0.5, 'rgba(255,255,255,0)'); g2.addColorStop(1, 'rgba(90,100,140,0.18)'); c.fillStyle = g2; c.fill(); }
-          c.lineWidth = 1; c.strokeStyle = pg.line; c.stroke();
-          if (!st.big && (!it.owner.material || it.owner.material === 'wood') && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
+          c.lineWidth = pg.soft ? 0.5 : 1; c.strokeStyle = pg.soft ? pg.fill : pg.line; c.stroke();
+          if (!st.big && (!pg.soft || pg.softCenter) && (!it.owner.material || it.owner.material === 'wood') && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
             c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1.2; c.stroke();
             if (pg.pts.length === 4) { const [p0, p1, p2, p3] = pg.pts; c.strokeStyle = 'rgba(120,80,40,0.09)'; c.lineWidth = 1; c.beginPath();
               for (const tt of [0.27, 0.5, 0.74]) { c.moveTo(p0.x + (p1.x - p0.x) * tt, p0.y + (p1.y - p0.y) * tt); c.lineTo(p3.x + (p2.x - p3.x) * (tt + 0.04), p3.y + (p2.y - p3.y) * (tt + 0.04)); } c.stroke(); } }
