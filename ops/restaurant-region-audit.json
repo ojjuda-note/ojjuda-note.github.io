@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "cyclePolicy": {
+    "anchor": "2026-11-05T00:00:00+09:00",
+    "slotDurationHours": 6,
+    "slotsPerCycle": 84,
+    "repeatIndefinitely": true,
+    "selectionBasis": "예약 실행 시각을 기준으로 계산; 예약 시각을 모를 때 한국시각 6시간 경계로 내림",
+    "scheduledTimesKST": [
+      "00:00",
+      "06:00",
+      "12:00",
+      "18:00"
+    ],
+    "reviewOrder": "01~48 시·구, 49~60 도·광역 공식 명단, 61~84 군"
+  },
+  "active": {
+    "cycle": 1,
+    "slot": 1,
+    "scheduledAt": "2026-11-05T00:00:00+09:00",
+    "checkedAtKST": "2026-11-05",
+    "source": "scheduled execution 2026-11-05 00:00 Asia/Seoul"
+  },
+  "entries": [
+    {
+      "cycle": 1,
+      "slot": 1,
+      "scheduledAtKST": "2026-11-05T00:00:00+09:00",
+      "checkedAtKST": "2026-11-05",
+      "status": "partial_review_with_two_verified_additions",
+      "assignedRegions": [
+        "서울특별시 종로구",
+        "서울특별시 중구",
+        "서울특별시 용산구",
+        "서울특별시 성동구",
+        "서울특별시 광진구"
+      ],
+      "regionAudit": [
+        {
+          "region": "서울특별시 종로구",
+          "baseListedCount": 38,
+          "scope": "기본 DB 분포 확인, 미쉐린 호라파의 공식 식당 페이지·주소 교차확인",
+          "new": 0,
+          "updated": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 중구",
+          "baseListedCount": 43,
+          "scope": "기본 DB 분포 확인, 미쉐린 라연의 공식 식당 페이지·주소 교차확인",
+          "new": 0,
+          "updated": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 용산구",
+          "baseListedCount": 40,
+          "scope": "기본 DB 분포 확인, 미쉐린 능동미나리 주소 재대조, Visit Seoul 원대구탕 이름·지점·주소·블루리본 선정 이력 확인",
+          "new": 1,
+          "updated": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 성동구",
+          "baseListedCount": 8,
+          "scope": "기본 DB 분포 확인, 미쉐린 주052 주소 재대조, Visit Seoul 제이드앤워터 옥수 이름·지점·주소·블루리본 선정 이력 확인",
+          "new": 1,
+          "updated": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 광진구",
+          "baseListedCount": 1,
+          "scope": "기본 DB 분포 확인, 미쉐린 정면의 공식 식당 페이지·주소 교차확인",
+          "new": 0,
+          "updated": 0,
+          "notExhaustive": true
+        }
+      ],
+      "officialGovernmentDirectoryChecked": {
+        "url": "https://www.mois.go.kr/frt/sub/a04/localGovernment/screen.do",
+        "checkedAt": "2026-11-05",
+        "notes": "시군구 안내 웹페이지 접근·서울특별시 회차 대상 확인; 전국 행정구역 변동 전체 전수 판독은 미완료"
+      },
+      "sourcesChecked": [
+        "행정안전부 지자체 누리집",
+        "미쉐린 가이드 2026 공식 발표와 식당별 현재 공개 페이지(선정과 영업 상태 구분)",
+        "블루리본 공식 전체 지도 안내(전체 목록 미수집)",
+        "서울관광재단 Visit Seoul 음식점 소개(두 식당의 블루리본 이력과 도로명주소)"
+      ],
+      "additions": 2,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "addedRestaurantIds": [
+        "local-seoul-visitseoul-won-daegutang",
+        "local-seoul-visitseoul-jade-and-water-oksu"
+      ],
+      "existingItemsRechecked": [
+        "호라파 (종로구)",
+        "라연 (중구)",
+        "능동미나리 (용산구)",
+        "주052 (성동구)",
+        "정면 (광진구)"
+      ],
+      "evidenceUrls": [
+        "https://www.mois.go.kr/frt/sub/a04/localGovernment/screen.do",
+        "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants",
+        "https://guide.michelin.com/kr/ko/article/michelin-guide-ceremony/all-the-stars-michelin-guide-seoul-busan-2026",
+        "https://litt.ly/blueribbonsurvey",
+        "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
+        "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/horapa",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/la-yeon",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/neungdong-minari",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/sool052",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/jeongmyeon"
+      ],
+      "unresolved": [
+        {
+          "topic": "새 식당 두 곳의 위도·경도",
+          "reason": "상호·현 주소가 일치하는 공개 좌표 근거 미확보",
+          "action": "null 유지, 주소 일치 좌표 추가 발견 시 반영"
+        },
+        {
+          "topic": "새 식당 두 곳의 정확한 블루리본 선정 연도·정규 리본 수",
+          "reason": "Visit Seoul 글에 연속 선정·여러 해 선정만 기재",
+          "action": "연도 및 등급 미확인으로 표시"
+        },
+        {
+          "topic": "다섯 자치구의 전체 등록 누락 및 폐휴업",
+          "reason": "회차 내 공개 근거 일부만 대조; 가이드 목록 미확보·영업 확인 미완료",
+          "action": "각 구 다음 배정 시 미검토 식당 우선 조사"
+        },
+        {
+          "topic": "광진구 등록량 적음",
+          "reason": "기본 데이터 정면 1곳만 조회됨",
+          "action": "광진구 공식 시구 관광 명단과 신규 인증 근거 우선 조사"
+        }
+      ],
+      "carryOver": [
+        "기본 DB 좌표 미확인 5구 식당 중 실제 주소 일치 좌표 근거 추가 검증",
+        "5개 구 기존 식당의 실제 폐업·이전 여부 별도 확인",
+        "전국 블루리본 공식 전체 지도 개별 명단 수집 제한으로 미완료"
+      ],
+      "nextSlot": 2,
+      "nextRegions": [
+        "서울특별시 동대문구",
+        "서울특별시 중랑구",
+        "서울특별시 성북구",
+        "서울특별시 강북구",
+        "서울특별시 도봉구"
+      ]
+    }
+  ],
+  "notes": [
+    "운영 기록은 한 회차에 한 건씩 보존한다. 누락 회차는 후속 순환 동일 번호에서 보완한다.",
+    "회원 추천 데이터 및 사진은 자동 조사 대상에서 제외한다.",
+    "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다."
+  ]
+}
