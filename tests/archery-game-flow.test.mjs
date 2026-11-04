@@ -2126,9 +2126,11 @@ test('all three equipment shops show progressive traits and speeds for the curre
     const html = app.getElement('modalContent').innerHTML, displayed = cards(html);
     assert.equal(displayed.length, catalog.length, 'every catalog entry is reachable in the shop');
     assert.equal((html.match(/data-equip="\d+"/g) || []).length, catalog.length);
-    assert.match(clean(html), new RegExp(`무기\\s*${mainWeapons.length}\\s*종?`));
-    assert.ok(clean(html).includes(`화살 ${app.engine.ARROWS.length}종`));
-    assert.ok(clean(html).includes(`총알 ${app.engine.BULLETS.length}종`));
+    assert.deepEqual([...html.matchAll(/data-shop-tab="([^"]+)"/g)].map(match => match[1]), ['bow', 'arrow', 'scope']);
+    if (kind !== 'bow') {
+      assert.ok(clean(html).includes(`화살 ${app.engine.ARROWS.length}종`));
+      assert.ok(clean(html).includes(`총알 ${app.engine.BULLETS.length}종`));
+    }
     const combination = clean(html.match(/<details\b[^>]*class="shop-loadout"[^>]*>[\s\S]*?<\/details>/)?.[0] || '');
     assert.ok(combination.includes(app.api.activeBow().name) && combination.includes(app.api.activeArrow().name));
     assert.ok(combination.includes(speed(app.api.activeBow(), app.api.activeArrow())), 'the shop identifies the current comparison loadout');
@@ -2199,7 +2201,7 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
   assert.deepEqual(Array.from(app.api.progress.scopedBows), []);
   let coins = 10000;
   for (const id of [3, 7, 10]) {
-    app.api.equipItem(id);
+    app.api.showShop('bow');app.api.equipItem(id);app.api.showShop('scope');
     assert.ok(!app.api.progress.scopedBows.includes(id), 'another bow must purchase its own scope');
     assert.match(app.getElement('modalContent').innerHTML, new RegExp(`data-install-scope="${id}"`));
     app.api.installScope(id, 3);coins -= app.engine.BOWS[id].scopePrice;
@@ -2208,8 +2210,8 @@ test('scope purchases charge once for each owned compatible bow and stay bound a
     assert.equal(app.api.state.zoom, 3, 'buying a scope immediately activates its threefold view');
     assert.equal(app.getElement('zoomBtn').textContent, '조준경 3×');
     const html = app.getElement('modalContent').innerHTML;
-    const card = Array.from(html.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(app.engine.BOWS[id].name));
-    assert.match(card, /장착 중/);
+    assert.match(html, /장착 중/);
+    assert.match(html, /data-shop-tab="scope" aria-pressed="true"/);
     app.api.installScope(id, 3);
     assert.equal(app.api.progress.coins, coins);
     assert.equal(app.api.progress.scopedBows.filter(value => value === id).length, 1);
@@ -2235,8 +2237,8 @@ test('all four scope lenses can be bought once, switched for free through shop b
   };
   let coins = 100000;
   for (const zoom of [2, 3, 6, 8]) {
-    app.api.showShop('bow');
-    const card = Array.from(app.getElement('modalContent').innerHTML.matchAll(/<article\b[\s\S]*?<\/article>/g), match => match[0]).find(card => card.includes(app.engine.BOWS[19].name));
+    app.api.showShop('scope');
+    const card = app.getElement('modalContent').innerHTML;
     assert.deepEqual(Array.from(card.matchAll(/data-scope-zoom="(\d+)"/g), match => Number(match[1])), [2, 3, 6, 8]);
     select(zoom);coins -= app.engine.getScopePrice(19, zoom);
     assert.equal(app.api.progress.coins, coins);assert.equal(app.api.equippedScope(19), zoom);
@@ -2421,7 +2423,7 @@ test('installing a scope on an unequipped weapon leaves the current weapon and v
   app.api.showShop('bow');app.api.installScope(3, 3);
   assert.equal(app.api.activeBow().id, 0);assert.equal(app.api.state.zoom, 1);
   assert.deepEqual({...app.api.camera}, originalCamera);
-  app.api.equipItem(7);assert.equal(app.api.state.zoom, 1, 'an unscoped weapon cannot borrow another weapon’s scope');
+  app.api.showShop('bow');app.api.equipItem(7);assert.equal(app.api.state.zoom, 1, 'an unscoped weapon cannot borrow another weapon’s scope');
   app.api.equipItem(3);assert.equal(app.api.state.zoom, 3);
   assert.deepEqual(Array.from(app.api.progress.scopedBows), [3]);
 });
@@ -2447,9 +2449,9 @@ test('laser purchases start with the first crossbow and charge once per eligible
   for (const id of [-1, 25, '13', 0, 3, 10, 20, 22]) assert.equal(app.api.installLaser(id), false);
   assert.equal(app.api.progress.coins, 2000);
   const buy = id => {
-    app.api.showShop('bow');
+    app.api.showShop('scope', id);
     const available = [...app.getElement('modalContent').innerHTML.matchAll(/data-install-laser="(\d+)"/g)].map(match => Number(match[1])).sort((a,b) => a-b);
-    assert.deepEqual(available, Array.from({length: 10}, (_, index) => index + 10), 'only the ten crossbows offer lasers, including the first shop crossbow');
+    assert.deepEqual(available, [id], 'the selected owned crossbow offers its own laser');
     const button = app.getElement(`buy-laser-${id}`);button.tagName = 'BUTTON';button.dataset.installLaser = String(id);
     app.document.emit('click', { target: button });
   };
@@ -3340,7 +3342,7 @@ test('bullet types require an owned gun and are bought once, shared by every gun
   };
   const ids = () => Array.from(app.getElement('modalContent').innerHTML.matchAll(/data-equipment="bullet" data-equipment-id="(\d+)"/g), match => Number(match[1]));
   app.api.showShop('bullet');assert.deepEqual(ids(), [0, 1, 2, 3]);
-  assert.match(app.getElement('modalContent').innerHTML, /data-shop-tab="bullet"/);
+  assert.match(app.getElement('modalContent').innerHTML, /data-projectile-tab="bullet"/);
   for (const id of [0, 1, 2, 3]) choose(id);
   assert.deepEqual(Array.from(app.api.progress.ownedBullets), []);assert.equal(app.api.progress.coins, 1000000);
   assert.equal(app.api.activeBow().id, 0, 'the bullet tab never grants or auto-equips a gun');
@@ -5666,4 +5668,53 @@ test('a real 150-point administrator burst round never submits a ranking or chan
   assert.deepEqual(app.ammo.requests,[]);assert.deepEqual(app.finishedRounds,[]);assert.deepEqual(app.storageOperations,[]);
   assert.deepEqual(store,before);assert.equal(JSON.stringify(app.ammo.account),account);
   assert.equal(app.api.progress.coins,75,'trial rewards use the ordinary economy without touching real savings');
+});
+
+
+test('shop category buttons keep weapon, projectile and scope purchases in the correct inventories', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: 'snipers-bullets-v1',
+    coins: 1000000, ownedBows: [0, 13, 22], bow: 0, ownedBullets: [0]});
+  const click = (data, value) => {
+    const button = app.getElement(`shop-${data}-${value}`);button.tagName = 'BUTTON';button.dataset[data] = String(value);
+    app.document.emit('click', {target: button});
+  };
+  const html = () => app.getElement('modalContent').innerHTML;
+  app.api.showShop('bow');
+  assert.deepEqual([...html().matchAll(/data-shop-tab="([^"]+)"/g)].map(match => match[1]), ['bow', 'arrow', 'scope']);
+  assert.doesNotMatch(html(), /data-install-scope|data-install-laser/);
+  assert.match(html(), /data-scope-weapon="13"/);
+  click('shopTab', 'scope');
+  assert.match(html(), /<option value="0" selected>/);
+  assert.deepEqual([...html().matchAll(/data-scope-zoom="(\d+)"/g)].map(match => Number(match[1])), [2]);
+  assert.deepEqual([...html().matchAll(/<option value="(\d+)"/g)].map(match => Number(match[1])), [0, 13, 22]);
+  const before = app.snapshot(), selector = app.getElement('shopScopeWeapon');selector.tagName = 'SELECT';selector.value = '13';
+  app.document.emit('change', {target: selector});
+  assert.deepEqual(app.snapshot(), before, 'browsing another weapon never equips it or charges coins');
+  assert.equal(app.document.activeElement, selector);
+  assert.match(html(), /data-install-laser="13"/);
+  const buy = app.getElement('shop-scope-buy');buy.tagName = 'BUTTON';buy.dataset.installScope = '13';buy.dataset.scopeZoom = '3';
+  app.document.emit('click', {target: buy});
+  assert.equal(app.api.progress.bow, 0);assert.equal(app.api.state.zoom, 1);
+  assert.equal(app.api.progress.coins, before.coins - app.engine.getScopePrice(13, 3));
+  assert.equal(app.api.equippedScope(13), 3);
+  assert.match(html(), /data-shop-tab="scope" aria-pressed="true"/);
+  assert.match(html(), /<option value="13" selected>/);
+  click('shopTab', 'bow');click('scopeWeapon', 22);
+  assert.match(html(), /<option value="22" selected>/);assert.doesNotMatch(html(), /data-install-laser/);
+  assert.deepEqual([...html().matchAll(/data-scope-zoom="(\d+)"/g)].map(match => Number(match[1])), [2, 3, 6, 8]);
+  click('shopTab', 'arrow');assert.match(html(), /data-equipment="arrow"/);
+  const coins = app.api.progress.coins;click('equip', 1);
+  assert.equal(app.api.progress.arrow, 1);assert.equal(app.api.progress.coins, coins - app.engine.ARROWS[1].price);
+  click('projectileTab', 'bullet');click('equip', 3);
+  assert.equal(app.api.progress.bullet, 3);assert.equal(app.api.progress.arrow, 1);
+  assert.equal(app.api.progress.coins, coins - app.engine.ARROWS[1].price - app.engine.BULLETS[3].price);
+  assert.match(html(), /data-shop-tab="arrow" aria-pressed="true"/);
+  click('shopTab', 'bow');click('equip', 22);click('shopTab', 'arrow');
+  assert.match(html(), /data-projectile-tab="bullet" aria-pressed="true"/, 'a gun opens its ammunition directly');
+  click('projectileTab', 'arrow');assert.match(html(), /data-equipment="arrow"/);
+  const restored = await appHarness(app.snapshot());
+  assert.equal(restored.api.progress.arrow, 1);assert.equal(restored.api.progress.bullet, 3);assert.equal(restored.api.equippedScope(13), 3);
+  const poor = await appHarness();poor.api.showShop('scope');
+  assert.match(poor.getElement('modalContent').innerHTML, /data-install-scope="0"[^>]*disabled/);
+  const unchanged = poor.snapshot();poor.api.installScope(0, 2);assert.deepEqual(poor.snapshot(), unchanged);
 });
