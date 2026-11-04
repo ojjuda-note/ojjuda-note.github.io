@@ -90,8 +90,13 @@ for(const [stage,pieces] of [[19,7],[20,8],[34,8],[35,9],[54,9],[55,10],[80,11],
  game.destroy();
 }
 // Complete every introductory stage with only the three free spare holes.
+// Clear the petals, then move the screws that physically support the remaining centre and top petal.
+const flowerSolution=[[0,0],[1,1],[0,3],[1,4],[2,0],[3,1],[2,6],[3,5],[4,0],[5,1],[4,7],[5,8],[6,0],[7,1],[8,2],[9,9],[0,12],[11,11],[10,10],[3,3],[11,13],[2,5],[13,11],[12,14],[0,6],[11,15],[4,16],[1,13]];
 for(let stage=1;stage<=11;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
+ if(stage===11){
+  for(const [id,target] of flowerSolution)relocate(game,id,st.level.holes[target]);
+ }else{
  for(let i=0;i<st.level.order.length;i+=2){
   clearSupports(game);
   // Reuse only real screw positions vacated by moving plates.
@@ -103,6 +108,7 @@ for(let stage=1;stage<=11;stage++){
   relocate(game,st.level.order[i],st.level.holes[0]);relocate(game,st.level.order[i+1],st.level.holes[1]);
   clearSupports(game);
  }
+ }
  for(let wait=0;wait<6&&!st.complete;wait++){tick(game);clearSupports(game);}
  assert.equal(st.complete,true,`stage ${stage} clears under actual gravity and plate collisions`);
  assert.equal(st.physics.bodies.size,0,'only plates that actually left the board are removed');
@@ -112,26 +118,30 @@ for(let stage=1;stage<=11;stage++){
  if(stage===1){press(game,{x:267,y:514});assert.equal(st.L,2);}
  game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
-// Regression: level 25 used to trap loose metal on stored screws. A player
-// must be able to clear the entire level using only the three free holes.
-for(const stage of [20,24,25,26,32]){
- const game=G.flat(api,stage),st=game.state;
- assert.equal(st.extraHoles,0);assert.equal(st.extraMoves,0);
- for(const plate of st.level.plates){
-  for(const spare of st.level.holes.slice(0,2))if(spare.screw!==null){
-   const parking=st.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(st.level,h));
-   assert.ok(parking,`stage ${stage} has free parking for metal ${plate.id}`);
-   relocate(game,spare.screw,parking);
-  }
-  for(let i=0;i<plate.holeIds.length;i++)relocate(game,st.level.holes[plate.holeIds[i]].screw,st.level.holes[i]);
-  assert.equal(plate.state,'gone',`stage ${stage} plate ${plate.id} falls without paid holes or moves`);
+// Stage 25 must clear with three free holes and rigid screw collisions intact.
+storage.set(STAGE_KEY,'25');
+const safe25=G.flat(api,25),safe25State=safe25.state;
+assert.equal(safe25State.level.plates.length,8);
+assert.equal(safe25State.level.holes.length-safe25State.level.screws.length,3);
+assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
+for(let i=0;i<safe25State.level.order.length;i+=2){
+ for(const spare of safe25State.level.holes.slice(0,2))if(spare.screw!==null){
+  const parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));
+  assert.ok(parking,'a fallen petal frees a place for the parked screw');
+  relocate(safe25,spare.screw,parking);
  }
- assert.equal(st.complete,true,`stage ${stage} clears with no purchase`);
- assert.ok(st.moves<=st.moveLimit,`stage ${stage} clears within the base move budget`);
- assert.equal(st.extraHoles,0);assert.equal(st.extraMoves,0);
- if(stage===25)assert.equal(st.moves,30,'stage 25 has a reproducible 30-transfer solution');
- game.destroy();
+ const p=safe25State.level.plates[i/2];
+ relocate(safe25,safe25State.level.order[i],safe25State.level.holes[0]);
+ assert.equal(p.pins.length,1,'one remaining screw must hold the petal');
+ assert.equal(p.state,'hinged','a petal with one screw must not fall');
+ relocate(safe25,safe25State.level.order[i+1],safe25State.level.holes[1]);
+ assert.equal(p.state,'gone','a fully unscrewed petal drops without getting trapped');
 }
+assert.equal(safe25State.complete,true,'stage 25 clears without hints or paid holes');
+assert.equal(safe25State.moves,30);
+assert.ok(safe25State.moves<=safe25State.moveLimit);
+assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
+safe25.destroy();
 // The previous final stage now continues; the new final stage exits only once.
 for(const stage of [500,999]){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY)));game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
@@ -160,22 +170,22 @@ assert.ok(sim.engine.pairs.list.some(pair=>pair.isActive),'the two plates have a
 assert.ok(sim.move(level.screws[2],level.holes[2]));assert.ok(sim.move(level.screws[3],level.holes[3]));
 step(sim,4);assert.equal(upper.state,'gone');assert.equal(lower.state,'gone','removing the support releases both plates');sim.destroy();
 
-// Stored screws cannot trap a fully detached plate; it moves in front of them.
+// The lower metal has gone, but its relocated screws still physically support metal.
 level=fixture();level.plates[1].state='gone';sim=P.createPhysics(level);upper=level.plates[0];
 const parked=[150,210].map(x=>{const h={id:level.holes.length,x,y:300,owner:null,screw:null};level.holes.push(h);return h;});
 for(let i=0;i<2;i++)assert.ok(sim.move(level.screws[2+i],parked[i]));
 assert.equal(sim.bodies.size,1,'there is no lower metal plate in this fixture');
 assert.ok(sim.move(level.screws[0],level.holes[0]));assert.ok(sim.move(level.screws[1],level.holes[1]));
 step(sim,8,.05);
-assert.equal(upper.state,'gone','a released plate passes the parked screw heads');
-assert.equal(sim.bodies.size,0,'the released metal has left the picture');
+assert.equal(upper.state,'loose','parked screws support a released plate indefinitely');
+assert.ok(Math.abs(upper.y+15-(300-P.SCREW_RADIUS))<1,'the plate rests on the screw heads');
 for(const s of level.screws.slice(2)){
  assert.ok(P.canUnscrew(level,s),'a supporting screw remains accessible');
- assert.ok(!sim.engine.pairs.list.some(pair=>pair.isActive&&[pair.bodyA.label,pair.bodyB.label].includes('screw-'+s.id)),'parked screws cannot snag detached metal');
+ assert.ok(sim.engine.pairs.list.some(pair=>pair.isActive&&[pair.bodyA.label,pair.bodyB.label].includes('screw-'+s.id)),'both screw heads have physical contacts');
  assert.deepEqual(sim.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y});
 }
 assert.ok(sim.move(level.screws[2],level.holes[2]));assert.ok(sim.move(level.screws[3],level.holes[3]));
-step(sim,4,.05);assert.equal(upper.state,'gone','moving the parked screws keeps the cleared plate gone');
+step(sim,4,.05);assert.equal(upper.state,'gone','moving the supporting screws removes their old collisions and releases the plate');
 sim.destroy();assert.equal(sim.screwBodies.size,0);assert.equal(sim.engine.world.bodies.length,0);
 
 level=fixture(250);sim=P.createPhysics(level);upper=level.plates[0];
@@ -200,14 +210,12 @@ const covered={id:fast.level.holes.length,x:fast.p.x,y:fast.p.y,owner:null,screw
 assert.equal(P.canAccessHole(fast.level,covered),false);assert.equal(fast.sim.move(fast.level.screws[0],covered),false,'solid moving metal blocks a board hole');
 fast.sim.destroy();slow.sim.destroy();
 
-// The detached-plate rule also applies when plate IDs exceed collision-mask limits.
+// Plate IDs above 31 must still collide with another plate's supporting screws.
 level=fixture();level.plates[1].id=32;level.plates[1].h=6;level.plates[1].vertices.forEach(v=>v.y*=.15);
 level.plates[1].mounts.forEach((m,i)=>{m.x=i?30:-30;const h=level.holes[level.plates[1].holeIds[i]];h.owner=32;h.x=180+m.x;});
 sim=P.createPhysics(level);upper=level.plates[0];
 assert.ok(sim.move(level.screws[0],level.holes[0]));assert.ok(sim.move(level.screws[1],level.holes[1]));step(sim,8);
-assert.equal(upper.state,'loose','plate 32 still physically supports detached metal');
-assert.ok(Math.abs(upper.y+15-(330-3))<1,'detached metal rests on plate 32, not its screw heads');
-sim.destroy();
+assert.ok(Math.abs(upper.y+15-(330-P.SCREW_RADIUS))<1,'plate 0 rests on screws belonging to plate 32 instead of passing through them');sim.destroy();
 
 storage.set(STAGE_KEY,'4');const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state,first=st.level.order[0],second=st.level.order[1],initial=st.level.screws[first].hole;
 press(game,st.level.holes[0]);assert.equal(st.pending,null,'select a screw before its empty destination');
@@ -226,4 +234,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
 press(game,st.level.screws[0].hole);press(game,st.level.screws[1].hole);assert.equal(st.selected,1);assert.equal(st.pending,null);invariant(st.level);
 game.onKey('Escape');game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 metal layouts, thirteen outlines, free introductory and advanced playthroughs including level 25, detached-plate collisions, three spare holes, progression and input regressions.');
+console.log('PASS: 1000 layouts with thirteen progressive metal outlines and a flower playthrough and varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced piece release, explicit stage selection beyond 500, final-stage boundaries, three spare holes, eleven free introductory playthroughs, a solvable stage 25 and physical screw-support regressions.');

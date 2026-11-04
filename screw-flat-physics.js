@@ -152,7 +152,31 @@
     }
     return null;
   }
+
+  function makeBalancedFlower25(L){
+    const tops=[245,178,222,151,151,222,178,245],bottoms=[420,465,435,481,481,435,465,420];
+    const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[],silhouette=[];
+    for(let i=0;i<8;i++){
+      const left=32.5+i*37,right=left+36,top=tops[i],bottom=bottoms[i];
+      const x=(left+right)/2,y=(top+bottom)/2,raw=[
+        {x:left+4,y:top},{x:right-4,y:top},{x:right,y:top+4},{x:right,y:bottom-4},
+        {x:right-4,y:bottom},{x:left+4,y:bottom},{x:left,y:bottom-4},{x:left,y:top+4}];
+      const p={id:i,z:i,row:0,col:i,releaseFrom:1,x,y,angle:0,
+        vertices:raw.map(v=>({x:v.x-x,y:v.y-y})),mounts:[],pins:[],holeIds:[],
+        state:'fixed',vx:0,vy:0,spin:0,w:36,h:bottom-top};
+      plates.push(p);silhouette.push(raw);
+      // Release the lower pin first: the upper pin holds the strip upright.
+      for(const sy of [bottom-43,top+43]){
+        const h={id:holes.length,x,y:sy,owner:i,screw:screws.length};holes.push(h);
+        p.holeIds.push(h.id);p.mounts.push({x:0,y:sy-y});
+        p.pins.push({hole:h.id,mount:p.mounts.length-1});
+        screws.push({id:screws.length,hole:h,startHole:h.id});
+      }
+    }
+    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[6],screwRadius:SCREW_RADIUS,silhouette,plates,holes,screws,order:screws.map(s=>s.id)};
+  }
   function makeShapedLevel(L){
+    if(L===25)return makeBalancedFlower25(L);
     const count=pieceCount(L),shape=shapeIndex(L),outline=shapeOutline(shape,L===FIRST_SHAPED_STAGE);
     const area=outline.reduce((sum,poly)=>sum+M.Vertices.area(poly),0),density=shape>=7?Math.min(1,Math.sqrt(area/75000)):1;
     const radius=SCREW_RADIUS*density/(1+Math.max(0,count-18)*.04);let leaves,roots;
@@ -251,9 +275,6 @@
       for(const c of joints.get(p.id)||[])M.Composite.remove(engine.world,c);joints.set(p.id,[]);
       const fixed=p.pins.length>=2;M.Body.setStatic(b,fixed);
       p.state=fixed?'fixed':p.pins.length?'hinged':'loose';
-      // A fully detached plate drops in front of the board, so exposed screw
-      // heads must not trap it. Keep metal-to-metal and hinged collisions.
-      b.collisionFilter.mask=p.pins.length?3:2;
       if(fixed){M.Body.setVelocity(b,{x:0,y:0});M.Body.setAngularVelocity(b,0);}
       else if(p.pins.length===1){
         const pin=p.pins[0],hole=level.holes[pin.hole],q=worldPoint(p,p.mounts[pin.mount]);
