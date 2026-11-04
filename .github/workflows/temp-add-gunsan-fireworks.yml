@@ -1,0 +1,85 @@
+name: Add verified Gunsan fireworks festival
+
+on:
+  push:
+    branches:
+      - fix-gunsan-fireworks-20261104
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Add event data
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('games/festival-schedule/events.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          event = {
+              'id': 'gunsan-fireworks-2026',
+              'title': '2026 군산불꽃축제',
+              'category': 'local',
+              'start': '2026-11-14',
+              'end': '2026-11-14',
+              'region': '전북',
+              'city': '군산시',
+              'venue': '군산 내항 친수공원 일원',
+              'address': '전북특별자치도 군산시 장미동 49-2',
+              'lat': 35.991,
+              'lng': 126.712,
+              'geoApprox': True,
+              'summary': '동백대교와 군산 내항을 배경으로 음악과 불꽃이 어우러지는 약 30분간의 해상 멀티미디어 불꽃쇼입니다.',
+              'scheduleNote': '20:00 시작 / 약 30분 진행',
+              'priceNote': '무료 관람',
+              'accessNote': '행사장 안에는 먹거리·판매 부스를 운영하지 않습니다. 교통통제와 관람구역 안내는 공식 공지를 확인해 주세요.',
+              'sourceUrl': 'https://www.gunsan.go.kr/main/m363/view/9835781',
+              'sourceName': '군산시',
+              'sourceCheckedAt': '2026-11-04',
+              'verificationSources': [
+                  'https://www.gunsan.go.kr/main/m2562'
+              ],
+              'tags': ['불꽃축제', '야간', '바다', '무료'],
+              'status': 'scheduled'
+          }
+
+          events = [item for item in data.get('events', []) if item.get('id') != event['id']]
+          insert_at = len(events)
+          for index, item in enumerate(events):
+              start = item.get('start')
+              if start is None or (isinstance(start, str) and start > event['start']):
+                  insert_at = index
+                  break
+          events.insert(insert_at, event)
+          data['events'] = events
+          data['updatedAt'] = '2026-11-04'
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Validate festival data
+        run: |
+          node games/festival-schedule/validate.mjs
+          node tests/festival-core.test.mjs
+          node tests/festival-entry.test.cjs
+          node tests/game-release-refresh.test.cjs
+          node --check games/festival-schedule/app.js
+      - name: Commit verified update and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/temp-add-gunsan-fireworks.yml
+          git config user.name 'ojjuda-note'
+          git config user.email 'mj830417@naver.com'
+          git add -A
+          git commit -m 'Add 2026 Gunsan fireworks festival'
+          git push origin HEAD:fix-gunsan-fireworks-20261104
