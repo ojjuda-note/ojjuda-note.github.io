@@ -701,7 +701,12 @@ const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6
 // Tutorial: 2 colors; higher stages introduce one new color at key milestones.
 const difficultyTier = L => L <= 3 ? 0 : L <= 30 ? 1 : L <= 100 ? 2
   : L <= 250 ? 3 : L <= 500 ? 4 : L <= 750 ? 5 : 6;
-const colorCount = L => [2, 3, 4, 5, 6, 7, 7][difficultyTier(L)];
+// Higher stages add new screw colors without changing the 3-of-a-kind rule.
+// A correct route still needs only the two default boxes; detours use storage.
+const colorCount = L => L <= 3 ? 2 : L <= 30 ? 3 : L <= 70 ? 4
+  : L <= 120 ? 5 : L <= 200 ? 6 : L <= 300 ? 7
+  : L <= 420 ? 8 : L <= 550 ? 9 : L <= 690 ? 10
+  : L <= 850 ? 11 : 12;
 function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
   const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
   return assemble(['작은 블럭', '블럭 기차', '네모 블럭'][L - 1], cells.map((p, i) => cube(...p, WOOD[i])), { minS: targetScrews(L) });
@@ -780,8 +785,8 @@ function buildLevel(L, alt = false) {
   M.els.forEach(e => { e.state = 'on'; }); M.screws.forEach(s => { s.state = 'in'; });
   const queue = [];
   for (let t = 0; t < order.length / 3; t++) { let c; do { c = t < K || L <= 3 ? t % K : Math.floor(Math.random() * K); } while (t >= 2 && c === queue[t - 1] && c === queue[t - 2]); queue.push(c); }
-  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; });
-  return { name: M.name, els: M.els, screws: M.screws, queue, grid: M.grid, gridEls: M.gridEls, special: M.special, mid: M.mid, refs: M.refs };
+  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; s.solutionOrder = i + 1; });
+  return { name: M.name, els: M.els, screws: M.screws, queue, solution: order, grid: M.grid, gridEls: M.gridEls, special: M.special, mid: M.mid, refs: M.refs };
 }
 // 작은 물건은 계단식 블럭 전시대 위에 올려서 나사 수를 맞춰요 (전시대도 블럭 사이에 판과 나사가 숨은 퍼즐)
 function withPedestal(obj, T) {
@@ -1002,14 +1007,24 @@ function screw3d(api,startStage=loadResumeStage()) {
     try { localStorage.setItem(key, JSON.stringify(st.purchases)); return true; } catch (_) { return false; }
   }
   if (typeof window !== 'undefined') { window.__ojjScrew3d = st; window.__ojjS3d = { rayHit, pose, F, sepFront, LENS_R }; }   // 시험용
-  const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
+  // A freely rearranged color box keeps the screws already inside it. We
+  // reserve each 3-screw group once, even if it is brought forward out of order.
+  const newBox = () => {
+    if (st.parkedBoxes?.length) return st.parkedBoxes.shift();
+    while (st.qi < st.lvl.queue.length && st.takenGroups?.has(st.qi)) st.qi++;
+    if (st.qi >= st.lvl.queue.length) return null;
+    const q = st.qi++; st.takenGroups?.add(q);
+    return { c: st.lvl.queue[q], q, n: 0, res: 0, close: 0 };
+  };
   function say(m, t) { st.msg = m; st.msgT = t; }
   // Use the arcade's existing sound setting and sound engine.
   const sound = type => { try { api.playSfx?.(type); } catch (_) { /* audio is optional */ } };
   function start(L) { ended = false; st.over = 0; st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     // Start big objects in fast mode so the first rendered frame does not lag.
     st.big = st.lvl.screws.length + st.lvl.els.length > 420;
-    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
+    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
+    st.sorting = 0; st.sorts = 0; st.detours = 0;
+    st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
   }
   const view = () => mm(rx(st.pitch), ry(st.yaw));
@@ -1095,13 +1110,62 @@ function screw3d(api,startStage=loadResumeStage()) {
   function send(s, fx, fy) {
     const bi = bestBox(s.color); let to;
     if (bi >= 0) { const b = st.boxes[bi]; to = { kind: 'box', bi, ...boxHole(bi, b.n + b.res, st.boxes.length, st.boxes.length < BOX_MAX) }; b.res++; }
-    else { const k = st.buf.indexOf(null); if (k < 0) return false; st.buf[k] = 'res'; to = { kind: 'buf', k, ...bufHole(k, st.buf.length, st.buf.length < BUF_MAX) }; if (st.ms.id === 'nobuf') st.ms.bad = true; }
+    else { const k = st.buf.indexOf(null); if (k < 0) return false; st.buf[k] = 'res'; to = { kind: 'buf', k, ...bufHole(k, st.buf.length, st.buf.length < BUF_MAX) }; if (st.ms.id === 'nobuf') st.ms.bad = true; st.detours++; }
     st.fly.push({ s, fx, fy, to, t: 0, wait: 0.34 }); return true;
   }
   function pullFromBuffer() {
     st.buf.forEach((s, k) => { if (!s || s === 'res') return; const bi = bestBox(s.color); if (bi < 0) return;
       const b = st.boxes[bi], h = bufHole(k, st.buf.length, st.buf.length < BUF_MAX); st.buf[k] = null; s.state = 'fly'; st.fly.push({ s, fx: h.x, fy: h.y, to: { kind: 'box', bi, ...boxHole(bi, b.n + b.res, st.boxes.length, st.boxes.length < BOX_MAX) }, t: 0, wait: 0 }); b.res++; });
   }
+  // Wrong color order is allowed. If a player fills the temporary tray, a
+  // no-ZU recovery swaps one current box with a future color group, preserving
+  // partial boxes. Paid upgrades merely save the time spent rearranging.
+  const SORT_X = 21, SORT_Y = 198, SORT_W = 122, SORT_H = 29;
+  function chooseSort() {
+    if (!st.buf?.some(v => v && v !== 'res') || !st.lvl) return null;
+    const colors = new Map();
+    for (const screw of st.buf) if (screw && screw !== 'res')
+      colors.set(screw.color,(colors.get(screw.color)||0)+1);
+    const candidates = [];
+    // Bring back an already-started box if one of its colors is waiting.
+    st.parkedBoxes.forEach((box,j) => {
+      if (box && !box.close && box.n + box.res < 3 && colors.has(box.c))
+        candidates.push({kind:'parked', j, c:box.c, priority:colors.get(box.c)*1000-box.q});
+    });
+    for(let j=st.qi;j<st.lvl.queue.length;j++){
+      if (st.takenGroups.has(j)) continue;
+      const c=st.lvl.queue[j];if(!colors.has(c))continue;
+      candidates.push({kind:'future',j,c,priority:colors.get(c)*1000-j});
+    }
+    candidates.sort((a,b)=>b.priority-a.priority);
+    if(!candidates.length)return null;
+    const slots=st.boxes.map((box,i)=>({box,i}))
+      .filter(({box})=>box&&!box.close&&box.res===0)
+      .sort((a,b)=>(a.box.n-b.box.n)||(b.box.q-a.box.q));
+    if(!slots.length)return null;
+    return {target:candidates[0],index:slots[0].i};
+  }
+  function completeSort() {
+    const action=chooseSort();
+    if(!action) { say('정리할 색상 상자가 없어요 · 다른 나사를 확인해 보세요',2);return; }
+    const {target,index}=action, old=st.boxes[index];
+    st.parkedBoxes.push(old);
+    if(target.kind==='parked'){
+      st.boxes[index]=st.parkedBoxes.splice(target.j,1)[0];
+    } else {
+      st.takenGroups.add(target.j);
+      st.boxes[index]={c:target.c,q:target.j,n:0,res:0,close:0};
+    }
+    st.sorts++; pullFromBuffer();
+    say('상자 색상을 바꿨어요 · 기존 나사는 보관돼요',2);
+  }
+  function organize() {
+    if(st.sorting>0)return;
+    if(!chooseSort()){ say('정리할 색상 나사를 보관칸에 먼저 모아 주세요',1.7);return; }
+    st.sorting=8; say('색상 상자 정리 중 · 8초 소요',1.6);
+  }
+  const organizeBtn=(x,y)=> x>=SORT_X&&x<=SORT_X+SORT_W&&y>=SORT_Y&&y<=SORT_Y+SORT_H
+    ? organize : null;
   function release(E) {   // 나사가 빠진 뒤: 판은 1개 남으면 그 나사로 매달리고, 하나도 없으면(블럭도) 떨어져요
     const left = st.lvl.screws.filter(s => s.state === 'in' && (s.thru === E || s.into === E));
     if (!left.length) {
@@ -1133,7 +1197,11 @@ function screw3d(api,startStage=loadResumeStage()) {
     if (!send(s, h.x, h.y)) {
       const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 1, canBox = st.boxes.length < BOX_MAX && balance >= 3 && st.qi < st.lvl.queue.length;
       if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (1 ZU)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (3 ZU)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
-      st.over = 1.3; sound('blocked'); say('보관 칸이 가득 찼어요', 1.3); return;
+      // A bad move is not an immediate loss. The player may rearrange boxes
+      // for free (8 seconds), purchase storage, or find another playable screw.
+      sound('blocked');
+      say('보관칸이 가득 찼어요 · 상자 정리(무료) 또는 아이템', 2.1);
+      return;
     }
     s.state = 'out'; s.t = 0; sound('tap'); release(s.thru); release(s.into);
   }
@@ -1176,7 +1244,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (st.pinch) { if (!st.ptrs.size) st.pinch = null; st.drag = null; return; }
       const d = st.drag; st.drag = null;
       if (st.lensHold) { st.lensHold = false; st.lens = null; return; }   // 꾹 누르기는 보기만 해요
-      if (d && !d.moved) { const sb = shopBtn(x, y); if (sb) { sb(); return; } const bt = zoomBtn(x, y); if (bt) { bt(); st.touched = true; return; } tap(x, y); }
+      if (d && !d.moved) { const sb = shopBtn(x, y); if (sb) { sb(); return; } const org = organizeBtn(x, y); if(org) { org(); return; } const bt = zoomBtn(x, y); if (bt) { bt(); st.touched = true; return; } tap(x, y); }
     },
     onCancel(id = 0) {
       // A cancelled touch must never count as a tap or trigger a ZU purchase.
@@ -1191,6 +1259,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (restoreBlocked) { if (Date.now() >= retryAt) void verifyPurchases(false); return; }
       st.t += dt; if (st.msgT > 0) st.msgT -= dt; if (st.shake && (st.shake.t -= dt) <= 0) st.shake = null;
       if (st.over) { st.over -= dt; if (st.over <= 0) { ended = true; sound('lose'); api.end(st.score, {outcome:'failure'}); } return; }
+      if(st.sorting>0) { st.sorting=Math.max(0,st.sorting-dt); if(st.sorting===0)completeSort(); }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
       const g = mv(tr(view()), [0, -1, 0]);   // 화면 아래(중력)를 물건 쪽 방향으로
@@ -1244,6 +1313,15 @@ function screw3d(api,startStage=loadResumeStage()) {
       const completedFraction = 1 - remaining / Math.max(1, st.lvl.screws.length);
       if (completedFraction > 0) { c.fillStyle = '#4B9D9A'; c.fillRect(20, 43, 320 * completedFraction, 4); }
       drawBoxes(c, st); drawBuffer(c, st);
+      // Color management difficulty and a free time-costly escape from a full tray.
+      const sortable=chooseSort();
+      c.save();
+      rr(c,SORT_X,SORT_Y,SORT_W,SORT_H,11);
+      c.fillStyle=st.sorting>0?'#D6DEE5':sortable?'#D9ECE8':'#EEE6DF';c.fill();
+      c.lineWidth=1;c.strokeStyle=sortable?'#5AA59C':'#C9BFB5';c.stroke();
+      c.fillStyle=sortable?'#246C63':'#7C7B82';c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
+      c.fillText(st.sorting>0?`정리 ${Math.ceil(st.sorting)}초`:'상자 정리 · 무료',SORT_X+SORT_W/2,SORT_Y+SORT_H/2);
+      c.restore();
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
@@ -1385,7 +1463,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         drawScrew(c, x, y, COLORS[f.s.color], f.t * 9, 1 + Math.sin(Math.PI * t) * 0.3);
       }
       if (st.msgT > 0 && st.msg) { c.save(); c.globalAlpha = Math.min(1, st.msgT * 3); c.font = 'bold 16px sans-serif'; const w = Math.max(200, c.measureText(st.msg).width + 60); rr(c, 180 - w / 2, 198, w, 44, 22); c.fillStyle = 'rgba(35,38,74,0.86)'; c.fill(); c.fillStyle = '#FFFFFF'; c.textAlign = 'center'; c.fillText(st.msg, 180, 220); c.restore(); }
-      if (!st.touched) { c.fillStyle = '#A38F7C'; c.font = '12px sans-serif'; c.textAlign = 'center'; c.fillText('끌어서 돌리고, 나사를 톡 눌러 빼요', 180, 504); }
+      if (!st.touched) { c.fillStyle = '#A38F7C'; c.font = '12px sans-serif'; c.textAlign = 'center'; c.fillText('같은 색 3개씩 먼저 · 순서가 어긋나면 보관이 어려워요', 180, 504); }
       if (st.ms) { const ok = missionOk(st.ms), fail = (st.ms.id === 'nobuf' || st.ms.id === 'nomiss') && st.ms.bad || st.ms.id === 'time' && st.ms.t > st.ms.need || st.ms.id === 'turns' && st.ms.turns > st.ms.need;
         c.font = 'bold 12.5px sans-serif'; c.textAlign = 'center'; const txt = missionText(st.ms), w = c.measureText(txt).width + 24;
         rr(c, 180 - w / 2, 512, w, 22, 11); c.fillStyle = fail ? 'rgba(240,103,154,0.16)' : ok ? 'rgba(47,185,154,0.16)' : 'rgba(35,38,74,0.07)'; c.fill();
