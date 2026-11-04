@@ -20,6 +20,7 @@ const engineSource = await readFile(new URL('../games/forest-archer/engine.mjs',
 const animalSource = await readFile(new URL('../games/forest-archer/animal-zones.mjs', import.meta.url), 'utf8');
 const viewSource = await readFile(new URL('../games/forest-archer/view.mjs', import.meta.url), 'utf8');
 const cinematicSource = await readFile(new URL('../games/forest-archer/cinematic.mjs', import.meta.url), 'utf8');
+const bulletCinematicSource = await readFile(new URL('../games/forest-archer/bullet-cinematic.mjs', import.meta.url), 'utf8');
 const coachSource = await readFile(new URL('../games/forest-archer/coach.mjs', import.meta.url), 'utf8');
 const laserSource = await readFile(new URL('../games/forest-archer/laser.mjs', import.meta.url), 'utf8');
 const gameSource = await readFile(new URL('../games/forest-archer/game.mjs', import.meta.url), 'utf8');
@@ -47,6 +48,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   let now = 0, nextFrame = null, frameId = 0, timerId = 0;
   let viewport = { width: 1000, height: 600 }, canvasOrigin = { left: 0, top: 0 }, sceneryFrame, firstPersonFrame;
   const timers = new Map(), canvasText = [], canvasArcs = [], bullseyeFrames = [], vignetteFrames = [], animalFrames = [], storageOperations = [];
+  const bulletFlightFrames = [], bulletMarkFrames = [], bulletImpactFrames = [], bulletVignetteFrames = [];
   const speech = {utterances: [], times: [], cancellations: 0, overlaps: 0, activeUntil: 0};
   const elements = new Map(), store = ammoOptions.store || new Map(saved ? [[SAVE_KEY, JSON.stringify({launchEpoch: 4, stageCatalog: STAGE_CATALOG, ...saved})]] : []);
   const noop = () => {};
@@ -158,6 +160,7 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const animals = new vm.SourceTextModule(animalSource, { context, identifier: 'animal-zones.mjs' });
   const view = new vm.SourceTextModule(viewSource, { context, identifier: 'view.mjs' });
   const cinematic = new vm.SourceTextModule(cinematicSource, { context, identifier: 'cinematic.mjs' });
+  const bulletCinematic = new vm.SourceTextModule(bulletCinematicSource, { context, identifier: 'bullet-cinematic.mjs' });
   const coach = new vm.SourceTextModule(coachSource, { context, identifier: 'coach.mjs' });
   const laser = new vm.SourceTextModule(laserSource, { context, identifier: 'laser.mjs' });
   const ammoModule = new vm.SourceTextModule(ammoSource, { context, identifier: 'ammo-client.mjs' });
@@ -165,13 +168,18 @@ async function appHarness(saved = null, ammoOptions = {}) {
   const scenery = new vm.SyntheticModule(sceneryNames, function () {
     for (const name of sceneryNames) this.setExport(name, name === 'drawScenery' ? (_ctx, _w, _h, options) => { sceneryFrame = options; } : name === 'drawFirstPersonBow' ? (_ctx, _w, _h, options) => { firstPersonFrame = options; } : name === 'drawAnimal' ? (...args) => animalFrames.push(args.slice(1)) : name === 'drawBullseyeImpact' ? (...args) => bullseyeFrames.push(args.slice(1)) : name === 'drawBullseyeVignette' ? (...args) => vignetteFrames.push(args.slice(1)) : noop);
   }, { context });
+  const bulletEffectFrames = {drawCinematicBullet: bulletFlightFrames, drawBulletMark: bulletMarkFrames,
+    drawBulletImpact: bulletImpactFrames, drawBulletVignette: bulletVignetteFrames};
+  const bulletEffects = new vm.SyntheticModule(Object.keys(bulletEffectFrames), function () {
+    for (const [name, frames] of Object.entries(bulletEffectFrames)) this.setExport(name, (...args) => frames.push(args.slice(1)));
+  }, { context });
   const game = new vm.SourceTextModule(gameSource + '\nexport const testApi = { state, get progress(){return progress;}, get ammo(){return ammo;}, startStage, resetRound, finishRound, showShop, equipItem, installScope, equippedScope, hasScope, maximumZoom, setAimZoom, installLaser, activeLaser, laserEnabled, setLaserSettings, adjustLaser, resetLaser, toggleLaser, setLaserStep, laserFrame, openLaserAdjustments, closeLaserAdjustments, save, closeModal, activeBow, activeArrow, activeBullet, aimAngles, shotParams, effectiveSway, isSteady, get camera(){return camera;}, sceneItems, resize, project, onImpact, retryAmmo, showStabilizers, buyStabilizer, useStabilizer, aimBounds, cinematicFrame, renderTime, adminTrialRequested, get adminTrialActive(){return adminTrialActive;}, get pointer(){return pointer;} };', { context, identifier: 'game.mjs' });
-  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
+  await game.link(specifier => specifier.startsWith('./engine.mjs') ? engine : specifier.startsWith('./animal-zones.mjs') ? animals : specifier.startsWith('./view.mjs') ? view : specifier.startsWith('./cinematic.mjs') ? cinematic : specifier.startsWith('./bullet-cinematic.mjs') ? bulletCinematic : specifier.startsWith('./bullet-effects.mjs') ? bulletEffects : specifier.startsWith('./coach.mjs') ? coach : specifier.startsWith('./laser.mjs') ? laser : specifier.startsWith('./ammo-client.mjs') ? ammoModule : scenery);
   await game.evaluate();
   await flush();
   api = game.namespace.testApi;
   return {
-    api, engine: engine.namespace, animals: animals.namespace, view: view.namespace, cinematic: cinematic.namespace, coach: coach.namespace, laser: laser.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, animalFrames, speech, flush,
+    api, engine: engine.namespace, animals: animals.namespace, view: view.namespace, cinematic: cinematic.namespace, bulletCinematic: bulletCinematic.namespace, coach: coach.namespace, laser: laser.namespace, getElement, store, document, window, canvasText, canvasArcs, bullseyeFrames, vignetteFrames, bulletFlightFrames, bulletMarkFrames, bulletImpactFrames, bulletVignetteFrames, animalFrames, speech, flush,
     ammo: { account, receipts, runs, requests: ammoRequests, held: heldActions, reply: replyAmmo, execute: executeAmmo, snapshot: accountSnapshot },
     finishedRounds, storageOperations, sendInit,
     get animationScheduled() { return !!nextFrame; },
@@ -985,22 +993,159 @@ test('a real bullseye replays recorded flight once, holds impact, and restores a
   app.frames(4);assert.ok(state.time > worldTime, 'normal scene time resumes when the replay is complete');
 });
 
-test('eight-point hits, misses, main guns and animal hits do not start the circular-target bullseye replay', async () => {
-  for (const outcome of ['eight', 'miss']) {
-    const app = await appHarness(), {state} = app.api;
+test('eight-point hits, misses and animal hits do not start either circular-target celebration', async () => {
+  for (const bow of [0, 22]) for (const outcome of ['eight', 'miss']) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+      ownedBows: bow ? [0, bow] : [0], bow, ownedBullets: bow ? [0, 3] : [], bullet: 3, sound: false});
+    const {state} = app.api;app.until(() => state.mode === 'ready' && state.reloadRemaining === 0);
     const {pad, coords} = outcome === 'eight' ? preciseMainDraw(app, {x: .3, y: 0}) : startHighMiss(app);
     pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
     assert.equal(state.shot.result.score, outcome === 'eight' ? 8 : 0);
     assert.equal(state.cinematic, null);app.frames(5);
     assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
     assert.equal(app.bullseyeFrames.length, 0);assert.equal(app.vignetteFrames.length, 0);
+    assert.equal(app.bulletFlightFrames.length, 0);assert.equal(app.bulletImpactFrames.length, 0);assert.equal(app.bulletVignetteFrames.length, 0);
   }
-  const gun = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20], bow: 20, sound: false});
-  const bullet = await preciseMainShot(gun);assert.equal(bullet.result.score, 10);
-  assert.equal(gun.api.state.cinematic, null);assert.equal(gun.api.state.score, 10);
   const animal = await appHarness();await enterScene(animal, 'rabbit');
   resolveTestHit(animal, {x: 0, y: 0}, {x: 0, y: -2, z: 30}, 10);
   assert.equal(animal.api.state.cinematic, null);assert.equal(animal.api.state.score, 10);
+});
+
+test('every gun and bullet type plays a separate rotating-bullet celebration without replaying physics or awarding twice', async () => {
+  for (const bow of [20, 21, 22]) for (const bullet of [0, 1, 2, 3]) {
+    const distance = [10, 50, 150, 10][bullet];
+    const stage = STAGE_FIXTURES.find(entry => entry.kind === 'target' && entry.distance === distance && !entry.motion.speed && !entry.obstacles.length && !entry.passers.length);
+    const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+      ownedBows: [0, bow], bow, ownedBullets: [0, 1, 2, 3], bullet, coins: 100, lastStage: stage.id, sound: false}), {remaining: 0});
+    const {state} = app.api, {pad, coords} = preciseMainDraw(app);
+    const aim = {...state.aim}, baseCamera = {...app.api.camera};
+    pad.emit('pointerup', coords);await app.flush();
+    // The fastest bullet can resolve inside one rendered frame. Its launch and
+    // real impact still provide the two endpoints needed for its own replay.
+    if (bullet === 3) {
+      app.advanceTo(app.now + 1000 / 30);
+      assert.equal(state.mode, 'settling', 'a fastest close-range hit resolves within one rendered frame');
+    }
+    app.until(() => state.mode === 'settling');
+    const shot = state.shot, replay = state.cinematic, worldTime = state.time;
+    assert.equal(shot.projectileType, 'bullet');assert.equal(shot.bulletId, bullet);assert.equal(shot.result.score, 10);
+    assert.equal(replay?.kind, 'bullet');assert.equal(replay.shot, shot);assert.ok(shot.replayFrames.length >= 2);
+    assert.equal(app.cinematic.createBullseyeCinematic(shot, worldTime), null, 'a bullet uses its own presentation instead of the arrow animation');
+    assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'flight');
+    assert.equal(app.getElement('shotFeedback').classList.contains('hidden'), true);
+    const physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result});
+    const accounting = shotAccounting(app);assert.deepEqual(accounting, [1, 10, 1, 1, 1, 110, 0]);
+    app.api.onImpact();app.api.onImpact();assert.equal(state.cinematic, replay);
+    app.frames(12);
+    const frame = app.api.cinematicFrame(), target = app.engine.targetAt(state.stage, app.api.renderTime());
+    assert.equal(frame.phase, 'flight');assert.equal(frame.kind, 'bullet');assert.equal(frame.projectileType, 'bullet');
+    const items = app.api.sceneItems(target), projectiles = items.filter(item => item.kind === 'bullet');
+    assert.equal(projectiles.length, 1);assert.equal(projectiles[0].flying, true);
+    assert.ok(items.every(item => !['shaft', 'tip', 'feather'].includes(item.kind)), 'a bullet never grows an arrow shaft or feathers');
+    for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(projectiles[0].point[axis] - frame.point[axis]) < 1e-9);
+    assert.ok(app.bulletFlightFrames.length > 0);assert.equal(app.bulletImpactFrames.length, 0);
+    const rendered = app.bulletFlightFrames.at(-1).at(-1), projected = app.api.project(frame.point);
+    assert.ok(Math.hypot(rendered.tip.x - projected.x, rendered.tip.y - projected.y) < 1e-8, 'the new rotating projectile is drawn at its measured position');
+    assert.ok(Number.isFinite(rendered.spin));const spin = rendered.spin;app.frames(6);
+    assert.notEqual(app.bulletFlightFrames.at(-1).at(-1).spin, spin, 'the bullet visibly rotates during slow motion');
+    pad.emit('pointerdown');pad.emit('pointerup');
+    assert.equal(state.shot, shot);assert.equal(state.used, 1);assert.equal(state.magazine, 9, 'input during replay cannot spend a second shot');
+    app.until(() => app.api.cinematicFrame()?.phase === 'impact');
+    assert.equal(state.time, worldTime);assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result}), physics);
+    assert.equal(app.getElement('shotFeedback').classList.contains('hidden'), false);assert.match(app.getElement('flightBadge').textContent, /10점/);
+    assert.ok(app.bulletImpactFrames.length > 0);assert.ok(app.bulletMarkFrames.length > 0);
+    assert.equal(app.bullseyeFrames.length, 0);assert.equal(app.vignetteFrames.length, 0, 'bullet effects never call the arrow celebration renderer');
+    const impact = app.bulletImpactFrames.at(-1).at(-1), point = app.api.project({...shot.result.point, z: shot.result.point.z - .002});
+    assert.ok(Math.hypot(impact.x - point.x, impact.y - point.y) < 1e-8, 'the impact effect remains at the actual ten-point hit');
+    assert.deepEqual(shotAccounting(app), accounting);
+    app.until(() => app.api.cinematicFrame()?.phase === 'return');
+    app.until(() => state.mode === 'ready');
+    assert.equal(state.cinematic, null);assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
+    assert.equal(state.targetMarks.length, 1);assert.equal(state.targetMarks[0].projectileType, 'bullet');
+    assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.magazine, 9);
+    assert.deepEqual({...state.aim}, aim);assert.deepEqual({...app.api.camera}, baseCamera);
+    assert.equal(app.ammo.requests.filter(request => ['spend', 'buy'].includes(request.action)).length, 0);
+  }
+});
+
+test('moving-target bullet celebration keeps the real impact and remains visible through phone and landscape resizing', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+    ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: 3, sound: false});
+  await enterScene(app, 'moving');
+  const {state} = app.api, {pad, coords} = preciseMainDraw(app);pad.emit('pointerup', coords);await app.flush();
+  app.until(() => state.mode === 'settling');const shot = state.shot, worldTime = state.time, accounting = shotAccounting(app);
+  assert.equal(state.cinematic?.kind, 'bullet');assert.equal(shot.result.score, 10);app.frames(12);
+  const physics = JSON.stringify({velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, attachment: shot.attachment, mark: shot.targetMark});
+  for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {
+    app.resize(width, height);app.frames();
+    const frame = app.api.cinematicFrame(), target = app.engine.targetAt(state.stage, frame.time);
+    const items = app.api.sceneItems(target), displayed = items.find(item => item.kind === 'target').target;
+    assert.equal(displayed.x, target.x);assert.equal(displayed.y, target.y);assert.equal(app.sceneryFrame.time, frame.time);
+    const point = app.api.project(frame.point);
+    assert.ok(Object.values(app.api.camera).every(Number.isFinite));assert.equal(point.visible, true);
+    assert.ok(point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height);
+    assert.equal(state.time, worldTime);assert.deepEqual(shotAccounting(app), accounting);
+  }
+  app.until(() => app.api.cinematicFrame()?.phase === 'impact');
+  assert.equal(JSON.stringify({velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, attachment: shot.attachment, mark: shot.targetMark}), physics);
+  const impactTarget = app.engine.targetAt(state.stage, app.api.renderTime()), effect = app.bulletImpactFrames.at(-1).at(-1);
+  const impact = app.api.project({x: impactTarget.x + shot.attachment.x, y: impactTarget.y + shot.attachment.y, z: impactTarget.z - .002});
+  assert.ok(Math.hypot(effect.x - impact.x, effect.y - impact.y) < 1e-8);
+  app.until(() => state.mode === 'ready');app.frames(90);
+  const moved = app.engine.targetAt(state.stage, state.time), mark = app.bulletMarkFrames.at(-1).at(-1);
+  assert.ok(Math.abs(moved.x - shot.result.targetCenter.x) > .01, 'the marked target resumes its real movement after the animation');
+  const attached = app.api.project({x: moved.x + shot.attachment.x, y: moved.y + shot.attachment.y, z: moved.z - .002});
+  assert.ok(Math.hypot(mark.point.x - attached.x, mark.point.y - attached.y) < 1e-8, 'the bullet hole travels with the moving target');
+  assert.equal(JSON.stringify({velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, attachment: shot.attachment, mark: shot.targetMark}), physics);
+  assert.deepEqual(shotAccounting(app), accounting);
+});
+
+test('reduced-motion bullet bullseyes retain the ordinary impact view and skip the spinning flight', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+    ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: 3, sound: false}, {reducedMotion: true});
+  const {state} = app.api, {pad, coords} = preciseMainDraw(app), baseCamera = {...app.api.camera};
+  pad.emit('pointerup', coords);await app.flush();app.until(() => state.mode === 'settling');
+  const replay = state.cinematic, accounting = shotAccounting(app), frame = app.api.cinematicFrame();
+  assert.equal(replay?.kind, 'bullet');assert.equal(replay.reducedMotion, true);assert.equal(replay.flightDuration, 0);
+  assert.equal(frame.phase, 'impact');assert.equal(frame.entryMask, 0);assert.equal(frame.impactPulse, 0);
+  app.resize(1000, 600);
+  assert.deepEqual({...app.api.camera}, {...app.view.desiredFollowCamera(state.shot.position, baseCamera, {w: 1000, h: 600})},
+    'motion preference prevents the special close-up camera');
+  app.frames(10);assert.equal(app.bulletFlightFrames.length, 0);assert.ok(app.bulletImpactFrames.length > 0);
+  assert.ok(app.bulletImpactFrames.every(entry => entry.at(-1).reducedMotion));
+  assert.ok(app.bulletVignetteFrames.every(entry => entry.at(-1).reducedMotion));
+  assert.equal(app.bullseyeFrames.length, 0);assert.equal(app.vignetteFrames.length, 0);
+  app.until(() => state.mode === 'ready');assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.magazine, 9);
+});
+
+test('bullet celebration pauses and resumes through hidden-page and menu interruptions without replaying a shot or award', async () => {
+  for (const phase of ['flight', 'impact', 'return']) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+      ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: 3, coins: 100, sound: false});
+    const {state} = app.api, {pad, coords} = preciseMainDraw(app);pad.emit('pointerup', coords);await app.flush();
+    app.until(() => state.mode === 'settling' && app.api.cinematicFrame()?.phase === phase && app.api.cinematicFrame().progress >= .2);
+    const replay = state.cinematic, shot = state.shot, accounting = shotAccounting(app);
+    const physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, frames: shot.replayFrames});
+    for (const reason of ['hidden', 'menu']) {
+      const frozen = {time: state.time, settle: state.settle, magazine: state.magazine, soundPlayed: replay.soundPlayed};
+      if (reason === 'hidden') {app.document.hidden = true;app.document.emit('visibilitychange');}
+      else {app.getElement('menuBtn').emit('click');assert.equal(state.modal, 'menu');}
+      pad.emit('pointerdown');pad.emit('pointerup');app.advanceTo(app.now + 8000);
+      assert.deepEqual({time: state.time, settle: state.settle, magazine: state.magazine, soundPlayed: replay.soundPlayed}, frozen,
+        `${reason} pauses both the resolved-shot clock and the ${phase} presentation`);
+      assert.equal(state.cinematic, replay);assert.equal(state.shot, shot);assert.deepEqual(shotAccounting(app), accounting);
+      assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, frames: shot.replayFrames}), physics);
+      if (reason === 'hidden') {app.document.hidden = false;app.document.emit('visibilitychange');}
+      else app.api.closeModal();
+      await app.flush();app.frames();
+      assert.ok(Math.abs(state.settle - frozen.settle - 1 / 60) < 1e-8, 'resuming continues from the held frame without catching up the pause');
+      assert.equal(app.api.cinematicFrame().phase, phase);assert.deepEqual(shotAccounting(app), accounting);
+    }
+    app.api.onImpact();assert.equal(state.cinematic, replay);app.until(() => state.mode === 'ready');
+    assert.equal(state.cinematic, null);assert.equal(state.targetMarks.length, 1);assert.equal(state.magazine, 9);
+    assert.deepEqual(shotAccounting(app), accounting);
+    assert.equal(app.ammo.requests.filter(request => ['spend', 'buy'].includes(request.action)).length, 0);
+  }
 });
 
 test('moving-target replay follows recorded time through resizing and preserves the real impact attachment', async () => {
@@ -3144,6 +3289,14 @@ test('ten real gun shots finish each gun model at one hundred points and cannot 
       pad.emit('pointerup', coords);await app.flush();
       const shot = state.shot;
       assert.equal(state.mode, 'flight');assertCoachCue(app, false, 'releasing each bullet immediately hides the cue');
+      app.until(() => state.mode === 'settling');
+      assert.equal(state.cinematic?.kind, 'bullet');assert.equal(state.mode, 'settling');
+      assert.equal(state.modal, null, 'the round result waits for the final bullet celebration');
+      assert.equal(app.ammo.requests.filter(request => request.action === 'round-complete').length, 0);
+      const replayAccounting = shotAccounting(app);
+      pad.emit('pointerdown');pad.emit('pointerup');app.frames(3);
+      assert.equal(state.shot, shot);assert.equal(state.used, turn);assert.equal(state.magazine, 10 - turn);
+      assert.deepEqual(shotAccounting(app), replayAccounting, 'input during the celebration cannot fire or score again');
       app.until(() => ['ready', 'finished'].includes(state.mode));await app.flush();
       assertCoachCue(app, false, 'the coach stays hidden between shots and after the final result');
       assert.equal(shot.projectileType, 'bullet');assert.equal(shot.bulletId, bullet);assert.equal(shot.ability, null);
@@ -3432,7 +3585,7 @@ test('all three main guns follow real-time trajectories and hit near and distant
     assert.equal(shot.result.type, 'hit');assert.equal(shot.result.targetCenter.kind, 'target');assert.equal(shot.result.score, 10);
     assert.ok(Math.abs(shot.elapsed - planned.flightTime) < 1e-8);
     assert.ok(Math.abs((app.now - firedAt) / 1000 - shot.elapsed) < 1 / 60 + 1e-9, 'the bullet uses real scene time');
-    assert.equal(state.score, 10);assert.equal(state.cinematic, null);assert.equal(state.targetMarks[0].projectileType, 'bullet');
+    assert.equal(state.score, 10);assert.equal(state.cinematic?.kind, 'bullet');assert.equal(state.targetMarks[0].projectileType, 'bullet');
     assert.equal(app.ammo.requests.filter(request => ['spend', 'buy'].includes(request.action)).length, 0);
     draw.pad.emit('pointerup', draw.coords);await app.flush();assert.equal(state.used, 1);assert.equal(state.magazine, 9);
     app.until(() => state.mode === 'ready');assert.equal(state.score, 10);assert.equal(app.api.progress.shots, 1);
@@ -3974,6 +4127,77 @@ function assertClearDisplayedArrow(app) {
   }
   return tip;
 }
+
+function assertClearDisplayedBullet(app) {
+  const {state} = app.api, replay = app.api.cinematicFrame(), shot = state.shot;
+  const target = app.engine.targetAt(state.stage, app.api.renderTime(), shot.attachment?.passId);
+  const expected = replay?.phase === 'flight' ? replay.point : shot.attachment
+    ? {x: target.x + shot.attachment.x, y: target.y + shot.attachment.y, z: target.z - .002} : shot.position;
+  const item = app.api.sceneItems(target).find(entry => entry.kind === 'bullet' &&
+    Math.hypot(entry.point.x - expected.x, entry.point.y - expected.y, entry.point.z - expected.z) < 1e-8);
+  assert.ok(item, 'the real bullet or its target-local hole is part of the rendered scene');
+  const points = [['contact', item.point]];
+  if (item.flying) {
+    const velocity = item.velocity, speed = Math.hypot(velocity.x, velocity.y, velocity.z), length = shot.shaftLength;
+    points.push(['bullet base', Object.fromEntries(['x', 'y', 'z'].map(axis => [axis, item.point[axis] - velocity[axis] / speed * length]))]);
+  }
+  assert.ok(Object.values(app.api.camera).every(Number.isFinite));
+  for (const [name, point] of points) {
+    const screen = app.api.project(point), {width, height} = app.viewport;
+    assert.equal(screen.visible, true, `stage ${state.stage.id} ${name} is ahead of the near plane`);
+    assert.ok(screen.x >= 0 && screen.x <= width && screen.y >= 0 && screen.y <= height,
+      `stage ${state.stage.id} ${name} (${screen.x}, ${screen.y}) fits ${width}×${height}`);
+    for (const wall of state.stage.obstacles) assert.equal(sightlineCrossesWall(app.api.camera, point, wall), false,
+      `stage ${state.stage.id} ${replay?.phase || state.mode} ${name} is hidden behind the wall at ${wall.z}m`);
+  }
+  return points.map(([, point]) => point);
+}
+
+for (const fixture of [
+  {lessonKey: 'fixed-gap-1/3', distance: 20, bullet: 0},
+  {lessonKey: 'pillars-regular', distance: 20, bullet: 1},
+  {lessonKey: 'low-wall-arc', distance: 10, bullet: 3}
+]) test(`bullet bullseye on ${fixture.lessonKey} keeps the short projectile and actual impact clear of cover and restores aim`, async () => {
+  const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+    ownedBows: [0, 22], bow: 22, ownedBullets: [0, fixture.bullet], bullet: fixture.bullet, coins: 100,
+    scopeLoadouts: {22: {owned: [3], equipped: 3}}, lastStage: lessonStageId(fixture.lessonKey, fixture.distance), sound: false}));
+  const {state} = app.api, draw = preciseMainDraw(app);
+  // For moving pillars, wait while holding and follow the real target until
+  // its centre reaches a physical opening. Walls and target are never moved.
+  for (let attempt = 0; attempt < 40 && app.engine.predictTrajectory(app.api.shotParams(), state.stage, state.time).result?.score !== 10; attempt++) {
+    holdFor(app, 50);
+    const aim = targetIntercept(app.engine, app.api.shotParams(), state.stage, state.time);
+    draw.coords = moveHeldAim(app, aim.yaw, aim.pitch);
+  }
+  assert.equal(app.engine.predictTrajectory(app.api.shotParams(), state.stage, state.time).result?.score, 10, 'the fixture uses a real reachable ten-point opening');
+  const originalCamera = {...app.api.camera}, originalAim = {...state.aim}, originalPan = [state.panX, state.panY];
+  const walls = JSON.stringify(state.stage.obstacles);assert.ok(state.stage.obstacles.length > 0);
+  draw.pad.emit('pointerup', draw.coords);await app.flush();
+  let liveFrames = 0;
+  while (state.mode === 'flight') {
+    if (state.shot.position.z > .8) {assertClearDisplayedBullet(app);liveFrames++;}
+    app.advanceTo(app.now + 1000 / 240);
+  }
+  assert.ok(liveFrames > 0);assert.equal(state.mode, 'settling');assert.equal(state.shot.result.score, 10);
+  assert.equal(state.cinematic?.kind, 'bullet');const shot = state.shot, replay = state.cinematic, accounting = shotAccounting(app);
+  const physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, frames: shot.replayFrames});
+  const phases = new Set();let frames = 0;
+  while (state.mode === 'settling' && app.api.cinematicFrame()?.phase !== 'return') {
+    phases.add(app.api.cinematicFrame().phase);assertClearDisplayedBullet(app);
+    if ([10, 30, 55].includes(frames)) {
+      for (const [width, height] of [[390, 640], [844, 290], [1000, 600]]) {app.resize(width, height);assertClearDisplayedBullet(app);}
+    }
+    assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed, result: shot.result, frames: shot.replayFrames}), physics);
+    assert.deepEqual(shotAccounting(app), accounting);app.frames();frames++;
+  }
+  assert.ok(frames > 70);assert.deepEqual([...phases], ['flight', 'impact']);
+  assert.ok(app.bulletFlightFrames.length > 0 && app.bulletImpactFrames.length > 0);
+  assert.equal(app.bullseyeFrames.length, 0);assert.equal(state.cinematic, replay);app.api.onImpact();
+  app.until(() => state.mode === 'ready');
+  assert.equal(state.targetMarks.length, 1);assert.equal(state.magazine, 9);assert.deepEqual(shotAccounting(app), accounting);
+  assert.deepEqual({...app.api.camera}, originalCamera);assert.deepEqual({...state.aim}, originalAim);
+  assert.deepEqual([state.panX, state.panY], originalPan);assert.equal(state.zoom, 3);assert.equal(JSON.stringify(state.stage.obstacles), walls);
+});
 
 function inspectFinalApproach(app, baseCamera) {
   const { state } = app.api;
