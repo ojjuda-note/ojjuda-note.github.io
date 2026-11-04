@@ -28,6 +28,46 @@ function centreAim(stage, worldTime = 0, bow = 0, arrow = 0, bullet = 0) {
   return {bow, arrow, bullet, charge: 1, yaw: Math.atan2(v.x, v.z), pitch: Math.atan2(v.y, Math.hypot(v.x, v.z))};
 }
 
+// Independent, piecewise closed-form flight through wide, stationary walls.
+// This solves the new aim without querying the coach or engine collision path.
+function coveredFlight(params, stage, end = stage.distance) {
+  const initial = launchArrow(params);
+  let point = {...PLAYER}, velocity = {...initial.velocity}, drag = initial.dragRate;
+  let gravity = GRAVITY * initial.gravityScale, elapsed = 0;
+  const planes = stage.obstacles.map(wall => ({z: wall.z - wall.depth / 2, material: wall.material}))
+    .filter(wall => wall.z < end).sort((a, b) => a.z - b.z);
+  for (const plane of [...planes, {z: end}]) {
+    const dz = plane.z - point.z, dt = drag ? -Math.log1p(-drag * dz / velocity.z) / drag : dz / velocity.z;
+    const decay = Math.exp(-drag * dt), a = drag ? -Math.expm1(-drag * dt) / drag : dt;
+    const b = drag ? (dt - a) / drag : dt * dt / 2;
+    point = {x: point.x + velocity.x * a, y: point.y + velocity.y * a - gravity * b, z: plane.z};
+    velocity = {x: velocity.x * decay, y: velocity.y * decay - gravity * a, z: velocity.z * decay};
+    elapsed += dt;
+    if (plane.material) {
+      const retention = plane.material === 'wood' ? .8 : .5, drop = plane.material === 'wood' ? 1.2 : 1.5;
+      velocity = Object.fromEntries(Object.entries(velocity).map(([axis, value]) => [axis, value * retention]));
+      drag *= retention;gravity *= retention * retention * drop;
+    }
+  }
+  return {point, elapsed};
+}
+
+function coveredAim(stage, bullet = 0) {
+  const params = {bow: 22, bullet, arrow: 13, charge: 0, yaw: 0}, target = targetAt(stage, 0);
+  let lo = -.05, hi = .4;
+  for (let i = 0; i < 60; i++) {
+    const pitch = (lo + hi) / 2;
+    if (coveredFlight({...params, pitch}, stage).point.y < target.y) lo = pitch;else hi = pitch;
+  }
+  return {...params, pitch: (lo + hi) / 2};
+}
+
+const coveredStage = materials => ({...clone(STAGES[0]), distance: 150, height: 2.3, radius: .06, wind: 0,
+  motion: {}, passers: [], retiredPasserIds: [], obstacles: materials.map((material, index) => ({
+    x: 0, z: 25 + index * 45 + .4, width: 30, height: 30, depth: .8, material,
+    type: material === 'wood' ? 'timber' : 'stone'
+  }))});
+
 test('a stable centre shot earns a cue without changing the supplied aim, stage or equipment', () => {
   const stage = clone(STAGES[0]), params = centreAim(stage), before = clone({stage, params, timing});
   const answer = evaluateCoachShot(params, stage, 0, timing);
@@ -180,12 +220,70 @@ test('coaching uses the selected bullet trajectory for the original gun and both
     const answer = evaluateCoachShot(params, stage, 0, timing);
     assert.equal(answer.ready, true, `${gun.name} with ${bullet.name}`);
     assert.equal(answer.nowScore, 10);assert.equal(answer.laterScore, 10);assert.equal(answer.probes, 2);
-    const blocked = evaluateCoachShot(params, {...stage, obstacles:[{x:0, z:5, width:20, height:10, depth:.1}]}, 0, timing);
-    assert.equal(blocked.ready, false);assert.equal(blocked.reason, 'obstacle');
+    const covered = {...stage, obstacles:[{x:0, z:5, width:20, height:10, depth:.1, material:'stone'}]};
+    const penetrated = launchArrow(params);stepArrow(penetrated, getFlightTimeLimit(penetrated), covered);
+    const forecast = evaluateCoachShot(params, covered, 0, timing);
+    assert.equal(penetrated.penetrations.length, 1);
+    assert.equal(forecast.nowScore, penetrated.result.type === 'hit' ? penetrated.result.score : 0);
+    assert.notEqual(forecast.reason, 'obstacle', 'a gun forecast cannot treat the penetrable wall as a terminal hit');
   }
   const straightAim = centreAim(stage, 0, 22, 13, 3);
   assert.equal(evaluateCoachShot({...straightAim, bullet:0}, stage, 0, timing).ready, false,
     'a cue for a flat bullet cannot silently reuse the dropping basic-bullet prediction');
+});
+
+test('gun coaching compensates the compounded wall drop for every bullet and leaves a straight bullet straight', () => {
+  for (const materials of [['wood'], ['stone'], ['wood', 'wood'], ['stone', 'stone'], ['wood', 'stone'], ['stone', 'wood']]) {
+    const stage = coveredStage(materials);
+    for (const bullet of BULLETS) {
+      const params = coveredAim(stage, bullet.id), original = clone({stage, params});
+      const reference = coveredFlight(params, stage), shot = launchArrow(params);
+      stepArrow(shot, getFlightTimeLimit(shot), stage, 2.5);
+      assert.equal(shot.result.type, 'hit');assert.equal(shot.result.score, 10);
+      assert.equal(shot.penetrations.length, materials.length);
+      assert.ok(Math.abs(shot.result.point.y - reference.point.y) < 1e-7);
+      assert.ok(Math.abs(shot.elapsed - reference.elapsed) < 1e-7);
+      const answer = evaluateCoachShot(params, stage, 2.5, timing);
+      assert.equal(answer.ready, true, `${bullet.name} after ${materials.join(' then ')}`);
+      assert.equal(answer.nowScore, 10);assert.equal(answer.laterScore, 10);assert.equal(answer.probes, 2);
+      const oldAim = centreAim(stage, 0, 22, 13, bullet.id);
+      if (bullet.id === 0) {
+        const oldShot = launchArrow(oldAim);stepArrow(oldShot, getFlightTimeLimit(oldShot), stage);
+        assert.notEqual(oldShot.result.type, 'hit', 'the former open-lane aim misses after its drop increases');
+        const oldCue = evaluateCoachShot(oldAim, stage, 0, timing);
+        assert.equal(oldCue.ready, false);assert.equal(oldCue.nowScore, 0);
+        assert.ok(params.pitch > oldAim.pitch, 'the valid cue requires the player to raise the gun');
+      }
+      if (bullet.id === 3) {
+        assert.ok(Math.abs(params.pitch - oldAim.pitch) < 1e-12, 'zero drop needs no invented gravity correction');
+        assert.equal(shot.gravityScale, 0);
+        assert.ok(shot.elapsed > coveredFlight(params, {...stage, obstacles: []}).elapsed,
+          'even the straight bullet takes longer after losing speed');
+      }
+      assert.deepEqual({stage, params}, original, 'coaching cannot mutate wall, equipment or aim state');
+    }
+  }
+});
+
+test('gun coaching includes slowed arrival when a person crosses behind a penetrated wall', () => {
+  const stage = coveredStage(['wood', 'stone']), params = coveredAim(stage);
+  const z = 100, arrival = coveredFlight(params, stage, z);
+  const directArrival = coveredFlight(params, {...stage, obstacles: []}, z);
+  assert.ok(arrival.elapsed > directArrival.elapsed + .3, 'the fixture distinguishes slowed and old arrival clocks');
+  for (const delay of [0, .1]) {
+    const config = {id: 7, z, width: .01, height: 10, depth: .01, passDuration: 20, phase: .5};
+    const person = passersAt({...stage, passers: [config]}, delay + arrival.elapsed)[0];
+    config.phase += (arrival.point.x - person.x) / (person.velocityX * config.passDuration);
+    const occupied = {...stage, passers: [config]}, before = clone(occupied);
+    const actual = [0, .1].map(time => {
+      const shot = launchArrow(params);stepArrow(shot, getFlightTimeLimit(shot), occupied, time);
+      assert.equal(shot.penetrations.length, 2);return shot.result;
+    });
+    assert.deepEqual(actual.map(result => result.type), delay ? ['hit', 'person'] : ['person', 'hit']);
+    const answer = evaluateCoachShot(params, occupied, 0, timing);
+    assert.equal(answer.ready, false);assert.equal(answer.reason, 'person');assert.equal(answer.probes, delay ? 2 : 1);
+    assert.deepEqual(occupied, before, 'a forecast does not retire the person or change persistent state');
+  }
 });
 
 test('main gun coaching leads moving targets and rejects a hit lost during reaction time', () => {
@@ -203,13 +301,9 @@ test('main gun coaching leads moving targets and rejects a hit lost during react
   assert.equal(fleeting.nowScore, 10);assert.equal(fleeting.laterScore, 0);assert.equal(fleeting.ready, false);
 });
 
-test('main gun coaching rejects real walls and people entering the shot during reaction time', () => {
+test('main gun coaching rejects people entering the shot during reaction time', () => {
   const gun = BOWS.find(item => item.weaponType === 'gun');
   const stage = {...clone(STAGES[1]), retiredPasserIds: []}, params = centreAim(stage, 0, gun.id);
-  const wall = {...stage, obstacles: [{x: 0, z: 5, width: 20, height: 10, depth: .1}]};
-  const blocked = evaluateCoachShot(params, wall, 0, timing);
-  assert.equal(blocked.ready, false);assert.equal(blocked.reason, 'obstacle');assert.equal(blocked.probes, 1);
-
   const shot = launchArrow(params), z = 12;
   const flightTime = -Math.log1p(-shot.dragRate * z / shot.velocity.z) / shot.dragRate;
   const bulletX = shot.velocity.x * -Math.expm1(-shot.dragRate * flightTime) / shot.dragRate;

@@ -843,9 +843,10 @@ test('every main gun keeps the basic bullet at twice the actual maximum arrow sp
     stepArrow(reference, .3, { ...emptyRange, wind: 1 });
     assert.ok(reference.position.x > 0 && reference.velocity.z < initial.z);
     assert.ok(reference.position.y < PLAYER.y + initial.y * .3, 'bullets still fall under gravity');
-    const blocked = launchArrow({ bow: gun, pitch: .03 });
-    const result = stepArrow(blocked, 1, { ...emptyRange, obstacles: [{ x: 0, z: 10, width: 3, height: 4, depth: .01 }] });
-    assert.equal(result.type, 'obstacle'); close(result.point.z, 9.995);
+    const pierced = launchArrow({ bow: gun, pitch: .03 });
+    const result = stepArrow(pierced, 1, { ...emptyRange, obstacles: [{ x: 0, z: 10, width: 3, height: 4, depth: .01 }] });
+    assert.notEqual(result?.type, 'obstacle');assert.equal(pierced.penetrations.length, 1);
+    close(pierced.penetrations[0].point.z, 9.995);close(pierced.penetrationSpeedRatio, .5);
   }
   assert.equal(launchArrow({ bow: BOWS[0] }).projectileType, 'arrow');
 });

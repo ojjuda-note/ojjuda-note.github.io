@@ -1094,7 +1094,7 @@ export function launchArrow(params = {}) {
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
     speed, mass: isBullet ? ammunition.mass : getArrowMass(arrow), windFactor: isBullet ? ammunition.windFactor : getWindResponse(arrow),
     projectileType: isBullet ? 'bullet' : 'arrow', shaftLength: isBullet ? .12 : .85,
-    ...(isBullet ? {bulletId: ammunition.id} : {}),
+    ...(isBullet ? {bulletId: ammunition.id, penetrations: [], penetrationSpeedRatio: 1, penetrationDropRatio: 1} : {}),
     gravityScale: isBullet ? ammunition.gravityScale : 1,
     dragRate: isBullet ? ammunition.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
@@ -1217,6 +1217,12 @@ function personCollision(position, velocity, acceleration, stage, worldTime, dt,
   let earliest = null;
   for (const config of stage.passers || []) {
     if (isPasserRetired(stage, config)) continue;
+    if (dt === 0) {
+      const person = passerAt(stage, config, worldTime);
+      if (obstacleTime(position, velocity, acceleration, person, 0, drag) === 0)
+        return {t: 0, personId: person.id, passId: person.passId};
+      continue;
+    }
     let start = 0;
     while (start < dt - 1e-10) {
       const person = passerAt(stage, config, worldTime + start);
@@ -1244,11 +1250,35 @@ function scoreAt(point, target) {
   return { score: [10, 8, 6, 4, 2][ring], zone: ['정중앙', '빨간 원', '파란 원', '검은 원', '흰 원'][ring] };
 }
 
+function bulletWallMaterial(obstacle) {
+  if (obstacle.material === 'wood' || obstacle.material === 'stone') return obstacle.material;
+  return obstacle.type === 'timber' ? 'wood' : 'stone';
+}
+
+function penetrateWall(shot, event, worldTime) {
+  const material = event.material, retention = material === 'wood' ? .8 : .5;
+  const drop = material === 'wood' ? 1.2 : 1.5, velocityBefore = {...shot.velocity};
+  shot.velocity = Object.fromEntries(['x','y','z'].map(axis => [axis, shot.velocity[axis] * retention]));
+  // Speed and drag scale together. From the incoming tangent, the same next
+  // distance takes 1/r of the time, so gravity*r²*d produces exactly d of the
+  // additional drop. A zero-drop bullet remains a straight projectile.
+  shot.dragRate = Math.max(0, shot.dragRate ?? 0) * retention;
+  shot.gravityScale = (shot.gravityScale ?? 1) * retention ** 2 * drop;
+  shot.penetrationSpeedRatio = (shot.penetrationSpeedRatio ?? 1) * retention;
+  shot.penetrationDropRatio = (shot.penetrationDropRatio ?? 1) * drop;
+  (shot.penetrations ??= []).push(Object.freeze({
+    obstacleIndex: event.obstacleIndex, material, point: Object.freeze({...shot.position}),
+    velocityBefore: Object.freeze(velocityBefore), velocityAfter: Object.freeze({...shot.velocity}),
+    time: worldTime, elapsed: shot.elapsed,
+    speedRatio: shot.penetrationSpeedRatio, dropRatio: shot.penetrationDropRatio
+  }));
+}
+
 // A constant-acceleration segment retains the exact original damped solution.
 // Special guidance supplies the same acceleration to movement and swept hits.
-function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
+function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null, instantaneous = false) {
   if (!shot.active) return shot.result;
-  if (!(dt > 0) || !Number.isFinite(dt)) return null;
+  if ((!(dt > 0) && !(instantaneous && dt === 0)) || !Number.isFinite(dt)) return null;
   const position = shot.position, velocity = shot.velocity;
   const drag = Math.max(0, shot.dragRate ?? 0);
   const acceleration = { x: (stage.wind || 0) * WIND_RESPONSE * (shot.windFactor ?? 1), y: -GRAVITY * (shot.gravityScale ?? 1), z: 0 };
@@ -1256,9 +1286,12 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
   const events = [];
   const ground = roots(position.y, velocity.y, acceleration.y, 0, dt, drag).filter(t => t >= 0 && t <= dt && velocityAt(velocity, acceleration, t, drag).y <= 0);
   if (ground.length) events.push({ t: Math.min(...ground), type: 'ground', score: 0, zone: '땅에 떨어졌어요' });
-  for (const obstacle of stage.obstacles || []) {
+  for (const [obstacleIndex, obstacle] of (stage.obstacles || []).entries()) {
+    const bullet = shot.projectileType === 'bullet';
+    if (bullet && shot.penetrations?.some(entry => entry.obstacleIndex === obstacleIndex)) continue;
     const t = obstacleTime(position, velocity, acceleration, obstacle, dt, drag);
-    if (t !== null) events.push({ t, type: 'obstacle', score: 0, zone: '장애물에 닿았어요' });
+    if (t !== null) events.push(bullet ? {t, type: 'penetration', obstacleIndex, material: bulletWallMaterial(obstacle)} :
+      {t, type: 'obstacle', score: 0, zone: '장애물에 닿았어요'});
   }
   const person = personCollision(position, velocity, acceleration, stage, worldTime, dt, drag);
   if (person) events.push({ ...person, type: 'person', score: 0, zone: '사람이 가로막았어요' });
@@ -1283,14 +1316,16 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
   }
   const flightLimit = getFlightTimeLimit(shot);
   if (shot.elapsed + dt >= flightLimit) events.push({ t: Math.max(0, flightLimit - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
-  const eventPriority = { person: 0, obstacle: 1, ground: 2, hit: 3, miss: 4 };
+  const eventPriority = { person: 0, obstacle: 1, penetration: 1, ground: 2, hit: 3, miss: 4 };
   events.sort((a, b) => a.t - b.t || eventPriority[a.type] - eventPriority[b.type]);
   const event = events[0], usedTime = event ? event.t : dt;
   shot.position = at(position, velocity, acceleration, usedTime, drag);
   shot.velocity = velocityAt(velocity, acceleration, usedTime, drag);
   shot.elapsed += usedTime;
-  // An earlier ground contact must not consume a future target-plane crossing.
-  if (!shot.targetPassed && targetTime >= -1e-9 && targetTime <= usedTime + 1e-9) {
+  // An earlier contact cannot consume a future target-plane crossing. When
+  // a wall and target share a plane, resolve the target after the wall's loss.
+  const pendingTargetAtWall = event?.type === 'penetration' && Math.abs(targetTime - usedTime) <= 1e-9;
+  if (!shot.targetPassed && !pendingTargetAtWall && targetTime >= -1e-9 && targetTime <= usedTime + 1e-9) {
     shot.targetPassed = true;
     shot.magnetActive = false;
   }
@@ -1306,6 +1341,13 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
     if (shot.trail.length > 180) shot.trail.shift();
   }
   if (event) {
+    if (event.type === 'penetration') {
+      penetrateWall(shot, event, worldTime + usedTime);
+      // Continue from the exact entry point, including a zero-time boundary.
+      // Skipping only this recorded wall preserves people, ground and targets
+      // inside it and processes every overlapping wall once without a jump.
+      return advanceBallistic(shot, Math.max(0, dt - usedTime), stage, worldTime + usedTime, steering, true);
+    }
     if (event.type === 'ground' && shot.projectileType === 'arrow' && shot.ability?.type === 'bounce' &&
       shot.bouncesRemaining > 0 && !shot.targetPassed && shot.position.z < stage.distance - 1e-7 && shot.velocity.z > 0) {
       shot.bounceCount++;shot.bouncesRemaining--;
@@ -1407,9 +1449,10 @@ export function predictTrajectory(params, stage, worldTime = 0, maxSeconds) {
   let time = 0;
   while (shot.active && time < forecastSeconds) {
     const step = Math.min(dt, forecastSeconds - time);
-    const beforeBounce = shot.bounceCount;
+    const beforeBounce = shot.bounceCount, beforePenetration = shot.penetrations?.length ?? 0;
     stepArrow(shot, step, stage, worldTime + time);
     if (shot.bounceCount > beforeBounce && shot.bouncePoint) points.push({...shot.bouncePoint});
+    for (const entry of shot.penetrations?.slice(beforePenetration) || []) points.push({...entry.point});
     points.push({ ...shot.position });
     time += step;
   }

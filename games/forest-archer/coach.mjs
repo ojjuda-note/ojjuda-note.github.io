@@ -1,5 +1,5 @@
 /** A conservative release cue. It never changes aim, fires, or spends anything. */
-import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow, getFlightTimeLimit} from './engine.mjs?v=20261104-archery-sniper-bullets1';
+import {BOWS, clamp, targetAt, launchArrow, launchVolley, stepArrow, getFlightTimeLimit} from './engine.mjs?v=20261104-archery-bullet-penetration1';
 
 export const COACH_REACTION_SECONDS = .10;
 const CHARGE_SECONDS = 1.25;
