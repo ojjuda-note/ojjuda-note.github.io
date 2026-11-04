@@ -45,6 +45,11 @@ jobs:
           )
           replace_once(
               'tests/byeolcheonji-browser-guide.test.cjs',
+              "const vm = require('node:vm');\n\nconst source = fs.readFileSync('byeolcheonji/browser-guide.js', 'utf8');\nconst index = fs.readFileSync('byeolcheonji/index.html', 'utf8');\nconst styles = fs.readFileSync('byeolcheonji/styles.css', 'utf8');",
+              "const vm = require('node:vm');\nconst path = require('node:path');\n\nconst root = path.join(__dirname, '..');\nconst source = fs.readFileSync(path.join(root, 'byeolcheonji/browser-guide.js'), 'utf8');\nconst index = fs.readFileSync(path.join(root, 'byeolcheonji/index.html'), 'utf8');\nconst styles = fs.readFileSync(path.join(root, 'byeolcheonji/styles.css'), 'utf8');"
+          )
+          replace_once(
+              'tests/byeolcheonji-browser-guide.test.cjs',
               "assert.match(index, /다시 안 보기/);",
               "assert.match(index, /다시 안 보기/);\nassert.match(index, /<span class=\"browser-guide-label\">브라우저 안내<\\/span>/);"
           )
