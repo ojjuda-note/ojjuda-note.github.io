@@ -49,7 +49,7 @@ export function createReplacementModels(h) {
   modelRobot.blocks=t=>robotCells(t).cells.length;
 
   function penguinCells(t) {
-    const w=6+Math.min(13,Math.floor(t/2)),ht=8+Math.min(13,Math.floor(t/2)),d=2+Math.min(5,Math.floor(t/5)),cells=[];
+    const w=5+Math.min(13,Math.floor(t/2)),ht=7+Math.min(13,Math.floor(t/2)),d=2+Math.min(5,Math.floor(t/5)),cells=[];
     const mid=(w-1)/2;
     for(let x=0;x<w;x++)for(let y=0;y<ht;y++)for(let z=0;z<d;z++){
       const X=Math.abs(x-mid)/(w*.5),Y=y/(ht-1),Z=Math.abs(z-(d-1)/2)/(d*.5);
