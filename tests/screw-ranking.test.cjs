@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8'),world=read('world.html');
 const part=(from,to)=>world.slice(world.indexOf(from),world.indexOf(to,world.indexOf(from)+from.length));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -41,8 +42,8 @@ function fixture(){
  flat.state.level.plates.forEach(p=>p.state='gone');flat.update(.05);
  assert.equal(records.length,1,'a completed flat stage saves before reaching stage 1000');
  assert.equal(records[0],flat.state.score);flat.update(.05);assert.equal(records.length,1);flat.destroy();
- const boxContext=vm.createContext({console,localStorage:global.localStorage});
- vm.runInContext(read('screw3d.js').replace(/export \{[^}]*\};/,'').replace('  start(st.L);','  globalThis.stageState=st;start(st.L);'),boxContext);
+ const boxContext=vm.createContext({console,localStorage:global.localStorage,window:{}});
+ vm.runInContext(bundleScrew3d(read).replace('  start(st.L);','  globalThis.stageState=st;start(st.L);'),boxContext);
  const boxRecords=[],box=boxContext.screw3d({setScore:noop,end:()=>assert.fail('a cleared box stage does not fail'),saveScore:score=>boxRecords.push(score)});
  boxContext.stageState.lvl.screws.forEach(s=>s.state='done');boxContext.stageState.lvl.els.forEach(e=>e.state='gone');
  box.update(.05);assert.equal(boxRecords.length,1,'box stage progress saves without waiting for failure');

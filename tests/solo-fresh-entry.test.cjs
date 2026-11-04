@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{test}=require('node:test');
+const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const {JSDOM}=require('jsdom'),{randomUUID}=require('node:crypto');
 const root=path.join(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8'),tick=()=>new Promise(resolve=>setImmediate(resolve));
 const E=require('../games/sacheonseong/engine.js'),KEY='ojjuda-sacheonseong-v1',owner=randomUUID();
@@ -70,12 +71,7 @@ const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage
 function withScrews(run,entries=[],blocked=false){
  const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
  const context=vm.createContext({console,localStorage,window:{}});
- // The browser loads the box game as ES modules; the VM fixture must preload
- // their helpers before evaluating the main game script in the same context.
- for(const file of ['screw3d-premium-models.js','screw3d-classic-styles.js','screw3d-soft-cubes.js','screw3d-replacement-models.js']){
-  vm.runInContext(read(file).replace(/^export\s+/gm,''),context);
- }
- vm.runInContext(read('screw3d.js').replace(/^import\s+\{[^}]+\}\s+from\s+['"][^'"]+['"];?\s*$/gm,'').replace(/^export\s+\{[^}]*\};?\s*$/gm,''),context);
+ vm.runInContext(bundleScrew3d(read),context);
  const previous=global.localStorage,games=[],records=[];global.localStorage=localStorage;
  const api={setScore(){},end(){},saveScore:score=>records.push(score)};
  try{

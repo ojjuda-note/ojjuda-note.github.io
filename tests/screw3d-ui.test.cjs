@@ -2,7 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
-const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
+const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
+const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'],
     ...(process.env.SCREW_CHROMIUM ? { executablePath: process.env.SCREW_CHROMIUM } : {}) });
@@ -11,7 +12,7 @@ const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
     const errors = []; page.on('pageerror', e => errors.push(e.message));
     await page.route('**/*', route => route.fulfill({ contentType: 'text/html', body: '<canvas width="360" height="540"></canvas>' }));
     await page.goto('https://screw.test');
-    await page.addScriptTag({ content: source.replace(/export \{[^}]*\};/, '') + `
+    await page.addScriptTag({ content: source + `
       const ctx = document.querySelector('canvas').getContext('2d');
       let game, state, testScrew, obstacle, purchases = 0;
       function boot(L = 1) {
@@ -82,7 +83,7 @@ const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
     assert.deepEqual(await page.evaluate(() => screwTest.xray()), {visible:true,blocked:true}, 'intentional x-ray reveals the screw while keeping its physical blocker');
     const play = await page.evaluate(() => screwTest.tutorials());
     assert.equal(play.stage, 4, 'touch gameplay advances through all three easy rounds');
-    assert.deepEqual(play.rounds, [{stage:1,screws:12},{stage:2,screws:18},{stage:3,screws:24}]);
+    assert.deepEqual(play.rounds, [{stage:1,screws:15},{stage:2,screws:21},{stage:3,screws:27}]);
     assert.equal(play.purchases, 0); assert.ok(play.score > 0);
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
     const perf = {};

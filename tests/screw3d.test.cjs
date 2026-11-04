@@ -2,9 +2,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const source = fs.readFileSync(path.join(__dirname, '../screw3d.js'), 'utf8');
+const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
+const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
 const context = vm.createContext({ assert, console });
-vm.runInContext(source.replace(/export \{[^}]*\};/, '')
+vm.runInContext(source
   .replace('  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; });',
     '  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; }); globalThis.solution = order.slice();'), context);
 vm.runInContext(`
@@ -55,10 +56,11 @@ vm.runInContext(`
   assert.equal(rear.polys[0].visible.length, 1, 'intentional x-ray remains available');
   let last = 0;
   for (let L = 1; L <= STAGES; L++) { assert.ok(targetScrews(L) >= last); last = targetScrews(L); }
-  assert.equal(colorCount(3), 2); assert.equal(colorCount(4), 3); assert.equal(colorCount(8), 4);
-  for (const L of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,32,80,160,500]) {
+  assert.equal(colorCount(3), 2); assert.equal(colorCount(4), 3); assert.equal(colorCount(8), 3);
+  for(const [stage,colors] of [[31,4],[101,5],[251,6],[501,7],[751,7]])assert.equal(colorCount(stage),colors);
+  for (const L of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,32,80,160,500,650,800,1000]) {
     const m = makeLevel(L), witness = solution;
-    if (L <= 3) { assert.equal(m.screws.length, targetScrews(L)); assert.equal(new Set(m.queue).size, 2); }
+    if (L <= 3) { assert.ok(m.screws.length>=targetScrews(L)&&m.screws.length<=targetScrews(L)+9,'diagonal screw mounts add only a small tutorial overhead'); assert.equal(new Set(m.queue).size, 2); }
     else { assert.ok(m.screws.length > 24); assert.equal(new Set(m.queue).size, colorCount(L)); }
     assert.equal(m.screws.length % 3, 0);
     for (let i = 0; i < witness.length; i++) {
@@ -71,4 +73,4 @@ vm.runInContext(`
     assert.ok(m.els.every(e => e.state === 'gone'), 'stage '+L+' fully disassembles');
   }
 `, context, { timeout: 120000 });
-console.log('PASS: exact empty-space geometry, moving occluders, partial screw visibility, three tutorial rounds and 22 solvable stages through stage 500');
+console.log('PASS: exact empty-space geometry, moving occluders, partial screw visibility, three tutorial rounds and 25 solvable stages through stage 1000');
