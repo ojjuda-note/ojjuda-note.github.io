@@ -1439,15 +1439,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3002,
+    "uniqueRestaurants": 3003,
     "providerCounts": {
       "blue-ribbon": 517,
-      "local-guide": 2280,
+      "local-guide": 2281,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1003,
-    "coordinatesMissing": 1999,
+    "coordinatesMissing": 2000,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1455,7 +1455,7 @@
       "경북": 145,
       "광주": 69,
       "대구": 117,
-      "대전": 104,
+      "대전": 105,
       "부산": 378,
       "서울": 310,
       "세종": 100,
@@ -1473,7 +1473,7 @@
       "일식": 128,
       "기타": 585,
       "양식": 202,
-      "분식": 16,
+      "분식": 17,
       "디저트": 212
     }
   },
@@ -9207,52 +9207,110 @@
       "scope": "대전시 공식 음식점 소개 1곳, 공주시 2020년 선정 이력 2곳. 블루리본 등급·현재 영업 여부 확인되지 않아 별도 선정·영업으로 주장하지 않음.",
       "newCoordinateCount": 0,
       "completeRegionalBlueRibbonList": false
+    },
+    {
+      "id": "2026-11-04-seogu-municipal-introduction",
+      "checkedAt": "2026-11-04",
+      "baseCommit": "6512f1b99b09e1fab25329d0e48132c61d8f959a",
+      "previousCoverage": {
+        "uniqueRestaurants": 3002,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2280,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 1999,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 104,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 28,
+          "인천": 316,
+          "전남": 169,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1740,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 16,
+          "디저트": 212
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3003,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2281,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 2000,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 28,
+          "인천": 316,
+          "전남": 169,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1740,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 17,
+          "디저트": 212
+        }
+      },
+      "newRestaurantCount": 1,
+      "newRestaurantIds": [
+        "local-daejeon-barogzip-goejeong"
+      ],
+      "newCoordinateCount": 0,
+      "officialSources": [
+        {
+          "name": "대전 서구청 공식 블로그",
+          "url": "https://blog.naver.com/first_seogu/223250576100",
+          "sourceAsOf": "2023"
+        }
+      ],
+      "scope": "대전 서구청 음식점 공식 소개 1건. 지정·선정 등급 및 현재 영업상태 확인하지 않음.",
+      "completeRegionalBlueRibbonList": false
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-04-daejeon-gongju-supplement",
+    "id": "2026-11-04-seogu-municipal-introduction",
     "checkedAt": "2026-11-04",
-    "baseCommit": "43bd2299cc76cd0444d873599c2b35252c4d8e92",
+    "baseCommit": "6512f1b99b09e1fab25329d0e48132c61d8f959a",
     "previousCoverage": {
-      "uniqueRestaurants": 2999,
-      "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2277,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1003,
-      "coordinatesMissing": 1996,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 103,
-        "부산": 378,
-        "서울": 310,
-        "세종": 100,
-        "울산": 28,
-        "인천": 316,
-        "전남": 169,
-        "전북": 208,
-        "제주": 113,
-        "충남": 44,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "한식": 1737,
-        "중식": 119,
-        "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 16,
-        "디저트": 212
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3002,
       "providerCounts": {
         "blue-ribbon": 517,
@@ -9291,36 +9349,58 @@
         "디저트": 212
       }
     },
-    "newRestaurantCount": 3,
+    "currentCoverage": {
+      "uniqueRestaurants": 3003,
+      "providerCounts": {
+        "blue-ribbon": 517,
+        "local-guide": 2281,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1003,
+      "coordinatesMissing": 2000,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 322,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 310,
+        "세종": 100,
+        "울산": 28,
+        "인천": 316,
+        "전남": 169,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "한식": 1740,
+        "중식": 119,
+        "일식": 128,
+        "기타": 585,
+        "양식": 202,
+        "분식": 17,
+        "디저트": 212
+      }
+    },
+    "newRestaurantCount": 1,
     "newRestaurantIds": [
-      "local-daejeon-halmeoni-mukjip",
-      "local-gongju-bapkkot-hana",
-      "local-gongju-yega-geumbyeok"
+      "local-daejeon-barogzip-goejeong"
     ],
+    "newCoordinateCount": 0,
     "officialSources": [
       {
-        "name": "대전광역시 공식 구즉도토리묵 소개",
-        "url": "https://www.daejeon.go.kr/fod/fodModelList.do?menuSeq=157&sctcd=A06",
-        "selectionType": "official_list_introduction"
-      },
-      {
-        "name": "한국관광공사 대전 여행기사·주소 확인",
-        "url": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=bba07096-b676-4e04-96c4-89fa8d235482",
-        "sourceAsOf": "2019-03"
-      },
-      {
-        "name": "공주시 2020 으뜸공주맛집 전문가 선정",
-        "url": "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf",
-        "selectionYear": 2020
-      },
-      {
-        "name": "충남관광 음식점 최신 목록·주소",
-        "url": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
-        "checkedAt": "2026-11-04"
+        "name": "대전 서구청 공식 블로그",
+        "url": "https://blog.naver.com/first_seogu/223250576100",
+        "sourceAsOf": "2023"
       }
     ],
-    "scope": "대전시 공식 음식점 소개 1곳, 공주시 2020년 선정 이력 2곳. 블루리본 등급·현재 영업 여부 확인되지 않아 별도 선정·영업으로 주장하지 않음.",
-    "newCoordinateCount": 0,
+    "scope": "대전 서구청 음식점 공식 소개 1건. 지정·선정 등급 및 현재 영업상태 확인하지 않음.",
     "completeRegionalBlueRibbonList": false
   },
   "latestMapCoverageAudit": {
@@ -9443,8 +9523,8 @@
     "provider": "local-guide",
     "label": "지자체 지정",
     "completeNationalCollection": false,
-    "scope": "지자체가 맛·향토성·전통성 등을 심사하거나 공식 미식 목록으로 선정한 식당의 공개 명단과 선정 이력. 광역시도 목록과 시군구 자체 사업을 함께 수집했으며, 전국의 모든 지정사업·업소 확보를 뜻하지 않음.",
-    "recordCount": 2280,
+    "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
+    "recordCount": 2281,
     "designationEvidenceCount": 2364,
     "coordinatesAvailable": 732,
     "regionCount": 17,
@@ -9481,7 +9561,7 @@
       },
       {
         "region": "대전",
-        "uniqueRestaurants": 95,
+        "uniqueRestaurants": 96,
         "coordinatesAvailable": 3,
         "completeRegionalCollection": false
       },
@@ -9553,7 +9633,7 @@
       }
     ],
     "policies": {
-      "inclusion": "지정·선정 사실을 지자체 원문, 공식 관광기관 목록, 공식 발행 자료에서 확인한 업소.",
+      "inclusion": "지자체 선정·지정 사실은 공식 문서로 확인. 지자체 공식 블로그의 단순 음식점 소개는 별도 '공식 소개'로 표시하며 심사·지정으로 간주하지 않음.",
       "excluded": "일반 음식점 허가 명단, 단순 위생등급·안심식당·모범음식점·착한가격업소만으로 맛집 선정으로 간주하지 않음.",
       "identity": "기존881개 ID 보존. 상호·도로명·건물번호 일치 또는 검토한 동일 업소만 병합. 같은 이름의 다른 주소는 확인 전 분리.",
       "dates": "선정연도·판년도·자료기준일·페이지수정일·출처확인일을 구분. 명시되지 않은 선정연도는 null. 지정기간이 지난 원문은 선정이력 표시.",
@@ -9578,6 +9658,20 @@
         "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
       ],
       "status": "대전 공식 소개 1(지정 아님), 공주 2020 선정 이력 2. 좌표 모두 미확인, BlueRibbon 등급 미부여, 현재 영업 미확인."
+    },
+    "municipalIntroduction20261104": {
+      "checkedAt": "2026-11-04",
+      "recordCount": 1,
+      "restaurantIds": [
+        "local-daejeon-barogzip-goejeong"
+      ],
+      "sourceUrl": "https://blog.naver.com/first_seogu/223250576100",
+      "sourceMirrorUrl": "https://www.welfarehello.com/community/hometownNews/%EC%B6%94%EC%96%B5%EC%9D%98-%EC%95%84%EC%9D%B4%EC%8A%A4%ED%81%AC%EB%A6%BC-%EB%96%A1%EB%B3%B6%EC%9D%B4-%EB%B0%94%EB%A1%9C%EA%B7%B8%EC%A7%91-%EA%B4%B4%EC%A0%95%EC%A0%90--7bae12a8-1188-430d-b58e-5e4c63ff1b69",
+      "region": "대전",
+      "sourceAsOf": "2023",
+      "selection": "공식 소개만 확인, 지정·블루리본 선정 아님",
+      "coordinates": "공식 업소 좌표 미확인",
+      "operatingStatus": "미확인"
     }
   },
   "mapCoverageAuditHistory": [
