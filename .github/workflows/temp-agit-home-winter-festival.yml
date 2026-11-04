@@ -1,0 +1,212 @@
+name: Update directory home links and winter festival
+
+on:
+  push:
+    branches:
+      - fix-agit-home-logo-winter-festival-20261104
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply UI and festival updates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              text = file.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one match, found {count}: {old[:80]}')
+              file.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          home_link = '<a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a>'
+
+          festival_path = Path('world-festival-schedule.js')
+          festival = festival_path.read_text(encoding='utf-8')
+          old_header = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>축제일정 <small>테스트</small></span></header>'
+          new_header = f'<header class="tour-game-header">{home_link}<span>축제일정 <small>테스트</small></span></header>'
+          if festival.count(old_header) != 1:
+              raise SystemExit('world-festival-schedule.js: festival header changed unexpectedly')
+          festival = festival.replace(old_header, new_header, 1)
+          old_listener = "   dialog.querySelector('button').addEventListener('click',close);\n"
+          if festival.count(old_listener) != 1:
+              raise SystemExit('world-festival-schedule.js: close listener changed unexpectedly')
+          festival = festival.replace(old_listener, '', 1)
+          old_focus = "   dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});"
+          new_focus = "   dialog.showModal();dialog.querySelector('.agit-home-link').focus({preventScroll:true});"
+          if festival.count(old_focus) != 1:
+              raise SystemExit('world-festival-schedule.js: focus target changed unexpectedly')
+          festival_path.write_text(festival.replace(old_focus, new_focus, 1), encoding='utf-8')
+
+          restaurant_path = Path('world-restaurant-guide.js')
+          restaurant = restaurant_path.read_text(encoding='utf-8')
+          old_header = '<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header>'
+          new_header = f'<header class="restaurant-guide-header">{home_link}<span>인증맛집 <small>테스트</small></span></header>'
+          if restaurant.count(old_header) != 1:
+              raise SystemExit('world-restaurant-guide.js: restaurant header changed unexpectedly')
+          restaurant = restaurant.replace(old_header, new_header, 1)
+          old_listener = "   dialog.querySelector('button').addEventListener('click',()=>{void close();});\n"
+          if restaurant.count(old_listener) != 1:
+              raise SystemExit('world-restaurant-guide.js: close listener changed unexpectedly')
+          restaurant = restaurant.replace(old_listener, '', 1)
+          old_focus = "   dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});"
+          new_focus = "   dialog.showModal();dialog.querySelector('.agit-home-link').focus({preventScroll:true});"
+          if restaurant.count(old_focus) != 1:
+              raise SystemExit('world-restaurant-guide.js: focus target changed unexpectedly')
+          restaurant_path.write_text(restaurant.replace(old_focus, new_focus, 1), encoding='utf-8')
+
+          festival_css = Path('world-festival-schedule.css')
+          festival_style = '''
+          .festival-schedule-dialog>.tour-game-header .agit-home-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:4px 6px 4px 2px;border-radius:8px;color:#245a48;text-decoration:none;font:800 14px/1 system-ui,sans-serif;letter-spacing:-.03em;white-space:nowrap}
+          .festival-schedule-dialog>.tour-game-header .agit-home-link img{display:block;width:24px;height:24px}
+          .festival-schedule-dialog>.tour-game-header .agit-home-link strong{font-weight:800}
+          .festival-schedule-dialog>.tour-game-header .agit-home-link:focus-visible{outline:2px solid #247060;outline-offset:1px}
+          '''
+          text = festival_css.read_text(encoding='utf-8')
+          if '.festival-schedule-dialog>.tour-game-header .agit-home-link{' in text:
+              raise SystemExit('world-festival-schedule.css: home link style already exists')
+          festival_css.write_text(text.rstrip() + '\n' + festival_style.strip() + '\n', encoding='utf-8')
+
+          restaurant_css = Path('world-restaurant-guide.css')
+          restaurant_style = '''
+          .restaurant-guide-header .agit-home-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:4px 6px 4px 2px;border-radius:8px;color:#245a48;text-decoration:none;font:800 14px/1 system-ui,sans-serif;letter-spacing:-.03em;white-space:nowrap}
+          .restaurant-guide-header .agit-home-link img{display:block;width:24px;height:24px}
+          .restaurant-guide-header .agit-home-link strong{font-weight:800}
+          .restaurant-guide-header .agit-home-link:focus-visible{outline:2px solid #247060;outline-offset:1px}
+          '''
+          text = restaurant_css.read_text(encoding='utf-8')
+          if '.restaurant-guide-header .agit-home-link{' in text:
+              raise SystemExit('world-restaurant-guide.css: home link style already exists')
+          restaurant_css.write_text(text.rstrip() + '\n' + restaurant_style.strip() + '\n', encoding='utf-8')
+
+          replace_once(
+              'world-game-assets.js',
+              "const revision='20261104-directory-share1';",
+              "const revision='20261104-agit-home-winter1';"
+          )
+          replace_once('world-game-assets.js', "festival:'1.2.0'", "festival:'1.2.1'")
+          replace_once('world-game-assets.js', "restaurants:'1.9.0'", "restaurants:'1.9.1'")
+          replace_once(
+              'world-game-assets.js',
+              "festival:['/world-festival-schedule.css?v=20261104-directory-share1','/world-festival-schedule.js?v=20261104-directory-share1'],",
+              "festival:['/world-festival-schedule.css?v=20261104-agit-home1','/world-festival-schedule.js?v=20261104-agit-home1'],"
+          )
+          replace_once(
+              'world-game-assets.js',
+              "'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261104-directory-share1'",
+              "'/world-restaurant-guide.css?v=20261104-agit-home1','/world-restaurant-guide.js?v=20261104-agit-home1'"
+          )
+          replace_once(
+              'world.html',
+              '<script src="/world-game-assets.js?v=20261104-directory-share1" defer></script>',
+              '<script src="/world-game-assets.js?v=20261104-agit-home-winter1" defer></script>'
+          )
+
+          release_path = Path('game-release.json')
+          release = json.loads(release_path.read_text(encoding='utf-8'))
+          if release.get('revision') != '20261104-directory-share1':
+              raise SystemExit(f"game-release.json: unexpected revision {release.get('revision')}")
+          release['revision'] = '20261104-agit-home-winter1'
+          release_path.write_text(json.dumps(release, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+
+          events_path = Path('games/festival-schedule/events.json')
+          data = json.loads(events_path.read_text(encoding='utf-8'))
+          event = {
+              'id': 'hwacheon-sancheoneo-2027',
+              'title': '얼음나라화천 산천어축제',
+              'category': 'local',
+              'start': '2027-01-09',
+              'end': '2027-01-31',
+              'region': '강원',
+              'city': '화천군',
+              'venue': '화천천 및 화천읍 일원',
+              'address': '강원특별자치도 화천군 화천읍 산천어길 137',
+              'lat': 38.1043,
+              'lng': 127.6982,
+              'geoApprox': True,
+              'summary': '화천천 얼음판에서 산천어 낚시와 눈·얼음 체험을 즐기는 겨울축제입니다. 2027년 세부 프로그램은 주최 측이 업데이트 중입니다.',
+              'scheduleNote': '2027년 1월 9일~31일 / 운영시간·예약·세부 프로그램은 추후 공식 안내 확인',
+              'priceNote': '유료 / 2027년 체험료는 공식 안내 확인',
+              'accessNote': '결빙과 기상 상황에 따라 운영이 바뀔 수 있으니 방문 전 공식 공지를 확인해 주세요.',
+              'sourceUrl': 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=02a1c2ab-bce7-404a-9c8f-4eb4ac69acb3',
+              'sourceName': '한국관광공사 대한민국 구석구석',
+              'sourceCheckedAt': '2026-11-04',
+              'verificationSources': [
+                  'https://www.ihc.go.kr/www/selectBbsNttView.do?bbsNo=11&integrDeptCode=&key=2338&nttNo=187602&pageIndex=2&searchCnd=all&searchCtgry=&searchKrwd=%5C'
+              ],
+              'tags': ['산천어축제', '얼음낚시', '겨울축제', '가족'],
+              'status': 'scheduled'
+          }
+          events = [item for item in data.get('events', []) if item.get('id') != event['id']]
+          insert_at = len(events)
+          for index, item in enumerate(events):
+              start = item.get('start')
+              if start is None or (isinstance(start, str) and start > event['start']):
+                  insert_at = index
+                  break
+          events.insert(insert_at, event)
+          data['events'] = events
+          data['updatedAt'] = '2026-11-04'
+          events_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          test_path = Path('tests/directory-home-logo.test.cjs')
+          test_path.write_text(r'''const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+
+          const read = path => fs.readFileSync(path, 'utf8');
+          const festival = read('world-festival-schedule.js');
+          const restaurants = read('world-restaurant-guide.js');
+
+          for (const source of [festival, restaurants]) {
+            assert.match(source, /class="agit-home-link" href="\/world\.html"/);
+            assert.match(source, /aria-label="오쭈다 아지트 홈으로 이동"/);
+            assert.match(source, /querySelector\('\.agit-home-link'\)\.focus/);
+          }
+          assert.doesNotMatch(festival, /← 게임 목록/);
+          assert.doesNotMatch(restaurants, /← 오락실/);
+          assert.match(read('world-festival-schedule.css'), /\.agit-home-link/);
+          assert.match(read('world-restaurant-guide.css'), /\.agit-home-link/);
+          assert.equal(JSON.parse(read('game-release.json')).revision, '20261104-agit-home-winter1');
+          assert.match(read('world-game-assets.js'), /20261104-agit-home-winter1/);
+          assert.ok(JSON.parse(read('games/festival-schedule/events.json')).events.some(
+            event => event.id === 'hwacheon-sancheoneo-2027' &&
+              event.start === '2027-01-09' && event.end === '2027-01-31'
+          ));
+          console.log('directory home logo and winter festival checks passed');
+          ''', encoding='utf-8')
+          PY
+      - name: Validate changes
+        run: |
+          node --check world-festival-schedule.js
+          node --check world-restaurant-guide.js
+          node --check world-game-assets.js
+          node tests/directory-home-logo.test.cjs
+          node games/festival-schedule/validate.mjs
+          node tests/festival-core.test.mjs
+          node tests/festival-entry.test.cjs
+          node tests/game-release-refresh.test.cjs
+          node tests/game-release-version.test.cjs
+      - name: Commit verified update
+        shell: bash
+        run: |
+          rm .github/workflows/temp-agit-home-winter-festival.yml
+          git config user.name 'ojjuda-note'
+          git config user.email 'mj830417@naver.com'
+          git add -A
+          git commit -m 'Link directory headers to Agit home and add winter festival'
+          git push origin HEAD:fix-agit-home-logo-winter-festival-20261104
