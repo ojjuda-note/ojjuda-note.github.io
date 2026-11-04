@@ -1456,6 +1456,8 @@ function screw3d(api,startStage=loadResumeStage()) {
       c.lineWidth=1;c.strokeStyle=sortable?'#5AA59C':'#C9BFB5';c.stroke();
       c.fillStyle=sortable?'#246C63':'#7C7B82';c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
       c.fillText(st.sorting>0?`정리 ${Math.ceil(st.sorting)}초`:'상자 정리 · 무료',SORT_X+SORT_W/2,SORT_Y+SORT_H/2);
+      c.fillStyle='#586178';c.font='bold 11px sans-serif';c.textAlign='right';
+      c.fillText(`색상 ${colorCount(st.L)}종 · 우회 ${st.detours}회`,336,SORT_Y+SORT_H/2);
       c.restore();
       for (const bt of BTN) { c.beginPath(); c.arc(bt.x, bt.y, 15, 0, Math.PI * 2); c.fillStyle = 'rgba(255,255,255,0.85)'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = 'rgba(35,38,74,0.25)'; c.stroke(); c.fillStyle = '#4A4F7A'; c.font = 'bold 17px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(bt.t, bt.x, bt.y + 1); }   // 확대·축소·가운데로
       for (const f of st.fly) {
