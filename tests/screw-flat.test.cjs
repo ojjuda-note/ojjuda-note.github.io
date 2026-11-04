@@ -158,10 +158,10 @@ assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
 safe25.destroy();
 // The previous final stage now continues; the new final stage exits only once.
 for(const stage of [500,999]){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY)));game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY)));game.state.level.routeUnlocked=true;game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
  assert.equal(storage.get(STAGE_KEY),String(stage+1));press(game,{x:267,y:514});assert.equal(game.state.L,stage+1);assert.equal(ends,0);game.destroy();
 }
-storage.set(STAGE_KEY,'1000');const finalGame=G.flat(api,Number(storage.get(G.STAGE_KEY)));finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
+storage.set(STAGE_KEY,'1000');const finalGame=G.flat(api,Number(storage.get(G.STAGE_KEY)));finalGame.state.level.routeUnlocked=true;finalGame.state.level.plates.forEach(p=>p.state='gone');finalGame.update(.05);
 assert.equal(storage.get(STAGE_KEY),'1000');press(finalGame,{x:267,y:514});press(finalGame,{x:267,y:514});assert.equal(ends,1);finalGame.destroy();
 assert.equal(purchases,0);
 // A physical fixture with spare holes and two independent metal rectangles.
