@@ -716,10 +716,9 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
   if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * (L <= 30 ? 2.2 : 2.45) < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
-// Place functional, diagonally mounted screws on exposed rounded-cube bevels.
-// Each screw releases a real washer and is checked by the normal solver.
+// Place functional 45-degree screws on rounded-cube bevels in EVERY stage,
+// including the three tutorials. Normal collision and solvability rules apply.
 function addAngledScrews(M, L) {
-  if (L <= 3) return;
   const cubes=M.els.filter(e => e.kind==='block' && e.cell && e.geom.soft);
   const key=v=>v.map(q=>Math.round(q/GRID)).join(',');
   const occupied=new Map(cubes.map(e=>[key(e.c),e])),candidates=[];
@@ -734,8 +733,8 @@ function addAngledScrews(M, L) {
   let done=0;
   for(const {E,a,p} of candidates){
     if(done>=limit)break;
-    if(chosen.has(E))continue;
-    if(M.screws.some(s=>Math.hypot(...sub(s.p,p))<0.16))continue;
+    if(L > 3 && chosen.has(E))continue;
+    if(M.screws.some(s=>Math.hypot(...sub(s.p,p))<0.14))continue;
     if(rayHit(add(p,mul(a,0.06)),a,0.15,M.els,[E]))continue;
     const washer=el('plate',cylGeom(.077,.018,10),add(p,mul(a,.018)),
       frame(a,[0,1,0]),'#C1D2DD',{badge:true,diagonal:true,material:'metal'});
