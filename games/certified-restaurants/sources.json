@@ -1439,42 +1439,42 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3003,
+    "uniqueRestaurants": 3011,
     "providerCounts": {
       "blue-ribbon": 517,
-      "local-guide": 2281,
+      "local-guide": 2289,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1003,
-    "coordinatesMissing": 2000,
+    "coordinatesMissing": 2008,
     "regionalCounts": {
-      "강원": 44,
-      "경기": 322,
-      "경남": 319,
-      "경북": 145,
-      "광주": 69,
-      "대구": 117,
-      "대전": 105,
-      "부산": 378,
       "서울": 310,
-      "세종": 100,
-      "울산": 28,
-      "인천": 316,
-      "전남": 169,
-      "전북": 208,
-      "제주": 113,
+      "부산": 378,
+      "충북": 214,
       "충남": 46,
-      "충북": 214
+      "울산": 36,
+      "경남": 319,
+      "강원": 44,
+      "전북": 208,
+      "경기": 322,
+      "인천": 316,
+      "제주": 113,
+      "대구": 117,
+      "전남": 169,
+      "세종": 100,
+      "대전": 105,
+      "경북": 145,
+      "광주": 69
     },
     "categoryCounts": {
-      "한식": 1740,
+      "한식": 1747,
       "중식": 119,
       "일식": 128,
       "기타": 585,
       "양식": 202,
       "분식": 17,
-      "디저트": 212
+      "디저트": 213
     }
   },
   "coordinateEnrichment": {
@@ -9304,52 +9304,124 @@
       ],
       "scope": "대전 서구청 음식점 공식 소개 1건. 지정·선정 등급 및 현재 영업상태 확인하지 않음.",
       "completeRegionalBlueRibbonList": false
+    },
+    {
+      "id": "2026-11-04-ulsan-municipal-tourism-listing",
+      "checkedAt": "2026-11-04",
+      "baseCommit": "b404e92d6b681afd52ba4c562a97bc6ac81cc66c",
+      "previousCoverage": {
+        "uniqueRestaurants": 3003,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2281,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 2000,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 28,
+          "인천": 316,
+          "전남": 169,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1740,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 17,
+          "디저트": 212
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3011,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2289,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 2008,
+        "regionalCounts": {
+          "서울": 310,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 322,
+          "인천": 316,
+          "제주": 113,
+          "대구": 117,
+          "전남": 169,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1747,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-ulsan-tour-solbat",
+        "local-ulsan-tour-five-makchang",
+        "local-ulsan-tour-gagopa",
+        "local-ulsan-tour-garimyeongga-main",
+        "local-ulsan-tour-galbi-gurakbu",
+        "local-ulsan-tour-gangwondo-haejangguk",
+        "local-ulsan-tour-gogi-geureut",
+        "local-ulsan-tour-gorae-cafeteria"
+      ],
+      "newCoordinateCount": 0,
+      "sourceFiles": [
+        "restaurants.json",
+        "official-ulsan-tourism.json"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "officialSources": [
+        {
+          "name": "울산광역시 공식 관광 음식점 목록",
+          "url": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "pageLastModifiedAt": "2026-09-11",
+          "lastModifiedScope": "사이트 목록 페이지, 개별 식당 정보 확인일이나 선정 연도와 구분"
+        }
+      ],
+      "scope": "울산광역시 공식 관광 음식점 소개 8곳. 지정·선정 등급 및 현재 영업상태는 별도로 확인하지 않았음.",
+      "completeRegionalBlueRibbonList": false,
+      "storageNote": "원본 restaurants.json은 대용량 GitHub API 업로드 오류로 그대로 두고, 공식 추가 8곳은 official-ulsan-tourism.json에 분리 수록. 화면은 두 파일을 중복 제거 병합."
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-04-seogu-municipal-introduction",
+    "id": "2026-11-04-ulsan-municipal-tourism-listing",
     "checkedAt": "2026-11-04",
-    "baseCommit": "6512f1b99b09e1fab25329d0e48132c61d8f959a",
+    "baseCommit": "b404e92d6b681afd52ba4c562a97bc6ac81cc66c",
     "previousCoverage": {
-      "uniqueRestaurants": 3002,
-      "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2280,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1003,
-      "coordinatesMissing": 1999,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 104,
-        "부산": 378,
-        "서울": 310,
-        "세종": 100,
-        "울산": 28,
-        "인천": 316,
-        "전남": 169,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "한식": 1740,
-        "중식": 119,
-        "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 16,
-        "디저트": 212
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3003,
       "providerCounts": {
         "blue-ribbon": 517,
@@ -9388,20 +9460,73 @@
         "디저트": 212
       }
     },
-    "newRestaurantCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3011,
+      "providerCounts": {
+        "blue-ribbon": 517,
+        "local-guide": 2289,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1003,
+      "coordinatesMissing": 2008,
+      "regionalCounts": {
+        "서울": 310,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 322,
+        "인천": 316,
+        "제주": 113,
+        "대구": 117,
+        "전남": 169,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1747,
+        "중식": 119,
+        "일식": 128,
+        "기타": 585,
+        "양식": 202,
+        "분식": 17,
+        "디저트": 213
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-daejeon-barogzip-goejeong"
+      "local-ulsan-tour-solbat",
+      "local-ulsan-tour-five-makchang",
+      "local-ulsan-tour-gagopa",
+      "local-ulsan-tour-garimyeongga-main",
+      "local-ulsan-tour-galbi-gurakbu",
+      "local-ulsan-tour-gangwondo-haejangguk",
+      "local-ulsan-tour-gogi-geureut",
+      "local-ulsan-tour-gorae-cafeteria"
     ],
     "newCoordinateCount": 0,
+    "sourceFiles": [
+      "restaurants.json",
+      "official-ulsan-tourism.json"
+    ],
+    "existingRestaurantsEnriched": 0,
     "officialSources": [
       {
-        "name": "대전 서구청 공식 블로그",
-        "url": "https://blog.naver.com/first_seogu/223250576100",
-        "sourceAsOf": "2023"
+        "name": "울산광역시 공식 관광 음식점 목록",
+        "url": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+        "pageLastModifiedAt": "2026-09-11",
+        "lastModifiedScope": "사이트 목록 페이지, 개별 식당 정보 확인일이나 선정 연도와 구분"
       }
     ],
-    "scope": "대전 서구청 음식점 공식 소개 1건. 지정·선정 등급 및 현재 영업상태 확인하지 않음.",
-    "completeRegionalBlueRibbonList": false
+    "scope": "울산광역시 공식 관광 음식점 소개 8곳. 지정·선정 등급 및 현재 영업상태는 별도로 확인하지 않았음.",
+    "completeRegionalBlueRibbonList": false,
+    "storageNote": "원본 restaurants.json은 대용량 GitHub API 업로드 오류로 그대로 두고, 공식 추가 8곳은 official-ulsan-tourism.json에 분리 수록. 화면은 두 파일을 중복 제거 병합."
   },
   "latestMapCoverageAudit": {
     "id": "2026-11-04-daejeon-gongju-map-supplement",
@@ -9524,7 +9649,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2281,
+    "recordCount": 2289,
     "designationEvidenceCount": 2364,
     "coordinatesAvailable": 732,
     "regionCount": 17,
@@ -9567,7 +9692,7 @@
       },
       {
         "region": "울산",
-        "uniqueRestaurants": 10,
+        "uniqueRestaurants": 18,
         "coordinatesAvailable": 0,
         "completeRegionalCollection": false
       },
@@ -9672,6 +9797,29 @@
       "selection": "공식 소개만 확인, 지정·블루리본 선정 아님",
       "coordinates": "공식 업소 좌표 미확인",
       "operatingStatus": "미확인"
+    },
+    "municipalTourism20261104": {
+      "checkedAt": "2026-11-04",
+      "recordCount": 8,
+      "restaurantIds": [
+        "local-ulsan-tour-solbat",
+        "local-ulsan-tour-five-makchang",
+        "local-ulsan-tour-gagopa",
+        "local-ulsan-tour-garimyeongga-main",
+        "local-ulsan-tour-galbi-gurakbu",
+        "local-ulsan-tour-gangwondo-haejangguk",
+        "local-ulsan-tour-gogi-geureut",
+        "local-ulsan-tour-gorae-cafeteria"
+      ],
+      "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+      "pageLastModifiedAt": "2026-09-11",
+      "sourceType": "official_restaurant_listing",
+      "status": "tourism_directory_not_formal_selection",
+      "selection": "공식 관광 목록 소개이며 심사·지정·블루리본 등급이 아니다.",
+      "coordinates": "주소가 표시되나 지점별 공개 좌표 미확인으로 null 유지",
+      "operatingStatus": "미확인",
+      "sourceFile": "official-ulsan-tourism.json",
+      "baseCatalog": "restaurants.json (unchanged by large-file API limitation)"
     }
   },
   "mapCoverageAuditHistory": [
