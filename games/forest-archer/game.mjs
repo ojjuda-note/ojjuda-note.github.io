@@ -1,4 +1,4 @@
-import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-coin-shop1';
+import {createCoinExchangeClient,COIN_PACKS,COINS_PER_ZU} from './coin-exchange.mjs?v=20261104-archery-coin-connect1';
 import {PLAYER, BOWS, ARROWS, BULLETS, getBullet, SCOPES, getScopePrice, getScoreCoinReward, STAGES, STAGE_GEAR_BANDS, prepareStage, passersAt, retirePasser, clamp, targetAt, applyAnimalHit, getAnimalAttachmentPoint, getSpeed, getArrowMass, getArrowConsistency, getArrowVariance, getArrowDragRate, getWindResponse, sortEquipment, launchArrow, launchVolley, stepArrow, predictTrajectory, createSway, stepSway} from './engine.mjs?v=20261104-archery-coin-shop1';
 import {drawScenery, drawAnimal, drawClay, drawUfo, drawObstacle, drawPasser, drawEquipmentIcon, drawFirstPersonBow, drawBullseyeImpact, drawBullseyeVignette} from './scenery.mjs?v=20261104-archery-bullet-penetration1';
 import {FLIGHT_TIME_SCALE, IMPACT_HOLD, RETURN_DURATION, PREVIEW_RISE, PREVIEW_HOLD, PREVIEW_RETURN, NEAR_PLANE, projectPoint, depthFragments, desiredFollowCamera, desiredPreviewCamera, clearShotCamera, lerpCamera} from './view.mjs?v=20261104-archery-eagle-dive1';
@@ -164,7 +164,11 @@ function save(){
   if(adminTrialRequested){$('saveStatus').textContent=adminTrialActive?'관리자 체험 · 기록 저장 안 함':'관리자 체험 권한을 확인하고 있어요';return adminTrialActive;}
   let exchangeChanged=false;
   try{
-    const stored=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+    const saved=localStorage.getItem(SAVE_KEY);
+    let stored=null;
+    // Malformed old saves already load as fresh progress; they must not block
+    // saving that recovery. Storage access failures still stop the write.
+    try{stored=JSON.parse(saved||'null');}catch(error){if(!(error instanceof SyntaxError))throw error;}
     exchangeChanged=stored?.launchEpoch===LAUNCH_EPOCH&&Array.isArray(stored.coinExchangeReceipts)&&stored.coinExchangeReceipts.some(id=>!progress.coinExchangeReceipts.includes(id));
     if(exchangeChanged)throw Error('exchange changed in another window');
     // The credit and removal of the old bow records commit together. Keep the
@@ -1201,8 +1205,19 @@ function showCoinShop(){
   const pending=coinExchange?.pending,busy=!!coinExchange?.busy,available=!!coinExchange?.available&&!adminTrialRequested;
   const amount=pending?.zu||shopCoinPack,coins=amount*COINS_PER_ZU,balance=coinExchange?.balance??ammo?.snapshot?.coins;
   const shortage=Number.isSafeInteger(balance)&&balance<amount;
-  const reason=adminTrialRequested?'관리자 체험에서는 ZU를 교환하지 않아요.':!available?'오락실에서 로그인한 뒤 교환할 수 있어요.':!pending&&shortage?'보유 ZU가 부족해요.':'';
-  openModal('shop',`<div class="shop-layout">${shopHeadingMarkup()}<section class="shop-coin-panel" aria-label="코인 교환"><h3>코인 교환</h3><p>10 ZU = 100코인</p>${available&&Number.isSafeInteger(balance)?`<p class="shop-zu-balance">보유 <strong>${formatCoins(balance)} ZU</strong></p>`:''}<div class="coin-pack-options" aria-label="교환할 ZU 선택">${COIN_PACKS.map(zu=>`<button type="button" class="button coin-pack-button" data-coin-pack="${zu}" aria-pressed="${amount===zu}" ${busy||pending?'disabled':''}><strong>${formatCoins(zu)} ZU</strong><small>${formatCoins(zu*COINS_PER_ZU)}코인</small></button>`).join('')}</div><button type="button" class="button primary-button coin-exchange-button" data-action="exchange-coins" ${busy||!available||(!pending&&shortage)?'disabled':''}>${busy?'교환 확인 중…':pending?'교환 내역 다시 확인':`${formatCoins(amount)} ZU → ${formatCoins(coins)}코인 교환`}</button><p class="coin-exchange-notice" role="status">${coinExchange?.notice||reason||'교환한 코인으로 활·화살·조준경을 구매하세요.'}</p><small class="shop-coin-save-note">게임 코인과 장비는 현재 기기에 저장돼요.</small></section></div>`);
+  const needsUpdate=coinExchange?.connection==='update';
+  const reason=adminTrialRequested?'일반 게임으로 이동하면 코인을 교환할 수 있어요.':!available?needsUpdate?'오락실의 상점 연결을 새로 불러와야 해요. 아래 버튼을 눌러 주세요.':'오락실에서 로그인한 뒤 코인 상점을 열어 주세요.':!pending&&shortage?'표시된 ZU가 부족해요. 교환 버튼을 누르면 현재 잔액으로 다시 확인해요.':'';
+  const action=available?'exchange-coins':'connect-coin-shop';
+  const label=!available?(adminTrialRequested?'일반 게임에서 코인 교환':needsUpdate?'상점 연결 새로고침':'오락실에서 코인 교환'):busy?'교환 확인 중…':pending?'교환 내역 다시 확인':`${formatCoins(amount)} ZU → ${formatCoins(coins)}코인 교환`;
+  openModal('shop',`<div class="shop-layout">${shopHeadingMarkup()}<section class="shop-coin-panel" aria-label="코인 교환"><h3>코인 교환</h3><p>10 ZU = 100코인</p>${available&&Number.isSafeInteger(balance)?`<p class="shop-zu-balance">보유 <strong>${formatCoins(balance)} ZU</strong></p>`:''}<div class="coin-pack-options" aria-label="교환할 ZU 선택">${COIN_PACKS.map(zu=>`<button type="button" class="button coin-pack-button" data-coin-pack="${zu}" aria-pressed="${amount===zu}" ${busy||pending?'disabled':''}><strong>${formatCoins(zu)} ZU</strong><small>${formatCoins(zu*COINS_PER_ZU)}코인</small></button>`).join('')}</div><button type="button" class="button primary-button coin-exchange-button" data-action="${action}" ${busy?'disabled':''}>${label}</button><p class="coin-exchange-notice" role="status">${coinExchange?.notice||reason||'교환한 코인으로 활·화살·조준경을 구매하세요.'}</p><small class="shop-coin-save-note">게임 코인과 장비는 현재 기기에 저장돼요.</small></section></div>`);
+}
+function reconnectCoinShop(){
+  if(state.modal!=='shop'||shopTab!=='coin'||coinExchange?.busy)return;
+  if(!adminTrialRequested&&!save()){toast('진행 상황을 저장하지 못했어요. 저장 공간을 확인해 주세요.');return;}
+  // Re-open the authenticated host too: replacing only game assets leaves an
+  // already-open shell without the new account-bound purchase callbacks.
+  const url=window.location.origin+'/world.html?tab=arcade&game=archery&archery_shop=coin&game_update=20261104-archery-coin-connect1';
+  try{window.parent.location.replace(url);}catch{window.location.assign(url);}
 }
 async function exchangeShopCoins(){
   if(state.modal!=='shop'||shopTab!=='coin'||adminTrialRequested||!coinExchange?.available||coinExchange.busy)return;
@@ -1223,7 +1238,7 @@ function showShop(tab=shopTab,scopeWeaponId){
   if(guardAmmoAction())return;
   if(state.mode==='flight'||state.mode==='settling'){toast('이번 발사가 끝난 뒤 상점을 열 수 있어요.');return;}
   if(!['bow','arrow','bullet','scope','coin'].includes(tab))tab='bow';
-  if(tab==='coin'){shopTab=tab;showCoinShop();return;}
+  if(tab==='coin'){const entering=shopTab!=='coin';shopTab=tab;showCoinShop();if(entering)void refreshAmmoStatus();return;}
   if(tab==='scope'){
     if(Number.isInteger(scopeWeaponId)&&progress.ownedBows.includes(scopeWeaponId))shopScopeWeapon=scopeWeaponId;
     else if(shopTab!=='scope'||!progress.ownedBows.includes(shopScopeWeapon))shopScopeWeapon=progress.bow;
@@ -1387,6 +1402,7 @@ document.addEventListener('click',e=>{
   if(btn.dataset.stage){if(state.mode==='flight'||state.mode==='settling'){toast('이번 화살이 도착하면 이동할 수 있어요.');return;}startStage(+btn.dataset.stage);}
   const act=btn.dataset.action;
   if(act==='exchange-coins')void exchangeShopCoins();
+  if(act==='connect-coin-shop')reconnectCoinShop();
   if(act==='buy-stabilizer')buyStabilizer();
   if(act==='toggle-coach')toggleCoach();
   if(act==='use-stabilizer')useStabilizer();
@@ -1846,3 +1862,5 @@ function bootAdminTrial(){
 }
 if(adminTrialRequested)bootAdminTrial();
 else{coinExchange=createCoinExchangeClient({onCredit:creditExchangedCoins,onChange:()=>{if(state.modal==='shop'&&shopTab==='coin')showCoinShop();}});ammo=createAmmoClient({onChange:onAmmoChange,recordsOnly:true});save();resetRound(state.stage);requestAnimationFrame(tick);}
+
+if(!adminTrialRequested&&/(?:^|[?&])shop=coin(?:&|$)/.test(window.location.search||''))showShop('coin');

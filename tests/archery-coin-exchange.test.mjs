@@ -45,3 +45,15 @@ test('saving must succeed before a debit request and before a fulfilled receipt 
  }finally{f.client.dispose();}
  let credited=0;const recovered=fixture({store:f.store,credit:r=>{credited+=r.game_coins;return true;},reply:m=>({ok:true,coins:9000,receipt:receipt(m)})});recovered.init();await flush();assert.equal(credited,1000);assert.equal(f.store.size,0);recovered.client.dispose();
 });
+
+
+test('signed-in old shells request a connection update instead of being mistaken for signed-out users',()=>{
+ const f=fixture();
+ try{
+  f.init({coinExchangeAvailable:false});assert.equal(f.client.available,false);assert.equal(f.client.connection,'update');
+  f.init({owner:null,coinExchangeAvailable:false});assert.equal(f.client.connection,'guest');
+  f.init({adminTrial:true});assert.equal(f.client.connection,'trial');
+  f.init();assert.equal(f.client.available,true);assert.equal(f.client.connection,'ready');
+  assert.equal(f.sent.length,0,'reconnecting must never automatically buy a coin pack');
+ }finally{f.client.dispose();}
+});

@@ -6,6 +6,7 @@ const PREFIX='forest-archer-coin-exchange-v1:';
 export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},host=globalThis.window,storage=globalThis.localStorage,timeout=12000}={}){
   const origin=host?.location?.origin,parent=host?.parent;
   let identity=null,pending=null,busy=false,disposed=false,notice='',balance=null;
+  let connection=parent&&parent!==host?'connecting':'standalone';
   const waiting=new Map();
   const fail=reason=>({ok:false,reason});
   const notify=()=>{if(!disposed)onChange();};
@@ -76,7 +77,9 @@ export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},hos
     const data=event.data;
     if(data.type==='init'){
       if(data.launchEpoch!==4||!UUID.test(data.sessionId||''))return;
-      const usable=parent&&parent!==host&&data.coinExchangeAvailable===true&&data.adminTrial!==true&&UUID.test(data.owner||'');
+      const signedIn=UUID.test(data.owner||'');
+      connection=data.adminTrial===true?'trial':!signedIn?'guest':data.coinExchangeAvailable===true?'ready':'update';
+      const usable=parent&&parent!==host&&connection==='ready';
       if(usable&&identity?.owner===data.owner&&identity?.sessionId===data.sessionId)return;
       for(const entry of waiting.values()){clearTimeout(entry.timer);entry.resolve(fail('unavailable'));}waiting.clear();
       identity=usable?{owner:data.owner,sessionId:data.sessionId}:null;busy=false;pending=null;balance=null;notice='';
@@ -91,7 +94,7 @@ export function createCoinExchangeClient({onCredit=()=>false,onChange=()=>{},hos
   }
   host?.addEventListener?.('message',receive);
   return {
-    get available(){return !!identity&&!disposed;},get owner(){return identity?.owner||null;},
+    get connection(){return connection;},get available(){return !!identity&&!disposed;},get owner(){return identity?.owner||null;},
     get busy(){return busy;},get pending(){return pending;},get notice(){return notice;},get balance(){return balance;},
     updateBalance(value){if(identity&&Number.isSafeInteger(value)&&value>=0&&value!==balance){balance=value;notify();}},
     exchange:zu=>perform('buy',zu),retry:()=>pending?perform('buy',pending.zu):Promise.resolve(fail('nothing_pending')),
