@@ -257,7 +257,8 @@
   function renderMatches() {
     const data = state.data;
     if (!data) return;
-    const matches = data.matches;
+    // Temporarily suppress room 205 until its Naver booking page is independently verified.
+    const matches = data.matches.filter(match => !/^205호(?:\s|$)/.test(match.roomName.trim()));
     $('match-count').hidden = false;
     $('match-count').textContent = `${matches.length}건 · 예약 미확인`;
     $('results-caption').textContent = `${filterLabel(state.filters)} · ${shortDate(data.window?.from)}~${shortDate(data.window?.to)} 입실${timeLabel(data.checkedAt) ? ` · ${timeLabel(data.checkedAt)} 확인` : ''}`;
