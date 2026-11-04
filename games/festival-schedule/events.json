@@ -307,17 +307,22 @@
       "lng": 129.119,
       "geoApprox": true,
       "summary": "광안대교와 광안리 밤바다를 배경으로 음악과 불꽃을 함께 감상하는 축제입니다. 해외 초청 불꽃쇼와 부산 멀티 불꽃쇼가 예정되어 있습니다.",
-      "scheduleNote": "불꽃쇼 시간·교통통제는 공식 안내 확인",
+      "scheduleNote": "11/7 본 불꽃쇼 19:00~20:00 / 광안대교 상층 15:30, 하층 18:30부터 전면 통제(부산시 공지); 사전행사·도로 통제는 별도 확인",
       "priceNote": "유료 좌석 정규 R석 100,000원 / S석 70,000원",
       "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=21318988-6590-40d5-a9ee-d17b806b89a1",
       "sourceName": "한국관광공사 대한민국 구석구석",
-      "sourceCheckedAt": "2026-11-03",
+      "sourceCheckedAt": "2026-11-05",
       "tags": [
         "불꽃",
         "야경",
         "바다"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "accessNote": "유료석 NOL티켓 예매(11/6 17:00 마감 예정), 일반 해변 관람 구역은 무료. 광안해변로 11/7 10:00부터 단계별 도로 통제 및 혼잡 주의.",
+      "verificationSources": [
+        "https://www.busan.go.kr/nbnews/1761578",
+        "https://www.busanfireworks.com/"
+      ]
     },
     {
       "id": "yeoju-sanbuk-kimjang-2026",
@@ -1652,6 +1657,165 @@
       "verificationSources": [
         "https://www.jinankimchi.kr/page/festival02/festival02.jsp"
       ]
+    },
+    {
+      "id": "incheon-sky-festival-2026",
+      "title": "2026 인천공항 SKY FESTIVAL",
+      "category": "local",
+      "start": "2026-11-07",
+      "end": "2026-11-08",
+      "region": "인천",
+      "city": "중구",
+      "venue": "인스파이어 아레나·인스파이어 볼룸",
+      "address": "인천광역시 중구 공항문화로 127",
+      "lat": 37.46669,
+      "lng": 126.3908,
+      "geoApprox": true,
+      "summary": "인천국제공항공사가 개최하는 K-POP 음악축제입니다. 아레나 메인 콘서트와 볼룸 부대행사를 진행합니다.",
+      "scheduleNote": "11/7~8 콘서트 18:00~21:00, 부대행사 13:00~19:00(현장 사정에 따라 변경 가능)",
+      "priceNote": "전석 무료 / 사전 예매 티켓 전량 매진",
+      "accessNote": "NOL티켓 단독 사전 예매로 전석 매진. 만 12세 이상 관람 가능하며 공연 중 퇴장 시 재입장 불가. 공연 사진·영상 촬영 금지.",
+      "sourceUrl": "https://www.2026skf.com/",
+      "sourceName": "인천국제공항공사 SKY FESTIVAL 공식 누리집",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://2026skf.com/en"
+      ],
+      "tags": [
+        "K-POP",
+        "뮤직페스티벌",
+        "음악",
+        "무료",
+        "예매매진"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jeju-garden-culture-expo-2026",
+      "title": "2026 대한민국 제주정원문화박람회",
+      "category": "expo",
+      "start": "2026-11-06",
+      "end": "2026-11-10",
+      "region": "제주",
+      "city": "서귀포시",
+      "venue": "제주혁신도시 바람모루공원 일원",
+      "address": "제주특별자치도 서귀포시 서호동 1602",
+      "lat": 33.25406553,
+      "lng": 126.5173415,
+      "geoApprox": true,
+      "summary": "작가·도민·기업 정원을 전시하고 정원산업전, 정원장터, 정원토크·체험·음악회 등을 운영하는 박람회입니다.",
+      "scheduleNote": "11/6~10 개최 / 세부 프로그램별 운영 시간 공식 안내 확인",
+      "priceNote": "입장·체험별 비용은 주최 측 공식 안내 확인",
+      "accessNote": "정원 체험·강연 등 일부 프로그램은 별도 접수나 예약이 필요할 수 있으니 공식 공지를 확인하세요.",
+      "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000014600",
+      "sourceName": "제주관광공사 비짓제주(제주도·서귀포시 주최)",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "http://jeju-garden-expo.kr"
+      ],
+      "tags": [
+        "정원",
+        "박람회",
+        "식물",
+        "가족",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jeju-pet-fair-festival-2026",
+      "title": "2026 제주반려동물문화산업한마당",
+      "category": "expo",
+      "start": "2026-11-06",
+      "end": "2026-11-08",
+      "region": "제주",
+      "city": "제주시",
+      "venue": "제주 한라체육관 일대",
+      "address": "제주특별자치도 제주시 서광로2길 24",
+      "lat": 33.49745,
+      "lng": 126.51545,
+      "geoApprox": true,
+      "summary": "제주도가 개최하는 반려동물 문화축제와 제주펫페어 공동행사입니다. 반려동물 체험, 강연, 용품 전시가 마련됩니다.",
+      "scheduleNote": "11/6~8 개최 / 강연·체험별 시간표 공식 안내 확인",
+      "priceNote": "입장료 및 유료 체험 비용은 공식 안내 확인",
+      "accessNote": "반려동물 동반 조건, 참가 신청 및 프로그램별 현장·사전 접수는 공식 주최 측 안내 확인.",
+      "sourceUrl": "https://www.visitjeju.net/kr/festival/view?contentsid=CNTS_300000000014924",
+      "sourceName": "제주관광공사 비짓제주(제주특별자치도 주최)",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.instagram.com/jejupetfestival/"
+      ],
+      "tags": [
+        "반려동물",
+        "펫페어",
+        "박람회",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jinju-agrofood-expo-2026",
+      "title": "2026 진주국제농식품박람회",
+      "category": "expo",
+      "start": "2026-11-04",
+      "end": "2026-11-08",
+      "region": "경남",
+      "city": "진주시",
+      "venue": "진주종합경기장 일원",
+      "address": "경상남도 진주시 동진로 415",
+      "lat": 35.1829,
+      "lng": 128.13583,
+      "geoApprox": true,
+      "summary": "진주시와 경상남도가 주최하는 농식품·농기자재 전시 및 지역 농특산물 판매, 농업 체험, 수출상담회가 열리는 박람회입니다.",
+      "scheduleNote": "11/4~8 개최 / 체험관 10:00~18:00, 기타 전시·프로그램 시간은 공식 안내 확인",
+      "priceNote": "입장·전시·체험별 비용 공식 안내 확인(일부 농업체험관 프로그램 1,000원)",
+      "accessNote": "농업체험관 일부 체험은 정원이나 사전 신청 조건이 있을 수 있어 행사별 공식 공지 확인.",
+      "sourceUrl": "https://www.jinju.go.kr/agrex/",
+      "sourceName": "진주시 국제농식품박람회 공식 누리집",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.jinju.go.kr/"
+      ],
+      "tags": [
+        "농식품",
+        "농업",
+        "먹거리",
+        "농기계",
+        "박람회"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "uljin-jukbyeon-seafood-2026",
+      "title": "2026 죽변항 수산물축제",
+      "category": "local",
+      "start": "2026-11-06",
+      "end": "2026-11-08",
+      "region": "경북",
+      "city": "울진군",
+      "venue": "죽변항 일원",
+      "address": "경상북도 울진군 죽변면 죽변항길 일원",
+      "lat": 37.05448,
+      "lng": 129.42018,
+      "geoApprox": true,
+      "summary": "울진 죽변항에서 신선한 수산물과 먹거리, 맨손 활어잡기 체험 및 지역 공연을 즐기는 축제입니다.",
+      "scheduleNote": "11/6~8 개최 / 울진군 공식 행사표에 일별 11:00부터 공연·체험 안내(세부 프로그램 시간 확인)",
+      "priceNote": "식음료·체험별 비용은 주최 측 공식 안내 확인",
+      "accessNote": "맨손 활어잡기 등 참여형 프로그램은 인원·현장 접수 조건을 확인하세요.",
+      "sourceUrl": "https://www.uljin.go.kr/tour/index.uljin?menuCd=DOM_000000203006002000",
+      "sourceName": "울진군 문화관광 죽변항 수산물축제 공식 행사일정",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://lib.uljin.go.kr/content/04community/01_0103.php?b_num=754&proc_type=view"
+      ],
+      "tags": [
+        "수산물",
+        "먹거리",
+        "가을축제",
+        "체험",
+        "어항"
+      ],
+      "status": "scheduled"
     }
   ]
 }
