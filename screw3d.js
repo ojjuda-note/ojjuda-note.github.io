@@ -1,5 +1,6 @@
 import { createPremiumModels } from './screw3d-premium-models.js?v=20261104-screw-v2';
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
+import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-shapes1';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -461,7 +462,11 @@ function modelCastle(t = 0, minS = 0) {   // 성: 넓고(4→) 높게(1→) 커�
 modelCastle.blocks = t => { const N = 4 + t, Hc = 1 + Math.floor(t / 2); return (4 * N - 4) * Hc; };
 
 const [modelSportsCar, modelTitanic, modelWatermelon, modelPig, modelCow, modelRabbit] = createPremiumModels({ modelCar, boxE, GRID, finish, pin, topOfE, Yax, cube, assemble, face, el, cylGeom, I3, boundOf, cylE, rx, add, mul, rz, coneGeom });
-const MODELS = [modelCube, modelHouse, modelPizza, modelCar, modelHat, modelBridge, modelTeapotRound, modelFan, modelRocket, modelCake, modelLighthouse, modelTree, modelCastle, modelEiffel, modelSportsCar, modelTitanic, modelWatermelon, modelPig, modelCow, modelRabbit];
+const { modelRobot, modelFireTruck, modelFerrisWheel, modelPenguin, modelHelicopter } = createReplacementModels({
+  cube, assemble, modelCar, boxE, cylE, el, pin, add, mul, face, GRID,
+  I3, Yax, rx, rz, cylGeom, boxGeom, boundOf, tubeParts
+});
+const MODELS = [modelRobot, modelHouse, modelPizza, modelFireTruck, modelPenguin, modelFerrisWheel, modelTeapotRound, modelHelicopter, modelRocket, modelCake, modelLighthouse, modelTree, modelCastle, modelEiffel, modelSportsCar, modelTitanic, modelWatermelon, modelPig, modelCow, modelRabbit];
 
 // ---------- 지금 모양 (흔들림·떨어짐) ----------
 function pose(E) {
@@ -627,7 +632,7 @@ function makeLevel(L) {   // 빈자리가 모자라거나 풀 수 없는 모양�
   for (let tries = 0; ; tries++) { try { return buildLevel(L, tries > 14); } catch (e) { if (tries > 30) throw e; } }   // 계속 안 되면 같은 나사 수의 큐브로 대신
 }
 function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: 커지는 물건은 크기를 키우고, 작은 물건은 블럭 전시대 위에
-  const T = targetScrews(L), f = alt ? modelCube : MODELS[(L - 1) % MODELS.length];
+  const T = targetScrews(L), f = alt ? modelRobot : MODELS[(L - 1) % MODELS.length];
   if (L <= 3) return tutorialModel(L);
   const ms = Math.ceil(T * 0.85 / 3) * 3;
   if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * 2.2 < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
