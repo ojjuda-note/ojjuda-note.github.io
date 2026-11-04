@@ -153,30 +153,51 @@
     return null;
   }
 
-  function makeBalancedFlower25(L){
-    const tops=[245,178,222,151,151,222,178,245],bottoms=[420,465,435,481,481,435,465,420];
+  function makeInterlockedFlower25(L){
+    // The flower is assembled from four tapered pairs, rather than eight
+    // independent strips. The lower pairs physically support the upper ones:
+    // removing the top first makes it rest on the still-fastened metal.
+    const bands=[
+      {top:412,bottom:481,leftTop:32,leftBottom:34,holes:[[58,465],[58,429]]},
+      {top:328,bottom:408,leftTop:79,leftBottom:72,holes:[[96,389],[96,348]]},
+      {top:240,bottom:324,leftTop:119,leftBottom:104,holes:[[139,305],[139,260]]},
+      {top:151,bottom:236,leftTop:128,leftBottom:119,holes:[[149,216],[149,173]]}
+    ];
     const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[],silhouette=[];
-    for(let i=0;i<8;i++){
-      const left=32.5+i*37,right=left+36,top=tops[i],bottom=bottoms[i];
-      const x=(left+right)/2,y=(top+bottom)/2,raw=[
-        {x:left+4,y:top},{x:right-4,y:top},{x:right,y:top+4},{x:right,y:bottom-4},
-        {x:right-4,y:bottom},{x:left+4,y:bottom},{x:left,y:bottom-4},{x:left,y:top+4}];
-      const p={id:i,z:i,row:0,col:i,releaseFrom:1,x,y,angle:0,
-        vertices:raw.map(v=>({x:v.x-x,y:v.y-y})),mounts:[],pins:[],holeIds:[],
-        state:'fixed',vx:0,vy:0,spin:0,w:36,h:bottom-top};
-      plates.push(p);silhouette.push(raw);
-      // Release the lower pin first: the upper pin holds the strip upright.
-      for(const sy of [bottom-43,top+43]){
-        const h={id:holes.length,x,y:sy,owner:i,screw:screws.length};holes.push(h);
-        p.holeIds.push(h.id);p.mounts.push({x:0,y:sy-y});
-        p.pins.push({hole:h.id,mount:p.mounts.length-1});
-        screws.push({id:screws.length,hole:h,startHole:h.id});
+    for(let row=0;row<bands.length;row++){
+      const band=bands[row];
+      for(let col=0;col<2;col++){
+        const flip=col===1,mirror=x=>flip?360-x:x;
+        const corners=[
+          [band.leftTop,band.top],[172,band.top],
+          [172,band.bottom],[band.leftBottom,band.bottom]
+        ].map(([x,y])=>({x:mirror(x),y}));
+        const raw=corners.map((v,j)=>({
+          x:v.x+(corners[(j+1)%4].x-v.x)*.055,
+          y:v.y+(corners[(j+1)%4].y-v.y)*.055
+        })).flatMap((v,j)=>[v,{
+          x:corners[(j+1)%4].x+(corners[j].x-corners[(j+1)%4].x)*.055,
+          y:corners[(j+1)%4].y+(corners[j].y-corners[(j+1)%4].y)*.055
+        }]);
+        const x=M.Vertices.centre(raw).x,y=M.Vertices.centre(raw).y;
+        const p={id:plates.length,z:plates.length,row:3-row,col,releaseFrom:1,x,y,angle:0,
+          vertices:raw.map(v=>({x:v.x-x,y:v.y-y})),mounts:[],pins:[],holeIds:[],
+          state:'fixed',vx:0,vy:0,spin:0,w:Math.max(...raw.map(v=>v.x))-Math.min(...raw.map(v=>v.x)),h:band.bottom-band.top};
+        plates.push(p);silhouette.push(raw);
+        // Release the bottom pin before the upper pivot, so a plate cannot
+        // pretend to fall while its last fastener is still in place.
+        for(const [hx,hy] of band.holes){
+          const h={id:holes.length,x:mirror(hx),y:hy,owner:p.id,screw:screws.length};holes.push(h);
+          p.holeIds.push(h.id);p.mounts.push({x:h.x-x,y:h.y-y});
+          p.pins.push({hole:h.id,mount:p.mounts.length-1});
+          screws.push({id:screws.length,hole:h,startHole:h.id});
+        }
       }
     }
     return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[6],screwRadius:SCREW_RADIUS,silhouette,plates,holes,screws,order:screws.map(s=>s.id)};
   }
   function makeShapedLevel(L){
-    if(L===25)return makeBalancedFlower25(L);
+    if(L===25)return makeInterlockedFlower25(L);
     const count=pieceCount(L),shape=shapeIndex(L),outline=shapeOutline(shape,L===FIRST_SHAPED_STAGE);
     const area=outline.reduce((sum,poly)=>sum+M.Vertices.area(poly),0),density=shape>=7?Math.min(1,Math.sqrt(area/75000)):1;
     const radius=SCREW_RADIUS*density/(1+Math.max(0,count-18)*.04);let leaves,roots;

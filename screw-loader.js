@@ -32,7 +32,7 @@
         return (await import('./screw3d.js?v=20261105-screw-rounded-diagonal1' + (retry ? '&retry=' + retry : ''))).screw3d;
       }
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
-      await script('/screw-flat-physics.js?v=20261105-screw-flat25-real-1', () => !!window.OjjudaFlatPhysics);
+      await script('/screw-flat-physics.js?v=20261105-screw-flat25-layered-2', () => !!window.OjjudaFlatPhysics);
       await script('/screw-flat-pictures.js?v=20261004-surprise1', () => !!window.OjjudaFlatPictures);
       await script('/screw-flat.js?v=20261105-screw-stage25-fix1', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
