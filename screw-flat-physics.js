@@ -27,7 +27,8 @@
   function plateCovers(p,x,y,radius=0){if(p.state==='gone')return false;const q=localPoint(p,x,y);return polygonDistance(p.vertices,q.x,q.y)<radius;}
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
   function canAccessHole(level,hole){
-    return !level.plates.some(p=>p.state!=='gone'&&plateCovers(p,hole.x,hole.y,12*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS)&&
+    const margin=level.route?0:12*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS;
+    return !level.plates.some(p=>p.state!=='gone'&&plateCovers(p,hole.x,hole.y,margin)&&
       !p.pins.some(pin=>pin.hole===hole.id)&&alignedMount(p,hole)<0);
   }
   function bareHole(level,hole){return !level.plates.some(p=>plateCovers(p,hole.x,hole.y,15*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS));}
@@ -233,7 +234,23 @@
       }
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
-    return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
+    const level={stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
+    if(L>=26){
+      // Three empty sockets remain throughout. A verified route uses the two
+      // left sockets to release a panel, then parks those fasteners in the
+      // panel's original holes before releasing the next one. Any different
+      // transfer is physically possible, but needs an item to complete.
+      const route=[];let previous=null,held=null;
+      ordered.forEach((p,index)=>{
+        p.orderRank=index+1;
+        if(previous){route.push({screw:held[0],to:previous.holeIds[0]},{screw:held[1],to:previous.holeIds[1]});}
+        held=p.holeIds.map(id=>holes[id].screw);
+        route.push({screw:held[0],to:0},{screw:held[1],to:1});
+        previous=p;
+      });
+      level.route=route;level.routeProgress=0;level.routeBroken=false;level.routeUnlocked=false;level.routeGateBlocked=false;
+    }
+    return level;
   }
   function makeFlatLevel(stage){
     const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),count=pieceCount(L),random=seeded(431+Math.max(1,count-2)*7919);
@@ -278,6 +295,7 @@
     engine.gravity.y=1;engine.gravity.scale=.001;
     const bodies=new Map(),joints=new Map(),screwBodies=new Map();let accumulator=0,dead=false;
     const radius=level.screwRadius||SCREW_RADIUS;
+    const routed=!!level.route;
     function refreshScrews(){
       for(const s of level.screws){
         let body=screwBodies.get(s.id);
@@ -286,16 +304,20 @@
           screwBodies.set(s.id,body);M.Composite.add(engine.world,body);
         }
         M.Body.setPosition(body,{x:s.hole.x,y:s.hole.y});
-        // A screw passes through its own drilled mount, but stops every other plate.
-        body.collisionFilter[PINNED_BODIES]=new Set(level.plates.filter(p=>p.pins.some(pin=>pin.hole===s.hole.id)).map(p=>bodies.get(p.id)?.id).filter(id=>id!==undefined));
+        // Only a fastener in a living panel's own mount protrudes above the
+        // board on routed levels. Screws parked in vacated holes are recessed.
+        const attached=level.plates.filter(p=>p.state!=='gone'&&p.pins.some(pin=>pin.hole===s.hole.id));
+        body.collisionFilter.mask=!routed||attached.length?2:0;
+        body.collisionFilter[PINNED_BODIES]=new Set(attached.map(p=>bodies.get(p.id)?.id).filter(id=>id!==undefined));
       }
     }
     function sync(p){const b=bodies.get(p.id);p.x=b.position.x;p.y=b.position.y;p.angle=b.angle;p.vx=M.Body.getVelocity(b).x;p.vy=M.Body.getVelocity(b).y;p.spin=M.Body.getAngularVelocity(b);}
     function refreshPins(p){
       const b=bodies.get(p.id);if(!b)return;
       for(const c of joints.get(p.id)||[])M.Composite.remove(engine.world,c);joints.set(p.id,[]);
-      const fixed=p.pins.length>=2;M.Body.setStatic(b,fixed);
-      p.state=fixed?'fixed':p.pins.length?'hinged':'loose';
+      const fixed=routed?p.pins.length>0:p.pins.length>=2;M.Body.setStatic(b,fixed);
+      p.state=p.pins.length>=2?'fixed':p.pins.length?'hinged':'loose';
+      if(routed)b.collisionFilter.mask=p.pins.length?3:0;
       if(fixed){M.Body.setVelocity(b,{x:0,y:0});M.Body.setAngularVelocity(b,0);}
       else if(p.pins.length===1){
         const pin=p.pins[0],hole=level.holes[pin.hole],q=worldPoint(p,p.mounts[pin.mount]);
@@ -310,8 +332,20 @@
     }
     refreshScrews();
     function move(screw,to){
+      if(routed)level.routeGateBlocked=false;
       if(dead||to.screw!==null||!canUnscrew(level,screw)||!canAccessHole(level,to))return false;
       const from=screw.hole,changed=new Set();
+      if(routed&&!level.routeUnlocked){
+        // The final fastener is the safety latch. A wrong sequence can move
+        // real screws and release earlier plates, but cannot secretly clear
+        // an empty board without an item: the last plate remains bolted on.
+        const finalPlate=level.plates.find(p=>p.orderRank===level.plates.length);
+        const finalStep=level.route[level.route.length-1];
+        if(finalPlate?.pins.length===1&&finalPlate.pins[0].hole===from.id&&
+          (level.routeProgress!==level.route.length-1||screw.id!==finalStep.screw||to.id!==finalStep.to)){
+          level.routeGateBlocked=true;return false;
+        }
+      }
       for(const p of level.plates)if(p.state!=='gone'){
         if(p.pins.some(pin=>pin.hole===from.id)){p.pins=p.pins.filter(pin=>pin.hole!==from.id);changed.add(p);}
         const mount=alignedMount(p,to);if(mount>=0&&!p.pins.some(pin=>pin.mount===mount)){p.pins.push({hole:to.id,mount});changed.add(p);}
@@ -319,6 +353,11 @@
       from.screw=null;to.screw=screw.id;screw.hole=to;
       for(const p of changed)refreshPins(p);
       refreshScrews();
+      if(routed){
+        const expected=level.route[level.routeProgress];
+        if(expected&&expected.screw===screw.id&&expected.to===to.id)level.routeProgress++;
+        else level.routeBroken=true;
+      }
       return true;
     }
     function step(seconds){
