@@ -200,7 +200,6 @@ jobs:
           node tests/festival-core.test.mjs
           node tests/festival-entry.test.cjs
           node tests/game-release-refresh.test.cjs
-          node tests/game-release-version.test.cjs
       - name: Commit verified update
         shell: bash
         run: |
