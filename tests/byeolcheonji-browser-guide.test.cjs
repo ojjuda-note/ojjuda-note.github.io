@@ -1,10 +1,12 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
+const path = require('node:path');
 
-const source = fs.readFileSync('byeolcheonji/browser-guide.js', 'utf8');
-const index = fs.readFileSync('byeolcheonji/index.html', 'utf8');
-const styles = fs.readFileSync('byeolcheonji/styles.css', 'utf8');
+const root = path.join(__dirname, '..');
+const source = fs.readFileSync(path.join(root, 'byeolcheonji/browser-guide.js'), 'utf8');
+const index = fs.readFileSync(path.join(root, 'byeolcheonji/index.html'), 'utf8');
+const styles = fs.readFileSync(path.join(root, 'byeolcheonji/styles.css'), 'utf8');
 const KEY = 'ojjuda-byeolcheonji-browser-guide-v3';
 
 class ClassList {
@@ -75,6 +77,7 @@ function createHarness(initial = {}) {
 
 assert.match(index, /id="browser-guide-dont-show"[^>]*type="checkbox"/);
 assert.match(index, /다시 안 보기/);
+assert.match(index, /<span class="browser-guide-label">브라우저 안내<\/span>/);
 assert.match(index, /browser-guide\.js\?v=20261104-dontshow1/);
 assert.match(styles, /\.browser-guide-skip\{/);
 
