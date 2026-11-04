@@ -251,6 +251,9 @@
       for(const c of joints.get(p.id)||[])M.Composite.remove(engine.world,c);joints.set(p.id,[]);
       const fixed=p.pins.length>=2;M.Body.setStatic(b,fixed);
       p.state=fixed?'fixed':p.pins.length?'hinged':'loose';
+      // A fully detached plate drops in front of the board, so exposed screw
+      // heads must not trap it. Keep metal-to-metal and hinged collisions.
+      b.collisionFilter.mask=p.pins.length?3:2;
       if(fixed){M.Body.setVelocity(b,{x:0,y:0});M.Body.setAngularVelocity(b,0);}
       else if(p.pins.length===1){
         const pin=p.pins[0],hole=level.holes[pin.hole],q=worldPoint(p,p.mounts[pin.mount]);
