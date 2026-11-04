@@ -570,7 +570,7 @@
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
-      const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\\s+/g, '').toLowerCase()).join('|');
+      const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\s+/g, '').toLowerCase()).join('|');
       const knownPlaces = new Set(combined.map(identity));
       for (const item of supplement.restaurants) {
         const key = identity(item);
@@ -582,7 +582,7 @@
       combineRestaurantSources();
       const localCount = state.certified.filter(item => item.guides.some(g => g.provider === 'local-guide')).length;
       const mappedCount = state.certified.filter(item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng)).length;
-      const coverageNote = (data.coverageNote || '').replace(/지자체 지정·선정·공식 소개 \\d+곳/, '지자체 지정·선정·공식 소개 ' + localCount + '곳').replace(/중복 제외 \\d+곳/, '중복 제외 ' + state.certified.length + '곳').replace(/\\d+곳은 지도에 표시할 수 있고/, mappedCount + '곳은 지도에 표시할 수 있고');
+      const coverageNote = (data.coverageNote || '').replace(/지자체 지정·선정·공식 소개 \d+곳/, '지자체 지정·선정·공식 소개 ' + localCount + '곳').replace(/중복 제외 \d+곳/, '중복 제외 ' + state.certified.length + '곳').replace(/\d+곳은 지도에 표시할 수 있고/, mappedCount + '곳은 지도에 표시할 수 있고');
       $('coverage').textContent = text(coverageNote, 400) || '공식 출처로 확인한 일부 식당부터 제공합니다.';
       $('updated').textContent = validDate(data.updatedAt) ? '자료 갱신 ' + dateLabel(data.updatedAt) : '';
       state.loading = false; announce(''); render(true);
