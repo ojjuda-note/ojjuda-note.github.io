@@ -663,7 +663,11 @@ const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6
   : L <= 30 ? Math.round(48 + 952 * Math.pow((L - 4) / 496, 0.8))
   : L <= 500 ? Math.round(138 + 262 * Math.pow((L - 30) / 470, 0.85))
   : Math.round(400 + 140 * Math.pow((L - 500) / 500, 0.90));
-const colorCount = L => L <= 3 ? 2 : Math.min(3 + Math.floor((L - 4) / 12), COLORS.length);
+// Difficulty now follows the reduced model and screw counts.
+// Tutorial: 2 colors; higher stages introduce one new color at key milestones.
+const difficultyTier = L => L <= 3 ? 0 : L <= 30 ? 1 : L <= 100 ? 2
+  : L <= 250 ? 3 : L <= 500 ? 4 : L <= 750 ? 5 : 6;
+const colorCount = L => [2, 3, 4, 5, 6, 7, 7][difficultyTier(L)];
 function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
   const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
   return assemble(['작은 블럭', '블럭 기차', '네모 블럭'][L - 1], cells.map((p, i) => cube(...p, WOOD[i])), { minS: targetScrews(L) });
@@ -679,7 +683,7 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
 function buildLevel(L, alt = false) {
-  const M = mapLevel(applyClassicStyle(sizedModel(L, alt))), K = colorCount(L);   // 4판부터 세 색, 이후 네 단계마다 색을 늘려요.
+  const M = mapLevel(applyClassicStyle(sizedModel(L, alt))), K = colorCount(L);   // 색상 수는 단계별 난이도 구간에 맞게 서서히 증가
   M.generating = true; // no falling or hinged parts during the solvability simulation
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
@@ -851,10 +855,22 @@ function circleHitsHull(cx, cy, r, H) {   // 원이 볼록 다각형과 겹치�
 const inHull = (x, y, H) => { for (let i = 0; i < H.length; i++) { const a = H[i], b = H[(i + 1) % H.length]; if ((b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]) < -0.5) return false; } return true; };
 // ---------- 미션: 판마다 하나, 성공하면 보너스 ----------
 function pickMission(L, lvl) {
-  const hid = lvl.screws.filter(s => blocked(s, lvl)).length, n = lvl.screws.length, pool = ['nobuf', 'time', 'nomiss', 'turns'];
-  if (hid >= 2) pool.push('find', 'find');
-  const id = L === 1 ? (hid ? 'find' : 'nobuf') : pool[Math.floor(Math.random() * pool.length)];
-  const need = id === 'find' ? Math.min(hid, L === 1 ? 1 : 1 + Math.floor(L / 4)) : id === 'time' ? Math.max(40, Math.round(n * 4.5)) : id === 'turns' ? 6 + Math.round(lvl.els.length / 3) : 0;
+  const tier = difficultyTier(L);
+  const hid = lvl.screws.reduce((n, s) => n + !!blocked(s, lvl), 0);
+  const n = lvl.screws.length;
+  // Optional bonus goals also ramp up slowly. No mission requires buying ZU.
+  const pool = ['nobuf', 'time', 'nomiss'];
+  if (tier >= 2) pool.push('turns');
+  if (tier >= 1 && hid >= 2) pool.push('find');
+  if (tier >= 5 && hid >= 2) pool.push('find');
+  const id = L === 1 ? (hid ? 'find' : 'nobuf') : tier === 0 ? 'nobuf'
+    : pool[Math.floor(Math.random() * pool.length)];
+  const findTarget = [1, 1, 2, 2, 3, 3, 4][tier];
+  const timePerScrew = [7, 6, 5.7, 5.3, 5.0, 4.8, 4.6][tier];
+  const rotationDivisor = [3, 3.3, 3.6, 4.0, 4.5, 4.8, 5.2][tier];
+  const need = id === 'find' ? Math.min(hid, findTarget)
+    : id === 'time' ? Math.max(45, Math.round(n * timePerScrew))
+    : id === 'turns' ? Math.max(8, Math.round(6 + lvl.els.length / rotationDivisor)) : 0;
   return { id, need, t: 0, bad: false, found: new Set(), turns: 0, bonus: 15 + L * 3 };
 }
 function missionText(ms) {
