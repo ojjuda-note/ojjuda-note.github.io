@@ -15,8 +15,10 @@ const vector = value => value && ['x','y','z'].every(axis=>Number.isFinite(value
 const copy = value => ({x:value.x,y:value.y,z:value.z});
 const mix = (a,b,t) => ({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t});
 const distance = (a,b) => Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
-const snapshot = frame => ({point:copy(frame.point),velocity:copy(frame.velocity),time:frame.time});
-const between = (a,b,t) => ({point:mix(a.point,b.point,t),velocity:mix(a.velocity,b.velocity,t),time:a.time+(b.time-a.time)*t});
+const snapshot = frame => ({point:copy(frame.point),velocity:copy(frame.velocity),time:frame.time,
+  ...(frame.incomingVelocity?{incomingVelocity:copy(frame.incomingVelocity)}:{})});
+const between = (a,b,t) => t<=0?snapshot(a):t>=1?snapshot(b):
+  ({point:mix(a.point,b.point,t),velocity:mix(a.velocity,b.incomingVelocity||b.velocity,t),time:a.time+(b.time-a.time)*t});
 
 /** Keep measured bends and the real contact; even a one-frame flight has two samples. */
 export function createBulletCinematic(shot, worldTime, {reducedMotion = false} = {}) {
@@ -27,15 +29,22 @@ export function createBulletCinematic(shot, worldTime, {reducedMotion = false} =
   if(!Array.isArray(shot.replayFrames)||shot.replayFrames.length<2)return null;
   const recorded=[];
   for(const frame of shot.replayFrames){
-    if(!vector(frame?.point)||!vector(frame?.velocity)||!Number.isFinite(frame?.time))return null;
+    if(!vector(frame?.point)||!vector(frame?.velocity)||!Number.isFinite(frame?.time)||
+      (frame.incomingVelocity!==undefined&&!vector(frame.incomingVelocity)))return null;
     if(recorded.length&&frame.time<recorded.at(-1).time-1e-9)return null;
     if(frame.time>worldTime+1e-9)continue;
     const next=snapshot(frame);
-    if(recorded.length&&Math.abs(next.time-recorded.at(-1).time)<=1e-9)recorded[recorded.length-1]=next;
+    if(recorded.length&&Math.abs(next.time-recorded.at(-1).time)<=1e-9){
+      if(recorded.at(-1).incomingVelocity)next.incomingVelocity=copy(recorded.at(-1).incomingVelocity);
+      recorded[recorded.length-1]=next;
+    }
     else recorded.push(next);
   }
   const impact={point:copy(result.point),velocity:copy(shot.velocity),time:worldTime};
-  if(recorded.length&&Math.abs(recorded.at(-1).time-worldTime)<=1e-9)recorded[recorded.length-1]=impact;
+  if(recorded.length&&Math.abs(recorded.at(-1).time-worldTime)<=1e-9){
+    if(recorded.at(-1).incomingVelocity)impact.incomingVelocity=copy(recorded.at(-1).incomingVelocity);
+    recorded[recorded.length-1]=impact;
+  }
   else recorded.push(impact);
   if(recorded.length<2||worldTime-recorded[0].time<=1e-9)return null;
   let length=0,first=0,cut=null;

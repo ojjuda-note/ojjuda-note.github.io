@@ -102,3 +102,52 @@ test('reduced motion keeps a static impact and never spins, shakes or adds a fli
     assert.deepEqual(desiredBulletCamera(frame,base,{w:390,h:640}),base);
   }
 });
+
+const penetrationFixture=()=>{
+  const shot=fixture();shot.bulletId=3;shot.position={x:0,y:1.65,z:10};shot.velocity={x:0,y:0,z:80};
+  shot.result.point={...shot.position};shot.result.targetCenter={kind:'target',x:0,y:1.65,z:10,radius:.61};
+  shot.replayFrames=[
+    {point:{x:0,y:1.65,z:0},velocity:{x:0,y:0,z:100},time:0},
+    {point:{x:0,y:1.65,z:5},incomingVelocity:{x:0,y:0,z:100},velocity:{x:0,y:0,z:80},time:.05},
+    {point:{x:0,y:1.65,z:10},velocity:{x:0,y:0,z:80},time:.1125}
+  ];return shot;
+};
+const sampleRecordedTime=(motion,time)=>{
+  let low=0,high=motion.flightDuration;
+  for(let i=0;i<60;i++){
+    const mid=(low+high)/2;
+    if(sampleBulletCinematic(motion,mid).time<time)low=mid;else high=mid;
+  }
+  return sampleBulletCinematic(motion,(low+high)/2);
+};
+
+test('a recorded wall slowdown occurs at contact instead of easing into it before impact',()=>{
+  const shot=penetrationFixture(),original=copy(shot),motion=createBulletCinematic(shot,.1125);
+  const wall=motion.frames.find(frame=>frame.time===.05);
+  assert.ok(wall);near(wall.incomingVelocity.z,100);near(wall.velocity.z,80);
+  near(sampleRecordedTime(motion,.049999).velocity.z,100);
+  near(sampleRecordedTime(motion,.050001).velocity.z,80);
+  near(sampleRecordedTime(motion,.049999).point.z,4.9999);
+  near(sampleRecordedTime(motion,.050001).point.z,5.00008);
+  assert.deepEqual(shot,original);
+  shot.replayFrames[1].incomingVelocity.z=999;near(wall.incomingVelocity.z,100);
+});
+
+test('simultaneous walls keep the first incoming and final outgoing velocity at one unchanged clock',()=>{
+  const shot=penetrationFixture();shot.velocity.z=40;shot.replayFrames.at(-1).velocity.z=40;shot.replayFrames.at(-1).time=.175;
+  shot.replayFrames.splice(2,0,{point:{x:0,y:1.65,z:5},incomingVelocity:{x:0,y:0,z:80},velocity:{x:0,y:0,z:40},time:.05});
+  const motion=createBulletCinematic(shot,.175),walls=motion.frames.filter(frame=>frame.time===.05);
+  assert.equal(walls.length,1);near(walls[0].incomingVelocity.z,100);near(walls[0].velocity.z,40);
+  near(sampleRecordedTime(motion,.049999).velocity.z,100);near(sampleRecordedTime(motion,.050001).velocity.z,40);
+  assert.ok(motion.frames.every((frame,i)=>!i||frame.time>motion.frames[i-1].time));
+});
+
+test('a wall at the final impact retains its real incoming velocity and rejects invalid recordings',()=>{
+  const shot=penetrationFixture();shot.replayFrames.at(-1).incomingVelocity={x:0,y:0,z:80};
+  shot.replayFrames.at(-1).velocity.z=40;shot.velocity.z=40;
+  const motion=createBulletCinematic(shot,.1125);
+  near(motion.frames.at(-1).incomingVelocity.z,80);near(motion.frames.at(-1).velocity.z,40);
+  near(sampleRecordedTime(motion,.112499).velocity.z,80);
+  near(sampleBulletCinematic(motion,motion.flightDuration).velocity.z,40);
+  shot.replayFrames[1].incomingVelocity.x=NaN;assert.equal(createBulletCinematic(shot,.1125),null);
+});

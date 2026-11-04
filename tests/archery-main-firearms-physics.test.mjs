@@ -119,13 +119,14 @@ test('every gun can hit the actual fixed 1.22m targets at 10, 50 and 150m regard
   }
 });
 
-test('bullet drop is used by exact wall collisions and stays identical across physics step sizes', () => {
+test('bullet drop locates exact wall entries and clear paths stay identical across physics step sizes', () => {
   const params = {bow:20, pitch:.12, yaw:0, charge:1}, initial = launchArrow(params);
   const target = crossing(initial, 150), front = crossing(initial, 49.995), rear = crossing(initial, 50.005);
   const stage = {...range, height:target.y, radius:.61, wind:0};
   const wall = {x:0, z:50, width:3, depth:.01, height:front.y + .03};
-  const blocked = stepArrow(launchArrow(params), 16, {...stage, obstacles:[wall]});
-  assert.equal(blocked.type, 'obstacle');close(blocked.point.z, 49.995);close(blocked.point.y, front.y);
+  const penetrated = launchArrow(params), result = stepArrow(penetrated, 16, {...stage, obstacles:[wall]});
+  assert.notEqual(result.type, 'obstacle');assert.equal(penetrated.penetrations.length, 1);
+  close(penetrated.penetrations[0].point.z, 49.995);close(penetrated.penetrations[0].point.y, front.y);
   const clearStage = {...stage, obstacles:[{...wall, height:Math.min(front.y, rear.y) - .03}]};
   const direct = stepArrow(launchArrow(params), 16, clearStage);
   assert.equal(direct.type, 'hit');assert.equal(direct.score, 10);
@@ -215,7 +216,7 @@ test('the highest bullet launches at exactly three times basic speed and stays o
   }
 });
 
-test('straight misses finish at the actual target plane while hits, walls and people retain swept collision priority', () => {
+test('straight misses finish at the target plane while wall penetration and people retain swept collision priority', () => {
   const params = {bow:22, bullet:3, pitch:0, yaw:0}, distance = 150;
   const plain = {...range, distance, height:PLAYER.y, radius:.61, wind:12}, missedStage = {...plain, height:5};
   const expected = crossing(launchArrow(params), distance), missed = stepArrow(launchArrow(params), 16, missedStage);
@@ -224,18 +225,20 @@ test('straight misses finish at the actual target plane while hits, walls and pe
   const hit = stepArrow(launchArrow(params), 16, plain);
   assert.equal(hit.type, 'hit');assert.equal(hit.score, 10);close(hit.flightTime, missed.flightTime);
 
-  // Both blockers begin at precisely the target plane. Their existing tie
-  // priority must still beat a target hit or the new straight-bullet miss.
+  // Both blockers begin at precisely the target plane. A person still stops
+  // the bullet first; a wall applies its loss before the same-time hit/miss.
   const wall = {x:0, z:distance + .005, width:1, height:3, depth:.01};
   const config = {id:0, z:distance + .005, width:1, height:3, depth:.01, passDuration:20, phase:.5};
   const person = passersAt({...plain, passers:[config]}, expected.time)[0];
   config.phase -= person.x / (person.velocityX * config.passDuration);
   for (const stage of [plain, missedStage]) {
     const wallStage = {...stage, obstacles:[wall]}, personStage = {...wallStage, passers:[config]};
-    const blocked = stepArrow(launchArrow(params), 16, wallStage);
-    assert.equal(blocked.type, 'obstacle');close(blocked.point.z, distance);
-    const intercepted = stepArrow(launchArrow(params), 16, personStage);
+    const pierced = launchArrow(params), through = stepArrow(pierced, 16, wallStage);
+    assert.equal(through.type, stage === plain ? 'hit' : 'miss');close(through.point.z, distance);
+    assert.equal(pierced.penetrations.length, 1);close(pierced.penetrationSpeedRatio, .5);
+    const stopped = launchArrow(params), intercepted = stepArrow(stopped, 16, personStage);
     assert.equal(intercepted.type, 'person');assert.equal(intercepted.personId, 0);close(intercepted.point.z, distance);
+    assert.equal(stopped.penetrations.length, 0, 'a person at the entry plane has priority over penetration');
     for (const dt of [1 / 30, 1 / 144, .47]) {
       const shot = launchArrow(params);
       while (shot.active) stepArrow(shot, dt, personStage, shot.elapsed);

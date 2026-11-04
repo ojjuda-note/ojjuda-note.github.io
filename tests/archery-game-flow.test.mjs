@@ -340,6 +340,46 @@ function preciseMainDraw(app, offset = { x: 0, y: 0 }, {missDuringHold = false, 
   return {pad, coords};
 }
 
+// Solve a static, windless penetration fixture independently of the app's
+// collision/prediction routines, then move the actual held touch to that aim.
+function coveredGunAim(app) {
+  const {engine, api} = app, stage = api.state.stage;
+  const params = {bow: api.activeBow(), bullet: api.activeBullet(), charge: 1, yaw: 0};
+  const heightAtTarget = pitch => {
+    const shot = engine.launchArrow({...params, pitch});
+    let point = {...engine.PLAYER}, velocity = {...shot.velocity}, drag = shot.dragRate;
+    let gravity = engine.GRAVITY * shot.gravityScale;
+    const planes = stage.obstacles.map(wall => ({z: wall.z - wall.depth / 2, material: wall.material})).sort((a, b) => a.z - b.z);
+    for (const plane of [...planes, {z: stage.distance}]) {
+      const dz = plane.z - point.z, dt = drag ? -Math.log1p(-drag * dz / velocity.z) / drag : dz / velocity.z;
+      const decay = Math.exp(-drag * dt), a = drag ? -Math.expm1(-drag * dt) / drag : dt;
+      const b = drag ? (dt - a) / drag : dt * dt / 2;
+      point = {x: point.x + velocity.x * a, y: point.y + velocity.y * a - gravity * b, z: plane.z};
+      velocity = {x: velocity.x * decay, y: velocity.y * decay - gravity * a, z: velocity.z * decay};
+      if (plane.material) {
+        const retention = plane.material === 'wood' ? .8 : .5, drop = plane.material === 'wood' ? 1.2 : 1.5;
+        velocity = Object.fromEntries(Object.entries(velocity).map(([axis, value]) => [axis, value * retention]));
+        drag *= retention;gravity *= retention * retention * drop;
+      }
+    }
+    return point.y;
+  };
+  const target = engine.targetAt(stage, api.state.time);let lo = -.05, hi = .4;
+  for (let i = 0; i < 60; i++) {
+    const pitch = (lo + hi) / 2;
+    if (heightAtTarget(pitch) < target.y) lo = pitch;else hi = pitch;
+  }
+  return {yaw: 0, pitch: (lo + hi) / 2};
+}
+
+function setCoveredGunFixture(app, materials, distance = 150) {
+  Object.assign(app.api.state.stage, {distance, height: 2.3, radius: .06, wind: 0, motion: {}, passers: [],
+    retiredPasserIds: [], obstacles: materials.map((material, index) => ({
+      x: 0, z: (distance < 20 ? 4 + index * 2 : 25 + index * 45) + .4,
+      width: 30, height: 30, depth: .8, material, type: material === 'wood' ? 'timber' : 'stone'
+    }))});
+}
+
 const shotAccounting = app => [app.api.state.used, app.api.state.score, app.api.state.hits,
   app.api.progress.shots, app.api.progress.hits, app.api.progress.coins, app.ammo.account.remaining];
 
@@ -1068,6 +1108,121 @@ test('every gun and bullet type plays a separate rotating-bullet celebration wit
   }
 });
 
+test('real bullet releases compound wall losses, preserve exact replay entries and award each ten-point hit once', async () => {
+  for (const fixture of [
+    {materials: ['wood'], speed: .8, drop: 1.2},
+    {materials: ['stone'], speed: .5, drop: 1.5},
+    {materials: ['wood', 'wood'], speed: .64, drop: 1.44},
+    {materials: ['stone', 'stone'], speed: .25, drop: 2.25},
+    {materials: ['wood', 'stone'], speed: .4, drop: 1.8},
+    {materials: ['stone', 'wood'], speed: .4, drop: 1.8},
+    {materials: ['wood', 'stone'], speed: .4, drop: 1.8, bullet: 3, distance: 10}
+  ]) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+      ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: fixture.bullet || 0, coins: 100,
+      coachEnabled: true, sound: false}, {remaining: 0});
+    setCoveredGunFixture(app, fixture.materials, fixture.distance || 150);
+    const {state} = app.api, draw = preciseMainDraw(app), aim = coveredGunAim(app);
+    draw.coords = moveHeldAim(app, aim.yaw, aim.pitch);
+    app.until(() => state.coachReady, 8);
+    const originalAim = {...state.aim}, originalCamera = {...app.api.camera};
+    const walls = JSON.stringify(state.stage.obstacles), best = JSON.stringify(app.api.progress.best);
+    draw.pad.emit('pointerup', draw.coords);await app.flush();
+    assert.equal(state.used, 1);assert.equal(state.magazine, 9);
+    assert.equal(state.shot.penetrations.length, 0, 'a newly released bullet starts without another shot\'s penalties');
+    const badges = new Set();
+    if (fixture.bullet === 3) app.advanceTo(app.now + 100);
+    while (state.mode === 'flight') {badges.add(app.getElement('flightBadge').textContent);app.frames();}
+    assert.equal(state.mode, 'settling');
+    const shot = state.shot, replay = state.cinematic, accounting = shotAccounting(app);
+    assert.equal(shot.result.type, 'hit');assert.equal(shot.result.score, 10);assert.equal(replay?.kind, 'bullet');
+    assert.deepEqual(accounting, [1, 10, 1, 1, 1, 110, 0]);
+    assert.equal(shot.penetrations.length, fixture.materials.length);
+    assert.ok(Math.abs(shot.penetrationSpeedRatio - fixture.speed) < 1e-12);
+    assert.ok(Math.abs(shot.penetrationDropRatio - fixture.drop) < 1e-12);
+    for (const [index, entry] of shot.penetrations.entries()) {
+      assert.equal(entry.material, fixture.materials[index]);assert.equal(entry.obstacleIndex, index);
+      assert.ok(Math.abs(entry.point.z - (state.stage.obstacles[index].z - .4)) < 1e-8);
+      const frame = shot.replayFrames.find(value => Math.abs(value.time - entry.time) < 1e-10);
+      assert.ok(frame, 'the real contact clock is recorded even between rendered frames');
+      assert.deepEqual({...frame.point}, {...entry.point});
+      assert.deepEqual({...frame.incomingVelocity}, {...entry.velocityBefore});
+      assert.deepEqual({...frame.velocity}, {...entry.velocityAfter});
+      assert.ok(entry.time > shot.replayFrames[0].time && entry.time < shot.replayFrames.at(-1).time);
+      if (fixture.distance === 10) assert.ok(replay.frames.some(value => Math.abs(value.time - entry.time) < 1e-10),
+        'both close walls remain at their exact entry locations in the short cinematic');
+    }
+    if (fixture.bullet !== 3) assert.ok([...badges].some(value => /관통/.test(value)), 'the live HUD acknowledges penetration');
+    const feedback = app.getElement('feedbackDetail').textContent;
+    assert.match(feedback, new RegExp(`${fixture.materials.length}회 관통`));
+    assert.match(feedback, new RegExp(`속도 ${Math.round(fixture.speed * 100)}%`));
+    assert.match(feedback, fixture.bullet === 3 ? /낙차 없음/ : new RegExp(`낙차 ${Math.round(fixture.drop * 100)}%`));
+    const physics = JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed,
+      result: shot.result, entries: shot.penetrations, frames: shot.replayFrames});
+    const saved = JSON.stringify(app.snapshot()), saveCount = app.storageOperations.filter(([action]) => action === 'set').length;
+    app.api.onImpact();app.api.onImpact();draw.pad.emit('pointerdown');draw.pad.emit('pointerup');
+    assert.equal(state.shot, shot);assert.equal(state.cinematic, replay);assert.equal(state.magazine, 9);
+    app.until(() => app.api.cinematicFrame()?.phase === 'impact');
+    assert.ok(app.bulletImpactFrames.length > 0);assert.equal(app.bullseyeFrames.length, 0);
+    app.until(() => state.mode === 'ready' && state.reloadRemaining === 0);
+    assert.equal(JSON.stringify({position: shot.position, velocity: shot.velocity, elapsed: shot.elapsed,
+      result: shot.result, entries: shot.penetrations, frames: shot.replayFrames}), physics);
+    assert.deepEqual(shotAccounting(app), accounting);assert.equal(state.targetMarks.length, 1);
+    assert.equal(JSON.stringify(app.snapshot()), saved);
+    assert.equal(app.storageOperations.filter(([action]) => action === 'set').length, saveCount);
+    assert.deepEqual({...state.aim}, originalAim);assert.deepEqual({...app.api.camera}, originalCamera);
+    assert.equal(JSON.stringify(state.stage.obstacles), walls);assert.equal(JSON.stringify(app.api.progress.best), best);
+    assert.equal(app.api.progress.unlocked, 1, 'passing walls and the cinematic do not unlock another stage');
+    assert.equal(app.finishedRounds.length, 0);assert.equal(app.ammo.requests.filter(request => ['spend', 'buy', 'coach-buy', 'round-complete'].includes(request.action)).length, 0);
+    draw.pad.emit('pointerdown');holdFor(app, 250);draw.pad.emit('pointerup');
+    assert.notEqual(state.shot, shot);assert.equal(state.shot.penetrations.length, 0);
+    assert.equal(state.shot.penetrationSpeedRatio, 1);assert.equal(state.shot.penetrationDropRatio, 1);
+    assert.equal(state.used, 2);assert.equal(state.magazine, 8);assert.equal(state.score, 10);
+    assert.equal(app.api.progress.shots, 1, 'the next pending shot does not replay or re-award the first impact');
+  }
+});
+
+test('a real bullet hits a person behind two walls and removes that person only for the following shot', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
+    ownedBows: [0, 22], bow: 22, coins: 100, coachEnabled: true, sound: false}, {remaining: 0});
+  setCoveredGunFixture(app, ['wood', 'stone']);
+  const {state} = app.api;
+  state.stage.passers = [{id: 7, z: 100, width: 30, height: 10, depth: .1, passDuration: 1e6, phase: .5}];
+  const draw = preciseMainDraw(app), aim = coveredGunAim(app);draw.coords = moveHeldAim(app, aim.yaw, aim.pitch);
+  holdFor(app, 200);assert.equal(state.coachReady, false);
+  assert.equal(state.stage.retiredPasserIds.length, 0, 'a coach forecast cannot retire the person');
+  draw.pad.emit('pointerup', draw.coords);await app.flush();app.until(() => state.mode === 'settling');
+  const shot = state.shot;assert.equal(shot.penetrations.length, 2);
+  assert.equal(shot.result.type, 'person');assert.equal(shot.result.personId, 7);assert.equal(shot.result.score, 0);
+  assert.equal(state.cinematic, null);assert.equal(state.targetMarks.length, 0);
+  assert.deepEqual(shotAccounting(app), [1, 0, 0, 1, 0, 101, 0]);assert.equal(state.magazine, 9);
+  assert.match(app.getElement('feedbackDetail').textContent, /이번 발사 0점/);
+  assert.match(app.getElement('feedbackDetail').textContent, /다음 발사부터 빠져요/);
+  assert.match(app.getElement('feedbackDetail').textContent, /2회 관통/);
+  app.until(() => state.mode === 'ready' && state.reloadRemaining === 0);
+  assert.ok(state.stage.retiredPasserIds.includes(7));
+  const again = preciseMainDraw(app), corrected = coveredGunAim(app);
+  again.coords = moveHeldAim(app, corrected.yaw, corrected.pitch);app.until(() => state.coachReady, 8);
+  again.pad.emit('pointerup', again.coords);await app.flush();app.until(() => state.mode === 'settling');
+  assert.equal(state.shot.result.type, 'hit');assert.equal(state.shot.result.score, 10);
+  assert.equal(state.shot.penetrations.length, 2);assert.equal(state.used, 2);assert.equal(state.magazine, 8);
+  assert.deepEqual(shotAccounting(app), [2, 10, 1, 2, 1, 111, 0]);
+});
+
+test('normal arrows remain stopped by either wall material in the actual release flow', async () => {
+  for (const material of ['wood', 'stone']) {
+    const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, sound: false, coachEnabled: true});
+    setCoveredGunFixture(app, [material], 10);
+    const {state} = app.api, {pad, coords} = preciseMainDraw(app);
+    assert.equal(state.coachReady, false);pad.emit('pointerup', coords);await app.flush();
+    app.until(() => state.mode === 'settling');
+    assert.equal(state.shot.projectileType, 'arrow');assert.equal(state.shot.result.type, 'obstacle');
+    assert.equal(state.shot.result.score, 0);assert.equal(state.shot.penetrations?.length || 0, 0);
+    assert.equal(state.cinematic, null);assert.equal(state.used, 1);assert.equal(state.score, 0);
+    assert.doesNotMatch(app.getElement('feedbackDetail').textContent, /관통/);
+  }
+});
+
 test('moving-target bullet celebration keeps the real impact and remains visible through phone and landscape resizing', async () => {
   const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG,
     ownedBows: [0, 22], bow: 22, ownedBullets: [0, 3], bullet: 3, sound: false});
@@ -1449,9 +1604,10 @@ test('coach evaluates every aiming mode up to sixteen times per second and remai
   }
 });
 
-test('gun coaching follows the actual aim and blocked path without firing, moving aim or using account ammunition', async () => {
-  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, ownedBows: [0, 20], bow: 20,
+test('gun coaching follows the changed wall trajectory without firing, moving aim or using account ammunition', async () => {
+  const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, firearmCatalog: FIREARM_CATALOG, ownedBows: [0, 22], bow: 22,
     coachEnabled: true, sound: true}, {remaining: 0, coins: 0});
+  setCoveredGunFixture(app, []);
   const {state} = app.api, {pad} = preciseMainDraw(app, {x: 0, y: 0}, {missDuringHold: true});
   const goodAim = {...state.aim}, before = shotAccounting(app), beforeMagazine = state.magazine;
   app.until(() => state.coachReady, 20);assertCoachCue(app, true);
@@ -1461,13 +1617,19 @@ test('gun coaching follows the actual aim and blocked path without firing, movin
   holdFor(app, 500);assert.equal(app.speech.utterances.length, 1);
   moveHeldAim(app, goodAim.yaw, goodAim.pitch);app.until(() => state.coachReady, 8);assertCoachCue(app, true);
   assert.equal(app.speech.utterances.length, 2);
-  state.stage.obstacles = [{x: 0, z: 5, width: 20, height: 10, depth: .1}];
-  const blocked = app.engine.predictTrajectory(app.api.shotParams(), state.stage, state.time).result;
-  assert.equal(blocked.type, 'obstacle', 'the wall really intercepts this bullet');
+  setCoveredGunFixture(app, ['wood', 'stone']);
+  const oldAimShot = app.engine.launchArrow(app.api.shotParams());
+  app.engine.stepArrow(oldAimShot, 16, state.stage, state.time);
+  assert.equal(oldAimShot.penetrations.length, 2);
+  assert.notEqual(oldAimShot.result.type, 'hit', 'increased drop makes the former open-lane aim miss');
   app.until(() => !state.coachReady, 8);assertCoachCue(app, false);holdFor(app, 500);
-  assert.equal(app.speech.utterances.length, 2, 'a blocked cue cannot queue a delayed firing command');
+  assert.equal(app.speech.utterances.length, 2, 'the obsolete trajectory cannot queue a delayed firing command');
+  assert.deepEqual({...state.aim}, goodAim, 'the coach does not silently adjust the gun for penetration');
+  const corrected = coveredGunAim(app);moveHeldAim(app, corrected.yaw, corrected.pitch);
+  app.until(() => state.coachReady, 8);assertCoachCue(app, true);
+  assert.equal(app.speech.utterances.length, 3);
   assert.equal(state.mode, 'drawing');assert.equal(state.shot, null);assert.equal(state.magazine, beforeMagazine);
-  assert.deepEqual({...state.aim}, goodAim);assert.deepEqual(shotAccounting(app), before);
+  assert.ok(Math.abs(state.aim.pitch - corrected.pitch) < 1e-9);assert.deepEqual(shotAccounting(app), before);
   assert.equal(app.ammo.requests.filter(request => ['coach-buy', 'spend', 'buy'].includes(request.action)).length, 0);
   assert.equal(app.speech.overlaps, 0);
   pad.emit('pointercancel');assertCoachCue(app, false);
@@ -4164,12 +4326,17 @@ for (const fixture of [
   const {state} = app.api, draw = preciseMainDraw(app);
   // For moving pillars, wait while holding and follow the real target until
   // its centre reaches a physical opening. Walls and target are never moved.
-  for (let attempt = 0; attempt < 40 && app.engine.predictTrajectory(app.api.shotParams(), state.stage, state.time).result?.score !== 10; attempt++) {
+  const clearBullseye = () => {
+    const shot = app.engine.launchArrow(app.api.shotParams());
+    app.engine.stepArrow(shot, 16, state.stage, state.time);
+    return shot.result?.score === 10 && shot.penetrations.length === 0;
+  };
+  for (let attempt = 0; attempt < 40 && !clearBullseye(); attempt++) {
     holdFor(app, 50);
     const aim = targetIntercept(app.engine, app.api.shotParams(), state.stage, state.time);
     draw.coords = moveHeldAim(app, aim.yaw, aim.pitch);
   }
-  assert.equal(app.engine.predictTrajectory(app.api.shotParams(), state.stage, state.time).result?.score, 10, 'the fixture uses a real reachable ten-point opening');
+  assert.equal(clearBullseye(), true, 'the fixture uses a real ten-point opening without entering a wall');
   const originalCamera = {...app.api.camera}, originalAim = {...state.aim}, originalPan = [state.panX, state.panY];
   const walls = JSON.stringify(state.stage.obstacles);assert.ok(state.stage.obstacles.length > 0);
   draw.pad.emit('pointerup', draw.coords);await app.flush();

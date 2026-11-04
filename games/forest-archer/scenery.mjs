@@ -284,7 +284,7 @@ export function drawObstacle(ctx,obstacle,{project,camera={},nearPlane=.25}={}) 
   const near=(Number.isFinite(camera.z)?camera.z:0)+Math.max(.001,Number.isFinite(nearPlane)?nearPlane:.25);
   const left=x-width/2,right=x+width/2,front=z-depth/2,back=z+depth/2;
   if(back<=near)return;
-  const timber=obstacle.type==='timber',pillar=obstacle.type==='pillar';
+  const timber=obstacle.material==='wood'||(obstacle.material!=='stone'&&obstacle.type==='timber'),pillar=obstacle.type==='pillar';
   const palette=timber
     ?{light:'#ac9366',dark:'#7c6846',side:'#6e6043',top:'#c0aa7b',edge:'#625a3f',seam:'#5c563e99',shine:'#dcc79c80'}
     :pillar
