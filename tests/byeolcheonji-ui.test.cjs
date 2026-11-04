@@ -55,7 +55,7 @@ function fixture({user=userA,url='https://ojjuda.kr/byeolcheonji/',getUser,avail
  let release;f=fixture({getUser:()=>new Promise(r=>release=r)});await until(()=>release,'waiting Auth');assert.equal(f.calls.length,0);f.emit('SIGNED_OUT',null);release({data:{user:userA}});await sleep(20);assert.equal(f.calls.length,0);assert.equal(f.w.document.querySelector('#member-content').hidden,true);f.close();
  f=fixture({url:'https://ojjuda.kr/byeolcheonji/?date=2026-11-06&room=7618700&guests=4'});await until(()=>f.w.document.querySelector('.booking-link'),'matches');
  assert.equal(f.permissionCalls,0,'no auto notification opt-in');assert.equal(f.pushes.length,0,'no SW mutation without action');
- const url=new URL(f.w.document.querySelector('.booking-link').href);assert.equal(url.pathname,'/booking/3/bizes/1627625/items/7618700');assert.equal(url.searchParams.get('startDateTime').slice(0,10),'2026-11-06');assert.ok(f.w.document.querySelector('.target-room'));
+ const bookingLink=f.w.document.querySelector('.booking-link');const url=new URL(bookingLink.href);assert.equal(url.origin,'https://search.naver.com');assert.equal(url.pathname,'/search.naver');assert.equal(url.searchParams.get('query'),'한우산별천지');assert.equal(bookingLink.target,'_blank');assert.ok(f.w.document.querySelector('.target-room'));
  assert.ok(f.w.document.querySelector('#login-link').href.includes('guests=4'));
  const weekday=f.w.document.querySelector('[name=dateMode][value=weekday]');weekday.checked=true;weekday.dispatchEvent(new f.w.Event('change',{bubbles:true}));await until(()=>f.calls.some(c=>c.url.includes('dateMode=weekday')),'weekday query');
  const optionValues=Array.from(f.w.document.querySelectorAll('[name=guests]'),e=>e.value);assert.deepEqual(optionValues,['all','2','4','6','8']);
@@ -116,5 +116,5 @@ function fixture({user=userA,url='https://ojjuda.kr/byeolcheonji/',getUser,avail
  assert.equal(events.fetch,undefined,'push worker never caches fetches');
  let done;events.push({data:{json:()=>({url:'https://evil.invalid/x',title:'Fixture',body:'Test only'})},waitUntil:p=>done=p});await done;assert.equal(notifications[0].options.data.url,'https://ojjuda.kr/byeolcheonji/');
  events.notificationclick({notification:{close(){},data:{url:'https://ojjuda.kr/byeolcheonji/?date=2026-11-06&room=7618700&guests=4&access_token=never'}},waitUntil:p=>done=p});await done;assert.equal(opened[0],'https://ojjuda.kr/byeolcheonji/?date=2026-11-06&room=7618700&guests=4');
- console.log('PASS: guest/anonymous gating, auth race, exact filters, room deep links, no auto permission, owner-bound device token, subscription lifecycle, upstream failure/unknown states, unsafe links, push URL safety and no caching');
+ console.log('PASS: guest/anonymous gating, auth race, exact filters, safe Naver booking search links, no auto permission, owner-bound device token, subscription lifecycle, upstream failure/unknown states, unsafe links, push URL safety and no caching');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{for(const window of instances)window.close();instances.clear();});

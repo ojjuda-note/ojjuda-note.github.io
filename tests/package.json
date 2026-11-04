@@ -29,7 +29,7 @@
     "test:results": "npm run test:results:unit && node --test game-results-ui.test.cjs game-results-multiplayer-ui.test.cjs",
     "test:results:unit": "node --experimental-vm-modules --test game-results.test.cjs game-results-arcade.test.cjs game-results-stages.test.cjs game-results-multiplayer.test.cjs sacheonseong-result-ranking.test.cjs matgo-result-receipt-db.test.cjs",
     "test:pwa": "node --test pwa-install.test.cjs pwa-service-worker.test.cjs",
-    "test:byeolcheonji": "node --test byeolcheonji-model.test.mjs byeolcheonji-provider.test.mjs byeolcheonji-security.test.mjs && node byeolcheonji-ui.test.cjs && node byeolcheonji-db.test.cjs"
+    "test:byeolcheonji": "node --test byeolcheonji-model.test.mjs byeolcheonji-provider.test.mjs byeolcheonji-security.test.mjs && node byeolcheonji-ui.test.cjs && node byeolcheonji-db.test.cjs && node byeolcheonji-compact-layout.test.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

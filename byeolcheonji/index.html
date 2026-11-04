@@ -10,7 +10,8 @@
   <link rel="manifest" href="/manifest.webmanifest?v=20261104-pwa1">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
   <link rel="stylesheet" href="/byeolcheonji/styles.css?v=20261104-browser-emphasis1">
-  <script src="/byeolcheonji/browser-guide.js?v=20261104-browser-guide1" defer></script>
+  <link rel="stylesheet" href="/byeolcheonji/compact.css?v=20261104-compact1">
+  <script src="/byeolcheonji/browser-guide.js?v=20261104-compact1" defer></script>
   <script src="/config.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/byeolcheonji/app.js?v=20261104-byeolcheonji60d" defer></script>
@@ -19,12 +20,12 @@
   <div class="page-shell">
     <header class="topbar">
       <a class="back-link" href="/world.html?tab=arcade" aria-label="오쭈다 테스트 메뉴로 돌아가기"><span aria-hidden="true">←</span> 오쭈다 <span class="crumb">/ 테스트</span></a>
-      <div class="topbar-actions"><button id="browser-guide-open" class="browser-guide-open" type="button" aria-haspopup="dialog" aria-controls="browser-guide">브라우저 안내</button><span class="member-badge">회원 전용</span></div>
+      <div class="topbar-actions"><button id="browser-guide-open" class="browser-guide-open" type="button" aria-haspopup="dialog" aria-controls="browser-guide">도움말</button><span class="member-badge">회원 전용</span></div>
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <div><p class="eyebrow">한우산에서 쉬어가는 하루</p><h1 id="page-title">별천지 빈방 알림</h1><p class="intro-copy">원하는 날과 인원만 고르세요.<br>빈방이 생기면 알려드릴게요.</p></div>
-        <img class="intro-icon" src="/byeolcheonji/icon.svg" alt="" width="112" height="112">
+        <div class="intro-text"><h1 id="page-title">별천지 빈방 알림</h1><p class="intro-copy">날짜와 인원을 고르고 알림을 켜세요.</p></div>
+        <img class="intro-icon" src="/byeolcheonji/icon.svg" alt="" width="64" height="64">
       </section>
 
       <section id="member-gate" class="gate surface" aria-live="polite" aria-busy="true">
@@ -41,24 +42,24 @@
       <div id="member-content" hidden>
         <div class="workspace">
           <section class="preferences surface" aria-labelledby="preferences-title">
-            <div class="section-title"><h2 id="preferences-title">어떤 빈방을 찾으세요?</h2><span class="quiet-pill">1박 기준</span></div>
+            <div class="section-title"><h2 id="preferences-title">알림 조건</h2><span class="quiet-pill">1박</span></div>
             <form id="preferences-form">
-              <fieldset><legend>입실 날짜</legend><div class="choices date-choices">
+              <fieldset><legend>날짜</legend><div class="choices date-choices">
                 <label><input type="radio" name="dateMode" value="all" checked><span>전체</span></label>
                 <label><input type="radio" name="dateMode" value="weekend"><span>주말</span></label>
                 <label><input type="radio" name="dateMode" value="weekday"><span>평일</span></label>
-              </div><p class="field-note">주말은 금·토 입실과 공휴일 전날 입실이에요.<br>예약처에서 확인된 빈방만 보여드려요.</p></fieldset>
-              <fieldset><legend>이용 인원</legend><div class="choices guest-choices">
+              </div></fieldset>
+              <fieldset><legend>인원</legend><div class="choices guest-choices">
                 <label><input type="radio" name="guests" value="all" checked><span>전체</span></label>
                 <label><input type="radio" name="guests" value="2"><span>2인</span></label>
                 <label><input type="radio" name="guests" value="4"><span>4인</span></label>
                 <label><input type="radio" name="guests" value="6"><span>6인</span></label>
                 <label><input type="radio" name="guests" value="8"><span>8인</span></label>
-              </div><p class="field-note">선택한 인원이 함께 묵을 수 있는 방을 찾아요.</p></fieldset>
+              </div></fieldset>
             </form>
 
             <section class="alarm-panel" aria-labelledby="alarm-title">
-              <div class="alarm-heading"><svg aria-hidden="true" viewBox="0 0 24 24" width="23" height="23" fill="none"><path d="M6.5 9a5.5 5.5 0 0 1 11 0v4l1.5 3H5l1.5-3V9ZM10 19h4M12 2v1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3 id="alarm-title">화면을 닫아도 빈방 알림</h3><p>서버가 2분마다 확인해 알려드려요.</p></div></div>
+              <div class="alarm-heading"><svg aria-hidden="true" viewBox="0 0 24 24" width="23" height="23" fill="none"><path d="M6.5 9a5.5 5.5 0 0 1 11 0v4l1.5 3H5l1.5-3V9ZM10 19h4M12 2v1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3 id="alarm-title">빈방 알림</h3><p>2분마다 확인</p></div></div>
               <p id="alarm-status" class="alarm-state" role="status">알림 상태를 확인하고 있어요.</p>
               <p id="alarm-saved" class="alarm-saved" hidden></p>
               <p id="alarm-dirty" class="alarm-hint" hidden>알림 조건도 바꾸려면 아래에서 저장해 주세요.</p>
@@ -67,17 +68,17 @@
               <div id="alarm-tools" class="alarm-tools" hidden><button id="alarm-test" type="button">테스트 알림</button><button id="alarm-disable" type="button">알림 끄기</button></div>
               <div id="alarm-feedback" class="alarm-feedback" aria-live="polite"></div>
             </section>
-            <p id="device-help" class="device-help">알림을 받을 휴대폰에서 한 번만 켜 주세요.</p>
+            <details class="compact-help"><summary>알림 사용 안내</summary><p id="device-help" class="device-help">알림을 받을 휴대폰에서 한 번만 켜 주세요.</p></details>
           </section>
 
           <section class="availability" aria-labelledby="availability-title">
-            <div class="availability-heading"><div><p class="eyebrow">원하는 방을 바로 예약하세요</p><h2 id="availability-title">지금 확인된 빈방 <span id="match-count" class="count" hidden></span></h2></div><button id="refresh" class="refresh-button" type="button" aria-label="빈방 새로 확인"><svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M19.5 9a8 8 0 1 0 .3 5M19.5 4.5V9H15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>새로 확인</span></button></div>
-            <p id="results-caption" class="results-caption" role="status">앞으로 60일의 빈방을 확인해요.</p>
+            <div class="availability-heading"><div><h2 id="availability-title">빈방 <span id="match-count" class="count" hidden></span></h2></div><button id="refresh" class="refresh-button" type="button" aria-label="빈방 새로 확인"><svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M19.5 9a8 8 0 1 0 .3 5M19.5 4.5V9H15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>새로 확인</span></button></div>
+            <p id="results-caption" class="results-caption" role="status">앞으로 60일 확인</p>
             <div id="notification-target" class="target-note" hidden></div>
             <p id="partial-note" class="partial-note" hidden></p>
-            <div id="results" aria-live="polite" aria-busy="true"><div class="result-state loading"><span class="loading-dot" aria-hidden="true"></span><h3>빈방을 확인하고 있어요</h3><p>예약처의 현재 객실 정보를 가져옵니다.</p></div></div>
+            <div id="results" aria-live="polite" aria-busy="true"><div class="result-state loading"><span class="loading-dot" aria-hidden="true"></span><h3>빈방을 확인하고 있어요</h3><p>현재 객실 정보를 가져옵니다.</p></div></div>
             <button id="show-more" class="show-more" type="button" hidden>다음 빈방 더 보기</button>
-            <p class="booking-note">예약하기를 누르면 해당 객실의 네이버 예약으로 이동해요. 날짜·인원을 확인한 뒤 네이버에서 결제하면 예약돼요.</p>
+            <details class="compact-help booking-help"><summary>예약 안내</summary><p class="booking-note">예약 버튼은 네이버로 이동합니다. 날짜·인원을 확인한 뒤 결제하세요.</p></details>
           </section>
         </div>
       </div>
@@ -86,13 +87,12 @@
     <footer>오쭈다 테스트 <span aria-hidden="true">·</span> 한우산 별천지</footer>
   </div>
   <dialog id="browser-guide" class="browser-guide" aria-labelledby="browser-guide-title" aria-describedby="browser-guide-message" aria-modal="true">
-    <span class="browser-guide-label">별천지 빈방 이용 안내</span>
-    <div class="browser-guide-symbol" aria-hidden="true">↗</div>
-    <h2 id="browser-guide-title">브라우저에서<br>열어 주세요</h2>
-    <p id="browser-guide-message"><strong class="browser-guide-browsers">인터넷 브라우저, 크롬 브라우저, 사파리 브라우저 등에서</strong> <strong>ojjuda.kr/star</strong>에 들어가서 이용하세요.</p>
-    <div class="browser-guide-address-box"><label for="browser-guide-address">별천지 바로가기 주소</label><input id="browser-guide-address" value="ojjuda.kr/star" readonly spellcheck="false"><button id="browser-guide-copy" type="button">주소 복사</button></div>
+    <span class="browser-guide-label">도움말</span>
+    <h2 id="browser-guide-title">브라우저에서 열기</h2>
+    <p id="browser-guide-message">알림은 Chrome·Safari 같은 브라우저에서 <strong>ojjuda.kr/star</strong>로 접속할 때 가장 안정적이에요.</p>
+    <div class="browser-guide-address-box"><label for="browser-guide-address">바로가기 주소</label><input id="browser-guide-address" value="ojjuda.kr/star" readonly spellcheck="false"><button id="browser-guide-copy" type="button">복사</button></div>
     <p id="browser-guide-feedback" class="browser-guide-feedback" role="status" aria-live="polite"></p>
-    <button id="browser-guide-confirm" class="browser-guide-confirm" type="button" autofocus>확인하고 이용하기</button>
+    <button id="browser-guide-confirm" class="browser-guide-confirm" type="button" autofocus>닫기</button>
   </dialog>
 </body>
 </html>
