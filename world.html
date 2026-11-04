@@ -1105,8 +1105,10 @@ function installWorldGameScreen(session){
    const renderScale=Math.min(2,scale*(window.devicePixelRatio||1)),pixelWidth=Math.max(1,Math.round(Z*renderScale)),pixelHeight=Math.max(1,Math.round(he*renderScale));
    if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){
     canvas.width=pixelWidth;canvas.height=pixelHeight;
-    session.ctx.setTransform(pixelWidth/Z,0,0,pixelHeight/he,0,0);
    }
+   // The browser can reset the 2D context without changing canvas.width.
+   // Reestablish the backing-pixel ratio on every fullscreen resize.
+   session.ctx.setTransform(canvas.width/Z,0,0,canvas.height/he,0,0);
   }
   if(session.game)session.game.draw(session.ctx);else D2();
  };
