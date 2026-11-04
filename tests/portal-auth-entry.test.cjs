@@ -201,6 +201,34 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await photoConfirmed.flush(); photoConfirmed.fill(); await photoConfirmed.submit();
   assert.deepEqual(photoConfirmed.navigations, ['/photo-ttang.html']);
 
+  const bookingQuery = 'date=2026-12-24&room=7618700&guests=4';
+  const bookingMember = setup('?auth=login&next=byeolcheonji&' + bookingQuery, { user: reader });
+  await bookingMember.flush();
+  assert.deepEqual(bookingMember.navigations, ['/byeolcheonji/?' + bookingQuery], 'notification room and date survive sign-in');
+  const bookingGuest = setup('?auth=login&next=byeolcheonji&' + bookingQuery);
+  await bookingGuest.flush();
+  assert.equal(bookingGuest.element('auth-dialog').open, true);
+  assert.deepEqual(bookingGuest.navigations, [], 'a guest must sign in before returning to the member tool');
+  bookingGuest.element('email').value = 'member@example.invalid';
+  bookingGuest.element('password').value = 'test-password';
+  await bookingGuest.submit();
+  assert.deepEqual(bookingGuest.navigations, ['/byeolcheonji/?' + bookingQuery]);
+  const bookingSignup = setup('?auth=signup&next=byeolcheonji&' + bookingQuery);
+  await bookingSignup.flush(); bookingSignup.fill(); await bookingSignup.submit();
+  assert.equal(bookingSignup.signups[0].options.emailRedirectTo, 'https://ojjuda.kr/?next=byeolcheonji&' + bookingQuery);
+  const bookingConfirmed = setup('?code=confirmation');
+  await bookingConfirmed.flush();
+  bookingConfirmed.storage.set('ojjuda_post_confirm_destination', JSON.stringify({
+    destination: 'byeolcheonji', booking: bookingQuery, email: reader.email, expiresAt: Date.now() + 60000
+  }));
+  await bookingConfirmed.emit('SIGNED_IN', { user: reader });
+  assert.deepEqual(bookingConfirmed.navigations, ['/byeolcheonji/?' + bookingQuery]);
+  for (const invalid of ['date=2026-02-30&room=https://evil.invalid/&guests=99', 'date=2026-12-24&date=2026-12-25&room=7618700&room=7618751&guests=4&guests=8']) {
+    const app = setup('?auth=login&next=byeolcheonji&' + invalid, { user: reader });
+    await app.flush();
+    assert.deepEqual(app.navigations, ['/byeolcheonji/'], 'invalid or duplicate booking values cannot change the trusted destination');
+  }
+
   for (const query of ['?next=star', '?auth=login&next=star&startDate=2026-11-14&endDate=2026-11-16',
     '?auth=login&next=https://example.invalid/star/']) {
     const retired = setup(query, { user: reader });

@@ -1,10 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261104-archery-sniper-bullets1';
+ const revision='20261104-byeolcheonji1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
+  byeolcheonji:'1.0.0',
   festival:'1.1.1',
   restaurants:'1.8.2',
   recommendations:'1.5.2',
@@ -36,6 +37,7 @@
  const restaurantRatings=['/restaurant-ratings.css?v=20261103-restaurants-ratings1','/restaurant-ratings.js?v=20261103-restaurants-ratings1'];
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
+  byeolcheonji:[],
   festival:['/world-festival-schedule.css?v=20261103-festival-undecided1','/world-festival-schedule.js?v=20261103-festival-undecided1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261103-restaurants-fit2','/world-restaurant-guide.js?v=20261103-restaurants-sort1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261104-restaurant-photos1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261104-restaurant-photos1'],
