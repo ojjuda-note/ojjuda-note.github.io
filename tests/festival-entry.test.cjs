@@ -1,6 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const world=read('world.html'),bridge=read('world-festival-schedule.js'),assets=read('world-game-assets.js');
+assert.match(read('games/festival-schedule/index.html'),/data-category="fireworks">불꽃·불빛<\/button>/,'the fireworks category is shown in the UI');
+assert.match(read('games/festival-schedule/core.js'),/fireworks: Object\.freeze\(\{ label: '불꽃·불빛'/,'the fireworks category is recognized by shared core');
 function section(start,end){
  const from=world.indexOf(start),to=world.indexOf(end,from);
  assert.ok(from>=0&&to>from,'the tested production section exists: '+start);
