@@ -109,8 +109,8 @@
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 517,
-    "coordinatesCount": 239,
+    "recordCount": 523,
+    "coordinatesCount": 244,
     "buildCounts": {
       "existingRecords": 6,
       "highestMatchedMichelin": 32,
@@ -190,7 +190,7 @@
     "coordinatesPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 517,
+    "recordCountIncludingCollaborations": 523,
     "displayLabels": {
       "3리본": 46,
       "공동선정": 270,
@@ -1427,6 +1427,14 @@
       "evidenceType": "business_reported_history",
       "sourceAuditFile": "gumi-sources.json",
       "policy": "운영자 안내로 확인한 선정·수록 이력만 표시. 연도·리본 수·현재 등급은 추정하지 않음."
+    },
+    "yeosuExpansion": {
+      "checkedAt": "2026-11-04",
+      "addedRestaurantCount": 5,
+      "existingRestaurantEnriched": 1,
+      "evidenceType": "business_reported_history",
+      "sourceAuditFile": "yeosu-sources.json",
+      "policy": "업소 공개 안내 근거로 구분. 명시된 연도만 수록하며 리본 개수는 추정하지 않음."
     }
   },
   "mapBackground": {
@@ -1439,40 +1447,40 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3011,
+    "uniqueRestaurants": 3019,
     "providerCounts": {
-      "blue-ribbon": 517,
-      "local-guide": 2289,
+      "blue-ribbon": 523,
       "michelin": 237,
+      "local-guide": 2292,
       "post-office": 240
     },
-    "coordinatesAvailable": 1003,
-    "coordinatesMissing": 2008,
+    "coordinatesAvailable": 1023,
+    "coordinatesMissing": 1996,
     "regionalCounts": {
-      "서울": 310,
-      "부산": 378,
-      "충북": 214,
-      "충남": 46,
-      "울산": 36,
-      "경남": 319,
       "강원": 44,
-      "전북": 208,
       "경기": 322,
-      "인천": 316,
-      "제주": 113,
-      "대구": 117,
-      "전남": 169,
-      "세종": 100,
-      "대전": 105,
+      "경남": 319,
       "경북": 145,
-      "광주": 69
+      "광주": 69,
+      "대구": 117,
+      "대전": 105,
+      "부산": 378,
+      "서울": 310,
+      "세종": 100,
+      "울산": 36,
+      "인천": 316,
+      "전남": 177,
+      "전북": 208,
+      "제주": 113,
+      "충남": 46,
+      "충북": 214
     },
     "categoryCounts": {
-      "한식": 1747,
+      "한식": 1767,
       "중식": 119,
       "일식": 128,
-      "기타": 585,
-      "양식": 202,
+      "기타": 572,
+      "양식": 203,
       "분식": 17,
       "디저트": 213
     }
@@ -9415,52 +9423,115 @@
       "scope": "울산광역시 공식 관광 음식점 소개 8곳. 지정·선정 등급 및 현재 영업상태는 별도로 확인하지 않았음.",
       "completeRegionalBlueRibbonList": false,
       "storageNote": "원본 restaurants.json은 대용량 GitHub API 업로드 오류로 그대로 두고, 공식 추가 8곳은 official-ulsan-tourism.json에 분리 수록. 화면은 두 파일을 중복 제거 병합."
+    },
+    {
+      "id": "2026-11-04-yeosu-expansion",
+      "checkedAt": "2026-11-04",
+      "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
+      "previousCoverage": {
+        "uniqueRestaurants": 3011,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2289,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 2008,
+        "regionalCounts": {
+          "서울": 310,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 322,
+          "인천": 316,
+          "제주": 113,
+          "대구": 117,
+          "전남": 169,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1747,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "previousActualRestaurantCount": 3011,
+      "baseCatalogCount": 3011,
+      "supplementRestaurantCount": 8,
+      "currentCoverage": {
+        "uniqueRestaurants": 3019,
+        "providerCounts": {
+          "blue-ribbon": 523,
+          "michelin": 237,
+          "local-guide": 2292,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 1996,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1767,
+          "중식": 119,
+          "일식": 128,
+          "기타": 572,
+          "양식": 203,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-yeosu-3607",
+        "local-yeosu-3352",
+        "local-yeosu-4046",
+        "blue-yeosu-11821464",
+        "blue-yeosu-1114516192",
+        "blue-yeosu-31043930",
+        "blue-yeosu-11714408",
+        "blue-yeosu-2095288002"
+      ],
+      "existingRestaurantsEnriched": 13,
+      "sourceAuditFile": "yeosu-sources.json",
+      "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
+      "completeRegionalBlueRibbonList": false,
+      "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음."
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-04-ulsan-municipal-tourism-listing",
+    "id": "2026-11-04-yeosu-expansion",
     "checkedAt": "2026-11-04",
-    "baseCommit": "b404e92d6b681afd52ba4c562a97bc6ac81cc66c",
+    "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
     "previousCoverage": {
-      "uniqueRestaurants": 3003,
-      "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2281,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1003,
-      "coordinatesMissing": 2000,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 310,
-        "세종": 100,
-        "울산": 28,
-        "인천": 316,
-        "전남": 169,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "한식": 1740,
-        "중식": 119,
-        "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 17,
-        "디저트": 212
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3011,
       "providerCounts": {
         "blue-ribbon": 517,
@@ -9499,48 +9570,18 @@
         "디저트": 213
       }
     },
-    "newRestaurantCount": 8,
-    "newRestaurantIds": [
-      "local-ulsan-tour-solbat",
-      "local-ulsan-tour-five-makchang",
-      "local-ulsan-tour-gagopa",
-      "local-ulsan-tour-garimyeongga-main",
-      "local-ulsan-tour-galbi-gurakbu",
-      "local-ulsan-tour-gangwondo-haejangguk",
-      "local-ulsan-tour-gogi-geureut",
-      "local-ulsan-tour-gorae-cafeteria"
-    ],
-    "newCoordinateCount": 0,
-    "sourceFiles": [
-      "restaurants.json",
-      "official-ulsan-tourism.json"
-    ],
-    "existingRestaurantsEnriched": 0,
-    "officialSources": [
-      {
-        "name": "울산광역시 공식 관광 음식점 목록",
-        "url": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
-        "pageLastModifiedAt": "2026-09-11",
-        "lastModifiedScope": "사이트 목록 페이지, 개별 식당 정보 확인일이나 선정 연도와 구분"
-      }
-    ],
-    "scope": "울산광역시 공식 관광 음식점 소개 8곳. 지정·선정 등급 및 현재 영업상태는 별도로 확인하지 않았음.",
-    "completeRegionalBlueRibbonList": false,
-    "storageNote": "원본 restaurants.json은 대용량 GitHub API 업로드 오류로 그대로 두고, 공식 추가 8곳은 official-ulsan-tourism.json에 분리 수록. 화면은 두 파일을 중복 제거 병합."
-  },
-  "latestMapCoverageAudit": {
-    "id": "2026-11-04-daejeon-gongju-map-supplement",
-    "checkedAt": "2026-11-04",
-    "baseCommit": "43bd2299cc76cd0444d873599c2b35252c4d8e92",
-    "previousCoverage": {
-      "uniqueRestaurants": 2999,
+    "previousActualRestaurantCount": 3011,
+    "baseCatalogCount": 3011,
+    "supplementRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3019,
       "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2277,
+        "blue-ribbon": 523,
         "michelin": 237,
+        "local-guide": 2292,
         "post-office": 240
       },
-      "coordinatesAvailable": 1003,
+      "coordinatesAvailable": 1023,
       "coordinatesMissing": 1996,
       "regionalCounts": {
         "강원": 44,
@@ -9549,38 +9590,101 @@
         "경북": 145,
         "광주": 69,
         "대구": 117,
-        "대전": 103,
+        "대전": 105,
         "부산": 378,
         "서울": 310,
         "세종": 100,
-        "울산": 28,
+        "울산": 36,
         "인천": 316,
-        "전남": 169,
+        "전남": 177,
         "전북": 208,
         "제주": 113,
-        "충남": 44,
+        "충남": 46,
         "충북": 214
       },
       "categoryCounts": {
-        "한식": 1737,
+        "한식": 1767,
         "중식": 119,
         "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 16,
-        "디저트": 212
+        "기타": 572,
+        "양식": 203,
+        "분식": 17,
+        "디저트": 213
       }
     },
-    "currentCoverage": {
-      "uniqueRestaurants": 3002,
+    "newRestaurantCount": 8,
+    "newRestaurantIds": [
+      "local-yeosu-3607",
+      "local-yeosu-3352",
+      "local-yeosu-4046",
+      "blue-yeosu-11821464",
+      "blue-yeosu-1114516192",
+      "blue-yeosu-31043930",
+      "blue-yeosu-11714408",
+      "blue-yeosu-2095288002"
+    ],
+    "existingRestaurantsEnriched": 13,
+    "sourceAuditFile": "yeosu-sources.json",
+    "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
+    "completeRegionalBlueRibbonList": false,
+    "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음."
+  },
+  "latestMapCoverageAudit": {
+    "id": "2026-11-04-yeosu-map-expansion",
+    "checkedAt": "2026-11-04",
+    "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
+    "previousCoverage": {
+      "uniqueRestaurants": 3011,
       "providerCounts": {
         "blue-ribbon": 517,
-        "local-guide": 2280,
+        "local-guide": 2289,
         "michelin": 237,
         "post-office": 240
       },
       "coordinatesAvailable": 1003,
-      "coordinatesMissing": 1999,
+      "coordinatesMissing": 2008,
+      "regionalCounts": {
+        "서울": 310,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 322,
+        "인천": 316,
+        "제주": 113,
+        "대구": 117,
+        "전남": 169,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1747,
+        "중식": 119,
+        "일식": 128,
+        "기타": 585,
+        "양식": 202,
+        "분식": 17,
+        "디저트": 213
+      }
+    },
+    "previousActualRestaurantCount": 3011,
+    "baseCatalogCount": 3011,
+    "supplementRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3019,
+      "providerCounts": {
+        "blue-ribbon": 523,
+        "michelin": 237,
+        "local-guide": 2292,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 1996,
       "regionalCounts": {
         "강원": 44,
         "경기": 322,
@@ -9588,60 +9692,46 @@
         "경북": 145,
         "광주": 69,
         "대구": 117,
-        "대전": 104,
+        "대전": 105,
         "부산": 378,
         "서울": 310,
         "세종": 100,
-        "울산": 28,
+        "울산": 36,
         "인천": 316,
-        "전남": 169,
+        "전남": 177,
         "전북": 208,
         "제주": 113,
         "충남": 46,
         "충북": 214
       },
       "categoryCounts": {
-        "한식": 1740,
+        "한식": 1767,
         "중식": 119,
         "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 16,
-        "디저트": 212
+        "기타": 572,
+        "양식": 203,
+        "분식": 17,
+        "디저트": 213
       }
     },
-    "newRestaurantCount": 3,
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-daejeon-halmeoni-mukjip",
-      "local-gongju-bapkkot-hana",
-      "local-gongju-yega-geumbyeok"
+      "local-yeosu-3607",
+      "local-yeosu-3352",
+      "local-yeosu-4046",
+      "blue-yeosu-11821464",
+      "blue-yeosu-1114516192",
+      "blue-yeosu-31043930",
+      "blue-yeosu-11714408",
+      "blue-yeosu-2095288002"
     ],
-    "officialSources": [
-      {
-        "name": "대전광역시 공식 구즉도토리묵 소개",
-        "url": "https://www.daejeon.go.kr/fod/fodModelList.do?menuSeq=157&sctcd=A06",
-        "selectionType": "official_list_introduction"
-      },
-      {
-        "name": "한국관광공사 대전 여행기사·주소 확인",
-        "url": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=bba07096-b676-4e04-96c4-89fa8d235482",
-        "sourceAsOf": "2019-03"
-      },
-      {
-        "name": "공주시 2020 으뜸공주맛집 전문가 선정",
-        "url": "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf",
-        "selectionYear": 2020
-      },
-      {
-        "name": "충남관광 음식점 최신 목록·주소",
-        "url": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
-        "checkedAt": "2026-11-04"
-      }
-    ],
-    "scope": "대전시 공식 음식점 소개 1곳, 공주시 2020년 선정 이력 2곳. 블루리본 등급·현재 영업 여부 확인되지 않아 별도 선정·영업으로 주장하지 않음.",
-    "newCoordinateCount": 0,
+    "existingRestaurantsEnriched": 13,
+    "sourceAuditFile": "yeosu-sources.json",
+    "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
     "completeRegionalBlueRibbonList": false,
-    "existingRestaurantsEnriched": 0
+    "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음.",
+    "newCoordinateCount": 20,
+    "existingCoordinateEnrichedCount": 13
   },
   "localGovernment": {
     "checkedAt": "2026-11-04",
@@ -9649,9 +9739,9 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2289,
-    "designationEvidenceCount": 2364,
-    "coordinatesAvailable": 732,
+    "recordCount": 2292,
+    "designationEvidenceCount": 2377,
+    "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
       {
@@ -9734,8 +9824,8 @@
       },
       {
         "region": "전남",
-        "uniqueRestaurants": 168,
-        "coordinatesAvailable": 0,
+        "uniqueRestaurants": 171,
+        "coordinatesAvailable": 16,
         "completeRegionalCollection": false
       },
       {
@@ -16247,6 +16337,110 @@
       "newCoordinateCount": 0,
       "completeRegionalBlueRibbonList": false,
       "existingRestaurantsEnriched": 0
+    },
+    {
+      "id": "2026-11-04-yeosu-map-expansion",
+      "checkedAt": "2026-11-04",
+      "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
+      "previousCoverage": {
+        "uniqueRestaurants": 3011,
+        "providerCounts": {
+          "blue-ribbon": 517,
+          "local-guide": 2289,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1003,
+        "coordinatesMissing": 2008,
+        "regionalCounts": {
+          "서울": 310,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 322,
+          "인천": 316,
+          "제주": 113,
+          "대구": 117,
+          "전남": 169,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1747,
+          "중식": 119,
+          "일식": 128,
+          "기타": 585,
+          "양식": 202,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "previousActualRestaurantCount": 3011,
+      "baseCatalogCount": 3011,
+      "supplementRestaurantCount": 8,
+      "currentCoverage": {
+        "uniqueRestaurants": 3019,
+        "providerCounts": {
+          "blue-ribbon": 523,
+          "michelin": 237,
+          "local-guide": 2292,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 1996,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1767,
+          "중식": 119,
+          "일식": 128,
+          "기타": 572,
+          "양식": 203,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-yeosu-3607",
+        "local-yeosu-3352",
+        "local-yeosu-4046",
+        "blue-yeosu-11821464",
+        "blue-yeosu-1114516192",
+        "blue-yeosu-31043930",
+        "blue-yeosu-11714408",
+        "blue-yeosu-2095288002"
+      ],
+      "existingRestaurantsEnriched": 13,
+      "sourceAuditFile": "yeosu-sources.json",
+      "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
+      "completeRegionalBlueRibbonList": false,
+      "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음.",
+      "newCoordinateCount": 20,
+      "existingCoordinateEnrichedCount": 13
     }
   ]
 }
