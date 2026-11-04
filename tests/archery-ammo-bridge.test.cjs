@@ -29,7 +29,7 @@ function fixture(options={},fakeTimers=false){
  const previous=new Element('button');previous.isConnected=true;
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{classList:{contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)},append:node=>{node.isConnected=true;nodes.push(node);}}};
  const window={OjjudaGuestAccess:{finished:options=>finishes.push(options)},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);}};
- vm.runInNewContext(bridge,{window,document,location:{origin},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
+ vm.runInNewContext(bridge,{window,document,location:{origin,search:options.search||''},crypto:{randomUUID},setTimeout:fakeTimers?fn=>{const id=++timerId;timers.set(id,fn);return id;}:setTimeout,clearTimeout:fakeTimers?id=>timers.delete(id):clearTimeout});
  const defaults={owner,authorized:()=>authorized,onAmmoStatus:async()=>snapshot(),onRoundStart:async()=>snapshot({run_id:randomUUID()}),onRoundComplete:async()=>snapshot(),onAmmoSpend:async()=>snapshot(),onAmmoBuy:async()=>snapshot(),onCoachBuy:async()=>snapshot(),onAmmoReceipt:async()=>snapshot({found:false,receipt:null})};
  const api={
   open(overrides={}){window.OjjudaArcheryGame.open({...defaults,...options,...overrides});return nodes.at(-1)?.frame;},
@@ -77,6 +77,15 @@ test('member and account-changed archery sessions cannot consume a guest trial',
   const oldFrame=f.dialog.frame;f.close();f.open({owner:null});f.ready();
   f.finish(member);f.finish(member,{frame:oldFrame});assert.equal(f.finishes.length,0);
   f.finish();assert.deepEqual(f.finishes,[undefined]);
+ }finally{f.close();}
+});
+
+test('reconnecting opens the coin tab in a normal game without requesting a purchase',()=>{
+ const f=fixture({search:'?tab=arcade&game=archery&archery_shop=coin',onCoinExchange:async()=>assert.fail('opening the shop must not buy'),onCoinReceipt:async()=>({ok:true,found:false})});
+ try{
+  assert.match(f.dialog.frame.src,/&shop=coin(?:&|$)/);
+  assert.equal(f.dialog.frame.sent[0].data.coinExchangeAvailable,true);
+  assert.equal(f.responses().length,0);
  }finally{f.close();}
 });
 

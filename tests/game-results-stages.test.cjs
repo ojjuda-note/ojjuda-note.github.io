@@ -134,7 +134,8 @@ test('archery completed rounds keep equipment purchases directly beneath the sta
       assert.equal(card.querySelectorAll('[data-action="result-shop"]').length,1);
       const rounds=g.progress.mainRounds,score=g.state.score;shop.click();assert.equal(g.state.modal,'shop');assert.equal(g.state.mode,'finished');
       $('[data-shop-tab="coin"]').click();assert.equal($('#modalContent').querySelectorAll('[data-coin-pack]').length,6);
-      assert.equal($('[data-action="exchange-coins"]').disabled,true,'standalone games cannot debit ZU');
+      assert.equal($('[data-action="exchange-coins"]'),null,'standalone games cannot debit ZU');
+      assert.equal($('[data-action="connect-coin-shop"]').disabled,false,'standalone users can reopen the authenticated coin shop');
       $('#modalClose').click();assertResult($('#modalContent'),passed?'success':'failure');assert.equal(g.progress.mainRounds,rounds);assert.equal(g.state.score,score);
       $('[data-action="retry"]').click();await flush();
     }
@@ -142,4 +143,33 @@ test('archery completed rounds keep equipment purchases directly beneath the sta
     const before=g.progress.coins;assert.equal(g.creditExchangedCoins(receipt),true);assert.equal(g.creditExchangedCoins(receipt),true);
     const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-single-v4'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
   }finally{w.close();}
+});
+
+test('archery coin shop recovers old hosts and checks stale balances on the server',async()=>{
+  const dom=new JSDOM(read('games/forest-archer/index.html'),{url:'https://fixture.test/games/forest-archer/?shop=coin',runScripts:'outside-only',pretendToBeVisual:true});
+  const w=dom.window;shared(w);
+  const sent=[],navigations=[],parent={postMessage:data=>sent.push(data),location:{replace:url=>navigations.push(url)}};
+  Object.defineProperty(w,'parent',{value:parent});
+  const noop=()=>{},drawing=new Proxy({}, {get:(object,key)=>object[key]||(key==='measureText'?()=>({width:20}):/Gradient$/.test(key)?()=>({addColorStop:noop}):noop),set:(object,key,value)=>(object[key]=value,true)});
+  w.HTMLCanvasElement.prototype.getContext=()=>drawing;w.ResizeObserver=class{observe(){}};
+  w.HTMLElement.prototype.getBoundingClientRect=()=>({left:0,top:0,width:900,height:600});
+  const modules=new Map(),context=dom.getInternalVMContext();
+  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const coinTest={get client(){return coinExchange;},get coins(){return progress.coins;}};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
+  const game=load('game.mjs');await game.link(specifier=>load(specifier.replace(/^\.\//,'').split('?')[0]));await game.evaluate();await flush();
+  const g=game.namespace.coinTest,$=selector=>w.document.querySelector(selector),owner='11111111-1111-4111-8111-111111111111',sessionId='22222222-2222-4222-8222-222222222222';
+  const emit=data=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{source:'ojjuda-archery-world',owner,sessionId,launchEpoch:4,...data}}));
+  try{
+    assert.equal($('#modalContent').querySelectorAll('[data-coin-pack]').length,6,'the return URL opens the coin tab');
+    emit({type:'init',available:false,coinExchangeAvailable:false});await flush();
+    const reconnect=$('[data-action="connect-coin-shop"]');assert.equal(reconnect.disabled,false);assert.equal(reconnect.textContent,'상점 연결 새로고침');
+    assert.doesNotMatch($('.coin-exchange-notice').textContent,/로그인/);
+    reconnect.click();assert.equal(navigations.length,1);const destination=new URL(navigations[0]);assert.equal(destination.pathname,'/world.html');assert.equal(destination.searchParams.get('game'),'archery');assert.equal(destination.searchParams.get('archery_shop'),'coin');
+    assert.equal(sent.filter(data=>data.action==='coin-exchange').length,0,'reconnecting never spends ZU');
+    emit({type:'init',available:false,coinExchangeAvailable:true});await flush();
+    g.client.updateBalance(0);const before=g.coins,buy=$('[data-action="exchange-coins"]');assert.equal(buy.disabled,false,'a cached zero balance cannot block a server check');
+    buy.click();buy.click();await flush();
+    const requests=sent.filter(data=>data.action==='coin-exchange');assert.equal(requests.length,1);assert.equal(requests[0].zu,10);assert.equal($('[data-action="exchange-coins"]').disabled,true);
+    const request=requests[0];emit({type:'ammo-response',action:request.action,requestId:request.requestId,result:{ok:true,owner,request_id:request.requestId,zu:10,game_coins:100,coins:40}});await flush();
+    assert.equal(g.coins,before+100);assert.equal($('[data-action="exchange-coins"]').disabled,false);assert.match($('.coin-exchange-notice').textContent,/100코인으로 교환/);
+  }finally{g.client.dispose();w.close();}
 });
