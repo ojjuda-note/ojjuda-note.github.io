@@ -566,7 +566,7 @@
     function renderLocation(editor, message = '지역·주소를 확인해 주세요.') {
       editor.locationOpen.textContent = editor.location ? '지도 위치 변경' : '지도에서 위치 선택';
       editor.locationClear.hidden = !editor.location;
-      editor.locationStatus.textContent = editor.location ? '지도 위치 선택 완료 · ' + message : '지도에서 위치를 고르면 지역과 주소를 자동으로 입력해요.';
+      editor.locationStatus.textContent = editor.location ? '지도 위치 선택 완료 · ' + message : '지도 위치가 없으면 지도 핀이 표시되지 않고 거리순에서는 맨 뒤에 나와요. 지도에서 위치를 선택해 주세요.';
     }
     async function chooseLocation(session, editor) {
       if (!active(session) || session.editor !== editor || editor.disposed || editor.processing || editor.saving || editor.uncertain || editor.picker) return;
@@ -591,7 +591,7 @@
             : hasRegion ? '지역을 입력했어요. 주소는 직접 입력해 주세요.'
             : hasAddress ? '주소를 입력했어요. 지역은 직접 선택해 주세요.'
             : '주소를 찾지 못했어요. 지역·주소를 직접 입력해 주세요.';
-          editor.location = point; editor.dirty = true; renderLocation(editor, message);
+          editor.location = point; editor.locationAddress = editor.fields.address.value.trim(); editor.locationRegion = editor.fields.region.value; editor.dirty = true; renderLocation(editor, message);
           formMessage(editor, message);
         }
       } catch {
@@ -606,7 +606,7 @@
       releaseEditor(session.editor);
       resetView(session, 'editor', row ? '추천 글 수정' : '맛집 추천하기');
       const form = node('form', 'rr-editor'); form.noValidate = false;
-      const editor = { id: row?.id || uid(), existing: row, form, dirty: false, processing: false, saving: false, uncertain: null, disposed: false, location: locationFrom(row), picker: null, photos: (row?.photos || []).map(path => ({ key: uid(), path, uploaded: true })), fields: {}, originalPaths: row?.photos || [] };
+      const editor = { id: row?.id || uid(), existing: row, form, dirty: false, processing: false, saving: false, uncertain: null, disposed: false, location: locationFrom(row), locationAddress: textValue(row?.address).trim(), locationRegion: textValue(row?.region).trim(), picker: null, photos: (row?.photos || []).map(path => ({ key: uid(), path, uploaded: true })), fields: {}, originalPaths: row?.photos || [] };
       session.editor = editor;
       form.append(node('p', 'rr-editor-intro', '직접 다녀온 맛집을 회원들에게 소개해 주세요.'));
       const name = field('name', '가게명', 'text', row?.name, 80, '지점이 있다면 함께 적어 주세요');
@@ -627,7 +627,21 @@
       };
       editor.locationStatus = hook(node('p', 'rr-location-status'), 'location-status'); editor.locationStatus.setAttribute('role', 'status');
       location.append(editor.locationOpen, editor.locationClear, editor.locationStatus); renderLocation(editor);
-      for (const [key, item] of Object.entries({ name, category, region, address, menu, reason })) { editor.fields[key] = item.control; item.control.oninput = () => { item.control.setCustomValidity(''); editor.dirty = true; if ((key === 'address' || key === 'region') && editor.location) formMessage(editor, '주소나 지역을 바꿨다면 지도 위치도 확인해 주세요.'); }; }
+      for (const [key, item] of Object.entries({ name, category, region, address, menu, reason })) {
+         editor.fields[key] = item.control;
+         const onEdit = () => {
+           item.control.setCustomValidity(''); editor.dirty = true;
+           if ((key === 'address' || key === 'region') && editor.location &&
+               (editor.fields.address.value.trim() !== editor.locationAddress || editor.fields.region.value !== editor.locationRegion)) {
+             // Never keep a stale map pin after a member changes the street or region.
+             editor.location = null;
+             renderLocation(editor);
+             formMessage(editor, '주소나 지역이 바뀌어 기존 지도 위치를 해제했어요. 새 위치를 선택해 주세요.', true);
+           }
+         };
+         item.control.oninput = onEdit;
+         if (key === 'address' || key === 'region') item.control.onchange = onEdit;
+       }
       form.append(name.wrap, pair, address.wrap, location, menu.wrap, reason.wrap);
       const photos = node('section', 'rr-photo-section'), photoHeading = node('div', 'rr-photo-heading');
       editor.count = hook(node('span', 'rr-photo-count'), 'photo-count'); photoHeading.append(node('h3', '', '맛집 사진'), editor.count);

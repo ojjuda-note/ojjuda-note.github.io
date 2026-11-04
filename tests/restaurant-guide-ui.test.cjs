@@ -131,6 +131,15 @@ async function fixture(browser, options = {}) {
       { ...layoutBase, id: 'layout-busan', name: '부산 지도 식당', region: '부산', district: '중구', lat: 35.1796, lng: 129.0756 },
       { ...layoutBase, id: 'layout-unlocated', name: '제주 주소 식당', region: '제주', district: '제주시', lat: null, lng: null }
     ];
+    // A member may type 부페 even when the registered restaurant spells its name 뷔페.
+    const spellingRows = [{ ...structuredClone(layoutBase), id: 'spelling-restaurant', name: '효자한식뷔페', region: '대전', district: '동구', address: '대전광역시 동구 대전로813번길 49, 1층', lat: 36.33107, lng: 127.42966 }];
+    const spelling = await fixture(browser, { dataset: { restaurants: spellingRows } });
+    await waitForTotal(spelling.page, 1);
+    await spelling.page.locator('#search').fill('효자한식부페');
+    await spelling.page.locator('#search').press('Enter');
+    assert.deepEqual(await visibleIds(spelling.page), ['spelling-restaurant'], 'a common buffet spelling does not hide the same restaurant');
+    await spelling.context.close();
+
     const firstMap = await fixture(browser, { firstVisit: true, dataset: { restaurants: layoutRows } });
     await waitForTotal(firstMap.page, layoutRows.length);
     await firstMap.page.waitForFunction(() => !!document.querySelector('.leaflet-tile-loaded'));
