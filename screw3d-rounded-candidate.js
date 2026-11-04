@@ -720,35 +720,50 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
 // including the three tutorials. Normal collision and solvability rules apply.
 function addAngledScrews(M, L) {
   const cubes=M.els.filter(e => e.kind==='block' && e.cell && e.geom.soft);
-  const key=v=>v.map(q=>Math.round(q/GRID)).join(',');
+  // Use actual world centres because a pedestal may shift its sculpted model
+  // while the original cell coordinates remain unchanged.
+  const key=v=>v.map(q=>Math.round(q*100000)).join(',');
   const occupied=new Map(cubes.map(e=>[key(e.c),e])),candidates=[];
   const outer=GRID/2-SOFT_RADIUS+SOFT_RADIUS/Math.SQRT2;
-  for(const E of cubes)for(const sx of [-1,1])for(const sz of [-1,1]){
-    if(occupied.has(key(add(E.c,[sx*GRID,0,0])))||occupied.has(key(add(E.c,[0,0,sz*GRID]))))continue;
-    const a=norm([sx,0,sz]),p=add(E.c,[sx*outer,0,sz*outer]);
-    candidates.push({E,a,p,score:E.c[1]+(sx+sz)*0.015});
+  const dirs=[[0,2],[0,1],[1,2]]; // XZ bevels, XY bevels, then YZ bevels
+  for(const E of cubes)for(const [i,j] of dirs)for(const si of [-1,1])for(const sj of [-1,1]){
+    const offsetI=[0,0,0],offsetJ=[0,0,0];
+    offsetI[i]=si*GRID;offsetJ[j]=sj*GRID;
+    // Both adjacent sides must be unoccupied, so the entire bevel is real
+    // exterior surface rather than an invisible inter-block seam.
+    if(occupied.has(key(add(E.c,offsetI)))||occupied.has(key(add(E.c,offsetJ))))continue;
+    const normal=[0,0,0],point=[0,0,0],up=[0,0,0];
+    normal[i]=si;normal[j]=sj;
+    point[i]=si*outer;point[j]=sj*outer;
+    up[3-i-j]=1; // perpendicular to the screw's 45-degree direction
+    const a=norm(normal),p=add(E.c,point);
+    const priority=E.c[1]+(i===0&&j===2 ? .16 : i===0 ? .09 : .03);
+    candidates.push({E,a,p,up,priority});
   }
-  candidates.sort((a,b)=>b.score-a.score);
+  candidates.sort((a,b)=>b.priority-a.priority);
   const chosen=new Set(),limit=L>=250?6:3;
   let done=0;
-  for(const {E,a,p} of candidates){
+  for(const {E,a,p,up} of candidates){
     if(done>=limit)break;
-    if(L > 3 && chosen.has(E))continue;
-    if(M.screws.some(s=>Math.hypot(...sub(s.p,p))<0.14))continue;
-    if(rayHit(add(p,mul(a,0.06)),a,0.15,M.els,[E]))continue;
+    if(L>3&&chosen.has(E))continue;
+    // Keep the head and washer clear of existing fasteners and solid parts.
+    if(M.screws.some(s=>Math.hypot(...sub(s.p,p))<.14))continue;
+    if(rayHit(add(p,mul(a,.06)),a,.15,M.els,[E]))continue;
     const washer=el('plate',cylGeom(.077,.018,10),add(p,mul(a,.018)),
-      frame(a,[0,1,0]),'#C1D2DD',{badge:true,diagonal:true,material:'metal'});
+      frame(a,up),'#C1D2DD',{badge:true,diagonal:true,material:'metal'});
     M.els.push(washer);
-    pin(M,washer,E,add(p,mul(a,.036)),a);
+    const screw=pin(M,washer,E,add(p,mul(a,.036)),a);
+    screw.diagonal=true;
     chosen.add(E);done++;
   }
-  // Never break the three-screws-per-color grouping.
+  // Extra screws must always complete a trio, including the tutorial levels.
   for(let k=0;k<done%3;k++){
-    const z=M.screws.pop(),washer=z.thru;
-    M.els.splice(M.els.indexOf(washer),1);M.hold.pop();
+    const screw=M.screws.pop();
+    M.els.splice(M.els.indexOf(screw.thru),1);
+    M.hold.pop();
   }
+  if(done-(done%3)<3)throw new Error('대각선 나사 설치 공간이 부족해요');
 }
-
 function buildLevel(L, alt = false) {
   const raw=applyClassicStyle(sizedModel(L,alt));
   addAngledScrews(raw,L);
