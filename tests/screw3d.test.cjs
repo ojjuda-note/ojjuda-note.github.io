@@ -63,7 +63,8 @@ vm.runInContext(`
   assert.equal(colorCount(3), 2); assert.equal(colorCount(4), 3);
   assert.ok(lastColors>=7,'later stages use more screw colors');
   for (const L of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,32,80,160,500,650,800,1000]) {
-    const m = makeLevel(L), witness = solution;
+    const m = makeLevel(L), witness = m.solution || globalThis.solution;
+    assert.ok(Array.isArray(witness),'every generated stage exposes a winning order');
     if (L <= 3) { assert.ok(m.screws.length>=targetScrews(L)&&m.screws.length<=targetScrews(L)+9,'diagonal screw mounts add only a small tutorial overhead'); assert.equal(new Set(m.queue).size, 2); }
     else { assert.ok(m.screws.length > 24); assert.equal(new Set(m.queue).size, colorCount(L)); }
     assert.equal(m.screws.length % 3, 0);
