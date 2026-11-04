@@ -202,17 +202,18 @@
       "lng": 126.647,
       "geoApprox": true,
       "summary": "사흘 동안 제주올레 19·20코스를 걸으며 마을 문화와 공연을 만나는 걷기 축제입니다. 지도는 첫 출발지 주변을 표시합니다.",
-      "scheduleNote": "08:00~17:00 / 참가 가능 여부는 주최 측 확인",
-      "priceNote": "일반 참가비 30,000원 / 할인 대상 25,000원",
+      "scheduleNote": "08:00~17:00 / 현장 참가 접수는 각 행사일 아침 선착순",
+      "priceNote": "현장 접수 일반 35,000원 / 할인 30,000원 (10/9 종료된 사전신청 요금은 일반 30,000원 / 할인 25,000원)",
       "sourceUrl": "https://visitjeju.net/kr/festival/view?contentsid=CNTS_300000000014508",
       "sourceName": "제주관광공사 비짓제주",
-      "sourceCheckedAt": "2026-11-03",
+      "sourceCheckedAt": "2026-11-04",
       "tags": [
         "걷기",
         "자연",
         "제주올레"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "accessNote": "사전신청은 10월 9일 종료. 현장 참가 접수는 매일 아침 등록부스에서 선착순(조기 마감 가능), 점심 식권 현장 판매 없음. 개인 물병·식기 지참 권장."
     },
     {
       "id": "gumi-ramyun-2026",
