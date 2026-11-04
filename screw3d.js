@@ -566,14 +566,33 @@ function mapLevel(M) {   // 칸 지도: 칸 → 블럭, 특별한 조각 목록
     return Math.hypot(Math.abs(c[0]) + h[0], Math.abs(c[1]) + h[1], Math.abs(c[2]) + h[2]) + 0.32;
   });
   M.staticSpecialNear = new Map(); M.staticScrewsNear = new Map();
+  // X-axis spatial buckets discard distant candidates without changing the
+  // exact collision rules. Original ordering is preserved for blocker choice.
+  const BIN = 0.65, cell = x => Math.floor(x / BIN);
+  const partBins = new Map(), screwBins = new Map();
+  const addBin = (map, key, value) => {
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(value);
+  };
+  M.special.forEach((E, i) => {
+    const r = extents[i];
+    for (let x = cell(E.c[0] - r); x <= cell(E.c[0] + r); x++)
+      addBin(partBins, x, { E, r });
+  });
+  M.screws.forEach((z, i) => addBin(screwBins, cell(z.p[0]), { z, i }));
   for (const s of M.screws) {
-    M.staticSpecialNear.set(s, M.special.filter((E, i) => {
-      const d = sub(E.c, s.p), r = extents[i]; return dot(d, d) <= r * r;
-    }));
-    M.staticScrewsNear.set(s, M.screws.filter(z => {
-      const d = sub(z.p, s.p);
-      return dot(d, d) <= 0.65 * 0.65;
-    }));
+    const x = cell(s.p[0]);
+    M.staticSpecialNear.set(s, (partBins.get(x) || []).filter(({ E, r }) => {
+      const dx = E.c[0] - s.p[0], dy = E.c[1] - s.p[1], dz = E.c[2] - s.p[2];
+      return dx * dx + dy * dy + dz * dz <= r * r;
+    }).map(item => item.E));
+    const close = [];
+    for (let k = x - 1; k <= x + 1; k++) close.push(...(screwBins.get(k) || []));
+    close.sort((a, b) => a.i - b.i);
+    M.staticScrewsNear.set(s, close.filter(({ z }) => {
+      const dx = z.p[0] - s.p[0], dy = z.p[1] - s.p[1], dz = z.p[2] - s.p[2];
+      return dx * dx + dy * dy + dz * dz <= 0.65 * 0.65;
+    }).map(item => item.z));
   }
   return M;
 }
