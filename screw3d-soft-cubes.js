@@ -1,6 +1,7 @@
-/* Soft rounded-cube LODs for the 3D screw puzzle.
- * Geometry is visual-only: puzzle placement, collision and screw positions
- * still use the original regular cube. Both meshes are watertight.
+/* Convex rounded-cube mesh shared by rendering and physical ray tests.
+ * The smooth mesh defines the real rounded contact surface. The lower-detail
+ * mesh is used only for distant/crowded frames. Both are watertight.
+ * Real diagonal screws mount on the 45-degree rounded bevels.
  */
 export function createSoftCubeGeometry(halfSide, smooth = true) {
   const h = [halfSide, halfSide, halfSide], radius = halfSide * 0.29;
