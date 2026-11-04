@@ -434,13 +434,13 @@ test('better arrows reduce speed spread without cancelling gravity', () => {
   close(shot.velocity.y, vy - GRAVITY * 0.2);
 });
 
-test('twenty-one weapons and nineteen arrows preserve bow and arrow identities after consolidating guns', () => {
-  assert.equal(BOWS.length, 21); assert.equal(ARROWS.length, 19);
-  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 21 }, (_, id) => id));
+test('twenty-three weapons and nineteen arrows preserve bow and arrow identities after adding sniper guns', () => {
+  assert.equal(BOWS.length, 23); assert.equal(ARROWS.length, 19);
+  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 23 }, (_, id) => id));
   assert.deepEqual(ARROWS.map(item => item.id), Array.from({ length: 19 }, (_, id) => id));
   assert.deepEqual(BOWS.slice(0, 4).map(item => item.name), ['숲길 목궁', '단풍나무 활', '바람결 활', '달빛 명궁']);
   assert.deepEqual(ARROWS.slice(0, 4).map(item => item.name), ['나무 화살', '깃털 화살', '탄소 화살', '은빛 화살']);
-  assert.equal(new Set(BOWS.map(item => item.name)).size, 21);
+  assert.equal(new Set(BOWS.map(item => item.name)).size, 23);
   assert.equal(new Set(ARROWS.slice(0, 12).map(item => item.fletching.name)).size, 12);
   assert.ok(ARROWS[1].tipMass > ARROWS[2].tipMass, 'different arrow points remain independently selectable');
   for (const bow of BOWS) for (const arrow of ARROWS) {
@@ -513,7 +513,7 @@ test('shop progression keeps released ranks and prices while adding small stat i
   for (const weapon of weapons.filter(item => item.scopeCompatible)) {
     assert.ok(weapon.scopePrice >= 500 && weapon.scopePrice >= weapon.price * .2, 'a permanent scope also requires meaningful savings');
   }
-  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [29000], 'guns continue the main-gear price curve after the last crossbow');
+  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [29000, 31500, 34100], 'guns continue the main-gear price curve after the last crossbow');
 });
 
 test('ability sorting uses the selected actual stat without mutating saved equipment identities', () => {
@@ -540,7 +540,7 @@ test('ability sorting uses the selected actual stat without mutating saved equip
   assertOrder(ARROWS, 'tip-heavy', item => item.tipMass, -1);
   assert.deepEqual(sortEquipment(weapons, 'unknown').map(item => item.id), sortEquipment(weapons).map(item => item.id));
   assert.deepEqual(weapons.map(item => item.id), weaponIds);
-  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 21 }, (_, id) => id));
+  assert.deepEqual(BOWS.map(item => item.id), Array.from({ length: 23 }, (_, id) => id));
   assert.deepEqual(ARROWS.map(item => item.id), arrowIds);
 });
 
@@ -572,11 +572,11 @@ test('the four scope tiers follow released shop ranks and promoted guns support 
     assert.deepEqual(BOWS[id].scopeMagnifications, group.magnifications, `weapon ${id} uses shop rank ${BOWS[id].shopRank}`);
     assert.equal(BOWS[id].scopeCompatible, true);
   }
-  for (const id of [20]) {
+  for (const id of [20, 21, 22]) {
     assert.deepEqual(BOWS[id].scopeMagnifications, [2, 3, 6, 8]);
     assert.equal(BOWS[id].scopeCompatible, true);
   }
-  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), Array.from({ length: 21 }, (_, id) => id));
+  assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), Array.from({ length: 23 }, (_, id) => id));
 });
 
 test('scope prices retain bought threefold values, round other tiers to fifty coins and reject unsupported options', () => {
@@ -593,7 +593,7 @@ test('scope prices retain bought threefold values, round other tiers to fifty co
       if (magnification !== 3) assert.equal(price % 50, 0);
     } else assert.equal(price, null, `weapon ${item.id} cannot buy ${magnification}×`);
   }
-  for (const invalid of [-1, 21, 22, 23, 24, 25, 1.5, NaN, Infinity, '0', '19', null, undefined, {}]) assert.equal(getScopePrice(invalid, 2), null);
+  for (const invalid of [-1, 23, 24, 25, 1.5, NaN, Infinity, '0', '19', null, undefined, {}]) assert.equal(getScopePrice(invalid, 2), null);
 });
 
 test('all main weapon upgrades preserve speed and range with bounded gains, including the first crossbow', () => {
@@ -817,17 +817,17 @@ test('only rare crossbows launch three distinct arrows and better tiers tighten 
   }
 });
 
-test('the single main gun fires at exactly twice the actual maximum archery speed regardless of arrows, charge or random bias', () => {
+test('every main gun keeps the basic bullet at twice the actual maximum arrow speed regardless of arrows, charge or random bias', () => {
   const guns = BOWS.filter(weapon => weapon.weaponType === 'gun');
   const mainSpeeds = BOWS.filter(weapon => weapon.weaponType !== 'gun').flatMap(bow => ARROWS.map(arrow =>
     getSpeed({ bow, arrow, charge: 1, velocityBias: 1 })));
   assert.equal(mainSpeeds.length, 20 * 19);
   assert.equal(MAX_MAIN_PROJECTILE_SPEED, Math.max(...mainSpeeds));
   assert.equal(BULLET_SPEED, Math.max(...mainSpeeds) * 2);
-  assert.equal(guns.length, 1);
-  assert.deepEqual(guns.map(gun => gun.magazineSize), [10]);
-  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [1]);
-  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['빠름']);
+  assert.equal(guns.length, 3);
+  assert.deepEqual(guns.map(gun => gun.magazineSize), [10, 10, 10]);
+  assert.deepEqual(guns.map(gun => gun.reloadSeconds), [1, 1, 1]);
+  assert.deepEqual(guns.map(gun => gun.reloadLabel), ['빠름', '빠름', '빠름']);
   for (const gun of guns) {
     assert.ok(gun.power > 0 && !Object.hasOwn(gun, 'elasticity'));
     assert.equal(gun.muzzleSpeed, BULLET_SPEED);assert.equal(gun.speed, BULLET_SPEED);assert.equal(gun.ammo.variance, 0);
@@ -850,10 +850,8 @@ test('the single main gun fires at exactly twice the actual maximum archery spee
   assert.equal(launchArrow({ bow: BOWS[0] }).projectileType, 'arrow');
 });
 
-test('the sole main gun retains precision-gun handling, one-second reload and its actual wind response', () => {
-  const guns = BOWS.filter(weapon => weapon.weaponType === 'gun');
-  assert.equal(guns.length, 1);
-  const gun = guns[0];
+test('the original main gun retains precision-gun handling, one-second reload and its actual wind response', () => {
+  const gun = BOWS[20];
   assert.deepEqual([gun.id, gun.name, gun.grip, gun.power, gun.magazineSize, gun.reloadSeconds, gun.ammo.mass, gun.ammo.windFactor],
     [20, '정밀 사격총', 100, 80, 10, 1, 8, .08]);
   assert.equal(gun.visualTier, 24, 'the consolidated item retains the precision rifle appearance');

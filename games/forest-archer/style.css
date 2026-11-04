@@ -133,6 +133,107 @@
   .item-price strong{font-size:12px}
 }
 
+/* Compact shop cards keep full specifications and attachments one tap away. */
+.modal[data-view="shop"]{width:min(800px,100%);overflow-x:hidden}
+.modal[data-view="shop"] .modal-close{position:sticky;display:flex;float:none;top:0;right:0;z-index:20;width:40px;height:40px;margin:0 -5px -40px auto}
+.modal[data-view="shop"] .shop-layout{min-width:0;isolation:isolate}
+.shop-layout .shop-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px;padding-right:48px}
+.shop-layout .shop-heading>h2{min-width:0;margin:0;font-size:24px;line-height:1.4;white-space:nowrap}
+.shop-layout>h2{max-width:calc(100% - 44px);margin:0;font-size:24px;line-height:1.4}
+.shop-layout .shop-trial-note{margin:4px 0 0;color:#728268;font-size:11px}
+.shop-layout .shop-top{display:block;margin:8px 0 12px;padding:8px 44px 8px 0}
+.shop-layout .shop-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;width:100%;padding:3px;border-radius:10px;min-width:0}
+.shop-layout .shop-tabs button{min-height:44px;padding:8px 5px;font-size:11px;white-space:nowrap}
+.shop-layout .shop-coins{min-width:0;gap:4px;font-size:11px;font-variant-numeric:tabular-nums}
+.shop-layout .shop-coins svg{width:16px;height:16px}
+.shop-layout .shop-coins strong{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.shop-layout .shop-loadout{display:block;margin:0 0 12px;padding:0;border:1px solid #dce5d3;border-radius:9px;background:#eef3e7}
+.shop-layout .shop-loadout>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:9px 12px;list-style:none;cursor:pointer}
+.shop-layout .shop-loadout>summary>span:first-child{flex:none;font-size:10px;color:#7b8971}
+.shop-layout .shop-loadout>summary>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#365c42;font-weight:600}
+.shop-layout .shop-loadout .item-detail-indicator{margin-left:auto}
+.shop-layout .shop-loadout-body{padding:0 12px 11px;color:#6b7c60;font-size:11px;line-height:1.7}
+.shop-layout .shop-loadout-body>strong,.shop-layout .shop-loadout-body>span{display:block;font-size:11px;font-weight:400}
+.shop-layout .shop-controls{margin:0 0 12px}
+.shop-layout .weapon-filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.shop-layout .weapon-filters button{min-height:38px;padding:7px 12px;border-radius:8px;font-size:10px;white-space:nowrap}
+.shop-layout .shop-sort{gap:8px;margin:0}
+.shop-layout .shop-sort label{font-size:10px;color:#7a8970;font-weight:500}
+.shop-layout .shop-sort select{flex:1;min-height:44px;padding:8px 28px 8px 11px;font-size:11px;border-radius:8px}
+.shop-layout .shop-bullet-note{margin:2px 0 13px;color:#7b8b70;font-size:11px;line-height:1.7;word-break:keep-all}
+.shop-layout .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}
+.shop-layout .item-card{display:block;min-width:0;padding:0;overflow:hidden;border:1px solid #dfe6d7;border-radius:12px;background:#fbfcf7}
+.shop-layout .item-card.equipped{border-color:#9bb88b;box-shadow:inset 0 0 0 1px #9bb88b22;background:#f7faf2}
+.shop-layout .item-card-summary{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:13px}
+.shop-layout .item-art{position:relative;display:flex;align-items:center;justify-content:center;height:90px;min-width:0;margin:0;border-radius:9px;background:linear-gradient(140deg,#f0f4e9,#e8efde)}
+.shop-layout .item-art canvas{display:block;width:100%;height:100%;max-height:none;object-fit:contain}
+.shop-layout .item-rank{position:absolute;left:7px;top:5px;font-size:9px;font-weight:600;letter-spacing:.04em;color:#8b9d7e}
+.shop-layout .item-main{display:flex;flex-direction:column;min-width:0}
+.shop-layout .item-meta{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:16px}
+.shop-layout .item-tag{position:static;min-width:0;font-size:9px;line-height:1.4;letter-spacing:0;color:#7b8b6c;background:none}
+.shop-layout .rare-item .item-tag{color:#836b9d}
+.shop-layout .item-owned{position:static;flex:none;border-radius:4px;padding:2px 5px;background:#e8efde;color:#66804e;font-size:9px;line-height:1.4;white-space:nowrap}
+.shop-layout .equipped .item-owned{background:#365c42;color:#fffdf1}
+.shop-layout .item-card h3{margin:3px 0 0;font-size:14px;line-height:1.4;letter-spacing:-.3px;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}
+.shop-layout .item-quick{margin:4px 0 10px;color:#839076;font-size:10px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.shop-layout .item-purchase{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;margin-top:auto}
+.shop-layout .item-price{display:block;min-width:0;margin:0;line-height:1.4}
+.shop-layout .item-price strong{font-size:11px;font-weight:600;color:#627c4f;white-space:nowrap}
+.shop-layout .item-actions{display:flex;flex:none;flex-direction:row;margin:0;gap:0}
+.shop-layout .item-actions .button{min-height:44px;min-width:84px;padding:8px 10px;border-radius:8px;font-size:11px;line-height:1.4;white-space:nowrap}
+.shop-layout .item-actions .button:disabled{opacity:.6;transform:none}
+.shop-layout .item-details{border-top:1px solid #e4eadc}
+.shop-layout .item-details>summary,.shop-layout .shop-guide>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:10px 13px;list-style:none;cursor:pointer;color:#6e8160;font-size:11px;font-weight:500}
+.shop-layout summary::-webkit-details-marker{display:none}
+.shop-layout summary::marker{content:""}
+.shop-layout summary:focus-visible{outline:3px solid #ccaa5c;outline-offset:-3px;border-radius:7px}
+.shop-layout .item-detail-indicator{display:block;flex:none;min-width:13px;font-size:17px;line-height:1;text-align:center;color:#91a482;transition:transform .15s}
+.shop-layout details[open]>summary>.item-detail-indicator{transform:rotate(45deg)}
+.shop-layout .item-details[open]>summary{background:#f0f5e8;border-bottom:1px solid #e4eadc;color:#47683a}
+.shop-layout .item-detail-body{padding:13px}
+.shop-layout .item-description{margin:0 0 12px;color:#77876a;font-size:11px;line-height:1.8;word-break:keep-all}
+.shop-layout .item-stat{gap:8px;font-size:11px;line-height:1.7}
+.shop-layout .item-stat strong{font-size:11px;line-height:1.7}
+.shop-layout .stat-track{height:3px;margin:4px 0 8px}
+.shop-layout .item-combination,.shop-layout .item-list-price{margin-top:10px;padding-top:7px;border-top:1px solid #e3e9db}
+.shop-layout .item-budget{margin:8px 0 0;color:#967645;font-size:11px;line-height:1.6}
+.shop-layout .item-scope{margin-top:13px;padding-top:12px;gap:7px}
+.shop-layout .item-scope>span{font-size:11px}
+.shop-layout .item-scope>small{font-size:10px;line-height:1.6}
+.shop-layout .scope-options{gap:7px}
+.shop-layout .scope-options .scope-button{min-height:48px;font-size:11px}
+.shop-layout .scope-options .scope-button small{font-size:10px}
+.shop-layout .laser-shop-button{width:100%;min-height:48px;margin-top:10px;gap:3px;font-size:11px}
+.shop-layout .laser-shop-button>strong,.shop-layout .laser-shop-button>small{display:block;width:100%}
+.shop-layout .laser-shop-button>small{font-size:10px;font-weight:400}
+.shop-layout .shop-guide{margin-top:15px;border-top:1px solid #dfe6d5}
+.shop-layout .shop-guide>summary{padding:12px 2px;font-size:12px;min-height:46px}
+.shop-layout .shop-order-note,.shop-layout .shop-footnote{margin:3px 0 12px;color:#7c8b71;font-size:11px;line-height:1.85;word-break:keep-all}
+@media(max-width:600px){
+  .shop-layout .shop-grid{grid-template-columns:minmax(0,1fr)}
+  .shop-layout .weapon-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .shop-layout .weapon-filters button{min-height:38px;padding:7px 4px}
+  .shop-layout .item-card-summary{grid-template-columns:96px minmax(0,1fr);gap:12px}
+  .shop-layout .item-art{height:91px}
+}
+@media(max-width:380px){
+  .shop-layout>h2,.shop-layout .shop-heading>h2{font-size:22px}
+  .shop-layout .shop-top{gap:7px;padding-right:41px}
+  .shop-layout .shop-tabs button{padding:8px 4px;font-size:10px}
+  .shop-layout .shop-coins{gap:3px;font-size:10px}
+  .shop-layout .shop-coins svg{width:13px;height:13px}
+  .shop-layout .weapon-filters button{font-size:9px}
+  .shop-layout .item-card-summary{grid-template-columns:72px minmax(0,1fr);gap:10px;padding:11px}
+  .shop-layout .item-art{height:88px}
+  .shop-layout .item-card h3{font-size:13px}
+  .shop-layout .item-tag,.shop-layout .item-owned{font-size:8px}
+  .shop-layout .item-quick{font-size:9px;margin-bottom:8px}
+  .shop-layout .item-purchase{gap:6px}
+  .shop-layout .item-price strong{font-size:10px}
+  .shop-layout .item-actions .button{min-width:76px;padding:8px 7px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.shop-layout .item-detail-indicator{transition:none}}
+
 /* The playfield uses the space left by the toolbar and controls, not a fixed height. */
 html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .app-shell{width:100%;max-width:none;height:100vh;height:100dvh;min-height:0;margin:0;padding:6px 8px;display:flex;flex-direction:column;gap:6px;overflow:hidden}

@@ -51,9 +51,9 @@ const arrow = (id, name, tag, description, tipMass, shaftMass, tip, shaft, fletc
   // Compatibility summaries; simulation helpers always read the actual components.
   return { ...item, variance: getArrowVariance(item), windFactor: getWindResponse(item) };
 };
-const gun = (id, name, tag, description, grip, power, mass, windFactor, color) => ({
+const gun = (id, name, tag, description, grip, power, mass, windFactor, color, handSwayFactor = 1) => ({
   id, name, tag, description, grip, power, muzzleSpeed: 0, color, weaponType: 'gun', visualTier: 24,
-  speed: 0, sway: bowSway(grip), burstCount: 1, burstInterval: 0, burstSpread: 0,
+  speed: 0, sway: bowSway(grip), handSwayFactor, burstCount: 1, burstInterval: 0, burstSpread: 0,
   grouping: 100, rarity: '일반', scopeCompatible: true, scopePrice: 0,
   magazineSize: 10,
   reloadSeconds: 1,
@@ -64,7 +64,7 @@ const gun = (id, name, tag, description, grip, power, mass, windFactor, color) =
 // Released ranks are stable: rebalancing stats must not move saved items to a
 // different price, equipment band, scope cost or steady-window duration.
 const EQUIPMENT_ORDER = Object.freeze({
-  weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19, 20]),
+  weapon: Object.freeze([0, 4, 5, 6, 1, 2, 8, 7, 9, 3, 13, 12, 10, 14, 11, 15, 16, 17, 18, 19, 20, 21, 22]),
   arrow: Object.freeze([0, 4, 6, 1, 8, 5, 9, 2, 7, 10, 3, 11, 12, 13, 14, 15, 16, 17, 18])
 });
 function equipmentCatalog(items, kind) {
@@ -109,7 +109,7 @@ export function sortEquipment(items, key = 'progression') {
   const value = item => {
     if (key === 'grip') return -(item.grip ?? 0);
     if (key === 'elasticity') return -(item.elasticity ?? item.power ?? 0);
-    if (key === 'steady') return -(item.steadyDuration ?? .5);
+    if (key === 'steady') return item.handSwayFactor === 0 ? -Infinity : -(item.steadyDuration ?? .5);
     if (key === 'grouping') return item.burstCount > 1 ? -(item.grouping ?? 0) : 1;
     if (key === 'magazine') return -(item.magazineSize ?? 0);
     if (key === 'reload') return item.reloadSeconds ?? Infinity;
@@ -143,7 +143,9 @@ export const BOWS = equipmentCatalog([
   bow(17, '레어 정밀석궁', '레어 정밀 3연발', '속사석궁의 탄성에 더 좋은 그립과 정밀한 레일을 더했어요.', 95, 95, '#a79679'),
   bow(18, '레어 매눈석궁', '레어 고급 3연발', '정밀석궁의 그립을 유지하고 탄성과 집탄성을 높였어요.', 95, 100, '#b1a471'),
   bow(19, '레어 명인석궁', '레어 명품 3연발', '최고 그립과 탄성, 가장 좁은 탄착군을 갖춘 마지막 석궁.', 100, 100, '#bcafcf'),
-  gun(20, '정밀 사격총', '정밀 사격총', '마지막 석궁 다음 장비. 10발을 쏘면 한 판이 끝나고, 새 판은 1초 장전 뒤 시작해요. 최고 화살 대비 탄속 2배·같은 거리 낙하 절반으로 겨눠요.', 100, 80, 8, .08, '#a8b1bf')
+  gun(20, '정밀 사격총', '정밀 사격총', '마지막 석궁 다음 장비. 10발을 쏘면 한 판이 끝나고, 새 판은 1초 장전 뒤 시작해요. 기본 탄환은 최고 화살 대비 탄속 2배·같은 거리 낙하 절반이에요.', 100, 80, 8, .08, '#a8b1bf'),
+  gun(21, '정밀 저격총', '저진동 저격총', '정밀 사격총보다 손떨림을 75% 줄인 저격총. 탄환을 따로 선택하며, 한 판 10발·장전 1초는 같아요.', 100, 80, 8, .08, '#638c8e', .25),
+  gun(22, '무진동 저격총', '무진동 저격총', '손떨림 없이 조준한 방향을 유지하는 저격총. 탄환을 따로 선택하며, 한 판 10발·장전 1초는 같아요.', 100, 80, 8, .08, '#c8ad70', 0)
 ], 'weapon');
 
 /** Return a supported scope's price without treating an invalid weapon as the starter bow. */
@@ -715,6 +717,27 @@ export const FASTEST_ARROW_REFERENCE = Object.freeze(BOWS.filter(weapon => weapo
 export const MAX_MAIN_PROJECTILE_SPEED = FASTEST_ARROW_REFERENCE.speed;
 export const BULLET_SPEED = MAX_MAIN_PROJECTILE_SPEED * BULLET_SPEED_RATIO;
 export const BULLET_DRAG_RATE = FASTEST_ARROW_REFERENCE.dragRate * BULLET_SPEED_RATIO;
+
+// Speed and drag scale together, so the same distance is reached in 1/S of
+// the base bullet's time. Gravity times S²*D therefore gives exactly D of its
+// drop below the aim ray. The straight tier also removes wind acceleration.
+const bullet = (id, name, tag, description, price, speedRatio, dropRatio, color) => Object.freeze({
+  id, name, tag, description, price, shopRank: id + 1, color, speedRatio, dropRatio,
+  muzzleSpeed: BULLET_SPEED * speedRatio,
+  mass: BOWS[20].ammo.mass, windFactor: dropRatio === 0 ? 0 : BOWS[20].ammo.windFactor,
+  dragRate: BULLET_DRAG_RATE * speedRatio,
+  gravityScale: BULLET_GRAVITY_SCALE * speedRatio ** 2 * dropRatio, variance: 0
+});
+export const BULLETS = Object.freeze([
+  bullet(0, '기본 탄환', '기본', '총을 구매하면 함께 받는 기본 탄환. 기존 탄속과 낙하량으로 겨눠요.', 0, 1, 1, '#c3b477'),
+  bullet(1, '고속 탄환', '1.5배속', '기본 탄환보다 탄속은 1.5배, 같은 거리의 낙하량은 60%예요.', 4000, 1.5, .6, '#a3bfce'),
+  bullet(2, '정밀 탄환', '2배속', '기본 탄환보다 탄속은 2배, 같은 거리의 낙하량은 25%예요.', 12000, 2, .25, '#9d96c9'),
+  bullet(3, '직선 탄환', '3배속 · 무낙하', '기본 탄환보다 탄속이 3배 빠르고, 중력과 바람에 휘지 않고 직선으로 날아가요.', 30000, 3, 0, '#d2b566')
+]);
+export function getBullet(input) {
+  return typeof input === 'number' ? BULLETS[input] || BULLETS[0] : input || BULLETS[0];
+}
+
 for (const weapon of BOWS.filter(weapon => weapon.weaponType === 'gun')) {
   weapon.muzzleSpeed = BULLET_SPEED;weapon.speed = BULLET_SPEED;
   weapon.ammo.dragRate = BULLET_DRAG_RATE;
@@ -1046,9 +1069,12 @@ export function getArrowVariance(arrow) {
   return .20 * (1 - getArrowConsistency(arrow) / 100);
 }
 
-export function getSpeed({ charge = 1, bow, arrow, velocityBias = 0 } = {}) {
+export function getSpeed({ charge = 1, bow, arrow, bullet, velocityBias = 0 } = {}) {
   const b = getBow(bow), a = getArrow(arrow);
-  if (b.weaponType === 'gun') return b.muzzleSpeed * (1 + clamp(velocityBias, -1, 1) * b.ammo.variance);
+  if (b.weaponType === 'gun') {
+    const ammunition = getBullet(bullet);
+    return b.muzzleSpeed * ammunition.speedRatio * (1 + clamp(velocityBias, -1, 1) * ammunition.variance);
+  }
   const referenceSpeed = Number.isFinite(b.elasticity) ? bowSpeed(b.elasticity) * (b.launchBoost ?? 1) : b.speed;
   const variance = getArrowVariance(a);
   // Equal bow energy: adding point mass lowers launch speed, not gravity.
@@ -1057,18 +1083,20 @@ export function getSpeed({ charge = 1, bow, arrow, velocityBias = 0 } = {}) {
 }
 
 export function launchArrow(params = {}) {
-  const { yaw = 0, pitch = 0, charge = 1, bow, arrow, velocityBias = 0 } = params;
-  const speed = getSpeed({ charge, bow, arrow, velocityBias });
-  const cp = Math.cos(pitch), weapon = getBow(bow), bullet = weapon.weaponType === 'gun';
-  const ability = bullet ? null : getArrow(arrow).ability || null;
+  const { yaw = 0, pitch = 0, charge = 1, bow, arrow, bullet, velocityBias = 0 } = params;
+  const speed = getSpeed({ charge, bow, arrow, bullet, velocityBias });
+  const cp = Math.cos(pitch), weapon = getBow(bow), isBullet = weapon.weaponType === 'gun';
+  const ammunition = isBullet ? getBullet(bullet) : null;
+  const ability = isBullet ? null : getArrow(arrow).ability || null;
   return {
     position: { ...PLAYER },
     velocity: { x: Math.sin(yaw) * cp * speed, y: Math.sin(pitch) * speed, z: Math.cos(yaw) * cp * speed },
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
-    speed, mass: bullet ? weapon.ammo.mass : getArrowMass(arrow), windFactor: bullet ? weapon.ammo.windFactor : getWindResponse(arrow),
-    projectileType: bullet ? 'bullet' : 'arrow', shaftLength: bullet ? .12 : .85,
-    gravityScale: bullet ? weapon.ammo.gravityScale : 1,
-    dragRate: bullet ? weapon.ammo.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
+    speed, mass: isBullet ? ammunition.mass : getArrowMass(arrow), windFactor: isBullet ? ammunition.windFactor : getWindResponse(arrow),
+    projectileType: isBullet ? 'bullet' : 'arrow', shaftLength: isBullet ? .12 : .85,
+    ...(isBullet ? {bulletId: ammunition.id} : {}),
+    gravityScale: isBullet ? ammunition.gravityScale : 1,
+    dragRate: isBullet ? ammunition.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
     bounceCount:0,bouncesRemaining:ability?.type === 'bounce' ? ability.maxBounces : 0,
     magnetActive:false,magnetSteered:false,magnetTurn:0,magnetCorrection:0,magnetTargetPassId:null,magnetLost:false
@@ -1247,9 +1275,11 @@ function advanceBallistic(shot, dt, stage, worldTime = 0, steering = null) {
       if (!closest || distance < closest.distance) closest = { hit, target, distance };
     }
     if (closest) events.push({ t, type: 'hit', ...closest.hit, targetCenter: closest.target });
-    // All event targets share this plane. A missed bullet is finished here;
-    // arrows retain their full falling trajectory beyond the target.
-    else if (shot.projectileType === 'bullet' && stage.kind === 'clay') events.push({ t, type: 'miss', score: 0, zone: '표적을 지나쳤어요' });
+    // A straight bullet has no falling tail to wait for after it misses.
+    // Dropping main projectiles retain their complete flight; event bullets
+    // and zero-curvature bullets finish at the swept target plane instead.
+    else if (shot.projectileType === 'bullet' && (stage.kind === 'clay' ||
+      (shot.gravityScale === 0 && shot.windFactor === 0))) events.push({ t, type: 'miss', score: 0, zone: '표적을 지나쳤어요' });
   }
   const flightLimit = getFlightTimeLimit(shot);
   if (shot.elapsed + dt >= flightLimit) events.push({ t: Math.max(0, flightLimit - shot.elapsed), type: 'miss', score: 0, zone: '멀리 날아갔어요' });
