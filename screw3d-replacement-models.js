@@ -97,25 +97,26 @@ export function createReplacementModels(h) {
     const xs=upper.map(E=>E.c[0]),zs=upper.map(E=>E.c[2]);
     const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
     const xc=(x0+x1)/2, railH=Math.max(.10,(x1-x0)*.5);
-    const rails=[];
-    for(const z of [z0,z1]){
-      const E=boxE([railH,.036,.037],[xc,topY+.07,z],'#DDE4EB');
-      E.material='metal';M.els.push(E);rails.push(E);
-      const B=upper.find(b=>b.c[2]===z&&Math.abs(b.c[0]-xc)<GRID)||
+    // One mechanically detachable ladder unit, secured with three separated
+    // screws. Grouped rungs avoid head-to-head interlocks on the early levels.
+    const zc=(z0+z1)/2;
+    const ladder=el('wheel',null,[xc,topY+.075,zc],I3,'#E1E9F0');
+    const parts=[
+      {geom:boxGeom([railH,.027,.032]),pc:[0,0,z0-zc],pR:I3,color:'#DEE5EA'},
+      {geom:boxGeom([railH,.027,.032]),pc:[0,0,z1-zc],pR:I3,color:'#CBD5DC'}
+    ];
+    for(const pos of [-.4,0,.4]) {
+      parts.push({geom:boxGeom([.032,.022,Math.max(.14,(z1-z0)*.5+.04)]),
+        pc:[railH*pos,.005,0],pR:I3,color:'#F4F8FA'});
+    }
+    ladder.parts=parts;ladder.geom=boundOf(parts);ladder.material='metal';
+    M.els.push(ladder);
+    const mount=(x,z)=>{
+      const B=upper.find(b=>b.c[2]===z&&Math.abs(b.c[0]-x)<.001)||
         upper.find(b=>b.c[2]===z)||upper[0];
-      pin(M,E,B,[B.c[0],topY+.106,z],Yax);
-    }
-    for(const x of [xc-railH*.5,xc+railH*.5]){
-      const E=boxE([.038,.018,Math.max(.18,(z1-z0)*.5+.04)],[x,topY+.12,(z0+z1)/2],'#F7F8FC');
-      E.material='metal';safeAdd(M,E,rails[0],[x,topY+.138,z0],Yax);
-    }
-    // 4 extra screws: complement them with a roof siren pair to keep groups of 3.
-    const sirens=[];
-    for(const z of [z0,z1]){
-      const B=upper.find(b=>b.c[2]===z&&b.c[0]===x1)||upper[0];
-      const E=cylE(.063,.037,[B.c[0],topY+.18,z],blue);
-      E.material='glass';safeAdd(M,E,B,[E.c[0],E.c[1]+.037,E.c[2]],Yax);sirens.push(E);
-    }
+      pin(M,ladder,B,[x,topY+.112,z],Yax);
+    };
+    mount(x0,z0);mount(x1,z0);mount(x1,z1);
     return M;
   }
   modelFireTruck.blocks=modelCar.blocks;
