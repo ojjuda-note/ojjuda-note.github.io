@@ -64,7 +64,9 @@ for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolv
  f.w.OjjudaSacheonseongGame.close();await f.enter();assertGarden(f.state(),stage);assert.equal(f.state().hints,0);assert.equal(f.state().shuffles,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);assert.deepEqual(f.records(),records);
 });
 
-const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:500},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
+const boxStageCap=Number(read('screw3d.js').match(/\bconst STAGES\s*=\s*(\d+)\s*;/)?.[1]);
+assert.ok(Number.isSafeInteger(boxStageCap)&&boxStageCap>=1,'the box mode exposes its stage cap');
+const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:boxStageCap},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
 function withScrews(run,entries=[],blocked=false){
  const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
  const context=vm.createContext({console,localStorage,window:{}});
