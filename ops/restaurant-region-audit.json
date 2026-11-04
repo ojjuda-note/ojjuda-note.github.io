@@ -16,10 +16,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 1,
-    "scheduledAt": "2026-11-05T00:00:00+09:00",
+    "slot": 2,
+    "scheduledAt": "2026-11-05T06:00:00+09:00",
     "checkedAtKST": "2026-11-05",
-    "source": "scheduled execution 2026-11-05 00:00 Asia/Seoul"
+    "source": "scheduled execution 2026-11-05 06:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -181,6 +181,409 @@
             "https://www.mois.go.kr/frt/sub/a04/localGovernment/screen.do"
           ]
         }
+      ]
+    },
+    {
+      "cycle": 1,
+      "slot": 2,
+      "scheduledAtKST": "2026-11-05T06:00:00+09:00",
+      "checkedAtKST": "2026-11-05",
+      "status": "official_tourism_introductions_and_location_recheck_partial",
+      "assignedRegions": [
+        "서울특별시 동대문구",
+        "서울특별시 중랑구",
+        "서울특별시 성북구",
+        "서울특별시 강북구",
+        "서울특별시 도봉구"
+      ],
+      "regionAudit": [
+        {
+          "region": "서울특별시 동대문구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 중랑구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 성북구",
+          "baseListedCount": 2,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 강북구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
+          "new": 1,
+          "updated": 0,
+          "unknownLocations": 1,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 도봉구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
+          "new": 4,
+          "updated": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "서울관광재단 Visit Seoul 개별 관광 음식점·카페 소개",
+        "기존 미쉐린 공식 숙수도가 식당 페이지",
+        "기존 서울미식 2026 사만 커피 로스터스 선정 정보"
+      ],
+      "additions": 14,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 16,
+      "addedRestaurantIds": [
+        "local-seoul-visitseoul-ddm-yeonghwajang",
+        "local-seoul-visitseoul-ddm-green-field",
+        "local-seoul-visitseoul-ddm-andongjip",
+        "local-seoul-visitseoul-jr-chaesundang",
+        "local-seoul-visitseoul-jr-inggone",
+        "local-seoul-visitseoul-jr-dongbu-bakery",
+        "local-seoul-visitseoul-sb-cheongsujang",
+        "local-seoul-visitseoul-sb-napoleon",
+        "local-seoul-visitseoul-sb-majeonteo",
+        "local-seoul-visitseoul-gb-seomjingang",
+        "local-seoul-visitseoul-db-chilgapsan",
+        "local-seoul-visitseoul-db-hamsbrot",
+        "local-seoul-visitseoul-db-hanuso",
+        "local-seoul-visitseoul-db-ssangmun"
+      ],
+      "existingItemsRechecked": [
+        "숙수도가 (성북구)",
+        "사만 커피 로스터스 (성북구)"
+      ],
+      "evidenceUrls": [
+        "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r",
+        "https://korean.visitseoul.net/restaurants/GreenFieldRestaurant/KOPk0otw0",
+        "https://korean.visitseoul.net/restaurants/andongjip-sonkalguksi/KOP32dncy",
+        "https://korean.visitseoul.net/etc-area/%EC%B1%84%EC%84%A0%EB%8B%B9%EC%8B%A0%EB%82%B4%EC%A0%90--ChaesundangSinnae/KOP002714",
+        "https://korean.visitseoul.net/restaurants/2023112/KOPnownn2",
+        "https://korean.visitseoul.net/restaurants/2023113/KOPusfd76",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377",
+        "https://korean.visitseoul.net/restaurants/%EB%82%98%ED%8F%B4%EB%A0%88%EC%98%B9/KOP006613",
+        "https://korean.visitseoul.net/restaurants/%EB%A7%88%EC%A0%84%ED%84%B0/KOP011133",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%84%AC%EC%A7%84%EA%B0%95%EB%AF%BC%EB%AC%BC%EC%9E%A5%EC%96%B4/KOP042376",
+        "https://korean.visitseoul.net/restaurants/Chilgapsan/KOPu0txa8",
+        "https://korean.visitseoul.net/restaurants/2023019/KOP042375",
+        "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389",
+        "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756",
+        "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/sooksoodoga",
+        "https://tasteofseoul.visitseoul.net/cafe/view?wm_id=792&txt_search=&wm_ca_id1%5B0%5D=H"
+      ],
+      "locationReviews": [
+        {
+          "id": "sooksoodoga",
+          "name": "숙수도가",
+          "address": "서울 성북구 동소문로17길 28",
+          "region": "서울특별시 성북구",
+          "aliases": [
+            "서울 성북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/sooksoodoga"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-cafe-792",
+          "name": "사만 커피 로스터스",
+          "address": "서울 성북구 성북로6길 2-2",
+          "region": "서울특별시 성북구",
+          "aliases": [
+            "서울 성북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://tasteofseoul.visitseoul.net/cafe/view?wm_id=792&txt_search=&wm_ca_id1%5B0%5D=H"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-ddm-yeonghwajang",
+          "name": "영화장",
+          "address": "서울 동대문구 휘경로 3-8",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-ddm-green-field",
+          "name": "초록뜰식당",
+          "address": "서울 동대문구 망우로18길 36",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/GreenFieldRestaurant/KOPk0otw0"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-ddm-andongjip",
+          "name": "안동집 손칼국시",
+          "address": "서울 동대문구 고산자로36길 3 (경동시장 신관 지하1층)",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/andongjip-sonkalguksi/KOP32dncy"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-jr-chaesundang",
+          "name": "채선당 신내점",
+          "address": "서울 중랑구 용마산로 623 (삼부그린스포츠센터)",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/etc-area/%EC%B1%84%EC%84%A0%EB%8B%B9%EC%8B%A0%EB%82%B4%EC%A0%90--ChaesundangSinnae/KOP002714"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-jr-inggone",
+          "name": "잉꼬네떡볶이",
+          "address": "서울 중랑구 용마산로120길 43",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023112/KOPnownn2"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-jr-dongbu-bakery",
+          "name": "동부고려제과",
+          "address": "서울 중랑구 망우로 388",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023113/KOPusfd76"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-sb-cheongsujang",
+          "name": "청수장",
+          "address": "서울 성북구 정릉로 237-2",
+          "region": "서울특별시 성북구",
+          "aliases": [
+            "서울 성북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-sb-napoleon",
+          "name": "나폴레옹과자점",
+          "address": "서울 성북구 성북로 7",
+          "region": "서울특별시 성북구",
+          "aliases": [
+            "서울 성북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%82%98%ED%8F%B4%EB%A0%88%EC%98%B9/KOP006613"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-sb-majeonteo",
+          "name": "마전터",
+          "address": "서울 성북구 혜화로 82-2",
+          "region": "서울특별시 성북구",
+          "aliases": [
+            "서울 성북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%A7%88%EC%A0%84%ED%84%B0/KOP011133"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-gb-seomjingang",
+          "name": "섬진강민물장어",
+          "address": "서울 강북구 한천로 1151",
+          "region": "서울특별시 강북구",
+          "aliases": [
+            "서울 강북구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%84%AC%EC%A7%84%EA%B0%95%EB%AF%BC%EB%AC%BC%EC%9E%A5%EC%96%B4/KOP042376"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-db-chilgapsan",
+          "name": "칠갑산",
+          "address": "서울 도봉구 노해로 379",
+          "region": "서울특별시 도봉구",
+          "aliases": [
+            "서울 도봉구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/Chilgapsan/KOPu0txa8"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-db-hamsbrot",
+          "name": "함스브로트과자점",
+          "address": "서울 도봉구 도봉로 483",
+          "region": "서울특별시 도봉구",
+          "aliases": [
+            "서울 도봉구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023019/KOP042375"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-db-hanuso",
+          "name": "하누소",
+          "address": "서울 도봉구 노해로 327",
+          "region": "서울특별시 도봉구",
+          "aliases": [
+            "서울 도봉구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-visitseoul-db-ssangmun",
+          "name": "쌍문동커피",
+          "address": "서울 도봉구 도봉로116길 5",
+          "region": "서울특별시 도봉구",
+          "aliases": [
+            "서울 도봉구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756"
+          ],
+          "result": "공식 자료의 상호·지점과 도로명주소는 있으나 동일 위치의 검증된 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        }
+      ],
+      "unresolved": [
+        "새로 수록된 14곳 모두 위경도 미확인, 지도 마커 대신 주소 목록만 노출",
+        "기존 성북구 2곳 포함 위치 미확인 16곳은 재확인 대기",
+        "공식 관광 소개는 별도 미쉐린/블루리본 선정·사업 지정과 다름",
+        "이 회차의 5구 전체 식당·현재 폐업/휴업 정보 전수 조사 미완료"
+      ],
+      "carryOver": [
+        "현재 상호·지점명과 주소로 공개 좌표를 다시 찾아 지도 표시 가능 여부 검증",
+        "미확인 16개 식당을 해당 지역의 다음 순환 회차에서 다시 확인",
+        "공식 선정·가이드 추가 누락, 폐업·이전 여부 확인"
+      ],
+      "nextSlot": 3,
+      "nextRegions": [
+        "서울특별시 노원구",
+        "서울특별시 은평구",
+        "서울특별시 서대문구",
+        "서울특별시 마포구",
+        "서울특별시 양천구"
       ]
     }
   ],

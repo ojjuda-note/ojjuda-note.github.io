@@ -1477,15 +1477,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3021,
+    "uniqueRestaurants": 3035,
     "providerCounts": {
       "blue-ribbon": 525,
       "michelin": 237,
-      "local-guide": 2292,
+      "local-guide": 2306,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 1998,
+    "coordinatesMissing": 2012,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1495,7 +1495,7 @@
       "대구": 117,
       "대전": 105,
       "부산": 378,
-      "서울": 312,
+      "서울": 326,
       "세종": 100,
       "울산": 36,
       "인천": 316,
@@ -1506,13 +1506,13 @@
       "충북": 214
     },
     "categoryCounts": {
-      "한식": 1768,
-      "중식": 119,
+      "한식": 1776,
+      "중식": 120,
       "일식": 128,
       "기타": 572,
       "양식": 204,
-      "분식": 17,
-      "디저트": 213
+      "분식": 18,
+      "디저트": 217
     }
   },
   "coordinateEnrichment": {
@@ -9858,19 +9858,19 @@
     "existingCoordinateEnrichedCount": 13
   },
   "localGovernment": {
-    "checkedAt": "2026-11-04",
+    "checkedAt": "2026-11-05",
     "provider": "local-guide",
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2292,
-    "designationEvidenceCount": 2377,
+    "recordCount": 2306,
+    "designationEvidenceCount": 2391,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
       {
         "region": "서울",
-        "uniqueRestaurants": 141,
+        "uniqueRestaurants": 155,
         "coordinatesAvailable": 12,
         "completeRegionalCollection": false
       },
@@ -10034,6 +10034,39 @@
       "operatingStatus": "미확인",
       "sourceFile": "official-ulsan-tourism.json",
       "baseCatalog": "restaurants.json (unchanged by large-file API limitation)"
+    },
+    "municipalTourism20261105Northeast": {
+      "checkedAt": "2026-11-05",
+      "recordCount": 14,
+      "sourceType": "서울관광재단 Visit Seoul 공식 관광 식당·카페 소개",
+      "sourceFile": "official-seoul-visitseoul-northeast.json",
+      "regionCounts": {
+        "동대문구": 3,
+        "중랑구": 3,
+        "성북구": 3,
+        "강북구": 1,
+        "도봉구": 4
+      },
+      "evidenceUrls": [
+        "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r",
+        "https://korean.visitseoul.net/restaurants/GreenFieldRestaurant/KOPk0otw0",
+        "https://korean.visitseoul.net/restaurants/andongjip-sonkalguksi/KOP32dncy",
+        "https://korean.visitseoul.net/etc-area/%EC%B1%84%EC%84%A0%EB%8B%B9%EC%8B%A0%EB%82%B4%EC%A0%90--ChaesundangSinnae/KOP002714",
+        "https://korean.visitseoul.net/restaurants/2023112/KOPnownn2",
+        "https://korean.visitseoul.net/restaurants/2023113/KOPusfd76",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377",
+        "https://korean.visitseoul.net/restaurants/%EB%82%98%ED%8F%B4%EB%A0%88%EC%98%B9/KOP006613",
+        "https://korean.visitseoul.net/restaurants/%EB%A7%88%EC%A0%84%ED%84%B0/KOP011133",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%84%AC%EC%A7%84%EA%B0%95%EB%AF%BC%EB%AC%BC%EC%9E%A5%EC%96%B4/KOP042376",
+        "https://korean.visitseoul.net/restaurants/Chilgapsan/KOPu0txa8",
+        "https://korean.visitseoul.net/restaurants/2023019/KOP042375",
+        "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389",
+        "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756"
+      ],
+      "classification": "지자체 공식 관광 소개이며 정식 지정·가이드 수상과 구분",
+      "coordinatesAdded": 0,
+      "unknownCoordinates": 14,
+      "currentOperatingStatusVerified": 0
     }
   },
   "mapCoverageAuditHistory": [
