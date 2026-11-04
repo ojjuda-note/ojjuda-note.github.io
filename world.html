@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261104-agit-stability1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261104-archery-shop-tabs1" defer></script>
+<script src="/world-game-assets.js?v=20261104-archery-coin-shop1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -1218,7 +1218,9 @@ function Al(t,options={}){
    onAmmoSpend:requestId=>ammoCall('archery_single_action',{p_action:'spend',p_epoch:4,p_request_id:requestId}),
    onAmmoBuy:requestId=>ammoCall('archery_single_action',{p_action:'buy',p_epoch:4,p_request_id:requestId}),
    onCoachBuy:requestId=>ammoCall('archery_single_action',{p_action:'coach-buy',p_epoch:4,p_request_id:requestId}),
-   onAmmoReceipt:(requestId,action)=>ammoCall('archery_single_receipt',{p_epoch:4,p_request_id:requestId,p_action:action})
+   onAmmoReceipt:(requestId,action)=>ammoCall('archery_single_receipt',{p_epoch:4,p_request_id:requestId,p_action:action}),
+   onCoinExchange:(requestId,zu)=>ammoCall('archery_coin_exchange',{p_request_id:requestId,p_zu:zu,p_action:'exchange'}),
+   onCoinReceipt:(requestId,zu)=>ammoCall('archery_coin_exchange',{p_request_id:requestId,p_zu:zu,p_action:'receipt'})
   });return;
  }
  if(t==="saetbyeol"){

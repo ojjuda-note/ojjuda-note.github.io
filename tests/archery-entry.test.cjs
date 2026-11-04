@@ -71,7 +71,7 @@ assert.match(gameButton('festival'),/<small class="game-test-badge">테스트<\/
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
-ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','canAdminTrial','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
+ctx.Al('archery');assert.deepEqual(Object.keys(launchOptions).sort(),['owner','authorized','canAdminTrial','onAmmoStatus','onRoundStart','onRoundComplete','onAmmoSpend','onAmmoBuy','onCoachBuy','onAmmoReceipt','onCoinExchange','onCoinReceipt'].sort(),'event ammo and ranked completion use explicit parent callbacks');
 assert.equal(launchOptions.owner,null);assert.ok(!('client' in launchOptions),'the authenticated client stays in the arcade');
 assert.equal(launchOptions.authorized(),true);ctx.D.online=true;ctx.D.user={id:'other'};assert.equal(launchOptions.authorized(),false);
 const rankStart=world.indexOf('function worldRankGames(');
@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'browser and app back use the existing dialog return control');
 
 vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.7.0');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'2.8.0');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -99,7 +99,7 @@ assert.equal(read('games/forest-archer/index.html').match(/src="game\.mjs\?v=([^
 // Refresh main gun play and its record-only bridge while retaining unchanged
 // camera and anatomy modules. Every consumer must share its dependency's URL.
 const moduleRevision=game.match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1];
-assert.equal(moduleRevision,'20261104-archery-straight-wall-drop1','every consumer loads the same wall penetration ballistics');
+assert.equal(moduleRevision,archeryRevision,'every consumer loads the same wall penetration ballistics');
 assert.equal(game.match(/from '\.\/laser\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the laser sight uses the current engine release');
 assert.equal(read('games/forest-archer/laser.mjs').match(/from '\.\/engine\.mjs\?v=([^']+)'/)?.[1],moduleRevision);
 assert.equal(game.match(/from '\.\/coach\.mjs\?v=([^']+)'/)?.[1],moduleRevision,'the unchanged gun coach keeps its ballistics release');

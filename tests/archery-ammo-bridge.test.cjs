@@ -202,7 +202,7 @@ test('guest requests, late replies after close/account changes, and insufficient
  }finally{f.close();}
 });
 
-test('the real archery launch branch routes all seven RPCs through the existing account-bound wallet wrapper',async()=>{
+test('the real archery launch branch routes record and coin exchange RPCs through the existing account-bound wallet wrapper',async()=>{
  const start=world.indexOf(' if(t==="archery"){'),end=world.indexOf('\n if(t==="saetbyeol")',start);
  assert.ok(start>=0&&end>start);const calls=[];let opened,version=0;
  const D={online:true,user:{id:owner}};
@@ -211,13 +211,13 @@ test('the real archery launch branch routes all seven RPCs through the existing 
  launch();assert.equal(opened.owner,owner);assert.ok(!('client' in opened));
  assert.equal(opened.canAdminTrial(),false);D.isAdmin=true;assert.equal(opened.canAdminTrial(),true);D.isAdmin=false;assert.equal(opened.canAdminTrial(),false);
  const requestId=randomUUID(),runId=randomUUID();
- await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7,48);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onCoachBuy(requestId);await opened.onAmmoReceipt(requestId,'coach-buy');
+ await opened.onAmmoStatus();await opened.onRoundStart(requestId,7);await opened.onRoundComplete(requestId,runId,7,48);await opened.onAmmoSpend(requestId);await opened.onAmmoBuy(requestId);await opened.onCoachBuy(requestId);await opened.onAmmoReceipt(requestId,'coach-buy');await opened.onCoinExchange(requestId,5000);await opened.onCoinReceipt(requestId,5000);
  assert.deepEqual(calls.map(call=>[call.rpc,call.args]),[
-  ['archery_single_action',{p_epoch:4,p_action:'status'}],['archery_single_action',{p_epoch:4,p_action:'round-start',p_request_id:requestId,p_stage:7}],['archery_single_action',{p_epoch:4,p_action:'round-complete',p_request_id:requestId,p_run_id:runId,p_stage:7,p_score:48}],['archery_single_action',{p_epoch:4,p_action:'spend',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'buy',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'coach-buy',p_request_id:requestId}],['archery_single_receipt',{p_epoch:4,p_request_id:requestId,p_action:'coach-buy'}]
+  ['archery_single_action',{p_epoch:4,p_action:'status'}],['archery_single_action',{p_epoch:4,p_action:'round-start',p_request_id:requestId,p_stage:7}],['archery_single_action',{p_epoch:4,p_action:'round-complete',p_request_id:requestId,p_run_id:runId,p_stage:7,p_score:48}],['archery_single_action',{p_epoch:4,p_action:'spend',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'buy',p_request_id:requestId}],['archery_single_action',{p_epoch:4,p_action:'coach-buy',p_request_id:requestId}],['archery_single_receipt',{p_epoch:4,p_request_id:requestId,p_action:'coach-buy'}],['archery_coin_exchange',{p_request_id:requestId,p_zu:5000,p_action:'exchange'}],['archery_coin_exchange',{p_request_id:requestId,p_zu:5000,p_action:'receipt'}]
  ]);
- assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6,7]);
- D.user={id:'another-owner'};assert.equal((await opened.onCoachBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,7);
- D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,7);
+ assert.ok(calls.every(call=>call.request.owner===owner));assert.deepEqual(calls.map(call=>call.request.version),[1,2,3,4,5,6,7,8,9]);
+ D.user={id:'another-owner'};assert.equal((await opened.onCoachBuy(randomUUID())).reason,'sign_in');assert.equal(calls.length,9);
+ D.online=false;launch();assert.equal((await opened.onAmmoStatus()).reason,'sign_in');assert.equal(calls.length,9);
 });
 
 test('only a live signed-in administrator sees or can enter the item trial',()=>{
@@ -272,4 +272,20 @@ test('trial authorization loss closes an idle iframe and prevents stale actions'
    await f.request('spend',{}, {frame});assert.deepEqual(calls,[]);
   }finally{f.close();}
  }
+});
+
+test('coin exchange bridge validates all packs, isolates receipts and blocks trial purchases',async()=>{
+ const calls=[];const f=fixture({onCoinExchange:async(id,zu)=>{calls.push(['exchange',id,zu]);return {ok:true,coins:990,game_coins:zu*10};},onCoinReceipt:async(id,zu)=>{calls.push(['receipt',id,zu]);return {ok:true,found:false};}});
+ try{
+  assert.equal(f.ready().coinExchangeAvailable,true);
+  for(const zu of [10,50,100,500,1000,5000])await f.request('coin-exchange',{zu});
+  assert.deepEqual(calls.map(x=>x[2]),[10,50,100,500,1000,5000]);
+  for(const fields of [{zu:1},{zu:10000},{zu:'10'},{zu:10,game_coins:999999},{zu:10,coins:0}])await f.request('coin-exchange',fields);
+  assert.equal(calls.length,6);
+  const id=randomUUID();await f.request('coin-receipt',{zu:50,receiptId:id});assert.deepEqual(calls.at(-1),['receipt',id,50]);
+  const duplicate=await f.request('coin-exchange',{zu:10});await f.request('coin-exchange',{zu:50,requestId:duplicate.requestId});
+  assert.equal(f.responses().at(-1).result.reason,'request_conflict');
+  f.close();f.open({adminTrial:true,canAdminTrial:()=>true});assert.equal(f.ready().coinExchangeAvailable,false);
+  const before=calls.length;await f.request('coin-exchange',{zu:10});assert.equal(calls.length,before);assert.equal(f.responses().at(-1).result.reason,'trial_only');
+ }finally{f.close();}
 });

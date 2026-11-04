@@ -1,7 +1,7 @@
 /** A manually zeroed sight only. This module never aims or fires an arrow. */
-import {PLAYER, BOWS} from './engine.mjs?v=20261104-archery-straight-wall-drop1';
+import {PLAYER, BOWS} from './engine.mjs?v=20261104-archery-coin-shop1';
 
-export const LASER_PRICE = 500;
+export const LASER_PRICE = 1000;
 export const LASER_CLICK_DEGREES = .05;
 export const LASER_MAX_CLICKS = 1200;
 const CLICK_RADIANS = LASER_CLICK_DEGREES * Math.PI / 180;

@@ -624,3 +624,28 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .shop-layout .shop-scope-panel .scope-button small{font-size:11px}
 
 .shop-layout .shop-tabs button{font-size:13px}
+
+/* Keep equipment purchases directly below all three round choices. */
+.result-content:has(.game-result-card){display:block}
+.result-content>.result-shop-button,.game-result-card .game-result-actions>.result-shop-button{display:flex;grid-column:1/-1;align-items:center;justify-content:center;width:100%;min-height:58px;padding:11px 14px;gap:12px;margin:10px 0 0;background:#28543e;border:1px solid #28543e;border-radius:12px;color:#fffdf1;box-shadow:0 3px 10px #214b3220}
+.result-shop-button>span{display:flex;flex-direction:column;gap:3px}
+.result-shop-button>span>strong{font-size:16px;line-height:1.3}
+.result-shop-button>span>small{font-size:11px;font-weight:500;line-height:1.4;color:#e5efdb}
+.result-content>.result-shop-button:hover,.game-result-card .game-result-actions>.result-shop-button:hover{background:#1d422e}
+.game-result-card .game-result-actions>.result-shop-button{margin:0}
+@media(max-height:520px){.game-result-card .game-result-icon{display:none}.result-content>.result-shop-button,.game-result-card .game-result-actions>.result-shop-button{min-height:48px;padding-block:8px}}
+@media(max-height:330px) and (min-width:600px){.result-content>.result-shop-button{grid-column:2;grid-row:3;margin:0}.result-content>.text-button{grid-row:4}.result-content>[data-action="retry-ammo"]{grid-row:5}}
+
+.shop-layout .shop-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}
+.shop-layout .shop-top{padding-right:0}
+.shop-coin-panel{padding:18px;border:1px solid var(--line);border-radius:14px;background:#f4f6ec}
+.shop-coin-panel h3{margin:0;font-size:18px}.shop-coin-panel>p{margin:8px 0 14px;font-size:13px;color:#59704d}
+.shop-zu-balance{text-align:right}
+.coin-pack-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.coin-pack-button{min-width:0;min-height:70px;flex-direction:column;gap:5px;padding:9px 5px}
+.coin-pack-button strong{font-size:14px;white-space:nowrap}.coin-pack-button small{font-size:11px;color:#657756;white-space:nowrap}
+.coin-pack-button[aria-pressed="true"]{background:#dfedce;border-color:#719553;box-shadow:inset 0 0 0 1px #719553}
+.coin-exchange-button{width:100%;min-height:52px;margin-top:16px;padding-inline:8px;font-size:13px;white-space:nowrap}
+.shop-coin-panel>.coin-exchange-notice{min-height:22px;line-height:1.6;margin:12px 0}
+.shop-coin-save-note{font-size:11px;color:#78876c}
+@media(max-width:380px){.coin-pack-options{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-coin-panel{padding:14px}.shop-layout .shop-tabs button{font-size:12px}}
