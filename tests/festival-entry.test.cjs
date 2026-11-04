@@ -33,7 +33,7 @@ function bridgeFixture(){
  class Element extends EventTarget{
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};}
   setAttribute(name,value){this.attributes[name]=value;}
-  set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
+  set innerHTML(html){this.html=html;this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
   querySelector(selector){return selector==='iframe'?this.frame:(selector==='button'||selector==='.agit-home-link')?this.button:null;}
   showModal(){this.open=true;}close(){this.open=false;}remove(){this.isConnected=false;}
   focus(){focused=this;document.activeElement=this;}click(){this.dispatchEvent(new Event('click'));}
@@ -42,8 +42,8 @@ function bridgeFixture(){
  const document={activeElement:previous,createElement:tag=>new Element(tag),body:{
   classList:{contains:name=>classes.has(name),add:name=>classes.add(name),remove:name=>classes.delete(name)},
   append:node=>{node.isConnected=true;nodes.push(node);}}};
- previous.focus();const ctx=vm.createContext({window:{},document});vm.runInContext(bridge,ctx);
- return{api:ctx.window.OjjudaFestivalSchedule,nodes,document,previous,focused:()=>focused};
+ let homeUrl='';previous.focus();const ctx=vm.createContext({window:{location:{assign:url=>{homeUrl=url;}}},document});vm.runInContext(bridge,ctx);
+ return{api:ctx.window.OjjudaFestivalSchedule,nodes,document,previous,focused:()=>focused,homeUrl:()=>homeUrl};
 }
 const f=bridgeFixture();f.api.open({authorized:()=>false});assert.equal(f.nodes.length,0);
 f.api.open({owner:'member-a'});const first=f.nodes[0];
@@ -51,8 +51,10 @@ assert.equal(first.open,true);assert.equal(f.document.body.classList.contains('g
 assert.equal(f.focused(),first.button,'the return button receives initial focus');
 assert.match(first.frame.src,/^\/games\/festival-schedule\/index\.html\?v=[^&]+&embedded=1$/,'the page stays on the arcade origin');
 assert.equal(first.attributes['aria-label'],'축제일정 · 테스트');
+assert.match(first.html,/class=\"agit-home-link\"/);assert.match(first.html,/오쭈다 아지트/);assert.match(first.html,/favicon\.svg/);
 f.api.open({owner:'member-a'});assert.equal(f.nodes.length,1,'duplicate open reuses the active dialog');
 first.button.click();assert.equal(first.isConnected,false);assert.equal(first.open,false);
+assert.equal(f.homeUrl(),'/world.html','the Agit logo opens the home route');
 assert.equal(first.frame.src,'about:blank','closing unloads the map document');
 assert.equal(f.document.body.classList.contains('gaming'),false);assert.equal(f.focused(),f.previous);
 f.api.close();assert.equal(f.nodes.length,1,'repeated close is harmless');
@@ -115,7 +117,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.1.1');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.1.2');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);

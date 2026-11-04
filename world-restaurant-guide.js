@@ -24,14 +24,14 @@
    const dialog=document.createElement('dialog');
    dialog.className='restaurant-guide-dialog';
    dialog.setAttribute('aria-label','인증맛집 · 테스트');
-   dialog.innerHTML='<header class="restaurant-guide-header"><button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation"></iframe>';
+   dialog.innerHTML='<header class="restaurant-guide-header"><button class="agit-home-link" type="button" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="22" height="22"><span class="agit-home-word">오쭈다 아지트</span></button><span>인증맛집 <small>테스트</small></span></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
    const ratings=recommendations?.ratings;
    const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
    const ratingRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261103-restaurants-sort1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261104-agit-home-logo1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();
@@ -123,12 +123,12 @@
    active={dialog,owner,current,close,back,childOpen,openRecommendations:showRecommendations};
    frame.addEventListener('load',loaded);
    window.addEventListener('message',receive);
-   dialog.querySelector('button').addEventListener('click',()=>{void close();});
+   dialog.querySelector('.agit-home-link').addEventListener('click',()=>{void close(true);window.location.assign('/world.html');});
    dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
    if(hasMemberData&&typeof recommendations.subscribeChanges==='function')unsubscribeChanges=recommendations.subscribeChanges(mapChanged);
    authTimer=setInterval(()=>{if(disposed)return;if(!allowed()){close(true);return;}const childIsOpen=childOpen();if(childWasOpen&&!childIsOpen)mapChanged();childWasOpen=childIsOpen;},750);
    document.body.append(dialog);document.body.classList.add('gaming');
-   dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});
+   dialog.showModal();dialog.querySelector('.agit-home-link').focus({preventScroll:true});
    if(openRecommendations)return showRecommendations();
    return true;
   },
