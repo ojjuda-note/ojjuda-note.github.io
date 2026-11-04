@@ -10,3 +10,5 @@
 
 .browser-guide>p .browser-guide-browsers{display:block;margin-bottom:14px;padding:12px 10px;border:1px solid #dec783;border-radius:12px;background:#f5e9bb;color:#244b35;font-size:19px;font-weight:800;line-height:1.65;letter-spacing:-.35px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
 @media(max-width:420px){.browser-guide>p .browser-guide-browsers{font-size:17px;padding:12px 9px}}
+
+.browser-guide-skip{display:flex;align-items:center;justify-content:center;gap:9px;width:max-content;max-width:100%;margin:14px auto 0;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;user-select:none}.browser-guide-skip input{width:18px;height:18px;margin:0;accent-color:var(--green);cursor:pointer}.browser-guide-skip span{line-height:1.2}

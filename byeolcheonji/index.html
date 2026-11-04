@@ -9,9 +9,9 @@
   <link rel="icon" href="/byeolcheonji/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest?v=20261104-pwa1">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
-  <link rel="stylesheet" href="/byeolcheonji/styles.css?v=20261104-browser-emphasis1">
+  <link rel="stylesheet" href="/byeolcheonji/styles.css?v=20261104-dontshow1">
   <link rel="stylesheet" href="/byeolcheonji/compact.css?v=20261104-compact1">
-  <script src="/byeolcheonji/browser-guide.js?v=20261104-compact1" defer></script>
+  <script src="/byeolcheonji/browser-guide.js?v=20261104-dontshow1" defer></script>
   <script src="/config.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/byeolcheonji/app.js?v=20261104-byeolcheonji60d" defer></script>
@@ -87,11 +87,15 @@
     <footer>오쭈다 테스트 <span aria-hidden="true">·</span> 한우산 별천지</footer>
   </div>
   <dialog id="browser-guide" class="browser-guide" aria-labelledby="browser-guide-title" aria-describedby="browser-guide-message" aria-modal="true">
-    <span class="browser-guide-label">도움말</span>
+    <span class="browser-guide-label">브라우저 안내</span>
     <h2 id="browser-guide-title">브라우저에서 열기</h2>
     <p id="browser-guide-message">알림은 Chrome·Safari 같은 브라우저에서 <strong>ojjuda.kr/star</strong>로 접속할 때 가장 안정적이에요.</p>
     <div class="browser-guide-address-box"><label for="browser-guide-address">바로가기 주소</label><input id="browser-guide-address" value="ojjuda.kr/star" readonly spellcheck="false"><button id="browser-guide-copy" type="button">복사</button></div>
     <p id="browser-guide-feedback" class="browser-guide-feedback" role="status" aria-live="polite"></p>
+    <label class="browser-guide-skip" for="browser-guide-dont-show">
+      <input id="browser-guide-dont-show" type="checkbox">
+      <span>다시 안 보기</span>
+    </label>
     <button id="browser-guide-confirm" class="browser-guide-confirm" type="button" autofocus>닫기</button>
   </dialog>
 </body>
