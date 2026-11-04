@@ -51,7 +51,7 @@ test('two distinct special arrows append their own abilities after the ordinary 
   assert.equal(ARROWS[12].ability.type, 'bounce'); assert.equal(ARROWS[13].ability.type, 'magnetic');
   assert.equal(ARROWS[12].ability.maxBounces, 1);
   assert.equal(ARROWS[13].ability.radius, 5);
-  assert.deepEqual(ARROWS.slice(12, 14).map(arrow => arrow.price), [6900, 7800]);
+  assert.deepEqual(ARROWS.slice(12, 14).map(arrow => arrow.price), [13800, 15600]);
   assert.ok(ARROWS.filter(arrow => arrow.id < 12 || arrow.id > 13).every(arrow => !arrow.ability));
 });
 

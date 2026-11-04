@@ -114,26 +114,32 @@ test('saetbyeol remains a popup exception and preserves its original growth and 
   }finally{f.w.close();}
 });
 
-test('archery result precedes its fifth-round event and event points never unlock a failed main stage',async()=>{
-  assert.equal(typeof vm.SourceTextModule,'function','run with node --experimental-vm-modules');
+test('archery completed rounds keep equipment purchases directly beneath the stage choices',async()=>{
+  assert.equal(typeof vm.SourceTextModule,'function');
   const dom=new JSDOM(read('games/forest-archer/index.html'),{url:'https://fixture.test/games/forest-archer/',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;shared(w);
   const noop=()=>{},drawing=new Proxy({}, {get:(object,key)=>object[key]||(key==='measureText'?()=>({width:20}):/Gradient$/.test(key)?()=>({addColorStop:noop}):noop),set:(object,key,value)=>(object[key]=value,true)});
   w.HTMLCanvasElement.prototype.getContext=()=>drawing;w.ResizeObserver=class{observe(){}};
   w.HTMLElement.prototype.getBoundingClientRect=()=>({left:0,top:0,width:900,height:600});
   const modules=new Map(),context=dom.getInternalVMContext();
-  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const resultTest={state,progress,finishRound,startStage,enterEvent};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
+  const load=file=>{if(!modules.has(file)){let source=read('games/forest-archer/'+file);if(file==='game.mjs')source+='\nexport const resultTest={state,progress,finishRound,startStage,creditExchangedCoins};';modules.set(file,new vm.SourceTextModule(source,{context,identifier:file}));}return modules.get(file);};
   const game=load('game.mjs');await game.link(specifier=>load(specifier.replace(/^\.\//,'').split('?')[0]));await game.evaluate();await flush();
   const g=game.namespace.resultTest,$=selector=>w.document.querySelector(selector);
   try{
-    g.progress.mainRounds=4;g.state.score=g.state.stage.goal+1;g.state.hits=4;g.state.used=5;g.finishRound();await flush();await flush();
-    assert.equal(g.state.mode,'finished');assert.equal(g.state.isEvent,false);assert.equal(g.state.pendingEventLevel,1);
-    let card=assertResult($('#modalContent'),'success');assert.equal(card.querySelectorAll('.stage-choice').length,3);
-    $('[data-action="continue-event"]').click();await flush();assert.equal(g.state.isEvent,true);assert.equal(g.state.modal,'event-ready');
-    g.state.eventStarted=true;g.state.score=100;g.state.hits=10;g.finishRound();assertResult($('#modalContent'),'complete');
-    assert.equal($('[data-action="next-stage"]').disabled,false);$('[data-action="next-stage"]').click();await flush();assert.equal(g.state.stage.id,2);
-    g.state.score=0;g.state.used=5;g.finishRound();await flush();await flush();assertResult($('#modalContent'),'failure');
-    assert.equal($('[data-action="next-stage"]').disabled,true);g.enterEvent(1);await flush();g.state.eventStarted=true;g.state.score=10000;g.finishRound();
-    assert.equal($('[data-action="next-stage"]').disabled,true,'an event record cannot replace the failed main-round clear');
+    for(const passed of [true,false,true]){
+      g.state.score=passed?g.state.stage.goal:0;g.state.used=5;g.finishRound();await flush();await flush();
+      const card=assertResult($('#modalContent'),passed?'success':'failure'),choices=card.querySelector('.stage-result-actions'),shop=choices.nextElementSibling;
+      assert.equal(choices.querySelectorAll('.stage-choice').length,3);
+      assert.equal(shop.dataset.action,'result-shop');assert.match(shop.textContent,/장비 구매/);assert.equal(shop.disabled,false);
+      assert.equal(card.querySelectorAll('[data-action="result-shop"]').length,1);
+      const rounds=g.progress.mainRounds,score=g.state.score;shop.click();assert.equal(g.state.modal,'shop');assert.equal(g.state.mode,'finished');
+      $('[data-shop-tab="coin"]').click();assert.equal($('#modalContent').querySelectorAll('[data-coin-pack]').length,6);
+      assert.equal($('[data-action="exchange-coins"]').disabled,true,'standalone games cannot debit ZU');
+      $('#modalClose').click();assertResult($('#modalContent'),passed?'success':'failure');assert.equal(g.progress.mainRounds,rounds);assert.equal(g.state.score,score);
+      $('[data-action="retry"]').click();await flush();
+    }
+    const receipt={owner:'11111111-1111-4111-8111-111111111111',request_id:'22222222-2222-4222-8222-222222222222',game_coins:500};
+    const before=g.progress.coins;assert.equal(g.creditExchangedCoins(receipt),true);assert.equal(g.creditExchangedCoins(receipt),true);
+    const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-single-v4'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
   }finally{w.close();}
 });

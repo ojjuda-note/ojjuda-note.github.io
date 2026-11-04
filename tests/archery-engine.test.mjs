@@ -470,7 +470,7 @@ const originalArrowIdentities = [
   [13, '자석 화살', 7800, 14, '유도 안정깃', '#629d98']
 ];
 test('component rebalancing preserves arrow identities, prices and appearances', () => {
-  assert.deepEqual(ARROWS.slice(0, 14).map(item => [item.id, item.name, item.price, item.shopRank, item.fletching.name, item.color]), originalArrowIdentities);
+  assert.deepEqual(ARROWS.slice(0, 14).map(item => [item.id, item.name, item.price, item.shopRank, item.fletching.name, item.color]), originalArrowIdentities.map(([id,name,price,...rest])=>[id,name,price*2,...rest]));
   assert.ok(ARROWS.slice(0, 12).every(item => !item.ability));
   assert.equal(ARROWS[12].ability.type, 'bounce');
   assert.equal(ARROWS[13].ability.type, 'magnetic');
@@ -505,15 +505,15 @@ test('shop progression keeps released ranks and prices while adding small stat i
       previousGap = gap;
     }
   }
-  assert.deepEqual(weapons.map(item => item.price), [0, 500, 1100, 1800, 2600, 3500, 4500, 5600, 6800, 8100, 9500, 11000, 12600, 14300, 16100, 18000, 20000, 22100, 24300, 26600]);
-  assert.deepEqual(arrows.map(item => item.price), [0, 300, 650, 1050, 1500, 2000, 2550, 3150, 3800, 4500, 5250, 6050, 6900, 7800, 8750, 9750, 10800, 11900, 13050]);
+  assert.deepEqual(weapons.map(item => item.price), [0, 500, 1100, 1800, 2600, 3500, 4500, 5600, 6800, 8100, 9500, 11000, 12600, 14300, 16100, 18000, 20000, 22100, 24300, 26600].map(price=>price*2));
+  assert.deepEqual(arrows.map(item => item.price), [0, 300, 650, 1050, 1500, 2000, 2550, 3150, 3800, 4500, 5250, 6050, 6900, 7800, 8750, 9750, 10800, 11900, 13050].map(price=>price*2));
   assert.ok(getArrowConsistency(arrows.at(-1)) > getArrowConsistency(arrows[0]));
   assert.ok(getWindResponse(arrows.at(-1)) < getWindResponse(arrows[0]));
   assert.ok(getArrowDragRate(arrows.at(-1)) < getArrowDragRate(arrows[0]));
   for (const weapon of weapons.filter(item => item.scopeCompatible)) {
     assert.ok(weapon.scopePrice >= 500 && weapon.scopePrice >= weapon.price * .2, 'a permanent scope also requires meaningful savings');
   }
-  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [29000, 31500, 34100], 'guns continue the main-gear price curve after the last crossbow');
+  assert.deepEqual(BOWS.filter(item => item.weaponType === 'gun').map(item => item.price), [29000, 31500, 34100].map(price=>price*2), 'guns continue the main-gear price curve after the last crossbow');
 });
 
 test('ability sorting uses the selected actual stat without mutating saved equipment identities', () => {
@@ -579,12 +579,12 @@ test('the four scope tiers follow released shop ranks and promoted guns support 
   assert.deepEqual(BOWS.filter(bow => bow.scopeCompatible).map(bow => bow.id), Array.from({ length: 23 }, (_, id) => id));
 });
 
-test('scope prices retain bought threefold values, round other tiers to fifty coins and reject unsupported options', () => {
+test('scope prices double each released tier exactly and reject unsupported options', () => {
   const legacyThreefoldPrices = { 3: 1650, 7: 1150, 8: 900, 9: 1400, 10: 2550, 11: 3250, 12: 2200, 13: 1900, 14: 2900, 15: 3600, 16: 4000, 17: 4450, 18: 4900, 19: 5350, 20: 5800 };
-  for (const [id, price] of Object.entries(legacyThreefoldPrices)) assert.equal(getScopePrice(Number(id), 3), price);
+  for (const [id, price] of Object.entries(legacyThreefoldPrices)) assert.equal(getScopePrice(Number(id), 3), price*2);
   for (const [id, magnification, price] of [[0, 2, 300], [2, 2, 450], [2, 3, 700], [13, 2, 1150], [13, 6, 3800], [19, 2, 3250], [19, 6, 10700], [19, 8, 16050]]) {
-    assert.equal(getScopePrice(id, magnification), price, `weapon ${id}, ${magnification}×`);
-    assert.equal(getScopePrice(BOWS[id], magnification), price, 'catalog objects and IDs address the same scope');
+    assert.equal(getScopePrice(id, magnification), price*2, `weapon ${id}, ${magnification}×`);
+    assert.equal(getScopePrice(BOWS[id], magnification), price*2, 'catalog objects and IDs address the same scope');
   }
   for (const item of BOWS) for (const magnification of [1, 2, 3, 4, 5, 6, 7, 8, 9, '2', null, undefined]) {
     const price = getScopePrice(item, magnification);
@@ -1419,4 +1419,14 @@ test('unchanged animal reference goals retain real five-shot margins with sway, 
     if (adjustedGoals.has(stage.id)) assert.ok(minimumMargin >= requiredMargin,
       `${stage.id}: the calibrated goal keeps ${requiredMargin} expected points of margin for its weaker reference (${minimumMargin.toFixed(2)} actual)`);
   }
+});
+
+
+test('score rewards follow the requested ten-point and eight-point stage tables', async () => {
+  const {getScoreCoinReward:reward}=await import('../games/forest-archer/engine.mjs');
+  for(const [stage,ten,eight] of [[1,10,9],[2,11,9],[3,12,9],[4,13,9],[10,19,9],[11,20,9],[12,21,10],[13,22,11],[20,29,18],[220,229,218]]) {
+    assert.equal(reward(10,stage),ten);assert.equal(reward(8,stage),eight);
+    for(const [score,coins] of [[6,7],[4,6],[2,4],[5,6],[3,5]])assert.equal(reward(score,stage),coins);
+  }
+  assert.equal(reward(0,12),0);assert.equal(reward(10,0),0);
 });

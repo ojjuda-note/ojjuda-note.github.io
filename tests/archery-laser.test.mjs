@@ -21,7 +21,7 @@ test('laser compatibility starts at the first crossbow and excludes every bow an
 });
 
 test('laser settings keep only manual zeroing and clamp clicks to the supported range', () => {
-  assert.equal(LASER_PRICE,500);assert.equal(LASER_CLICK_DEGREES,.05);assert.equal(LASER_MAX_CLICKS,1200);
+  assert.equal(LASER_PRICE,1000);assert.equal(LASER_CLICK_DEGREES,.05);assert.equal(LASER_MAX_CLICKS,1200);
   assert.deepEqual(normalizeLaserSettings(),{enabled:true,horizontalClicks:0,verticalClicks:0});
   assert.deepEqual(normalizeLaserSettings({enabled:false,horizontalClicks:1201,verticalClicks:-12345,autoFire:true,targetPoint:{x:0}}),
     {enabled:false,horizontalClicks:1200,verticalClicks:-1200});

@@ -14,6 +14,13 @@ export const BULLET_DROP_RATIO = .5;
 // drag by 2 halves arrival time, so 2g gives half the reference arrow's drop.
 export const BULLET_GRAVITY_SCALE = BULLET_SPEED_RATIO ** 2 * BULLET_DROP_RATIO;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+/** Score-specific rewards: centre hits grow every stage, 8 points grow after stage 11. */
+export function getScoreCoinReward(score, stageId) {
+  if (!Number.isFinite(score) || score <= 0 || !Number.isInteger(stageId) || stageId < 1) return 0;
+  if (score === 10) return stageId + 9;
+  if (score === 8) return 9 + Math.max(0, stageId - 11);
+  return Math.ceil(score * .8) + 2;
+}
 export const SCOPES = Object.freeze([
   {magnification:2,name:'2배 조준경',priceMultiplier:.6},
   {magnification:3,name:'3배 조준경',priceMultiplier:1},
@@ -100,6 +107,7 @@ function equipmentCatalog(items, kind) {
     item.scopeMagnifications = Object.freeze(SCOPES.map(scope => scope.magnification));
     item.scopePrice = Math.max(500, Math.ceil(item.price * .2 / 50) * 50);
   });
+  for (const item of items) { item.price *= 2; if (item.scopePrice) item.scopePrice *= 2; }
   return Object.freeze(items);
 }
 
@@ -155,7 +163,7 @@ export function getScopePrice(weaponOrId, magnification) {
   if (!scope || !weapon?.scopeCompatible || !Array.isArray(weapon.scopeMagnifications) || !weapon.scopeMagnifications.includes(magnification) ||
       !Number.isFinite(weapon.scopePrice) || weapon.scopePrice <= 0) return null;
   // Keep each catalog weapon's three-power price as the shared base.
-  return magnification === 3 ? weapon.scopePrice : Math.max(50, Math.ceil(weapon.scopePrice * scope.priceMultiplier / 50) * 50);
+  return magnification === 3 ? weapon.scopePrice : Math.max(100, Math.ceil(weapon.scopePrice * scope.priceMultiplier / 100) * 100);
 }
 
 export const ARROWS = equipmentCatalog([
@@ -722,7 +730,7 @@ export const BULLET_DRAG_RATE = FASTEST_ARROW_REFERENCE.dragRate * BULLET_SPEED_
 // the base bullet's time. Gravity times S²*D therefore gives exactly D of its
 // drop below the aim ray. The straight tier also removes wind acceleration.
 const bullet = (id, name, tag, description, price, speedRatio, dropRatio, color) => Object.freeze({
-  id, name, tag, description, price, shopRank: id + 1, color, speedRatio, dropRatio,
+  id, name, tag, description, price: price * 2, shopRank: id + 1, color, speedRatio, dropRatio,
   muzzleSpeed: BULLET_SPEED * speedRatio,
   mass: BOWS[20].ammo.mass, windFactor: dropRatio === 0 ? 0 : BOWS[20].ammo.windFactor,
   dragRate: BULLET_DRAG_RATE * speedRatio,

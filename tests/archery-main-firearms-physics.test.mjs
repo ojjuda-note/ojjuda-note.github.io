@@ -30,7 +30,7 @@ test('the original gun and two snipers follow the crossbows with ten-round magaz
   const order = sortEquipment(BOWS);
   assert.deepEqual(order.slice(20).map(weapon => weapon.id), [20, 21, 22]);
   assert.deepEqual(order.map(weapon => weapon.shopRank), Array.from({length:23}, (_, index) => index + 1));
-  assert.deepEqual(guns.map(weapon => weapon.price), [29000, 31500, 34100]);
+  assert.deepEqual(guns.map(weapon => weapon.price), [58000, 63000, 68200]);
   assert.deepEqual(guns.map(weapon => weapon.magazineSize), [10, 10, 10]);
   assert.deepEqual(guns.map(weapon => weapon.reloadSeconds), [1, 1, 1]);
   assert.deepEqual(guns.map(weapon => weapon.name), ['정밀 사격총', '정밀 저격총', '무진동 저격총']);
@@ -51,9 +51,10 @@ test('the original gun and two snipers follow the crossbows with ten-round magaz
   }
 });
 
-test('promoting guns leaves every released arrow, bow, crossbow and main mission unchanged', () => {
+test('price changes preserve every released equipment property and mission except prices', () => {
   // Captured independently from main at b5d1b3b4a6f861a133b9bd851906cd4a382835ee.
-  assert.equal(fingerprint({BOWS:BOWS.filter(weapon => weapon.weaponType !== 'gun'), ARROWS, SCOPES}),
+  const oldPrice=item=>({...item,price:item.price/2,...('scopePrice' in item?{scopePrice:item.scopePrice/2}:{})});
+  assert.equal(fingerprint({BOWS:BOWS.filter(weapon => weapon.weaponType !== 'gun').map(oldPrice), ARROWS:ARROWS.map(oldPrice), SCOPES}),
     'cbb8e518058169685b5a8004046c51d4b87b36ff61c09cdc50727e156ff8abb2');
   assert.equal(fingerprint(STAGES), 'afc0eddd2bcedc511034e61ad1bcf06062818fe3a1af3fcb29691e9d82b83d2d');
 });
@@ -141,7 +142,7 @@ test('bullet drop locates exact wall entries and clear paths stay identical acro
 
 test('four reusable bullet choices retain exact basic ammunition and never alter bows or special arrows', () => {
   assert.deepEqual(BULLETS.map(item => item.id), [0, 1, 2, 3]);
-  assert.deepEqual(BULLETS.map(item => item.price), [0, 4000, 12000, 30000]);
+  assert.deepEqual(BULLETS.map(item => item.price), [0, 8000, 24000, 60000]);
   assert.deepEqual(BULLETS.map(item => item.speedRatio), [1, 1.5, 2, 3]);
   assert.deepEqual(BULLETS.map(item => item.dropRatio), [1, .6, .25, 0]);
   assert.equal(getBullet(), BULLETS[0]);assert.equal(getBullet(999), BULLETS[0]);
