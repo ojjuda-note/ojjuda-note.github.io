@@ -1,0 +1,177 @@
+name: Update Agit home logo navigation
+
+on:
+  push:
+    branches:
+      - fix-agit-home-logo-20261104
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply focused header update
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          revision = '20261104-agit-home-logo1'
+          logo = '<button class="agit-home-link" type="button" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="22" height="22"><span class="agit-home-word">오쭈다 아지트</span></button>'
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              text = file.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one occurrence, found {count}: {old[:80]}')
+              file.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          def regex_once(path, pattern, replacement):
+              file = Path(path)
+              text = file.read_text(encoding='utf-8')
+              updated, count = re.subn(pattern, replacement, text, count=1)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one regex occurrence, found {count}: {pattern}')
+              file.write_text(updated, encoding='utf-8')
+
+          festival_js = 'world-festival-schedule.js'
+          replace_once(festival_js, '<button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button>', logo)
+          replace_once(festival_js, 'dialog.querySelector(\'button\').addEventListener(\'click\',close);', "dialog.querySelector('.agit-home-link').addEventListener('click',()=>{close();window.location.assign('/world.html');});")
+          replace_once(festival_js, "dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});", "dialog.showModal();dialog.querySelector('.agit-home-link').focus({preventScroll:true});")
+          regex_once(festival_js, r'/games/festival-schedule/index\.html\?v=[^&\"]+&embedded=1', f'/games/festival-schedule/index.html?v={revision}&embedded=1')
+
+          restaurant_js = 'world-restaurant-guide.js'
+          replace_once(restaurant_js, '<button type="button" aria-label="오락실 목록으로 돌아가기">← 오락실</button>', logo)
+          replace_once(restaurant_js, "dialog.querySelector('button').addEventListener('click',()=>{void close();});", "dialog.querySelector('.agit-home-link').addEventListener('click',()=>{void close(true);window.location.assign('/world.html');});")
+          replace_once(restaurant_js, "dialog.showModal();dialog.querySelector('button').focus({preventScroll:true});", "dialog.showModal();dialog.querySelector('.agit-home-link').focus({preventScroll:true});")
+          regex_once(restaurant_js, r'/games/certified-restaurants/index\.html\?v=[^&\"]+&embedded=1', f'/games/certified-restaurants/index.html?v={revision}&embedded=1')
+
+          festival_css = Path('world-festival-schedule.css')
+          festival_text = festival_css.read_text(encoding='utf-8')
+          festival_styles = (
+              '.festival-schedule-dialog>.tour-game-header .agit-home-link{display:inline-flex;align-items:center;gap:6px;min-width:0;padding:6px 6px 6px 0;color:#1f5c47;font-weight:800;letter-spacing:-.03em}\n'
+              '.festival-schedule-dialog>.tour-game-header .agit-home-link img{display:block;flex:none;width:22px;height:22px}\n'
+              '.festival-schedule-dialog>.tour-game-header .agit-home-word{font-size:13px;line-height:1;white-space:nowrap}\n'
+              '.festival-schedule-dialog>.tour-game-header .agit-home-link:focus-visible{outline:2px solid #247060;outline-offset:1px;border-radius:6px}\n'
+          )
+          if '.festival-schedule-dialog>.tour-game-header .agit-home-link{' in festival_text:
+              raise SystemExit('festival logo styles already exist unexpectedly')
+          festival_css.write_text(festival_text + festival_styles, encoding='utf-8')
+
+          restaurant_css = Path('world-restaurant-guide.css')
+          restaurant_text = restaurant_css.read_text(encoding='utf-8')
+          restaurant_styles = (
+              '.restaurant-guide-header .agit-home-link{display:inline-flex;align-items:center;gap:6px;min-width:0;padding:6px 6px 6px 0;color:#1f5c47;font-weight:800;letter-spacing:-.03em}\n'
+              '.restaurant-guide-header .agit-home-link img{display:block;flex:none;width:22px;height:22px}\n'
+              '.restaurant-guide-header .agit-home-word{font-size:13px;line-height:1;white-space:nowrap}\n'
+          )
+          if '.restaurant-guide-header .agit-home-link{' in restaurant_text:
+              raise SystemExit('restaurant logo styles already exist unexpectedly')
+          restaurant_css.write_text(restaurant_text + restaurant_styles, encoding='utf-8')
+
+          assets_path = Path('world-game-assets.js')
+          assets = assets_path.read_text(encoding='utf-8')
+          assets, count = re.subn(r"const revision='[^']+';", f"const revision='{revision}';", assets, count=1)
+          if count != 1:
+              raise SystemExit('world-game-assets revision was not updated')
+          replacements = {
+              "festival:'1.1.1'": "festival:'1.1.2'",
+              "restaurants:'1.8.2'": "restaurants:'1.8.3'",
+              '/world-festival-schedule.css?v=20261103-festival-undecided1': f'/world-festival-schedule.css?v={revision}',
+              '/world-festival-schedule.js?v=20261103-festival-undecided1': f'/world-festival-schedule.js?v={revision}',
+              '/world-restaurant-guide.css?v=20261103-restaurants-fit2': f'/world-restaurant-guide.css?v={revision}',
+              '/world-restaurant-guide.js?v=20261103-restaurants-sort1': f'/world-restaurant-guide.js?v={revision}',
+          }
+          for old, new in replacements.items():
+              if assets.count(old) != 1:
+                  raise SystemExit(f'world-game-assets expected one occurrence: {old}')
+              assets = assets.replace(old, new, 1)
+          assets_path.write_text(assets, encoding='utf-8')
+
+          release_path = Path('game-release.json')
+          release = json.loads(release_path.read_text(encoding='utf-8'))
+          release['revision'] = revision
+          release_path.write_text(json.dumps(release, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
+
+          world_path = Path('world.html')
+          world = world_path.read_text(encoding='utf-8')
+          world, count = re.subn(r'world-game-assets\.js\?v=[A-Za-z0-9._-]+', f'world-game-assets.js?v={revision}', world)
+          if count < 1:
+              raise SystemExit('world.html game asset loader query was not found')
+          world_path.write_text(world, encoding='utf-8')
+
+          test_path = Path('tests/festival-entry.test.cjs')
+          test = test_path.read_text(encoding='utf-8')
+          old = "set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src=\"([^\"]+)\"/)[1];}"
+          new = "set innerHTML(html){this.html=html;this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src=\"([^\"]+)\"/)[1];}"
+          if test.count(old) != 1:
+              raise SystemExit('festival test innerHTML harness was not found')
+          test = test.replace(old, new, 1)
+          old = "previous.focus();const ctx=vm.createContext({window:{},document});vm.runInContext(bridge,ctx);\n return{api:ctx.window.OjjudaFestivalSchedule,nodes,document,previous,focused:()=>focused};"
+          new = "let homeUrl='';previous.focus();const ctx=vm.createContext({window:{location:{assign:url=>{homeUrl=url;}}},document});vm.runInContext(bridge,ctx);\n return{api:ctx.window.OjjudaFestivalSchedule,nodes,document,previous,focused:()=>focused,homeUrl:()=>homeUrl};"
+          if test.count(old) != 1:
+              raise SystemExit('festival test location harness was not found')
+          test = test.replace(old, new, 1)
+          old = "assert.equal(first.attributes['aria-label'],'축제일정 · 테스트');"
+          new = old + "\nassert.match(first.html,/class=\\\"agit-home-link\\\"/);assert.match(first.html,/오쭈다 아지트/);assert.match(first.html,/favicon\\.svg/);"
+          if test.count(old) != 1:
+              raise SystemExit('festival test dialog assertion anchor was not found')
+          test = test.replace(old, new, 1)
+          old = "first.button.click();assert.equal(first.isConnected,false);assert.equal(first.open,false);"
+          new = old + "\nassert.equal(f.homeUrl(),'/world.html','the Agit logo opens the home route');"
+          if test.count(old) != 1:
+              raise SystemExit('festival test click assertion anchor was not found')
+          test = test.replace(old, new, 1)
+          if "version('festival'),'1.1.1'" not in test:
+              raise SystemExit('festival release assertion was not found')
+          test = test.replace("version('festival'),'1.1.1'", "version('festival'),'1.1.2'", 1)
+          test_path.write_text(test, encoding='utf-8')
+
+          static_test = r'''const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+          const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
+          const festival=read('world-festival-schedule.js'),restaurant=read('world-restaurant-guide.js');
+          const festivalCss=read('world-festival-schedule.css'),restaurantCss=read('world-restaurant-guide.css');
+          const assets=read('world-game-assets.js'),world=read('world.html'),release=JSON.parse(read('game-release.json'));
+          for(const [name,source] of [['festival',festival],['restaurant',restaurant]]){
+            assert.match(source,/class="agit-home-link"/i,name+' renders the Agit home logo button');
+            assert.match(source,/aria-label="오쭈다 아지트 홈으로 이동"/,name+' exposes the home destination');
+            assert.match(source,/favicon\.svg/,name+' uses the official Agit mark');
+            assert.match(source,/오쭈다 아지트/,name+' shows the Agit wordmark');
+            assert.match(source,/window\.location\.assign\('\/world\.html'\)/,name+' routes the logo to Agit home');
+          }
+          assert.match(festivalCss,/\.agit-home-link/);assert.match(restaurantCss,/\.agit-home-link/);
+          assert.match(assets,/festival:'1\.1\.2'/);assert.match(assets,/restaurants:'1\.8\.3'/);
+          assert.ok(world.includes('/world-game-assets.js?v='+release.revision));
+          assert.ok(assets.includes("const revision='"+release.revision+"';"));
+          console.log('PASS: festival and restaurant headers show an accessible Agit logo that routes home');
+          '''
+          Path('tests/agit-home-logo.test.cjs').write_text('\n'.join(line.strip() for line in static_test.splitlines()) + '\n', encoding='utf-8')
+          PY
+      - name: Validate focused change
+        run: |
+          node --check world-festival-schedule.js
+          node --check world-restaurant-guide.js
+          node tests/agit-home-logo.test.cjs
+          node tests/festival-entry.test.cjs
+          node tests/game-release-refresh.test.cjs
+      - name: Commit verified change
+        shell: bash
+        run: |
+          rm .github/workflows/temp-agit-home-logo.yml
+          git config user.name 'ojjuda-note'
+          git config user.email 'mj830417@naver.com'
+          git add -A
+          git commit -m 'Link festival and restaurant headers to Agit home'
+          git push origin HEAD:fix-agit-home-logo-20261104
