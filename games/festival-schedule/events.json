@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-04",
+  "updatedAt": "2026-11-05",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -1470,6 +1470,183 @@
         "얼음축제",
         "겨울축제",
         "가족"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "indef-incheon-design-2026",
+      "title": "2026 인천국제디자인페어(INDEF)",
+      "category": "expo",
+      "start": "2026-11-20",
+      "end": "2026-11-22",
+      "region": "인천",
+      "city": "남동구",
+      "venue": "인천문화예술회관",
+      "address": "인천광역시 남동구 예술로 149",
+      "lat": 37.447,
+      "lng": 126.704,
+      "geoApprox": true,
+      "summary": "20주년을 맞은 인천국제디자인페어로, 인천의 디자인기업·작가·공공디자인과 전시·교류 프로그램을 선보입니다.",
+      "scheduleNote": "10:00~17:00(한국관광공사 등록 정보 기준; 세부 프로그램은 주최 측 확인)",
+      "priceNote": "무료(한국관광공사 등록 정보 기준)",
+      "accessNote": "관람·부대행사별 예약 및 입장 조건은 공식 홈페이지에서 확인해 주세요.",
+      "sourceUrl": "https://indef.kr/",
+      "sourceName": "인천국제디자인페어 공식 홈페이지",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://indef.kr/en/about/overview"
+      ],
+      "tags": [
+        "디자인",
+        "전시",
+        "인천",
+        "무료"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "robotworld-2026",
+      "title": "2026 로보월드(ROBOWORLD)",
+      "category": "expo",
+      "start": "2026-11-04",
+      "end": "2026-11-07",
+      "region": "경기",
+      "city": "고양시",
+      "venue": "킨텍스(KINTEX) 제1전시장 3~5홀",
+      "address": "경기 고양시 일산서구 킨텍스로 217-60",
+      "lat": 37.6689,
+      "lng": 126.7458,
+      "geoApprox": true,
+      "summary": "국내외 로봇 산업 전시와 기술 교류를 만나는 로봇 전문 박람회입니다.",
+      "scheduleNote": "11/4~6 10:00~17:00 / 11/7 10:00~16:00",
+      "priceNote": "현장 성인 12,000원 / 학생 6,000원 / 7세 이하 무료",
+      "accessNote": "무료 사전등록 기한은 10/24 종료. 기한 내 사전등록 완료자나 초청장 소지자는 무료입장 대상이며, 현장 입장 조건은 공식 안내 확인.",
+      "sourceUrl": "https://www.itfind.or.kr/seminar/seminarDetail.do?id=14855",
+      "sourceName": "ITFIND IT 지식포털 행사 안내",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://robotworld.or.kr/index.php/?"
+      ],
+      "tags": [
+        "로봇",
+        "과학기술",
+        "산업전시",
+        "사전등록"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "international-robot-contest-2026",
+      "title": "제21회 국제로봇콘테스트(IRC 2026)",
+      "category": "expo",
+      "start": "2026-11-13",
+      "end": "2026-11-14",
+      "region": "대구",
+      "city": "북구",
+      "venue": "엑스코(EXCO) 서관 2홀·3홀",
+      "address": "대구광역시 북구 엑스코로 10",
+      "lat": 35.90713,
+      "lng": 128.61306,
+      "geoApprox": true,
+      "summary": "산업통상부·대구광역시가 주최하고 한국로봇산업진흥원이 주관하는 국제 로봇 경진·체험 행사입니다.",
+      "scheduleNote": "11/13~14 개최 / 로봇캠프 오전 09:30~12:30·오후 14:00~17:00(별도 프로그램)",
+      "priceNote": "참관료·프로그램별 참가비는 공식 안내 확인",
+      "accessNote": "일반 참관객 등록 경로를 공식 홈페이지에서 확인하세요. 어린이 로봇캠프는 별도 참가 대상·신청조건이 있습니다.",
+      "sourceUrl": "https://irchub.kr/",
+      "sourceName": "국제로봇콘테스트 공식 사무국(한국로봇산업진흥원)",
+      "sourceCheckedAt": "2026-11-05",
+      "tags": [
+        "로봇",
+        "기술",
+        "경진대회",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "pohang-international-music-2026",
+      "title": "2026 포항국제음악제 《흐름-경계 너머》",
+      "category": "local",
+      "start": "2026-11-06",
+      "end": "2026-11-12",
+      "region": "경북",
+      "city": "포항시",
+      "venue": "포항문화예술회관 대공연장(주요 공연), 포항시 일원",
+      "address": "경북 포항시 남구 희망대로 850",
+      "lat": 36.014,
+      "lng": 129.352,
+      "geoApprox": true,
+      "summary": "포항문화재단이 마련하는 국제 음악 축제입니다. 클래식·실내악 중심의 메인 공연과 포항시 일원 연계 무대가 열립니다.",
+      "scheduleNote": "11/6~12 메인공연 7회(공연별 시작시간 및 다른 장소 프로그램은 별도 확인)",
+      "priceNote": "메인공연 R석 50,000원·S석 40,000원(공연별 확인)",
+      "accessNote": "주요 유료 공연은 취학아동 이상 관람 가능. 날짜·장소별 예매 및 입장 조건이 다르므로 상세 프로그램을 확인하세요.",
+      "sourceUrl": "https://phcf.or.kr/phcf/current_festivals/view.do",
+      "sourceName": "포항문화재단 공식 대표축제 안내",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://facility.ticketlink.co.kr/global/zh/help/notice/65832"
+      ],
+      "tags": [
+        "국제음악제",
+        "클래식",
+        "실내악",
+        "공연"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "pohang-asia-dj-festival-2026",
+      "title": "2026 아시아 디제이 페스티벌",
+      "category": "local",
+      "start": "2026-11-20",
+      "end": "2026-11-20",
+      "region": "경북",
+      "city": "포항시",
+      "venue": "영일대 장미원",
+      "address": "경북 포항시 북구 해안로 영일대해수욕장 일원",
+      "lat": 36.061,
+      "lng": 129.38,
+      "geoApprox": true,
+      "summary": "포항문화재단이 공식 축제 일정에 소개한 영일대 장미원 야외 DJ 음악 페스티벌입니다.",
+      "scheduleNote": "11월 20일 개최 / 정확한 공연시간 공식 안내 확인",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "입장·연령·우천 시 운영 여부는 주최 측 최신 공지 확인.",
+      "sourceUrl": "https://phcf.or.kr/phcf/current_festivals/view.do",
+      "sourceName": "포항문화재단 공식 대표축제 안내",
+      "sourceCheckedAt": "2026-11-05",
+      "tags": [
+        "DJ",
+        "음악페스티벌",
+        "야외공연"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jinan-kimchi-bossam-2026",
+      "title": "제8회 진안고원 김치보쌈축제",
+      "category": "local",
+      "start": "2026-11-14",
+      "end": "2026-11-15",
+      "region": "전북",
+      "city": "진안군",
+      "venue": "진안군 로컬푸드직매장 일원",
+      "address": "전북특별자치도 진안군 진안읍 진무로 1166",
+      "lat": 35.792,
+      "lng": 127.423,
+      "geoApprox": true,
+      "summary": "김치 담그기 체험과 진안 로컬 바비큐·고원구이존·농특산물 판매 등을 즐길 수 있는 진안의 먹거리 축제입니다.",
+      "scheduleNote": "11/14~15 개최 / 우리집 김치담그기 체험은 하루 3회(상세 시간 별도 안내)",
+      "priceNote": "입장료·체험료는 주최 측 안내 확인(먹거리 유료 판매)",
+      "accessNote": "우리집 김치담그기 프로그램은 사전예약 필수. 예약처 진안YMCA 063-433-6613.",
+      "sourceUrl": "https://www.jinan.go.kr/board/view.jinan?boardId=BBS_0000026&dataSid=217224&menuCd=DOM_000000107001001000",
+      "sourceName": "진안군청 문화체육과 공식 공지(2026-11-03)",
+      "sourceCheckedAt": "2026-11-05",
+      "tags": [
+        "김치",
+        "김장",
+        "보쌈",
+        "먹거리",
+        "사전예약"
       ],
       "status": "scheduled"
     }
