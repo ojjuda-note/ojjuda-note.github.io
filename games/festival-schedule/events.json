@@ -1031,6 +1031,37 @@
       "status": "scheduled"
     },
     {
+      "id": "hwacheon-sancheoneo-2027",
+      "title": "얼음나라화천 산천어축제",
+      "category": "local",
+      "start": "2027-01-09",
+      "end": "2027-01-31",
+      "region": "강원",
+      "city": "화천군",
+      "venue": "화천천 및 화천읍 일원",
+      "address": "강원특별자치도 화천군 화천읍 산천어길 137",
+      "lat": 38.1043,
+      "lng": 127.6982,
+      "geoApprox": true,
+      "summary": "화천천 얼음판에서 산천어 낚시와 눈·얼음 체험을 즐기는 겨울축제입니다. 2027년 세부 프로그램은 주최 측이 업데이트 중입니다.",
+      "scheduleNote": "2027년 1월 9일~31일 / 운영시간·예약·세부 프로그램은 추후 공식 안내 확인",
+      "priceNote": "유료 / 2027년 체험료는 공식 안내 확인",
+      "accessNote": "결빙과 기상 상황에 따라 운영이 바뀔 수 있으니 방문 전 공식 공지를 확인해 주세요.",
+      "sourceUrl": "https://www.ihc.go.kr/www/selectBbsNttView.do?bbsNo=11&key=2338&nttNo=187602",
+      "sourceName": "화천군",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=02a1c2ab-bce7-404a-9c8f-4eb4ac69acb3"
+      ],
+      "tags": [
+        "산천어축제",
+        "얼음낚시",
+        "겨울축제",
+        "가족"
+      ],
+      "status": "scheduled"
+    },
+    {
       "start": null,
       "end": null,
       "dateStatus": "undecided",

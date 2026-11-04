@@ -33,8 +33,8 @@ function bridgeFixture(){
  class Element extends EventTarget{
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};}
   setAttribute(name,value){this.attributes[name]=value;}
-  set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
-  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:null;}
+  set innerHTML(html){this.homeLink=new Element('a');this.homeLink.href='/world.html';this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
+  querySelector(selector){return selector==='iframe'?this.frame:selector==='.agit-home-link'?this.homeLink:null;}
   showModal(){this.open=true;}close(){this.open=false;}remove(){this.isConnected=false;}
   focus(){focused=this;document.activeElement=this;}click(){this.dispatchEvent(new Event('click'));}
  }
@@ -48,11 +48,11 @@ function bridgeFixture(){
 const f=bridgeFixture();f.api.open({authorized:()=>false});assert.equal(f.nodes.length,0);
 f.api.open({owner:'member-a'});const first=f.nodes[0];
 assert.equal(first.open,true);assert.equal(f.document.body.classList.contains('gaming'),true);
-assert.equal(f.focused(),first.button,'the return button receives initial focus');
+assert.equal(f.focused(),first.homeLink,'the Agit home link receives initial focus');
 assert.match(first.frame.src,/^\/games\/festival-schedule\/index\.html\?v=[^&]+&embedded=1$/,'the page stays on the arcade origin');
 assert.equal(first.attributes['aria-label'],'축제일정 · 테스트');
 f.api.open({owner:'member-a'});assert.equal(f.nodes.length,1,'duplicate open reuses the active dialog');
-first.button.click();assert.equal(first.isConnected,false);assert.equal(first.open,false);
+assert.equal(first.homeLink.href,'/world.html','the logo links to Agit home');f.api.close();assert.equal(first.isConnected,false);assert.equal(first.open,false);
 assert.equal(first.frame.src,'about:blank','closing unloads the map document');
 assert.equal(f.document.body.classList.contains('gaming'),false);assert.equal(f.focused(),f.previous);
 f.api.close();assert.equal(f.nodes.length,1,'repeated close is harmless');
@@ -115,7 +115,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.2.0');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.2.1');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);

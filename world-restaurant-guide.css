@@ -8,3 +8,7 @@
 .restaurant-guide-dialog>iframe{display:block;flex:1 1 0;min-width:0;min-height:0;width:100%;height:0;border:0;background:#f8f8f3}
 .restaurant-guide-dialog::backdrop{background:#152e2655}
 .restaurant-guide-message{flex:0 0 auto;margin:0;padding:10px 16px;border-bottom:1px solid #e2e5dc;background:#fff5e8;color:#795a3c;font:13px/1.6 system-ui,sans-serif}.restaurant-guide-message[hidden]{display:none}
+.restaurant-guide-header .agit-home-link{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:4px 6px 4px 2px;border-radius:8px;color:#245a48;text-decoration:none;font:800 14px/1 system-ui,sans-serif;letter-spacing:-.03em;white-space:nowrap}
+.restaurant-guide-header .agit-home-link img{display:block;width:24px;height:24px}
+.restaurant-guide-header .agit-home-link strong{font-weight:800}
+.restaurant-guide-header .agit-home-link:focus-visible{outline:2px solid #247060;outline-offset:1px}
