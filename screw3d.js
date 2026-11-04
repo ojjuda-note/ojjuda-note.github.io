@@ -863,6 +863,8 @@ function screw3d(api,startStage=loadResumeStage()) {
   if (typeof window !== 'undefined') { window.__ojjScrew3d = st; window.__ojjS3d = { rayHit, pose, F, sepFront, LENS_R }; }   // 시험용
   const newBox = () => (st.qi < st.lvl.queue.length ? { c: st.lvl.queue[st.qi++], n: 0, res: 0, close: 0 } : null);
   function say(m, t) { st.msg = m; st.msgT = t; }
+  // Use the arcade's existing sound setting and sound engine.
+  const sound = type => { try { api.playSfx?.(type); } catch (_) { /* audio is optional */ } };
   function start(L) { ended = false; st.over = 0; st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     // Start big objects in fast mode so the first rendered frame does not lag.
     st.big = st.lvl.screws.length + st.lvl.els.length > 420;
@@ -982,17 +984,17 @@ function screw3d(api,startStage=loadResumeStage()) {
     const s = pick(x, y);
     if (!s || s.state !== 'in') {   // 조각 뒤에 가려진 나사를 누르면 알려만 줘요
       const V = view(), hid = st.lvl.screws.some(z => z.state === 'in' && (() => { const hp = headPoint(z, V); return Math.hypot(hp.x - x, hp.y - y) < 22; })());
-      if (hid) { say('물체가 가리고 있어서 뺄 수 없어요', 1.1); if (st.ms.id === 'nomiss') st.ms.bad = true; } return;
+      if (hid) { sound('blocked'); say('물체가 가리고 있어서 뺄 수 없어요', 1.1); if (st.ms.id === 'nomiss') st.ms.bad = true; } return;
     }
     const blocker = blocked(s, st.lvl);
-    if (blocker) { st.shake = { s, t: 0.35 }; say(blocker.p ? '앞의 나사를 먼저 풀어 주세요' : '다른 조각이 막고 있어요', 0.9); if (st.ms.id === 'nomiss') st.ms.bad = true; return; }
+    if (blocker) { st.shake = { s, t: 0.35 }; sound('blocked'); say(blocker.p ? '앞의 나사를 먼저 풀어 주세요' : '다른 조각이 막고 있어요', 0.9); if (st.ms.id === 'nomiss') st.ms.bad = true; return; }
     const h = st.heads.get(s) || { x, y };
     if (!send(s, h.x, h.y)) {
       const balance = coins(), canBuf = st.buf.length < BUF_MAX && balance >= 1, canBox = st.boxes.length < BOX_MAX && balance >= 3 && st.qi < st.lvl.queue.length;
       if (canBuf || canBox) { st.shake = { s, t: 0.35 }; say(canBuf ? '보관 칸이 가득 찼어요 · 칸을 사서 이어 가요 (1 ZU)' : '보관 칸이 가득 찼어요 · 상자를 사서 이어 가요 (3 ZU)', 1.8); return; }   // 살 수 있으면 끝내지 않아요
-      st.over = 1.3; say('보관 칸이 가득 찼어요', 1.3); return;
+      st.over = 1.3; sound('blocked'); say('보관 칸이 가득 찼어요', 1.3); return;
     }
-    s.state = 'out'; s.t = 0; release(s.thru); release(s.into);
+    s.state = 'out'; s.t = 0; sound('tap'); release(s.thru); release(s.into);
   }
   function curAxis(s) { const E = s.thru; return E.hinge ? mv(axisRot(E.hinge.a, E.hinge.th), s.a) : s.a; }
   function headPoint(s, V) { const E = s.thru; let p = s.p; if (E.hinge) p = add(E.hinge.p, mv(axisRot(E.hinge.a, E.hinge.th), sub(s.p, E.hinge.p))); return project(add(p, mul(curAxis(s), HEAD_H)), V); }
@@ -1015,23 +1017,31 @@ function screw3d(api,startStage=loadResumeStage()) {
     onDown(x, y, id = 0) {
       st.ptrs.set(id, { x, y });
       if (st.ptrs.size >= 2) { const [a, b] = [...st.ptrs.values()]; st.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, zm0: st.zm, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], pan0: st.pan.slice() }; st.drag = null; st.lensHold = false; st.lens = null; return; }   // 두 손가락: 벌려서 확대, 끌어서 이동
-      st.drag = { x, y, x0: x, y0: y, moved: false, t0: st.t }; if (st.lens && !st.lens.hold) st.lens = { x, y, hold: false, t: st.t };
+      st.drag = { id, x, y, x0: x, y0: y, moved: false, t0: st.t }; if (st.lens && !st.lens.hold) st.lens = { x, y, hold: false, t: st.t };
     },
     onMove(x, y, id = 0) {
       if (st.ptrs.has(id)) st.ptrs.set(id, { x, y });
       if (st.pinch) { if (st.ptrs.size >= 2) { const [a, b] = [...st.ptrs.values()], d2 = Math.hypot(a.x - b.x, a.y - b.y), m = [(a.x + b.x) / 2, (a.y + b.y) / 2]; st.zm = Math.max(0.6, Math.min(9, st.pinch.zm0 * d2 / st.pinch.d0)); st.pan = [st.pinch.pan0[0] + m[0] - st.pinch.m0[0], st.pinch.pan0[1] + m[1] - st.pinch.m0[1]]; st.touched = true; } return; }
       const d = st.drag;
+      if (d && d.id !== id) return; // another pointer cannot rotate this camera
       if (!d) { if (y > 196) st.lens = { x, y, hold: false, t: st.t }; else st.lens = null; return; }   // 마우스를 올리면 투시 돋보기
       if (st.lensHold) { st.lens = { x, y, hold: true, t: st.t }; d.x = x; d.y = y; return; }   // 꾹 누른 채 밀면 돋보기가 따라와요
       if (!d.moved && Math.hypot(x - d.x0, y - d.y0) > 7) { d.moved = true; st.lens = null; if (st.ms && !st.next) st.ms.turns++; }
       if (d.moved) { st.touched = true; st.yaw += (x - d.x) * 0.011; st.pitch = Math.max(-1.35, Math.min(1.35, st.pitch + (y - d.y) * 0.011)); } d.x = x; d.y = y;
     },
     onUp(x, y, id = 0) {
+      if (!st.ptrs.has(id)) return; // ignore unrelated/repeated pointer-up events
       st.ptrs.delete(id);
       if (st.pinch) { if (!st.ptrs.size) st.pinch = null; st.drag = null; return; }
       const d = st.drag; st.drag = null;
       if (st.lensHold) { st.lensHold = false; st.lens = null; return; }   // 꾹 누르기는 보기만 해요
       if (d && !d.moved) { const sb = shopBtn(x, y); if (sb) { sb(); return; } const bt = zoomBtn(x, y); if (bt) { bt(); st.touched = true; return; } tap(x, y); }
+    },
+    onCancel(id = 0) {
+      // A cancelled touch must never count as a tap or trigger a ZU purchase.
+      // Clear the entire gesture so the remaining pointer cannot accidentally tap.
+      st.ptrs.clear(); st.pinch = null; st.drag = null;
+      st.lensHold = false; st.lens = null;
     },
     onWheel(dy, x, y) { zoomAt(Math.exp(-dy * 0.0015), x, y); st.touched = true; },
     update(dt) {
@@ -1039,7 +1049,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (walletUser && !sameWallet()) { restoreBlocked = true; say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 3); return; }
       if (restoreBlocked) { if (Date.now() >= retryAt) void verifyPurchases(false); return; }
       st.t += dt; if (st.msgT > 0) st.msgT -= dt; if (st.shake && (st.shake.t -= dt) <= 0) st.shake = null;
-      if (st.over) { st.over -= dt; if (st.over <= 0) { ended = true; api.end(st.score, {outcome:'failure'}); } return; }
+      if (st.over) { st.over -= dt; if (st.over <= 0) { ended = true; sound('lose'); api.end(st.score, {outcome:'failure'}); } return; }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
       const g = mv(tr(view()), [0, -1, 0]);   // 화면 아래(중력)를 물건 쪽 방향으로
@@ -1061,21 +1071,22 @@ function screw3d(api,startStage=loadResumeStage()) {
         const pr = project(E.dyn.c, view()); if (pr.y > H + 140 || pr.x < -220 || pr.x > W + 220 || pr.y < -260 || E.dyn.t > 14) E.state = 'gone';
       }
       for (const s of st.lvl.screws) if (s.state === 'out') { s.t += dt; if (s.t >= 0.34) s.state = 'fly'; }
-      let landedInBuffer = false;
+      let landedInBuffer = false, matchedBox = false;
       for (const f of st.fly) {
         if (f.wait > 0) { f.wait -= dt; const h = st.heads.get(f.s); if (h) { f.fx = h.x; f.fy = h.y; } continue; }
         f.t += dt / 0.4; if (f.t < 1) continue;
         const s = f.s;
-        if (f.to.kind === 'box') { const b = st.boxes[f.to.bi]; b.n++; b.res--; s.state = 'done'; st.score += 1; api.setScore(st.score); if (b.n === 3) b.close = 0.0001; }
+        if (f.to.kind === 'box') { const b = st.boxes[f.to.bi]; b.n++; b.res--; s.state = 'done'; st.score += 1; api.setScore(st.score); if (b.n === 3) { b.close = 0.0001; matchedBox = true; } }
         else { st.buf[f.to.k] = s; s.state = 'buf'; landedInBuffer = true; }
       }
       st.fly = st.fly.filter(f => f.wait > 0 || f.t < 1);
+      if (matchedBox) sound('match');
       if (landedInBuffer) pullFromBuffer();   // 도착 전 예약 중에 같은 색 상자가 열렸을 수 있어요
       st.boxes.forEach((b, i) => { if (b && b.close) { b.close += dt / 0.45; if (b.close >= 1) { st.boxes[i] = newBox(); pullFromBuffer(); } } });
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
         const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); api.saveScore?.(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
-        st.next = 1; saveStage(Math.min(STAGES, st.L + 1));
+        st.next = 1; sound('win'); saveStage(Math.min(STAGES, st.L + 1));
         api.stageClear?.(st.score);
         return;
       }
@@ -1084,8 +1095,13 @@ function screw3d(api,startStage=loadResumeStage()) {
     draw(c) {
       st.coins = coins();
       if (!st.bg) { st.bg = c.createLinearGradient(0, 0, 0, H); st.bg.addColorStop(0, '#FBF3EA'); st.bg.addColorStop(0.55, '#F6E9DD'); st.bg.addColorStop(1, '#EFDFD0'); } c.fillStyle = st.bg; c.fillRect(0, 0, W, H);
+      const remaining = st.lvl.screws.reduce((n, screw) => n + (screw.state === 'in' ? 1 : 0), 0);
       c.fillStyle = '#23264A'; c.font = 'bold 16px sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillText(`${st.L}단계 · ${st.lvl.name}`, 20, 28);
-      c.textAlign = 'right'; c.fillStyle = '#626894'; c.font = '13px sans-serif'; c.fillText(`🔩 ${st.lvl.screws.filter(s => s.state === 'in').length}${st.hiddenN ? ` · 숨은 ${st.hiddenN}` : ''}`, 340, 28);
+      c.textAlign = 'right'; c.fillStyle = '#626894'; c.font = '13px sans-serif'; c.fillText(`🔩 ${remaining}${st.hiddenN ? ` · 숨은 ${st.hiddenN}` : ''}`, 340, 28);
+      // Thin progress track sits between the title and the color-box area.
+      c.fillStyle = 'rgba(75,89,130,0.13)'; c.fillRect(20, 43, 320, 4);
+      const completedFraction = 1 - remaining / Math.max(1, st.lvl.screws.length);
+      if (completedFraction > 0) { c.fillStyle = '#4B9D9A'; c.fillRect(20, 43, 320 * completedFraction, 4); }
       drawBoxes(c, st); drawBuffer(c, st);
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
