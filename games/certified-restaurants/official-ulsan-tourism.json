@@ -1,0 +1,218 @@
+{
+  "updatedAt": "2026-11-04",
+  "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+  "sourceName": "울산광역시 울산관광 공식 먹거리 목록",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-ulsan-tour-solbat",
+      "name": "(주)솔밭",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 함월20길 65",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-five-makchang",
+      "name": "5시5막창팩토리",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 곽남1길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막창"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-gagopa",
+      "name": "가고파",
+      "category": "한식",
+      "region": "울산",
+      "district": "북구",
+      "address": "울산광역시 북구 동해안로 1692 (1층)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "참가자미국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-garimyeongga-main",
+      "name": "가리명가 본점",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 성안12길 1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-galbi-gurakbu",
+      "name": "갈비구락부",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 삼남읍 남상평2길 34-12",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-gangwondo-haejangguk",
+      "name": "강원도해장국",
+      "category": "한식",
+      "region": "울산",
+      "district": "중구",
+      "address": "울산광역시 중구 북부순환도로 864",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해장국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-gogi-geureut",
+      "name": "고기그릇",
+      "category": "한식",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 삼산로 282 (삼산동) 롯데백화점 B1 식품관",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-ulsan-tour-gorae-cafeteria",
+      "name": "고래카페테리아",
+      "category": "디저트",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 산업로 654(2층)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산시 관광 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 사이트의 음식점 소개입니다. 공식 심사·지정 등급, 블루리본 선정, 현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    }
+  ]
+}

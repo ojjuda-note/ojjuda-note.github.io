@@ -5,7 +5,7 @@
   "label": "지자체 지정",
   "completeNationalCollection": false,
   "scope": "지자체가 맛·향토성·전통성 등을 심사하거나 공식 미식 목록으로 선정한 식당의 공개 명단과 선정 이력. 광역시도 목록과 시군구 자체 사업을 함께 수집했으며, 전국의 모든 지정사업·업소 확보를 뜻하지 않음.",
-  "recordCount": 2277,
+  "recordCount": 2289,
   "designationEvidenceCount": 2361,
   "coordinatesAvailable": 732,
   "regionCount": 17,
@@ -48,7 +48,7 @@
     },
     {
       "region": "울산",
-      "uniqueRestaurants": 10,
+      "uniqueRestaurants": 18,
       "coordinatesAvailable": 0,
       "completeRegionalCollection": false
     },
@@ -4607,7 +4607,7 @@
       "oldAddress": "서울특별시 강남구 도산대로59길 16 (청담동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-7666338391fc90f3",
@@ -4618,7 +4618,7 @@
       "oldAddress": "경기도 수원시 팔달구 권선로 741번길 16-8",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-c20c705c08f96a5f",
@@ -4629,7 +4629,7 @@
       "oldAddress": "인천광역시 미추홀구 매소홀로488번길 6-29(학익동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-59916654e325fdd2",
@@ -4640,7 +4640,7 @@
       "oldAddress": "인천광역시 미추홀구 미추홀대로 650 (주안동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-f35163838bfd484b",
@@ -4651,7 +4651,7 @@
       "oldAddress": "인천광역시 미추홀구 인중로 1, 1-3층(숭의동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-4b56de91d37e45f2",
@@ -4662,7 +4662,7 @@
       "oldAddress": "인천광역시 서구 경명대로 692(공촌동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-c209be2d5b4e6d1e",
@@ -4673,7 +4673,7 @@
       "oldAddress": "인천광역시 서구 경명대로 692(공촌동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-north-c209be2d5b4e6d1e",
@@ -4684,7 +4684,7 @@
       "oldAddress": "인천광역시 서구 청라루비로134번길 6-30(청라동)",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-namdo-599325",
@@ -4695,7 +4695,7 @@
       "oldAddress": "전남 목포시 호남로 64번길 3-1",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-namdo-599261",
@@ -4706,7 +4706,7 @@
       "oldAddress": "전남 강진군 강진읍 보은로3길 11-1",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-busan-taste-b998db3a7b4a2d0a",
@@ -4717,7 +4717,7 @@
       "oldAddress": "부산 수영구 광안해변로279번길 13",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-busan-taste-a63e01f4ddfe74d1",
@@ -4728,7 +4728,7 @@
       "oldAddress": "부산 해운대구 구남로 21, 해운대 경동리인뷰 2차 상가 208호",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-geoje-eight-21450953",
@@ -4739,7 +4739,7 @@
       "oldAddress": "경상남도 고성군 고성읍 중앙로25번길 47",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-geoje-eight-21451576",
@@ -4750,7 +4750,7 @@
       "oldAddress": "경상남도 거제시 거제중앙로 1881-6",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-gimhae-159",
@@ -4761,7 +4761,7 @@
       "oldAddress": "경상남도 창원시 성산구 용지로 257",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     },
     {
       "candidate": "local-gg-fd5681c8cfee64",
@@ -4772,7 +4772,7 @@
       "oldAddress": "경기도 오산시 독산성로 225",
       "sameAddress": false,
       "sameName": true,
-      "ratio": 1.0
+      "ratio": 1
     }
   ],
   "addressReviews": [
@@ -4810,5 +4810,70 @@
       ],
       "sourceUrl": "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
     }
-  ]
+  ],
+  "municipalTourismDirectory20261104": {
+    "checkedAt": "2026-11-04",
+    "sourceName": "울산광역시 울산관광",
+    "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+    "pageLastModifiedAt": "2026-09-11",
+    "recordCount": 8,
+    "sourceFile": "official-ulsan-tourism.json",
+    "namesAndAddresses": [
+      {
+        "id": "local-ulsan-tour-solbat",
+        "name": "(주)솔밭",
+        "address": "울산광역시 중구 함월20길 65",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-five-makchang",
+        "name": "5시5막창팩토리",
+        "address": "울산광역시 중구 곽남1길 26",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-gagopa",
+        "name": "가고파",
+        "address": "울산광역시 북구 동해안로 1692 (1층)",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-garimyeongga-main",
+        "name": "가리명가 본점",
+        "address": "울산광역시 중구 성안12길 1",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-galbi-gurakbu",
+        "name": "갈비구락부",
+        "address": "울산광역시 울주군 삼남읍 남상평2길 34-12",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-gangwondo-haejangguk",
+        "name": "강원도해장국",
+        "address": "울산광역시 중구 북부순환도로 864",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-gogi-geureut",
+        "name": "고기그릇",
+        "address": "울산광역시 남구 삼산로 282 (삼산동) 롯데백화점 B1 식품관",
+        "category": "한식"
+      },
+      {
+        "id": "local-ulsan-tour-gorae-cafeteria",
+        "name": "고래카페테리아",
+        "address": "울산광역시 남구 산업로 654(2층)",
+        "category": "디저트"
+      }
+    ],
+    "classification": "official_restaurant_listing",
+    "isDesignation": false,
+    "isBlueRibbonSelection": false,
+    "operatingStatusVerified": false,
+    "coordinatesVerified": 0,
+    "baseCatalogNotOverwritten": true,
+    "baseCatalogUpdateIssue": "GitHub Contents API upload of 3.2MB restaurants.json failed; client-side merged supplemental file used."
+  }
 }
