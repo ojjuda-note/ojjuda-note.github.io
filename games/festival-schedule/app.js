@@ -2,7 +2,7 @@ import {
   CATEGORIES, REGIONS, todayKST, parseDate, isoDate, addDays,
   monthRange, periodRange, overlaps, eventStatus, filterEvents,
   formatRange, createICS, hasEventDates, isDateUndecided
-} from './core.js?v=20261103-festival-undecided1';
+} from './core.js?v=20261104-festival-fireworks1';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'ojjuda.festival.saved.v1';
