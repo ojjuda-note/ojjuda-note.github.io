@@ -1,0 +1,21 @@
+.page-share-button { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-width:44px; min-height:44px; padding:6px 10px; border:1px solid #dce6d8; border-radius:999px; background:#fbfcf7; color:#425c47; font:inherit; font-size:13px; white-space:nowrap; cursor:pointer; flex-shrink:0; }
+.page-share-button svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.page-share-button:hover { background:#eaf1e5; }
+.page-share-button:focus-visible,.page-share-dialog :focus-visible { outline:2px solid #387e59; outline-offset:3px; }
+.page-share-button:disabled { opacity:.6; cursor:wait; }
+.page-share-notice { position:fixed; z-index:10000; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px 18px; border-radius:12px; background:#253b34; color:#fff; font-size:14px; text-align:center; box-shadow:0 4px 18px #152e2633; }
+.page-share-notice[hidden] { display:none; }
+.page-share-dialog { width:min(420px,calc(100% - 32px)); box-sizing:border-box; padding:24px; border:1px solid #dce6d8; border-radius:18px; background:#faf9f5; color:#253b34; }
+.page-share-dialog::backdrop { background:#152e2677; }
+.page-share-dialog h2 { margin:0 0 12px; font-size:20px; }
+.page-share-dialog p { margin:0 0 20px; font-size:14px; line-height:1.6; }
+.page-share-dialog label { display:block; font-size:13px; }
+.page-share-dialog input { display:block; box-sizing:border-box; width:100%; margin:8px 0 20px; padding:12px; border:1px solid #b8d1bf; border-radius:8px; background:#fff; color:#253b34; font-size:16px; }
+.page-share-dialog button { display:block; min-height:44px; margin-left:auto; padding:8px 20px; border:0; border-radius:8px; background:#387e59; color:#fff; font:inherit; cursor:pointer; }
+@media(max-width:400px) {
+  .page-share-button { padding:6px; font-size:12px; }
+  .page-share-button svg { display:none; }
+  .header-actions { gap:4px; }
+  #saved-toggle>span:not(.icon):not(#saved-count) { display:none; }
+  #saved-toggle { min-width:36px; justify-content:center; }
+}
