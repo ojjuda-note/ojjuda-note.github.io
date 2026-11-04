@@ -1,4 +1,5 @@
 import { createPremiumModels } from './screw3d-premium-models.js?v=20261104-screw-v2';
+import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -552,6 +553,23 @@ function mapLevel(M) {   // 칸 지도: 칸 → 블럭, 특별한 조각 목록
   for (const e of M.els) if (e.kind === 'block' && e.cell && e.cell.every((n, i) => Math.abs(e.c[i] + M.mid[i] - (n + 0.5) * GRID) < 1e-6)) M.grid.set(e.cell.join(','), e);
   M.gridEls = new Set(M.grid.values()); M.special = M.els.filter(e => !M.gridEls.has(e));
   M.refs = new Map(M.els.map(e => [e, []])); for (const z of M.screws) { M.refs.get(z.thru).push(z); M.refs.get(z.into).push(z); }
+  // The generator starts with static pieces. Cache shortlists only for that
+  // initial solvability pass, not for live falling/hinged pieces.
+  const extents = M.special.map(E => {
+    const h = E.geom.half, c = E.geom.cen || [0, 0, 0];
+    // Conservatively enclose every possible vertex under arbitrary rotation.
+    return Math.hypot(Math.abs(c[0]) + h[0], Math.abs(c[1]) + h[1], Math.abs(c[2]) + h[2]) + 0.32;
+  });
+  M.staticSpecialNear = new Map(); M.staticScrewsNear = new Map();
+  for (const s of M.screws) {
+    M.staticSpecialNear.set(s, M.special.filter((E, i) => {
+      const d = sub(E.c, s.p), r = extents[i]; return dot(d, d) <= r * r;
+    }));
+    M.staticScrewsNear.set(s, M.screws.filter(z => {
+      const d = sub(z.p, s.p);
+      return dot(d, d) <= 0.65 * 0.65;
+    }));
+  }
   return M;
 }
 function gridHit(lvl, o, d, len, skip) {
@@ -574,7 +592,7 @@ function screwPose(s) {
 }
 function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 빼는 길을 막나요?
   const radius2 = (HEAD_R * 2 - 0.002) ** 2, half = HEAD_H / 2 + HEAD_R - 0.002;
-  for (const z of L.screws) {
+  for (const z of (L.staticScrewsNear?.get(s) || L.screws)) {
     if (z === s || z.state !== 'in' && z.state !== 'out') continue;
     const q = screwPose(z), rise = z.state === 'out' ? Math.min(1, z.t / 0.34) * 0.22 : 0;
     // Opposing heads create impossible mutual locks; allow them to disengage.
@@ -594,7 +612,7 @@ function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나�
   const { p, a } = screwPose(s), o = add(p, mul(a, HEAD_H + 0.01));
   const skip = [s.thru, s.into], travel = 0.24;   // 실제 풀림 이동(0.22) + 여유. 멀리 떨어진 물체는 막지 않아요.
   if (Array.isArray(L)) return rayHit(o, a, travel, L, skip);
-  return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.special, skip)
+  return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.staticSpecialNear?.get(s) || L.special, skip)
     || rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip) || screwHit(s, L, o, a, travel);
 }
 const STAGES = 1000;
@@ -616,7 +634,7 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
 function buildLevel(L, alt = false) {
-  const M = mapLevel(sizedModel(L, alt)), K = colorCount(L);   // 4판부터 세 색, 이후 네 단계마다 색을 늘려요.
+  const M = mapLevel(applyClassicStyle(sizedModel(L, alt))), K = colorCount(L);   // 4판부터 세 색, 이후 네 단계마다 색을 늘려요.
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
     const av = [...left].filter(s => !blocked(s, M));
@@ -1146,8 +1164,32 @@ function screw3d(api,startStage=loadResumeStage()) {
         for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
+          // Fine surface cues for the original models. Gameplay and hit boxes
+          // remain unchanged; avoid extra strokes in fast high-level scenes.
+          const mat = it.owner.material;
+          if (!st.big && mat && pg.pts.length === 4 && pg.lit > 0.18) {
+            const [p0, p1, p2, p3] = pg.pts;
+            const mix = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+            const strokeDetail = (col, x, y, xx, yy, width = 1) => {
+              c.strokeStyle = col; c.lineWidth = width; c.beginPath();
+              c.moveTo(x.x, x.y); c.lineTo(y.x, y.y); c.moveTo(xx.x, xx.y); c.lineTo(yy.x, yy.y); c.stroke();
+            };
+            if (mat === 'stone') {
+              strokeDetail('rgba(68,58,49,0.10)', mix(p0,p3,.36),mix(p1,p2,.36),mix(p0,p1,.53),mix(p3,p2,.53));
+            } else if (mat === 'fabric' || mat === 'leaf') {
+              strokeDetail(mat === 'leaf' ? 'rgba(225,255,205,0.25)' : 'rgba(255,255,255,0.15)',
+                mix(p0,p1,.18),mix(p3,p2,.72),mix(p0,p3,.73),mix(p1,p2,.25));
+            } else if (mat === 'icing') {
+              c.strokeStyle = 'rgba(255,255,255,0.36)'; c.lineWidth = 1.45;
+              c.beginPath(); c.moveTo(p0.x,p0.y); c.lineTo(p1.x,p1.y); c.stroke();
+            }
+          }
           // Soft lacquer highlights on the detailed collections; keep high-poly stages fast.
-          const showGloss = !st.big && /스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name);
+          const material = it.owner.material;
+          const showGloss = !st.big && (
+            material === 'paint' || material === 'polished' ||
+            material === 'glass' || material === 'ceramic' || material === 'metal' ||
+            /스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name));
           if (showGloss && pg.lit > 0.4 && pg.pts.length >= 3 && it.owner.kind !== 'plate') {
             const p0 = pg.pts[0], p1 = pg.pts[Math.floor(pg.pts.length / 2)];
             if (Math.hypot(p1.x - p0.x, p1.y - p0.y) > 1) {
@@ -1161,7 +1203,7 @@ function screw3d(api,startStage=loadResumeStage()) {
           if (!st.big && it.owner.flat && pg.up !== undefined && pg.pts.length === 4 && pg.lit > 0.2) {   // 판: 금속 빛 번짐
             const g2 = c.createLinearGradient(pg.pts[0].x, pg.pts[0].y, pg.pts[2].x, pg.pts[2].y); g2.addColorStop(0, 'rgba(255,255,255,0.45)'); g2.addColorStop(0.5, 'rgba(255,255,255,0)'); g2.addColorStop(1, 'rgba(90,100,140,0.18)'); c.fillStyle = g2; c.fill(); }
           c.lineWidth = 1; c.strokeStyle = pg.line; c.stroke();
-          if (!st.big && !/스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name) && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
+          if (!st.big && (!it.owner.material || it.owner.material === 'wood') && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
             c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1.2; c.stroke();
             if (pg.pts.length === 4) { const [p0, p1, p2, p3] = pg.pts; c.strokeStyle = 'rgba(120,80,40,0.09)'; c.lineWidth = 1; c.beginPath();
               for (const tt of [0.27, 0.5, 0.74]) { c.moveTo(p0.x + (p1.x - p0.x) * tt, p0.y + (p1.y - p0.y) * tt); c.lineTo(p3.x + (p2.x - p3.x) * (tt + 0.04), p3.y + (p2.y - p3.y) * (tt + 0.04)); } c.stroke(); } }
