@@ -1573,8 +1573,8 @@
       "city": "포항시",
       "venue": "포항문화예술회관 대공연장(주요 공연), 포항시 일원",
       "address": "경북 포항시 남구 희망대로 850",
-      "lat": 36.014,
-      "lng": 129.352,
+      "lat": 36.00951,
+      "lng": 129.36593,
       "geoApprox": true,
       "summary": "포항문화재단이 마련하는 국제 음악 축제입니다. 클래식·실내악 중심의 메인 공연과 포항시 일원 연계 무대가 열립니다.",
       "scheduleNote": "11/6~12 메인공연 7회(공연별 시작시간 및 다른 장소 프로그램은 별도 확인)",
@@ -1603,7 +1603,7 @@
       "region": "경북",
       "city": "포항시",
       "venue": "영일대 장미원",
-      "address": "경북 포항시 북구 해안로 영일대해수욕장 일원",
+      "address": "경북 포항시 북구 두호동 1003-4 (영일대 장미원)",
       "lat": 36.061,
       "lng": 129.38,
       "geoApprox": true,
@@ -1648,7 +1648,10 @@
         "먹거리",
         "사전예약"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "verificationSources": [
+        "https://www.jinankimchi.kr/page/festival02/festival02.jsp"
+      ]
     }
   ]
 }
