@@ -243,12 +243,12 @@
     price.append(node('small', '', '1박 · 추가요금 별도'));
     main.append(details, price);
     const bottom = node('div', 'room-card-bottom');
-    bottom.append(node('p', '', '예약처에서 최종 빈방 확인'));
+    bottom.append(node('p', '', '예약 페이지 작동 여부 미확인 · 실제 예약 가능 여부를 확인해 주세요'));
     const href = safeBookingUrl(match);
     if (href) {
-      const link = node('a', 'booking-link', '예약하기 ↗');
-      link.href = href; link.target = '_blank'; link.rel = 'noopener noreferrer';
-      link.setAttribute('aria-label', `${dateLabel(match.date)} ${match.roomName} 네이버 예약하기`);
+      const link = node('a', 'booking-link', '네이버에서 예약 상태 확인 ↗');
+      link.href = 'https://search.naver.com/search.naver?query=%ED%95%9C%EC%9A%B0%EC%82%B0%EB%B3%84%EC%B2%9C%EC%A7%80'; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.setAttribute('aria-label', `${dateLabel(match.date)} ${match.roomName} 네이버에서 예약 상태 확인`);
       bottom.append(link);
     } else bottom.append(node('span', 'booking-unavailable', '예약 주소를 확인하지 못했어요'));
     card.append(main, bottom);
@@ -259,11 +259,11 @@
     if (!data) return;
     const matches = data.matches;
     $('match-count').hidden = false;
-    $('match-count').textContent = `${matches.length}건`;
+    $('match-count').textContent = `${matches.length}건 · 예약 미확인`;
     $('results-caption').textContent = `${filterLabel(state.filters)} · ${shortDate(data.window?.from)}~${shortDate(data.window?.to)} 입실${timeLabel(data.checkedAt) ? ` · ${timeLabel(data.checkedAt)} 확인` : ''}`;
     const partial = data.partial || Number(data.unknownDates) > 0;
     $('partial-note').hidden = !partial;
-    $('partial-note').textContent = '예약처에서 일부 날짜·객실을 확인하지 못했어요. 확인된 빈방만 표시하며, 미확인 날짜는 매진으로 판단하지 않아요.';
+    $('partial-note').textContent = '예약처에서 일부 날짜·객실을 확인하지 못했어요. 예약처의 잔여 수량만 조회한 결과이며 실제 예약 페이지는 검증되지 않았어요. 미확인 날짜는 매진으로 판단하지 않아요.';
     $('show-more').hidden = matches.length <= state.limit;
     const targetNote = $('notification-target');
     targetNote.replaceChildren(); targetNote.hidden = !target.date;
