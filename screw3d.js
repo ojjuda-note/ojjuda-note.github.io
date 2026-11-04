@@ -1,3 +1,4 @@
+import { createPremiumModels } from './screw3d-premium-models.js?v=20261104-screw-v2';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -158,6 +159,16 @@ function assemble(name, blocks, { pre, extra, reserved = [], cover = [], els = [
   let k = 0; while (M.screws.length % 3 === 2 && k < spare.length) { const [A, B, n] = spare[k++]; bridge(M, A, B, n); }
   const spots = []; for (const A of cells) { const [x, y, z] = A.cell; for (const n of DIRS) if (kind(x + n[0], y + n[1], z + n[2]) === 'open') { const u = Math.abs(n[1]) ? [1, 0, 0] : [0, 1, 0], v = cross(u, n);
     for (const a of [-0.12, 0, 0.12]) for (const b2 of [-0.12, 0, 0.12]) spots.push({ q: add(face(A, n), add(mul(u, a), mul(v, b2))), n, u, into: A }); } }
+  // Large sculpted models may have an exposed voxel that the spanning plates miss.
+  // Give it its own fastener so it can always be dismantled, rather than trapping it.
+  for (const A of cells) {
+    if (M.screws.some(z => z.thru === A || z.into === A)) continue;
+    for (const p of spots) {
+      if (p.into !== A) continue;
+      if (place(M, rect(p.q, p.n, p.u, 0.07, 0.07), PLATE,
+        [{ q: p.q, into: A }], { badge: true })) break;
+    }
+  }
   return finish(M, spots, minS);
 }
 function modelTeapot(t = 0) {   // 주전자: 몸통이 넓어져요(2→3칸)
@@ -447,7 +458,8 @@ function modelCastle(t = 0, minS = 0) {   // 성: 넓고(4→) 높게(1→) 커�
 }
 modelCastle.blocks = t => { const N = 4 + t, Hc = 1 + Math.floor(t / 2); return (4 * N - 4) * Hc; };
 
-const MODELS = [modelCube, modelHouse, modelPizza, modelCar, modelHat, modelBridge, modelTeapotRound, modelFan, modelRocket, modelCake, modelLighthouse, modelTree, modelCastle, modelEiffel];
+const [modelSportsCar, modelTitanic, modelWatermelon, modelPig, modelCow, modelRabbit] = createPremiumModels({ modelCar, boxE, GRID, finish, pin, topOfE, Yax, cube, assemble, face, el, cylGeom, I3, boundOf, cylE, rx, add, mul, rz, coneGeom });
+const MODELS = [modelCube, modelHouse, modelPizza, modelCar, modelHat, modelBridge, modelTeapotRound, modelFan, modelRocket, modelCake, modelLighthouse, modelTree, modelCastle, modelEiffel, modelSportsCar, modelTitanic, modelWatermelon, modelPig, modelCow, modelRabbit];
 
 // ---------- 지금 모양 (흔들림·떨어짐) ----------
 function pose(E) {
@@ -582,9 +594,10 @@ function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나�
   return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.special, skip)
     || rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip) || screwHit(s, L, o, a, travel);
 }
-const STAGES = 500;
-const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6 : Math.round(48 + 952 * Math.pow((Math.min(L, STAGES) - 4) / (STAGES - 4), 0.8));
-const colorCount = L => L <= 3 ? 2 : Math.min(3 + Math.floor((L - 4) / 4), COLORS.length);
+const STAGES = 1000;
+// 1~500 retain their established progression; new levels keep growing without a sudden jump.
+const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6 : L <= 500 ? Math.round(48 + 952 * Math.pow((L - 4) / 496, 0.8)) : 1000 + 3 * Math.ceil((L - 500) / 10);
+const colorCount = L => L <= 3 ? 2 : Math.min(3 + Math.floor((L - 4) / 12), COLORS.length);
 function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
   const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
   return assemble(['작은 블럭', '블럭 기차', '네모 블럭'][L - 1], cells.map((p, i) => cube(...p, WOOD[i])), { minS: targetScrews(L) });
@@ -1034,7 +1047,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
-        for (const [fi, f] of geom.faces.entries()) { const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.62 + 0.38 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.35), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
+        for (const [fi, f] of geom.faces.entries()) { const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)) }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv, planes, bb: [x0, y0, x1, y1], pv, hull: st.big ? null : hull2d(pv) });
       };
@@ -1103,10 +1116,22 @@ function screw3d(api,startStage=loadResumeStage()) {
         for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
+          // Soft lacquer highlights on the detailed collections; keep high-poly stages fast.
+          const showGloss = !st.big && /스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name);
+          if (showGloss && pg.lit > 0.4 && pg.pts.length >= 3 && it.owner.kind !== 'plate') {
+            const p0 = pg.pts[0], p1 = pg.pts[Math.floor(pg.pts.length / 2)];
+            if (Math.hypot(p1.x - p0.x, p1.y - p0.y) > 1) {
+              const g = c.createLinearGradient(p0.x, p0.y, p1.x, p1.y);
+              g.addColorStop(0, 'rgba(255,255,255,0.22)');
+              g.addColorStop(0.55, 'rgba(255,255,255,0.04)');
+              g.addColorStop(1, 'rgba(23,32,65,0.07)');
+              c.fillStyle = g; c.fill();
+            }
+          }
           if (!st.big && it.owner.flat && pg.up !== undefined && pg.pts.length === 4 && pg.lit > 0.2) {   // 판: 금속 빛 번짐
             const g2 = c.createLinearGradient(pg.pts[0].x, pg.pts[0].y, pg.pts[2].x, pg.pts[2].y); g2.addColorStop(0, 'rgba(255,255,255,0.45)'); g2.addColorStop(0.5, 'rgba(255,255,255,0)'); g2.addColorStop(1, 'rgba(90,100,140,0.18)'); c.fillStyle = g2; c.fill(); }
           c.lineWidth = 1; c.strokeStyle = pg.line; c.stroke();
-          if (!st.big && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
+          if (!st.big && !/스포츠카|타이타닉호|수박|돼지|소|토끼/.test(st.lvl.name) && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
             c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1.2; c.stroke();
             if (pg.pts.length === 4) { const [p0, p1, p2, p3] = pg.pts; c.strokeStyle = 'rgba(120,80,40,0.09)'; c.lineWidth = 1; c.beginPath();
               for (const tt of [0.27, 0.5, 0.74]) { c.moveTo(p0.x + (p1.x - p0.x) * tt, p0.y + (p1.y - p0.y) * tt); c.lineTo(p3.x + (p2.x - p3.x) * (tt + 0.04), p3.y + (p2.y - p3.y) * (tt + 0.04)); } c.stroke(); } }
