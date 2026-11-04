@@ -2,7 +2,7 @@
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html' };
+  const destinations = { note: '/world.html?place=park', world: '/world.html', home: '/world.html?tab=home', board: '/world.html?tab=board', my: '/world.html?tab=my', photo: '/photo-ttang.html', byeolcheonji: '/byeolcheonji/' };
   // The document linked from the checkbox and the recorded version must agree.
   // Keep the existing terms during the public notice period (Korea time).
   const termsVersion = Date.now() >= Date.parse('2026-11-20T00:00:00+09:00')
@@ -56,6 +56,17 @@
   let recoveryEventSeen = false;
   const postConfirmKey = 'ojjuda_post_confirm_destination';
   const authQuery = new URLSearchParams(location.search);
+  function safeBookingReturn(query) {
+    const clean = new URLSearchParams();
+    const date = query.get('date'), room = query.get('room'), guests = query.get('guests');
+    const timestamp = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? Date.parse(date + 'T00:00:00Z') : NaN;
+    if (query.getAll('date').length === 1 && Number.isFinite(timestamp)
+        && new Date(timestamp).toISOString().slice(0, 10) === date) clean.set('date', date);
+    if (query.getAll('room').length === 1 && ['7576351','7618700','7618711','7618722','7618727','7618739','7618751','7618755','7618764'].includes(room)) clean.set('room', room);
+    if (query.getAll('guests').length === 1 && ['all','2','4','6','8'].includes(guests)) clean.set('guests', guests);
+    return clean.toString();
+  }
+  let bookingReturn = authQuery.get('next') === 'byeolcheonji' ? safeBookingReturn(authQuery) : '';
   const validReturnCard = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value || '');
   let returnCard = authQuery.get('next') === 'note' && validReturnCard(authQuery.get('card'))
     ? authQuery.get('card') : null;
@@ -193,7 +204,8 @@
   }
 
   function destinationPath(key) {
-    return Object.hasOwn(destinations, key) ? destinations[key] : null;
+    if (!Object.hasOwn(destinations, key)) return null;
+    return destinations[key] + (key === 'byeolcheonji' && bookingReturn ? '?' + bookingReturn : '');
   }
 
   function rememberAfterEmail(destination, address) {
@@ -201,6 +213,7 @@
     try {
       sessionStorage.setItem(postConfirmKey, JSON.stringify({
         destination, card: destination === 'note' ? returnCard : null,
+        booking: destination === 'byeolcheonji' ? bookingReturn : null,
         email: address.toLowerCase(), expiresAt: Date.now() + 2 * 60 * 60 * 1000
       }));
     } catch { /* The redirect query still carries the chosen destination. */ }
@@ -212,6 +225,7 @@
       if (stored?.expiresAt > Date.now() && stored.email === String(user?.email || '').toLowerCase()
           && destinationPath(stored.destination)) {
         if (!returnCard && stored.destination === 'note' && validReturnCard(stored.card)) returnCard = stored.card;
+        if (!bookingReturn && stored.destination === 'byeolcheonji' && typeof stored.booking === 'string') bookingReturn = safeBookingReturn(new URLSearchParams(stored.booking));
         return stored.destination;
       }
     } catch { /* The session store can be unavailable or empty. */ }
@@ -225,11 +239,15 @@
   function clearReturnDestination() {
     returnQueryDestination = null;
     returnCard = null;
+    bookingReturn = '';
     try { sessionStorage.removeItem(postConfirmKey); } catch { /* Ignore unavailable storage. */ }
     const url = new URL(location.href);
     if (url.searchParams.has('next')) {
       url.searchParams.delete('next');
       url.searchParams.delete('card');
+      url.searchParams.delete('date');
+      url.searchParams.delete('room');
+      url.searchParams.delete('guests');
       history.replaceState(null, '', url.pathname + url.search + url.hash);
     }
   }
@@ -460,6 +478,7 @@
         const confirmationUrl = new URL('/', location.href);
         if (destinationPath(pendingDestination)) confirmationUrl.searchParams.set('next', pendingDestination);
         if (pendingDestination === 'note' && returnCard) confirmationUrl.searchParams.set('card', returnCard);
+        if (pendingDestination === 'byeolcheonji') for (const [key, value] of new URLSearchParams(bookingReturn)) confirmationUrl.searchParams.set(key, value);
         const { data, error } = await client.auth.signUp({
           email: address,
           password: secret,
