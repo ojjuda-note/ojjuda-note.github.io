@@ -172,6 +172,21 @@ function assemble(name, blocks, { pre, extra, reserved = [], cover = [], els = [
         [{ q: p.q, into: A }], { badge: true })) break;
     }
   }
+  // Sometimes a fully enclosed pedestal cube has no exposed position for a
+  // normal connecting plate. Secure it through its top face into the block
+  // underneath; the screw becomes reachable as the upper layer is removed.
+  // The standard level solver still rejects any cyclic or blocked layout.
+  for (const A of cells) {
+    if (M.screws.some(z => z.thru === A || z.into === A)) continue;
+    const [x, y, z] = A.cell, B = at.get([x, y - 1, z].join(','));
+    if (!B) continue;
+    for (const [dx, dz] of [[0, 0], [-0.11, -0.11], [0.11, 0.11], [-0.11, 0.11], [0.11, -0.11]]) {
+      const q = add(face(A, [0, 1, 0]), [dx, 0, dz]);
+      if (!spotFree(M, q, [0, 1, 0])) continue;
+      pin(M, A, B, q, [0, 1, 0]);
+      break;
+    }
+  }
   return finish(M, spots, minS);
 }
 function modelTeapot(t = 0) {   // 주전자: 몸통이 넓어져요(2→3칸)
