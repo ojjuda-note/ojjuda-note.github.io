@@ -9,7 +9,8 @@
   <link rel="icon" href="/byeolcheonji/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest?v=20261104-pwa1">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261022-agit-logo2">
-  <link rel="stylesheet" href="/byeolcheonji/styles.css?v=20261104-byeolcheonji1">
+  <link rel="stylesheet" href="/byeolcheonji/styles.css?v=20261104-browser-guide1">
+  <script src="/byeolcheonji/browser-guide.js?v=20261104-browser-guide1" defer></script>
   <script src="/config.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
   <script src="/byeolcheonji/app.js?v=20261104-byeolcheonji1" defer></script>
@@ -18,7 +19,7 @@
   <div class="page-shell">
     <header class="topbar">
       <a class="back-link" href="/world.html?tab=arcade" aria-label="오쭈다 테스트 메뉴로 돌아가기"><span aria-hidden="true">←</span> 오쭈다 <span class="crumb">/ 테스트</span></a>
-      <span class="member-badge">회원 전용</span>
+      <div class="topbar-actions"><button id="browser-guide-open" class="browser-guide-open" type="button" aria-haspopup="dialog" aria-controls="browser-guide">브라우저 안내</button><span class="member-badge">회원 전용</span></div>
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
@@ -84,5 +85,14 @@
     </main>
     <footer>오쭈다 테스트 <span aria-hidden="true">·</span> 한우산 별천지</footer>
   </div>
+  <dialog id="browser-guide" class="browser-guide" aria-labelledby="browser-guide-title" aria-describedby="browser-guide-message" aria-modal="true">
+    <span class="browser-guide-label">별천지 빈방 이용 안내</span>
+    <div class="browser-guide-symbol" aria-hidden="true">↗</div>
+    <h2 id="browser-guide-title">브라우저에서<br>열어 주세요</h2>
+    <p id="browser-guide-message">인터넷 브라우저, 크롬 브라우저, 사파리 브라우저 등에서 <strong>ojjuda.kr/star</strong>에 들어가서 이용하세요.</p>
+    <div class="browser-guide-address-box"><label for="browser-guide-address">별천지 바로가기 주소</label><input id="browser-guide-address" value="ojjuda.kr/star" readonly spellcheck="false"><button id="browser-guide-copy" type="button">주소 복사</button></div>
+    <p id="browser-guide-feedback" class="browser-guide-feedback" role="status" aria-live="polite"></p>
+    <button id="browser-guide-confirm" class="browser-guide-confirm" type="button" autofocus>확인하고 이용하기</button>
+  </dialog>
 </body>
 </html>
