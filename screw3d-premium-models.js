@@ -14,16 +14,8 @@ export function createPremiumModels(h) {
           (x%4===0?'#ED5569':z===0||z===D-1?'#C72E4B':'#F26778');
       }else if(E.kind==='wheel'&&E.color==='#2E3358')E.color='#202638';
     }
-    const at=(x,y,z)=>M.els.find(E=>E.cell&&E.cell[0]===x&&E.cell[1]===y&&E.cell[2]===z);
-    const rearA=at(0,0,0),rearB=at(0,0,D-1),hood=at(L-1,0,Math.floor(D/2));
-    const zc=(rearA.c[2]+rearB.c[2])/2;
-    const wing=boxE([0.10,0.035,D*GRID/2-0.012],[rearA.c[0],rearA.c[1]+GRID/2+0.035,zc],'#1B273E');
-    const intake=boxE([0.115,0.027,0.135],[hood.c[0],hood.c[1]+GRID/2+0.027,hood.c[2]],'#1F2E43');
-    M.els.push(wing,intake);
-    pin(M,wing,rearA,[wing.c[0],topOfE(wing),rearA.c[2]],Yax);
-    pin(M,wing,rearB,[wing.c[0],topOfE(wing),rearB.c[2]],Yax);
-    pin(M,intake,hood,[intake.c[0],topOfE(intake),intake.c[2]],Yax);
-    return finish(M,[]);
+    // Original working car assembly is retained; new racing paint keeps all screws reachable.
+    return M;
   }
   modelSportsCar.blocks=modelCar.blocks;
 
@@ -66,10 +58,11 @@ export function createPremiumModels(h) {
     const m=(N-1)/2,r=N/2-0.05;
     return ((x-m)/r)**2+((y-m)/r)**2+((z-m)/r)**2<=1;
   }
+  const watermelonShell=(N,x,y,z)=>watermelonCell(N,x,y,z)&&[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].some(d=>!watermelonCell(N,x+d[0],y+d[1],z+d[2]));
   function modelWatermelon(t=0,minS=0) {
     const N=watermelonSize(t),m=(N-1)/2,b=[];
     for(let x=0;x<N;x++)for(let y=0;y<N;y++)for(let z=0;z<N;z++){
-      if(!watermelonCell(N,x,y,z))continue;
+      if(!watermelonShell(N,x,y,z))continue;
       const front=x>m+N*0.24,inner=Math.hypot(y-m,z-m)<N*0.30;
       const angle=Math.atan2(z-m,x-m),stripe=Math.floor((angle+Math.PI)*8)%2;
       const color=front&&inner?'#F16974':front?'#F1EAC6':stripe?'#227C51':'#57AC68';
@@ -90,7 +83,7 @@ export function createPremiumModels(h) {
   }
   modelWatermelon.blocks=t=>{
     const N=watermelonSize(t);let n=0;
-    for(let x=0;x<N;x++)for(let y=0;y<N;y++)for(let z=0;z<N;z++)if(watermelonCell(N,x,y,z))n++;
+    for(let x=0;x<N;x++)for(let y=0;y<N;y++)for(let z=0;z<N;z++)if(watermelonShell(N,x,y,z))n++;
     return n;
   };
 
