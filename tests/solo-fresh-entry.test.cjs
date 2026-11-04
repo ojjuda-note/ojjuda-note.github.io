@@ -67,7 +67,13 @@ for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolv
 const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:500},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
 function withScrews(run,entries=[],blocked=false){
  const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
- const context=vm.createContext({console,localStorage,window:{}});vm.runInContext(read('screw3d.js').replace(/export \{[^}]*\};/,''),context);
+ const context=vm.createContext({console,localStorage,window:{}});
+ // The browser loads the box game as ES modules; the VM fixture must preload
+ // their helpers before evaluating the main game script in the same context.
+ for(const file of ['screw3d-premium-models.js','screw3d-classic-styles.js','screw3d-soft-cubes.js','screw3d-replacement-models.js']){
+  vm.runInContext(read(file).replace(/^export\s+/gm,''),context);
+ }
+ vm.runInContext(read('screw3d.js').replace(/^import\s+\{[^}]+\}\s+from\s+['"][^'"]+['"];?\s*$/gm,'').replace(/^export\s+\{[^}]*\};?\s*$/gm,''),context);
  const previous=global.localStorage,games=[],records=[];global.localStorage=localStorage;
  const api={setScore(){},end(){},saveScore:score=>records.push(score)};
  try{
@@ -77,7 +83,7 @@ function withScrews(run,entries=[],blocked=false){
 }
 function completeScrew(game){
  if(game.state.lvl){game.state.lvl.screws.forEach(screw=>screw.state='done');game.state.lvl.els.forEach(piece=>piece.state='gone');}
- else game.state.level.plates.forEach(plate=>plate.state='gone');
+ else {game.state.level.routeUnlocked=true;game.state.level.plates.forEach(plate=>plate.state='gone');}
  game.update(.05);
 }
 function nextScrew(game){
