@@ -560,19 +560,20 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const [response, supplementResponse] = await Promise.all([
-        fetch('./restaurants.json?v=20261104-restaurants-ulsan2', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-ulsan-tourism.json?v=20261104-restaurants-ulsan2', { signal: controller.signal, cache: 'no-cache' })
+      const [response, supplementResponse, seoulResponse] = await Promise.all([
+        fetch('./restaurants.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-seoul-blue-ribbon.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' })
       ]);
-      if (!response.ok || !supplementResponse.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status);
-      const [data, supplement] = await Promise.all([response.json(), supplementResponse.json()]);
-      if (!data || !Array.isArray(data.restaurants) || !supplement || !Array.isArray(supplement.restaurants)) throw new Error('Invalid dataset');
+      if (!response.ok || !supplementResponse.ok || !seoulResponse.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status + '/' + seoulResponse.status);
+      const [data, supplement, seoul] = await Promise.all([response.json(), supplementResponse.json(), seoulResponse.json()]);
+      if (!data || !Array.isArray(data.restaurants) || !supplement || !Array.isArray(supplement.restaurants) || !seoul || !Array.isArray(seoul.restaurants)) throw new Error('Invalid dataset');
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
       const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\s+/g, '').toLowerCase()).join('|');
       const knownPlaces = new Set(combined.map(identity));
-      for (const item of supplement.restaurants) {
+      for (const item of [...supplement.restaurants, ...seoul.restaurants]) {
         const key = identity(item);
         if (knownIds.has(item.id) || knownPlaces.has(key)) continue;
         combined.push(item); knownIds.add(item.id); knownPlaces.add(key);
@@ -581,10 +582,12 @@
       state.collections = Array.isArray(data.collections) ? data.collections.filter(collection => collection && Object.hasOwn(PROVIDERS, collection.provider) && text(collection.title) && safeHttps(collection.url)).map(collection => ({ provider: collection.provider, title: text(collection.title, 160), url: safeHttps(collection.url), sourceUrl: safeHttps(collection.sourceUrl), sourceName: text(collection.sourceName, 160), note: text(collection.note, 400) })) : [];
       combineRestaurantSources();
       const localCount = state.certified.filter(item => item.guides.some(g => g.provider === 'local-guide')).length;
+      const blueCount = state.certified.filter(item => item.guides.some(g => g.provider === 'blue-ribbon')).length;
       const mappedCount = state.certified.filter(item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng)).length;
-      const coverageNote = (data.coverageNote || '').replace(/지자체 지정·선정·공식 소개 \d+곳/, '지자체 지정·선정·공식 소개 ' + localCount + '곳').replace(/중복 제외 \d+곳/, '중복 제외 ' + state.certified.length + '곳').replace(/\d+곳은 지도에 표시할 수 있고/, mappedCount + '곳은 지도에 표시할 수 있고');
+      const coverageNote = (data.coverageNote || '').replace(/블루리본 선정·공동선정·수록 이력 \d+곳/, '블루리본 선정·공동선정·수록 이력 ' + blueCount + '곳').replace(/지자체 지정·선정·공식 소개 \d+곳/, '지자체 지정·선정·공식 소개 ' + localCount + '곳').replace(/중복 제외 \d+곳/, '중복 제외 ' + state.certified.length + '곳').replace(/\d+곳은 지도에 표시할 수 있고/, mappedCount + '곳은 지도에 표시할 수 있고');
       $('coverage').textContent = text(coverageNote, 400) || '공식 출처로 확인한 일부 식당부터 제공합니다.';
-      $('updated').textContent = validDate(data.updatedAt) ? '자료 갱신 ' + dateLabel(data.updatedAt) : '';
+      const newestDate = [data.updatedAt, supplement.updatedAt, seoul.updatedAt].filter(validDate).sort().at(-1);
+      $('updated').textContent = newestDate ? '자료 갱신 ' + dateLabel(newestDate) : '';
       state.loading = false; announce(''); render(true);
       if (combined.length !== state.certified.length) announce('출처를 확인할 수 있는 가게부터 표시했어요. 일부 자료는 확인 중이에요.');
       void loadRecommendations();
