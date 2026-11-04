@@ -1313,15 +1313,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const completedFraction = 1 - remaining / Math.max(1, st.lvl.screws.length);
       if (completedFraction > 0) { c.fillStyle = '#4B9D9A'; c.fillRect(20, 43, 320 * completedFraction, 4); }
       drawBoxes(c, st); drawBuffer(c, st);
-      // Color management difficulty and a free time-costly escape from a full tray.
-      const sortable=chooseSort();
-      c.save();
-      rr(c,SORT_X,SORT_Y,SORT_W,SORT_H,11);
-      c.fillStyle=st.sorting>0?'#D6DEE5':sortable?'#D9ECE8':'#EEE6DF';c.fill();
-      c.lineWidth=1;c.strokeStyle=sortable?'#5AA59C':'#C9BFB5';c.stroke();
-      c.fillStyle=sortable?'#246C63':'#7C7B82';c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
-      c.fillText(st.sorting>0?`정리 ${Math.ceil(st.sorting)}초`:'상자 정리 · 무료',SORT_X+SORT_W/2,SORT_Y+SORT_H/2);
-      c.restore();
+
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
       const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
@@ -1456,6 +1448,15 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (it.cross) { c.strokeStyle = 'rgba(255,255,255,0.95)'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.cross[0].x, it.cross[0].y); c.lineTo(it.cross[1].x, it.cross[1].y); c.moveTo(it.cross[2].x, it.cross[2].y); c.lineTo(it.cross[3].x, it.cross[3].y); c.stroke(); }
         c.restore();
       }
+      // Color management difficulty and a free time-costly escape from a full tray.
+      const sortable=chooseSort();
+      c.save();
+      rr(c,SORT_X,SORT_Y,SORT_W,SORT_H,11);
+      c.fillStyle=st.sorting>0?'#D6DEE5':sortable?'#D9ECE8':'#EEE6DF';c.fill();
+      c.lineWidth=1;c.strokeStyle=sortable?'#5AA59C':'#C9BFB5';c.stroke();
+      c.fillStyle=sortable?'#246C63':'#7C7B82';c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';
+      c.fillText(st.sorting>0?`정리 ${Math.ceil(st.sorting)}초`:'상자 정리 · 무료',SORT_X+SORT_W/2,SORT_Y+SORT_H/2);
+      c.restore();
       for (const bt of BTN) { c.beginPath(); c.arc(bt.x, bt.y, 15, 0, Math.PI * 2); c.fillStyle = 'rgba(255,255,255,0.85)'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = 'rgba(35,38,74,0.25)'; c.stroke(); c.fillStyle = '#4A4F7A'; c.font = 'bold 17px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(bt.t, bt.x, bt.y + 1); }   // 확대·축소·가운데로
       for (const f of st.fly) {
         if (f.wait > 0) continue;
