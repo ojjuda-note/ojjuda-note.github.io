@@ -140,7 +140,7 @@ export function createReplacementModels(h) {
     const {cells,L,D,W}=helicopterCells(t),b=cells.map(q=>cube(q.x,q.y,q.z,q.color));
     const at=(x,y,z)=>b.find(E=>E.cell[0]===x&&E.cell[1]===y&&E.cell[2]===z);
     return assemble('헬리콥터',b,{minS,pre:M=>{
-      const mid=Math.floor((W-1)/2),z=Math.floor(D/2),B=at(mid,2,z)||at(mid,3,z);
+      const mid=Math.floor((W-1)/2),z=Math.floor(D/2),B=at(mid,3,z)||at(mid,2,z);
       if(B){
         const y=face(B,Yax)[1],E=el('wheel',null,[B.c[0],y+.13,B.c[2]],I3,'#E5EAF0');
         E.parts=[
@@ -195,5 +195,21 @@ export function createReplacementModels(h) {
     const N=6+Math.min(30,Math.floor(t/2)),D=2+Math.min(12,Math.floor(t/5)),top=4+Math.min(14,Math.floor(t/4));
     return N*D+top*3;
   };
-  return {modelRobot,modelFireTruck,modelFerrisWheel,modelPenguin,modelHelicopter};
+  // Materials are decorative only: shape, fasteners and collisions are unchanged.
+  const dress = model => {
+    const make=(t=0,minS=0)=>{
+      const M=model(t,minS);
+      for(const E of M.els)if(!E.material) E.material=E.cell?'paint':E.flat?'metal':'polished';
+      return M;
+    };
+    make.blocks=model.blocks;
+    return make;
+  };
+  return {
+    modelRobot:dress(modelRobot),
+    modelFireTruck:dress(modelFireTruck),
+    modelFerrisWheel:dress(modelFerrisWheel),
+    modelPenguin:dress(modelPenguin),
+    modelHelicopter:dress(modelHelicopter)
+  };
 }
