@@ -160,14 +160,15 @@ export function createReplacementModels(h) {
   }
   modelHelicopter.blocks=t=>helicopterCells(t).cells.length;
 
-  function modelFerrisWheel(t=0) {
-    const N=6+Math.min(2,t),top=4+Math.min(2,t),mid=Math.floor(N/2),z=1;
+  function modelFerrisWheel(t=0,minS=0) {
+    const N=6+Math.min(30,Math.floor(t/2)),D=2+Math.min(12,Math.floor(t/5)),top=4+Math.min(14,Math.floor(t/4)),mid=Math.floor(N/2),z=Math.floor(D/2);
     const b=[];
-    for(let x=0;x<N;x++)for(let zz=0;zz<2;zz++)b.push(cube(x,0,zz,'#C0CDD4'));
-    for(let y=1;y<=top;y++)b.push(cube(mid,y,z,y%2?'#8AA7B6':'#A4BDC7'));
+    for(let x=0;x<N;x++)for(let zz=0;zz<D;zz++)b.push(cube(x,0,zz,'#C0CDD4'));
+    for(let y=1;y<=top;y++)for(const xx of [mid-1,mid,mid+1])b.push(cube(xx,y,z,y%2?'#8AA7B6':'#A4BDC7'));
+
     const at=(x,y,zz)=>b.find(E=>E.cell[0]===x&&E.cell[1]===y&&E.cell[2]===zz);
-    const R=.64+.08*Math.min(2,t),cy=(top+.5)*GRID,cx=(mid+.5)*GRID,cz=1.08;
-    return assemble('대관람차',b,{pre:M=>{
+    const R=Math.max(.64,(N-1)*GRID*.43),cy=(top+.5)*GRID,cx=(mid+.5)*GRID,cz=(z+1)*GRID+.24;
+    return assemble('대관람차',b,{minS,pre:M=>{
       const center=at(mid,top,z),wheel=el('wheel',null,[cx,cy,cz],I3,'#E5AF63');
       const parts=[],seg=16+2*Math.min(2,t);
       for(let i=0;i<seg;i++){
@@ -190,5 +191,9 @@ export function createReplacementModels(h) {
       }
     }});
   }
+  modelFerrisWheel.blocks=t=>{
+    const N=6+Math.min(30,Math.floor(t/2)),D=2+Math.min(12,Math.floor(t/5)),top=4+Math.min(14,Math.floor(t/4));
+    return N*D+top*3;
+  };
   return {modelRobot,modelFireTruck,modelFerrisWheel,modelPenguin,modelHelicopter};
 }
