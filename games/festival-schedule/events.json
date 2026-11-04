@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-03",
+  "updatedAt": "2026-11-04",
   "events": [
     {
       "id": "nowon-moonlight-2026",
@@ -337,6 +337,37 @@
         "유자",
         "먹거리",
         "빛정원"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gunsan-fireworks-2026",
+      "title": "2026 군산불꽃축제",
+      "category": "local",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "전북",
+      "city": "군산시",
+      "venue": "군산 내항 친수공원 일원",
+      "address": "전북특별자치도 군산시 장미동 49-2",
+      "lat": 35.991,
+      "lng": 126.712,
+      "geoApprox": true,
+      "summary": "동백대교와 군산 내항을 배경으로 음악과 불꽃이 어우러지는 약 30분간의 해상 멀티미디어 불꽃쇼입니다.",
+      "scheduleNote": "20:00 시작 / 약 30분 진행",
+      "priceNote": "무료 관람",
+      "accessNote": "행사장 안에는 먹거리·판매 부스를 운영하지 않습니다. 교통통제와 관람구역 안내는 공식 공지를 확인해 주세요.",
+      "sourceUrl": "https://www.gunsan.go.kr/main/m363/view/9835781",
+      "sourceName": "군산시",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://www.gunsan.go.kr/main/m2562"
+      ],
+      "tags": [
+        "불꽃축제",
+        "야간",
+        "바다",
+        "무료"
       ],
       "status": "scheduled"
     },
