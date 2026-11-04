@@ -575,6 +575,65 @@
       "status": "scheduled"
     },
     {
+      "id": "pyeongchang-gimjang-2026",
+      "title": "제9회 평창고랭지김장축제",
+      "category": "local",
+      "start": "2026-11-04",
+      "end": "2026-11-16",
+      "region": "강원",
+      "city": "평창군",
+      "venue": "진부면민체육공원(오대천축제장)",
+      "address": "강원특별자치도 평창군 진부면 오대천로 1958-27",
+      "lat": 37.636,
+      "lng": 128.558,
+      "geoApprox": true,
+      "summary": "평창 고랭지 배추와 양념으로 김치를 담그는 김장 체험 축제입니다. 체험 재료와 포장용품을 제공하며 현장 택배는 유료입니다.",
+      "scheduleNote": "매일 09:00~17:00, 현장 접수 16:00 마감",
+      "priceNote": "김장체험 69,000원 / 프리미엄 79,000원 / 알타리 70,000원",
+      "accessNote": "온라인·전화 사전 예약(10월 20일부터) 또는 현장 접수. 예약 권장, 사전 예약은 1인 최대 80kg(알타리 제외).",
+      "sourceUrl": "https://gimjang700.co.kr/user/gimjang",
+      "sourceName": "평창고랭지김장축제위원회 공식 홈페이지",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://gimjang700.co.kr/user/introduction"
+      ],
+      "tags": [
+        "김장",
+        "먹거리",
+        "체험",
+        "겨울준비"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "noodle-daejeon-2026",
+      "title": "2026 누들대전축제",
+      "category": "local",
+      "start": "2026-11-13",
+      "end": "2026-11-15",
+      "region": "대전",
+      "city": "중구",
+      "venue": "서대전시민광장",
+      "address": "대전광역시 중구 문화동 1-40",
+      "lat": 36.321,
+      "lng": 127.409,
+      "geoApprox": true,
+      "summary": "대전 면요리를 비롯한 누들 먹거리·쿠킹쇼·버스킹과 로봇축구·AI바둑 등 체험이 열립니다.",
+      "scheduleNote": "11/13 16:00~21:00 / 11/14~15 12:00~21:00 (세부 무대 시간은 공식 일정 확인)",
+      "priceNote": "행사장 입장 무료, 음식과 일부 체험 유료(세부 요금 공식 안내 확인)",
+      "sourceUrl": "https://noodle-dj.com/",
+      "sourceName": "누들대전축제 주최 측(대전일보사)",
+      "sourceCheckedAt": "2026-11-04",
+      "tags": [
+        "누들",
+        "먹거리",
+        "쿠킹쇼",
+        "체험",
+        "AI"
+      ],
+      "status": "scheduled"
+    },
+    {
       "id": "mokwon-festival-2026",
       "title": "목원대학교 대동제 시절인연",
       "category": "campus",
@@ -957,6 +1016,69 @@
       "sourceName": "전주국제영화제 공식 뉴스",
       "sourceCheckedAt": "2026-11-03",
       "geoApprox": true,
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-biennale-2026",
+      "title": "제16회 광주비엔날레 《너는 네 삶을 바꿔야 한다》",
+      "category": "expo",
+      "start": "2026-09-05",
+      "end": "2026-11-15",
+      "region": "광주",
+      "city": "북구",
+      "venue": "광주비엔날레 전시관",
+      "address": "광주광역시 북구 비엔날레로 111",
+      "lat": 35.182,
+      "lng": 126.889,
+      "geoApprox": true,
+      "summary": "호추니엔 예술감독이 기획한 현대미술 비엔날레로, 11월 6~8일 전시관 안팎에서 폐막 전 프로그램을 엽니다.",
+      "scheduleNote": "전시·프로그램별 운영시간은 공식 안내 확인. 클로징 프로그램 11/6~8.",
+      "priceNote": "전시 관람권은 유료일 수 있음 / 일부 야외 작품은 무료, 자세한 가격은 공식 안내 확인",
+      "accessNote": "일부 전시실 및 프로그램은 관람권 또는 사전 신청이 필요하며 정원 제한이 있습니다.",
+      "sourceUrl": "https://www.gwangjubiennale.org/gb/Board/12163/detailView.do",
+      "sourceName": "광주비엔날레 재단",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://www.gwangjubiennale.org/gb/Board/12179/detailView.do"
+      ],
+      "tags": [
+        "현대미술",
+        "비엔날레",
+        "전시",
+        "문화"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "ulsan-startup-festa-2026",
+      "title": "2026 울산 스타트업 페스타(USF)",
+      "category": "expo",
+      "start": "2026-11-05",
+      "end": "2026-11-06",
+      "region": "울산",
+      "city": "울주군",
+      "venue": "울산전시컨벤션센터(UECO)",
+      "address": "울산광역시 울주군 삼남읍 울산역로 255",
+      "lat": 35.556,
+      "lng": 129.137,
+      "geoApprox": true,
+      "summary": "스타트업 전시·AI 및 배터리 신기술 발표·창업 IR·투자자 상담과 다양한 체험 프로그램이 열립니다.",
+      "scheduleNote": "11/5 10:00~18:00, 11/6 09:00~18:00 (세션별 일정 상이)",
+      "priceNote": "공식 입장료 안내 확인",
+      "accessNote": "공식 사이트에서 사전 접수 가능. 일부 투자 상담·미팅은 별도 참여 조건 확인.",
+      "sourceUrl": "https://www.startupfesta.or.kr/",
+      "sourceName": "2026 울산스타트업페스타 공식 주최 측",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://ueco.or.kr/tour/location"
+      ],
+      "tags": [
+        "스타트업",
+        "AI",
+        "기술",
+        "산업전시",
+        "창업"
+      ],
       "status": "scheduled"
     },
     {
