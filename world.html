@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261104-agit-stability1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261104-archery-bullet-cinematic1" defer></script>
+<script src="/world-game-assets.js?v=20261104-star-entry1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -1142,7 +1142,7 @@ function fitWorldBoardScreen(){
 function Al(t,options={}){
  if(t==="byeolcheonji"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
-  location.assign(D.online&&D.user?.id&&!D.user.is_anonymous?"/byeolcheonji/":"/?auth=login&next=byeolcheonji");return;
+  location.assign("/star");return;
  }
  if(t==="recommendations")return Al("restaurants",{...options,openRecommendations:true});
  if(window.OjjudaGuestAccess?.canPlay()===false)return;

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6ef">
+  <title>별천지 빈방 · 오쭈다</title>
+  <link rel="canonical" href="https://ojjuda.kr/byeolcheonji/">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 24px; background: #f7f6ef; color: #243d30; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; word-break: keep-all; }
+    main { width: min(100%, 440px); padding: 36px 28px; border: 1px solid #dedfd5; border-radius: 24px; background: #fffefa; text-align: center; }
+    .brand { margin: 0 0 20px; font-size: 14px; font-weight: 700; color: #67796a; }
+    h1 { margin: 0; font-size: clamp(23px, 5vw, 28px); line-height: 1.45; letter-spacing: -.04em; }
+    .hint { margin: 20px 0 24px; font-size: 15px; line-height: 1.7; color: #667066; }
+    a { display: block; padding: 15px 18px; border-radius: 13px; background: #2e573f; color: #fff; font-size: 16px; font-weight: 700; line-height: 1.5; text-decoration: none; }
+    a:hover { background: #234732; }
+    a:focus-visible { outline: 3px solid #b78b38; outline-offset: 4px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="brand">오쭈다 · 별천지 빈방</p>
+    <h1>별천지 빈방으로<br>연결하고 있어요</h1>
+    <p class="hint">화면이 바뀌지 않으면<br>아래 버튼을 눌러 주세요.</p>
+    <a href="/byeolcheonji/">별천지 빈방으로 이동</a>
+  </main>
+  <script>
+    (() => {
+      try {
+        const input = new URLSearchParams(location.search);
+        const clean = new URLSearchParams();
+        const date = input.get('date');
+        const stamp = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? Date.parse(date + 'T00:00:00Z') : NaN;
+        if (input.getAll('date').length === 1 && Number.isFinite(stamp)
+            && new Date(stamp).toISOString().slice(0, 10) === date) clean.set('date', date);
+        const room = input.get('room');
+        if (input.getAll('room').length === 1 && /^[1-9]\d{0,19}$/.test(room || '')) clean.set('room', room);
+        const guests = input.get('guests');
+        if (input.getAll('guests').length === 1 && /^(all|2|4|6|8)$/.test(guests || '')) clean.set('guests', guests);
+        const query = clean.toString();
+        location.replace('/byeolcheonji/' + (query ? '?' + query : ''));
+      } catch { /* The fixed link remains available if automatic navigation fails. */ }
+    })();
+  </script>
+</body>
+</html>
