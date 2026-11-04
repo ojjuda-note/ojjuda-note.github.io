@@ -164,3 +164,16 @@ test('ICS escapes newlines and folds without splitting Korean text',()=>{
  assert.equal(unfolded.split('\r\n').filter(line=>line==='BEGIN:VEVENT').length,1);
  assert.ok(unfolded.includes('🎉'));
 });
+
+// The fireworks category is independent of local festivals and shares the same calendar filters.
+test('fireworks and lights category filters independently with correct date boundaries',()=>{
+  const paju={id:'paju-lights',title:'운정 불빛정원',category:'fireworks',region:'경기',start:'2026-10-31',end:'2026-12-31',status:'scheduled',tags:['빛축제']};
+  const yeosu={id:'yeosu-media',title:'여수 미디어아트',category:'fireworks',region:'전남',start:'2026-10-09',end:'2026-11-08',status:'scheduled'};
+  const local={id:'seosan-flowers',title:'서산국화축제',category:'local',region:'충남',start:'2026-11-06',end:'2026-11-15',status:'scheduled'};
+  const events=[paju,yeosu,local];
+  assert.equal(core.CATEGORIES.fireworks.label,'불꽃·불빛');
+  assert.deepEqual(core.filterEvents(events,{today:'2026-11-04',category:'fireworks',region:'경기'}).map(e=>e.id),[paju.id]);
+  assert.deepEqual(core.filterEvents(events,{today:'2026-11-04',category:'fireworks',period:'custom',from:'2026-11-14',to:'2026-11-14'}).map(e=>e.id),[paju.id]);
+  assert.deepEqual(core.filterEvents(events,{today:'2026-11-04',category:'local'}).map(e=>e.id),[local.id]);
+  assert.equal(core.filterEvents(events,{today:'2027-01-01',category:'fireworks'}).length,0);
+});

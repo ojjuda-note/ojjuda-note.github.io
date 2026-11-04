@@ -35,7 +35,7 @@
     {
       "id": "nowon-moonlight-2026",
       "title": "노원달빛산책",
-      "category": "local",
+      "category": "fireworks",
       "start": "2026-10-16",
       "end": "2026-11-08",
       "region": "서울",
@@ -53,6 +53,7 @@
       "sourceCheckedAt": "2026-11-03",
       "tags": [
         "빛축제",
+        "야간조명",
         "산책",
         "무료"
       ],
@@ -295,28 +296,34 @@
     {
       "id": "busan-fireworks-2026",
       "title": "부산불꽃축제",
-      "category": "local",
+      "category": "fireworks",
       "start": "2026-11-07",
       "end": "2026-11-07",
       "region": "부산",
       "city": "수영구",
-      "venue": "광안리해수욕장·광안대교 일대",
+      "venue": "광안리해수욕장·광안대교 일대(이기대·동백섬 관람권 포함)",
       "address": "부산 수영구 광안해변로 219",
       "lat": 35.153,
       "lng": 129.119,
       "geoApprox": true,
       "summary": "광안대교와 광안리 밤바다를 배경으로 음악과 불꽃을 함께 감상하는 축제입니다. 해외 초청 불꽃쇼와 부산 멀티 불꽃쇼가 예정되어 있습니다.",
-      "scheduleNote": "불꽃쇼 시간·교통통제는 공식 안내 확인",
+      "scheduleNote": "불꽃쇼는 11/7 개최(세부 공연시간 공식 프로그램 확인) / 행사 교통통제 및 기상변경 공지 확인",
       "priceNote": "유료 좌석 정규 R석 100,000원 / S석 70,000원",
       "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=21318988-6590-40d5-a9ee-d17b806b89a1",
       "sourceName": "한국관광공사 대한민국 구석구석",
-      "sourceCheckedAt": "2026-11-03",
+      "sourceCheckedAt": "2026-11-04",
       "tags": [
-        "불꽃",
-        "야경",
-        "바다"
+        "불꽃놀이",
+        "야간",
+        "바다",
+        "교통통제"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "accessNote": "광안리 등 일반 관람 공간과 유료 지정 좌석의 입장조건은 다릅니다. 정규 유료석 온라인 예매는 11/6 17:00 마감 예정(매진 여부 예매처 확인).",
+      "verificationSources": [
+        "https://www.busanfireworks.com/",
+        "https://www.busan.go.kr/nbnews/1761578"
+      ]
     },
     {
       "id": "yeoju-sanbuk-kimjang-2026",
@@ -437,7 +444,7 @@
     {
       "id": "gunsan-fireworks-2026",
       "title": "2026 군산불꽃축제",
-      "category": "local",
+      "category": "fireworks",
       "start": "2026-11-14",
       "end": "2026-11-14",
       "region": "전북",
@@ -458,7 +465,7 @@
         "https://www.gunsan.go.kr/main/m2562"
       ],
       "tags": [
-        "불꽃축제",
+        "불꽃놀이",
         "야간",
         "바다",
         "무료"
@@ -468,7 +475,7 @@
     {
       "id": "pohang-firelight-2026",
       "title": "포항국제불빛축제",
-      "category": "local",
+      "category": "fireworks",
       "start": "2026-11-19",
       "end": "2026-11-21",
       "region": "경북",
@@ -479,13 +486,14 @@
       "lng": 129.378,
       "geoApprox": true,
       "summary": "영일대 바다에서 불과 빛을 주제로 펼쳐지는 축제입니다. 국제 불꽃쇼와 미디어파사드, 야간 퍼레이드가 안내되어 있습니다.",
-      "scheduleNote": "프로그램별 운영 시간은 공식 안내 확인",
+      "scheduleNote": "축제 전체 11/19~11/21 / 국제 불꽃쇼 실제 진행일·시간은 공식 세부 프로그램 확인 필요(매일 불꽃쇼로 확정되지 않음)",
       "priceNote": "무료",
       "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=1a7b7f32-e5a4-47b1-9e35-4a87499eccd8",
       "sourceName": "한국관광공사 대한민국 구석구석",
       "sourceCheckedAt": "2026-11-03",
       "tags": [
-        "불꽃",
+        "불꽃놀이",
+        "불빛축제",
         "야경",
         "바다"
       ],
@@ -1200,7 +1208,7 @@
       "sourceCheckedAt": "2026-11-03",
       "id": "yangcheon-light-festival-2026",
       "title": "양천 비체나라 페스티벌",
-      "category": "local",
+      "category": "fireworks",
       "region": "서울",
       "city": "양천구",
       "venue": "장소 미정",
@@ -1212,8 +1220,9 @@
       "sourceName": "서울특별시 FUN SEOUL",
       "sourceUrl": "https://festival.seoul.go.kr/festival/main/festivalView.do?festacode=586",
       "tags": [
-        "겨울",
         "빛축제",
+        "조명전시",
+        "겨울",
         "개최 예정"
       ]
     },
@@ -1347,6 +1356,341 @@
         "얼음축제",
         "겨울축제",
         "가족"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "paju-unjeong-fireworks-lights-2026",
+      "title": "운정호수공원 불꽃축제·불빛정원",
+      "category": "fireworks",
+      "start": "2026-10-31",
+      "end": "2026-12-31",
+      "region": "경기",
+      "city": "파주시",
+      "venue": "운정호수공원 일대",
+      "address": "경기 파주시 경의로 1151 (운정호수공원 행사장 대표주소)",
+      "lat": 37.71873,
+      "lng": 126.76328,
+      "geoApprox": true,
+      "summary": "10월 31일 열렸던 파주 운정호수공원 불꽃쇼와 연말까지 이어지는 야간 불빛정원입니다. 불꽃쇼는 이미 종료됐고, 12월 31일까지는 조명 전시만 이어집니다.",
+      "scheduleNote": "불꽃쇼·개막식 10/31 18:50~20:00에 한 차례 진행·종료 / 불빛정원 10/31~12/31 매일 가로등 점등 시각~22:00",
+      "priceNote": "무료",
+      "accessNote": "불꽃쇼는 10/31에 종료되었습니다. 11~12월 방문 시 불빛정원만 관람할 수 있습니다.",
+      "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=5731ca2a-5bab-4148-94d2-556f59dd0a69",
+      "sourceName": "한국관광공사 대한민국 구석구석(파주시·파주문화재단 제공)",
+      "sourceCheckedAt": "2026-11-04",
+      "status": "scheduled",
+      "tags": [
+        "불꽃놀이(10/31 종료)",
+        "빛축제",
+        "조명전시",
+        "무료"
+      ],
+      "verificationSources": [
+        {
+          "name": "파주시 운정호수공원 불꽃축제 공식 안내",
+          "url": "https://tour.paju.go.kr/user/link/cultural/BD_selectCulturalView.do?cultMstSn=966"
+        }
+      ]
+    },
+    {
+      "id": "yeosu-jinnamgwan-mediaart-2026",
+      "title": "국가유산 미디어아트 여수 진남관",
+      "category": "fireworks",
+      "start": "2026-10-09",
+      "end": "2026-11-08",
+      "region": "전남",
+      "city": "여수시",
+      "venue": "진남관·고소대·이순신광장 일대",
+      "address": "전남 여수시 동문로 11",
+      "lat": 34.742,
+      "lng": 127.737,
+      "geoApprox": true,
+      "summary": "여수의 진남관·고소대·이순신광장에서 이순신과 전라좌수영의 이야기를 빛과 미디어아트로 표현하는 야간 전시입니다. 불꽃놀이 행사는 아닙니다.",
+      "scheduleNote": "10/9~11/8(매주 화요일 휴무·10/19 특별휴무) / 개별 점등·상영 시간 공식 안내 확인",
+      "priceNote": "무료",
+      "accessNote": "매주 화요일 휴무입니다. 방문 전 공식 운영 공지를 확인해 주세요.",
+      "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cmsCntntsId=4116779",
+      "sourceName": "한국관광공사 대한민국 구석구석(국가유산청·여수시 제공)",
+      "sourceCheckedAt": "2026-11-04",
+      "status": "scheduled",
+      "tags": [
+        "빛축제",
+        "미디어아트",
+        "조명전시",
+        "국가유산",
+        "무료"
+      ]
+    },
+    {
+      "id": "seosan-chrysanthemum-2026",
+      "title": "서산국화축제",
+      "category": "local",
+      "start": "2026-11-06",
+      "end": "2026-11-15",
+      "region": "충남",
+      "city": "서산시",
+      "venue": "서산국화축제장(고북면)",
+      "address": "충남 서산시 고북면 복남골길 31-1",
+      "lat": 36.66937,
+      "lng": 126.53627,
+      "geoApprox": true,
+      "summary": "국화꽃과 국화터널, 분재국 전시를 중심으로 공연·체험·농특산물 판매가 열리는 서산의 가을 축제입니다.",
+      "scheduleNote": "축제 11/6~11/15 / 개막식 11/6 14:00 / 일일 세부 운영시간 공식 확인",
+      "priceNote": "입장료 공식 안내 확인",
+      "sourceUrl": "https://www.seosan.go.kr/tour/contents.do?key=6138",
+      "sourceName": "서산시 문화관광",
+      "sourceCheckedAt": "2026-11-04",
+      "status": "scheduled",
+      "tags": [
+        "국화",
+        "꽃축제",
+        "가족",
+        "체험"
+      ]
+    },
+    {
+      "id": "expo-tourism-souvenir-2026",
+      "title": "2026 대한민국 관광기념품 박람회",
+      "category": "expo",
+      "start": "2026-11-20",
+      "end": "2026-11-22",
+      "region": "서울",
+      "city": "중구",
+      "venue": "DDP 아트홀 1·2관",
+      "address": "서울 중구 을지로 281",
+      "lat": 37.56699,
+      "lng": 127.0099,
+      "geoApprox": true,
+      "summary": "전국 관광기념품·K-굿즈 전시와 판매, 관광기념품 공모전 수상작을 만나는 박람회입니다.",
+      "scheduleNote": "11/20~21 10:00~19:00(입장 18:30 마감) / 11/22 10:00~18:00(입장 17:20 마감)",
+      "priceNote": "무료",
+      "accessNote": "사전등록은 11/18 18:00까지, 사전등록자는 QR코드로 입장 가능. 현장 입장방법은 주최 측 안내 확인.",
+      "sourceUrl": "https://kto.visitkorea.or.kr/kor/souvenir/exhb/exhbIntro.kto",
+      "sourceName": "한국관광공사 대한민국 관광기념품 박람회",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        "https://kto.visitkorea.or.kr/kor/souvenir/exhb/exhbViewGuide.kto"
+      ],
+      "status": "scheduled",
+      "tags": [
+        "전시",
+        "관광기념품",
+        "굿즈",
+        "무료",
+        "사전등록"
+      ]
+    },
+    {
+      "id": "taean-light-festival-2026",
+      "title": "태안 빛축제",
+      "category": "fireworks",
+      "start": "2026-01-01",
+      "end": "2026-12-31",
+      "region": "충남",
+      "city": "태안군",
+      "venue": "네이처월드",
+      "address": "충남 태안군 남면 마검포길 200",
+      "lat": 36.616472,
+      "lng": 126.300958,
+      "geoApprox": true,
+      "summary": "네이처월드의 정원을 다양한 빛 조형물로 꾸미는 연중 야간 축제입니다.",
+      "scheduleNote": "연중 운영 / 11~1월 입장 17:30~21:00, 폐장 22:00 / 다른 달은 공식 월별 시간표 확인",
+      "priceNote": "성인 10,000원 / 36개월 이상~19세 8,000원 / 36개월 미만 무료 / 할인 대상은 공식 안내 확인",
+      "accessNote": "우천 시 야간 점등을 하지 않습니다. 방문 전 운영 공지와 월별 입장시간을 확인해 주세요.",
+      "sourceUrl": "https://tour.chungnam.go.kr/prog/fstvl/kor/sub02_01_01/view.do?fstvlNo=113",
+      "sourceName": "충청남도 충남관광",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        {
+          "name": "네이처월드 공식 운영안내",
+          "url": "https://www.ffestival.co.kr/page/sub1_2"
+        },
+        {
+          "name": "네이처월드 공식 축제소개",
+          "url": "https://www.ffestival.co.kr/page/sub1_4"
+        }
+      ],
+      "tags": [
+        "불빛축제",
+        "빛축제",
+        "조명",
+        "정원",
+        "야간",
+        "연중"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "seoul-lantern-2026",
+      "title": "2026 서울빛초롱축제",
+      "category": "fireworks",
+      "start": null,
+      "end": null,
+      "dateStatus": "undecided",
+      "dateNote": "2026년 12월 예정",
+      "dateEvidence": "서울시 FUN SEOUL의 2026 서울빛초롱축제 안내에 12월 예정 및 청계천 일대 개최 계획이 게시됨. 주최 측 홈페이지는 이전 회차 안내로, 2026년 정확한 날짜는 아직 확인되지 않음.",
+      "region": "서울",
+      "city": "중구",
+      "venue": "청계천 일대 (예정)",
+      "locationStatus": "planned",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "청계천을 따라 전통 한지등과 미디어아트를 선보일 예정인 겨울 빛축제입니다. 정확한 날짜와 전시 구간은 공식 발표 후 갱신합니다.",
+      "scheduleNote": "세부 날짜·점등시간 추후 안내",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "공식 개최 계획 단계로, 세부 프로그램과 관람 조건은 추후 발표됩니다.",
+      "sourceUrl": "https://festival.seoul.go.kr/festival/main/festivalView.do?festacode=360",
+      "sourceName": "서울특별시 FUN SEOUL",
+      "sourceCheckedAt": "2026-11-04",
+      "tags": [
+        "불빛축제",
+        "빛축제",
+        "등축제",
+        "한지등",
+        "겨울",
+        "개최 예정"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "sejong-nakhwa-2026",
+      "title": "세종낙화축제",
+      "category": "fireworks",
+      "start": "2026-05-16",
+      "end": "2026-05-16",
+      "region": "세종",
+      "city": "세종시",
+      "venue": "세종호수공원·중앙공원 일원",
+      "address": "세종특별자치시 다솜로 216",
+      "lat": 36.498823,
+      "lng": 127.270076,
+      "geoApprox": true,
+      "summary": "호수공원과 중앙공원에서 꽃잎처럼 흩날리는 낙화봉의 불씨를 감상하는 전통 야간 축제입니다.",
+      "scheduleNote": "5월 16일 19:30부터 / 낙화 연출 관람 약 2시간",
+      "priceNote": "무료",
+      "sourceUrl": "https://sjfestival.kr/dh_board/views/779",
+      "sourceName": "세종시문화관광재단",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        {
+          "name": "한국관광공사 대한민국 구석구석",
+          "url": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=5cf9cb68-94e3-491a-ab6b-73e42094d3f7"
+        }
+      ],
+      "tags": [
+        "낙화",
+        "낙화놀이",
+        "낙화축제",
+        "전통불꽃",
+        "야간",
+        "무료"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "haman-nakhwa-myk-2026",
+      "title": "함안낙화 페스티벌 with MyK FESTA",
+      "category": "fireworks",
+      "start": "2026-07-03",
+      "end": "2026-07-04",
+      "region": "경남",
+      "city": "함안군",
+      "venue": "무진정 일원",
+      "address": "경남 함안군 함안면 괴산4길 25",
+      "lat": 35.25542,
+      "lng": 128.422748,
+      "geoApprox": true,
+      "summary": "무진정에서 전통 낙화놀이와 문화 공연·체험을 함께 선보인 7월 특별행사입니다. 부처님 오신 날 열리는 함안낙화놀이와는 별도 회차입니다.",
+      "scheduleNote": "7월 3~4일 16:00~21:30 / 점화식 19:20",
+      "priceNote": "자유관람 10,000원 / A~D구역 20,000원 / S구역 30,000원",
+      "accessNote": "당시 사전예매자만 입장. 유아·아동을 포함한 전 연령 예매가 필요하며 1인 최대 4매였습니다.",
+      "sourceUrl": "https://m.ticket.yes24.com/Notice/Detail.aspx?bid=18010",
+      "sourceName": "함안군 주최 공식 예매 공지 (YES24)",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        {
+          "name": "경상남도 공식 축제 안내",
+          "url": "https://festa.gyeongnam.go.kr/index.do?siteCd=145"
+        },
+        {
+          "name": "경상남도 공식 행사장 안내",
+          "url": "https://festa.gyeongnam.go.kr/index.do?menuCode=004_003004000000&siteCd=145"
+        }
+      ],
+      "tags": [
+        "낙화",
+        "낙화놀이",
+        "낙화축제",
+        "전통불꽃",
+        "야간",
+        "사전예약"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "paju-jangdan-bean-2026",
+      "title": "2026 파주장단콩축제",
+      "category": "local",
+      "start": "2026-11-27",
+      "end": "2026-11-29",
+      "region": "경기",
+      "city": "파주시",
+      "venue": "임진각 광장 (예정)",
+      "locationStatus": "planned",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "파주 장단콩과 지역 농특산물을 소개하고 장터·체험을 진행하는 가을 지역축제입니다.",
+      "scheduleNote": "11/27~11/29 / 개막식 11/27 14:00 / 그 밖의 행사별 시간은 공식 시간표 확인",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "행사장은 임진각 광장으로 발표됐으며 주차장과 출입 동선은 파주시 행사 안내를 확인해 주세요.",
+      "sourceUrl": "https://tour.paju.go.kr/tour/festival/festival02/festival02_2/festival02_2_01/festival02_2_01_01.jsp",
+      "sourceName": "파주시 문화관광(파주장단콩축제 공식 안내)",
+      "sourceCheckedAt": "2026-11-04",
+      "tags": [
+        "장단콩",
+        "먹거리",
+        "장터",
+        "농특산물"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "expo-megashow-travel-2026",
+      "title": "메가쇼 & 트래블쇼 2026 시즌 2",
+      "category": "expo",
+      "start": "2026-11-12",
+      "end": "2026-11-15",
+      "region": "경기",
+      "city": "고양시",
+      "venue": "킨텍스 제1전시장 2·3·4홀",
+      "address": "경기 고양시 일산서구 킨텍스로 217-60",
+      "lat": 37.6689,
+      "lng": 126.7458,
+      "geoApprox": true,
+      "summary": "식품·생활용품·리빙·주방용품·여행 상품을 소개하는 소비재 박람회입니다.",
+      "scheduleNote": "11/12~14 10:00~18:00 / 11/15 10:00~17:00",
+      "priceNote": "성인 현장 10,000원 / 사전등록 본인 무료 / 학생·미취학 아동 무료(공식 입장 조건 확인)",
+      "accessNote": "사전등록 무료입장은 등록자 본인만 적용됩니다. 동반 성인은 각각 사전등록하거나 초청장이 필요합니다. 미성년자는 보호자와 동반하면 무료이며 반려동물 입장은 불가합니다.",
+      "sourceUrl": "https://megashow.co.kr/page/index?tpl=sub/megashow01.html",
+      "sourceName": "메가쇼 주최 측 공식 관람안내",
+      "sourceCheckedAt": "2026-11-04",
+      "verificationSources": [
+        {
+          "name": "메가쇼 공식 홈페이지",
+          "url": "https://megashow.co.kr/"
+        }
+      ],
+      "tags": [
+        "박람회",
+        "소비재",
+        "여행",
+        "사전등록",
+        "무료입장 가능"
       ],
       "status": "scheduled"
     }
