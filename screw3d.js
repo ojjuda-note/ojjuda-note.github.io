@@ -656,7 +656,13 @@ function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나�
 }
 const STAGES = 1000;
 // 1~500 retain their established progression; new levels keep growing without a sudden jump.
-const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6 : L <= 500 ? Math.round(48 + 952 * Math.pow((L - 4) / 496, 0.8)) : 1000 + 3 * Math.ceil((L - 500) / 10);
+// Scale puzzle complexity gradually while keeping scenes comfortable on phones.
+// The 1-3 stage tutorial stays unchanged. The target (not a strict count)
+// rises from about 138 screws at stage 30 to 400 at 500 and 540 at 1000.
+const targetScrews = L => L <= 3 ? 12 + (L - 1) * 6
+  : L <= 30 ? Math.round(48 + 952 * Math.pow((L - 4) / 496, 0.8))
+  : L <= 500 ? Math.round(138 + 262 * Math.pow((L - 30) / 470, 0.85))
+  : Math.round(400 + 140 * Math.pow((L - 500) / 500, 0.90));
 const colorCount = L => L <= 3 ? 2 : Math.min(3 + Math.floor((L - 4) / 12), COLORS.length);
 function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
   const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
@@ -669,7 +675,7 @@ function sizedModel(L, alt = false) {   // 단계에 맞는 크기의 물건: �
   const T = targetScrews(L), f = alt ? modelRobot : MODELS[(L - 1) % MODELS.length];
   if (L <= 3) return tutorialModel(L);
   const ms = Math.ceil(T * 0.85 / 3) * 3;
-  if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * 2.2 < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
+  if (f.blocks) { let t = 0; while (t < 60 && f.blocks(t) * (L <= 30 ? 2.2 : 2.45) < T) t++; const A = f(t, ms); if (t > 0 && A.screws.length > T * 1.3) { const B2 = f(t - 1, ms); if (Math.abs(B2.screws.length - T) < Math.abs(A.screws.length - T)) return B2; } return A; }
   return withPedestal(f(Math.min(2, Math.floor((L - 1) / MODELS.length))), T);
 }
 function buildLevel(L, alt = false) {
@@ -694,7 +700,7 @@ function withPedestal(obj, T) {
   const drop = new Set(obj.screws.filter(z => z.a[1] < -0.9)); obj.screws = obj.screws.filter(z => !drop.has(z));
   obj.hold = obj.hold.filter(h => ![...drop].some(z => Math.hypot(...sub(z.p, h.p)) < 1e-6));
   obj.els = obj.els.filter(e => e.kind !== 'plate' || !e.flat || obj.screws.some(z => z.thru === e || z.into === e));
-  const need = Math.max(8, T - obj.screws.length), nb = Math.max(4, Math.round(need / 2.15));
+  const need = Math.max(8, T - obj.screws.length), nb = Math.max(4, Math.round(need / 2.6));
   let fp = 0; for (const e of obj.els) { const c = add(e.c, mv(e.R, e.geom.cen || [0, 0, 0])); fp = Math.max(fp, Math.hypot(c[0], c[2]) + Math.max(e.geom.half[0], e.geom.half[2]) * 0.8); }
   const k = 2; let m = 1, cnt = k * k; while (cnt < nb) { cnt += (k + 2 * m) * (k + 2 * m); m++; }   // 맨 위층은 2×2 (넓은 물건은 살짝 튀어나와요)
   const S = k + 2 * (m - 1), b = [];
