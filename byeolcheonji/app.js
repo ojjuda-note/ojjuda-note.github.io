@@ -216,7 +216,9 @@
       const start = url.searchParams.get('startDateTime') || url.searchParams.get('startDate');
       const end = url.searchParams.get('endDateTime') || url.searchParams.get('endDate');
       if (start?.slice(0, 10) !== match.date || end?.slice(0, 10) !== match.endDate) return null;
-      return url.href;
+      // Open Naver's business-level booking page instead of a potentially closed item deep link.
+      // The guest selects the room and date again on Naver.
+      return `https://booking.naver.com/booking/3/bizes/1627625`;
     } catch { return null; }
   }
   function validMatch(match) {
