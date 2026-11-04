@@ -24,8 +24,8 @@ export function createPremiumModels(h) {
     const b=[];
     for(let x=0;x<L;x++)for(let z=0;z<D;z++)if(x!==0&&x!==L-1||z===mid)
       b.push(cube(x,0,z,(x+z)%4===0?'#35425C':'#29354B'));
-    for(let x=1;x<L-1;x++)for(let z=1;z<D-1;z++)
-      b.push(cube(x,1,z,(x+z)%3===0?'#F1DEB5':'#F8EDD5'));
+    for(let x=1;x<L-1;x++)
+      b.push(cube(x,1,mid,x%3===0?'#F1DEB5':'#F8EDD5'));
     for(let x=2;x<L-2;x++)b.push(cube(x,2,mid,x%4===0?'#D7E3EB':'#F6F4E9'));
     b.push(cube(2,3,mid,'#F4EFE2'));
     const at=(x,y,z)=>b.find(E=>E.cell[0]===x&&E.cell[1]===y&&E.cell[2]===z);
@@ -50,7 +50,7 @@ export function createPremiumModels(h) {
   }
   modelTitanic.blocks=t=>{
     const L=9+Math.min(42,Math.floor(t*0.8)),D=3+Math.min(5,Math.floor(t/12));
-    return (L-2)*D+2+(L-2)*(D-2)+(L-4)+1;
+    return (L-2)*D+2+(L-2)+(L-4)+1;
   };
 
   const watermelonSize=t=>4+Math.min(11,t);
@@ -95,6 +95,8 @@ export function createPremiumModels(h) {
     const [L,D,H]=animalDims(t),pig=type==='pig',cow=type==='cow',b=[];
     const name=pig?'돼지':cow?'소':'토끼';
     for(let x=0;x<L-1;x++)for(let y=1;y<=H;y++)for(let z=0;z<D;z++){
+      // Hollow figurines expose inner fastening faces instead of trapping solid voxels.
+      if(x>0&&x<L-2&&y>1&&y<H&&z>0&&z<D-1)continue;
       const col=pig?(x+y+z)%6===0?'#F6A8B9':'#F2BDCA':
         cow?(x*3+z*5+y*7)%9<3?'#444753':'#F7F6EC':
         (x+y+z)%5===0?'#E1E3F0':'#FFF9EF';
@@ -125,7 +127,7 @@ export function createPremiumModels(h) {
     }});
   }
   modelAnimal.blocks=t=>{
-    const [L,D,H]=animalDims(t);return (L-1)*D*H+2*D+4;
+    const [L,D,H]=animalDims(t);return (L-1)*D*H-Math.max(0,L-3)*Math.max(0,D-2)*Math.max(0,H-2)+2*D+4;
   };
   const modelPig=(t=0,minS=0)=>modelAnimal('pig',t,minS);
   const modelCow=(t=0,minS=0)=>modelAnimal('cow',t,minS);
