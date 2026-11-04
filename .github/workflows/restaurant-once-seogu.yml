@@ -1,0 +1,61 @@
+name: One-time Daejeon restaurant catalog source update
+on:
+  push:
+    branches: [automation/restaurants-seogu-20261104]
+    paths: [.github/workflows/restaurant-once-seogu.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: automation/restaurants-seogu-20261104
+      - name: Apply verified municipal introduction with repository-native file transfer
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const root='games/certified-restaurants/';
+          const d=JSON.parse(fs.readFileSync(root+'restaurants.json','utf8'));
+          const s=JSON.parse(fs.readFileSync(root+'sources.json','utf8'));
+          const id='local-daejeon-barogzip-goejeong';
+          if(d.restaurants.some(r=>r.id===id)){console.log('Already patched, no update');process.exit(0);}
+          assert.equal(d.restaurants.length,3002);
+          assert.equal(s.coverage.uniqueRestaurants,3003);
+          assert.equal(s.coverage.providerCounts['local-guide'],2281);
+          const url='https://blog.naver.com/first_seogu/223250576100';
+          d.restaurants.push({id,name:'바로그집 괴정점',category:'분식',region:'대전',district:'서구',address:'대전광역시 서구 도산로369번길 94',lat:null,lng:null,menu:['떡볶이','김밥','어묵'],guides:[{provider:'local-guide',label:'대전 서구청 공식 맛집 소개',year:null,yearType:'source',sourceUrl:url,sourceName:'대전광역시 서구청 공식 블로그',verifiedAt:'2026-11-04',sourceAsOf:'2023',status:'official_restaurant_listing',selectionCriteria:'서구청이 소개한 음식점입니다. 정식 지정·심사 등급이나 블루리본 선정이 아니며 현재 영업 여부는 별도로 확인하지 않았습니다.'}],addressSourceUrl:url});
+          d.coverageNote=d.coverageNote.replace('지자체 지정·선정 이력 2280곳','지자체 지정·선정·공식 소개 2281곳').replace('중복 제외 3002곳','중복 제외 3003곳').replace('선정 기관·사업·연도·기준일은','단순 공식 음식점 소개는 지정·선정과 구분합니다. 선정 기관·사업·연도·기준일은');
+          assert(d.coverageNote.includes('중복 제외 3003곳'));
+          assert.equal(new Set(d.restaurants.map(r=>r.id)).size,3003);
+          assert.equal(d.restaurants.filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lng)).length,1003);
+          fs.writeFileSync(root+'restaurants.json',JSON.stringify(d,null,2)+'\n');
+          const rev='20261104-restaurants-seogu1',old='20261104-restaurants-regional1';
+          function patch(path,find,replacement){let val=fs.readFileSync(path,'utf8');assert(val.includes(find),'missing replacement pattern: '+path);val=val.replace(find,replacement);fs.writeFileSync(path,val);}
+          patch(root+'app.js','restaurants.json?v='+old,'restaurants.json?v='+rev);
+          patch(root+'index.html','app.js?v='+old,'app.js?v='+rev);
+          patch('world-restaurant-guide.js','index.html?v='+old,'index.html?v='+rev);
+          patch('world-game-assets.js',"const revision='"+old+"'","const revision='"+rev+"'");
+          patch('world-game-assets.js',"restaurants:'1.9.2'","restaurants:'1.9.3'");
+          patch('world-game-assets.js','world-restaurant-guide.js?v='+old,'world-restaurant-guide.js?v='+rev);
+          patch('world.html','/world-game-assets.js?v='+old,'/world-game-assets.js?v='+rev);
+          fs.writeFileSync('game-release.json',JSON.stringify({revision:rev})+'\n');
+          assert(fs.readFileSync('world.html','utf8').includes('/world-game-assets.js?v='+rev));
+          console.log('Updated 3003 restaurants with verified Daejeon municipal introduction; preserved other records.');
+          NODE
+      - name: Validate cache, basic game invariants, and commit patch
+        run: |
+          node --check games/certified-restaurants/app.js
+          node --check world-restaurant-guide.js
+          node --check world-game-assets.js
+          node tests/game-release-refresh.test.cjs
+          node tests/game-assets-loading.test.cjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add games/certified-restaurants/restaurants.json games/certified-restaurants/app.js games/certified-restaurants/index.html world-restaurant-guide.js world-game-assets.js game-release.json world.html
+          if git diff --cached --quiet; then echo 'No changes to commit'; exit 0; fi
+          git commit -m 'Publish Daejeon Seogu verified restaurant introduction'
+          git push origin HEAD:refs/heads/automation/restaurants-seogu-20261104
