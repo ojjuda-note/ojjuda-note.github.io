@@ -1,0 +1,1052 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-04",
+  "scope": "여수시 누락 맛집 및 기존 항목 보강",
+  "catalogAddedCount": 8,
+  "existingEnrichedCount": 13,
+  "resultingYeosuCount": 21,
+  "coordinatesAvailable": 20,
+  "blueRibbonHistoryCount": 6,
+  "completeRegionalList": false,
+  "officialDirectory": {
+    "sourceUrl": "https://yscms.yeosu.go.kr/health/info/model",
+    "sourceAsOf": "2022",
+    "selectedRows": [
+      [
+        "1",
+        "일반",
+        "대성식당",
+        "한식",
+        "전라남도 여수시 교동남1길    5-9 (교동)",
+        "061-663-0745",
+        "○",
+        "매우우수",
+        "○",
+        "○",
+        "○",
+        "○"
+      ],
+      [
+        "2",
+        "일반",
+        "광장서대회",
+        "한식",
+        "전라남도 여수시 이순신광장로 129,    1층 (중앙동)",
+        "061-661-0251",
+        "○",
+        "좋음",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "181",
+        "일반",
+        "경도회관",
+        "한식",
+        "전라남도 여수시 대경도길 2-2    (경호동,,621-4)",
+        "061-666-0044",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "182",
+        "일반",
+        "광장미가",
+        "한식",
+        "전라남도 여수시 중앙로 72-22    (중앙동,(1층))",
+        "061-662-1870",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "183",
+        "일반",
+        "풍산식당",
+        "한식",
+        "전라남도 여수시 중앙로 72-26    (중앙동,(1,2층))",
+        "061-662-8697",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "184",
+        "일반",
+        "경도회관(여천점)",
+        "한식",
+        "전라남도 여수시 시청서3길 23    (학동)",
+        "061-920-8888",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "185",
+        "일반",
+        "꽃돌게장1번가",
+        "한식",
+        "전라남도 여수시 봉산2로 36,    1~2층 (봉산동)",
+        "061-644-0003",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "186",
+        "일반",
+        "한일관",
+        "한식",
+        "전라남도 여수시 봉산2로 32, 제1동    1~2층 (봉산동)",
+        "061-654-0091",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "187",
+        "일반",
+        "오죽헌",
+        "한식",
+        "전라남도 여수시 시청서1길 36    (학동)",
+        "061-685-1700",
+        "",
+        "",
+        "○",
+        "○",
+        "○",
+        ""
+      ],
+      [
+        "288",
+        "일반",
+        "일조오리탕",
+        "한식",
+        "전라남도 여수시 통제영2길 8-12    (교동)",
+        "061- 666-1780",
+        "",
+        "",
+        "○",
+        "",
+        "",
+        "○"
+      ],
+      [
+        "304",
+        "일반",
+        "함남면옥",
+        "한식",
+        "전라남도 여수시 중앙1길 8 (중앙동)",
+        "061-662-2581",
+        "",
+        "",
+        "",
+        "○",
+        "",
+        "○"
+      ],
+      [
+        "545",
+        "일반",
+        "삼학집",
+        "한식",
+        "전라남도 이순신광장로 200-3    (종화동)",
+        "0507-1356-0261",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "○"
+      ]
+    ],
+    "policy": "남도음식·향토음식 열의 지정만 선정 근거로 사용. 현재 재지정 여부 미확인."
+  },
+  "officialRestaurantDetails": [
+    {
+      "id": 6501,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6501",
+      "name": "삼학집",
+      "addressOriginal": "전남광주통합특별시 여수시 이순신광장로 200-3 (종화동) ()",
+      "phone": "061-662-0261",
+      "lat": 34.7390860242063,
+      "lng": 127.745243842152,
+      "facts": {
+        "주소": "이순신광장로 200-3 (종화동)",
+        "전화": "061-662-0261",
+        "운영": "영업시간 : 09:00 ~ 21:00",
+        "휴무일": "기타(매주 수요일)",
+        "어린이놀이방": "없음",
+        "장애인시설": "휠체어 가능"
+      },
+      "menu": [
+        "갈치구이(2토막)",
+        "서대회"
+      ],
+      "sourceSha256": "e02aaba889f4058284083c22afba78dc72733491df9cd44fdbdf15b8f70d7af3"
+    },
+    {
+      "id": 3338,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3338",
+      "name": "대성식당",
+      "addressOriginal": "전남광주통합특별시 여수시 교동남1길 5-9 ((교동))",
+      "phone": "061-663-0745",
+      "lat": 34.739798022968955,
+      "lng": 127.73414429356292,
+      "facts": {
+        "주소": "교동남1길 5-9 (교동)",
+        "전화": "061-663-0745",
+        "운영": "영업시간 : 08시 ~ 21시",
+        "좌석": "56석(좌식:28, 입식:28)",
+        "휴무일": "기타(매월 첫째,셋째 월요일 휴무, 명절 당일 휴무)",
+        "어린이놀이방": "없음",
+        "장애인시설": ""
+      },
+      "menu": [
+        "갈치조림",
+        "서대회"
+      ],
+      "sourceSha256": "7671951b95569c790bb2d87f8ee023d0254ac3985addbede1b229f8f97cc897f"
+    },
+    {
+      "id": 4046,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4046",
+      "name": "경도회관 여천점",
+      "addressOriginal": "전남광주통합특별시 여수시 소호1길 50 (소호동) ((학동))",
+      "phone": "0507-1479-8891",
+      "lat": 34.7466892096656,
+      "lng": 127.658083230324,
+      "facts": {
+        "주소": "소호1길 50 (소호동) (학동)",
+        "전화": "0507-1479-8891",
+        "운영": "영업시간 : 11:30 ~ 22:00 휴식시간 : 15시 ~ 17시",
+        "좌석": "136석(입식:136)",
+        "휴무일": "명절휴무, 기타(둘째,넷째 일요일,명절(전날,당일)휴무,6월~7월은 휴무없음.)",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "우거지장어탕",
+        "갯장어 사시미",
+        "갯장어 샤브샤브(하모유비끼)(계절메뉴)"
+      ],
+      "sourceSha256": "35772aac0ae55e46b30ae7e4b51e2d4187d23dc22ec6ba718512ede91eefddf1"
+    },
+    {
+      "id": 3382,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3382",
+      "name": "오죽헌",
+      "addressOriginal": "전남광주통합특별시 여수시 시청서1길 36 ((학동))",
+      "phone": "061-685-1700",
+      "lat": 34.75834910345147,
+      "lng": 127.6610741193333,
+      "facts": {
+        "주소": "시청서1길 36 (학동)",
+        "전화": "061-685-1700",
+        "운영": "영업시간 : 10:00 ~ 21:00 휴식시간 : 15:00 ~ 17:00",
+        "좌석": "50석(입식:200)",
+        "휴무일": "명절휴무",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "떡갈비정식(점심특선)",
+        "돌문어전복삼계탕(점심특선)",
+        "점심 보리굴비 돌솥정식",
+        "궁중밥상(4인이드실때)",
+        "전라좌수사밥상(4인이드실때)",
+        "이순신알뜰밥상(4인이드실때)"
+      ],
+      "sourceSha256": "c023076b35c2773193a29e9bfb2e782b9fa2f62d1900516ad368fc117b69a6c5"
+    },
+    {
+      "id": 3380,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3380",
+      "name": "경도회관",
+      "addressOriginal": "전남광주통합특별시 여수시 대경도길 2-2 ((경호동))",
+      "phone": "061-666-0044",
+      "lat": 34.72180048879524,
+      "lng": 127.72181468196582,
+      "facts": {
+        "주소": "대경도길 2-2 (경호동)",
+        "전화": "061-666-0044",
+        "운영": "영업시간 : 11시 ~ 21시",
+        "좌석": "136석(입식:136)",
+        "휴무일": "기타(12월~3월 상황에 따라 휴무)",
+        "어린이놀이방": "없음",
+        "장애인시설": "휠체어 출입 가능"
+      },
+      "menu": [
+        "낙지비빔밥(2인)계절메뉴",
+        "광어회+새조개(계절메뉴)",
+        "새조개샤브샤브(계절메뉴)",
+        "붕장어유비끼(계절메뉴)",
+        "하모(갯장어)사시미",
+        "하모(갯장어)유비끼"
+      ],
+      "sourceSha256": "ec27b1221cc9855267147358a16543edd8e0696daa7668e55a2f04400a197c59"
+    },
+    {
+      "id": 4793,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4793",
+      "name": "한일관",
+      "addressOriginal": "전남광주통합특별시 여수시 봉산2로 32 ((봉산동))",
+      "phone": "061-654-0091",
+      "lat": 34.73265459690177,
+      "lng": 127.72584848119612,
+      "facts": {
+        "주소": "봉산2로 32 (봉산동)",
+        "전화": "061-654-0091",
+        "운영": "영업시간 : 11시 ~ 21시30 분 휴식시간 : 15시 ~ 17시",
+        "좌석": "420석(입식:420)",
+        "휴무일": "명절휴무",
+        "어린이놀이방": "없음",
+        "장애인시설": "휠체어출입가능"
+      },
+      "menu": [
+        "회무침",
+        "홍어삼합",
+        "전복구이",
+        "전복물회",
+        "해산물 정식 A코스 (4인상)",
+        "해산물 정식 A코스 (3인상)",
+        "해산물 정식 B코스 (4인상)",
+        "해산물 정식 B코스 (3인상)",
+        "육전",
+        "메로구이",
+        "꽃게장",
+        "전복회",
+        "생선회",
+        "해산물 정식 B코스 (2인상)",
+        "해산물 정식 A코스 (2인상)"
+      ],
+      "sourceSha256": "9de23362d18fa5785b15a0a1cff02734989e0387423e9fe82014849181075b60"
+    },
+    {
+      "id": 3314,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3314",
+      "name": "남경전복",
+      "addressOriginal": "전남광주통합특별시 여수시 시청서4길 54 ((학동))",
+      "phone": "061-686-6653",
+      "lat": 34.759130320793055,
+      "lng": 127.66129442056551,
+      "facts": {
+        "주소": "시청서4길 54 (학동)",
+        "전화": "061-686-6653",
+        "운영": "영업시간 : 11시30분 ~ 21시30분 휴식시간 : 15시 ~ 16시30분",
+        "좌석": "52석(입식:52)",
+        "휴무일": "기타(매주 일요일 )",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "전복솥밥",
+        "전복돌솥비빔밥",
+        "전복구이",
+        "전복찜",
+        "C정식",
+        "B정식",
+        "A정식"
+      ],
+      "sourceSha256": "b1e9ebc6ed1354598a6b6262fb3cc7fd434f734fee0a303eaeae7eb073932c77"
+    },
+    {
+      "id": 4258,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4258",
+      "name": "청정게장촌(유)",
+      "addressOriginal": "전남광주통합특별시 여수시 봉산남4길 23-32 ((봉산동))",
+      "phone": "061-643-7855",
+      "lat": 34.7330555,
+      "lng": 127.72204750000003,
+      "facts": {
+        "주소": "봉산남4길 23-32 (봉산동)",
+        "전화": "061-643-7855",
+        "운영": "영업시간 : 08시 ~ 20시30분",
+        "좌석": "236석(좌식:36, 입식:200)",
+        "휴무일": "연중무휴",
+        "어린이놀이방": "없음",
+        "장애인시설": "무"
+      },
+      "menu": [
+        "모둠꽃게장정식",
+        "갈치조림+돌게장정식"
+      ],
+      "sourceSha256": "916d1efc95c4455e2f03d41bfa232505496e3398fcf604cc17bcf2029c965048"
+    },
+    {
+      "id": 4193,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4193",
+      "name": "꽃돌게장1번가",
+      "addressOriginal": "전남광주통합특별시 여수시 봉산2로 36 ((봉산동) 1~2층)",
+      "phone": "061-644-0003",
+      "lat": 34.73303105561824,
+      "lng": 127.7262055375617,
+      "facts": {
+        "주소": "봉산2로 36 (봉산동) 1~2층",
+        "전화": "061-644-0003",
+        "운영": "영업시간 : 10시 ~ 20시30분 휴식시간 : 15시 ~ 17시",
+        "좌석": "250석(입식:250)",
+        "휴무일": "명절휴무",
+        "어린이놀이방": "없음",
+        "장애인시설": "엘리베이터,휠체어 출입 가능"
+      },
+      "menu": [
+        "왕간장꽃게장1마리",
+        "간장꽃게장1마리",
+        "갈치조림",
+        "새우장5마리",
+        "전복장1마리",
+        "양념꽃게장",
+        "왕꽃게정식(330g)",
+        "양념꽃게장1마리",
+        "간장꽃게장1마리",
+        "꽃밥",
+        "갈치조림",
+        "어린이수제돈까스",
+        "꽃게탕",
+        "꽃밥정식",
+        "갈치조림정식",
+        "꽃게정식(1인분)",
+        "돌게정식"
+      ],
+      "sourceSha256": "9cc26f2c0f14729f195146df05e10f9b1918dbc09ce60903fc254268c3ce6fbe"
+    },
+    {
+      "id": 3352,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3352",
+      "name": "풍산식당",
+      "addressOriginal": "전남광주통합특별시 여수시 중앙로 72-26 ((중앙동))",
+      "phone": "061-662-8697",
+      "lat": 34.73976125476819,
+      "lng": 127.73486029047018,
+      "facts": {
+        "주소": "중앙로 72-26 (중앙동)",
+        "전화": "061-662-8697",
+        "운영": "영업시간 : 09시 ~ 21시",
+        "좌석": "64석(좌식:24, 입식:40)",
+        "휴무일": "명절휴무, 기타(첫째, 셋째주 월요일 휴무)",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "갈치구이(2인)",
+        "장어구이(2인)",
+        "서대회",
+        "아귀탕",
+        "아귀대창찜",
+        "장어탕",
+        "아구찜"
+      ],
+      "sourceSha256": "5d70f0f89fea5fac5918aeea88a3630568568a268d43bf0a7cb37335fc06ad44"
+    },
+    {
+      "id": 3607,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3607",
+      "name": "광장미가",
+      "addressOriginal": "전남광주통합특별시 여수시 중앙로 72-22 ((중앙동))",
+      "phone": "061-662-2929",
+      "lat": 34.73974861991218,
+      "lng": 127.73516155797932,
+      "facts": {
+        "주소": "중앙로 72-22 (중앙동)",
+        "전화": "061-662-2929",
+        "운영": "영업시간 : 9시 ~ 21시",
+        "좌석": "116석(좌식:40, 입식:76)",
+        "휴무일": "명절휴무, 기타(매주 화요일, 명절 3일)",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "금풍생이구이(2인)",
+        "갈치구이",
+        "장어구이(2인)",
+        "아구탕",
+        "장어탕",
+        "서대회",
+        "갈치조림",
+        "대창찜",
+        "아귀찜"
+      ],
+      "sourceSha256": "aecc46d6fcb7f3d0f48aac9831d212df6bbc47f04919aee66a1fbef43d6a299f"
+    },
+    {
+      "id": 6841,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6841",
+      "name": "단군신화",
+      "addressOriginal": "전남광주통합특별시 여수시 소호6길 7-5 (소호동) (2층)",
+      "phone": "061-922-7222",
+      "lat": 34.7401796381376,
+      "lng": 127.649657754916,
+      "facts": {
+        "주소": "소호6길 7-5 (소호동) 2층",
+        "전화": "061-922-7222",
+        "운영": "영업시간 : 12:00 ~ 24:00 매주 화요일 정기휴무",
+        "여수시민할인": "전체 음식값의 5%할인"
+      },
+      "menu": [],
+      "sourceSha256": "ecaa3fd6090f49524c8aec50e5d4f645264e51ace2cd03c7fff427d71dcf4d49"
+    },
+    {
+      "id": 5485,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=5485",
+      "name": "광장서대회 ",
+      "addressOriginal": "전남광주통합특별시 여수시 이순신광장로 196 (종화동) (1층)",
+      "phone": "061-666-2013",
+      "lat": 34.7385283686401,
+      "lng": 127.744397497159,
+      "facts": {
+        "주소": "이순신광장로 196 (종화동) 1층",
+        "전화": "061-666-2013",
+        "운영": "영업시간 : 08:30 ~ 22:00",
+        "좌석": "52석(좌식:20, 입식:32)",
+        "휴무일": "연중무휴",
+        "어린이놀이방": "없음",
+        "여수시민할인": "전 메뉴 1000원 할인",
+        "장애인시설": "휠체어 출입 가능"
+      },
+      "menu": [
+        "갈치구이",
+        "갈치조림(2인)",
+        "갈치구이",
+        "홍어삼합",
+        "해물삼합",
+        "서대회"
+      ],
+      "sourceSha256": "26a58edcd8d29f95fe5efe3bd9895fcc453235d95f7625ed6ad2b5f769f7b847"
+    },
+    {
+      "id": 3437,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3437",
+      "name": "일조오리탕",
+      "addressOriginal": "전남광주통합특별시 여수시 통제영2길 8-12 ((교동))",
+      "phone": "061-666-1780",
+      "lat": 34.740584682182856,
+      "lng": 127.73343929082478,
+      "facts": {
+        "주소": "통제영2길 8-12 (교동)",
+        "전화": "061-666-1780",
+        "운영": "영업시간 : 11시 ~ 20시30분",
+        "좌석": "60석(입식:60)",
+        "휴무일": "명절휴무",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "오리탕",
+        "생오리",
+        "오리불고기",
+        "오리모듬훈제"
+      ],
+      "sourceSha256": "1b6a99ba9ce6bf95d51b5412346fa608a269290cb8a32edb8a0ac357d4ef62ab"
+    },
+    {
+      "id": 3334,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3334",
+      "name": "함남면옥",
+      "addressOriginal": "전남광주통합특별시 여수시 중앙1길 8 ((중앙동))",
+      "phone": "061-662-2581",
+      "lat": 34.7401190057238,
+      "lng": 127.73651886813629,
+      "facts": {
+        "주소": "중앙1길 8 (중앙동)",
+        "전화": "061-662-2581",
+        "운영": "영업시간 : 10:30 ~ 21:00",
+        "좌석": "144석(좌식:104, 입식:40)",
+        "휴무일": "기타(한달에 두번쉬는데 정해지지않음)",
+        "어린이놀이방": "없음"
+      },
+      "menu": [
+        "왕찐만두",
+        "한우설렁탕",
+        "한우갈비탕",
+        "회냉면",
+        "냉면"
+      ],
+      "sourceSha256": "d4c9f1e60c902545ea282054fe694ddb2ad703d08bcf1c870950e9043d1313d4"
+    },
+    {
+      "id": 6725,
+      "url": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6725",
+      "name": "여수생선구이",
+      "addressOriginal": "전남광주통합특별시 여수시 어항단지로 205 (봉산동) ()",
+      "phone": "--",
+      "lat": 34.7306793371607,
+      "lng": 127.72802798488,
+      "facts": {
+        "주소": "어항단지로 205 (봉산동)",
+        "전화": "-"
+      },
+      "menu": [
+        "생선구이"
+      ],
+      "sourceSha256": "0069bf48186da8d5769a682d5d932cf00a4717223e1010ea7942c10987146948"
+    }
+  ],
+  "businessReportedBlueRibbonHistories": [
+    {
+      "name": "삼학집",
+      "action": "enrich_existing",
+      "existingName": "삼학집",
+      "naverPlaceId": "11726049",
+      "address": "전남 여수시 이순신광장로 200-3 1층",
+      "phone": "0507-1356-0261",
+      "menu": [
+        "서대회무침",
+        "갈치구이",
+        "갈치조림"
+      ],
+      "year": null,
+      "selectionYears": null,
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_introduction",
+        "sourceUrl": "https://m.place.naver.com/restaurant/11726049/information",
+        "sourceName": "삼학집 네이버 플레이스 업소 소개",
+        "publishedAt": null
+      },
+      "location": {
+        "lat": 34.7390599,
+        "lng": 127.7452518,
+        "sourceUrl": "https://m.place.naver.com/restaurant/11726049/photo?entry=plt&x=127.7452518&y=34.7390599&filterType=%EC%97%85%EC%B2%B4",
+        "discoveryUrl": "https://m.search.naver.com/search.naver?query=%EC%97%AC%EC%88%98%20%EC%82%BC%ED%95%99%EC%A7%91",
+        "method": "동일 플레이스 ID 사진 링크의 x=경도, y=위도. 사용자 검색위치 좌표는 사용하지 않음"
+      },
+      "notes": [
+        "연속 수록 시작연도·횟수만 명시돼 있어 최신 수록연도를 계산하지 않음."
+      ],
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/11726049/home",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "name": "여수사시사철삼치회",
+      "action": "add_new",
+      "naverPlaceId": "11821464",
+      "address": "전남 여수시 교동남1길 5-11",
+      "phone": "061-666-1445",
+      "menu": [
+        "삼치회",
+        "서대회무침",
+        "갈치조림"
+      ],
+      "year": 2026,
+      "selectionYears": null,
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_news",
+        "sourceUrl": "https://m.place.naver.com/restaurant/11821464/feed",
+        "sourceName": "여수사시사철삼치회 네이버 플레이스 업소 소식",
+        "publishedAt": "2026-08-22",
+        "title": "14년 연속 블루리본, 여수 사시사철"
+      },
+      "location": {
+        "lat": 34.7397566,
+        "lng": 127.7342334,
+        "sourceUrl": "https://m.place.naver.com/restaurant/11821464/photo?entry=plt&x=127.7342334&y=34.7397566&filterType=%EC%97%85%EC%B2%B4",
+        "discoveryUrl": "https://m.search.naver.com/search.naver?query=%EC%97%AC%EC%88%98%20%EC%82%AC%EC%8B%9C%EC%82%AC%EC%B2%A0%EC%82%BC%EC%B9%98%ED%9A%8C",
+        "method": "동일 플레이스 ID 사진 링크의 x=경도, y=위도. 사용자 검색위치 좌표는 사용하지 않음"
+      },
+      "notes": [],
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/11821464/home",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "name": "지노한우 목장 시청본점",
+      "action": "add_new",
+      "naverPlaceId": "1114516192",
+      "address": "전남 여수시 시청서3길 25-2",
+      "phone": "0507-1368-9285",
+      "alternatePhone": "061-921-9285",
+      "menu": [
+        "한우 생갈빗살",
+        "육회비빔밥",
+        "돼지갈비",
+        "한우삼합"
+      ],
+      "year": 2026,
+      "selectionYears": [
+        2024,
+        2025,
+        2026
+      ],
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_news",
+        "sourceUrl": "https://m.place.naver.com/restaurant/1114516192/feed",
+        "sourceName": "지노한우 목장 시청본점 네이버 플레이스 업소 소식",
+        "publishedAt": "2026-05-19",
+        "title": "3년연속 블루리본 서베이 선정!"
+      },
+      "location": {
+        "lat": 34.7571735,
+        "lng": 127.6575758,
+        "sourceUrl": "https://m.place.naver.com/restaurant/1114516192/photo?entry=plt&x=127.6575758&y=34.7571735&filterType=%EC%97%85%EC%B2%B4",
+        "discoveryUrl": "https://m.search.naver.com/search.naver?query=%EC%97%AC%EC%88%98%20%EC%A7%80%EB%85%B8%ED%95%9C%EC%9A%B0%20%EB%AA%A9%EC%9E%A5",
+        "method": "동일 플레이스 ID 사진 링크의 x=경도, y=위도. 사용자 검색위치 좌표는 사용하지 않음"
+      },
+      "notes": [
+        "본점 '지노한우'→'지노한우목장' 간판 변경을 같은 글에서 명시. 노블점·무선점에 선정이력을 복제하면 안 됨."
+      ],
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/1114516192/home",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "name": "경원이네",
+      "action": "add_new",
+      "naverPlaceId": "31043930",
+      "address": "전남 여수시 문수3길 6-3",
+      "phone": "061-652-8407",
+      "menu": [
+        "해물삼합",
+        "한우차돌삼합",
+        "새조개 샤브샤브"
+      ],
+      "year": 2026,
+      "selectionYears": [
+        2026
+      ],
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_introduction",
+        "sourceUrl": "https://m.place.naver.com/restaurant/31043930/information",
+        "sourceName": "경원이네 네이버 플레이스 업소 소개",
+        "publishedAt": null
+      },
+      "location": {
+        "lat": 34.7549635,
+        "lng": 127.7043708,
+        "sourceUrl": "https://m.place.naver.com/restaurant/31043930/photo?entry=plt&x=127.7043708&y=34.7549635&filterType=%EC%97%85%EC%B2%B4",
+        "discoveryUrl": "https://m.search.naver.com/search.naver?query=%EC%97%AC%EC%88%98%20%EA%B2%BD%EC%9B%90%EC%9D%B4%EB%84%A4",
+        "method": "동일 플레이스 ID 사진 링크의 x=경도, y=위도. 사용자 검색위치 좌표는 사용하지 않음"
+      },
+      "notes": [],
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/31043930/home",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "name": "원앙식당",
+      "action": "add_new",
+      "naverPlaceId": "11714408",
+      "address": "전남 여수시 교동남1길 6-7 1층",
+      "phone": null,
+      "menu": [
+        "게장백반",
+        "서대회무침",
+        "야채불고기"
+      ],
+      "year": 2025,
+      "selectionYears": [
+        2023,
+        2024,
+        2025
+      ],
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_introduction",
+        "sourceUrl": "https://m.place.naver.com/restaurant/11714408/information",
+        "sourceName": "원앙식당 네이버 플레이스 업소 소개",
+        "publishedAt": null
+      },
+      "location": {
+        "lat": 34.7396788,
+        "lng": 127.7330745,
+        "sourceUrl": "https://m.place.naver.com/restaurant/11714408/photo?entry=plt&x=127.7330745&y=34.7396788&filterType=%EC%97%85%EC%B2%B4",
+        "discoveryUrl": "https://m.search.naver.com/search.naver?query=%EC%97%AC%EC%88%98%20%EC%9B%90%EC%95%99%EC%8B%9D%EB%8B%B9",
+        "method": "동일 플레이스 ID 사진 링크의 x=경도, y=위도. 사용자 검색위치 좌표는 사용하지 않음"
+      },
+      "notes": [
+        "2026년 선정 여부 미확인. 전화번호가 가려져 있어 null."
+      ],
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/11714408/home",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "name": "힐론 다이닝",
+      "action": "add_new",
+      "naverPlaceId": "2095288002",
+      "address": "전남 여수시 안산1길 62 4층",
+      "phone": "061-692-0725",
+      "menu": [
+        "힐론 다이닝 코스",
+        "오리가슴살 스테이크",
+        "허브 크러스트 양갈비",
+        "파스타"
+      ],
+      "year": 2026,
+      "selectionYears": [
+        2024,
+        2026
+      ],
+      "ribbons": null,
+      "evidence": {
+        "type": "business_owner_naver_news",
+        "sourceUrl": "https://m.place.naver.com/restaurant/1643390605/feed",
+        "sourceName": "힐론 공용 플레이스 업소 소식(현재 힐론카페)",
+        "publishedAt": "2026-06-02",
+        "title": "Hillon Dining, 2026 블루리본 서베이 수록"
+      },
+      "location": {
+        "lat": null,
+        "lng": null,
+        "sourceUrl": null
+      },
+      "notes": [
+        "2026-07-29 다이닝 소식에서 카페·다이닝 플레이스 분리 공지. 이전 공용 계정의 6월 소식이 '힐론 다이닝'을 명시하므로 다이닝에만 연결.",
+        "카페를 별도 블루리본 업소로 중복 등록하지 않음.",
+        "선정연도2024·2026만 명시, 2025를 연속으로 추가하지 않음."
+      ],
+      "identitySource": {
+        "sourceUrl": "https://m.place.naver.com/restaurant/2095288002/feed",
+        "publishedAt": "2026-07-29",
+        "title": "힐론 다이닝 네이버 플레이스 분리 및 이용 안내"
+      },
+      "menuSourceUrl": "https://m.place.naver.com/restaurant/2095288002/menu/list",
+      "region": "전남",
+      "district": "여수시",
+      "category": "blue-ribbon",
+      "verificationStatus": "owner_reported_history",
+      "displayLabel": "블루리본 수록 이력 (업소 안내)",
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/2095288002/home",
+      "checkedAt": "2026-11-04"
+    }
+  ],
+  "relocationUpdates": [
+    {
+      "name": "경도회관 여천점",
+      "naverPlaceId": "16960258",
+      "currentAddress": "전남 여수시 소호1길 50 순풍호빌딩 1,2층",
+      "sourceUrl": "https://m.place.naver.com/restaurant/16960258/feed",
+      "supportingUrl": "https://m.place.naver.com/restaurant/16960258/information",
+      "publishedAt": "2026-04-09",
+      "notes": "옛 시청 데이터 주소·좌표를 현재주소로 사용하지 말 것. 본점 경도회관과 다른 지점."
+    }
+  ],
+  "identityReviews": [
+    {
+      "restaurantId": "local-namdo-619921",
+      "nameBefore": "경도회관",
+      "nameAfter": "경도회관",
+      "addressBefore": "전라남도 여수시 대경도길 2-2",
+      "addressAfter": "전남 여수시 대경도길 2-2 (경호동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3380",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-619927",
+      "nameBefore": "광장서대회",
+      "nameAfter": "광장서대회",
+      "addressBefore": "전라남도 여수시 이순신광장로 196",
+      "addressAfter": "전남 여수시 이순신광장로 196 (종화동) 1층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=5485",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598624",
+      "nameBefore": "꽃돌게장1번가",
+      "nameAfter": "꽃돌게장1번가",
+      "addressBefore": "전남 여수시 봉산2로 36",
+      "addressAfter": "전남 여수시 봉산2로 36 (봉산동) 1~2층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4193",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675874",
+      "nameBefore": "남경정복",
+      "nameAfter": "남경전복",
+      "addressBefore": "전남 여수시 시청서4길 54",
+      "addressAfter": "전남 여수시 시청서4길 54 (학동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3314",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675524",
+      "nameBefore": "단군신화",
+      "nameAfter": "단군신화",
+      "addressBefore": "전남 여수시 소호6길 7-5, 2층",
+      "addressAfter": "전남 여수시 소호6길 7-5 (소호동) 2층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6841",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675674",
+      "nameBefore": "여수생선구이",
+      "nameAfter": "여수생선구이",
+      "addressBefore": "전남 여수시 어항단지로 205",
+      "addressAfter": "전남 여수시 어항단지로 205 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6725",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598614",
+      "nameBefore": "오죽현",
+      "nameAfter": "오죽헌",
+      "addressBefore": "전라남도 여수시 시청서 1길 36",
+      "addressAfter": "전남 여수시 시청서1길 36 (학동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3382",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675914",
+      "nameBefore": "청정게장촌",
+      "nameAfter": "청정게장촌",
+      "addressBefore": "전남 여수시 봉산남4길 23-32, 1층",
+      "addressAfter": "전남 여수시 봉산남4길 23-32 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4258",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598626",
+      "nameBefore": "한일관",
+      "nameAfter": "한일관",
+      "addressBefore": "전라남도 여수시 봉산2로 32",
+      "addressAfter": "전남 여수시 봉산2로 32 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4793",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598601",
+      "nameBefore": "대성식당",
+      "nameAfter": "대성식당",
+      "addressBefore": "전라남도 여수시 교동남1길 5-9",
+      "addressAfter": "전남 여수시 교동남1길 5-9 (교동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3338",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607472",
+      "nameBefore": "삼학집",
+      "nameAfter": "삼학집",
+      "addressBefore": "전라남도 여수시 동문동 이순신광장로 200-3",
+      "addressAfter": "전남 여수시 이순신광장로 200-3 (종화동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6501",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607475",
+      "nameBefore": "일조오리탕",
+      "nameAfter": "일조오리탕",
+      "addressBefore": "전라남도 여수시 중앙동 통제영2길 8-12",
+      "addressAfter": "전남 여수시 통제영2길 8-12 (교동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3437",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607477",
+      "nameBefore": "함남면옥",
+      "nameAfter": "함남면옥",
+      "addressBefore": "전라남도 여수시 중앙동 중앙1길 8",
+      "addressAfter": "전남 여수시 중앙1길 8 (중앙동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3334",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    }
+  ],
+  "heldCandidates": [
+    {
+      "name": "청정게장촌",
+      "reason": "블로그에는 블루리본 언급 있으나 조회한 업소 소개·소식·공식 홈페이지에서 텍스트 근거 미확인."
+    },
+    {
+      "name": "복춘식당",
+      "reason": "후기와 예약 대행 서비스만으로 판정하지 않음."
+    },
+    {
+      "name": "구백식당",
+      "reason": "조회한 업소 소개에서 블루리본 근거 미확인. 백년가게는 별도 인증."
+    },
+    {
+      "name": "경도회관",
+      "reason": "조회한 업소 소개에서 블루리본 근거 미확인."
+    },
+    {
+      "name": "여수 명동게장",
+      "reason": "조회한 업소 소개·소식에서 블루리본 근거 미확인."
+    },
+    {
+      "name": "여수게장 두꺼비게장",
+      "reason": "조회한 업소 소개·소식에서 블루리본 근거 미확인. 착한가격업소는 별도."
+    },
+    {
+      "name": "나진국밥",
+      "reason": "조회한 업소 소개·소식에서 블루리본 근거 미확인."
+    },
+    {
+      "name": "여수게장 황소게장",
+      "reason": "조회한 업소 소개·소식에서 블루리본 근거 미확인."
+    },
+    {
+      "name": "대풍마차",
+      "reason": "소개만 조회. 블루리본 명시 텍스트 미확인."
+    },
+    {
+      "name": "여수당",
+      "reason": "공식 블루리본 URL 검색노출은 확인했으나 본문 login_required. 수록연도·리본수 확인하지 않음."
+    },
+    {
+      "name": "광장서대회(이순신광장로129)",
+      "reason": "196번지·교동점과 주소·전화가 다름. 이전 증빙 없이 기존 항목에 지정이력 연결하지 않음."
+    }
+  ],
+  "accessLimits": [
+    {
+      "url": "https://www.bluer.co.kr/restaurants/35370",
+      "result": "login_required, 중단"
+    },
+    {
+      "url": "https://www.bluer.co.kr/restaurants/31004",
+      "result": "login_required, 중단"
+    }
+  ],
+  "publicationPolicy": "상호·주소·메뉴명·전화·지도좌표와 선정 근거만 게시. 운영 정보는 확인일 기준이며 변경될 수 있음. 원문 소개글·사진은 복제하지 않음."
+}

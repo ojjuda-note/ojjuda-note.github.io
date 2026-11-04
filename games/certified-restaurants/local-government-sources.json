@@ -5,9 +5,9 @@
   "label": "지자체 지정",
   "completeNationalCollection": false,
   "scope": "지자체가 맛·향토성·전통성 등을 심사하거나 공식 미식 목록으로 선정한 식당의 공개 명단과 선정 이력. 광역시도 목록과 시군구 자체 사업을 함께 수집했으며, 전국의 모든 지정사업·업소 확보를 뜻하지 않음.",
-  "recordCount": 2289,
-  "designationEvidenceCount": 2361,
-  "coordinatesAvailable": 732,
+  "recordCount": 2292,
+  "designationEvidenceCount": 2377,
+  "coordinatesAvailable": 748,
   "regionCount": 17,
   "regionalCoverage": [
     {
@@ -42,7 +42,7 @@
     },
     {
       "region": "대전",
-      "uniqueRestaurants": 94,
+      "uniqueRestaurants": 96,
       "coordinatesAvailable": 3,
       "completeRegionalCollection": false
     },
@@ -78,7 +78,7 @@
     },
     {
       "region": "충남",
-      "uniqueRestaurants": 21,
+      "uniqueRestaurants": 23,
       "coordinatesAvailable": 1,
       "completeRegionalCollection": false
     },
@@ -90,8 +90,8 @@
     },
     {
       "region": "전남",
-      "uniqueRestaurants": 168,
-      "coordinatesAvailable": 0,
+      "uniqueRestaurants": 171,
+      "coordinatesAvailable": 16,
       "completeRegionalCollection": false
     },
     {
@@ -185,6 +185,12 @@
       "rowsBeforeCatalogMerge": 62,
       "sha256": "9ecc01d88780b984b4f084a481742186c5143dbea77e06b6af4997b94bac9413",
       "sourceAuditFile": "gumi-sources.json"
+    },
+    {
+      "sourceBatch": "local-yeosu-2022-designations",
+      "rowsBeforeCatalogMerge": 11,
+      "newRestaurantCount": 3,
+      "sourceAuditFile": "yeosu-sources.json"
     }
   ],
   "programCoverage": [
@@ -2028,6 +2034,23 @@
       "sourceBatch": "local-gumi",
       "checkedAt": "2026-11-04",
       "note": "확인일의 공식 구미맛집 공개 목록 4쪽 및 상세 62건을 모두 수집. 개별 선정 연도는 원문에 없어 추정하지 않음. 구미시의 모든 지정 사업이나 현재 영업 여부 전수 검증을 의미하지 않음."
+    },
+    {
+      "region": "전남",
+      "district": "여수시",
+      "authority": "여수시 보건소",
+      "program": "남도음식명가·향토음식 지정 이력",
+      "sourceUrl": "https://yscms.yeosu.go.kr/health/info/model",
+      "sourceAsOf": "2022",
+      "parsedRows": 12,
+      "matchedRows": 11,
+      "newRestaurantCount": 3,
+      "heldRows": 1,
+      "completeForSource": false,
+      "status": "partial_source_roster_identity_review",
+      "sourceBatch": "local-yeosu-2022-designations",
+      "checkedAt": "2026-11-04",
+      "note": "2022년 표의 남도음식·향토음식 지정 열만 사용. 모범·안심·위생등급만으로 선정 판정하지 않음. 광장서대회 129번지 행은 기존 196번지와 동일성 미확인으로 연결 보류. 경도회관 여천점 이전 공지 확인."
     }
   ],
   "publicationEvidence": [
@@ -4809,6 +4832,136 @@
         "공식 명단 주소 오자 의심, 검토 필요: 재주시 조천읍 선교로 519"
       ],
       "sourceUrl": "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+    },
+    {
+      "restaurantId": "local-namdo-619921",
+      "nameBefore": "경도회관",
+      "nameAfter": "경도회관",
+      "addressBefore": "전라남도 여수시 대경도길 2-2",
+      "addressAfter": "전남 여수시 대경도길 2-2 (경호동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3380",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-619927",
+      "nameBefore": "광장서대회",
+      "nameAfter": "광장서대회",
+      "addressBefore": "전라남도 여수시 이순신광장로 196",
+      "addressAfter": "전남 여수시 이순신광장로 196 (종화동) 1층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=5485",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598624",
+      "nameBefore": "꽃돌게장1번가",
+      "nameAfter": "꽃돌게장1번가",
+      "addressBefore": "전남 여수시 봉산2로 36",
+      "addressAfter": "전남 여수시 봉산2로 36 (봉산동) 1~2층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4193",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675874",
+      "nameBefore": "남경정복",
+      "nameAfter": "남경전복",
+      "addressBefore": "전남 여수시 시청서4길 54",
+      "addressAfter": "전남 여수시 시청서4길 54 (학동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3314",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675524",
+      "nameBefore": "단군신화",
+      "nameAfter": "단군신화",
+      "addressBefore": "전남 여수시 소호6길 7-5, 2층",
+      "addressAfter": "전남 여수시 소호6길 7-5 (소호동) 2층",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6841",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675674",
+      "nameBefore": "여수생선구이",
+      "nameAfter": "여수생선구이",
+      "addressBefore": "전남 여수시 어항단지로 205",
+      "addressAfter": "전남 여수시 어항단지로 205 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6725",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598614",
+      "nameBefore": "오죽현",
+      "nameAfter": "오죽헌",
+      "addressBefore": "전라남도 여수시 시청서 1길 36",
+      "addressAfter": "전남 여수시 시청서1길 36 (학동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3382",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-3675914",
+      "nameBefore": "청정게장촌",
+      "nameAfter": "청정게장촌",
+      "addressBefore": "전남 여수시 봉산남4길 23-32, 1층",
+      "addressAfter": "전남 여수시 봉산남4길 23-32 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4258",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598626",
+      "nameBefore": "한일관",
+      "nameAfter": "한일관",
+      "addressBefore": "전라남도 여수시 봉산2로 32",
+      "addressAfter": "전남 여수시 봉산2로 32 (봉산동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=4793",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-598601",
+      "nameBefore": "대성식당",
+      "nameAfter": "대성식당",
+      "addressBefore": "전라남도 여수시 교동남1길 5-9",
+      "addressAfter": "전남 여수시 교동남1길 5-9 (교동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3338",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607472",
+      "nameBefore": "삼학집",
+      "nameAfter": "삼학집",
+      "addressBefore": "전라남도 여수시 동문동 이순신광장로 200-3",
+      "addressAfter": "전남 여수시 이순신광장로 200-3 (종화동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=6501",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607475",
+      "nameBefore": "일조오리탕",
+      "nameAfter": "일조오리탕",
+      "addressBefore": "전라남도 여수시 중앙동 통제영2길 8-12",
+      "addressAfter": "전남 여수시 통제영2길 8-12 (교동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3437",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
+    },
+    {
+      "restaurantId": "local-namdo-607477",
+      "nameBefore": "함남면옥",
+      "nameAfter": "함남면옥",
+      "addressBefore": "전라남도 여수시 중앙동 중앙1길 8",
+      "addressAfter": "전남 여수시 중앙1길 8 (중앙동)",
+      "sourceUrl": "https://www.yeosu.go.kr/tour/lodge_food/food/group_food/food_all?mode=view&idx=3334",
+      "identityBasis": "도로명 주소 일치, 공식 시청 음식점 상세의 상호·메뉴·위치 대조. 상호 오자 교정 시 동일 주소와 전화번호 확인.",
+      "checkedAt": "2026-11-04"
     }
   ],
   "municipalTourismDirectory20261104": {
