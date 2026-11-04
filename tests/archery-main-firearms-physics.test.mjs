@@ -234,7 +234,10 @@ test('straight misses finish at the target plane while wall penetration and peop
   for (const stage of [plain, missedStage]) {
     const wallStage = {...stage, obstacles:[wall]}, personStage = {...wallStage, passers:[config]};
     const pierced = launchArrow(params), through = stepArrow(pierced, 16, wallStage);
-    assert.equal(through.type, stage === plain ? 'hit' : 'miss');close(through.point.z, distance);
+    assert.equal(through.type, stage === plain ? 'hit' : 'ground');
+    if(stage===plain)close(through.point.z,distance);
+    else {close(through.point.y,0);assert.ok(through.point.z>distance);}
+    assert.ok(pierced.gravityScale>0, 'after penetration a missed straight bullet now falls');
     assert.equal(pierced.penetrations.length, 1);close(pierced.penetrationSpeedRatio, .5);
     const stopped = launchArrow(params), intercepted = stepArrow(stopped, 16, personStage);
     assert.equal(intercepted.type, 'person');assert.equal(intercepted.personId, 0);close(intercepted.point.z, distance);

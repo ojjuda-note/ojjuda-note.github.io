@@ -732,7 +732,7 @@ export const BULLETS = Object.freeze([
   bullet(0, '기본 탄환', '기본', '총을 구매하면 함께 받는 기본 탄환. 기존 탄속과 낙하량으로 겨눠요.', 0, 1, 1, '#c3b477'),
   bullet(1, '고속 탄환', '1.5배속', '기본 탄환보다 탄속은 1.5배, 같은 거리의 낙하량은 60%예요.', 4000, 1.5, .6, '#a3bfce'),
   bullet(2, '정밀 탄환', '2배속', '기본 탄환보다 탄속은 2배, 같은 거리의 낙하량은 25%예요.', 12000, 2, .25, '#9d96c9'),
-  bullet(3, '직선 탄환', '3배속 · 무낙하', '기본 탄환보다 탄속이 3배 빠르고, 중력과 바람에 휘지 않고 직선으로 날아가요.', 30000, 3, 0, '#d2b566')
+  bullet(3, '직선 탄환', '3배속 · 관통 전 무낙하', '기본 탄환보다 3배 빠르고 벽에 닿기 전까지 직선으로 날아요. 벽을 관통하면 낙차가 생기며 누적돼요.', 30000, 3, 0, '#d2b566')
 ]);
 export function getBullet(input) {
   return typeof input === 'number' ? BULLETS[input] || BULLETS[0] : input || BULLETS[0];
@@ -1094,7 +1094,8 @@ export function launchArrow(params = {}) {
     elapsed: 0, active: true, result: null, trail: [{ ...PLAYER }],
     speed, mass: isBullet ? ammunition.mass : getArrowMass(arrow), windFactor: isBullet ? ammunition.windFactor : getWindResponse(arrow),
     projectileType: isBullet ? 'bullet' : 'arrow', shaftLength: isBullet ? .12 : .85,
-    ...(isBullet ? {bulletId: ammunition.id, penetrations: [], penetrationSpeedRatio: 1, penetrationDropRatio: 1} : {}),
+    ...(isBullet ? {bulletId: ammunition.id, penetrations: [], penetrationSpeedRatio: 1, penetrationDropRatio: 1,
+      wallDropReference: ammunition.gravityScale === 0 ? BULLET_GRAVITY_SCALE * ammunition.speedRatio ** 2 : 0} : {}),
     gravityScale: isBullet ? ammunition.gravityScale : 1,
     dragRate: isBullet ? ammunition.dragRate : getArrowDragRate(arrow) + Math.max(0, weapon.extraDragRate ?? 0) * REFERENCE_ARROW_MASS / getArrowMass(arrow),
     lastTrailTime: 0, targetPassed: false, ability,
@@ -1261,11 +1262,14 @@ function penetrateWall(shot, event, worldTime) {
   shot.velocity = Object.fromEntries(['x','y','z'].map(axis => [axis, shot.velocity[axis] * retention]));
   // Speed and drag scale together. From the incoming tangent, the same next
   // distance takes 1/r of the time, so gravity*r²*d produces exactly d of the
-  // additional drop. A zero-drop bullet remains a straight projectile.
+  // additional drop. Straight bullets acquire the accumulated excess drop,
+  // measured against a basic bullet at the same distance, only after contact.
   shot.dragRate = Math.max(0, shot.dragRate ?? 0) * retention;
-  shot.gravityScale = (shot.gravityScale ?? 1) * retention ** 2 * drop;
   shot.penetrationSpeedRatio = (shot.penetrationSpeedRatio ?? 1) * retention;
   shot.penetrationDropRatio = (shot.penetrationDropRatio ?? 1) * drop;
+  shot.gravityScale = shot.wallDropReference > 0
+    ? shot.wallDropReference * shot.penetrationSpeedRatio ** 2 * (shot.penetrationDropRatio - 1)
+    : (shot.gravityScale ?? 1) * retention ** 2 * drop;
   (shot.penetrations ??= []).push(Object.freeze({
     obstacleIndex: event.obstacleIndex, material, point: Object.freeze({...shot.position}),
     velocityBefore: Object.freeze(velocityBefore), velocityAfter: Object.freeze({...shot.velocity}),

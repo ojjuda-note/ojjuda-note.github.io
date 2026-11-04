@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BOWS, BULLETS, PLAYER, GRAVITY, WIND_RESPONSE, launchArrow, stepArrow, predictTrajectory} from '../games/forest-archer/engine.mjs';
+import {BOWS, BULLETS, PLAYER, GRAVITY, BULLET_GRAVITY_SCALE, WIND_RESPONSE, launchArrow, stepArrow, predictTrajectory} from '../games/forest-archer/engine.mjs';
 
 const near=(actual,expected,tolerance=1e-8)=>assert.ok(Math.abs(actual-expected)<=tolerance,`${actual} != ${expected}`);
 const pointNear=(actual,expected)=>{for(const axis of ['x','y','z'])near(actual[axis],expected[axis]);};
@@ -36,7 +36,10 @@ function expectedFlight(initial,materials,wind=0,distance=150){
     state=cross(state,25+index*45,wind);
     const before=stateOf(state),r=material==='wood'?.8:.5,d=material==='wood'?1.2:1.5;
     state.velocity=Object.fromEntries(Object.entries(state.velocity).map(([key,value])=>[key,value*r]));
-    state.dragRate*=r;state.gravityScale*=r*r*d;speedRatio*=r;dropRatio*=d;
+    state.dragRate*=r;speedRatio*=r;dropRatio*=d;
+    state.gravityScale=initial.gravityScale===0
+      ? BULLET_GRAVITY_SCALE * BULLETS[3].speedRatio**2 * speedRatio**2 * (dropRatio-1)
+      : state.gravityScale*r*r*d;
     entries.push({before,after:stateOf(state),speedRatio,dropRatio});
   }
   return {...cross(state,distance,wind),entries,speedRatio,dropRatio};
@@ -126,7 +129,8 @@ test('overlapping and touching walls each apply once, including at an exact inte
   for(const obstacles of [[wall(10,'wood',4),wall(10,'stone',4)],[wall(10,'wood',2),wall(12,'stone',2)]]){
     const stage={...plain,distance:30,height:PLAYER.y,radius:.61,obstacles};
     const reference=launchArrow({bow:22,bullet:3});finish(reference,stage);
-    assert.equal(reference.result.score,10);assert.equal(reference.penetrations.length,2);
+    assert.equal(reference.result.type,'hit');assert.ok(reference.result.point.y<PLAYER.y);
+    assert.equal(reference.penetrations.length,2);
     near(reference.penetrationSpeedRatio,.4);near(reference.penetrationDropRatio,1.8);
     for(const dt of [1/240,.25,1]){
       const shot=launchArrow({bow:22,bullet:3});finish(shot,stage,dt);
@@ -188,17 +192,44 @@ test('a missed target plane before a later wall remains consumed after penetrati
   const result=finish(shot,stage);assert.notEqual(result.type,'hit');
 });
 
-test('zero-drop bullets retain their straight ray and wind immunity after cumulative penetration',()=>{
-  for(const wind of [-12,12]){
-    const params={bow:22,bullet:3,yaw:.04,pitch:.08},shot=launchArrow(params);
-    const ray=z=>({x:Math.tan(params.yaw)*z,y:PLAYER.y+Math.tan(params.pitch)/Math.cos(params.yaw)*z,z});
-    const expected=ray(150),stage={...plain,height:expected.y,targetX:expected.x,radius:.61,wind,obstacles:[wall(25,'wood'),wall(70,'stone')]};
-    const result=finish(shot,stage);assert.equal(result.score,10);pointNear(result.point,expected);
-    assert.equal(shot.gravityScale,0);assert.equal(shot.windFactor,0);near(shot.penetrationSpeedRatio,.4);
-    const predicted=predictTrajectory(params,stage,8);assert.equal(predicted.result.score,10);near(predicted.result.flightTime,result.flightTime);
-    assert.ok(predicted.points.some(p=>Math.abs(p.z-25)<1e-8));assert.ok(predicted.points.some(p=>Math.abs(p.z-70)<1e-8));
-    for(const point of predicted.points)pointNear(point,ray(point.z));
+test('straight bullets acquire measurable basic-referenced drop only after contact and compound at every wall',()=>{
+  for(const [materials,ratio] of [
+    [['wood'],.2],[['stone'],.5],[['wood','wood'],.44],[['stone','stone'],1.25],
+    [['wood','stone'],.8],[['stone','wood'],.8]
+  ])for(const bow of [20,21,22]){
+    const shot=makeShot({bow,bullet:3}),initial=stateOf(shot);
+    const stage={...plain,obstacles:materials.map((m,i)=>wall(25+i*45,m))};
+    stepArrow(shot,cross(initial,24).elapsed,stage);
+    assert.equal(shot.gravityScale,0);assert.equal(shot.penetrations.length,0);
+    pointNear(shot.position,cross(initial,24).position);
+    const result=finish(shot,stage),last=shot.penetrations.at(-1);
+    assert.ok(shot.gravityScale>0);assert.equal(shot.windFactor,0);
+    const speedFactor=materials.reduce((r,m)=>r*(m==='wood'?.8:.5),1)*3;
+    const basic={...initial,position:{...last.point},elapsed:last.elapsed,
+      velocity:Object.fromEntries(Object.entries(last.velocityAfter).map(([k,v])=>[k,v/speedFactor])),
+      dragRate:shot.dragRate/speedFactor,gravityScale:BULLET_GRAVITY_SCALE};
+    const tangentY=last.point.y+last.velocityAfter.y/last.velocityAfter.z*(150-last.point.z);
+    const basicDrop=tangentY-cross(basic,150).position.y;
+    assert.ok(basicDrop>0);near((tangentY-result.point.y)/basicDrop,ratio);
+    assert.ok(result.point.y<cross(initial,150).position.y);
+    const fresh=launchArrow({bow,bullet:3});assert.equal(fresh.gravityScale,0);assert.equal(fresh.penetrations.length,0);
   }
+});
+
+test('straight-bullet wall drop agrees across frame sizes, forecasts and wind directions',()=>{
+  const params={bow:22,bullet:3,pitch:.08,yaw:.04},stage={...plain,wind:12,obstacles:[wall(25,'wood'),wall(70,'stone')]};
+  const reference=makeShot(params);finish(reference,stage);
+  for(const dt of [1/240,1/60,.25,16]){
+    const shot=makeShot(params);finish(shot,{...stage,wind:-12},dt);
+    pointNear(shot.result.point,reference.result.point);near(shot.elapsed,reference.elapsed);
+    assert.equal(shot.penetrations.length,2);
+  }
+  const normal=launchArrow(params),normalStage={...stage,height:3,radius:1000};
+  finish(normal,normalStage);
+  const prediction=predictTrajectory(params,normalStage);
+  pointNear(prediction.result.point,normal.result.point);near(prediction.result.flightTime,normal.result.flightTime);
+  assert.ok(prediction.points.some(p=>Math.abs(p.z-25)<1e-8));
+  assert.ok(prediction.points.some(p=>Math.abs(p.z-70)<1e-8));
 });
 
 test('clear paths and gaps have no penalties and bows, crossbows and special arrows still stop at walls',()=>{
