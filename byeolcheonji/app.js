@@ -318,7 +318,7 @@
     $('match-count').hidden = true;
     $('partial-note').hidden = true;
     $('notification-target').hidden = true;
-    $('results-caption').textContent = `${filterLabel(state.filters)} · 앞으로 45일의 빈방을 확인해요.`;
+    $('results-caption').textContent = `${filterLabel(state.filters)} · 앞으로 60일의 빈방을 확인해요.`;
     resultState('loading', '빈방을 확인하고 있어요', '예약처의 현재 객실 정보를 가져옵니다.');
     const params = new URLSearchParams({ dateMode: state.filters.dateMode, guests: String(state.filters.guests) });
     try {
