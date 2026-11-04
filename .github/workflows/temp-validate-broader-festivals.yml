@@ -1,0 +1,49 @@
+name: Validate broader festival update
+
+on:
+  push:
+    branches:
+      - add-science-music-winter-festivals-20261104
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run festival checks
+        run: |
+          node games/festival-schedule/validate.mjs
+          node tests/festival-core.test.mjs
+          node tests/festival-entry.test.cjs
+          node tests/game-release-refresh.test.cjs
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const data = JSON.parse(fs.readFileSync('games/festival-schedule/events.json','utf8'));
+          const ids = new Set(data.events.map(event => event.id));
+          for (const id of ['gongju-gunbam-2026','ansan-asv-science-2026','khnp-music-festival-the-theater-2026','wonderlivet-2026','daegwallyeong-snow-2027']) {
+            if (!ids.has(id)) throw new Error(`missing ${id}`);
+          }
+          const guide = fs.readFileSync('games/festival-schedule/MAINTENANCE.md','utf8');
+          for (const phrase of ['군밤','과학·기술','눈·얼음','뮤직 페스티벌']) {
+            if (!guide.includes(phrase)) throw new Error(`missing collection scope: ${phrase}`);
+          }
+          console.log('broader festival update verified');
+          NODE
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/temp-validate-broader-festivals.yml
+          git config user.name 'ojjuda-note'
+          git config user.email 'mj830417@naver.com'
+          git add -A
+          git commit -m 'Finish broader festival validation'
+          git push origin HEAD:add-science-music-winter-festivals-20261104
