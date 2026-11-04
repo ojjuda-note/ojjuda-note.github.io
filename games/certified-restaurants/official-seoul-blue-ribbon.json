@@ -1,0 +1,75 @@
+{
+  "updatedAt": "2026-11-05",
+  "sourceName": "서울관광재단 Visit Seoul 공식 음식점 페이지",
+  "sourceUrl": "https://korean.visitseoul.net/",
+  "completeRegionalCollection": false,
+  "selectionAndOperatingStatusSeparate": true,
+  "restaurants": [
+    {
+      "id": "local-seoul-visitseoul-won-daegutang",
+      "name": "원대구탕",
+      "category": "한식",
+      "region": "서울",
+      "district": "용산구",
+      "address": "서울 용산구 한강대로62가길 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "대구탕",
+        "대구튀김"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
+          "sourceName": "서울관광재단 · Visit Seoul (블루리본 선정 이력 언급)",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-10-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "historical_selection",
+          "selectionCriteria": "서울관광재단은 여러 해 블루리본 선정 이력을 소개합니다. 정규 리본 수와 구체적 선정 연도는 미확인입니다. 현재 영업 상태는 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j"
+    },
+    {
+      "id": "local-seoul-visitseoul-jade-and-water-oksu",
+      "name": "제이드앤워터 옥수",
+      "category": "양식",
+      "region": "서울",
+      "district": "성동구",
+      "address": "서울 성동구 한림말3길 21-1, 지층 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "몬테크리스토",
+        "새우산도",
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5",
+          "sourceName": "서울관광재단 · Visit Seoul (블루리본 선정 이력 언급)",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-11",
+          "sourceDateType": "official-page-last-modified",
+          "status": "historical_selection",
+          "selectionCriteria": "서울관광재단 소개글에는 블루리본 6년 연속 선정이라고 명시됩니다. 선정 연도와 정규 리본 수는 공개되지 않아 확정하지 않았습니다. 현재 영업 상태는 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5"
+    }
+  ],
+  "notes": [
+    "원본 소개문·이미지 미수록. 좌표는 검증 가능한 공개 근거를 확보하지 않아 null.",
+    "동일 식당 중복 여부는 2026-11-05 최신 main 기본 목록 3011개 및 울산 추가 목록과 대조했고, 해당 상호·주소가 없음을 확인.",
+    "선정 이력은 현재 선정 또는 영업 중을 의미하지 않습니다."
+  ]
+}
