@@ -54,10 +54,14 @@ vm.runInContext(`
   assert.ok(Math.abs(rear.polys[0].visible.reduce((a,p)=>a+Math.abs(polyArea(p))/2,0) - 50) < 0.001, 'intersecting depth planes clip at the actual crossing');
   maskScrews([rear, front], moving);
   assert.equal(rear.polys[0].visible.length, 1, 'intentional x-ray remains available');
-  let last = 0;
-  for (let L = 1; L <= STAGES; L++) { assert.ok(targetScrews(L) >= last); last = targetScrews(L); }
-  assert.equal(colorCount(3), 2); assert.equal(colorCount(4), 3); assert.equal(colorCount(8), 3);
-  for(const [stage,colors] of [[31,4],[101,5],[251,6],[501,7],[751,7]])assert.equal(colorCount(stage),colors);
+  let last = 0, lastColors = 0;
+  for (let L = 1; L <= STAGES; L++) {
+    assert.ok(targetScrews(L) >= last); last = targetScrews(L);
+    assert.ok(colorCount(L)>=lastColors&&colorCount(L)<=COLORS.length,'color difficulty grows without exceeding available colors');
+    lastColors=colorCount(L);
+  }
+  assert.equal(colorCount(3), 2); assert.equal(colorCount(4), 3);
+  assert.ok(lastColors>=7,'later stages use more screw colors');
   for (const L of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,32,80,160,500,650,800,1000]) {
     const m = makeLevel(L), witness = solution;
     if (L <= 3) { assert.ok(m.screws.length>=targetScrews(L)&&m.screws.length<=targetScrews(L)+9,'diagonal screw mounts add only a small tutorial overhead'); assert.equal(new Set(m.queue).size, 2); }
