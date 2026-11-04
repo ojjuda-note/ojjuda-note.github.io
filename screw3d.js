@@ -576,6 +576,8 @@ function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 
   for (const z of L.screws) {
     if (z === s || z.state !== 'in' && z.state !== 'out') continue;
     const q = screwPose(z), rise = z.state === 'out' ? Math.min(1, z.t / 0.34) * 0.22 : 0;
+    // Opposing heads create impossible mutual locks; allow them to disengage.
+    if (dot(a, q.a) < -0.9) continue;
     const v = sub(o, add(q.p, mul(q.a, HEAD_H / 2 + rise))), along = dot(v, q.a), slope = dot(a, q.a);
     let lo = 0, hi = len;
     if (Math.abs(slope) < 1e-9) { if (Math.abs(along) > half) continue; }
