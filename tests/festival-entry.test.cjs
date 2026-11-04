@@ -34,7 +34,7 @@ function bridgeFixture(){
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};}
   setAttribute(name,value){this.attributes[name]=value;}
   set innerHTML(html){this.button=new Element('button');this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
-  querySelector(selector){return selector==='iframe'?this.frame:selector==='button'?this.button:null;}
+  querySelector(selector){return selector==='iframe'?this.frame:(selector==='button'||selector==='.agit-home-link')?this.button:null;}
   showModal(){this.open=true;}close(){this.open=false;}remove(){this.isConnected=false;}
   focus(){focused=this;document.activeElement=this;}click(){this.dispatchEvent(new Event('click'));}
  }
