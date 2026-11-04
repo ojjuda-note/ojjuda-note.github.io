@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-04",
+  "checkedAt": "2026-11-05",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -109,7 +109,7 @@
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 523,
+    "recordCount": 525,
     "coordinatesCount": 244,
     "buildCounts": {
       "existingRecords": 6,
@@ -190,11 +190,11 @@
     "coordinatesPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 523,
+    "recordCountIncludingCollaborations": 525,
     "displayLabels": {
       "3리본": 46,
       "공동선정": 270,
-      "선정 이력": 89,
+      "선정 이력": 91,
       "수록 이력": 70,
       "주목할 만한 새 맛집": 16,
       "2리본": 1,
@@ -1435,6 +1435,36 @@
       "evidenceType": "business_reported_history",
       "sourceAuditFile": "yeosu-sources.json",
       "policy": "업소 공개 안내 근거로 구분. 명시된 연도만 수록하며 리본 개수는 추정하지 않음."
+    },
+    "seoulVisitSeoulHistory": {
+      "checkedAt": "2026-11-05",
+      "recordCount": 2,
+      "coordinatesVerified": 0,
+      "selectionYearConfirmed": 0,
+      "ribbonGradeConfirmed": 0,
+      "sourceInstitution": "서울관광재단 · Visit Seoul",
+      "sourceType": "official_tourism_mention_of_historical_blue_ribbon_selection",
+      "records": [
+        {
+          "id": "local-seoul-visitseoul-won-daegutang",
+          "name": "원대구탕",
+          "region": "서울",
+          "district": "용산구",
+          "sourcePageModifiedAt": "2026-10-28",
+          "sourceUrl": "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
+          "historyEvidence": "여러 해 블루리본 선정 언급"
+        },
+        {
+          "id": "local-seoul-visitseoul-jade-and-water-oksu",
+          "name": "제이드앤워터 옥수",
+          "region": "서울",
+          "district": "성동구",
+          "sourcePageModifiedAt": "2026-09-11",
+          "sourceUrl": "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5",
+          "historyEvidence": "블루리본 6년 연속 선정 언급"
+        }
+      ],
+      "caveat": "Visit Seoul의 기록은 선정 이력 언급이며 정규 리본 등급·선정 판년도를 직접 입증하지 않음. 현재 영업 여부를 별도 확정하지 않음. 좌표 불명이라 null."
     }
   },
   "mapBackground": {
@@ -1447,15 +1477,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3019,
+    "uniqueRestaurants": 3021,
     "providerCounts": {
-      "blue-ribbon": 523,
+      "blue-ribbon": 525,
       "michelin": 237,
       "local-guide": 2292,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 1996,
+    "coordinatesMissing": 1998,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1465,7 +1495,7 @@
       "대구": 117,
       "대전": 105,
       "부산": 378,
-      "서울": 310,
+      "서울": 312,
       "세종": 100,
       "울산": 36,
       "인천": 316,
@@ -1476,11 +1506,11 @@
       "충북": 214
     },
     "categoryCounts": {
-      "한식": 1767,
+      "한식": 1768,
       "중식": 119,
       "일식": 128,
       "기타": 572,
-      "양식": 203,
+      "양식": 204,
       "분식": 17,
       "디저트": 213
     }
@@ -9525,55 +9555,111 @@
       "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
       "completeRegionalBlueRibbonList": false,
       "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음."
+    },
+    {
+      "id": "2026-11-05-seoul-slot01-blue-ribbon-history",
+      "checkedAt": "2026-11-05",
+      "baseCommit": "a8ab6ac6b7a83387080e59990ee3cde526a45c55",
+      "previousCoverage": {
+        "uniqueRestaurants": 3019,
+        "providerCounts": {
+          "blue-ribbon": 523,
+          "michelin": 237,
+          "local-guide": 2292,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 1996,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 310,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1767,
+          "중식": 119,
+          "일식": 128,
+          "기타": 572,
+          "양식": 203,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3021,
+        "providerCounts": {
+          "blue-ribbon": 525,
+          "michelin": 237,
+          "local-guide": 2292,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 1998,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 312,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1768,
+          "중식": 119,
+          "일식": 128,
+          "기타": 572,
+          "양식": 204,
+          "분식": 17,
+          "디저트": 213
+        }
+      },
+      "newRestaurantCount": 2,
+      "newRestaurantIds": [
+        "local-seoul-visitseoul-won-daegutang",
+        "local-seoul-visitseoul-jade-and-water-oksu"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
+        "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5"
+      ],
+      "scope": "서울 01회차(종로·중·용산·성동·광진) 부분 조사, 블루리본 과거 선정 이력 두 업소(용산·성동) 공식 관광기관 소개에서 확인. 정규 리본 수 및 선정 연도 미확인.",
+      "coordinatePolicy": "추정 좌표 없음; 2곳 모두 null",
+      "metadataRecountNote": "기본 카탈로그 3011곳 + 기존 울산 관광 보충 8곳 + 이번 서울 블루리본 이력 2곳, 유일 ID와 상호·주소 중복 없음",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-04-yeosu-expansion",
-    "checkedAt": "2026-11-04",
-    "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
+    "id": "2026-11-05-seoul-slot01-blue-ribbon-history",
+    "checkedAt": "2026-11-05",
+    "baseCommit": "a8ab6ac6b7a83387080e59990ee3cde526a45c55",
     "previousCoverage": {
-      "uniqueRestaurants": 3011,
-      "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2289,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1003,
-      "coordinatesMissing": 2008,
-      "regionalCounts": {
-        "서울": 310,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 322,
-        "인천": 316,
-        "제주": 113,
-        "대구": 117,
-        "전남": 169,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1747,
-        "중식": 119,
-        "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 17,
-        "디저트": 213
-      }
-    },
-    "previousActualRestaurantCount": 3011,
-    "baseCatalogCount": 3011,
-    "supplementRestaurantCount": 8,
-    "currentCoverage": {
       "uniqueRestaurants": 3019,
       "providerCounts": {
         "blue-ribbon": 523,
@@ -9612,22 +9698,60 @@
         "디저트": 213
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3021,
+      "providerCounts": {
+        "blue-ribbon": 525,
+        "michelin": 237,
+        "local-guide": 2292,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 1998,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 322,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 312,
+        "세종": 100,
+        "울산": 36,
+        "인천": 316,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "한식": 1768,
+        "중식": 119,
+        "일식": 128,
+        "기타": 572,
+        "양식": 204,
+        "분식": 17,
+        "디저트": 213
+      }
+    },
+    "newRestaurantCount": 2,
     "newRestaurantIds": [
-      "local-yeosu-3607",
-      "local-yeosu-3352",
-      "local-yeosu-4046",
-      "blue-yeosu-11821464",
-      "blue-yeosu-1114516192",
-      "blue-yeosu-31043930",
-      "blue-yeosu-11714408",
-      "blue-yeosu-2095288002"
+      "local-seoul-visitseoul-won-daegutang",
+      "local-seoul-visitseoul-jade-and-water-oksu"
     ],
-    "existingRestaurantsEnriched": 13,
-    "sourceAuditFile": "yeosu-sources.json",
-    "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
-    "completeRegionalBlueRibbonList": false,
-    "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음."
+    "existingRestaurantsEnriched": 0,
+    "sourceAuditFile": "ops/restaurant-region-audit.json",
+    "officialSourceUrls": [
+      "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
+      "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5"
+    ],
+    "scope": "서울 01회차(종로·중·용산·성동·광진) 부분 조사, 블루리본 과거 선정 이력 두 업소(용산·성동) 공식 관광기관 소개에서 확인. 정규 리본 수 및 선정 연도 미확인.",
+    "coordinatePolicy": "추정 좌표 없음; 2곳 모두 null",
+    "metadataRecountNote": "기본 카탈로그 3011곳 + 기존 울산 관광 보충 8곳 + 이번 서울 블루리본 이력 2곳, 유일 ID와 상호·주소 중복 없음",
+    "notExhaustive": true
   },
   "latestMapCoverageAudit": {
     "id": "2026-11-04-yeosu-map-expansion",
