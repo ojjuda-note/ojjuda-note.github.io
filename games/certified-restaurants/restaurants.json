@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-03",
-  "coverageNote": "미쉐린 237곳, 블루리본 선정·공동선정·수록 이력 515곳, 우체국 추천 240곳, 지자체 지정·선정 이력 2215곳을 모았습니다(중복 제외 2935곳). 지자체별 공개 명단의 기준일이 다르며 전국의 모든 지정업소 수집이 완료된 것은 아닙니다. 939곳은 지도에 표시할 수 있고, 위치 미확인 가게는 목록에서 확인할 수 있습니다. 선정 기관·사업·연도·기준일은 가게 정보에 표시합니다.",
+  "updatedAt": "2026-11-04",
+  "coverageNote": "미쉐린 237곳, 블루리본 선정·공동선정·수록 이력 517곳, 우체국 추천 240곳, 지자체 지정·선정 이력 2277곳을 모았습니다(중복 제외 2999곳). 지자체별 공개 명단의 기준일이 다르며 전국의 모든 지정업소 수집이 완료된 것은 아닙니다. 1003곳은 지도에 표시할 수 있고, 위치 미확인 가게는 목록에서 확인할 수 있습니다. 선정 기관·사업·연도·기준일은 가게 정보에 표시합니다. 업소 안내로 확인한 블루리본 이력은 출처를 따로 표시합니다.",
   "collections": [
     {
       "provider": "blue-ribbon",
@@ -93385,6 +93385,2328 @@
       ],
       "addressSourceUrl": "https://www.bucheon.go.kr/site/program/board/photoboard/view?menuid=148006001012001&pagesize=12&boardtypeid=26778&encid=sd418gY6IWTMvzJs6epBeQ==",
       "sourcePage": 1
+    },
+    {
+      "id": "local-gumi-2",
+      "name": "만다린식당",
+      "category": "중식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 거양길 4-11 (거의동)",
+      "lat": 36.1374464664682,
+      "lng": 128.411061860233,
+      "menu": [
+        "중식당"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=2&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=2&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=2&page=4",
+      "addressOriginal": "경북 구미시 거양길 4-11 (거의동)",
+      "sourceCategory": "중식",
+      "phoneText": "054-461-0887"
+    },
+    {
+      "id": "local-gumi-3",
+      "name": "금오산금오리",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산호대로23길 25-1 (옥계동)",
+      "lat": 36.1390896077448,
+      "lng": 128.41538175479,
+      "menu": [
+        "오리요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=3&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=3&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=3&page=4",
+      "addressOriginal": "경북 구미시 산호대로23길 25-1 (옥계동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-475-5295"
+    },
+    {
+      "id": "local-gumi-4",
+      "name": "청춘껍데기본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동28길 19-10 (진평동)",
+      "lat": 36.0939069287902,
+      "lng": 128.42839130027,
+      "menu": [
+        "껍데기구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=4&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=4&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=4&page=4",
+      "addressOriginal": "경북 구미시 인동28길 19-10 (진평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-475-7012"
+    },
+    {
+      "id": "local-gumi-8",
+      "name": "할미감성",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동중앙로3길 18-6 (황상동)",
+      "lat": 36.107985174605496,
+      "lng": 128.41979236911357,
+      "menu": [
+        "냉동삼겹살구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=8&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=8&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=8&page=4",
+      "addressOriginal": "경북 구미시 인동중앙로3길 18-6 (황상동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-476-8288"
+    },
+    {
+      "id": "local-gumi-10",
+      "name": "천생산오리사냥",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 천생산길 38 (구평동)",
+      "lat": 36.0956297021854,
+      "lng": 128.451626337527,
+      "menu": [
+        "오리구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=10&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=10&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=10&page=4",
+      "addressOriginal": "경북 구미시 천생산길 38 (구평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-471-5292"
+    },
+    {
+      "id": "local-gumi-12",
+      "name": "복터진집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동북길 67 (인의동)",
+      "lat": 36.1007510386566,
+      "lng": 128.424962908833,
+      "menu": [
+        "복버섯샤브구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=12&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=12&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=12&page=3",
+      "addressOriginal": "경북 구미시 인동북길 67 (인의동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-471-5101"
+    },
+    {
+      "id": "local-gumi-13",
+      "name": "주왕산삼계탕본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동9길 7-7 (인의동)",
+      "lat": 36.1023860700803,
+      "lng": 128.423673032128,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=13&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=13&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=13&page=4",
+      "addressOriginal": "경북 구미시 인동9길 7-7 (인의동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-474-5002"
+    },
+    {
+      "id": "local-gumi-17",
+      "name": "청정알탕횟집본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산호대로 187, 낙동상가 205호 (공단동)",
+      "lat": 36.1005211484005,
+      "lng": 128.385000164526,
+      "menu": [
+        "알탕",
+        "활어회",
+        "초밥",
+        "해물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=17&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=17&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=17&page=3",
+      "addressOriginal": "경북 구미시 산호대로 187, 낙동상가 205호 (공단동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-462-2266"
+    },
+    {
+      "id": "local-gumi-18",
+      "name": "동광알탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 1공단로7길 86-9 (공단동)",
+      "lat": 36.1099659417744,
+      "lng": 128.37843168946,
+      "menu": [
+        "알탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=18&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=18&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=18&page=3",
+      "addressOriginal": "경북 구미시 1공단로7길 86-9 (공단동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-463-3001"
+    },
+    {
+      "id": "local-gumi-24",
+      "name": "와촌식육식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 봉곡북로 90 (봉곡동)",
+      "lat": 36.1538537564283,
+      "lng": 128.31377295562,
+      "menu": [
+        "돼지찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=24&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=24&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=24&page=3",
+      "addressOriginal": "경북 구미시 봉곡북로 90 (봉곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-458-8892"
+    },
+    {
+      "id": "local-gumi-25",
+      "name": "오산골본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 금오산로 221 (남통동)",
+      "lat": 36.1209864795469,
+      "lng": 128.324058637215,
+      "menu": [
+        "한우국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=25&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=25&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=25&page=3",
+      "addressOriginal": "경북 구미시 금오산로 221 (남통동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-453-6555"
+    },
+    {
+      "id": "local-gumi-27",
+      "name": "사랑한다면봉곡어탕칼국수",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 봉곡남로17길 22 (봉곡동)",
+      "lat": 36.1517019573561,
+      "lng": 128.313630722675,
+      "menu": [
+        "어탕칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=27&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=27&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=27&page=3",
+      "addressOriginal": "경북 구미시 봉곡남로17길 22 (봉곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-455-5511"
+    },
+    {
+      "id": "local-gumi-34",
+      "name": "기와집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 야은로 133 (부곡동)",
+      "lat": 36.1458219129756,
+      "lng": 128.299427486883,
+      "menu": [
+        "돌솥한정식",
+        "소불고기정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=34&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=34&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=34&page=2",
+      "addressOriginal": "경북 구미시 야은로 133 (부곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-442-6007"
+    },
+    {
+      "id": "local-gumi-36",
+      "name": "오투쭈꾸미금오산",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산책길 55-4 (원평동)",
+      "lat": 36.1238110676273,
+      "lng": 128.329788516725,
+      "menu": [
+        "쭈꾸미볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=36&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=36&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=36&page=3",
+      "addressOriginal": "경북 구미시 산책길 55-4 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-452-5251"
+    },
+    {
+      "id": "local-gumi-38",
+      "name": "원조조방낙지식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 송원서로6길 41-1 (원평동)",
+      "lat": 36.1238130538671,
+      "lng": 128.348046554445,
+      "menu": [
+        "낙지볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=38&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=38&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=38&page=2",
+      "addressOriginal": "경북 구미시 송원서로6길 41-1 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-5972"
+    },
+    {
+      "id": "local-gumi-40",
+      "name": "싱글벙글식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 역전로 10 (원평동)",
+      "lat": 36.1295877975751,
+      "lng": 128.331680728473,
+      "menu": [
+        "복매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=40&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=40&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=40&page=2",
+      "addressOriginal": "경북 구미시 역전로 10 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-4515"
+    },
+    {
+      "id": "local-gumi-41",
+      "name": "신사랑방식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 금오산로 140 (원평동)",
+      "lat": 36.1246733276503,
+      "lng": 128.329353873208,
+      "menu": [
+        "북어물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=41&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=41&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=41&page=3",
+      "addressOriginal": "경북 구미시 금오산로 140 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-3326"
+    },
+    {
+      "id": "local-gumi-45",
+      "name": "낭만쭈꾸미신사옥점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산업로 193-84 (원평동)",
+      "lat": 36.1257881987795,
+      "lng": 128.349748145875,
+      "menu": [
+        "쭈꾸미볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=45&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=45&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=45&page=2",
+      "addressOriginal": "경북 구미시 산업로 193-84 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-441-5248"
+    },
+    {
+      "id": "local-gumi-46",
+      "name": "김태주선산곱창주식회사",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 송원서로 77 (원평동)",
+      "lat": 36.1246383067993,
+      "lng": 128.343267112451,
+      "menu": [
+        "곱창전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=46&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=46&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=46&page=2",
+      "addressOriginal": "경북 구미시 송원서로 77 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-458-4129"
+    },
+    {
+      "id": "local-gumi-49",
+      "name": "한정식 궁원",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 금오산로 126 (원평동)",
+      "lat": 36.1253048134445,
+      "lng": 128.331020223792,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=49&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=49&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=49&page=3",
+      "addressOriginal": "경북 구미시 금오산로 126 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-9900"
+    },
+    {
+      "id": "local-gumi-58",
+      "name": "홍어한마리",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로14길 74-1 (송정동)",
+      "lat": 36.116441861809314,
+      "lng": 128.34827571245768,
+      "menu": [
+        "홍어요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=58&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=58&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=58&page=2",
+      "addressOriginal": "경북 구미시 신시로14길 74-1 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-453-7390"
+    },
+    {
+      "id": "local-gumi-59",
+      "name": "한데만데이",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로14길 134 (송정동)",
+      "lat": 36.1145058703642,
+      "lng": 128.352853851724,
+      "menu": [
+        "콩나물밥",
+        "한방백숙",
+        "한방수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=59&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=59&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=59&page=2",
+      "addressOriginal": "경북 구미시 신시로14길 134 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-455-5633"
+    },
+    {
+      "id": "local-gumi-62",
+      "name": "제형밀면",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로14길 74 (송정동)",
+      "lat": 36.1167614581601,
+      "lng": 128.346725060664,
+      "menu": [
+        "밀면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=62&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=62&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=62&page=2",
+      "addressOriginal": "경북 구미시 신시로14길 74 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-4641"
+    },
+    {
+      "id": "local-gumi-65",
+      "name": "선산고을식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로16길 83 (송정동)",
+      "lat": 36.1168667623011,
+      "lng": 128.348010315285,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=65&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=65&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=65&page=",
+      "addressOriginal": "경북 구미시 신시로16길 83 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-1400"
+    },
+    {
+      "id": "local-gumi-70",
+      "name": "금오산해물탕.찜",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 백산로 91 (송정동)",
+      "lat": 36.1208182288895,
+      "lng": 128.343497360038,
+      "menu": [
+        "해물탕",
+        "해물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=70&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=70&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=70&page=",
+      "addressOriginal": "경북 구미시 백산로 91 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-452-2209"
+    },
+    {
+      "id": "local-gumi-71",
+      "name": "거제복집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로16길 49 (송정동)",
+      "lat": 36.117376278068,
+      "lng": 128.34405590074,
+      "menu": [
+        "복요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=71&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=71&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=71&page=",
+      "addressOriginal": "경북 구미시 신시로16길 49 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-462-0096"
+    },
+    {
+      "id": "local-gumi-72",
+      "name": "감나무집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로24길 3 (송정동)",
+      "lat": 36.1202801363894,
+      "lng": 128.338839622274,
+      "menu": [
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=72&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=72&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=72&page=",
+      "addressOriginal": "경북 구미시 신시로24길 3 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-608-7500"
+    },
+    {
+      "id": "local-gumi-78",
+      "name": "육림촌",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산동읍 강동로 982",
+      "lat": 36.1679194878504,
+      "lng": 128.439612005586,
+      "menu": [
+        "한우숯불구이",
+        "간장게장정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=78&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=78&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=78&page=",
+      "addressOriginal": "경북 구미시 산동읍 강동로 982",
+      "sourceCategory": "한식",
+      "phoneText": "054-474-3030"
+    },
+    {
+      "id": "local-gumi-80",
+      "name": "산동장안식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산동읍 강동로 840",
+      "lat": 36.1651208893104,
+      "lng": 128.454750383571,
+      "menu": [
+        "청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=80&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=80&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=80&page=",
+      "addressOriginal": "경북 구미시 산동읍 강동로 840",
+      "sourceCategory": "한식",
+      "phoneText": "054-474-2001"
+    },
+    {
+      "id": "local-gumi-83",
+      "name": "두꺼비왕족발보쌈구미본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산동읍 신당인덕1로3길 28",
+      "lat": 36.1568631942151,
+      "lng": 128.436458945368,
+      "menu": [
+        "족발",
+        "보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=83&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=83&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=83&page=",
+      "addressOriginal": "경북 구미시 산동읍 신당인덕1로3길 28",
+      "sourceCategory": "한식",
+      "phoneText": "054-471-3322"
+    },
+    {
+      "id": "local-gumi-86",
+      "name": "옥성순두부",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 옥성면 상농소길 27-11",
+      "lat": 36.2993547477662,
+      "lng": 128.281355572126,
+      "menu": [
+        "두부요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=86&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=86&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=86&page=",
+      "addressOriginal": "경북 구미시 옥성면 상농소길 27-11",
+      "sourceCategory": "한식",
+      "phoneText": "054-482-4700"
+    },
+    {
+      "id": "local-gumi-88",
+      "name": "평양아바이순대국밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 고아읍 들성로 61",
+      "lat": 36.1542194365491,
+      "lng": 128.329171885572,
+      "menu": [
+        "순대국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=88&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=88&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=88&page=",
+      "addressOriginal": "경북 구미시 고아읍 들성로 61",
+      "sourceCategory": "한식",
+      "phoneText": "054-442-8998"
+    },
+    {
+      "id": "local-gumi-89",
+      "name": "연못식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 고아읍 송평로1길 42",
+      "lat": 36.1676498187307,
+      "lng": 128.355599468419,
+      "menu": [
+        "닭발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=89&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=89&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=89&page=",
+      "addressOriginal": "경북 구미시 고아읍 송평로1길 42",
+      "sourceCategory": "한식",
+      "phoneText": "054-454-1608"
+    },
+    {
+      "id": "local-gumi-91",
+      "name": "도개다곡묵고을",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 고아읍 원대로 163",
+      "lat": 36.1663413391867,
+      "lng": 128.321250090773,
+      "menu": [
+        "도토리묵밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=91&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=91&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=91&page=",
+      "addressOriginal": "경북 구미시 고아읍 원대로 163",
+      "sourceCategory": "한식",
+      "phoneText": "054-457-5500"
+    },
+    {
+      "id": "local-gumi-93",
+      "name": "윤실네진부령황태",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 선산읍 선주로 155-9",
+      "lat": 36.2448358153937,
+      "lng": 128.303572319804,
+      "menu": [
+        "황태구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=93&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=93&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=93&page=",
+      "addressOriginal": "경북 구미시 선산읍 선주로 155-9",
+      "sourceCategory": "한식",
+      "phoneText": "054-482-5543"
+    },
+    {
+      "id": "local-gumi-100",
+      "name": "천생산아구찜",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동남길 102",
+      "lat": 36.0976437737827,
+      "lng": 128.426906882807,
+      "menu": [
+        "아구찜",
+        "해물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=100&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=100&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=100&page=4",
+      "addressOriginal": "경북 구미시 인동남길 102",
+      "sourceCategory": "한식",
+      "phoneText": "054-472-0665"
+    },
+    {
+      "id": "local-gumi-102",
+      "name": "다미초밥",
+      "category": "일식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 송정대로 17",
+      "lat": 36.1172271070623,
+      "lng": 128.340544715401,
+      "menu": [
+        "대구탕",
+        "초밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=102&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=102&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=102&page=",
+      "addressOriginal": "경북 구미시 송정대로 17",
+      "sourceCategory": "일식",
+      "phoneText": "054-457-9035"
+    },
+    {
+      "id": "local-gumi-106",
+      "name": "상돈이비빔돼지",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 구미대로 399 (신평동)",
+      "lat": 36.1226482766705,
+      "lng": 128.362537539437,
+      "menu": [
+        "비빔돼지"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=106&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=106&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=106&page=3",
+      "addressOriginal": "경북 구미시 구미대로 399 (신평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-462-0030"
+    },
+    {
+      "id": "local-gumi-107",
+      "name": "윤쉐프의고기집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 신시로14길 10 (송정동)",
+      "lat": 36.1155420193578,
+      "lng": 128.340162224863,
+      "menu": [
+        "양등심",
+        "양갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=107&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=107&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=107&page=2",
+      "addressOriginal": "경북 구미시 신시로14길 10 (송정동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-452-6766"
+    },
+    {
+      "id": "local-gumi-108",
+      "name": "일선고을",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 선산읍 강동로 2842",
+      "lat": 36.2729211192805,
+      "lng": 128.329925174521,
+      "menu": [
+        "오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=108&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=108&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=108&page=",
+      "addressOriginal": "경북 선산읍 강동로 2842",
+      "sourceCategory": "한식",
+      "phoneText": "054-481-4050"
+    },
+    {
+      "id": "local-gumi-110",
+      "name": "터줏골홍어",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 상림로 69 (임은동)",
+      "lat": 36.0922967361826,
+      "lng": 128.360619063808,
+      "menu": [
+        "홍어삼합"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=110&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=110&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=110&page=3",
+      "addressOriginal": "경북 구미시 상림로 69 (임은동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-464-0121"
+    },
+    {
+      "id": "local-gumi-111",
+      "name": "금오산길",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 공원로 20 (남통동)",
+      "lat": 36.1116333535724,
+      "lng": 128.315888056226,
+      "menu": [
+        "한방닭백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=111&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=111&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=111&page=2",
+      "addressOriginal": "경북 구미시 공원로 20 (남통동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-455-8842"
+    },
+    {
+      "id": "local-gumi-113",
+      "name": "단지속쭈꾸미",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 상사서로 123 (사곡동)",
+      "lat": 36.09346548984,
+      "lng": 128.35530239967,
+      "menu": [
+        "쭈꾸미"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=113&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=113&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=113&page=3",
+      "addressOriginal": "경북 구미시 상사서로 123(사곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-461-3335"
+    },
+    {
+      "id": "local-gumi-114",
+      "name": "신촌육개장설렁탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동중앙로3길 38 (황상동)",
+      "lat": 36.1093935408019,
+      "lng": 128.418751505349,
+      "menu": [
+        "설렁탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=114&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=114&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=114&page=4",
+      "addressOriginal": "경북 구미시 인동중앙로3길 38(황상동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-458-8448"
+    },
+    {
+      "id": "local-gumi-115",
+      "name": "한재촌 구미본점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동중앙로3길 18-5 (황상동)",
+      "lat": 36.1082550396741,
+      "lng": 128.420136487056,
+      "menu": [
+        "소찌개",
+        "육회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=115&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=115&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=115&page=4",
+      "addressOriginal": "경북 구미시 인동중앙로3길 18-5 (황상동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-475-0712"
+    },
+    {
+      "id": "local-gumi-116",
+      "name": "푸차이로오",
+      "category": "기타",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 금오산로22길 29 (원평동)",
+      "lat": 36.1267695510774,
+      "lng": 128.330020259487,
+      "menu": [
+        "왕새우팟타이",
+        "소고기쌀국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=116&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=116&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=116&page=2",
+      "addressOriginal": "경북 구미시 금오산로22길 29 (원평동)",
+      "sourceCategory": "동남아식",
+      "phoneText": "0507-1380-3544"
+    },
+    {
+      "id": "local-gumi-117",
+      "name": "종갓집추어탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 임은3길 16, 1층 (임은동)",
+      "lat": 36.0889987833242,
+      "lng": 128.364490041872,
+      "menu": [
+        "추어탕",
+        "닭볶음탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=117&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=117&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=117&page=3",
+      "addressOriginal": "경북 구미시 임은3길 16, 1층 (임은동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-604-3051"
+    },
+    {
+      "id": "local-gumi-118",
+      "name": "육마켓",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 옥계신당로5길 51-26 (옥계동)",
+      "lat": 36.1410033710877,
+      "lng": 128.422473909761,
+      "menu": [
+        "한우 오마카세"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=118&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=118&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=118&page=4",
+      "addressOriginal": "경북 구미시 옥계신당로5길 51-26 (옥계동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-472-5075"
+    },
+    {
+      "id": "local-gumi-119",
+      "name": "순수가성",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동북길 99 (인의동)",
+      "lat": 36.0986274929861,
+      "lng": 128.427281545532,
+      "menu": [
+        "순두부"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=119&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=119&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=119&page=4",
+      "addressOriginal": "경북 구미시 인동북길 99 (인의동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-475-8533"
+    },
+    {
+      "id": "local-gumi-120",
+      "name": "금촌국밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 송원서로 79 (원평동)",
+      "lat": 36.1247697702673,
+      "lng": 128.34324413847,
+      "menu": [
+        "돼지머리국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=120&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=120&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=120&page=2",
+      "addressOriginal": "경북 구미시 송원서로 79 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-451-1612"
+    },
+    {
+      "id": "local-gumi-121",
+      "name": "뚜부랑가마솥손두부",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 봉곡남로18길 13 (봉곡동)",
+      "lat": 36.1487946047087,
+      "lng": 128.314501995813,
+      "menu": [
+        "대패두부짜박이",
+        "시래기들깨순두부"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=121&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=121&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=121&page=2",
+      "addressOriginal": "경북 구미시 봉곡남로18길 13 (봉곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-456-6388"
+    },
+    {
+      "id": "local-gumi-122",
+      "name": "원조옛날국밥구미점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동26길 40 (진평동)",
+      "lat": 36.094023823047,
+      "lng": 128.425991821479,
+      "menu": [
+        "돼지국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=122&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=122&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=122&page=4",
+      "addressOriginal": "경북 구미시 인동26길 40(진평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-472-0870"
+    },
+    {
+      "id": "local-gumi-123",
+      "name": "능이백숙천지랑놀자구미김천점",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 봉곡동로 36-7 (봉곡동)",
+      "lat": 36.1537668514627,
+      "lng": 128.315753936122,
+      "menu": [
+        "능이영계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=123&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=123&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=123&page=2",
+      "addressOriginal": "경북 구미시 봉곡동로 36-7 (봉곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-455-1006"
+    },
+    {
+      "id": "local-gumi-124",
+      "name": "황금꼬짬",
+      "category": "중식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산동읍 강동로 1004-25",
+      "lat": 36.169033077649,
+      "lng": 128.437266060182,
+      "menu": [
+        "황금꼬짬(꼬막짬뽕)"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=124&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=124&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=124&page=",
+      "addressOriginal": "경북 구미시 산동읍 강동로 1004-25",
+      "sourceCategory": "중식",
+      "phoneText": "054-474-9889"
+    },
+    {
+      "id": "local-gumi-125",
+      "name": "맛남의광장",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동60길 6 (구평동)",
+      "lat": 36.0921547582828,
+      "lng": 128.454888144578,
+      "menu": [
+        "잔치수육",
+        "시래기청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=125&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=125&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=125&page=3",
+      "addressOriginal": "구미시 인동60길 6 (구평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-471-7080"
+    },
+    {
+      "id": "local-gumi-126",
+      "name": "구미대가샤브칼국수맛집",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 경은로 68 (형곡동)",
+      "lat": 36.1128047082889,
+      "lng": 128.335531437445,
+      "menu": [
+        "소고기샤브",
+        "만두샤브칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=126&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=126&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=126&page=3",
+      "addressOriginal": "경북 구미시 경은로 68 (형곡동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-452-4282"
+    },
+    {
+      "id": "local-gumi-127",
+      "name": "칠삼피그",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동32길 22-26 (진평동)",
+      "lat": 36.0938376928278,
+      "lng": 128.429179584571,
+      "menu": [
+        "통삼겹살",
+        "냉꽃삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=127&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=127&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=127&page=4",
+      "addressOriginal": "경북 구미시 인동32길 22-26 (진평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-473-7392"
+    },
+    {
+      "id": "local-gumi-128",
+      "name": "칼잡이남자",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 인동중앙로3길 25 (황상동)",
+      "lat": 36.1083920847983,
+      "lng": 128.418898402962,
+      "menu": [
+        "숙성삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=128&page=4",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=128&page=4",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=128&page=4",
+      "addressOriginal": "경북 구미시 인동중앙로3길 25 (황상동)",
+      "sourceCategory": "한식",
+      "phoneText": "054)475-2616"
+    },
+    {
+      "id": "local-gumi-129",
+      "name": "66티에이치",
+      "category": "양식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 봉곡남로 66 (봉곡동)",
+      "lat": 36.1488990614933,
+      "lng": 128.3092778047,
+      "menu": [
+        "화덕피자",
+        "돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=129&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=129&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=129&page=2",
+      "addressOriginal": "경북 구미시 봉곡남로 66 (봉곡동)",
+      "sourceCategory": "양식",
+      "phoneText": "054-456-6679"
+    },
+    {
+      "id": "local-gumi-130",
+      "name": "백우정",
+      "category": "양식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 금오산로 178 (남통동)",
+      "lat": 36.1239973041877,
+      "lng": 128.325344018006,
+      "menu": [
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=130&page=3",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=130&page=3",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=130&page=3",
+      "addressOriginal": "경북 구미시 금오산로 178 (남통동)",
+      "sourceCategory": "양식",
+      "phoneText": "054-452-5020"
+    },
+    {
+      "id": "local-gumi-134",
+      "name": "김가네매운족발돼지국밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 산업로2길 52-1 (원평동)",
+      "lat": 36.1305679609744,
+      "lng": 128.32958870056,
+      "menu": [
+        "무침족발",
+        "불족발",
+        "돼지국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=134&page=2",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=134&page=2",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=134&page=2",
+      "addressOriginal": "경북 구미시 산업로2길 52-1 (원평동)",
+      "sourceCategory": "한식",
+      "phoneText": "054-452-2343"
+    },
+    {
+      "id": "local-gumi-135",
+      "name": "해평가마솥국밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 해평면 숭선로 433",
+      "lat": 36.1870336168223,
+      "lng": 128.385522679081,
+      "menu": [
+        "국밥(소머리,소고기,선지)"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "구미맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=135&page=",
+          "sourceName": "구미시 · 구미맛집 공식 목록",
+          "verifiedAt": "2026-11-04",
+          "status": "official_selection_list",
+          "selectionCriteria": "구미시 공식 구미맛집 공개 목록에 수록된 업소입니다. 개별 선정 연도는 원문에 표시되지 않아 확인일과 구분합니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "구미시 공식 맛집 상세 지도",
+        "url": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=135&page=",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://www.gumi.go.kr/gumifood/page.do?mid=7&category=&SearchPosChk=N&SearchPosLat=&SearchPosLng=&SearchTarget=&SearchKeyword=&ArticleId=135&page=",
+      "addressOriginal": "경북 구미시 해평면 숭선로 433",
+      "sourceCategory": "한식",
+      "phoneText": "054-473-5657"
+    },
+    {
+      "id": "blue-gumi-daldaloven",
+      "name": "달달한오븐",
+      "category": "디저트",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 옥계북로 56 1층",
+      "lat": 36.1379704,
+      "lng": 128.4236405,
+      "menu": [
+        "메론생크림빵"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력(업소 안내)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.instagram.com/daldaloven/",
+          "sourceName": "달달한오븐 공식 운영자 안내",
+          "verifiedAt": "2026-11-04",
+          "status": "business_reported_history",
+          "selectionCriteria": "업소 운영자가 공개 안내한 블루리본 선정 이력입니다. 선정 연도·리본 수와 현재 등급은 확인되지 않아 표시하지 않습니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "네이버 플레이스 동일 업소 지도",
+        "url": "https://m.place.naver.com/restaurant/1466986948/home",
+        "method": "published-place-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://pf.kakao.com/_Jdtxls",
+      "phoneText": "0507-1422-0416"
+    },
+    {
+      "id": "blue-gumi-seonsan-jeil-jokbal",
+      "name": "선산제일족발",
+      "category": "한식",
+      "region": "경북",
+      "district": "구미시",
+      "address": "경북 구미시 고아읍 들성로 232 1동 1층",
+      "lat": 36.1604656,
+      "lng": 128.3457828,
+      "menu": [
+        "헛개나무족발"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "수록 이력(업소 안내)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://m.place.naver.com/restaurant/2084968327/information",
+          "sourceName": "선산제일족발 네이버 플레이스 사업자 소개",
+          "verifiedAt": "2026-11-04",
+          "status": "business_reported_history",
+          "selectionCriteria": "업소 운영자가 공개 안내한 블루리본 등재 이력입니다. 선정 연도·리본 수와 현재 등급은 확인되지 않아 표시하지 않습니다."
+        }
+      ],
+      "coordinateSource": {
+        "name": "네이버 플레이스 동일 업소 지도",
+        "url": "https://m.place.naver.com/restaurant/2084968327/home",
+        "method": "published-place-coordinate",
+        "checkedAt": "2026-11-04"
+      },
+      "addressSourceUrl": "https://m.place.naver.com/restaurant/2084968327/home",
+      "phoneText": "0507-1446-2178"
     }
   ]
 }
