@@ -1,0 +1,91 @@
+name: Minimize broader festival data diff
+
+on:
+  push:
+    branches:
+      - add-science-music-winter-festivals-20261104
+
+permissions:
+  contents: write
+
+jobs:
+  minimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Preserve existing event order
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          base_sha = '91655d15ff5a5875583eca135acdb42e0b258c33'
+          path = Path('games/festival-schedule/events.json')
+          base = json.loads(subprocess.check_output(
+              ['git', 'show', f'{base_sha}:games/festival-schedule/events.json'],
+              text=True,
+              encoding='utf-8'
+          ))
+          current = json.loads(path.read_text(encoding='utf-8'))
+
+          added_ids = [
+              'gongju-gunbam-2026',
+              'ansan-asv-science-2026',
+              'khnp-music-festival-the-theater-2026',
+              'wonderlivet-2026',
+              'daegwallyeong-snow-2027'
+          ]
+          added = {event['id']: event for event in current['events'] if event.get('id') in added_ids}
+          missing = set(added_ids) - set(added)
+          if missing:
+              raise SystemExit(f'missing additions: {sorted(missing)}')
+
+          events = [event for event in base['events'] if event.get('id') not in added_ids]
+          for event in sorted(added.values(), key=lambda item: (item.get('start') is None, item.get('start') or '9999-12-31')):
+              if event.get('start') is None:
+                  events.append(event)
+                  continue
+              insert_at = len(events)
+              for index, existing in enumerate(events):
+                  existing_start = existing.get('start')
+                  if existing_start is None or existing_start > event['start']:
+                      insert_at = index
+                      break
+              events.insert(insert_at, event)
+
+          base['events'] = events
+          base['updatedAt'] = '2026-11-04'
+          path.write_text(json.dumps(base, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Validate minimized update
+        run: |
+          node games/festival-schedule/validate.mjs
+          node tests/festival-core.test.mjs
+          node tests/festival-entry.test.cjs
+          node tests/game-release-refresh.test.cjs
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const data = JSON.parse(fs.readFileSync('games/festival-schedule/events.json','utf8'));
+          const ids = new Set(data.events.map(event => event.id));
+          for (const id of ['gongju-gunbam-2026','ansan-asv-science-2026','khnp-music-festival-the-theater-2026','wonderlivet-2026','daegwallyeong-snow-2027']) {
+            if (!ids.has(id)) throw new Error(`missing ${id}`);
+          }
+          console.log('minimized broader festival data verified');
+          NODE
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/temp-minimize-festival-diff.yml
+          git config user.name 'ojjuda-note'
+          git config user.email 'mj830417@naver.com'
+          git add -A
+          git commit -m 'Preserve existing festival order'
+          git push origin HEAD:add-science-music-winter-festivals-20261104
