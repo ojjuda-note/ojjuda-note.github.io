@@ -8,7 +8,13 @@ world=world.replace('<script type="module">','<script src="/mobile-viewport.js">
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R,
+ openFlat(stage){
+  El();D.online=true;D.user={id:'fixture-admin'};D.isAdmin=true;window.screwFixtureStage=stage;
+  Al('screw',{screwMode:'flat'});
+ },
+ guest(){D.online=false;D.user=null;D.isAdmin=false}
+};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const qa=process.env.SCREW_MODES_QA_DIR;if(qa)fs.mkdirSync(qa,{recursive:true});
 const font=process.env.SCREW_QA_FONT;
 if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans KR";src:url("/fixture-korean.ttf")}body,button{font-family:"Noto Sans KR",sans-serif}</style></head>');
@@ -51,11 +57,11 @@ async function assertFullscreen(page,size){
   assert.deepEqual(engineRequests,[],'the arcade initially loads no screw engines');
   await page.evaluate(()=>{window.screwFixtureStage=4;screwWorld.open('screw');});
   assert.equal(await page.locator('[data-g=screw-start]').count(),2,'both modes are named');
-  assert.equal(await page.locator('[data-mode=box]').isDisabled(),true,'box mode remains under maintenance');
-  assert.equal(await page.locator('[data-mode=flat]').isEnabled(),true,'flat mode is accessible');
+  assert.ok(await page.locator('[data-mode=box]').isEnabled(),'box mode is open');
+  assert.ok(await page.locator('[data-mode=flat]').isDisabled(),'flat mode is under maintenance');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
   assert.deepEqual(engineRequests,[],'choosing a mode is lazy');
-  await page.locator('[data-mode=flat]').click();
+  await page.evaluate(()=>screwWorld.openFlat(4));
   await page.waitForFunction(()=>window.screwWorld.current()?.game?.state?.L===4);
   assert.equal(await page.locator('[data-g=screw-stages]').isVisible(),true,'the stage catalog is always available from the game header');
   assert.equal((await page.locator('[data-g=screw-stages]').textContent()).trim(),'단계 선택','the header labels the stage selector clearly');
@@ -92,7 +98,7 @@ async function assertFullscreen(page,size){
 
   await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-modes]').click();
-  await page.evaluate(()=>{window.screwFixtureStage=26;});await page.locator('[data-mode=flat]').click();
+  await page.evaluate(()=>screwWorld.openFlat(26));
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
   await page.locator('[data-g=screw-stages]').click();
   assert.equal(await page.locator('[data-g=screw-stage][data-stage="26"]').count(),1,'the catalog opens on the remembered stage page');
@@ -106,7 +112,7 @@ async function assertFullscreen(page,size){
 
   await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-modes]').click();
-  await page.evaluate(()=>{window.screwFixtureStage=1000;});await page.locator('[data-mode=flat]').click();
+  await page.evaluate(()=>screwWorld.openFlat(1000));
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
   await page.locator('[data-g=screw-stages]').click();
   assert.equal(await page.locator('[data-g=screw-stage][data-stage="1000"]').count(),1,'the last page opens automatically for the remembered stage');
@@ -118,11 +124,11 @@ async function assertFullscreen(page,size){
 
   page.once('dialog',dialog=>dialog.accept());await page.locator('[data-g=close]').click();
   await page.locator('#gov').waitFor({state:'detached'});
-  await page.evaluate(()=>screwWorld.open('screw',{screwMode:'box'}));
-  assert.equal(await page.locator('#gov').count(),0,'a direct box link stays blocked');
+  await page.evaluate(()=>{screwWorld.guest();screwWorld.open('screw',{screwMode:'flat'});});
+  assert.equal(await page.locator('#gov').count(),0,'a direct flat link stays blocked for guests');
   assert.equal(engineRequests.some(p=>p.includes('screw3d')),false);
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: flat-only chooser, maintenance gate, responsive 320/390/844/1280px, actual lift-seat touch, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
+  console.log('PASS: public box chooser, flat maintenance gate, administrator flat play, responsive 320/390/844/1280px, actual lift-seat touch, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -13,16 +13,20 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.entryTest);
  await page.evaluate(()=>entryTest.arcade());
  const screwCard=page.locator('[data-act="game-open"][data-v="screw"]');
- assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the repaired flat mode is available in the arcade');
- for(const id of ['screw_box']){
-  await page.evaluate(id=>entryTest.link(id),id);
-  await page.evaluate(id=>entryTest.rank(id),id);
-  assert.match(await page.locator('#toast').textContent(),/공사중/);
-  assert.equal(await page.locator('#gov').count(),0);
- }
- await page.evaluate(()=>entryTest.link('screw'));
- assert.equal(await page.locator('[data-g="screw-start"][data-mode="box"]').isDisabled(),true,'the unfinished box mode remains closed');
- assert.equal(await page.locator('[data-g="screw-start"][data-mode="flat"]').isEnabled(),true);
+ assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the screw chooser is available in the arcade');
+ await page.evaluate(()=>entryTest.link('screw_flat'));
+ await page.evaluate(()=>entryTest.rank('screw_flat'));
+ assert.match(await page.locator('#toast').textContent(),/공사중/);
+ assert.equal(await page.locator('#gov').count(),0);
+ await screwCard.click();
+ const menu=page.locator('[data-entry-key="screw"]');await menu.waitFor();
+ await menu.locator('.ge-icon svg').waitFor({state:'visible'});
+ assert.equal(await menu.locator('.ge-title').innerText(),'나사 풀기');
+ assert.deepEqual(await menu.locator('strong').allTextContents(),['박스형 시작','평면형 · 공사중']);
+ assert.deepEqual(await menu.locator('small').allTextContents(),['모형을 360° 돌려 나사를 분리해요','철판 퍼즐 점검 중']);
+ assert.ok(await menu.locator('[data-mode="box"]').isEnabled());
+ assert.ok(await menu.locator('[data-mode="flat"]').isDisabled());
+ assert.equal(await page.locator('.screw-zoom-nav').isVisible(),false);
  await page.evaluate(()=>entryTest.close());
  assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw3d\.js|screw-flat\.js/.test(r.name))),false,'opening the version chooser does not load an engine');
  let expected;
@@ -60,5 +64,5 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  }
  assert.deepEqual(errors,[]);await page.close();
  }
- console.log('PASS: consistent entry cards at 320/390/1280px, four arcade starts, closed screw card and direct links, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
+ console.log('PASS: consistent entry cards at 320/390/1280px, four arcade starts, readable screw chooser and closed flat-mode links, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
