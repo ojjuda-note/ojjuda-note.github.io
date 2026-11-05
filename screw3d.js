@@ -10,7 +10,12 @@ import { createScrewDepthRenderer } from './screw3d-depth-renderer.js?v=20261105
 // 물건마다 '풀리는 순서'를 먼저 확인하고 그 순서대로 3개씩 같은 색을 칠해서, 막혀서 못 푸는 판이 없어요.
 const W = 360, H = 540, CX = 180, CY = 392, SC = 150, F = 7;
 const SCENE_TOP=232,SCENE_BOTTOM=510;
-const COLORS = ['#F0679A', '#2FB99A', '#5B8DEF', '#F2B84B', '#9B7BF0', '#FF8A5B', '#8BC34A', '#A0714F', '#E4554B', '#1FB5C9', '#3A3F66', '#9AA0A6'];
+// The first twelve familiar screw colors stay unchanged. Later stages add
+// eight unmistakable two-tone heads; each pair is unique even when rotated.
+const COLORS = ['#F0679A', '#2FB99A', '#5B8DEF', '#F2B84B', '#9B7BF0', '#FF8A5B', '#8BC34A', '#A0714F', '#E4554B', '#1FB5C9', '#3A3F66', '#9AA0A6',
+  '#F0679A', '#2FB99A', '#5B8DEF', '#9B7BF0', '#E4554B', '#A0714F', '#3A3F66', '#9AA0A6'];
+const SECOND_COLORS = [null, null, null, null, null, null, null, null, null, null, null, null,
+  '#3A3F66', '#FF8A5B', '#F2B84B', '#8BC34A', '#1FB5C9', '#2FB99A', '#F2B84B', '#F0679A'];
 const BOX_Y = 52, BOX_W = 150, BOX_H = 64, BUF_Y = 138, BUF_N = 5;
 const BOX_MAX = 4, BUF_MAX = BUF_N + 3, BUY_W = 50;   // 색상 상자는 최대 4개, 보관 칸은 최대 8칸 (살 수 있어요)
 function boxLay(nb, buy) { const area = 328 - (buy ? BUY_W + 6 : 0), gap = 8, w = (area - gap * (nb - 1)) / nb, sp = Math.min(42, (w - 14) / 3); return { w, sp, x: i => 16 + i * (w + gap) }; }
@@ -751,10 +756,9 @@ const difficultyTier = L => L <= 3 ? 0 : L <= 30 ? 1 : L <= 100 ? 2
   : L <= 250 ? 3 : L <= 500 ? 4 : L <= 750 ? 5 : 6;
 // Higher stages add new screw colors without changing the 3-of-a-kind rule.
 // A correct route still needs only the two default boxes; detours use storage.
-const colorCount = L => L <= 3 ? 2 : L <= 30 ? 3 : L <= 70 ? 4
-  : L <= 120 ? 5 : L <= 200 ? 6 : L <= 300 ? 7
-  : L <= 420 ? 8 : L <= 550 ? 9 : L <= 690 ? 10
-  : L <= 850 ? 11 : 12;
+// Tutorial uses 2 kinds; then add 1 kind per 15-stage band:
+// 4-15: 3, 16-30: 4, 31-45: 5, ... 256-270: 20 (cap thereafter).
+const colorCount = L => L <= 3 ? 2 : Math.min(20, 3 + Math.floor((L - 1) / 15));
 function tutorialModel(L) {   // 처음 세 판은 작은 물건과 두 색으로 회전·분해를 익혀요.
   const cells = L === 1 ? [[0, 0, 0], [1, 0, 0]] : L === 2 ? [[0, 0, 0], [1, 0, 0], [2, 0, 0]] : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]];
   return assemble(['작은 블럭', '블럭 기차', '네모 블럭'][L - 1], cells.map((p, i) => cube(...p, WOOD[i])), { minS: targetScrews(L) });
@@ -921,9 +925,23 @@ function withPedestal(obj, T) {
 const HEAD_GEOM = cylGeom(DRAW_HEAD_R, DRAW_HEAD_H / 2, 12);
 const SOCKET_GEOM = cylGeom(DRAW_HEAD_R*1.24, .010, 10);
 const screwMeshes=new Map([[1,{head:HEAD_GEOM,seat:SOCKET_GEOM}]]);
-function screwMesh(scale){
+// Divide the actual 3D cylinder surface into two solid-color halves.
+// A rotated camera cannot make a rear color shine through the front face.
+function twoToneHead(geom, second) {
+  const sides=geom.faces.slice(0,12).map((f,i)=>i<6?{...f,paint:second}:f);
+  return {...geom,faces:[...sides,
+    {idx:[12,10,8,6,4,2,0],n:[0,1,0],paint:second},
+    {idx:[0,22,20,18,16,14,12],n:[0,1,0]},
+    {idx:[1,3,5,7,9,11,13],n:[0,-1,0],paint:second},
+    {idx:[13,15,17,19,21,23,1],n:[0,-1,0]}]};
+}
+function screwMesh(scale,colorIndex){
   if(!screwMeshes.has(scale))screwMeshes.set(scale,{head:cylGeom(DRAW_HEAD_R*scale,DRAW_HEAD_H/2,12),seat:cylGeom(DRAW_HEAD_R*1.24*scale,.010,10)});
-  return screwMeshes.get(scale);
+  const mesh=screwMeshes.get(scale),second=SECOND_COLORS[colorIndex];
+  if(!second)return mesh;
+  if(!mesh.twoTone)mesh.twoTone=new Map();
+  if(!mesh.twoTone.has(colorIndex))mesh.twoTone.set(colorIndex,twoToneHead(mesh.head,second));
+  return {head:mesh.twoTone.get(colorIndex),seat:mesh.seat};
 }
 const skinViewCache=new WeakMap();
 function visibleSkinMesh(geom,owner){
@@ -1177,7 +1195,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-solid-depth2',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-20-colors1',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
@@ -1696,7 +1714,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (s.state !== 'in' && s.state !== 'out') continue;
         const E = s.thru, rise = s.state === 'out' ? Math.min(1, s.t / 0.34) * 0.22 : 0, spin = s.state === 'out' ? s.t * 22 : 0;
         const {p,a}=visibleScrewPose(s);
-        const headScale=s.skinMount?.drawScale||1,headRadius=DRAW_HEAD_R*headScale,headMesh=screwMesh(headScale);
+        const headScale=s.skinMount?.drawScale||1,headRadius=DRAW_HEAD_R*headScale,headMesh=screwMesh(headScale,s.color);
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
         const hc = add(p, mul(a, DRAW_HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
         const hcs = add(hc, mul(u0, sh));
@@ -1713,7 +1731,13 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (st.big && s.state === 'in') {   // 조각이 많으면 나사 머리를 팔각형 하나로 (빠르게)
           const ctr = add(hcs, mul(a, DRAW_HEAD_H / 2)), w0 = mv(R, [1, 0, 0]), w1 = mv(R, [0, 0, 1]), pts = [];
           for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * headRadius), mul(w1, Math.sin(an) * headRadius))), V)); }
-          const col = COLORS[s.color], it2 = { z: project(ctr, V).z + 0.03, polys: [{ pts, depth: screenDepth(a, ctr, V, st.sc, st.zm, st.pan), fill: col, line: shade(col, -0.35) }], alpha: 1, owner: s, wv: [], planes: [], bb: bounds2(pts), hull: null };
+          const col = COLORS[s.color], second=SECOND_COLORS[s.color], depth=screenDepth(a,ctr,V,st.sc,st.zm,st.pan);
+          // Fast mode also has two genuine colored halves, not a translucent overlay.
+          const headPolys = second
+            ? [{pts:pts.slice(0,5),depth,fill:col,line:shade(col,-0.35)},
+               {pts:pts.slice(4).concat(pts[0]),depth,fill:second,line:shade(second,-0.35)}]
+            : [{pts,depth,fill:col,line:shade(col,-0.35)}];
+          const it2 = { z: project(ctr, V).z + 0.03, polys: headPolys, alpha: 1, owner: s, wv: [], planes: [], bb: bounds2(pts), hull: null };
           if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * headRadius * 0.62), mul(w1, uz * headRadius * 0.62))), V));
           items.push(it2); const hp = project(ctr, V); if (dot(a, fwd) > 0.12) st.heads.set(s, hp); continue;
         }
@@ -1870,7 +1894,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       for (const f of st.fly) {
         if (f.wait > 0) continue;
         const t = ease(Math.min(1, f.t)), x = f.fx + (f.to.x - f.fx) * t, y = f.fy + (f.to.y - f.fy) * t - Math.sin(Math.PI * t) * 46;
-        drawScrew(c, x, y, COLORS[f.s.color], f.t * 9, 1 + Math.sin(Math.PI * t) * 0.3);
+        drawScrew(c, x, y, f.s.color, f.t * 9, 1 + Math.sin(Math.PI * t) * 0.3);
       }
       if (st.msgT > 0 && st.msg) { c.save(); c.globalAlpha = Math.min(1, st.msgT * 3); c.font = 'bold 16px sans-serif'; const w = Math.max(200, c.measureText(st.msg).width + 60); rr(c, 180 - w / 2, 198, w, 44, 22); c.fillStyle = 'rgba(35,38,74,0.86)'; c.fill(); c.fillStyle = '#FFFFFF'; c.textAlign = 'center'; c.fillText(st.msg, 180, 220); c.restore(); }
       if (!st.touched) { c.fillStyle = '#A38F7C'; c.font = '12px sans-serif'; c.textAlign = 'center'; c.fillText('같은 색 3개씩 먼저 · 순서가 어긋나면 보관이 어려워요', 180, 504); }
@@ -1885,13 +1909,19 @@ function screw3d(api,startStage=loadResumeStage()) {
 
 function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function circ(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); }
-function drawScrew(c, x, y, color, rot, scale) {
-  c.save(); c.translate(x, y); c.scale(scale, scale);
+function drawScrew(c, x, y, colorIndex, rot, scale) {
+  const color=COLORS[colorIndex],second=SECOND_COLORS[colorIndex];
+  c.save(); c.translate(x, y); c.scale(scale, scale); c.rotate(rot);
   circ(c, 0, 1.5, 13.5); c.fillStyle = 'rgba(35,38,74,0.22)'; c.fill();
   circ(c, 0, 0, 13.5); c.fillStyle = shade(color, -0.28); c.fill();
   circ(c, 0, 0, 11); c.fillStyle = color; c.fill();
+  if(second){
+    c.beginPath();c.moveTo(0,-11);c.arc(0,0,11,-Math.PI/2,Math.PI/2);c.closePath();
+    c.fillStyle=second;c.fill();
+    c.beginPath();c.moveTo(0,-10);c.lineTo(0,10);c.strokeStyle='rgba(255,255,255,0.35)';c.lineWidth=1;c.stroke();
+  }
   c.beginPath(); c.ellipse(-4, -5, 5, 3, -0.5, 0, Math.PI * 2); c.fillStyle = 'rgba(255,255,255,0.4)'; c.fill();
-  c.rotate(rot); c.strokeStyle = 'rgba(255,255,255,0.92)'; c.lineWidth = 3; c.lineCap = 'round';
+  c.strokeStyle = 'rgba(255,255,255,0.92)'; c.lineWidth = 3; c.lineCap = 'round';
   c.beginPath(); c.moveTo(-6, 0); c.lineTo(6, 0); c.moveTo(0, -6); c.lineTo(0, 6); c.stroke();
   c.restore();
 }
@@ -1901,9 +1931,14 @@ function drawBoxes(c, st) {
   st.boxes.forEach((b, i) => {
     const x = L.x(i), y = BOX_Y + (b && b.close ? -ease(b.close) * 26 : 0), a = b && b.close ? 1 - b.close : 1;
     c.save(); c.globalAlpha = a; rr(c, x, y, L.w, BOX_H, 16); c.fillStyle = b ? shade(COLORS[b.c], 0.78) : '#EADFD3'; c.fill();
+    if(b && SECOND_COLORS[b.c]){
+      c.save();rr(c,x,y,L.w,BOX_H,16);c.clip();
+      c.fillStyle=shade(SECOND_COLORS[b.c],0.78);c.fillRect(x+L.w/2,y,L.w/2,BOX_H);
+      c.restore();
+    }
     c.lineWidth = 3; c.strokeStyle = b ? shade(COLORS[b.c], -0.08) : '#DCCFC2'; c.stroke();
     for (let k = 0; k < 3; k++) { const h = boxHole(i, k, nb, buy); circ(c, h.x, h.y + (y - BOX_Y), hr); c.fillStyle = 'rgba(35,38,74,0.14)'; c.fill(); }
-    if (b) for (let k = 0; k < b.n; k++) { const h = boxHole(i, k, nb, buy); drawScrew(c, h.x, h.y + (y - BOX_Y), COLORS[b.c], 0, sc); }
+    if (b) for (let k = 0; k < b.n; k++) { const h = boxHole(i, k, nb, buy); drawScrew(c, h.x, h.y + (y - BOX_Y), b.c, 0, sc); }
     if (b && b.close) { rr(c, x, y, L.w, 14 + ease(b.close) * (BOX_H - 14), 16); c.fillStyle = shade(COLORS[b.c], 0.2); c.fill(); }
     c.restore();
   });
@@ -1917,7 +1952,7 @@ function drawBuffer(c, st) {
   c.fillStyle = '#A38F7C'; c.font = '11px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(`보관 칸 ${n}칸`, 180, BUF_Y - 9);
   c.textAlign = 'right'; c.fillStyle = '#8A6FB8'; c.font = 'bold 11px sans-serif'; c.fillText(`🪙 ${st.coins === null ? '지갑 연결 필요' : `${st.coins} ZU`}`, 336, BUF_Y - 9);
   const full = st.buf.filter(Boolean).length;
-  for (let k = 0; k < n; k++) { const h = bufHole(k, n, buy); circ(c, h.x, h.y, hr); c.fillStyle = full >= n - 1 && !st.buf[k] ? 'rgba(240,103,154,0.28)' : 'rgba(35,38,74,0.14)'; c.fill(); const s = st.buf[k]; if (s && s !== 'res') drawScrew(c, h.x, h.y, COLORS[s.color], 0, sc); }
+  for (let k = 0; k < n; k++) { const h = bufHole(k, n, buy); circ(c, h.x, h.y, hr); c.fillStyle = full >= n - 1 && !st.buf[k] ? 'rgba(240,103,154,0.28)' : 'rgba(35,38,74,0.14)'; c.fill(); const s = st.buf[k]; if (s && s !== 'res') drawScrew(c, h.x, h.y, s.color, 0, sc); }
   if (buy) { const bx = 336 - BUY_W; rr(c, bx + 3, BUF_Y + 5, BUY_W - 8, 40, 20); c.fillStyle = '#FFF0F1'; c.fill(); c.setLineDash([4, 3]); c.lineWidth = 1.6; c.strokeStyle = '#EDBDC4'; c.stroke(); c.setLineDash([]);   // 보관 칸 사기 (1 ZU)
     c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#A72E40'; c.font = 'bold 11px sans-serif'; c.fillText('+칸', bx + BUY_W / 2 - 1, BUF_Y + 18); c.fillStyle = st.coins >= 1 ? '#A72E40' : '#93646D'; c.fillText('1 ZU', bx + BUY_W / 2 - 1, BUF_Y + 32); }
   c.textBaseline = 'alphabetic';
