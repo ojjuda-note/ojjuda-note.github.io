@@ -25,9 +25,8 @@ function solve(stage,layout){
   const from=s.hole.id;if(!sim.lift(s)){reason='lift rejected';break;}advance();
   const entry={screw:s.id,from,to:null};route.push(entry);
   if(l.plates.every(p=>p.state==='gone')){reason=null;break;}
-  // A fixed three-slot witness remains valid when later stages offer extra
-  // parking places: use the original three, so each new stage is proven
-  // solvable without depending on an extra hole or an item purchase.
+  // Every stage must be solvable using only its three free parking holes,
+  // without depending on a purchased item.
   const certifiedDestinations=()=>l.holes.filter(h=>(h.owner!==null||h.id<3)&&P.canSeatScrew(l,h,s));
   let free=certifiedDestinations();
   if(!free.length){advance(6);free=certifiedDestinations();entry.wait=7.5;}

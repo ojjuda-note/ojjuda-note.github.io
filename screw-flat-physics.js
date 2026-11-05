@@ -12,16 +12,13 @@
     filter.ojjudaFlat=true;M.Detector.canCollide=filter;
   }
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
-  // Stage boundaries are inclusive: 1–30 easy, 31–122 harder with three
-  // parking holes; then add one more parking hole every 122 stages.
-  function spareHoleCount(stage){return 3+Math.max(0,Math.ceil((clamp(Math.trunc(stage)||1,1,LAST_STAGE)-122)/122));}
-  // Keep the original three certified positions fixed. New slots fill a
-  // second, smaller row; the mobile-size screw heads remain distinct even
-  // with 11 stage holes and three purchased extras (14 total).
-  const EXTRA_SPARE_X=[40,303,124,225,61,282,145,204,103,246,166];
+  // Every level starts with exactly three free parking holes. The player
+  // alone decides whether to buy as many as three additional holes.
+  function spareHoleCount(){return 3;}
+  const EXTRA_SPARE_X=[45,315,135];
   function layoutSpareHoles(level){
     const spare=level.holes.filter(h=>h.owner===null);
-    spare.forEach((h,i)=>{h.x=i<3?90+i*90:EXTRA_SPARE_X[i-3];h.y=i<3?100:120;h.storageScale=i<3?1:.64;});
+    spare.forEach((h,i)=>{h.x=i<3?90+i*90:EXTRA_SPARE_X[i-3];h.y=100;h.storageScale=1;});
   }
   function createSpareHoles(stage){
     const holes=Array.from({length:spareHoleCount(stage)},(_,id)=>({id,x:0,y:100,owner:null,screw:null}));

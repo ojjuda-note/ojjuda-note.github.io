@@ -140,14 +140,14 @@ for(const stage of [4,26,220]){
  paidHoles=0;
  const crowded=Game.flat(wallet,1000),higher=crowded.state;
  await new Promise(resolve=>setImmediate(resolve));
- assert.equal(higher.level.holes.filter(h=>h.owner===null).length,11);
+ assert.equal(higher.level.holes.filter(h=>h.owner===null).length,3,'even the last stage starts with only three holes');
  for(let i=0;i<3;i++){
   press(crowded,{x:90,y:514});
   await new Promise(resolve=>setImmediate(resolve));
  }
  assert.equal(higher.extraHoles,3);
- assert.equal(higher.level.holes.filter(h=>h.owner===null).length,14);
- assert.doesNotThrow(()=>crowded.draw(canvas),'all fourteen storage slots render');
+ assert.equal(higher.level.holes.filter(h=>h.owner===null).length,6,'only the three purchases create extra holes');
+ assert.doesNotThrow(()=>crowded.draw(canvas),'all six storage slots render');
  const example=higher.level.screws.find(s=>Physics.canMoveToSpare(higher.level,s));
  assert.ok(example);
  press(crowded,example.hole);advance(crowded);

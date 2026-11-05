@@ -18,8 +18,8 @@ assert.doesNotMatch(flatSource,/철판 번호 순서대로|routeGateBlocked|wron
 assert.doesNotMatch(flatSource,/line\(c,\[\[0,-5\],\[0,5\]\]/,'no answer-signalling plus heads');
 const physicsSource=fs.readFileSync(require.resolve('../screw-flat-physics.js'),'utf8');
 assert.doesNotMatch(physicsSource,/routeGateBlocked|routeUnlocked|routeProgress|orderRank/);
-for(const [stage,expected] of [[1,3],[30,3],[31,3],[122,3],[123,4],[244,4],[245,5],[366,5],[367,6],[488,6],[489,7],[610,7],[611,8],[732,8],[733,9],[854,9],[855,10],[976,10],[977,11],[1000,11]]){
- assert.equal(Physics.spareHoleCount(stage),expected,`stage ${stage} parking-hole tier`);
+for(const stage of [1,30,31,122,123,244,245,366,367,488,489,610,611,732,733,854,855,976,977,1000]){
+ assert.equal(Physics.spareHoleCount(stage),3,`stage ${stage} starts with only three free holes`);
 }
 
 for(let stage=12;stage<=1000;stage++){
@@ -49,10 +49,10 @@ for(let stage=12;stage<=1000;stage++){
  for(let i=0;i<3;i++)level.holes.push({id:level.holes.length,owner:null,screw:null,extra:true});
  Physics.layoutSpareHoles(level);
  const all=level.holes.filter(h=>h.owner===null);
- assert.equal(all.length,14,'eleven level holes plus three paid holes fit the tray');
+ assert.equal(all.length,6,'three starting holes plus three paid holes fit the tray');
  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
   const a=all[i],b=all[j];
-  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,'all fourteen illustrated heads stay separated');
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,'all six illustrated heads stay separated');
  }
 }
 
@@ -130,4 +130,4 @@ async function itemRecovery(){
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
  play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover the spent-lift mistake');game.destroy();
 }
-itemRecovery().then(()=>console.log('PASS: 988 certified budgets, progressive storage holes, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
+itemRecovery().then(()=>console.log('PASS: 988 certified budgets, three free storage holes in every stage, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});

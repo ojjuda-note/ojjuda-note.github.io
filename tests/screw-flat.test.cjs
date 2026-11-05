@@ -50,7 +50,7 @@ let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchas
 storage.set('ojjuda-screw-stage','37');
 let last=0,maxScrews=0;const shapes=new Set(),cornerCounts=new Set(),firstShape=new Map();
 assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
-// Spare holes increase with difficulty and always stay above the picture.
+// Free parking holes always number three, regardless of stage difficulty.
 for(let stage=1;stage<=LAST_STAGE;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
  assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
@@ -257,4 +257,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
  game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);tick(game,.55);
  game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts with thirteen progressive metal outlines, varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced release, progressive spare holes, eleven introductory playthroughs, stage 25 and screw-support regressions.');
+console.log('PASS: 1000 layouts with thirteen progressive metal outlines, varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced release, three free spare holes, eleven introductory playthroughs, stage 25 and screw-support regressions.');
