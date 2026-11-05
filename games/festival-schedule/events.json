@@ -2785,7 +2785,7 @@
       "sourceCheckedAt": "2026-11-06",
       "geoApprox": true,
       "id": "busan-burak-festa-2026",
-      "title": "2026 부산대자율상권 부락(樂) 페스타",
+      "title": "2026 부락페스타",
       "category": "local",
       "section": "festival",
       "start": "2026-11-06",
@@ -2806,7 +2806,8 @@
         "레트로",
         "먹거리",
         "거리축제",
-        "부산"
+        "부산",
+        "부락페스타"
       ],
       "verificationSources": [
         "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=60e30da5-2852-4ce7-bfa3-6f8320238d8a"
