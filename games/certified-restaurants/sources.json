@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3117,
+    "uniqueRestaurants": 3124,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2386,
+      "local-guide": 2393,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2094,
+    "coordinatesMissing": 2101,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 354,
+      "경기": 361,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,13 +1531,13 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1828,
+      "한식": 1832,
       "중식": 128,
       "일식": 131,
-      "기타": 572,
+      "기타": 574,
       "양식": 208,
       "분식": 23,
-      "디저트": 227
+      "디저트": 228
     }
   },
   "coordinateEnrichment": {
@@ -10540,51 +10540,115 @@
       "scope": "경기도 뉴스포털의 2025·2026 공개 기사 3건에 소개된 안양·군포·의왕·과천의 음식점·카페 중 기본·기존 보충자료에서 미등록된 8곳의 이름·현 게시 주소 확인. 4시 전체 명단 전수 점검 아님. 정식 미식 인증 선정과 구분.",
       "coordinatePolicy": "상호·지점·현주소 일치 공개 좌표 미확인으로 신규 8곳 lat/lng=null, 기존 ID 및 지도 좌표 변경 없음. 가게 영업/폐업 개별 확인 미완료.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot13-ansan-siheung-gwangmyeong",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3117,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2386,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2094,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 354,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1828,
+          "중식": 128,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 227
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3124,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2393,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2101,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 361,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1832,
+          "중식": 128,
+          "일식": 131,
+          "기타": 574,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 228
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-gg-tour-slot13-gm-eobune",
+        "local-gg-tour-slot13-gm-regularly",
+        "local-gg-tour-slot13-sh-mulwang",
+        "local-gg-tour-slot13-sh-cheongchun",
+        "local-gg-tour-slot13-sh-nurungdak",
+        "local-gg-tour-slot13-an-kantipur",
+        "local-gg-tour-slot13-an-vietnam"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "existingRestaurantIds": [],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+      ],
+      "scope": "안산·시흥·광명 경기도 공식 음식점 소개 기사 3건 중 미등록 7곳. 배정 지역 전수확인·현 영업 확인 아님.",
+      "coordinatePolicy": "정확히 일치하는 공개 좌표 자료를 확보하지 못해 7곳 null. 기존 좌표 및 선정 이력 변경 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot12-anyang-gunpo-uiwang-gwacheon",
+    "id": "2026-11-06-gyeonggi-slot13-ansan-siheung-gwangmyeong",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3109,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2378,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2086,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 346,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1821,
-        "중식": 128,
-        "일식": 131,
-        "기타": 572,
-        "양식": 208,
-        "분식": 23,
-        "디저트": 226
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3117,
       "providerCounts": {
         "michelin": 237,
@@ -10623,27 +10687,65 @@
         "디저트": 227
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3124,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2393,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2101,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 361,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1832,
+        "중식": 128,
+        "일식": 131,
+        "기타": 574,
+        "양식": 208,
+        "분식": 23,
+        "디저트": 228
+      }
+    },
+    "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-gg-tour-slot12-anyang-kkokko",
-      "local-gg-tour-slot12-anyang-nambu",
-      "local-gg-tour-slot12-gunpo-sikdang",
-      "local-gg-tour-slot12-gunpo-sumdubu",
-      "local-gg-tour-slot12-gunpo-gungangol",
-      "local-gg-tour-slot12-gwacheon-fromtheearth",
-      "local-gg-tour-slot12-gwacheon-tongnamujip",
-      "local-gg-tour-slot12-uiwang-nonggun"
+      "local-gg-tour-slot13-gm-eobune",
+      "local-gg-tour-slot13-gm-regularly",
+      "local-gg-tour-slot13-sh-mulwang",
+      "local-gg-tour-slot13-sh-cheongchun",
+      "local-gg-tour-slot13-sh-nurungdak",
+      "local-gg-tour-slot13-an-kantipur",
+      "local-gg-tour-slot13-an-vietnam"
     ],
     "existingRestaurantsEnriched": 0,
     "existingRestaurantIds": [],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049",
       "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
-      "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+      "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+      "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
     ],
-    "scope": "경기도 뉴스포털의 2025·2026 공개 기사 3건에 소개된 안양·군포·의왕·과천의 음식점·카페 중 기본·기존 보충자료에서 미등록된 8곳의 이름·현 게시 주소 확인. 4시 전체 명단 전수 점검 아님. 정식 미식 인증 선정과 구분.",
-    "coordinatePolicy": "상호·지점·현주소 일치 공개 좌표 미확인으로 신규 8곳 lat/lng=null, 기존 ID 및 지도 좌표 변경 없음. 가게 영업/폐업 개별 확인 미완료.",
+    "scope": "안산·시흥·광명 경기도 공식 음식점 소개 기사 3건 중 미등록 7곳. 배정 지역 전수확인·현 영업 확인 아님.",
+    "coordinatePolicy": "정확히 일치하는 공개 좌표 자료를 확보하지 못해 7곳 null. 기존 좌표 및 선정 이력 변경 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -11224,6 +11326,33 @@
       "operatingStatusEstablished": false,
       "coordinateVerifiedCount": 0,
       "sourceFile": "games/certified-restaurants/official-gyeonggi-slot12.json",
+      "notExhaustive": true
+    },
+    "municipalTourism20261106GyeonggiSlot13": {
+      "checkedAt": "2026-11-06",
+      "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+      "sourcePublicationDates": [
+        "2026-01-12",
+        "2025-09-26",
+        "2025-12-10"
+      ],
+      "officialSourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+      ],
+      "regions": [
+        "안산시",
+        "시흥시",
+        "광명시"
+      ],
+      "recordCount": 7,
+      "provider": "local-guide",
+      "guideStatus": "official_restaurant_listing",
+      "selectionYearEstablished": false,
+      "operatingStatusEstablished": false,
+      "coordinateVerifiedCount": 0,
+      "sourceFile": "games/certified-restaurants/official-gyeonggi-slot13.json",
       "notExhaustive": true
     }
   },
