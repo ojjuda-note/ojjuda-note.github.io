@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261105-screw-stage-items2';
+ const revision='20261105-screw-stage-top1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -25,7 +25,7 @@
   stacker:'1.4.3',
   breakout:'1.5.3',
   spot:'1.10.5',
-  screw:'2.12.0',
+  screw:'2.12.1',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
