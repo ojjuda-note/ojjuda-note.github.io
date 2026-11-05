@@ -14,15 +14,9 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.evaluate(()=>entryTest.arcade());
  const screwCard=page.locator('[data-act="game-open"][data-v="screw"]');
  assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the repaired flat mode is available in the arcade');
- for(const id of ['screw_box']){
-  await page.evaluate(id=>entryTest.link(id),id);
-  await page.evaluate(id=>entryTest.rank(id),id);
-  assert.match(await page.locator('#toast').textContent(),/공사중/);
-  assert.equal(await page.locator('#gov').count(),0);
- }
  await page.evaluate(()=>entryTest.link('screw'));
- assert.equal(await page.locator('[data-g="screw-start"][data-mode="box"]').isDisabled(),true,'the unfinished box mode remains closed');
- assert.equal(await page.locator('[data-g="screw-start"][data-mode="flat"]').isEnabled(),true);
+ assert.equal(await page.locator('[data-g="screw-start"][data-mode="box"]').isEnabled(),true,'box mode remains open');
+ assert.equal(await page.locator('[data-g="screw-start"][data-mode="flat"]').isEnabled(),true,'flat mode opens to everyone');
  await page.evaluate(()=>entryTest.close());
  assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw3d\.js|screw-flat\.js/.test(r.name))),false,'opening the version chooser does not load an engine');
  let expected;

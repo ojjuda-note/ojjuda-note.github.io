@@ -5,8 +5,8 @@
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
   const RESUME_KEY = 'ojjuda-screw-flat-last-stage-v1';
   const ATTEMPT_KEY = 'ojjuda-screw-flat-active-attempt-v1';
-  const HELD={x:225,y:94};
-  const MAX_EXTRA_HOLES=3,PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
+  const HELD={x:343,y:101};
+  const MAX_EXTRA_HOLES=9,PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   // Finishing requires almost four transfers per plate; keep room for mistakes
   // without making a paid extra-move purchase necessary on advanced stages.
   const moveLimit=level=>Number.isInteger(level.requiredMoves)?level.requiredMoves+(level.stage<=30?5:2):level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
@@ -120,7 +120,7 @@
       if(!sameWallet()||!api.buyScrew){tell('로그인 후 구매할 수 있어요');return;}
       if(!st.shopReady){await readUpgrades();return;}
       const hole=kind==='flat_hole';
-      if(hole&&st.extraHoles>=MAX_EXTRA_HOLES){tell('이 판에는 최대 3개까지 추가해요');return;}
+      if(hole&&st.extraHoles>=MAX_EXTRA_HOLES){tell('이 판에는 최대 9개까지 추가해요');return;}
       const L=st.L,run=st.shopRun,before=hole?st.extraHoles:st.extraMoves;let id=pendingPurchase(L,kind);
       const coins=api.getCoins?.();if(!id&&(!Number.isFinite(coins)||coins<1)){tell(Number.isFinite(coins)?'1 ZU가 필요해요':'ZU 지갑을 확인해 주세요');return;}
       if(!id){id=crypto.randomUUID();if(!savePurchase(L,kind,id)){tell('구매 기록을 저장할 수 없어요');return;}}
@@ -129,7 +129,7 @@
         const r=await api.buyScrew(kind,id,L,false,st.attemptId);if(!currentShop(L,run))return;
         if(validCount(r,L,kind)&&(r.ok||(hole&&r.reason==='limit'))){
           applyUpgrade(kind,r.count);savePurchase(L,kind,null);
-          tell(r.reason==='limit'?'이 판에는 최대 3개까지 추가해요':(hole?st.extraHoles:st.extraMoves)>before?(hole?'구멍 1개를 추가했어요':'이동 3회를 추가했어요'):'구매한 내역을 확인했어요');
+          tell(r.reason==='limit'?'이 판에는 최대 9개까지 추가해요':(hole?st.extraHoles:st.extraMoves)>before?(hole?'구멍 1개를 추가했어요':'이동 3회를 추가했어요'):'구매한 내역을 확인했어요');
         }else{
           if(['coins','request_conflict','invalid','banned'].includes(r?.reason))savePurchase(L,kind,null);
           else st.shopReady=false;
@@ -172,7 +172,7 @@
       if(y>=491&&x>=148&&x<=264){void buyUpgrade('flat_moves');return;}
       if(st.pending)return;
       if(movesLeft()===0&&st.selected===null){tell('이동을 모두 썼어요. 1 ZU로 3회 추가해요');return;}
-      const hits=st.level.holes.filter(visibleHole).map(h=>{const q=screenPoint(h);return{h,d:Math.hypot(q.x-x,q.y-y)};}).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
+      const hits=st.level.holes.filter(visibleHole).map(h=>{const q=screenPoint(h);return{h,d:Math.hypot(q.x-x,q.y-y)};}).filter(({h,d})=>d<=(h.owner===null?Math.max(17,18*(h.storageScale||1)):21)).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
       if(!hit){if(hits.length)tell('앞의 나사나 철판이 홈을 가리고 있어요');return;}
       const h=hit.h;
@@ -264,9 +264,9 @@
       round(c,74,39,212,29,14);c.fillStyle=lowMoves?'#B74736':'#426E53';c.fill();
       c.font='800 18px "Noto Sans KR",sans-serif';c.fillStyle='#FFFFFF';c.fillText(`남은 이동 ${remaining}회`,180,54,194);
       round(c,24,68,312,62,18);c.fillStyle='#EAE2D9';c.fill();
-      c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
+      c.font='9px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.textAlign='left';c.fillText('빈 구멍',28,100);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':holding?'들고 있는 나사를 빈 구멍에 끼워요':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<3?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 뽑아요':showZoom?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 뽑아 빈 구멍에 끼워요',26,137,226);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':holding?'들고 있는 나사를 빈 구멍에 끼워요':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<MAX_EXTRA_HOLES?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 뽑아요':showZoom?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 뽑아 빈 구멍에 끼워요',26,137,226);
       c.fillStyle='#8E8178';
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,137);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
@@ -326,7 +326,7 @@
           const hole=kind==='flat_hole',full=hole&&st.extraHoles>=MAX_EXTRA_HOLES,ready=sameWallet()&&!full&&!st.shopBusy,urgent=hole?blocked:remaining===0;
           round(c,x,493,116,42,16);c.fillStyle=ready?(urgent?'#C83E4D':'#FFF0F1'):'#F3E8EA';c.fill();c.lineWidth=1;c.strokeStyle=ready?'#EDBDC4':'#DDC7CC';c.stroke();c.textAlign='center';c.fillStyle=ready?(urgent?'#FFFFFF':'#A72E40'):'#93646D';c.font='700 11px "Noto Sans KR",sans-serif';
           c.fillText(st.shopBusy==='buying'&&st.shopKind===kind?'구매 중…':st.shopBusy==='checking'?'내역 확인 중…':full?'구멍 추가 완료':hole?'+ 구멍 1개 · 1 ZU':'+ 이동 3회 · 1 ZU',x+58,507,108);
-          c.font='9px "Noto Sans KR",sans-serif';c.fillText(hole?`현재 판 · ${st.extraHoles}/3개 추가`:`현재 판 · ${st.extraMoves}회 추가`,x+58,523,108);
+          c.font='9px "Noto Sans KR",sans-serif';c.fillText(hole?`현재 판 · ${st.extraHoles}/9개 추가`:`현재 판 · ${st.extraMoves}회 추가`,x+58,523,108);
         }
         round(c,272,493,64,42,16);c.fillStyle='#E7DDD1';c.fill();c.fillStyle='#78695E';c.font='700 12px "Noto Sans KR",sans-serif';c.fillText('↻ 다시',304,514);
       }

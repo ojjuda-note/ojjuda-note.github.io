@@ -12,13 +12,20 @@
     filter.ojjudaFlat=true;M.Detector.canCollide=filter;
   }
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
-  // Every level starts with exactly three free parking holes. The player
-  // alone decides whether to buy as many as three additional holes.
+  // Every level starts with three free holes. Up to nine paid holes use fixed
+  // positions, so placing an extra screw never moves existing parked screws.
   function spareHoleCount(){return 3;}
-  const EXTRA_SPARE_X=[45,315,135];
+  const EXTRA_SPARE_POSITIONS=[
+    [54,80],[126,80],[198,80],[234,80],[306,80],
+    [54,120],[126,120],[198,120],[234,120]
+  ];
   function layoutSpareHoles(level){
     const spare=level.holes.filter(h=>h.owner===null);
-    spare.forEach((h,i)=>{h.x=i<3?90+i*90:EXTRA_SPARE_X[i-3];h.y=100;h.storageScale=1;});
+    if(spare.length>12)throw Error('Flat puzzle storage exceeds twelve holes');
+    spare.forEach((h,i)=>{
+      const [x,y]=i<3?[90+i*90,100]:EXTRA_SPARE_POSITIONS[i-3];
+      h.x=x;h.y=y;h.storageScale=i<3?1:.7;
+    });
   }
   function createSpareHoles(stage){
     const holes=Array.from({length:spareHoleCount(stage)},(_,id)=>({id,x:0,y:100,owner:null,screw:null}));

@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261105-admin-polish1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261106-screwbox-penguin-eye-fix1" defer></script>
+<script src="/world-game-assets.js?v=20261106-flat-open-nine-holes1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -1150,7 +1150,6 @@ function worldScrewAdminTestEnabled(){
  return D.online&&!!D.user?.id&&D.isAdmin===true;
 }
 function Al(t,options={}){
- if(t==="screw"&&options.screwMode==="flat"&&!worldScrewAdminTestEnabled()){M('나사 풀기 평면형은 공사중이에요. 박스형을 이용해 주세요.');return;}
  if(t==="byeolcheonji"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
   location.assign("/star");return;
@@ -1356,7 +1355,7 @@ var Cl=t=>{let e=R.cv.getBoundingClientRect();return[(t.clientX-e.left)*Z/e.widt
  const stage=Number(e.dataset.stage);
  if(!canChooseBreakoutStage(stage))return;
  R.breakoutStage=stage;_2();return;
-}if(R.id==="screw"&&o==="screw-stage"){if(e.disabled||!R.ov.contains(e))return;const stage=Number(e.dataset.stage);if(R.screwStageMenu)void chooseScrewStageFromMenu(stage);else void chooseScrewStage(stage);return;}if(R.id==="screw"&&o==="screw-stage-page"){if(!e.disabled&&R.screwStageMenu)showScrewStages(R.screwMode,Number(e.dataset.page));return;}if(R.id==="screw"&&o==="screw-stages"){if(R.screwStageMenu&&R.screwWasRunning)returnFromScrewStages();else void openScrewStagesFromResult();return;}if(R.id==="screw"&&o==="screw-stage-back"){returnFromScrewStages();return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.game&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.screwStageMenu=false;R.screwWasRunning=false;R.screwStage=undefined;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(e.dataset.mode!=="box"&&!(e.dataset.mode==="flat"&&worldScrewAdminTestEnabled()))return;R.screwMode=e.dataset.mode;R.screwStage=undefined;R.screwStageMenu=false;R.screwWasRunning=false;void _2();return}if(R.id==="screw"&&R.screwMode==="box"&&o.startsWith("screw-zoom-")){if(R.running&&R.game?.zoomControl)R.game.zoomControl(o.slice("screw-zoom-".length));return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
+}if(R.id==="screw"&&o==="screw-stage"){if(e.disabled||!R.ov.contains(e))return;const stage=Number(e.dataset.stage);if(R.screwStageMenu)void chooseScrewStageFromMenu(stage);else void chooseScrewStage(stage);return;}if(R.id==="screw"&&o==="screw-stage-page"){if(!e.disabled&&R.screwStageMenu)showScrewStages(R.screwMode,Number(e.dataset.page));return;}if(R.id==="screw"&&o==="screw-stages"){if(R.screwStageMenu&&R.screwWasRunning)returnFromScrewStages();else void openScrewStagesFromResult();return;}if(R.id==="screw"&&o==="screw-stage-back"){returnFromScrewStages();return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.game&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.screwStageMenu=false;R.screwWasRunning=false;R.screwStage=undefined;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;R.screwMode=e.dataset.mode;R.screwStage=undefined;R.screwStageMenu=false;R.screwWasRunning=false;void _2();return}if(R.id==="screw"&&R.screwMode==="box"&&o.startsWith("screw-zoom-")){if(R.running&&R.game?.zoomControl)R.game.zoomControl(o.slice("screw-zoom-".length));return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
 function canChooseBreakoutStage(stage){
  const current=R?.game?.stage,levels=window.OjjudaBreakoutGame?.levels||100;
  return R?.id==='breakout'&&!R.running&&!R.loading&&Number.isInteger(current)&&R.breakoutBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=levels&&Math.abs(stage-current)<=1&&(stage<=current||R.game.stageCleared===true);
@@ -1402,7 +1401,6 @@ function screwStagesMarkup(mode,page=0){
 }
 function showScrewStages(mode,page){
  if(!R||R.id!=='screw'||!['box','flat'].includes(mode))return;
- if(mode==='flat'&&!worldScrewAdminTestEnabled())return;
  R.screwMode=mode;R.screwStageMenu=true;R.screwStage=undefined;R.screwBaseStage=undefined;
  R.running=false;R.ov.dataset.screwMode=mode;
  R.ov.querySelector('.gt').textContent=mode==='flat'?'🔩 평면형':'🔩 박스형';
@@ -1598,7 +1596,6 @@ function resumeScrewScores(){
  }
 }
 async function _2(){if(!R||R.running||R.loading||R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;let t=R.id,factory=G2[t];
-if(t==='screw'&&R.screwMode==='flat'&&!worldScrewAdminTestEnabled()){M('평면형은 공사중이에요.');B2();return;}
 if(t==="breakout"&&R.game&&R.breakoutStage!==undefined&&!canChooseBreakoutStage(R.breakoutStage))return;
 if(t==="breakout"&&R.game?.stageCleared){
  const previous=R.game,stage=R.breakoutStage;
@@ -2431,7 +2428,7 @@ async function savePracticeStreak(session,winner){
 function worldRankGames(){
  const ranked={billiards:{name:'당구',unit:'연승',rankingBasis:'difficulty_streak',game:'carom4'},janggi:{name:'장기',unit:'연승',rankingBasis:'difficulty_streak'},chess:{name:'체스',unit:'연승',rankingBasis:'difficulty_streak'}};
  return {bang:_r.bang,archery:_r.archery,sacheonseong:_r.sacheonseong,tank:{name:'탱크게임',unit:'연승',rankingBasis:'opponents_streak'},saetbyeol:_r.saetbyeol,mines:_r.mines,tour:{name:'마블',unit:'연승',rankingBasis:'current_streak'},...ranked,
-  screw_box:{name:'나사풀기 · 박스형',unit:'점'},screw_flat:{name:'나사풀기 · 평면형',unit:'점',maintenance:'공사중'},spot:_r.spot,
+  screw_box:{name:'나사풀기 · 박스형',unit:'점'},screw_flat:{name:'나사풀기 · 평면형',unit:'점'},spot:_r.spot,
   ttang:_r.ttang,mole:_r.mole,runner:_r.runner,stacker:_r.stacker,breakout:_r.breakout,
   ...(D.online&&D.user?.id&&window.OjjudaMatgoAccess?.visible(19)?{matgo:{name:'맞고',unit:'G',rankingBasis:'best_round_gain'},poker:{name:'세븐포커',unit:'G',rankingBasis:'best_round_gain'},roulette:_r.roulette,photo_ttang:{name:'포토땅따먹기',unit:'장',rankingBasis:'photo_clears'}}:{})
  };

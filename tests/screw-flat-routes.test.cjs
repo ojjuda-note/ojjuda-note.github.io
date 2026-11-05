@@ -46,13 +46,13 @@ for(let stage=12;stage<=1000;stage++){
 }
 {
  const level=Physics.makeFlatLevel(1000);
- for(let i=0;i<3;i++)level.holes.push({id:level.holes.length,owner:null,screw:null,extra:true});
+ for(let i=0;i<9;i++)level.holes.push({id:level.holes.length,owner:null,screw:null,extra:true});
  Physics.layoutSpareHoles(level);
  const all=level.holes.filter(h=>h.owner===null);
- assert.equal(all.length,6,'three starting holes plus three paid holes fit the tray');
+ assert.equal(all.length,12,'three starting holes plus nine paid holes fit the tray');
  for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
   const a=all[i],b=all[j];
-  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,'all six illustrated heads stay separated');
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,'all twelve illustrated heads stay separated');
  }
 }
 

@@ -51,7 +51,7 @@ async function assertFullscreen(page,size){
   assert.deepEqual(engineRequests,[],'the arcade initially loads no screw engines');
   await page.evaluate(()=>{window.screwFixtureStage=4;screwWorld.open('screw');});
   assert.equal(await page.locator('[data-g=screw-start]').count(),2,'both modes are named');
-  assert.equal(await page.locator('[data-mode=box]').isDisabled(),true,'box mode remains under maintenance');
+  assert.equal(await page.locator('[data-mode=box]').isEnabled(),true,'box mode stays open');
   assert.equal(await page.locator('[data-mode=flat]').isEnabled(),true,'flat mode is accessible');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
   assert.deepEqual(engineRequests,[],'choosing a mode is lazy');
@@ -119,10 +119,12 @@ async function assertFullscreen(page,size){
   page.once('dialog',dialog=>dialog.accept());await page.locator('[data-g=close]').click();
   await page.locator('#gov').waitFor({state:'detached'});
   await page.evaluate(()=>screwWorld.open('screw',{screwMode:'box'}));
-  assert.equal(await page.locator('#gov').count(),0,'a direct box link stays blocked');
-  assert.equal(engineRequests.some(p=>p.includes('screw3d')),false);
+  await page.waitForFunction(()=>screwWorld.current()?.screwMode==='box'&&screwWorld.current()?.game);
+  assert.equal(await page.locator('#gov').count(),1,'a direct box link is still available');
+  assert.equal(engineRequests.some(p=>p.includes('screw3d')),true,'box mode loads its own engine when selected');
+  await page.evaluate(()=>screwWorld.close());
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: flat-only chooser, maintenance gate, responsive 320/390/844/1280px, actual lift-seat touch, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
+  console.log('PASS: both screw modes open, responsive 320/390/844/1280px, actual flat lift-seat touch, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
