@@ -1446,7 +1446,8 @@
       "sourcesChecked": [
         "인천관광공사 인천투어 개별 음식점 자료(한국관광공사 정보 제공)",
         "인천시 공식 재외동포정보허브: 외국인편리음식점 현황(맛집 선정과 구분)",
-        "기존 인천 지역 지자체 선정 명단과 식당명·주소 교차대조"
+        "기존 인천 지역 지자체 선정 명단과 식당명·주소 교차대조",
+        "인천투어 신동양 후보 URL이 정보 미발견으로 확인되어 신규 등록 보류. 대체 삼미소문난냉면의 정확한 공식 페이지·주소 검증."
       ],
       "additions": 13,
       "modifications": 0,
@@ -1458,7 +1459,7 @@
       "legacyDistrictAliasPending": 18,
       "addedRestaurantIds": [
         "local-incheon-itour-apd21112609191801020",
-        "local-incheon-itour-apd21112609171458854",
+        "local-incheon-itour-apd21112609165908467",
         "local-incheon-itour-apd21120810001294388",
         "local-incheon-itour-apd21112609143808184",
         "local-incheon-itour-apd21121010002505353",
@@ -1478,7 +1479,7 @@
       ],
       "evidenceUrls": [
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
-        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
@@ -1511,13 +1512,13 @@
           "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
         },
         {
-          "id": "local-incheon-itour-apd21112609171458854",
-          "name": "신동양",
-          "address": "인천광역시 제물포구 서해대로449번길 52 (신흥동1가)",
+          "id": "local-incheon-itour-apd21112609165908467",
+          "name": "삼미소문난냉면",
+          "address": "인천광역시 제물포구 화평로 10",
           "region": "인천광역시 제물포구",
           "checkedAtKST": "2026-11-06",
           "sourceUrls": [
-            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854"
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467"
           ],
           "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
           "recheckCycle": 2,
@@ -1725,7 +1726,8 @@
         "기존 134곳+신규 13곳의 위치 좌표 미확인(건수는 범위 현황, 개별 전수 재조사가 아님)",
         "현재 데이터의 구 중구·동구 분류 18곳은 제물포구/영종구 구분 재매핑 필요, 이번 회차 임의 변경하지 않음",
         "블루리본 정규 신규 선정·리본 수 및 최신 영업 여부는 이번 공개 자료만으로 미확인",
-        "일부 공식 관광 소개의 오래된 등록·수정 이력은 현재 영업을 보증하지 않으며 2026년 신규 선정으로 오인하지 않음"
+        "일부 공식 관광 소개의 오래된 등록·수정 이력은 현재 영업을 보증하지 않으며 2026년 신규 선정으로 오인하지 않음",
+        "신동양은 기존 후보 URL에서 공식 식당 정보 미확인으로 신규 등록하지 않음. 폐업이나 선정 취소라는 뜻은 아님."
       ],
       "carryOver": [
         "다음 순환 06회차에서 기존 중구·동구 별칭 포함 현 주소·좌표 누락 전수 구분 및 분쟁 좌표 재확인",
