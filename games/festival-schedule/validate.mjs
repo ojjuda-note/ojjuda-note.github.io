@@ -48,6 +48,6 @@ for(const e of data.events||[]){
  if(typeof e.geoApprox!=='boolean')fail(prefix+': geoApprox must be boolean');
  if(!['scheduled','cancelled','postponed'].includes(e.status))fail(prefix+': invalid status');
  if(e.accessNote!=null&&typeof e.accessNote!=='string')fail(prefix+': invalid accessNote');
- if(e.verificationSources!==undefined&&(!Array.isArray(e.verificationSources)||e.verificationSources.some(v=>!validURL(v))))fail(prefix+': invalid verificationSources');
+ if(e.verificationSources!==undefined&&(!Array.isArray(e.verificationSources)||e.verificationSources.some(v=>!validURL(typeof v==='string'?v:v?.url))))fail(prefix+': invalid verificationSources');
 }
 if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else console.log(`PASS: ${data.events.length} festival, sports and performance entries, unique IDs, sections, dates, locations, statuses and official-source fields`);
