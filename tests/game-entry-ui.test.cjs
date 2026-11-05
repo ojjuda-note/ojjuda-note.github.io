@@ -16,7 +16,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the screw chooser is available in the arcade');
  await page.evaluate(()=>entryTest.link('screw'));
  const menu=page.locator('[data-entry-key="screw"]');await menu.waitFor();
- assert.match(await menu.locator('.ge-icon').textContent(),/🔩/);
+ await menu.locator('.ge-icon svg').waitFor({state:'visible'});
  assert.equal(await menu.locator('.ge-title').innerText(),'나사 풀기');
  assert.deepEqual(await menu.locator('strong').allTextContents(),['박스형 시작','평면형 시작']);
  assert.deepEqual(await menu.locator('small').allTextContents(),['모형을 360° 돌려 나사를 분리해요','나사를 옮겨 철판을 모두 떨어뜨려요']);

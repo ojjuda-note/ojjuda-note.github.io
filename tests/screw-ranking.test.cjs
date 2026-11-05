@@ -7,7 +7,7 @@ const noop=()=>{};
 function fixture(){
  const calls=[],timers=[],messages=[],storage=new Map();let owner='member-a',submit=async(game,score)=>({ok:true,best:score});
  const node={innerHTML:'',textContent:'',hidden:false};
- const context=vm.createContext({console,Promise,Number,Math,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},performance:{now:()=>1},
+ const context=vm.createContext({console,Promise,Number,Math,crypto:require('node:crypto'),localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},performance:{now:()=>1},
   worldRewardOwner:()=>owner,worldRewardRequest:()=>({owner}),worldRewardCurrent:r=>r.owner===owner,
   tf:async(game,score,request)=>{calls.push({game,score,request});return submit(game,score,request);},
   setTimeout:(resolve,delay)=>timers.push({resolve,delay}),M:message=>messages.push(message),
