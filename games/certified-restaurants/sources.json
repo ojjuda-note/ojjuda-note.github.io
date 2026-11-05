@@ -109,7 +109,7 @@
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 525,
+    "recordCount": 526,
     "coordinatesCount": 244,
     "buildCounts": {
       "existingRecords": 6,
@@ -190,7 +190,7 @@
     "coordinatesPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 525,
+    "recordCountIncludingCollaborations": 526,
     "displayLabels": {
       "3리본": 46,
       "공동선정": 270,
@@ -199,7 +199,8 @@
       "주목할 만한 새 맛집": 16,
       "2리본": 1,
       "광주미식주간 공동선정": 22,
-      "수록": 1
+      "수록": 1,
+      "3리본 이력(관광기사)": 1
     },
     "busanCollaboration": {
       "title": "부산의 노포, 부산의 식문화",
@@ -1438,10 +1439,10 @@
     },
     "seoulVisitSeoulHistory": {
       "checkedAt": "2026-11-05",
-      "recordCount": 2,
+      "recordCount": 3,
       "coordinatesVerified": 0,
       "selectionYearConfirmed": 0,
-      "ribbonGradeConfirmed": 0,
+      "ribbonGradeConfirmed": 1,
       "sourceInstitution": "서울관광재단 · Visit Seoul",
       "sourceType": "official_tourism_mention_of_historical_blue_ribbon_selection",
       "records": [
@@ -1462,9 +1463,19 @@
           "sourcePageModifiedAt": "2026-09-11",
           "sourceUrl": "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5",
           "historyEvidence": "블루리본 6년 연속 선정 언급"
+        },
+        {
+          "id": "local-seoul-visitseoul-se-gangnam-duru",
+          "name": "두루",
+          "region": "서울",
+          "district": "강남구",
+          "sourcePageCreatedAt": "2018-07-22",
+          "sourcePageModifiedAt": "2026-06-03",
+          "sourceUrl": "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+          "historyEvidence": "2018년 서울관광재단 기사에서 과거 3리본 수상 언급(선정연도 및 현재 등급 미확인)"
         }
       ],
-      "caveat": "Visit Seoul의 기록은 선정 이력 언급이며 정규 리본 등급·선정 판년도를 직접 입증하지 않음. 현재 영업 여부를 별도 확정하지 않음. 좌표 불명이라 null."
+      "caveat": "원대구탕·제이드앤워터는 과거 선정만, 두루는 2018년 소개에서 과거 3리본 수상 언급. 선정 연도와 현행 등급·현재 영업 여부 미확인. 좌표 증거 없으므로 null."
     }
   },
   "mapBackground": {
@@ -1477,15 +1488,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3049,
+    "uniqueRestaurants": 3060,
     "providerCounts": {
-      "blue-ribbon": 525,
+      "blue-ribbon": 526,
+      "local-guide": 2331,
       "michelin": 237,
-      "local-guide": 2320,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2026,
+    "coordinatesMissing": 2037,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1495,7 +1506,7 @@
       "대구": 117,
       "대전": 105,
       "부산": 378,
-      "서울": 340,
+      "서울": 351,
       "세종": 100,
       "울산": 36,
       "인천": 316,
@@ -1506,13 +1517,13 @@
       "충북": 214
     },
     "categoryCounts": {
-      "한식": 1781,
-      "중식": 121,
-      "일식": 129,
       "기타": 572,
-      "양식": 205,
+      "디저트": 220,
       "분식": 21,
-      "디저트": 220
+      "양식": 206,
+      "일식": 129,
+      "중식": 122,
+      "한식": 1790
     }
   },
   "coordinateEnrichment": {
@@ -9761,78 +9772,153 @@
       "scope": "서울 1순환 4회차 강서·구로·금천·영등포·동작 일부 공식 관광 소개 조사. 5구 전수조사 아님.",
       "coordinatePolicy": "근거 검증 가능한 좌표 없어 신규 8곳 null, 기존 미확인 8곳도 임의 보강·삭제하지 않음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-05-seoul-slot05-southeast-tourism",
+      "checkedAt": "2026-11-05",
+      "previousCoverage": {
+        "uniqueRestaurants": 3049,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 525,
+          "local-guide": 2320,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2026,
+        "regionalCounts": {
+          "서울": 340,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 322,
+          "인천": 316,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1781,
+          "중식": 121,
+          "일식": 129,
+          "기타": 572,
+          "양식": 205,
+          "분식": 21,
+          "디저트": 220
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3060,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2331,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2037,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 220,
+          "분식": 21,
+          "양식": 206,
+          "일식": 129,
+          "중식": 122,
+          "한식": 1790
+        }
+      },
+      "newRestaurantCount": 11,
+      "newRestaurantIds": [
+        "local-seoul-visitseoul-se-gwanak-bongijeon",
+        "local-seoul-visitseoul-se-gwanak-ganggangsullae",
+        "local-seoul-visitseoul-se-gwanak-duremidadm",
+        "local-seoul-visitseoul-se-seocho-yeongdong-jokbal",
+        "local-seoul-visitseoul-se-seocho-bongsanok",
+        "local-seoul-visitseoul-se-seocho-la-saveur",
+        "local-seoul-visitseoul-se-gangnam-duru",
+        "local-seoul-visitseoul-se-songpa-yonggi",
+        "local-seoul-visitseoul-se-songpa-dorim-lotteworld",
+        "local-seoul-visitseoul-se-songpa-hangukjip-lotteworldmall",
+        "local-seoul-visitseoul-se-gangdong-namhangang"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd",
+        "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
+        "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145",
+        "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185",
+        "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313",
+        "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220",
+        "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+        "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd",
+        "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558",
+        "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om",
+        "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237"
+      ],
+      "scope": "서울 1순환 5회차 관악·서초·강남·송파·강동 5구 공식 관광자료 일부 교차 확인, 전수조사 아님.",
+      "coordinatePolicy": "일치하는 공개 좌표 증거가 없어 추가 11곳 null, 기존 미확인 125곳은 확인 필요. 미확인만으로 삭제 또는 폐업 처리하지 않음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-05-seoul-slot04-southwest-tourism",
+    "id": "2026-11-05-seoul-slot05-southeast-tourism",
     "checkedAt": "2026-11-05",
     "previousCoverage": {
-      "uniqueRestaurants": 3041,
-      "providerCounts": {
-        "blue-ribbon": 525,
-        "michelin": 237,
-        "local-guide": 2312,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2018,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 332,
-        "세종": 100,
-        "울산": 36,
-        "인천": 316,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "한식": 1780,
-        "중식": 120,
-        "일식": 129,
-        "기타": 572,
-        "양식": 204,
-        "분식": 19,
-        "디저트": 217
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3049,
       "providerCounts": {
-        "blue-ribbon": 525,
         "michelin": 237,
+        "blue-ribbon": 525,
         "local-guide": 2320,
         "post-office": 240
       },
       "coordinatesAvailable": 1023,
       "coordinatesMissing": 2026,
       "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
         "서울": 340,
-        "세종": 100,
-        "울산": 36,
-        "인천": 316,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
+        "부산": 378,
+        "충북": 214,
         "충남": 46,
-        "충북": 214
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 322,
+        "인천": 316,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
       },
       "categoryCounts": {
         "한식": 1781,
@@ -9844,31 +9930,76 @@
         "디저트": 220
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3060,
+      "providerCounts": {
+        "blue-ribbon": 526,
+        "local-guide": 2331,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2037,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 322,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 351,
+        "세종": 100,
+        "울산": 36,
+        "인천": 316,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "기타": 572,
+        "디저트": 220,
+        "분식": 21,
+        "양식": 206,
+        "일식": 129,
+        "중식": 122,
+        "한식": 1790
+      }
+    },
+    "newRestaurantCount": 11,
     "newRestaurantIds": [
-      "local-seoul-visitseoul-sw-gangseo-choiwolseon",
-      "local-seoul-visitseoul-sw-gangseo-lacroute",
-      "local-seoul-visitseoul-sw-geumcheon-dongheunggwan",
-      "local-seoul-visitseoul-sw-geumcheon-francaise",
-      "local-seoul-visitseoul-sw-yeongdeungpo-sinheung",
-      "local-seoul-visitseoul-sw-yeongdeungpo-walking",
-      "local-seoul-visitseoul-sw-dongjak-teobangnae",
-      "local-seoul-visitseoul-sw-dongjak-applehouse"
+      "local-seoul-visitseoul-se-gwanak-bongijeon",
+      "local-seoul-visitseoul-se-gwanak-ganggangsullae",
+      "local-seoul-visitseoul-se-gwanak-duremidadm",
+      "local-seoul-visitseoul-se-seocho-yeongdong-jokbal",
+      "local-seoul-visitseoul-se-seocho-bongsanok",
+      "local-seoul-visitseoul-se-seocho-la-saveur",
+      "local-seoul-visitseoul-se-gangnam-duru",
+      "local-seoul-visitseoul-se-songpa-yonggi",
+      "local-seoul-visitseoul-se-songpa-dorim-lotteworld",
+      "local-seoul-visitseoul-se-songpa-hangukjip-lotteworldmall",
+      "local-seoul-visitseoul-se-gangdong-namhangang"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://korean.visitseoul.net/restaurants/2023011/KOPof5zcz",
-      "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc",
-      "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265",
-      "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266",
-      "https://korean.visitseoul.net/restaurants/2023054/KOP8fihkt",
-      "https://korean.visitseoul.net/area/%EC%9B%8C%ED%82%B9%EC%98%A8%EB%8D%94%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C/KOP006891",
-      "https://korean.visitseoul.net/restaurants/202325/KOP5gojtd",
-      "https://korean.visitseoul.net/restaurants/2023024/KOPc29hhb"
+      "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd",
+      "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
+      "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145",
+      "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185",
+      "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313",
+      "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220",
+      "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+      "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd",
+      "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558",
+      "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om",
+      "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237"
     ],
-    "scope": "서울 1순환 4회차 강서·구로·금천·영등포·동작 일부 공식 관광 소개 조사. 5구 전수조사 아님.",
-    "coordinatePolicy": "근거 검증 가능한 좌표 없어 신규 8곳 null, 기존 미확인 8곳도 임의 보강·삭제하지 않음.",
+    "scope": "서울 1순환 5회차 관악·서초·강남·송파·강동 5구 공식 관광자료 일부 교차 확인, 전수조사 아님.",
+    "coordinatePolicy": "일치하는 공개 좌표 증거가 없어 추가 11곳 null, 기존 미확인 125곳은 확인 필요. 미확인만으로 삭제 또는 폐업 처리하지 않음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -9981,7 +10112,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2320,
+    "recordCount": 2331,
     "designationEvidenceCount": 2391,
     "coordinatesAvailable": 748,
     "regionCount": 17,
@@ -10237,6 +10368,37 @@
       "unknownCoordinates": 8,
       "operatingStatusVerified": 0,
       "completeness": "구로구 공식 가이드/선정 식당 중 독립적으로 확인 가능한 신규 건을 찾지 못해 이월"
+    },
+    "municipalTourism20261105Southeast": {
+      "checkedAt": "2026-11-05",
+      "recordCount": 11,
+      "sourceType": "서울관광재단 Visit Seoul 공식 음식점 소개·과거 블루리본 이력 별도 구분",
+      "sourceFile": "official-seoul-visitseoul-southeast.json",
+      "regionCounts": {
+        "관악구": 3,
+        "서초구": 3,
+        "강남구": 1,
+        "송파구": 3,
+        "강동구": 1
+      },
+      "evidenceUrls": [
+        "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd",
+        "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
+        "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145",
+        "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185",
+        "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313",
+        "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220",
+        "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+        "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd",
+        "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558",
+        "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om",
+        "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237"
+      ],
+      "classification": "공식 관광 소개와 블루리본 과거 3리본 언급을 분리, 현재 선정/영업 검증 및 2026 리본 등급으로 오인하지 않음",
+      "coordinatesAdded": 0,
+      "unknownCoordinates": 11,
+      "operatingStatusVerified": 0,
+      "completeness": "5구 전체 공식/가이드 명단 전수 대조 미완료, 공개 좌표 미확인 항목 다음 순환에 이월"
     }
   },
   "mapCoverageAuditHistory": [
