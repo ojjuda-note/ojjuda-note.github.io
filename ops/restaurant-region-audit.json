@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 11,
-    "scheduledAt": "2026-11-06T05:00:00+09:00",
+    "slot": 12,
+    "scheduledAt": "2026-11-06T06:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "hourly slot: anchor 2026-11-05T23:00+09:00"
+    "source": "hourly slot: anchor 2026-11-05T23:00+09:00; scheduled 06:00 KST; delay 23 minutes"
   },
   "entries": [
     {
@@ -2894,6 +2894,528 @@
           ]
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 12,
+      "scheduledAtKST": "2026-11-06T06:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_8_official_gyeonggi_news_tourism_additions",
+      "assignedRegions": [
+        "경기도 안양시",
+        "경기도 군포시",
+        "경기도 의왕시",
+        "경기도 과천시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 안양시",
+          "baseListedCount": 7,
+          "scope": "경기도 뉴스포털 공식 먹거리 소개에 기재된 해당 식당명·게시 도로명주소 확인(부분 검색). 기존 DB 좌표 미등록 항목 목록 확인, 개별 좌표·현재 영업 상태 재검증은 이월.",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 9,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 군포시",
+          "baseListedCount": 0,
+          "scope": "경기도 뉴스포털 공식 먹거리 소개에 기재된 해당 식당명·게시 도로명주소 확인(부분 검색). 기존 DB 좌표 미등록 항목 목록 확인, 개별 좌표·현재 영업 상태 재검증은 이월.",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 의왕시",
+          "baseListedCount": 4,
+          "scope": "경기도 뉴스포털 공식 먹거리 소개에 기재된 해당 식당명·게시 도로명주소 확인(부분 검색). 기존 DB 좌표 미등록 항목 목록 확인, 개별 좌표·현재 영업 상태 재검증은 이월.",
+          "new": 1,
+          "updated": 0,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 과천시",
+          "baseListedCount": 3,
+          "scope": "경기도 뉴스포털 공식 먹거리 소개에 기재된 해당 식당명·게시 도로명주소 확인(부분 검색). 기존 DB 좌표 미등록 항목 목록 확인, 개별 좌표·현재 영업 상태 재검증은 이월.",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경기도 뉴스포털 2025-09-16 달달한 경기도 먹거리 안양 편",
+        "경기도 뉴스포털 2026-01-12 달달한 경기도 먹거리 광명·군포 편",
+        "경기도 뉴스포털 2026-01-14 달달한 경기도 먹거리 과천·의왕 편",
+        "기본 인증맛집 DB에서 기존 14개 ID·주소·선정이력·좌표누락 여부 확인. 기존 좌표의 개별 공개 근거 대조는 미완료."
+      ],
+      "additions": 8,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 22,
+      "locationPendingScope": "기존 안양7·의왕4·과천3·군포0 총 14곳 좌표 null + 신규 안양2·군포3·의왕1·과천2 8곳 좌표 null. 식당별 위경도 개별 공개 근거 검증 미완료.",
+      "addedRestaurantIds": [
+        "local-gg-tour-slot12-anyang-kkokko",
+        "local-gg-tour-slot12-anyang-nambu",
+        "local-gg-tour-slot12-gunpo-sikdang",
+        "local-gg-tour-slot12-gunpo-sumdubu",
+        "local-gg-tour-slot12-gunpo-gungangol",
+        "local-gg-tour-slot12-gwacheon-fromtheearth",
+        "local-gg-tour-slot12-gwacheon-tongnamujip",
+        "local-gg-tour-slot12-uiwang-nonggun"
+      ],
+      "updatedRestaurantIds": [],
+      "existingItemsRechecked": [
+        "안양 7곳, 의왕 4곳, 과천 3곳: 기존 ID·선정 이력·주소·좌표 null 유지 여부 확인.",
+        "기존 블루리본 선정 이력과 신규 도 공식 관광/먹거리 소개는 별도 근거로 구분."
+      ],
+      "evidenceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-regional-hanyang-gwacheon",
+          "name": "한양 과천본점",
+          "address": "경기도 과천시 과천대로7길 20 스마트케이 B동 152-154호",
+          "region": "경기도 과천시",
+          "aliases": [
+            "경기 과천시",
+            "경기도 과천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-myeongga-mandu-uiwang",
+          "name": "명가만두",
+          "address": "경기도 의왕시 솔고개길 23",
+          "region": "경기도 의왕시",
+          "aliases": [
+            "경기 의왕시",
+            "경기도 의왕시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-bongdeok-kalguksu-uiwang",
+          "name": "봉덕칼국수",
+          "address": "경기도 의왕시 징계골길 1",
+          "region": "경기도 의왕시",
+          "aliases": [
+            "경기 의왕시",
+            "경기도 의왕시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-taewon-jeongyuk-anyang",
+          "name": "태원정육식당",
+          "address": "경기도 안양시 만안구 박달로507번길 19",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시 만안구",
+            "경기도 안양시 만안구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202509160920516925C049&page=1&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-seokgijeong-anyang",
+          "name": "석기정",
+          "address": "경기도 안양시 만안구 장내로139번길 55",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시 만안구",
+            "경기도 안양시 만안구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202509160920516925C049&page=1&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-yetjip-anyang",
+          "name": "옛집",
+          "address": "경기도 안양시 만안구 만안로55번길 40",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시 만안구",
+            "경기도 안양시 만안구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202509160920516925C049&page=1&s_code=C049"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-ec10b22de58347db",
+          "name": "경마장 오리집",
+          "address": "경기도 과천시 궁말로 20-4",
+          "region": "경기도 과천시",
+          "aliases": [
+            "경기 과천시",
+            "경기도 과천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-680bff8c144347fe",
+          "name": "해원복집",
+          "address": "경기도 과천시 별양상가로 2 그레이스호텔",
+          "region": "경기도 과천시",
+          "aliases": [
+            "경기 과천시",
+            "경기도 과천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-2855cfad3ea32fa8",
+          "name": "화진가든",
+          "address": "경기도 안양시 만안구 안양로 468",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시",
+            "경기도 안양시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-4a4b72313e1a63b7",
+          "name": "허서방추어탕메기매운탕",
+          "address": "경기도 안양시 만안구 예술공원로 118",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시",
+            "경기도 안양시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-8f337c0c3dcdc818",
+          "name": "명가원설농탕",
+          "address": "경기도 안양시 동안구 관악대로 249",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시",
+            "경기도 안양시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-dc9094acf4011002",
+          "name": "해조",
+          "address": "경기도 안양시 동안구 관평로 186번길 23",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시",
+            "경기도 안양시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-2a6687e24fcba1d2",
+          "name": "민속두부마을",
+          "address": "경기도 의왕시 오봉산길 17",
+          "region": "경기도 의왕시",
+          "aliases": [
+            "경기 의왕시",
+            "경기도 의왕시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-f15a1c54f790a783",
+          "name": "정성담",
+          "address": "경기도 의왕시 고산로 1",
+          "region": "경기도 의왕시",
+          "aliases": [
+            "경기 의왕시",
+            "경기도 의왕시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 DB 좌표 null 확인. 해당 식당의 최초 선정·공식 공개 명단 URL은 기존 기록에서 확인. 이번 회차에 상호·현주소 일치 지도 좌표 개별 대조는 완료하지 못함.",
+          "reason": "공개 좌표 미확보 및 개별 주소·영업 확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 순환 동일 지역에서 현재 주소와 정확히 일치하는 공개 지도 위치를 최우선 재검증. 미확인만으로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-anyang-kkokko",
+          "name": "꼬꼬바베큐",
+          "address": "경기도 안양시 만안구 장내로149번길 11",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시 만안구",
+            "경기도 안양시 만안구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-anyang-nambu",
+          "name": "안양남부식당",
+          "address": "경기도 안양시 만안구 안양로248번길 23",
+          "region": "경기도 안양시",
+          "aliases": [
+            "경기 안양시 만안구",
+            "경기도 안양시 만안구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-gunpo-sikdang",
+          "name": "군포식당",
+          "address": "경기도 군포시 군포로556번길 6",
+          "region": "경기도 군포시",
+          "aliases": [
+            "경기 군포시",
+            "경기도 군포시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-gunpo-sumdubu",
+          "name": "숨두부촌",
+          "address": "경기도 군포시 산본로482번길 7",
+          "region": "경기도 군포시",
+          "aliases": [
+            "경기 군포시",
+            "경기도 군포시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-gunpo-gungangol",
+          "name": "궁안골",
+          "address": "경기도 군포시 수리산로 191",
+          "region": "경기도 군포시",
+          "aliases": [
+            "경기 군포시",
+            "경기도 군포시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-gwacheon-fromtheearth",
+          "name": "프롬더어스",
+          "address": "경기도 과천시 별양상가1로 40, 101호",
+          "region": "경기도 과천시",
+          "aliases": [
+            "경기 과천시",
+            "경기도 과천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-gwacheon-tongnamujip",
+          "name": "통나무집",
+          "address": "경기도 과천시 새술막길 38, 중앙상가 1층 105호",
+          "region": "경기도 과천시",
+          "aliases": [
+            "경기 과천시",
+            "경기도 과천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        },
+        {
+          "id": "local-gg-tour-slot12-uiwang-nonggun",
+          "name": "농군의집",
+          "address": "경기도 의왕시 오매기백운산길 54-13",
+          "region": "경기도 의왕시",
+          "aliases": [
+            "경기 의왕시",
+            "경기도 의왕시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+          ],
+          "result": "경기도 공식 뉴스포털 업소명·게시 주소 확인. 상호·지점·현주소 일치 공개 위경도는 확보하지 못해 null 유지.",
+          "reason": "상호·현주소 일치 공개 위경도 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 12,
+          "action": "다음 같은 지역 배정 때 지도 좌표·최신 영업상태 독립 검증; 임의 좌표·삭제 금지"
+        }
+      ],
+      "unresolved": [
+        "블루리본 공식 전체 지도에 대한 지역별 신규 개별 정규 리본 판본·등급 직접 검증 미완료.",
+        "기존 위치 미등록 14개 및 신규 8개 업소의 상호·현주소 일치 위경도 미확인. 좌표 추정·목록 제외하지 않음.",
+        "영업 중/휴폐업·이전은 각 지점별 공식 현재상태 근거 미확보. 폐업 확정 또는 강제 제외 없음.",
+        "도 기사 발행일은 가게 선정연도가 아님. 경기도 공식 소개 8곳을 정규 가이드 지정과 혼동하지 않음."
+      ],
+      "carryOver": [
+        "기존 14개 + 신규 8개, 총 22곳의 정확한 위치·영업 상태 재검증",
+        "안양·군포·의왕·과천 공식 지정 맛집 목록과 블루리본 발행처 전체 지도 추가 교차대조",
+        "의왕·과천 보충 후보 발굴과 식당 주소·지점의 최신 상태 확인"
+      ],
+      "nextSlot": 13,
+      "nextRegions": [
+        "경기도 안산시",
+        "경기도 시흥시",
+        "경기도 광명시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [

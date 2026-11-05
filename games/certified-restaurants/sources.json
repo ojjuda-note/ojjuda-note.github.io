@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3109,
+    "uniqueRestaurants": 3117,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2378,
+      "local-guide": 2386,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2086,
+    "coordinatesMissing": 2094,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 346,
+      "경기": 354,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,13 +1531,13 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1821,
+      "한식": 1828,
       "중식": 128,
       "일식": 131,
       "기타": 572,
       "양식": 208,
       "분식": 23,
-      "디저트": 226
+      "디저트": 227
     }
   },
   "coordinateEnrichment": {
@@ -10436,51 +10436,116 @@
       "scope": "부천 공식 2026 H2 '부천맛집' 식당 5곳 + 블루리본 공식시청 소개 2곳 신규, 김포시 2026 신규 지정 4곳 기존 항목 선정연도 보완. 전국 전수 확인 아님. 추가 이어점검에서 부천맛집 1곳, 모범음식점 2곳 확인. 전체 명단 아님.",
       "coordinatePolicy": "신규 식당 7곳 공개 위치 위경도 미검증으로 null. 김포시 기존 4곳의 기존 공식 업소별 확인 좌표 유지. 신규 3곳도 상호·주소 일치 위경도 미확인으로 null.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot12-anyang-gunpo-uiwang-gwacheon",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3109,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2378,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2086,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 346,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1821,
+          "중식": 128,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 226
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3117,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2386,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2094,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 354,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1828,
+          "중식": 128,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 227
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-gg-tour-slot12-anyang-kkokko",
+        "local-gg-tour-slot12-anyang-nambu",
+        "local-gg-tour-slot12-gunpo-sikdang",
+        "local-gg-tour-slot12-gunpo-sumdubu",
+        "local-gg-tour-slot12-gunpo-gungangol",
+        "local-gg-tour-slot12-gwacheon-fromtheearth",
+        "local-gg-tour-slot12-gwacheon-tongnamujip",
+        "local-gg-tour-slot12-uiwang-nonggun"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "existingRestaurantIds": [],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+      ],
+      "scope": "경기도 뉴스포털의 2025·2026 공개 기사 3건에 소개된 안양·군포·의왕·과천의 음식점·카페 중 기본·기존 보충자료에서 미등록된 8곳의 이름·현 게시 주소 확인. 4시 전체 명단 전수 점검 아님. 정식 미식 인증 선정과 구분.",
+      "coordinatePolicy": "상호·지점·현주소 일치 공개 좌표 미확인으로 신규 8곳 lat/lng=null, 기존 ID 및 지도 좌표 변경 없음. 가게 영업/폐업 개별 확인 미완료.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot11-bucheon-gimpo",
+    "id": "2026-11-06-gyeonggi-slot12-anyang-gunpo-uiwang-gwacheon",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3099,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 526,
-        "local-guide": 2370,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2076,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 336,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1812,
-        "중식": 127,
-        "일식": 131,
-        "기타": 572,
-        "양식": 208,
-        "분식": 23,
-        "디저트": 226
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3109,
       "providerCounts": {
         "michelin": 237,
@@ -10519,36 +10584,66 @@
         "디저트": 226
       }
     },
-    "newRestaurantCount": 10,
+    "currentCoverage": {
+      "uniqueRestaurants": 3117,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2386,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2094,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 354,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1828,
+        "중식": 128,
+        "일식": 131,
+        "기타": 572,
+        "양식": 208,
+        "분식": 23,
+        "디저트": 227
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-bucheon-citytour-slot11-gyeongin570",
-      "local-bucheon-citytour-slot11-myeongga-salt",
-      "local-bucheon-citytour-slot11-cheonghakjae",
-      "local-bucheon-citytour-slot11-suu",
-      "local-bucheon-citytour-slot11-seoan",
-      "blue-bucheon-citytour-slot11-simga",
-      "blue-bucheon-citytour-slot11-bucheon-agui",
-      "local-bucheon-citytour-slot11-cont-ihakgalbi",
-      "local-bucheon-citytour-slot11-cont-songtan",
-      "local-bucheon-citytour-slot11-cont-chinamong"
+      "local-gg-tour-slot12-anyang-kkokko",
+      "local-gg-tour-slot12-anyang-nambu",
+      "local-gg-tour-slot12-gunpo-sikdang",
+      "local-gg-tour-slot12-gunpo-sumdubu",
+      "local-gg-tour-slot12-gunpo-gungangol",
+      "local-gg-tour-slot12-gwacheon-fromtheearth",
+      "local-gg-tour-slot12-gwacheon-tongnamujip",
+      "local-gg-tour-slot12-uiwang-nonggun"
     ],
-    "existingRestaurantsEnriched": 4,
-    "existingRestaurantIds": [
-      "local-gg-bd95fb61f13d11",
-      "local-gg-3c0b7cb3d2ff27",
-      "local-gg-925a6b99f923bd",
-      "local-gg-9166f631b0664c"
-    ],
+    "existingRestaurantsEnriched": 0,
+    "existingRestaurantIds": [],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://www.bucheon.go.kr/site/program/board/basicboard/list?boardtypeid=28516&menuid=172004002001002",
-      "https://www.gimpo.go.kr/news/selectBbsNttView.do?bbsNo=466&key=9377&nttNo=978722&pageIndex=21&pageUnit=10&searchCnd=all&searchKrwd=2026",
-      "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131966&boardtypeid=28516&menuid=172004002001002",
-      "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131928&boardtypeid=28516&menuid=172004002001002",
-      "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131924&boardtypeid=28516&menuid=172004002001002"
+      "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049",
+      "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+      "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
     ],
-    "scope": "부천 공식 2026 H2 '부천맛집' 식당 5곳 + 블루리본 공식시청 소개 2곳 신규, 김포시 2026 신규 지정 4곳 기존 항목 선정연도 보완. 전국 전수 확인 아님. 추가 이어점검에서 부천맛집 1곳, 모범음식점 2곳 확인. 전체 명단 아님.",
-    "coordinatePolicy": "신규 식당 7곳 공개 위치 위경도 미검증으로 null. 김포시 기존 4곳의 기존 공식 업소별 확인 좌표 유지. 신규 3곳도 상호·주소 일치 위경도 미확인으로 null.",
+    "scope": "경기도 뉴스포털의 2025·2026 공개 기사 3건에 소개된 안양·군포·의왕·과천의 음식점·카페 중 기본·기존 보충자료에서 미등록된 8곳의 이름·현 게시 주소 확인. 4시 전체 명단 전수 점검 아님. 정식 미식 인증 선정과 구분.",
+    "coordinatePolicy": "상호·지점·현주소 일치 공개 좌표 미확인으로 신규 8곳 lat/lng=null, 기존 ID 및 지도 좌표 변경 없음. 가게 영업/폐업 개별 확인 미완료.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10661,7 +10756,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2378,
+    "recordCount": 2386,
     "designationEvidenceCount": 2425,
     "coordinatesAvailable": 748,
     "regionCount": 17,
@@ -10716,7 +10811,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 309,
+        "uniqueRestaurants": 317,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -11102,6 +11197,34 @@
       ],
       "criteria": "부천 관광의 2026년 하반기 리스트 기준일은 각 업소 지정일이 아님; 김포시 공식 2026-06-22 신규 지정 발표는 기존 네 ID의 선정연도를 2026으로 확인. 같은 11회차 이어점검: 부천맛집 이학갈비 1곳, 모범음식점 송탄금이네부대찌개·차이나몽 2곳 추가. 모범음식점은 위생·서비스 지정으로 블루리본/미쉐린 등급과 별개.",
       "addedBucheonModelRestaurantCount": 2
+    },
+    "municipalTourism20261106GyeonggiSlot12": {
+      "checkedAt": "2026-11-06",
+      "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+      "sourcePublicationDates": [
+        "2025-09-16",
+        "2026-01-12",
+        "2026-01-14"
+      ],
+      "officialSourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509160920516925C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601141012035333C049&s_code=C049"
+      ],
+      "regions": [
+        "안양시",
+        "군포시",
+        "의왕시",
+        "과천시"
+      ],
+      "recordCount": 8,
+      "provider": "local-guide",
+      "guideStatus": "official_restaurant_listing",
+      "selectionYearEstablished": false,
+      "operatingStatusEstablished": false,
+      "coordinateVerifiedCount": 0,
+      "sourceFile": "games/certified-restaurants/official-gyeonggi-slot12.json",
+      "notExhaustive": true
     }
   },
   "mapCoverageAuditHistory": [
