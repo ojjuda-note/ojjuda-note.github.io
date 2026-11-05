@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261105-admin-polish1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261105-restaurants-slot05-southeast1" defer></script>
+<script src="/world-game-assets.js?v=20261105-screw-stage-items1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -1355,7 +1355,7 @@ var Cl=t=>{let e=R.cv.getBoundingClientRect();return[(t.clientX-e.left)*Z/e.widt
  const stage=Number(e.dataset.stage);
  if(!canChooseBreakoutStage(stage))return;
  R.breakoutStage=stage;_2();return;
-}if(R.id==="screw"&&o==="screw-stage"){if(!e.disabled&&R.ov.contains(e))void chooseScrewStage(Number(e.dataset.stage));return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.running&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;R.screwMode=e.dataset.mode;R.screwStage=undefined;_2();return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
+}if(R.id==="screw"&&o==="screw-stage"){if(e.disabled||!R.ov.contains(e))return;const stage=Number(e.dataset.stage);if(R.screwStageMenu){if(Number.isInteger(stage)&&stage>=1&&stage<=screwUnlockedStage(R.screwMode)){R.screwStage=stage;R.screwStageMenu=false;void _2();}}else void chooseScrewStage(stage);return;}if(R.id==="screw"&&o==="screw-stage-page"){if(!e.disabled&&R.screwStageMenu)showScrewStages(R.screwMode,Number(e.dataset.page));return;}if(R.id==="screw"&&o==="screw-stages"){void openScrewStagesFromResult();return;}if(R.id==="screw"&&o==="screw-result"){screwStageResult(R.score,R.game?.stageCleared?"success":"failure");return;}if(R.id==="screw"&&o==="screw-view"){if(R.game?.viewPicture?.()){ti("");R.ov.querySelector("#gctrl").innerHTML='<button class="btn" data-g="screw-result">결과 보기</button>';R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-resume"){if(R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;if(R.game?.resume?.()){ti("");R.running=true;R.last=performance.now();sf();}return;}if(R.id==="screw"&&o==="screw-modes"){if(R.running&&R.score>0)void R.saveScore?.(R.score);R.saveScore=null;R.loadRequest=null;R.loading=false;R.running=false;cancelAnimationFrame(R.raf);R.game?.destroy?.();R.game=null;R.screwStageMenu=false;R.screwStage=undefined;R.ov.querySelector("#gctrl").innerHTML="";B2();return}if(R.id==="screw"&&o==="screw-start"){if(!["box","flat"].includes(e.dataset.mode))return;showScrewStages(e.dataset.mode);return}o==="close"?requestArcadeClose():o==="sound"?(Vi(),e.innerHTML=R.id==="mole"&&window.OjjudaMoleGame?window.OjjudaMoleGame.soundIcon(Wr()):R.id==="runner"&&window.OjjudaRunnerGame?window.OjjudaRunnerGame.soundIcon(Wr()):Wr()):o==="start"?_2():o.startsWith("key:")&&R.running&&R.game&&R.game.onKey?R.game.onKey(o.slice(4)):o==="act"&&R.running&&R.game&&R.game.onAct&&R.game.onAct()}function ti(t){let e=R.ov.querySelector("#gscreen");e.innerHTML=t,e.style.display=t?"flex":"none"}function Ja(t){if(R){R.score=t;if(R.running&&t>0)void R.saveScore?.(t);}let e=R&&R.ov.querySelector("#gsc");e&&(e.textContent=`${t}${_r[R.id].unit}`)}function D2(){if(R.id==="runner"&&window.OjjudaRunnerGame){window.OjjudaRunnerGame.drawPreview(R.ctx);return;}if(R.id==="mole"&&window.OjjudaMoleGame){window.OjjudaMoleGame.drawPreview(R.ctx);return;}let t=R.ctx,e=_r[R.id];t.fillStyle=e.bg,t.fillRect(0,0,Z,he),t.font="120px sans-serif",t.textAlign="center",t.globalAlpha=.18,t.fillText(e.emoji,Z/2,he/2+40),t.globalAlpha=1}function breakoutControls(){return '<div class="breakout-touchpad" aria-label="판 조작 공간"><span aria-hidden="true">↔</span><span>여기서 좌우로 움직여요</span></div>';}
 function canChooseBreakoutStage(stage){
  const current=R?.game?.stage,levels=window.OjjudaBreakoutGame?.levels||100;
  return R?.id==='breakout'&&!R.running&&!R.loading&&Number.isInteger(current)&&R.breakoutBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=levels&&Math.abs(stage-current)<=1&&(stage<=current||R.game.stageCleared===true);
@@ -1377,14 +1377,53 @@ function breakoutStagePicker(stage){
   return `<button type="button" class="breakout-stage-choice${index===2?' breakout-stage-next':''}" data-g="breakout-stage" data-stage="${next}"${disabled?' disabled':''}><span>${label}</span>${next>=1&&next<=levels?`<strong>${next}단계</strong>`:''}</button>`;
  }).join('')+'</div>';
 }
+
+const SCREW_STAGE_PAGE_SIZE=25,SCREW_STAGE_LIMIT=1000;
+function screwUnlockedStage(mode){
+ const key=mode==='flat'?'ojjuda-screw-flat-stage-v1':'ojjuda-screw-stage';
+ try{const level=Number(localStorage.getItem(key));return Number.isInteger(level)&&level>=1&&level<=SCREW_STAGE_LIMIT?level:1}catch{return 1}
+}
+function screwRememberedStage(mode){
+ const key=mode==='flat'?'ojjuda-screw-flat-last-stage-v1':'ojjuda-screw-last-stage-v1';
+ try{const level=Number(localStorage.getItem(key));return Number.isInteger(level)&&level>=1?Math.min(level,screwUnlockedStage(mode)):screwUnlockedStage(mode)}catch{return screwUnlockedStage(mode)}
+}
+function screwStagesMarkup(mode,page=0){
+ const unlocked=screwUnlockedStage(mode),maxPage=Math.ceil(SCREW_STAGE_LIMIT/SCREW_STAGE_PAGE_SIZE)-1;
+ const currentPage=Math.max(0,Math.min(maxPage,Number.isInteger(page)?page:0));
+ const begin=currentPage*SCREW_STAGE_PAGE_SIZE+1,selected=screwRememberedStage(mode);
+ const buttons=Array.from({length:Math.min(SCREW_STAGE_PAGE_SIZE,SCREW_STAGE_LIMIT-begin+1)},(_,i)=>{
+  const level=begin+i,locked=level>unlocked;
+  return `<button type="button" class="screw-stage-tile${locked?' is-locked':''}${selected===level?' is-current':''}" data-g="screw-stage" data-stage="${level}" ${locked?'disabled aria-label="'+level+'단계 잠김"':'aria-label="'+level+'단계 선택"'}>${locked?'<span aria-hidden="true">🔒</span>':'<strong>'+level+'</strong>'}<small>${level}단계</small></button>`;
+ }).join('');
+ return `<div class="gcard screw-stage-card"><h3>${mode==='flat'?'평면형':'박스형'} 단계 선택</h3><p class="screw-stage-summary">1단계부터 순서대로 도전 · <strong>${unlocked}단계</strong>까지 열림</p><div class="screw-stage-grid" role="group" aria-label="단계 선택">${buttons}</div><div class="screw-stage-paging"><button class="btn" data-g="screw-stage-page" data-page="${currentPage-1}" ${currentPage===0?'disabled':''}>이전</button><span>${currentPage+1} / ${maxPage+1}</span><button class="btn" data-g="screw-stage-page" data-page="${currentPage+1}" ${currentPage===maxPage?'disabled':''}>다음</button></div><div class="screw-stage-quick"><button class="btn pri" data-g="screw-stage-page" data-page="${Math.floor((unlocked-1)/SCREW_STAGE_PAGE_SIZE)}">최근 열린 단계</button><button class="btn" data-g="screw-modes">종류 선택</button></div><p class="screw-stage-help">잠긴 단계는 바로 앞 단계를 깨면 열려요.</p></div>`;
+}
+function showScrewStages(mode,page){
+ if(!R||R.id!=='screw'||!['box','flat'].includes(mode))return;
+ R.screwMode=mode;R.screwStageMenu=true;R.screwStage=undefined;R.screwBaseStage=undefined;
+ R.running=false;R.ov.dataset.screwMode=mode;
+ R.ov.querySelector('.gt').textContent=mode==='flat'?'🔩 평면형':'🔩 박스형';
+ R.ov.querySelector('[data-g="screw-modes"]').hidden=false;
+ R.ov.querySelector('#gctrl').innerHTML='';
+ ti(screwStagesMarkup(mode,page===undefined?Math.floor((screwRememberedStage(mode)-1)/SCREW_STAGE_PAGE_SIZE):page));
+}
+async function openScrewStagesFromResult(){
+ if(!R||R.id!=='screw'||R.running||R.loading||R.stageChanging)return;
+ const session=R,game=R.game,mode=R.screwMode;session.stageChanging=true;
+ try{
+  if(game?.prepareStageChoice&&!await game.prepareStageChoice())return;
+  if(R!==session||R.game!==game||R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;
+  if(R.score>0)void R.saveScore?.(R.score);
+  game?.destroy?.();R.game=null;showScrewStages(mode);
+ }finally{if(R===session)session.stageChanging=false}
+}
 function canChooseScrewStage(stage){
  const game=R?.game,current=game?.stage;
- return R?.id==='screw'&&!R.running&&!R.loading&&!R.stageChanging&&Number.isInteger(current)&&R.screwBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=game.levels&&Math.abs(stage-current)<=1&&(stage<=current||game.stageCleared===true);
+ return R?.id==='screw'&&!R.running&&!R.loading&&!R.stageChanging&&Number.isInteger(current)&&R.screwBaseStage===current&&Number.isInteger(stage)&&stage>=1&&stage<=game.levels&&Math.abs(stage-current)<=1&&stage<=game.unlockedStage;
 }
 function screwStagePicker(){
  const game=R.game,current=game.stage;R.screwBaseStage=current;
  return '<div class="breakout-stage-picker" role="group" aria-label="다음에 할 단계 선택">'+['이전 단계','지금 단계','다음 단계'].map((label,index)=>{
-  const stage=current+index-1,disabled=stage<1||stage>game.levels||(index===2&&!game.stageCleared);
+  const stage=current+index-1,disabled=stage<1||stage>game.levels||stage>game.unlockedStage;
   return `<button class="breakout-stage-choice" data-g="screw-stage" data-stage="${stage}"${disabled?' disabled':''}><span>${label}</span>${stage>=1&&stage<=game.levels?`<strong>${stage}단계</strong>`:''}</button>`;
  }).join('')+'</div>';
 }
@@ -1392,7 +1431,7 @@ function screwStageResult(score,outcome){
  if(R?.id!=='screw'||!R.running||!R.game||(outcome==='success'?!R.game.stageCleared:!R.game.stageFailed))return;
  const game=R.game;R.running=false;cancelAnimationFrame(R.raf);game.draw(R.ctx);R.ov.querySelector('#gctrl').innerHTML='';
  finishWorldGuestRound(R);
- ti(worldGameResultMarkup({game:R.screwMode==='flat'?'screw_flat':'screw_box',outcome,metric:`${game.stage}단계 · ${score}점`,score,key:worldGameResultKey(game,`${game.stage}:${outcome}`),actions:screwStagePicker()+(outcome==='success'&&game.viewPicture?'<button class="btn" data-g="screw-view">그림 보기</button>':'')+(game.canResume?'<button class="btn" data-g="screw-resume">계속하기</button>':'')+'<button class="btn" data-g="close">닫기</button>',extra:'<p id="screw-state" role="status"></p>'}));
+ ti(worldGameResultMarkup({game:R.screwMode==='flat'?'screw_flat':'screw_box',outcome,metric:`${game.stage}단계 · ${score}점`,score,key:worldGameResultKey(game,`${game.stage}:${outcome}`),actions:screwStagePicker()+'<button class="btn" data-g="screw-stages">전체 단계 선택</button>'+(outcome==='success'&&game.viewPicture?'<button class="btn" data-g="screw-view">그림 보기</button>':'')+(game.canResume?'<button class="btn" data-g="screw-resume">계속하기</button>':'')+'<button class="btn" data-g="close">닫기</button>',extra:'<p id="screw-state" role="status"></p>'}));
  R.ov.querySelector(`[data-g="screw-stage"][data-stage="${game.stage}"]`)?.focus({preventScroll:true});
 }
 async function chooseScrewStage(stage){
@@ -1477,7 +1516,7 @@ if(t==="breakout")R.breakoutRewardRequest=worldRewardRequest();
 if(t==="screw"){const mode=R.screwMode||"box",session=R,request={};session.loading=true;session.loadRequest=request;ti('<div class="gcard"><p role="status">게임을 불러오고 있어요…</p><button class="btn" data-g="screw-modes">게임 선택으로</button></div>');try{factory=await window.OjjudaScrewLoader.load(mode)}catch(error){if(R!==session||session.loadRequest!==request||session.owner!==worldRewardOwner())return;session.loading=false;ti(`<div class="gcard"><p role="alert">게임을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.</p><button class="btn pri" data-g="screw-start" data-mode="${mode}">다시 시도</button><button class="btn" data-g="screw-modes">게임 선택으로</button></div>`);return}if(R!==session||session.loadRequest!==request||session.owner!==worldRewardOwner())return;session.loading=false;R.ov.dataset.screwMode=mode;R.ov.querySelector(".gt").textContent=mode==="flat"?"🔩 평면형":"🔩 박스형";R.ov.querySelector("[data-g=screw-modes]").hidden=false}R.saveScore=t==="screw"?createScrewScoreRecorder(R.screwMode==="flat"?"screw_flat":"screw_box"):null;ti(""),R.game=factory({setScore:Ja,end:S2,...(t==="breakout"?{stageClear:breakoutStageComplete}:{}),...(t==="screw"?{stageClear:score=>screwStageResult(score,"success"),stageFail:score=>screwStageResult(score,"failure"),saveScore:R.saveScore,playSfx:kind=>{
   const cues={tap:'arcadeTap',blocked:'arcadeBad',match:'arcadeBonus',win:'win',lose:'lose'};
   const cue=cues[kind];if(cue)gt[cue]?.();
-},getUserId:()=>D.user?.id||null,getCoins:()=>Cn()&&Number.isFinite($.coins)?$.coins:null,buyScrew:async(e,o,n,v)=>{if(!Cn())return{ok:!1,reason:"wallet_unavailable"};const request=worldRewardRequest();try{let r=await vl("screw_upgrade_buy_v2",{p_kind:e,p_request_id:o,p_stage:n,p_verify_only:!!v},request);if(worldRewardCurrent(request)&&r.ok)I();return r}catch(r){if(worldRewardCurrent(request))console.error(r);return{ok:!1,reason:"server_error"}}}}:{})},t==="breakout"?R.breakoutStage:t==="screw"?R.screwStage:undefined),R.ov.querySelector("#gctrl").innerHTML=R.game.controls||(t==="breakout"?breakoutControls():""),R.running=!0,R.last=performance.now(),Ja(0);try{if(["mole","stacker"].includes(t))window.OjjudaGameChallenges?.onStart?.(t)}catch{}sf()}function sf(){R.raf=requestAnimationFrame(t=>{if(!R||!R.running)return;let e=Math.max(0,Math.min(.05,(t-R.last)/1e3));R.last=t,R.game.update(e),R&&R.running&&R.game.draw(R.ctx),R&&R.running&&sf()})}var worldResultIds=new WeakMap(),worldResultSequence=0;
+},getUserId:()=>D.user?.id||null,getCoins:()=>Cn()&&Number.isFinite($.coins)?$.coins:null,buyScrew:async(e,o,n,v,attemptId)=>{if(!Cn())return{ok:!1,reason:"wallet_unavailable"};const request=worldRewardRequest();try{let r=await vl("screw_upgrade_buy_v3",{p_kind:e,p_request_id:o,p_stage:n,p_attempt_id:attemptId,p_verify_only:!!v},request);if(worldRewardCurrent(request)&&r.ok)I();return r}catch(r){if(worldRewardCurrent(request))console.error(r);return{ok:!1,reason:"server_error"}}}}:{})},t==="breakout"?R.breakoutStage:t==="screw"?R.screwStage:undefined),R.ov.querySelector("#gctrl").innerHTML=R.game.controls||(t==="breakout"?breakoutControls():""),R.running=!0,R.last=performance.now(),Ja(0);try{if(["mole","stacker"].includes(t))window.OjjudaGameChallenges?.onStart?.(t)}catch{}sf()}function sf(){R.raf=requestAnimationFrame(t=>{if(!R||!R.running)return;let e=Math.max(0,Math.min(.05,(t-R.last)/1e3));R.last=t,R.game.update(e),R&&R.running&&R.game.draw(R.ctx),R&&R.running&&sf()})}var worldResultIds=new WeakMap(),worldResultSequence=0;
 function finishWorldGuestRound(session){
  if(session?.owner===null&&worldRewardOwner()===null)window.OjjudaGuestAccess?.finished();
 }

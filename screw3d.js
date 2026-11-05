@@ -1158,15 +1158,16 @@ function missionText(ms) {
 const missionOk = ms => (ms.id === 'find' ? ms.found.size >= ms.need : ms.id === 'time' ? ms.t <= ms.need : ms.id === 'turns' ? ms.turns <= ms.need : !ms.bad);
 const STAGE_KEY = 'ojjuda-screw-stage';
 const RESUME_KEY = 'ojjuda-screw-last-stage-v1';
-const PURCHASE_KEY = 'ojjuda-screw-purchases-v1';
+const PURCHASE_KEY = 'ojjuda-screw-purchases-v2';
+const ATTEMPT_KEY = 'ojjuda-screw-active-attempt-v1';
 function loadStage() { try { const v = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(v) && v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
 function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(Math.max(loadStage(),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 // Keep the last played level separate from the highest unlocked milestone.
-function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return v; } catch (_) {} return loadStage(); }
+function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return Math.min(v, loadStage()); } catch (_) {} return loadStage(); }
 function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 function screw3d(api,startStage=loadResumeStage()) {
   const depthRenderer=createScrewDepthRenderer();
-  const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?startStage:1, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
+  const st = { L: Number.isInteger(startStage)&&startStage>=1?Math.min(startStage, loadStage()):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
@@ -1190,7 +1191,23 @@ function screw3d(api,startStage=loadResumeStage()) {
   }
   const walletUser = api.getUserId?.() || null;
   const sameWallet = () => !destroyed && walletUser && api.getUserId?.() === walletUser;
-  const purchaseKey = L => walletUser ? `${PURCHASE_KEY}:${walletUser}:${L}` : null;
+
+  const activeAttemptKey = walletUser ? `${ATTEMPT_KEY}:${walletUser}` : null;
+  function finishAttempt() {
+    if(!activeAttemptKey||!st.attemptId)return;
+    try{const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');if(record?.id===st.attemptId)localStorage.setItem(activeAttemptKey,JSON.stringify({...record,done:true}));}catch(_){}
+  }
+  function selectAttempt(L,fresh=false) {
+    const id=crypto.randomUUID();
+    if(!activeAttemptKey)return id;
+    try{
+      const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');
+      if(!fresh&&record?.stage===L&&record?.done!==true&&uuid(record.id))return record.id;
+      localStorage.setItem(activeAttemptKey,JSON.stringify({id,stage:L,done:false}));
+    }catch(_){}
+    return id;
+  }
+  const purchaseKey = L => walletUser ? `${PURCHASE_KEY}:${walletUser}:${L}:${st.attemptId}` : null;
   const uuid = s => typeof s === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s);
   function loadPurchases(L) {
     const empty = { paid: [], pending: {} }, key = purchaseKey(L);
@@ -1224,7 +1241,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   function say(m, t) { st.msg = m; st.msgT = t; }
   // Use the arcade's existing sound setting and sound engine.
   const sound = type => { try { api.playSfx?.(type); } catch (_) { /* audio is optional */ } };
-  function start(L) { ended = false; st.over = 0; st.L = L;
+  function start(L) { const fresh=!!st.attemptId; if(fresh)finishAttempt(); st.attemptId=selectAttempt(L,fresh); ended = false; st.over = 0; st.L = L;
     st.lvl = warmLevel?.stage === L ? warmLevel.level : makeLevel(L);
     if(['토끼','돼지','소'].includes(st.lvl.name)) {st.yaw=-0.67;st.pitch=.29;}
     warmLevel = null;
@@ -1269,18 +1286,18 @@ function screw3d(api,startStage=loadResumeStage()) {
     try {
       for (const p of [...purchases.paid]) {
         let r;
-        try { r = await api.buyScrew(p.kind, p.id, L, true); } catch (_) { r = { reason: 'server_error' }; }
+        try { r = await api.buyScrew(p.kind, p.id, L, true, st.attemptId); } catch (_) { r = { reason: 'server_error' }; }
         if (!sameWallet()) { restoreBlocked = true; return; }
-        if (r?.ok && r.stage === L) grantUpgrade(p.kind, p.id);
+        if (r?.ok && r.stage === L && r.attempt_id === st.attemptId) grantUpgrade(p.kind, p.id);
         else if (['not_found', 'request_conflict', 'invalid'].includes(r?.reason)) { purchases.paid = purchases.paid.filter(q => q.id !== p.id); savePurchases(); }
         else restoreBlocked = true;
       }
       for (const kind of ['box', 'buffer']) {
         const id = purchases.pending[kind]; if (!id) continue;
         let r;
-        try { r = await api.buyScrew(kind, id, L, true); } catch (_) { r = { reason: 'server_error' }; }
+        try { r = await api.buyScrew(kind, id, L, true, st.attemptId); } catch (_) { r = { reason: 'server_error' }; }
         if (!sameWallet()) { restoreBlocked = true; return; }
-        if (r?.ok && r.stage === L) confirmPurchase(kind, id);
+        if (r?.ok && r.stage === L && r.attempt_id === st.attemptId) confirmPurchase(kind, id);
         else if (r?.reason === 'not_found') { if (settlePending) { delete purchases.pending[kind]; savePurchases(); } }
         else if (['request_conflict', 'invalid'].includes(r?.reason)) { delete purchases.pending[kind]; savePurchases(); }
         else restoreBlocked = true;
@@ -1299,9 +1316,9 @@ function screw3d(api,startStage=loadResumeStage()) {
     }
     buying = true; say('구매 중…', 2);
     try {
-      const id = st.purchases.pending[kind], r = await api.buyScrew(kind, id, st.L, false);
+      const id = st.purchases.pending[kind], r = await api.buyScrew(kind, id, st.L, false, st.attemptId);
       if (!sameWallet()) { say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 2); return false; }
-      if (!r?.ok || r.stage !== st.L) {
+      if (!r?.ok || r.stage !== st.L || r.attempt_id !== st.attemptId) {
         if (['coins', 'request_conflict', 'invalid'].includes(r?.reason)) { delete st.purchases.pending[kind]; savePurchases(); }
         say(r?.reason === 'coins' ? `${price} ZU가 필요해요` : '지금은 구매할 수 없어요', 1.4); return false;
       }
@@ -1442,6 +1459,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   return {
     get stage() { return st.L; },
     get levels() { return STAGES; },
+    get unlockedStage() { return loadStage(); },
     get stageCleared() { return !!st.next; },
     get stageFailed() { return ended && !st.next; },
     async prepareStageChoice() {
@@ -1453,7 +1471,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (destroyed || buying || restoreBlocked || (walletUser && !sameWallet()) || Object.keys(st.purchases.pending).length || !st.next || next !== st.L + 1 || next > STAGES) return false;
       saveStage(next); start(next); return true;
     },
-    destroy() { destroyed = true; depthRenderer.destroy();if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
+    destroy() { finishAttempt(); destroyed = true; depthRenderer.destroy();if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
       st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
     onDown(x, y, id = 0) {
       st.ptrs.set(id, { x, y });
@@ -1555,7 +1573,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
         const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); api.saveScore?.(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
-        st.next = 1; sound('win'); saveStage(Math.min(STAGES, st.L + 1));
+        st.next = 1; sound('win'); saveStage(Math.min(STAGES, st.L + 1)); finishAttempt();
         api.stageClear?.(st.score);
         return;
       }
