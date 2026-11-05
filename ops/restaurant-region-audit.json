@@ -14,8 +14,8 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 9,
-    "scheduledAt": "2026-11-06T03:00:00+09:00",
+    "slot": 10,
+    "scheduledAt": "2026-11-06T04:00:00+09:00",
     "checkedAtKST": "2026-11-06",
     "source": "hourly slot: anchor 2026-11-05T23:00+09:00"
   },
@@ -2324,6 +2324,246 @@
       "nextRegions": [
         "경기도 고양시",
         "경기도 파주시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 10,
+      "scheduledAtKST": "2026-11-06T04:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_7_official_tourism_and_designation_additions",
+      "assignedRegions": [
+        "경기도 고양시",
+        "경기도 파주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 고양시",
+          "baseListedCount": 7,
+          "scope": "경기도 뉴스포털 2025-10-22 고양 지역 음식점 소개 5곳 중 기존 2곳 제외, 미등록 3곳 이름·도로명주소 확인. 기존 7곳 중 좌표 확인 1곳, 미확인 6곳(비전수).",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 9,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 파주시",
+          "baseListedCount": 6,
+          "scope": "경기관광공사 경기도으뜸맛집 분류 1곳 및 파주시 문화관광 파주맛고을 공식 음식점 3곳 확인. 기존 오백년누룽지백숙의 주소 오탈자 교차확인했으나 데이터 변경 전송 실패. 기존 6곳 좌표 미확인(비전수).",
+          "new": 4,
+          "updated": 0,
+          "unknownLocations": 10,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경기도 뉴스포털 2025-10-22 고양 먹거리 5곳 소개(동무밥상·어랑생선구이 기존 수록, 반야관·명계옥·계단라멘 미등록)",
+        "경기관광공사 경기도 DMZ 주변 음식점의 경기으뜸맛집 분류(오두산막국수)",
+        "파주시 문화관광 공식 파주맛고을 음식점 상세(약산정·가나안덕 통일동산점·고향집)",
+        "파주시 관광·경기관광공사 오백년누룽지백숙 주소 '탄현면 새오리로 94' 대조"
+      ],
+      "additions": 7,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 19,
+      "locationPendingScope": "고양 기존 7곳 중 6곳 및 파주 기존 6곳, 신규 고양 3곳·파주 4곳 총 19곳 좌표 미확인. 신규 7곳은 상호·주소 확인했지만 지도 위경도 검증 실패. 기존 12곳은 전체 개별 검증 미완료.",
+      "addedRestaurantIds": [
+        "local-goyang-gnews20251022-banyagwan",
+        "local-goyang-gnews20251022-myeonggyeok",
+        "local-goyang-gnews20251022-gyedanramen",
+        "local-paju-ggtour-odusannmakguksu",
+        "local-paju-tourism-yaksan-jeong",
+        "local-paju-tourism-canaan-duck",
+        "local-paju-tourism-gohyangjip"
+      ],
+      "existingItemsRechecked": [
+        "동무밥상·어랑생선구이(공식 2025 기사와 기본 DB 중복 확인, 신규 제외)",
+        "오백년누룽지백숙(주소 공식 확인했으나 원본 수정 전송 오류; 데이터 미변경)"
+      ],
+      "evidenceUrls": [
+        "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+        "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=952&menuCode=1001&q_gubun=food3&themaCode=1003"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-goyang-gnews20251022-banyagwan",
+          "name": "반야관 밤리단길점",
+          "address": "경기도 고양시 일산동구 대산로11번길 14-4, 1층",
+          "region": "경기도 고양시",
+          "aliases": [
+            "경기 고양시",
+            "경기도 고양시 일산동구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-goyang-gnews20251022-myeonggyeok",
+          "name": "명계옥",
+          "address": "경기도 고양시 일산동구 무궁화로 32-21 메탈릭타워",
+          "region": "경기도 고양시",
+          "aliases": [
+            "경기 고양시",
+            "경기도 고양시 일산동구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-goyang-gnews20251022-gyedanramen",
+          "name": "계단라멘 일산본점",
+          "address": "경기도 고양시 일산동구 율천로7번길 10",
+          "region": "경기도 고양시",
+          "aliases": [
+            "경기 고양시",
+            "경기도 고양시 일산동구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-paju-ggtour-odusannmakguksu",
+          "name": "오두산막국수",
+          "address": "경기도 파주시 탄현면 성동로 17",
+          "region": "경기도 파주시",
+          "aliases": [
+            "경기 파주시",
+            "경기도 파주시 탄현면"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-paju-tourism-yaksan-jeong",
+          "name": "약산정",
+          "address": "경기도 파주시 탄현면 새오리로 59-40",
+          "region": "경기도 파주시",
+          "aliases": [
+            "경기 파주시",
+            "경기도 파주시 탄현면"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-paju-tourism-canaan-duck",
+          "name": "가나안덕 통일동산점",
+          "address": "경기도 파주시 탄현면 새오리로 8, 1층",
+          "region": "경기도 파주시",
+          "aliases": [
+            "경기 파주시",
+            "경기도 파주시 탄현면"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-paju-tourism-gohyangjip",
+          "name": "고향집",
+          "address": "경기도 파주시 탄현면 새오리로 30",
+          "region": "경기도 파주시",
+          "aliases": [
+            "경기 파주시",
+            "경기도 파주시 탄현면"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
+          ],
+          "result": "공식 음식점 정보의 상호·주소 확인. 업소와 주소가 일치하는 검증 가능한 위경도 자료가 확인되지 않아 좌표 null.",
+          "reason": "정확한 공개 업소 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 10,
+          "action": "후속 동일 지역 회차에 공개 지도·관광기관 좌표 교차 검증. 선정·폐업 혼동 금지"
+        },
+        {
+          "id": "local-north-3557b9ef330be708",
+          "name": "오백년누룽지백숙",
+          "address": "현재 데이터: 경기도 파주시 탄현로 새오리로94 / 공식 확인: 경기도 파주시 탄현면 새오리로 94",
+          "region": "경기도 파주시",
+          "aliases": [
+            "오백년 누룽지 백숙",
+            "탄현면 새오리로94"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=952&menuCode=1001&q_gubun=food3&themaCode=1003",
+            "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006"
+          ],
+          "result": "파주시 공식 음식점 상세와 경기관광공사 목록 모두 '탄현면 새오리로 94' 확인; 원본 restaurants.json 직접 갱신 중 대용량 전송 연결 오류 발생해 이번 배포에 정정 미반영",
+          "reason": "데이터 오탈자 수정 미배포(전송 오류). 공개 주소는 확인됨.",
+          "recheckCycle": 1,
+          "recheckSlot": 11,
+          "action": "원본 파일 갱신 가능한 방법으로 정확한 주소 정정 및 배포 검증. 좌표는 검증 전 null 유지"
+        }
+      ],
+      "unresolved": [
+        "고양 6곳·파주 6곳 기존 좌표 미등록 개별 검증 미완료. 신규 7곳도 좌표 없음.",
+        "오백년누룽지백숙 기본 DB 주소 오탈자(탄현로 새오리로94)를 공식 '탄현면 새오리로 94'로 정정해야 하나 대용량 GitHub API 연결 오류로 미반영.",
+        "고양 신규 3곳은 경기도 공식 소개, 파주 3곳은 관광지 음식점 소개이며 정식 미식 심사·선정으로 오인 금지.",
+        "오두산막국수 경기으뜸맛집 지정 연도 미상; 현재 지정·영업 여부를 재확인하지 못함.",
+        "정규 블루리본 발행처 직접 확인 가능한 신규 개별 등급 미확보, 임의 추가 금지.",
+        "위치 근거 미확인만으로 폐업·미선정·삭제 처리하지 않음."
+      ],
+      "carryOver": [
+        "경기도 고양·파주 기존 12곳과 신규 7곳의 주소 일치 위경도 출처 재확인",
+        "오백년누룽지백숙 원본 주소 오탈자 수정·검사·배포",
+        "파주맛고을 안내 최신 유지 여부 및 실제 영업 상태 조사",
+        "경기도 고양·파주 블루리본 공식 선정 등급/판본·추가 가게 검증"
+      ],
+      "nextSlot": 11,
+      "nextRegions": [
+        "경기도 부천시",
+        "경기도 김포시"
       ],
       "notExhaustive": true
     }
