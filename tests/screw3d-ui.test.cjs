@@ -71,7 +71,11 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
         },
         covered() { return {visible:state.drawn.filter(p=>p.owner===testScrew).length, state:testScrew.state,big:state.big,pixel:[...ctx.getImageData(180,392,1,1).data]}; },
         move(x) { obstacle.dyn.c=[x,0,0.25];game.draw(ctx); },
-        partial() { obstacle.dyn.c=[0.21,0,0.25];game.draw(ctx);return state.drawn.filter(p=>p.owner===testScrew).flatMap(p=>p.pts).every(p=>p.x<=180.01); },
+        partial() {
+          obstacle.dyn.c[0]=.20;game.draw(ctx);
+          const points=state.drawn.filter(p=>p.owner===testScrew).flatMap(p=>p.pts);
+          return points.length>0&&points.every(p=>p.x<180);
+        },
         xray() {
           obstacle.c=obstacle.dyn.c;obstacle.dyn=null;state.lvl=mapLevel(state.lvl);
           state.lens={x:180,y:392,hold:true,t:state.t};game.draw(ctx);state.t+=1;game.draw(ctx);game.draw(ctx);
@@ -198,6 +202,12 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
       assert.equal((await page.evaluate(()=>screwTest.covered())).visible,0);
       await page.evaluate(()=>screwTest.tap(180,392));
       assert.equal((await page.evaluate(()=>screwTest.covered())).state,'in','touch assistance cannot reach a covered surface mount');
+      assert.equal(await page.evaluate(()=>screwTest.partial()),true,'a visible sliver remains on the left');
+      await page.evaluate(()=>screwTest.tap(180,392));
+      assert.equal((await page.evaluate(()=>screwTest.covered())).state,'in','the covered center is still blocked');
+      await page.evaluate(()=>screwTest.tap(176,392));
+      assert.equal((await page.evaluate(()=>screwTest.covered())).state,'out','the exposed edge can be tapped directly');
+      await page.evaluate(big=>screwTest.fixture(big,true,0,.95),big);
       await page.evaluate(()=>screwTest.move(.8));
       await page.evaluate(()=>screwTest.tap(180,392));
       assert.equal((await page.evaluate(()=>screwTest.covered())).state,'out','moving away uncovers the same mount');
