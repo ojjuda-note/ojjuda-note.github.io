@@ -1,6 +1,12 @@
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js');
 const Game=require('../screw-flat.js');
+
+// A hidden solution is still unique; never print the winning plate order.
+const flatSource=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
+assert.doesNotMatch(flatSource,/fillText\s*\(\s*String\(p\.orderRank\)/);
+assert.doesNotMatch(flatSource,/철판 번호 순서대로/);
 
 const storage=new Map();
 global.localStorage={

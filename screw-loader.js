@@ -34,7 +34,7 @@
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
       await script('/screw-flat-physics.js?v=20261105-screw-flat-routes1', () => !!window.OjjudaFlatPhysics);
       await script('/screw-flat-pictures.js?v=20261004-surprise1', () => !!window.OjjudaFlatPictures);
-      await script('/screw-flat.js?v=20261105-screw-flat-routes1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/screw-flat.js?v=20261105-screw-flat-orderhidden1', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);
