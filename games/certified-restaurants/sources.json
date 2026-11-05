@@ -1488,15 +1488,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3073,
+    "uniqueRestaurants": 3085,
     "providerCounts": {
       "blue-ribbon": 526,
-      "local-guide": 2344,
+      "local-guide": 2356,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2050,
+    "coordinatesMissing": 2062,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1509,7 +1509,7 @@
       "서울": 351,
       "세종": 100,
       "울산": 36,
-      "인천": 329,
+      "인천": 341,
       "전남": 177,
       "전북": 208,
       "제주": 113,
@@ -1518,12 +1518,12 @@
     },
     "categoryCounts": {
       "기타": 572,
-      "디저트": 220,
+      "디저트": 223,
       "분식": 23,
-      "양식": 207,
+      "양식": 208,
       "일식": 130,
-      "중식": 124,
-      "한식": 1797
+      "중식": 126,
+      "한식": 1803
     }
   },
   "coordinateEnrichment": {
@@ -9886,60 +9886,137 @@
       "scope": "서울 1순환 5회차 관악·서초·강남·송파·강동 5구 공식 관광자료 일부 교차 확인, 전수조사 아님.",
       "coordinatePolicy": "일치하는 공개 좌표 증거가 없어 추가 11곳 null, 기존 미확인 125곳은 확인 필요. 미확인만으로 삭제 또는 폐업 처리하지 않음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-incheon-slot07-tourism",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3073,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2344,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2050,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 329,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 220,
+          "분식": 23,
+          "양식": 207,
+          "일식": 130,
+          "중식": 124,
+          "한식": 1797
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3085,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2356,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2062,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 223,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1803
+        }
+      },
+      "newRestaurantCount": 12,
+      "newRestaurantIds": [
+        "local-incheon-itour-apd21112609193087780",
+        "local-incheon-itour-apd21112609180520327",
+        "local-incheon-itour-apd21112609190439861",
+        "local-incheon-itour-apd21112609162787758",
+        "local-incheon-itour-apd21112609142295248",
+        "local-incheon-itour-apd21112609142198558",
+        "local-incheon-itour-apd21121010002312914",
+        "local-incheon-itour-itd25011713193956493",
+        "local-incheon-itour-itd22010409442372372",
+        "local-incheon-itour-itd22010409520575697",
+        "local-incheon-itour-itd25112513304489119",
+        "local-incheon-itour-itd25020711230610778"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+      ],
+      "scope": "인천 1/07회차 부평·계양·서해·검단 공식 소개 일부만 확인, 완전 수집 아님.",
+      "coordinatePolicy": "신규 12곳 위경도 미확인 null 유지. 미확인만으로 선정 취소·폐업 판단 금지.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-05-seoul-slot05-southeast-tourism",
-    "checkedAt": "2026-11-05",
+    "id": "2026-11-06-incheon-slot07-tourism",
+    "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3049,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 525,
-        "local-guide": 2320,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2026,
-      "regionalCounts": {
-        "서울": 340,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 322,
-        "인천": 316,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1781,
-        "중식": 121,
-        "일식": 129,
-        "기타": 572,
-        "양식": 205,
-        "분식": 21,
-        "디저트": 220
-      }
-    },
-    "currentCoverage": {
-      "uniqueRestaurants": 3060,
+      "uniqueRestaurants": 3073,
       "providerCounts": {
         "blue-ribbon": 526,
-        "local-guide": 2331,
+        "local-guide": 2344,
         "michelin": 237,
         "post-office": 240
       },
       "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2037,
+      "coordinatesMissing": 2050,
       "regionalCounts": {
         "강원": 44,
         "경기": 322,
@@ -9952,7 +10029,7 @@
         "서울": 351,
         "세종": 100,
         "울산": 36,
-        "인천": 316,
+        "인천": 329,
         "전남": 177,
         "전북": 208,
         "제주": 113,
@@ -9962,44 +10039,85 @@
       "categoryCounts": {
         "기타": 572,
         "디저트": 220,
-        "분식": 21,
-        "양식": 206,
-        "일식": 129,
-        "중식": 122,
-        "한식": 1790
+        "분식": 23,
+        "양식": 207,
+        "일식": 130,
+        "중식": 124,
+        "한식": 1797
       }
     },
-    "newRestaurantCount": 11,
+    "currentCoverage": {
+      "uniqueRestaurants": 3085,
+      "providerCounts": {
+        "blue-ribbon": 526,
+        "local-guide": 2356,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2062,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 322,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 351,
+        "세종": 100,
+        "울산": 36,
+        "인천": 341,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "기타": 572,
+        "디저트": 223,
+        "분식": 23,
+        "양식": 208,
+        "일식": 130,
+        "중식": 126,
+        "한식": 1803
+      }
+    },
+    "newRestaurantCount": 12,
     "newRestaurantIds": [
-      "local-seoul-visitseoul-se-gwanak-bongijeon",
-      "local-seoul-visitseoul-se-gwanak-ganggangsullae",
-      "local-seoul-visitseoul-se-gwanak-duremidadm",
-      "local-seoul-visitseoul-se-seocho-yeongdong-jokbal",
-      "local-seoul-visitseoul-se-seocho-bongsanok",
-      "local-seoul-visitseoul-se-seocho-la-saveur",
-      "local-seoul-visitseoul-se-gangnam-duru",
-      "local-seoul-visitseoul-se-songpa-yonggi",
-      "local-seoul-visitseoul-se-songpa-dorim-lotteworld",
-      "local-seoul-visitseoul-se-songpa-hangukjip-lotteworldmall",
-      "local-seoul-visitseoul-se-gangdong-namhangang"
+      "local-incheon-itour-apd21112609193087780",
+      "local-incheon-itour-apd21112609180520327",
+      "local-incheon-itour-apd21112609190439861",
+      "local-incheon-itour-apd21112609162787758",
+      "local-incheon-itour-apd21112609142295248",
+      "local-incheon-itour-apd21112609142198558",
+      "local-incheon-itour-apd21121010002312914",
+      "local-incheon-itour-itd25011713193956493",
+      "local-incheon-itour-itd22010409442372372",
+      "local-incheon-itour-itd22010409520575697",
+      "local-incheon-itour-itd25112513304489119",
+      "local-incheon-itour-itd25020711230610778"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd",
-      "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
-      "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145",
-      "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185",
-      "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313",
-      "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220",
-      "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
-      "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd",
-      "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558",
-      "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om",
-      "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237"
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
     ],
-    "scope": "서울 1순환 5회차 관악·서초·강남·송파·강동 5구 공식 관광자료 일부 교차 확인, 전수조사 아님.",
-    "coordinatePolicy": "일치하는 공개 좌표 증거가 없어 추가 11곳 null, 기존 미확인 125곳은 확인 필요. 미확인만으로 삭제 또는 폐업 처리하지 않음.",
+    "scope": "인천 1/07회차 부평·계양·서해·검단 공식 소개 일부만 확인, 완전 수집 아님.",
+    "coordinatePolicy": "신규 12곳 위경도 미확인 null 유지. 미확인만으로 선정 취소·폐업 판단 금지.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10112,8 +10230,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2344,
-    "designationEvidenceCount": 2391,
+    "recordCount": 2356,
+    "designationEvidenceCount": 2403,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
@@ -10137,7 +10255,7 @@
       },
       {
         "region": "인천",
-        "uniqueRestaurants": 323,
+        "uniqueRestaurants": 335,
         "coordinatesAvailable": 0,
         "completeRegionalCollection": false
       },
@@ -10436,6 +10554,38 @@
       "notes": [
         "신동양 항목은 출처 세부 URL을 확인할 수 없어 제외; 공식 페이지 주소·상호·최초등록일·수정일을 검증한 삼미소문난냉면으로 대체. 신포순대/포청천부 수정일을 페이지 현행 표기와 재대조."
       ]
+    },
+    "municipalTourism20261106IncheonSlot07": {
+      "checkedAt": "2026-11-06",
+      "recordCount": 12,
+      "sourceType": "인천관광공사 인천투어 음식점 개별 소개(한국관광공사 제공)",
+      "sourceFile": "official-incheon-itour-slot07.json",
+      "regionCounts": {
+        "부평구": 6,
+        "계양구": 3,
+        "서해구": 2,
+        "검단구": 1
+      },
+      "evidenceUrls": [
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+      ],
+      "classification": "공식 관광 소개와 정규 인증·가이드 선정·현재 영업 상태를 분리함",
+      "coordinateAdded": 0,
+      "coordinatesMissing": 12,
+      "currentOperatingStatusVerified": 0,
+      "notExhaustive": true,
+      "scope": "부평·계양·서해·검단구 공식 관광 소개 12곳, 전체 명단 아님"
     }
   },
   "mapCoverageAuditHistory": [
