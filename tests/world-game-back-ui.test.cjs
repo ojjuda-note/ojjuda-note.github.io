@@ -19,7 +19,7 @@ world = world.replace('<script type="module">', () => `<script>${scripts}</scrip
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.backFixture={open:Al,link:openWorldGameLink,render:H,state:g,actions:sr,allowExit:true,exits:0,exitRequests:0,
+window.backFixture={initVersion:j1,open:Al,link:openWorldGameLink,render:H,state:g,actions:sr,allowExit:true,exits:0,exitRequests:0,
   billiards:()=>ep('carom4','local'),nativeBack:()=>window.nativeBack({canGoBack:false})};
 window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture',age:25}),getClient:()=>S,visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
 window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
@@ -128,11 +128,13 @@ window.childReady=true;
 
       // The return target of a shared game URL must stay on the arcade after refresh.
       await page.evaluate(()=>{
-        history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes');
+        history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
+        backFixture.initVersion(()=>{});
         backFixture.open('stacker');
       });
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
       assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
+      assert.equal(new URL(page.url()).searchParams.has('v'),false);
       await back();await main();
       const returned=new URL(page.url());
       assert.equal(returned.searchParams.get('tab'),'arcade');
