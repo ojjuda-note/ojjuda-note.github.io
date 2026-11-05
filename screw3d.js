@@ -562,6 +562,9 @@ function rayHit(o, d, len, els, skip) {
   return null;
 }
 const HEAD_H = 0.035, HEAD_R = 0.062;
+// Detached parts keep falling for four seconds, then fade gently for one.
+const DETACHED_FADE_START = 4, DETACHED_FADE_TIME = 1;
+const pieceOpacity = E => E.dyn ? Math.max(0, Math.min(1, (DETACHED_FADE_START + DETACHED_FADE_TIME - E.dyn.age) / DETACHED_FADE_TIME)) : E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1;
 // Visual heads are intentionally smaller than their unchanged collision
 // radius, making the enlarged sculpted models feel like the main subject.
 const DRAW_HEAD_H = 0.029, DRAW_HEAD_R = 0.051;
@@ -1454,7 +1457,7 @@ function screw3d(api,startStage) {
     const left = (st.lvl.refs?.get(E) || st.lvl.screws).filter(s => s.state === 'in' && (s.thru === E || s.into === E));
     if (!left.length) {
       const q = pose(E), h = E.geom.half, m = 8 * h[0] * h[1] * h[2] + 1e-4;
-      E.dyn = { c: q.c, R: q.R, v: mul(norm(q.c), 0.35), w: [(Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5], m, I: m * (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]) / 3, sleep: 0, t: 0 };
+      E.dyn = { c: q.c, R: q.R, v: mul(norm(q.c), 0.35), w: [(Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5], m, I: m * (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]) / 3, sleep: 0, t: 0, age: 0 };
       E.hinge = null; st.lvl.els.forEach(o => { if (o.dyn) o.dyn.sleep = 0; });   // 받치던 게 빠졌을 수 있으니 모두 깨워요
     } else if (left.length === 1 && E.kind === 'plate' && !E.badge && !E.hinge && left[0].thru === E) {
       E.hinge = { p: left[0].p, a: left[0].a, th: 0, w: 0, ign: new Set(st.lvl.els.filter(o => o !== E && o.state === 'on' && !o.dyn && hitAny(box(E), o))) };
@@ -1480,7 +1483,7 @@ function screw3d(api,startStage) {
     if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
     const o = topAt(x, y); if (o && o.p) return o;
     let best = null, bd = touchRadius();
-    for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && topAt(h.x, h.y) === s) { bd = d; best = s; } }
+    for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && (topAt(h.x, h.y) === s || s.skinMount)) { bd = d; best = s; } }
     return best;
   }
   function tap(x, y) {
@@ -1612,9 +1615,11 @@ function screw3d(api,startStage) {
       }
       for (const E of st.lvl.els) {
         if (E.state !== 'on' || !E.dyn) continue;
+        E.dyn.age = (E.dyn.age || 0) + Math.max(0, dt);
+        if (E.dyn.age >= DETACHED_FADE_START + DETACHED_FADE_TIME) { E.state = 'gone'; continue; }
         const candidates = nearby(E);
         for (let k = 0; k < 3; k++) stepDyn(E, candidates, gravity, physicsDt / 3);
-        if (Math.hypot(...E.dyn.c)>Math.max(4,st.modelRadius*3)||E.dyn.t>14) E.state='gone';
+        if (Math.hypot(...E.dyn.c)>Math.max(4,st.modelRadius*3)||E.dyn.age>=DETACHED_FADE_START+DETACHED_FADE_TIME) E.state='gone';
       }
       for (const s of st.lvl.screws) if (s.state === 'out') { s.t += dt; if (s.t >= 0.34) s.state = 'fly'; }
       let landedInBuffer = false, matchedBox = false;
@@ -1711,8 +1716,8 @@ function screw3d(api,startStage) {
         const span = [0, 1, 2].map(i => Math.abs(sh.R[i * 3]) * h[0] + Math.abs(sh.R[i * 3 + 1]) * h[1] + Math.abs(sh.R[i * 3 + 2]) * h[2]);
         return { sh, o, c, span };
       }));   // 움직이는 조각도 현재의 실제 모양으로 가려요
-      const coverOf = (pt, self) => { const res = [], g = lv.grid && lv.grid.get(cellKey(pt, lv.mid)); if (alive(g) && g !== self) { const l = sub(pt, g.c); if (Math.abs(l[0]) < GRID / 2 - 0.003 && Math.abs(l[1]) < GRID / 2 - 0.003 && Math.abs(l[2]) < GRID / 2 - 0.003) res.push(g); }
-        for (const { sh, o, c, span } of covers) { if (o !== self && Math.abs(pt[0] - c[0]) <= span[0] && Math.abs(pt[1] - c[1]) <= span[1] && Math.abs(pt[2] - c[2]) <= span[2] && shapeHit(pt, [0, 0, 0], 0, sh, 0.003)) res.push(o); } return res; };
+      const coverOf = (pt, ...ignore) => { const res = [], g = lv.grid && lv.grid.get(cellKey(pt, lv.mid)); if (alive(g) && !ignore.includes(g)) { const l = sub(pt, g.c); if (Math.abs(l[0]) < GRID / 2 - 0.003 && Math.abs(l[1]) < GRID / 2 - 0.003 && Math.abs(l[2]) < GRID / 2 - 0.003) res.push(g); }
+        for (const { sh, o, c, span } of covers) { if (!ignore.includes(o) && Math.abs(pt[0] - c[0]) <= span[0] && Math.abs(pt[1] - c[1]) <= span[1] && Math.abs(pt[2] - c[2]) <= span[2] && shapeHit(pt, [0, 0, 0], 0, sh, 0.003)) res.push(o); } return res; };
       let hiddenN = 0; const found = new Set();   // 투시로 드러난 숨은 판·나사
       const fwd = mv(tr(V), [0, 0, 1]);
       for (const E of st.lvl.els) {
@@ -1732,7 +1737,7 @@ function screw3d(api,startStage) {
           // their precise physical shape after another brick falls away.
           if (E.skinGeom && !E.hinge) {
             const skin = st.big ? E.skinFastGeom : E.skinGeom;
-            if (skin.faces.length) solid(skin, sh.R, sh.c, sh.color, 1, E,
+            if (skin.faces.length) solid(skin, sh.R, sh.c, sh.color, pieceOpacity(E), E,
               E.kind === 'block' ? 0 : 0.012, items);
             // A few physical cube faces are sufficient for exact screw
             // visibility; the hundreds of decorative skin triangles need not
@@ -1747,7 +1752,7 @@ function screw3d(api,startStage) {
           const geom = E.skinPlate && sh.geom === E.geom ? FABRIC_WASHER
             : E.geom.soft && sh.geom === E.geom && st.big ? SOFT_CUBE_FAST : sh.geom;
           solid(geom, sh.R, sh.c, E.skinPlate ? E.skinPlateColor : sh.color,
-            E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E,
+            pieceOpacity(E), E,
             E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
         }
       }
@@ -1759,8 +1764,7 @@ function screw3d(api,startStage) {
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
         const hc = add(p, mul(a, DRAW_HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
         const hcs = add(hc, mul(u0, sh));
-        const logical=screwPose(s);
-        const covering = s.state === 'in' ? coverOf(add(logical.p,mul(logical.a,HEAD_H)),s.thru) : [];
+        const covering = s.state === 'in' ? coverOf(add(p,mul(a,DRAW_HEAD_H)),s.thru,s.into) : [];
         if (covering.length) hiddenN++;
         if (covering.length && !(st.xrayOn && covering.every(o => o === st.xrayOn))) continue;   // 블럭 밑에 깔린 나사
         if (s.state === 'in' && dot(a,norm(sub(mv(tr(V),[0,0,F*st.sc]),p))) <= .04) continue;
