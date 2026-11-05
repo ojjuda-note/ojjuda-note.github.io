@@ -1394,6 +1394,26 @@
     });
     return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
   }
+  // A screw can leave its plate only if there is a different usable parking
+  // hole. Falling metal may uncover an empty slot, so preview that motion in
+  // an independent rigid-body world without changing the real player's board.
+  function canMoveToSpare(level,screw){
+    if(!canUnscrew(level,screw))return false;
+    const vacancies=level.holes.filter(h=>h!==screw.hole&&h.screw===null);
+    if(!vacancies.length)return false;
+    if(vacancies.some(h=>canSeatScrew(level,h,screw)))return true;
+    const trial={...level,holes:level.holes.map(h=>({...h})),plates:level.plates.map(p=>({...p,pins:p.pins.map(pin=>({...pin}))}))};
+    trial.screws=level.screws.map(s=>({...s,hole:s.hole?trial.holes[s.hole.id]:null}));
+    const preview=createPhysics(trial),lifted=trial.screws[screw.id];
+    try{
+      if(!preview.lift(lifted))return false;
+      for(let t=0;t<150;t++){
+        preview.step(.05);
+        if(t%3===0&&vacancies.some(h=>canSeatScrew(trial,trial.holes[h.id],lifted)))return true;
+      }
+      return false;
+    }finally{preview.destroy();}
+  }
   function createPhysics(level){
     const engine=M.Engine.create({positionIterations:12,velocityIterations:8,constraintIterations:8,enableSleeping:false});
     engine.gravity.y=1;engine.gravity.scale=.001;
@@ -1476,7 +1496,7 @@
     function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
     return{step,lift,move,destroy,engine,bodies,screwBodies};
   }
-  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
+  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();
