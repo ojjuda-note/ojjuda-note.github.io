@@ -2,7 +2,7 @@ import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-scre
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
-import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-occlusion3';
+import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-connected-plush1';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -1128,7 +1128,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-occlusion3',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-connected-plush1',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)

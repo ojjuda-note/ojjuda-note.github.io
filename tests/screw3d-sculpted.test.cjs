@@ -9,6 +9,25 @@ const testMath=Object.create(Math);
 const context=vm.createContext({assert,Math:testMath,console,structuredClone});
 
 vm.runInContext(sources+`
+  globalThis.checkConnectedAnimalMesh=whole=>{
+    const parent=[],vertices=new Map(),faces=[];
+    const vertex=p=>{
+      const key=p.map(v=>v.toFixed(4)).join(',');
+      if(vertices.has(key))return vertices.get(key);
+      const id=parent.length;parent.push(id);vertices.set(key,id);return id;
+    };
+    const find=id=>{while(parent[id]!==id){parent[id]=parent[parent[id]];id=parent[id];}return id;};
+    const unite=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent[b]=a;};
+    for(const E of whole.filter(e=>e.skinRole!=='pedestal')){
+      for(const face of E.skinFastGeom.faces){
+        const ids=face.idx.map(i=>vertex(E.skinFastGeom.verts[i].map((p,j)=>p+E.c[j])));
+        unite(ids[0],ids[1]);unite(ids[1],ids[2]);faces.push(ids[0]);
+      }
+    }
+    assert.ok(faces.length>0,'the animal model must have a visible curved mesh');
+    assert.equal(new Set(faces.map(find)).size,1,
+      'every animal paw and leg must join the body as one continuous model');
+  };
   globalThis.checkStage=(stage,seed)=>{
     let randomSeed=seed>>>0;
     Math.random=()=>((randomSeed=(Math.imul(randomSeed,1664525)+1013904223)>>>0)/4294967296);
@@ -32,6 +51,7 @@ vm.runInContext(sources+`
     }
     const guards=m.els.filter(e=>e.guard);
     if(['토끼','돼지','소','펭귄'].includes(m.name)){
+      checkConnectedAnimalMesh(whole);
       const cosmetic=m.els.filter(e=>e.kind==='plate'&&!e.guard&&!e.diagonal);
       assert.ok(cosmetic.length>0,'animal scenes have working fastening plates');
       assert.ok(cosmetic.every(e=>e.skinPlate&&e.visualMountOnly),

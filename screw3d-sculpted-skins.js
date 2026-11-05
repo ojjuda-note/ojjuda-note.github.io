@@ -46,10 +46,14 @@ function figureEnvelope(name, els, step) {
   const lo=[0,1,2].map(i=>Math.min(...els.map(e=>e.c[i])));
   const hi=[0,1,2].map(i=>Math.max(...els.map(e=>e.c[i])));
   const span=[0,1,2].map(i=>hi[i]-lo[i]), mid=[0,1,2].map(i=>(lo[i]+hi[i])*.5);
-  const shapes=[];
+  const shapes=[],bridges=[];
   // Give the figure a fuller, soft-toy silhouette.  The screw heads retain
   // their original dimensions, so they read as small hardware on a big toy.
   const add=(c,r)=>shapes.push({c,r:r.map(v=>v*1.12)});
+  const connect=(a,b,r0,r1)=>{
+    const v=minus(b,a);
+    bridges.push({a,v,inv:1/(dot(v,v)||1),r0,r1});
+  };
   if(name==='수박') {
     add(mid,span.map(v=>v*.5+step*.34));
   } else if(name==='펭귄') {
@@ -64,20 +68,33 @@ function figureEnvelope(name, els, step) {
   } else if(quadrupeds.has(name)) {
     const bodyEnd=hi[0]-step*.88;
     const bodyLength=Math.max(step,bodyEnd-lo[0]);
-    add([lo[0]+bodyLength*.51,lo[1]+span[1]*.50,mid[2]],
+    const bodyCenter=[lo[0]+bodyLength*.51,lo[1]+span[1]*.50,mid[2]];
+    add(bodyCenter,
       [bodyLength*.54+step*.30,span[1]*.41+step*.16,span[2]*.53+step*.34]);
     // A large round head overlaps the neck and reaches the roots of the
     // ears/horns. The original fastening cells stay exactly where they are.
     add([hi[0]-step*.53,hi[1]-step*.32,mid[2]],
       [step*1.15,step*1.15,span[2]*.55+step*.35]);
     for(const x of [lo[0]+step*.16,bodyEnd-step*.22])
-      for(const z of [lo[2],hi[2]])
-        add([x,lo[1]+step*.14,z],
-          [step*.53,step*.84,step*.50]);
+      for(const z of [lo[2],hi[2]]){
+        const foot=[x,lo[1]+step*.14,z];
+        add(foot,[step*.53,step*.84,step*.50]);
+        // Large animals used to have disconnected paws: the oval belly
+        // narrows at its corners while the real fastening cells stay at the
+        // outer edge. A tapered soft leg joins each paw to a point *inside*
+        // the body without moving a single physical cube or screw.
+        const root=[x*.55+bodyCenter[0]*.45,
+          lo[1]+span[1]*.36,z*.55+mid[2]*.45];
+        connect(foot,root,step*.72,step*.98);
+      }
   }
   return p=>{
     let d=Infinity;
     for(const s of shapes)d=smoothMin(d,ellipsoid(p,s.c,s.r),step*.25);
+    for(const b of bridges){
+      const q=minus(p,b.a),t=clamp(dot(q,b.v)*b.inv,0,1);
+      d=smoothMin(d,length(minus(q,times(b.v,t)))-(b.r0+(b.r1-b.r0)*t),step*.25);
+    }
     return d;
   };
 }
