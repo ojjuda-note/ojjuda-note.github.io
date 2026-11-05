@@ -264,7 +264,22 @@ async function assertFullscreen(page,size,playing=false){
     await page.mouse.move(box.x+box.width*.5,box.y+box.height*.6);await page.mouse.down();await page.mouse.move(box.x+box.width*.3,box.y+box.height*.45,{steps:8});await page.mouse.up();
     const afterPan=await page.evaluate(()=>{const s=screwWorld.current().game.state;return{...s.view,moves:s.moves};});
     assert.notEqual(afterPan.x,beforePan.x);assert.notEqual(afterPan.y,beforePan.y);assert.equal(afterPan.moves,beforePan.moves,'panning never spends a move');
-    const visible=await page.evaluate(()=>{const g=screwWorld.current().game;return g.state.level.screws.find(s=>{const q=g.screenPoint(s.hole);return q.x>50&&q.x<310&&q.y>180&&q.y<460&&OjjudaScrewGames.canUnscrew(g.state.level,s);}).id;});
+    const visible=await page.evaluate(()=>{
+     const r=screwWorld.current(),g=r.game,st=g.state,level=st.level,B=OjjudaFlatPhysics.BOARD;
+     const reachable=level.screws.filter(s=>OjjudaScrewGames.canUnscrew(level,s));
+     const onScreen=s=>{const q=g.screenPoint(s.hole);return q.x>50&&q.x<310&&q.y>180&&q.y<460;};
+     let screw=reachable.find(onScreen);
+     // The real metal keepers hide most screws. After a free-form pan, guide
+     // the test camera back to an exposed one, then use actual phone taps.
+     if(!screw)for(const candidate of reachable){
+      const z=st.view.zoom,x=Math.max(B.x+B.w/(2*z),Math.min(B.x+B.w-B.w/(2*z),candidate.hole.x));
+      const y=Math.max(B.y+B.h/(2*z),Math.min(B.y+B.h-B.h/(2*z),candidate.hole.y));
+      st.view.x=x;st.view.y=y;
+      if(onScreen(candidate)){screw=candidate;g.draw(r.ctx);break;}
+     }
+     if(!screw)throw Error('No exposed screw can be brought into the zoomed viewport');
+     return screw.id;
+    });
     await touchMove(visible,0);assert.equal(await page.evaluate(()=>screwWorld.current().game.state.moves),1,'an enlarged screw relocates through real phone taps');
     if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-stage-1000-zoom.png')});
     await touch({x:240,y:26});assert.equal(await page.evaluate(()=>screwWorld.current().game.state.view.zoom),1);

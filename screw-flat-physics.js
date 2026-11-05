@@ -24,7 +24,14 @@
     }
     return inside?-distance:distance;
   }
-  function plateCovers(p,x,y,radius=0){if(p.state==='gone')return false;const q=localPoint(p,x,y);return polygonDistance(p.vertices,q.x,q.y)<radius;}
+  function plateCovers(p,x,y,radius=0){
+    if(p.state==='gone')return false;
+    const q=localPoint(p,x,y);
+    if(polygonDistance(p.vertices,q.x,q.y)<radius)return true;
+    // Metal keeper strips overlap the following piece's screw heads. A screw
+    // underneath a still-attached strip cannot be reached by the screwdriver.
+    return !!p.pins.length&&(p.guards||[]).some(g=>Math.hypot(q.x-g.x,q.y-g.y)<g.radius+radius);
+  }
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
   function canAccessHole(level,hole){
     const margin=level.route?0:12*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS;
@@ -154,6 +161,47 @@
     return null;
   }
 
+  // Two adjacent metal pieces can support one another only in the direction
+  // of gravity. Find the pieces underneath each fragment before choosing the
+  // release order; a loose plate must not be asked to fall through a bolt or
+  // a still-fastened metal face.
+  function gravityReleaseOrder(plates){
+    const extents=plates.map(p=>{
+      const vertices=p.vertices.map(v=>worldPoint(p,v));
+      return{p,vertices,minX:Math.min(...vertices.map(v=>v.x)),maxX:Math.max(...vertices.map(v=>v.x)),bottom:Math.max(...vertices.map(v=>v.y))};
+    });
+    function span(item,x){
+      const v=item.vertices,ys=[];
+      for(let i=0;i<v.length;i++){
+        const a=v[i],b=v[(i+1)%v.length];
+        if(x<Math.min(a.x,b.x)-.001||x>Math.max(a.x,b.x)+.001)continue;
+        if(Math.abs(a.x-b.x)<.001){ys.push(a.y,b.y);}else{
+          const t=(x-a.x)/(b.x-a.x);if(t>=-.001&&t<=1.001)ys.push(a.y+t*(b.y-a.y));
+        }
+      }
+      return ys.length?{top:Math.min(...ys),bottom:Math.max(...ys)}:null;
+    }
+    const below=new Map(extents.map(e=>[e.p.id,new Set()]));
+    for(let i=0;i<extents.length;i++)for(let j=i+1;j<extents.length;j++){
+      const a=extents[i],b=extents[j],left=Math.max(a.minX,b.minX),right=Math.min(a.maxX,b.maxX);
+      if(right-left<.4)continue;
+      const xs=[left+(right-left)*.08,left+(right-left)*.5,left+(right-left)*.92];
+      for(const x of xs){
+        const aa=span(a,x),bb=span(b,x);if(!aa||!bb)continue;
+        if(aa.bottom<=bb.top+1){below.get(a.p.id).add(b.p.id);break;}
+        if(bb.bottom<=aa.top+1){below.get(b.p.id).add(a.p.id);break;}
+      }
+    }
+    const pending=new Set(plates.map(p=>p.id)),order=[];
+    while(pending.size){
+      const available=extents.filter(e=>pending.has(e.p.id)&&![...below.get(e.p.id)].some(id=>pending.has(id)));
+      const candidates=available.length?available:extents.filter(e=>pending.has(e.p.id));
+      candidates.sort((a,b)=>b.bottom-a.bottom||a.p.id-b.p.id);
+      const next=candidates[0].p;order.push(next);pending.delete(next.id);
+    }
+    return order;
+  }
+
   function makeInterlockedFlower25(L){
     // The flower is assembled from four tapered pairs, rather than eight
     // independent strips. The lower pairs physically support the upper ones:
@@ -234,21 +282,34 @@
       }
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
+    if(L>=26)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
+    if(L===598){
+      // This narrow centre wedge is caught by the two flanking metal faces
+      // if released before they are removed.
+      const wedge=ordered.splice(ordered.findIndex(p=>p.id===24),1)[0];
+      ordered.splice(Math.max(ordered.findIndex(p=>p.id===13),ordered.findIndex(p=>p.id===22))+1,0,wedge);
+    }
     const level={stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
     if(L>=26){
-      // Three empty sockets remain throughout. A verified route uses the two
-      // left sockets to release a panel, then parks those fasteners in the
-      // panel's original holes before releasing the next one. Any different
-      // transfer is physically possible, but needs an item to complete.
+      // A metal keeper attached to the preceding piece covers both fasteners
+      // on the next one. The actual geometry, not a secret answer index,
+      // decides whether the player can reach and unscrew a fastener.
+      for(let i=0;i<ordered.length-1;i++){
+        const p=ordered[i],next=ordered[i+1];
+        p.guards=next.holeIds.map(id=>({
+          x:holes[id].x-p.x,y:holes[id].y-p.y,radius:Math.max(2.4,radius*.78)
+        }));
+      }
+      // The base budget is the smallest number of real screw transfers: two
+      // to release each plate, two to park those screws before the next one.
       const route=[];let previous=null,held=null;
       ordered.forEach((p,index)=>{
-        p.orderRank=index+1;
         if(previous){route.push({screw:held[0],to:previous.holeIds[0]},{screw:held[1],to:previous.holeIds[1]});}
         held=p.holeIds.map(id=>holes[id].screw);
         route.push({screw:held[0],to:0},{screw:held[1],to:1});
         previous=p;
       });
-      level.route=route;level.routeProgress=0;level.routeBroken=false;level.routeUnlocked=false;level.routeGateBlocked=false;
+      level.route=route;
     }
     return level;
   }
@@ -317,7 +378,9 @@
       for(const c of joints.get(p.id)||[])M.Composite.remove(engine.world,c);joints.set(p.id,[]);
       const fixed=routed?p.pins.length>0:p.pins.length>=2;M.Body.setStatic(b,fixed);
       p.state=p.pins.length>=2?'fixed':p.pins.length?'hinged':'loose';
-      if(routed)b.collisionFilter.mask=p.pins.length?3:0;
+      // Released plates collide with the remaining screws and fixed plates.
+      // The contact can leave a badly released plate physically jammed.
+      if(routed)b.collisionFilter.mask=3;
       if(fixed){M.Body.setVelocity(b,{x:0,y:0});M.Body.setAngularVelocity(b,0);}
       else if(p.pins.length===1){
         const pin=p.pins[0],hole=level.holes[pin.hole],q=worldPoint(p,p.mounts[pin.mount]);
@@ -332,20 +395,8 @@
     }
     refreshScrews();
     function move(screw,to){
-      if(routed)level.routeGateBlocked=false;
       if(dead||to.screw!==null||!canUnscrew(level,screw)||!canAccessHole(level,to))return false;
       const from=screw.hole,changed=new Set();
-      if(routed&&!level.routeUnlocked){
-        // The final fastener is the safety latch. A wrong sequence can move
-        // real screws and release earlier plates, but cannot secretly clear
-        // an empty board without an item: the last plate remains bolted on.
-        const finalPlate=level.plates.find(p=>p.orderRank===level.plates.length);
-        const finalStep=level.route[level.route.length-1];
-        if(finalPlate?.pins.length===1&&finalPlate.pins[0].hole===from.id&&
-          (level.routeProgress!==level.route.length-1||screw.id!==finalStep.screw||to.id!==finalStep.to)){
-          level.routeGateBlocked=true;return false;
-        }
-      }
       for(const p of level.plates)if(p.state!=='gone'){
         if(p.pins.some(pin=>pin.hole===from.id)){p.pins=p.pins.filter(pin=>pin.hole!==from.id);changed.add(p);}
         const mount=alignedMount(p,to);if(mount>=0&&!p.pins.some(pin=>pin.mount===mount)){p.pins.push({hole:to.id,mount});changed.add(p);}
@@ -353,11 +404,6 @@
       from.screw=null;to.screw=screw.id;screw.hole=to;
       for(const p of changed)refreshPins(p);
       refreshScrews();
-      if(routed){
-        const expected=level.route[level.routeProgress];
-        if(expected&&expected.screw===screw.id&&expected.to===to.id)level.routeProgress++;
-        else level.routeBroken=true;
-      }
       return true;
     }
     function step(seconds){
