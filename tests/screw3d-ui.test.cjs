@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
+const userFlowFixture=require('./screw3d-user-flow-fixture.cjs');
 const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'],
@@ -32,8 +33,33 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
         game.draw(ctx); game.draw(ctx);
       }
       const tap = (x,y) => { game.onDown(x,y,1); game.onUp(x,y,1); };
+      const nearest=(x,y)=>{
+        let answer=null,depth=-Infinity;
+        const inside=(pts)=>{let hit=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+          const a=pts[i],b=pts[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)hit=!hit;
+        }return hit;};
+        for(const it of state.order)for(const pg of it.polys)
+          if(pg.depth&&(pg.visible||[pg.pts]).some(inside)){
+            const d=depthAt(pg.depth,{x,y});if(d>depth){depth=d;answer=it.owner;}}
+        return answer;
+      };
       window.screwTest = {
         boot, fixture, tap,
+        depthPixels(software=false) {
+          const surface=document.createElement('canvas');surface.width=360;surface.height=540;
+          const c=surface.getContext('2d'),original=HTMLCanvasElement.prototype.getContext;
+          if(software)HTMLCanvasElement.prototype.getContext=function(type,...args){return type==='webgl'?null:original.call(this,type,...args);};
+          const renderer=createScrewDepthRenderer(),rect=[{x:20,y:250},{x:100,y:250},{x:100,y:330},{x:20,y:330}];
+          const red={owner:{},alpha:1,polys:[{pts:rect,fill:'#FF0000',depth:[0,0,2]}]};
+          const blue={owner:{},alpha:1,polys:[{pts:rect,fill:'#0000FF',depth:[0,0,1]}]};
+          const pixel=(x,y)=>[...c.getImageData(x,y,1,1).data];
+          try{
+            renderer.draw(c,[red,blue],null,1,232,510);const first=pixel(60,280);
+            c.clearRect(0,0,360,540);renderer.draw(c,[blue,red],null,1,232,510);const reversed=pixel(60,280);
+            red.polys[0].depth=[.02,0,0];c.clearRect(0,0,360,540);renderer.draw(c,[red,blue],null,1,232,510);
+            return {first,reversed,left:pixel(30,280),right:pixel(80,280),hud:pixel(60,200)};
+          }finally{HTMLCanvasElement.prototype.getContext=original;renderer.destroy();}
+        },
         covered() { return {visible:state.drawn.filter(p=>p.owner===testScrew).length, state:testScrew.state,big:state.big,pixel:[...ctx.getImageData(180,392,1,1).data]}; },
         move(x) { obstacle.dyn.c=[x,0,0.25];game.draw(ctx); },
         partial() { obstacle.dyn.c=[0.21,0,0.25];game.draw(ctx);return state.drawn.filter(p=>p.owner===testScrew).flatMap(p=>p.pts).every(p=>p.x<=180.01); },
@@ -51,7 +77,7 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
               for(let k=0;k<8;k++) {
                 state.yaw=k*Math.PI/4;state.pitch=pitch;game.draw(ctx);
                 for(const [s,h] of state.heads) {
-                  if(s.state!=='in'||blocked(s,state.lvl)||!state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3))continue;
+                  if(s.state!=='in'||blocked(s,state.lvl)||nearest(h.x,h.y)!==s||!state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3))continue;
                   tap(h.x,h.y);if(s.state==='out'){picked=true;break;}
                 }
                 if(picked)break;
@@ -71,7 +97,7 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
             state.yaw=k*Math.PI/4;state.pitch=pitch;game.draw(ctx);
             visible=Math.max(visible,[...state.heads.keys()].filter(s=>s.skinMount).length);
             for(const [s,h] of state.heads){
-              if(!s.skinMount||blocked(s,state.lvl)||!state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3))continue;
+              if(!s.skinMount||blocked(s,state.lvl)||nearest(h.x,h.y)!==s||!state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3))continue;
               tap(h.x,h.y);
               if(s.state==='out')return {mounted,visible,tapped:true};
             }
@@ -92,8 +118,7 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
                 const a=pts[i],b=pts[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)hit=!hit;
               }return hit;
             };
-            const top=(x,y)=>{for(let i=state.drawn.length-1;i>=0;i--)
-              if(inside(x,y,state.drawn[i].pts))return state.drawn[i].owner;return null;};
+            const top=nearest;
             const advance=seconds=>{for(let i=0;i<seconds/.04;i++)game.update(.04);};
             while(clicks<total){
               let picked=false;
@@ -141,7 +166,10 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
           return shots;
         }
       };
-    ` });
+    `+'\nconst canvas=ctx,capture=()=>{};globalThis.confirm=()=>true;\n'+userFlowFixture });
+    for(const software of [false,true])assert.deepEqual(await page.evaluate(mode=>screwTest.depthPixels(mode),software),
+      {first:[255,0,0,255],reversed:[255,0,0,255],left:[0,0,255,255],right:[255,0,0,255],hud:[0,0,0,0]},
+      'GPU and software use per-pixel depth, independent of painter order, without painting over the HUD');
     for (const big of [false, true]) {
       await page.evaluate(big => screwTest.fixture(big), big);
       let result = await page.evaluate(() => screwTest.covered());
@@ -174,6 +202,9 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const rabbit=await page.evaluate(() => screwTest.rabbitOcclusion());
     assert.ok(rabbit.every(s=>s.plates===0&&s.unclipped===0&&s.front>0&&s.hidden>0),
       `curved rabbit must hide rear details and detached square plates: ${JSON.stringify(rabbit)}`);
+    const userFlow=await page.evaluate(async()=>{localStorage.clear();const r=await play(20,4,31676,true);last.game.destroy();return r;});
+    assert.ok(userFlow.cleared&&userFlow.clicks===123&&userFlow.boxes.length===3&&userFlow.buffer===6,
+      'seed4 previously stopped at119/123 with overlapping heads; every actual GPU touch now completes');
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
     if (process.env.SCREW_MODEL_QA) for (const L of [1, 5, 80]) {
       await page.evaluate(stage => { screwTest.boot(stage); }, L);
@@ -182,6 +213,6 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const perf = {};
     for (const L of [4, 20, 40, 160]) perf[L] = await page.evaluate(L => screwTest.perf(L), L);
     assert.deepEqual(errors, []);
-    console.log('PASS: normal/large rendering, partial occlusion, moving-block touch and completed tutorial/animal rounds', JSON.stringify({ play, complete, frameMs: perf }));
+    console.log('PASS: normal/large rendering, partial occlusion, moving-block touch and completed tutorial/animal rounds', JSON.stringify({ play, complete, userFlow, frameMs: perf }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

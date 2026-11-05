@@ -2,9 +2,9 @@
  * A shared sculpted surface for detachable screw-box bricks.
  *
  * The puzzle keeps its original fasteners and exact physical collision mesh.
- * Only the visible outside is remeshed. Each surface triangle belongs to one
- * real removable brick, so the sculpture opens as its fasteners come out.
- * Newly exposed inner faces revert to the brick's original physical mesh.
+ * Each physical brick owns a closed solid clipped to its own cell. The
+ * complete model keeps a curved silhouette, while exposed cuts and falling
+ * pieces retain the very same opaque volume and surface-mounted fasteners.
  */
 const __sculpted = (() => {
 const TETS = [[0, 5, 1, 6], [0, 1, 2, 6], [0, 2, 3, 6],
@@ -122,12 +122,13 @@ function continuousFigure(els,field,step,spacing,paintAt) {
     return best;
   };
   const addTriangle=(pa,pb,pc,outward)=>{
+    [pa,pb,pc]=[pa,pb,pc].map(p=>p.map(v=>Math.round(v*1e9)/1e9));
     let n=cross(minus(pb,pa),minus(pc,pa)),mag=length(n);
     if(mag<1e-9)return;
     if(dot(n,outward)<0)[pb,pc]=[pc,pb],n=n.map(v=>-v);
     const center=[0,1,2].map(i=>(pa[i]+pb[i]+pc[i])/3),E=owner(center),m=meshes.get(E);
     const vertex=p=>{
-      const local=minus(p,E.c),key=local.map(v=>v.toFixed(6)).join(',');
+      const local=minus(p,E.c),key=local.map(v=>v.toFixed(10)).join(',');
       if(m.seen.has(key))return m.seen.get(key);
       const i=m.verts.length;m.verts.push(local);m.seen.set(key,i);return i;
     };
@@ -193,56 +194,218 @@ function animalPaint(name,els,step) {
   return ()=>null;
 }
 
-// The puzzle's fastening positions belong to its original rigid blocks.
-// The new rounded skin can recede a long way from those coordinates.  Find
-// the point on the ACTUAL signed-distance surface where a visible fastener
-// should be drawn; never move the logical screw or its collision path.
-function attachToSurface(field,s,step) {
-  const base=s.p,d0=field(base),epsilon=step*.007;
-  if(!Number.isFinite(d0))return null;
-  let point=null;
-  if(Math.abs(d0)<=epsilon)point=base.slice();
-  else {
-    // First keep the fastener on its original straight extraction axis.
-    const sign=d0>0?-1:1,dx=step*.14,limit=step*2;
-    let last=base,lastD=d0;
-    for(let t=dx;t<=limit+1e-7;t+=dx){
-      const next=plus(base,times(s.a,t*sign)),nd=field(next);
-      if((lastD<=0)!==(nd<=0)){
-        let lo=last,hi=next,ld=lastD;
-        for(let k=0;k<9;k++){
-          const mid=times(plus(lo,hi),.5),md=field(mid);
-          if((ld<=0)===(md<=0)){lo=mid;ld=md;}else hi=mid;
-        }
-        point=times(plus(lo,hi),.5);break;
-      }
-      last=next;lastD=nd;
+// Divide the whole figure into closed nearest-cell volumes. Assigning only
+// outside triangles leaves paper-thin scraps; each cell needs its own hull.
+function closeSkinFragments(els,meshes,paintAt,field) {
+  const key=p=>p.map(v=>Math.round(v*1e8)).join(',');
+  const whole=[];
+  for(const [E,m] of meshes)for(const f of m.faces)
+    whole.push(f.idx.map(i=>plus(m.verts[i],E.c)));
+  const lo=[0,1,2].map(i=>Math.min(...whole.flatMap(f=>f.map(p=>p[i])))-1);
+  const hi=[0,1,2].map(i=>Math.max(...whole.flatMap(f=>f.map(p=>p[i])))+1);
+  const corners=CORNERS.map(p=>p.map((v,i)=>v?hi[i]:lo[i]));
+  const clip=(p,n,center)=>{
+    const out=[];
+    for(let i=0;i<p.length;i++){
+      const a=p[i],b=p[(i+1)%p.length];
+      let da=dot(minus(a,center),n),db=dot(minus(b,center),n);
+      if(Math.abs(da)<1e-9)da=0;if(Math.abs(db)<1e-9)db=0;
+      if(da<=0)out.push(a);
+      if((da<=0)!==(db<=0))out.push(plus(a,times(minus(b,a),da/(da-db))));
     }
-    if(!point){
-      // Rounded cheeks and ears do not always intersect a cube-face axis.
-      // Fall back to a short normal projection onto their curved surface.
-      point=base.slice();
-      for(let i=0;i<16;i++){
-        const d=field(point);if(Math.abs(d)<epsilon)break;
-        const h=step*.012,g=[0,1,2].map(j=>{
-          const p=point.slice(),q=point.slice();p[j]+=h;q[j]-=h;
-          return (field(p)-field(q))/(2*h);
-        });
-        const len2=dot(g,g);if(len2<1e-7)break;
-        point=minus(point,times(g,clamp(d/len2,-step*.32,step*.32)));
+    return [...new Map(out.map(p=>[key(p),p])).values()];
+  };
+  const cellRegion=E=>{
+    let region=[[0,3,2,1],[4,5,6,7],[0,1,5,4],[3,7,6,2],[0,4,7,3],[1,2,6,5]]
+      .map(idx=>({p:idx.map(i=>corners[i])}));
+    const neighbors=els.filter(F=>F!==E).sort((a,b)=>length(minus(a.c,E.c))-length(minus(b.c,E.c)));
+    for(const F of neighbors){
+      const n=unit(minus(F.c,E.c)),center=times(plus(E.c,F.c),.5);
+      if(region.every(f=>f.p.every(p=>dot(minus(p,center),n)<=1e-8)))continue;
+      const next=[],rim=new Map();
+      for(const f of region){
+        const p=clip(f.p,n,center);
+        for(const q of p)if(Math.abs(dot(minus(q,center),n))<1e-8)rim.set(key(q),q);
+        if(p.length>=3)next.push({...f,p});
       }
+      const p=[...rim.values()];
+      if(p.length>=3){
+        const mid=times(p.reduce(plus,[0,0,0]),1/p.length);
+        const u=unit(cross(n,Math.abs(n[0])<.8?[1,0,0]:[0,1,0])),v=cross(n,u);
+        p.sort((a,b)=>Math.atan2(dot(minus(a,mid),v),dot(minus(a,mid),u))-Math.atan2(dot(minus(b,mid),v),dot(minus(b,mid),u)));
+        if(length(p.reduce((sum,q,i)=>plus(sum,cross(q,p[(i+1)%p.length])),[0,0,0]))>1e-9)
+          next.push({p,n,center,neighbor:F});
+      }
+      region=next;
+    }
+    return region;
+  };
+  // Build a closed convex volume from the actual surface points in one cell.
+  // Unlike a triangle-soup cap, every hull edge has exactly two oppositely
+  // wound faces. The hull stays inside all shared cell half-spaces, so pieces
+  // never overlap or borrow a neighbour's skin.
+  const hull=(input,E,planes)=>{
+    const snapped=input.map(p=>p.map((v,i)=>E.c[i]+Math.round((v-E.c[i])*1e6)/1e6));
+    const points=[...new Map(snapped.map(p=>[key(p),p])).values()]
+      .sort((a,b)=>dot(minus(b,E.c),minus(b,E.c))-dot(minus(a,E.c),minus(a,E.c)));
+    const ints=points.map(p=>p.map((v,i)=>Math.round((v-E.c[i])*1e6)));
+    const orientation=(a,b,c,d)=>{
+      const u=minus(ints[b],ints[a]),v=minus(ints[c],ints[a]),w=minus(ints[d],ints[a]);
+      const terms=[u[0]*v[1]*w[2],u[1]*v[2]*w[0],u[2]*v[0]*w[1],
+        -u[2]*v[1]*w[0],-u[1]*v[0]*w[2],-u[0]*v[2]*w[1]];
+      const det=terms.reduce((a,b)=>a+b,0),error=terms.reduce((a,b)=>a+Math.abs(b),0)*1e-13;
+      if(Math.abs(det)>error)return Math.sign(det);
+      // Only the nearly coplanar case needs exact integer arithmetic. A
+      // guessed epsilon can reverse a horizon edge and open a solid hull.
+      const U=u.map(BigInt),V=v.map(BigInt),W=w.map(BigInt);
+      const exact=U[0]*(V[1]*W[2]-V[2]*W[1])-U[1]*(V[0]*W[2]-V[2]*W[0])+U[2]*(V[0]*W[1]-V[1]*W[0]);
+      return exact>0n?1:exact<0n?-1:0;
+    };
+    let a=0,b=0,c=0,d=0;
+    for(let i=1;i<points.length;i++)if(points[i][0]<points[a][0])a=i;
+    for(let i=0;i<points.length;i++)if(length(minus(points[i],points[a]))>length(minus(points[b],points[a])))b=i;
+    const ab=minus(points[b],points[a]);
+    for(let i=0;i<points.length;i++)if(length(cross(ab,minus(points[i],points[a])))>length(cross(ab,minus(points[c],points[a]))))c=i;
+    const n=unit(cross(ab,minus(points[c],points[a])));
+    for(let i=0;i<points.length;i++)if(Math.abs(dot(n,minus(points[i],points[a])))>Math.abs(dot(n,minus(points[d],points[a]))))d=i;
+    const inner=times([a,b,c,d].map(i=>points[i]).reduce(plus,[0,0,0]),.25);
+    const face=(a,b,c,orient=true)=>{
+      let n=unit(cross(minus(points[b],points[a]),minus(points[c],points[a])));
+      if(orient&&dot(n,minus(inner,points[a]))>0){[b,c]=[c,b];n=times(n,-1);}
+      return {idx:[a,b,c],n};
+    };
+    let faces=[face(a,b,c),face(a,d,b),face(a,c,d),face(b,d,c)];
+    const initial=new Set([a,b,c,d]);
+    for(let i=0;i<points.length;i++){
+      if(initial.has(i))continue;
+      const visible=new Set(faces.filter(f=>orientation(...f.idx,i)>0));
+      if(!visible.size)continue;
+      const rim=new Map();
+      for(const f of visible)for(let j=0;j<3;j++){
+        const a=f.idx[j],b=f.idx[(j+1)%3],reverse=b+','+a;
+        if(rim.has(reverse))rim.delete(reverse);else rim.set(a+','+b,[a,b]);
+      }
+      const added=[...rim.values()].map(([a,b])=>face(a,b,i,false));
+      faces=faces.filter(f=>!visible.has(f));faces.push(...added);
+    }
+    const used=[...new Set(faces.flatMap(f=>f.idx))],indices=new Map(used.map((id,i)=>[id,i]));
+    const verts=used.map(i=>minus(points[i],E.c));
+    faces=faces.map(f=>{
+      const p=f.idx.map(i=>points[i]),center=times(p.reduce(plus,[0,0,0]),1/3);
+      const boundary=planes.find(q=>p.every(v=>Math.abs(dot(minus(v,q.center),q.n))<2e-6));
+      return {idx:f.idx.map(i=>indices.get(i)),n:f.n,paint:paintAt?.(center)||E.color,boundary:boundary?.neighbor};
+    });
+    return {verts,faces,half:[0,1,2].map(i=>Math.max(.001,...verts.map(v=>Math.abs(v[i])))),
+      soft:true,sculpted:true,closed:true};
+  };
+  const result=new Map();
+  for(const E of els){
+    const region=cellRegion(E),planes=region.filter(f=>f.neighbor),points=[];
+    for(const triangle of whole){
+      let p=triangle;
+      for(const plane of planes){p=clip(p,plane.n,plane.center);if(!p.length)break;}
+      points.push(...p);
+    }
+    // Interior cells have no outside-shell triangles. Their shared cell
+    // corners are the real solid volume, not an empty decorative fragment.
+    for(const f of region)for(const p of f.p)if(field(p)<=1e-8)points.push(p);
+    result.set(E,hull(points,E,planes));
+  }
+  return result;
+}
+
+// A fastener belongs to its own retained piece, not to an analytic surface
+// of the complete toy (which can differ from its coarse rendered triangles).
+function attachToMesh(E,s,interior=false,taken=[]) {
+  const geom=E.skinFastGeom;if(!geom?.faces.length)return null;
+  let best=null;
+  for(let i=0;i<geom.faces.length;i++){
+    const f=geom.faces[i],n=f.n,slope=dot(n,s.a);if((f.boundary&&!interior)||slope<.05)continue;
+    const p=f.idx.map(j=>plus(geom.verts[j],E.c)),t=dot(n,minus(p[0],s.p))/slope;
+    const q=plus(s.p,times(s.a,t));
+    if(p.some((a,j)=>dot(cross(minus(p[(j+1)%3],a),minus(q,a)),n)<-1e-8))continue;
+    if(!best||t>best.t)best={p:q,a:n,t,face:i};
+  }
+  // A cell-axis ray can hit a neighbouring cell cut instead of the outer
+  // curve. Mounting there makes two legal screws face into one another.
+  // Find a real exterior triangle of THIS piece, never a neighbour's skin.
+  if(!best){
+    let score=Infinity;
+    for(let i=0;i<geom.faces.length;i++){
+      const f=geom.faces[i];if(f.boundary)continue;
+      const p=f.idx.map(j=>plus(geom.verts[j],E.c)),n=f.n;
+      let q=minus(s.p,times(n,dot(n,minus(s.p,p[0]))));
+      if(p.some((a,j)=>dot(cross(minus(p[(j+1)%3],a),minus(q,a)),n)<-1e-8)){
+        let distance=Infinity;
+        for(let j=0;j<3;j++){
+          const a=p[j],v=minus(p[(j+1)%3],a),d=dot(v,v);
+          const point=plus(a,times(v,d?clamp(dot(minus(s.p,a),v)/d,0,1):0));
+          const gap=length(minus(point,s.p));if(gap<distance){distance=gap;q=point;}
+        }
+      }
+      const cost=length(minus(q,s.p))+.08*(1-dot(n,s.a));
+      if(cost<score){score=cost;best={p:q,a:n,face:i};}
     }
   }
-  if(!Number.isFinite(field(point))||Math.abs(field(point))>step*.03
-    ||length(minus(point,base))>step*2.2)return null;
-  const h=step*.012,n=unit([0,1,2].map(j=>{
-    const p=point.slice(),q=point.slice();p[j]+=h;q[j]-=h;
-    return field(p)-field(q);
-  }));
-  // A thin, fabric-coloured seat covers the surface contact. Keep the head
-  // nearly flush, with no long visible shaft suspended in mid-air.
-  return {p:plus(point,times(n,.006)),a:n,gap:length(minus(point,base)),
-    surfaceError:Math.abs(field(point))};
+  if(!best)return null;
+  const head=p=>plus(p.p,times(p.a,.035));
+  const clearance=p=>taken.length?Math.min(...taken.map(q=>length(minus(head(p),head(q))))):Infinity;
+  if(clearance(best)<.106){
+    let candidate=null,score=Infinity;
+    for(let i=0;i<geom.faces.length;i++){
+      const f=geom.faces[i];if(f.boundary&&!interior)continue;
+      const [a,b,c]=f.idx.map(j=>plus(geom.verts[j],E.c));
+      for(let u=0;u<=8;u++)for(let v=0;v<=8-u;v++){
+        const p=plus(a,plus(times(minus(b,a),u/8),times(minus(c,a),v/8)));
+        const q={p,a:f.n,face:i};if(clearance(q)<.106)continue;
+        const cost=length(minus(p,s.p))+.12*length(minus(p,best.p))+.08*(1-dot(f.n,s.a));
+        if(cost<score){score=cost;candidate=q;}
+      }
+    }
+    if(candidate)best=candidate;
+  }
+  taken.push(best);
+  return {p:plus(best.p,times(best.a,.006)),a:best.a,owner:E,face:best.face,
+    gap:length(minus(best.p,s.p)),surfaceError:0,surfaceKind:'mesh',interior};
+}
+
+
+function spaceMeshFasteners(E,screws) {
+  const distance=(a,b)=>length(minus(plus(a.p,times(a.a,.035)),plus(b.p,times(b.a,.035))));
+  const current=screws.map(s=>({p:minus(s.skinMount.p,times(s.skinMount.a,.006)),a:s.skinMount.a,face:s.skinMount.face}));
+  if(current.every((a,i)=>current.every((b,j)=>j<=i||distance(a,b)>=.106)))return;
+  const choices=[];
+  for(let face=0;face<E.skinGeom.faces.length;face++){
+    const f=E.skinGeom.faces[face],[a,b,c]=f.idx.map(i=>plus(E.c,E.skinGeom.verts[i]));
+    for(let u=0;u<=10;u++)for(let v=0;v<=10-u;v++)choices.push({
+      p:plus(a,plus(times(minus(b,a),u/10),times(minus(c,a),v/10))),a:f.n,face,boundary:!!f.boundary});
+  }
+  const unique=[...new Map(choices.map(p=>[[...p.p.map(v=>Math.round(v*1e7)),...p.a.map(v=>Math.round(v*1e4)),p.boundary].join(','),p])).values()];
+  const order=screws.map((s,i)=>({s,i,options:[current[i],...unique.filter(p=>s.skinMount.interior||!p.boundary)]
+    .map(p=>({p,cost:length(minus(p.p,s.p))+.08*(1-dot(p.a,s.a))+.08*length(minus(p.p,current[i].p))}))
+    .sort((a,b)=>a.cost-b.cost).map(p=>p.p)}))
+    .sort((a,b)=>Number(a.s.skinMount.interior)-Number(b.s.skinMount.interior)||a.options.length-b.options.length);
+  // A later fastener can need a little space where an earlier one was placed.
+  // Repack that small group together, choosing the closest real surface seats;
+  // never move a logical screw, use a neighbour's part, or float a head.
+  for(const spacing of [.106,.086,.066,.046])for(const limit of [120,500]){
+    const placed=[];let visits=0;
+    const search=index=>{
+      if(index===order.length)return true;
+      if(++visits>20000)return false;
+      for(const p of order[index].options.slice(0,limit)){
+        if(placed.some(q=>distance(p,q)<spacing))continue;
+        placed.push(p);if(search(index+1))return true;placed.pop();
+      }
+      return false;
+    };
+    if(search(0)){
+      order.forEach(({s},i)=>{const p=placed[i];Object.assign(s.skinMount,{
+        p:plus(p.p,times(p.a,.006)),a:p.a,face:p.face,gap:length(minus(p.p,s.p)),
+        drawScale:Math.min(1,(spacing-.004)/.102)});});
+      return;
+    }
+  }
 }
 
 function applySculptedSkins(M,step) {
@@ -270,40 +433,62 @@ function applySculptedSkins(M,step) {
       }
       return d;
     };
+    // Every physical cell needs a real volume, including the outer shoulder
+    // cells of the largest animals. A lightly inset rounded cell union fills
+    // those corners without flattening the continuous curved silhouette.
+    const field=envelope?p=>smoothMin(envelope(p),sample(p)+step*.22,step*.16):sample;
     // A grid wider than one block can miss thin towers, rails and ship hulls
     // altogether. Sub-cell sampling guarantees visible geometry in every
     // disconnected one-block-wide feature, even in the fast quality tier.
-    const fine=step*(organic?.58:.66);
-    const coarse=step*(organic?(els.length<110?.69:.86):.90);
-    const useFastOnly=M.els.length+M.screws.length>100;
-    const sculptedFast=continuousFigure(els,envelope||sample,step,coarse,paint);
-    const sculpted=useFastOnly?sculptedFast:continuousFigure(els,envelope||sample,step,fine,paint);
+    const coarse=step*(organic?(els.length<110?.64:.86):(els.length<110?.75:.90));
+    const sculptedFast=closeSkinFragments(els,continuousFigure(els,field,step,coarse,paint),paint,field);
+    // One mesh for every quality tier: a zoom/fast-mode switch must never
+    // move the surface through an unchanged screw head.
+    const sculpted=sculptedFast;
+    const normalCache=new Map();
     for(const E of els){
       const p=pos(E.c);
       E.skinOriginalFaces=DIRECTIONS.map(n=>!cells.has(key(p.map((v,i)=>v+n[i]))));
       E.skinGeom=sculpted.get(E);
       E.skinFastGeom=sculptedFast.get(E);
+      for(const mesh of new Set([E.skinGeom,E.skinFastGeom])){
+        const h=step*.01;
+        const outside=new Set(mesh.faces.filter(f=>!f.boundary).flatMap(f=>f.idx));
+        mesh.normals=mesh.verts.map((v,j)=>{
+          if(!outside.has(j))return [0,1,0];
+          const p=plus(v,E.c),key=p.map(x=>Math.round(x*1e7)).join(',');
+          if(normalCache.has(key))return normalCache.get(key);
+          const n=unit([0,1,2].map(i=>{const a=p.slice(),b=p.slice();a[i]+=h;b[i]-=h;return field(a)-field(b);}));
+          normalCache.set(key,n);return n;
+        });
+      }
       if(organic)E.material='fabric';
     }
+    const seats=new Map();
     for(const s of M.screws){
       if(!cells.has(key(pos(s.into?.c||[Infinity,Infinity,Infinity])))
         ||s.thru?.kind!=='plate'||s.thru?.faceFeature||s.thru?.hinge
-        ||s.guard||role==='pedestal')continue;
+        ||s.guard)continue;
       const E=s.into,at=pos(E.c);
       // Interior screws stay hidden between the original removable bricks.
       const blockedAxis=[0,1,2].some(i=>Math.abs(s.a[i])>.9&&cells.has(key(at.map((v,j)=>v+(j===i?Math.sign(s.a[i]):0)))));
-      if(blockedAxis)continue;
-      const mount=attachToSurface(envelope||sample,s,step);
+      if(!seats.has(E))seats.set(E,[]);
+      const mount=attachToMesh(E,s,blockedAxis,seats.get(E));
       if(mount)s.skinMount=mount;
     }
   }
+  const seatsByOwner=new Map();
+  for(const s of M.screws)if(s.skinMount?.surfaceKind==='mesh'){
+    if(!seatsByOwner.has(s.into))seatsByOwner.set(s.into,[]);seatsByOwner.get(s.into).push(s);
+  }
+  for(const [E,screws] of seatsByOwner)spaceMeshFasteners(E,screws);
   // On cuddly animal toys the working fastening plates become tiny cloth-
   // covered buttons. The real plates, their screw paths and their collisions
   // are unchanged. Guard straps remain clearly metal and full-sized.
-  if(ANIMALS.has(M.name)&&M.name!=='수박')for(const E of M.els){
+  if(ANIMALS.has(M.name))for(const E of M.els){
     if(E.kind!=='plate'||E.guard||E.diagonal)continue;
     E.skinPlate=true;
-    E.skinPlateColor=M.name==='돼지'?'#F0AFC2':M.name==='펭귄'?'#82939A':M.name==='소'?'#E5E1D6':'#F0E7DD';
+    E.skinPlateColor=M.name==='돼지'?'#F0AFC2':M.name==='펭귄'?'#82939A':M.name==='소'?'#E5E1D6':M.name==='수박'?'#5DA373':'#F0E7DD';
     // Decorative fasteners from the old cube model (including multi-part
     // plates) cannot sit outside the new curved body. Their physical plates
     // still exist for screw collisions and the solution order; only the old
@@ -313,7 +498,7 @@ function applySculptedSkins(M,step) {
   // A cloth button should sit beneath each visible screw, not hang at the
   // old cubic plate location. Guard plates remain metal and keep their shape.
   for(const E of M.els){
-    if(!E.skinPlate&&!E.diagonal)continue;
+    if(E.kind!=='plate'||E.guard||E.faceFeature||E.hinge)continue;
     const owned=M.screws.filter(s=>s.thru===E);
     if(owned.length&&owned.every(s=>s.skinMount))E.visualMountOnly=true;
   }
