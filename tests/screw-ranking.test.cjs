@@ -42,7 +42,7 @@ function fixture(){
  flat.state.level.plates.forEach(p=>p.state='gone');flat.update(.05);
  assert.equal(records.length,1,'a completed flat stage saves before reaching stage 1000');
  assert.equal(records[0],flat.state.score);flat.update(.05);assert.equal(records.length,1);flat.destroy();
- const boxContext=vm.createContext({console,localStorage:global.localStorage,window:{}});
+ const boxContext=vm.createContext({console,crypto:require('node:crypto'),localStorage:global.localStorage,window:{}});
  vm.runInContext(bundleScrew3d(read).replace('  start(st.L);','  globalThis.stageState=st;start(st.L);'),boxContext);
  const boxRecords=[],box=boxContext.screw3d({setScore:noop,end:()=>assert.fail('a cleared box stage does not fail'),saveScore:score=>boxRecords.push(score)});
  boxContext.stageState.lvl.screws.forEach(s=>s.state='done');boxContext.stageState.lvl.els.forEach(e=>e.state='gone');

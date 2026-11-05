@@ -70,7 +70,7 @@ assert.ok(Number.isSafeInteger(boxStageCap)&&boxStageCap>=1,'the box mode expose
 const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:boxStageCap},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
 function withScrews(run,entries=[],blocked=false){
  const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
- const context=vm.createContext({console,localStorage,window:{}});
+ const context=vm.createContext({console,localStorage,window:{},crypto:require('node:crypto')});
  vm.runInContext(bundleScrew3d(read),context);
  const previous=global.localStorage,games=[],records=[];global.localStorage=localStorage;
  const api={setScore(){},end(){},saveScore:score=>records.push(score)};

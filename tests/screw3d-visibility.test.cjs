@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const source=bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
 const testMath=Object.create(Math);
-const context=vm.createContext({assert,Math:testMath,console,window:{},
+const context=vm.createContext({assert,Math:testMath,console,window:{},crypto:require('node:crypto'),
   localStorage:{getItem(){return null;},setItem(){}}});
 // Rendering still executes the real projection, depth clipping, draw list and
 // pointer handlers. Only Canvas raster operations are omitted in this audit.
