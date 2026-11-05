@@ -8,7 +8,7 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  const db=new PGlite(),member=randomUUID(),other=randomUUID(),poor=randomUUID(),shopper=randomUUID();
  await db.exec(`
   create role anon;create role authenticated;create role service_role;
-  create schema auth;create schema ojjuda_note_internal;
+  create schema auth;create schema ojjuda_note_internal;create schema ojjuda_shop_internal;
   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
   create function public.is_banned(uuid) returns boolean language sql stable as $$select coalesce(current_setting('test.banned',true),'false')='true'$$;
   create table public.user_private(user_id uuid primary key,coins integer not null check(coins>=0));
