@@ -20,6 +20,9 @@ const length = v => Math.hypot(v[0],v[1],v[2]);
 const minus = (a,b) => [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
 const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 const dot = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const plus = (a,b) => a.map((v,i)=>v+b[i]);
+const times = (v,k) => v.map(x=>x*k);
+const unit = v => { const d=length(v)||1;return times(v,1/d); };
 const smoothMin = (a,b,k) => {
   if(k<=0)return Math.min(a,b);
   const h=Math.max(k-Math.abs(a-b),0)/k;
@@ -44,7 +47,9 @@ function figureEnvelope(name, els, step) {
   const hi=[0,1,2].map(i=>Math.max(...els.map(e=>e.c[i])));
   const span=[0,1,2].map(i=>hi[i]-lo[i]), mid=[0,1,2].map(i=>(lo[i]+hi[i])*.5);
   const shapes=[];
-  const add=(c,r)=>shapes.push({c,r});
+  // Give the figure a fuller, soft-toy silhouette.  The screw heads retain
+  // their original dimensions, so they read as small hardware on a big toy.
+  const add=(c,r)=>shapes.push({c,r:r.map(v=>v*1.12)});
   if(name==='수박') {
     add(mid,span.map(v=>v*.5+step*.34));
   } else if(name==='펭귄') {
@@ -171,6 +176,58 @@ function animalPaint(name,els,step) {
   return ()=>null;
 }
 
+// The puzzle's fastening positions belong to its original rigid blocks.
+// The new rounded skin can recede a long way from those coordinates.  Find
+// the point on the ACTUAL signed-distance surface where a visible fastener
+// should be drawn; never move the logical screw or its collision path.
+function attachToSurface(field,s,step) {
+  const base=s.p,d0=field(base),epsilon=step*.007;
+  if(!Number.isFinite(d0))return null;
+  let point=null;
+  if(Math.abs(d0)<=epsilon)point=base.slice();
+  else {
+    // First keep the fastener on its original straight extraction axis.
+    const sign=d0>0?-1:1,dx=step*.14,limit=step*2;
+    let last=base,lastD=d0;
+    for(let t=dx;t<=limit+1e-7;t+=dx){
+      const next=plus(base,times(s.a,t*sign)),nd=field(next);
+      if((lastD<=0)!==(nd<=0)){
+        let lo=last,hi=next,ld=lastD;
+        for(let k=0;k<9;k++){
+          const mid=times(plus(lo,hi),.5),md=field(mid);
+          if((ld<=0)===(md<=0)){lo=mid;ld=md;}else hi=mid;
+        }
+        point=times(plus(lo,hi),.5);break;
+      }
+      last=next;lastD=nd;
+    }
+    if(!point){
+      // Rounded cheeks and ears do not always intersect a cube-face axis.
+      // Fall back to a short normal projection onto their curved surface.
+      point=base.slice();
+      for(let i=0;i<16;i++){
+        const d=field(point);if(Math.abs(d)<epsilon)break;
+        const h=step*.012,g=[0,1,2].map(j=>{
+          const p=point.slice(),q=point.slice();p[j]+=h;q[j]-=h;
+          return (field(p)-field(q))/(2*h);
+        });
+        const len2=dot(g,g);if(len2<1e-7)break;
+        point=minus(point,times(g,clamp(d/len2,-step*.32,step*.32)));
+      }
+    }
+  }
+  if(!Number.isFinite(field(point))||Math.abs(field(point))>step*.03
+    ||length(minus(point,base))>step*2.2)return null;
+  const h=step*.012,n=unit([0,1,2].map(j=>{
+    const p=point.slice(),q=point.slice();p[j]+=h;q[j]-=h;
+    return field(p)-field(q);
+  }));
+  // A thin, fabric-coloured seat covers the surface contact. Keep the head
+  // nearly flush, with no long visible shaft suspended in mid-air.
+  return {p:plus(point,times(n,.006)),a:n,gap:length(minus(point,base)),
+    surfaceError:Math.abs(field(point))};
+}
+
 function applySculptedSkins(M,step) {
   const groups=new Map();
   for(const E of M.els)if(E.cell&&E.geom?.soft&&!E.parts){
@@ -185,7 +242,7 @@ function applySculptedSkins(M,step) {
     const cells=new Map(els.map(E=>[key(pos(E.c)),E]));
     const organic=role!=='pedestal'&&ANIMALS.has(M.name);
     const rad=step*(organic?.40:.28),blend=step*(organic?.30:.22);
-    const half=step*.5-step*.015;
+    const half=step*.5+step*.052;
     const envelope=organic?figureEnvelope(M.name,els,step):null;
     const paint=organic?animalPaint(M.name,els,step):null;
     const sample=p=>{
@@ -211,6 +268,17 @@ function applySculptedSkins(M,step) {
       E.skinFastGeom=sculptedFast.get(E);
       if(organic)E.material='fabric';
     }
+    for(const s of M.screws){
+      if(!cells.has(key(pos(s.into?.c||[Infinity,Infinity,Infinity])))
+        ||s.thru?.kind!=='plate'||s.thru?.faceFeature||s.thru?.hinge
+        ||s.guard||role==='pedestal')continue;
+      const E=s.into,at=pos(E.c);
+      // Interior screws stay hidden between the original removable bricks.
+      const blockedAxis=[0,1,2].some(i=>Math.abs(s.a[i])>.9&&cells.has(key(at.map((v,j)=>v+(j===i?Math.sign(s.a[i]):0)))));
+      if(blockedAxis)continue;
+      const mount=attachToSurface(envelope||sample,s,step);
+      if(mount)s.skinMount=mount;
+    }
   }
   // On cuddly animal toys the working fastening plates become tiny cloth-
   // covered buttons. The real plates, their screw paths and their collisions
@@ -219,6 +287,19 @@ function applySculptedSkins(M,step) {
     if(E.kind!=='plate'||E.guard||E.diagonal||E.parts)continue;
     E.skinPlate=true;
     E.skinPlateColor=M.name==='돼지'?'#F0AFC2':M.name==='펭귄'?'#82939A':M.name==='소'?'#E5E1D6':'#F0E7DD';
+  }
+  // A cloth button should sit beneath each visible screw, not hang at the
+  // old cubic plate location. Guard plates remain metal and keep their shape.
+  for(const E of M.els){
+    if(!E.skinPlate&&!E.diagonal)continue;
+    const owned=M.screws.filter(s=>s.thru===E);
+    if(owned.length&&owned.every(s=>s.skinMount))E.visualMountOnly=true;
+  }
+  for(const E of M.els)if(E.guard&&E.guardTarget?.skinMount){
+    E.visualOffset=minus(E.guardTarget.skinMount.p,E.guardTarget.p);
+    for(const s of M.screws)if(s.thru===E&&s.guard){
+      s.skinMount={p:plus(s.p,E.visualOffset),a:s.a,gap:0};
+    }
   }
   return M;
 }

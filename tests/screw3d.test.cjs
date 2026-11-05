@@ -54,6 +54,13 @@ vm.runInContext(`
   assert.ok(Math.abs(rear.polys[0].visible.reduce((a,p)=>a+Math.abs(polyArea(p))/2,0) - 50) < 0.001, 'intersecting depth planes clip at the actual crossing');
   maskScrews([rear, front], moving);
   assert.equal(rear.polys[0].visible.length, 1, 'intentional x-ray remains available');
+  // The decorative curve may run inside the old cube's collision bounds;
+  // a screw snapped onto that visible skin must not be hidden by the cube.
+  screw.skinMount = {p:[0,0,0.1],a:[0,0,1]};
+  moving.skinGeom = {sculpted:true};
+  maskScrews([rear, front], null);
+  assert.equal(rear.polys[0].visible.length, 1, 'sculpted mount stays visible instead of vanishing behind its old cubic mask');
+  delete screw.skinMount; delete moving.skinGeom;
   let last = 0, lastColors = 0;
   for (let L = 1; L <= STAGES; L++) {
     assert.ok(targetScrews(L) >= last); last = targetScrews(L);

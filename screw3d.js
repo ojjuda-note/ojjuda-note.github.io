@@ -2,7 +2,7 @@ import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-scre
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
-import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-sculpted-gates1';
+import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-surface-mount2';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -531,6 +531,9 @@ function rayHit(o, d, len, els, skip) {
   return null;
 }
 const HEAD_H = 0.035, HEAD_R = 0.062;
+// Visual heads are intentionally smaller than their unchanged collision
+// radius, making the enlarged sculpted models feel like the main subject.
+const DRAW_HEAD_H = 0.029, DRAW_HEAD_R = 0.051;
 // ---------- 부딪힘: 떨어지는 조각 ↔ 박혀 있는 조각 (네모 상자끼리 겹침 판정) ----------
 const axesOf = R => [[R[0], R[3], R[6]], [R[1], R[4], R[7]], [R[2], R[5], R[8]]];
 function obbHit(A, B) {   // 겹치면 { n: B→A 쪽 방향, d: 깊이, p: 닿은 점 }
@@ -666,6 +669,11 @@ function screwPose(s) {
   if (!E.hinge) return { p: s.p, a: s.a };
   const Q = axisRot(E.hinge.a, E.hinge.th);
   return { p: add(E.hinge.p, mv(Q, sub(s.p, E.hinge.p))), a: mv(Q, s.a) };
+}
+function visibleScrewPose(s) {
+  // Cosmetic cloth buttons do not jump back to their old cubical position
+  // when their hidden fastening plate starts swinging or falling.
+  return s.skinMount || screwPose(s);
 }
 function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 빼는 길을 막나요?
   const radius2 = (HEAD_R * 2 - 0.002) ** 2, half = HEAD_H / 2 + HEAD_R - 0.002;
@@ -807,7 +815,7 @@ function addObstacleGates(M,L) {
       const a=target.a,u=norm(cross(a,Math.abs(a[1])>.85?[0,0,1]:[0,1,0]));
       const R=frame(a,u),c=add(target.p,mul(a,.127));
       const gate=el('plate',boxGeom([.205,.026,.095]),c,R,'#9DAEBA',
-        {badge:true,material:'metal',guard:true});
+        {badge:true,material:'metal',guard:true,guardTarget:target});
       if(M.els.some(o=>o!==target.thru&&o!==target.into&&o.state==='on'&&hitAny(box(gate),o)))continue;
       const newS=[-.15,0,.15].map(offset=>({
         p:add(add(c,mul(a,.032)),mul(u,offset)),a,thru:gate,into:target.into,
@@ -884,7 +892,8 @@ function withPedestal(obj, T) {
   } });
 }
 
-const HEAD_GEOM = cylGeom(HEAD_R, HEAD_H / 2, 12);
+const HEAD_GEOM = cylGeom(DRAW_HEAD_R, DRAW_HEAD_H / 2, 12);
+const SOCKET_GEOM = cylGeom(DRAW_HEAD_R*1.24, .010, 10);
 // 그리는 순서: 두 볼록한 도형 A, B가 겹쳐 보이면, A의 한 면(또는 B의 한 면)을 기준으로 상대가 통째로 바깥쪽에 있는지 보고
 // 내 눈(카메라)이 어느 쪽에 있는지로 앞뒤를 정해요. 그 관계대로 뒤에서 앞으로 그리고, 정해지지 않으면 거리로 정해요.
 function sepFront(A, B, cam) {   // 1: A가 앞, -1: B가 앞, 0: 모름
@@ -960,7 +969,7 @@ const boundsOverlap = (a, b) => a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && 
 function maskScrews(items, xrayOn, masks = [], rotationPreview = false) {
   // Screen-space buckets avoid checking every visible face for every screw.
   const faces = items.concat(masks).filter(it => !it.owner.p && !it.isSkin && it.owner !== xrayOn && it.alpha > 0.5)
-    .flatMap(it => it.polys.filter(pg => pg.depth).map(pg => ({ pg, bb: bounds2(pg.pts) })));
+    .flatMap(it => it.polys.filter(pg => pg.depth).map(pg => ({ pg, bb: bounds2(pg.pts),owner:it.owner })));
   const TILE = 48, cols = Math.ceil(W / TILE), rows = Math.ceil(H / TILE);
   const tiles = Array.from({ length: cols * rows }, () => []);
   const tileRange = bb => {
@@ -988,6 +997,10 @@ function maskScrews(items, xrayOn, masks = [], rotationPreview = false) {
         const depth=depthAt(pg.depth,center);
         for(const id of tiles[iy*cols+ix]){
           const other=faces[id],p=other.pg.pts;
+          // Sculpted mounts sit on the actual curved silhouette, sometimes
+          // *inside* the old cubic collider. That invisible collider must not
+          // erase a visible surface screw; guard straps still occlude it.
+          if(it.owner.skinMount&&(other.owner.skinGeom||other.owner.kind==='plate'&&!other.owner.guard))continue;
           if(center.x<other.bb[0]||center.x>other.bb[2]||center.y<other.bb[1]||center.y>other.bb[3])continue;
           if(depthAt(other.pg.depth,center)<=depth+1e-6)continue;
           let inside=false;
@@ -1003,6 +1016,7 @@ function maskScrews(items, xrayOn, masks = [], rotationPreview = false) {
       for (const id of tiles[y * cols + x]) neighbors.add(id);
     for (const i of [...neighbors].sort((a, b) => a - b)) {
       const other = faces[i]; if (!boundsOverlap(bb, other.bb)) continue;
+      if(it.owner.skinMount&&(other.owner.skinGeom||other.owner.kind==='plate'&&!other.owner.guard))continue;
       const d = other.pg.depth.map((v, j) => v - pg.depth[j]);
       if(pg.pts.every(p=>depthAt(d,p)<=1e-6))continue;
       const fullFront=other.pg.pts.every(p=>depthAt(d,p)>1e-6);
@@ -1071,7 +1085,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-sculpted-gates1',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-surface-mount2',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
@@ -1127,7 +1141,10 @@ function screw3d(api,startStage=loadResumeStage()) {
     st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     // Start big objects in fast mode so the first rendered frame does not lag.
     st.big = st.lvl.screws.length + st.lvl.els.length > 100;
-    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
+    let R = 0.5; for (const e of st.lvl.els) R = Math.max(R,
+      Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half),
+      e.skinFastGeom ? Math.hypot(...e.c) + Math.max(...e.skinFastGeom.half) : 0);
+    st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
     st.sorting = 0; st.sorts = 0; st.detours = 0;
     st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
@@ -1311,8 +1328,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     }
     s.state = 'out'; s.t = 0; sound('tap'); release(s.thru); release(s.into);
   }
-  function curAxis(s) { const E = s.thru; return E.hinge ? mv(axisRot(E.hinge.a, E.hinge.th), s.a) : s.a; }
-  function headPoint(s, V) { const E = s.thru; let p = s.p; if (E.hinge) p = add(E.hinge.p, mv(axisRot(E.hinge.a, E.hinge.th), sub(s.p, E.hinge.p))); return project(add(p, mul(curAxis(s), HEAD_H)), V); }
+  function headPoint(s, V) { const q=visibleScrewPose(s); return project(add(q.p,mul(q.a,DRAW_HEAD_H)),V); }
   start(st.L);
   return {
     get stage() { return st.L; },
@@ -1495,6 +1511,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const fwd = mv(tr(V), [0, 0, 1]);
       for (const E of st.lvl.els) {
         if (E.state === 'gone') continue;
+        if (E.visualMountOnly) continue;
         // Only prepare graphics for exposed cube faces; interior puzzle state
         // still exists for collision, screw order and scoring. When a neighbouring
         // cube falls, its previously hidden faces appear on the following frame.
@@ -1504,6 +1521,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (exposedFaces && !exposedFaces.some(Boolean)) continue;
         if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
+          if(E.visualOffset)sh.c=add(sh.c,E.visualOffset);
           // Outside fragments are one continuous sculpted surface, shared by
           // adjoining removable bricks. Newly uncovered interior faces retain
           // their precise physical shape after another brick falls away.
@@ -1534,27 +1552,34 @@ function screw3d(api,startStage=loadResumeStage()) {
       for (const s of st.lvl.screws) {   // 나사: 3D 머리(원기둥) + 십자 홈, 빠질 때는 돌며 솟아오르고 나삿대가 보여요
         if (s.state !== 'in' && s.state !== 'out') continue;
         const E = s.thru, rise = s.state === 'out' ? Math.min(1, s.t / 0.34) * 0.22 : 0, spin = s.state === 'out' ? s.t * 22 : 0;
-        let p = s.p, a = s.a; if (E.hinge) { const Q = axisRot(E.hinge.a, E.hinge.th); p = add(E.hinge.p, mv(Q, sub(s.p, E.hinge.p))); a = mv(Q, s.a); }
+        const {p,a}=visibleScrewPose(s);
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
-        const hc = add(p, mul(a, HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
-        const hcs = add(hc, mul(u0, sh)), before = items.length;
-        const covering = s.state === 'in' ? coverOf(hcs, s.thru) : [];
+        const hc = add(p, mul(a, DRAW_HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
+        const hcs = add(hc, mul(u0, sh));
+        const logical=screwPose(s);
+        const covering = s.state === 'in' ? coverOf(add(logical.p,mul(logical.a,HEAD_H)),s.thru) : [];
         if (covering.length) hiddenN++;
         if (covering.length && !(st.xrayOn && covering.every(o => o === st.xrayOn))) continue;   // 블럭 밑에 깔린 나사
         if (s.state === 'in' && !E.hinge && dot(a, fwd) < -0.15) continue;   // 뒤를 향한 나사
         if (covering.length) found.add(s);
+        if(s.skinMount&&s.state==='in'&&!s.guard&&!st.big){
+          const seat=add(p,mul(a,-.006));
+          solid(SOCKET_GEOM,frame(a,u0),seat,E.skinPlateColor||'#C9C5BE',1,s,0.025,items);
+        }
         if (st.big && s.state === 'in') {   // 조각이 많으면 나사 머리를 팔각형 하나로 (빠르게)
-          const ctr = add(hcs, mul(a, HEAD_H / 2)), w0 = mv(R, [1, 0, 0]), w1 = mv(R, [0, 0, 1]), pts = [];
-          for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * HEAD_R), mul(w1, Math.sin(an) * HEAD_R))), V)); }
+          const ctr = add(hcs, mul(a, DRAW_HEAD_H / 2)), w0 = mv(R, [1, 0, 0]), w1 = mv(R, [0, 0, 1]), pts = [];
+          for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * DRAW_HEAD_R), mul(w1, Math.sin(an) * DRAW_HEAD_R))), V)); }
           const col = COLORS[s.color], it2 = { z: project(ctr, V).z + 0.03, polys: [{ pts, depth: screenDepth(a, ctr, V, st.sc, st.zm, st.pan), fill: col, line: shade(col, -0.35) }], alpha: 1, owner: s, wv: [], planes: [], bb: bounds2(pts), hull: null };
-          if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * HEAD_R * 0.62), mul(w1, uz * HEAD_R * 0.62))), V));
+          if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * DRAW_HEAD_R * 0.62), mul(w1, uz * DRAW_HEAD_R * 0.62))), V));
           items.push(it2); const hp = project(ctr, V); if (dot(a, fwd) > 0.12) st.heads.set(s, hp); continue;
         }
+        const beforeHead=items.length;
         solid(HEAD_GEOM, R, hcs, COLORS[s.color], 1, s, 0.03, items);
-        const it = items[before], top = mv(mm(V, R), [0, 1, 0]);
-        if (top[2] > 0.05) { const e = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(hcs, mv(R, [ux * HEAD_R * 0.62, HEAD_H / 2 + 0.001, uz * HEAD_R * 0.62])), V)); it.cross = e; }
+        if(items.length===beforeHead)continue;
+        const it = items[items.length-1], top = mv(mm(V, R), [0, 1, 0]);
+        if (top[2] > 0.05) { const e = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(hcs, mv(R, [ux * DRAW_HEAD_R * 0.62, DRAW_HEAD_H / 2 + 0.001, uz * DRAW_HEAD_R * 0.62])), V)); it.cross = e; }
         if (rise > 0) it.shaft = [project(p, V), project(add(p, mul(a, rise)), V)];
-        const hp = project(add(hcs, mul(a, HEAD_H / 2)), V); if (s.state === 'in' && top[2] > 0.12) st.heads.set(s, hp); else if (s.state === 'out') st.heads.set(s, hp);
+        const hp = project(add(hcs, mul(a, DRAW_HEAD_H / 2)), V); if (s.state === 'in' && top[2] > 0.12) st.heads.set(s, hp); else if (s.state === 'out') st.heads.set(s, hp);
       }
       // 조각이 많으면(340개 넘으면 켜고 290개 아래면 꺼요: 오가며 깜빡이지 않게) 거리순으로 빠르게 그려요
       const activePieces = lv.els.reduce((n,e) => n + (e.state === 'on'), 0)
