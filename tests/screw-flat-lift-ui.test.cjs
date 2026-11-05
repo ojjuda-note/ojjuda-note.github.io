@@ -49,6 +49,33 @@ for(const stage of [4,26,220]){
  game.destroy();
 }
 
+// The hand cannot act as a storage slot when every other hole is occupied.
+// Vacant holes hidden by falling metal can become accessible after a lift.
+{
+ const game=Game.flat({setScore(){},end(){}},4),st=game.state;
+ const screw=st.level.screws.find(s=>Physics.canUnscrew(st.level,s));
+ const home=screw.hole,pins=st.level.plates[home.owner].pins.length;
+ const free=st.level.holes.filter(h=>h.screw===null);
+ const blocker=st.level.screws.find(s=>s!==screw&&s.hole);
+ assert.ok(free.length,'stage has spare holes to begin with');
+ for(const h of free)h.screw=blocker.id;
+ press(game,home);
+ assert.equal(st.moves,0,'no free hole means no move is spent');
+ assert.equal(st.selected,null,'no screw is held with all destinations occupied');
+ assert.equal(screw.hole,home,'the physical pin remains attached');
+ assert.equal(st.level.plates[home.owner].pins.length,pins,'the metal does not release');
+ assert.match(st.message,/옮길 빈 구멍이 없어요/);
+ game.onKey('ArrowRight');
+ assert.equal(st.focus,null,'keyboard navigation does not select an impossible pickup');
+ assert.doesNotThrow(()=>game.draw(canvas));
+ for(const h of free)h.screw=null;
+ assert.ok(free.some(h=>Physics.canSeatScrew(st.level,h,screw)));
+ press(game,home);
+ assert.equal(st.moves,1,'the screw may lift when a usable place is restored');
+ assert.equal(st.selected,screw.id);
+ game.destroy();
+}
+
 {
  const game=Game.flat({setScore(){},end(){}},4),st=game.state;
  const screw=st.level.screws.find(s=>Physics.canUnscrew(st.level,s)),home=screw.hole;
@@ -91,5 +118,19 @@ for(const stage of [4,26,220]){
  assert.equal(screw.hole,purchased);
  assert.equal(st.moves,1);
  game.destroy();
- console.log('PASS: lift-first interaction, physics release, collision re-seat, stage-26 zoom, occupied-screw guard, zero-move seat, Escape, retry, purchased hole while holding.');
+
+ paidHoles=0;
+ const stuck=Game.flat(wallet,4),state=stuck.state;
+ await new Promise(resolve=>setImmediate(resolve));
+ const waiting=state.level.screws.find(s=>Physics.canUnscrew(state.level,s));
+ const obstruction=state.level.screws.find(s=>s!==waiting&&s.hole);
+ for(const hole of state.level.holes)if(hole.screw===null)hole.screw=obstruction.id;
+ press(stuck,waiting.hole);
+ assert.equal(state.selected,null,'a full board prevents the original pickup');
+ press(stuck,{x:90,y:514});await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(state.extraHoles,1,'a purchased hole creates a real new destination');
+ press(stuck,waiting.hole);
+ assert.equal(state.selected,waiting.id,'the newly available slot permits the pickup');
+ stuck.destroy();
+ console.log('PASS: pickup requires another empty hole, releasing a pin consumes no phantom storage, zoom, Escape, retry, and purchased holes.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
