@@ -97,6 +97,28 @@
     if(dist<separation)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
+  // Keep the certified rigid-body polygon stable while giving selected pieces
+  // a gently rounded top face. The underlying metal rim still matches the
+  // collision body, and every mounting screw remains inside the top face.
+  function sculptMetal(vertices,stage,id,mounts=[]){
+    if(vertices.length<4||vertices.length>9)return vertices;
+    const variety=(stage*3+id*7)%11;
+    if(variety<5)return vertices;
+    const oval=variety>=9,rounded=variety>=7,amount=oval?.38:rounded?.28:.22;
+    const result=[];
+    for(let i=0;i<vertices.length;i++){
+      const v=vertices[i],prev=vertices[(i+vertices.length-1)%vertices.length],next=vertices[(i+1)%vertices.length];
+      const smooth=oval||(rounded?i%2===(id%2):i===(id%vertices.length));
+      if(!smooth){result.push(v);continue;}
+      const a={x:v.x+(prev.x-v.x)*amount,y:v.y+(prev.y-v.y)*amount};
+      const b={x:v.x+(next.x-v.x)*amount,y:v.y+(next.y-v.y)*amount};
+      for(let j=0;j<=5;j++){
+        const t=j/5,u=1-t;
+        result.push({x:u*u*a.x+2*u*t*v.x+t*t*b.x,y:u*u*a.y+2*u*t*v.y+t*t*b.y});
+      }
+    }
+    return M.Vertices.isConvex(result)&&mounts.every(m=>polygonDistance(result,m.x,m.y)<-.4)?result:vertices;
+  }
   const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃','별','나비','구름','초승달','로켓','십자'];
   const SHAPE_UNLOCKS=[80,140,220,320,450,650];
   function shapeIndex(L){const extra=SHAPE_UNLOCKS.filter(stage=>L>=stage).length;return extra?(L-SHAPE_UNLOCKS[extra-1]+6+extra)%(7+extra):(L-11+6)%7;}
@@ -1269,6 +1291,7 @@
           p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
+        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     }
     return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[6],screwRadius:SCREW_RADIUS,silhouette,plates,holes,screws,order:screws.map(s=>s.id)};
@@ -1309,6 +1332,7 @@
         const h={id:holes.length,x:q.x,y:q.y,owner:p.id,screw:screws.length};holes.push(h);p.holeIds.push(h.id);
         p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});screws.push({id:screws.length,hole:h,startHole:h.id});
       }
+      p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
     if(interlocked)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
@@ -1365,6 +1389,7 @@
           p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
+        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     });
     return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
