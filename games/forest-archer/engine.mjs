@@ -681,6 +681,23 @@ function arrangeAnimalTracking(template) {
 }
 export const STAGES = Object.freeze([...introductoryStages,...longRangeStages(introductoryStages)]
   .map(arrangeHiddenRange).map(arrangeAnimalTracking));
+// Record IDs belong to the released missions. Playable numbers follow the
+// actual target distances after hidden targets have been moved behind cover.
+const firstLessons = ['fixed-intro', 'elevated-fixed', 'wind-intro'];
+const lessonChapters = new Map(introductoryStages.map(stage => [stage.lessonKey, stage.chapterId]));
+function lessonPriority(stage) {
+  const lesson = stage.sourceLessonKey || stage.lessonKey;
+  const index = firstLessons.indexOf(lesson);
+  return index < 0 ? firstLessons.length + lessonChapters.get(lesson) : index;
+}
+export const DISTANCE_STAGES = Object.freeze([...STAGES].sort((a, b) =>
+  a.distance - b.distance || lessonPriority(a) - lessonPriority(b) ||
+  a.difficulty.score - b.difficulty.score || a.id - b.id
+).map((stage, index) => Object.freeze({...stage, recordId:stage.id, id:index + 1})));
+export const DISTANCE_GROUPS = Object.freeze([...new Set(DISTANCE_STAGES.map(stage => stage.distance))].map(distance => {
+  const stages = DISTANCE_STAGES.filter(stage => stage.distance === distance);
+  return Object.freeze({distance, first:stages[0].id, last:stages.at(-1).id});
+}));
 /** The first 120-mission catalog keeps its records after the teaching reorder. */
 export const CATALOG_V1_STAGE_MAP = Object.freeze(Object.fromEntries(introductoryStages.map(stage => [stage.catalogV1Id,stage.id])));
 /** Migration only: old saved records move to their corresponding expanded lesson. */
@@ -772,7 +789,7 @@ function hashUnit(value) {
 }
 // Reordering lessons must not reroll their walls or irregular motion. Events
 // and standalone range fixtures still use their own id when no catalog exists.
-const stageSeedId = stage => stage.catalogV1Id ?? stage.id;
+const stageSeedId = stage => stage.catalogV1Id ?? stage.recordId ?? stage.id;
 const targetTimeScale = stage => Number.isFinite(stage.targetSpeedScale) && stage.targetSpeedScale > 0 ? stage.targetSpeedScale : 1;
 /** Fresh round layout; rerolling an already-prepared stage never compounds offsets. */
 export function prepareStage(stage, seed = 0) {

@@ -141,7 +141,7 @@ test('archery completed rounds keep equipment purchases directly beneath the sta
     }
     const receipt={owner:'11111111-1111-4111-8111-111111111111',request_id:'22222222-2222-4222-8222-222222222222',game_coins:500};
     const before=g.progress.coins;assert.equal(g.creditExchangedCoins(receipt),true);assert.equal(g.creditExchangedCoins(receipt),true);
-    const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-single-v5'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
+    const saved=JSON.parse(w.localStorage.getItem('forest-archer-progress-distance-v5'));assert.equal(saved.coins,before+500);assert.equal(saved.coinExchangeReceipts.length,1);
   }finally{w.close();}
 });
 

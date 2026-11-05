@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLAYER, BOWS, ARROWS, STAGES, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, LONG_RANGE_DISTANCES, LONG_RANGE_LESSONS, prepareStage, targetAt, passersAt, createClayEvent, eventTargetsAt, launchArrow, stepArrow, getArrowMass, getArrowConsistency, getArrowDragRate, getWindResponse } from '../games/forest-archer/engine.mjs';
+import { PLAYER, BOWS, ARROWS, STAGES, DISTANCE_STAGES, DISTANCE_GROUPS, STAGE_GEAR_BANDS, MISSION_GROUPS, LEGACY_STAGE_MAP, CATALOG_V1_STAGE_MAP, LONG_RANGE_DISTANCES, LONG_RANGE_LESSONS, prepareStage, targetAt, passersAt, createClayEvent, eventTargetsAt, launchArrow, stepArrow, getArrowMass, getArrowConsistency, getArrowDragRate, getWindResponse } from '../games/forest-archer/engine.mjs';
 import { getAnimalGroundHeight } from '../games/forest-archer/animal-zones.mjs';
 
 const distances = [10, 20, 30, 50];
@@ -39,6 +39,36 @@ function visibleFace(stage, time = 0) {
   }
   return visible / disk.length;
 }
+
+test('all 220 playable stages follow actual distance and retain their original records and trajectories', () => {
+  assert.equal(DISTANCE_STAGES.length, STAGES.length);
+  assert.equal(new Set(DISTANCE_STAGES.map(stage => stage.recordId)).size, 220);
+  assert.deepEqual(DISTANCE_GROUPS.map(group => group.distance), [10,20,30,50,60,65,70,80,100,120,150]);
+  for (const [index, stage] of DISTANCE_STAGES.entries()) {
+    assert.equal(stage.id, index + 1);
+    assert.ok(!index || stage.distance >= DISTANCE_STAGES[index - 1].distance);
+    const original = STAGES[stage.recordId - 1];
+    assert.equal(stage.name, original.name);
+    assert.equal(stage.goal, original.goal);
+    const before = prepareStage(original, 42), after = prepareStage(stage, 42);
+    assert.deepEqual(after.obstacles, before.obstacles);
+    assert.deepEqual(targetAt(after, 1.75), targetAt(before, 1.75));
+    assert.deepEqual(passersAt(after, 1.75), passersAt(before, 1.75));
+  }
+  assert.deepEqual(DISTANCE_STAGES.slice(0, 3).map(stage => stage.lessonKey),
+    ['fixed-intro', 'elevated-fixed', 'wind-intro']);
+  // A beginner aiming straight at the centre, without compensating for drop,
+  // can pass the first three stationary 10m lessons with ordinary equipment.
+  for (const stage of DISTANCE_STAGES.slice(0, 3)) {
+    let score = 0;
+    for (const velocityBias of [-1,-.5,0,.5,1]) {
+      const pitch = Math.atan2(stage.height - PLAYER.y, stage.distance);
+      const shot = launchArrow({bow:BOWS[0], arrow:ARROWS[0], yaw:0, pitch, charge:1, velocityBias});
+      score += stepArrow(shot, 3, stage, 0).score || 0;
+    }
+    assert.ok(score >= stage.goal, `stage ${stage.id} scores ${score} of ${stage.goal}`);
+  }
+});
 
 test('the original 120 missions retain thirty skills with four increasing distances each', () => {
   assert.equal(originalStages.length, 120);
