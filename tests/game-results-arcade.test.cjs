@@ -3,6 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const test=require('node:test');
+const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const root=path.join(__dirname,'..'),world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const rounds=world.slice(world.indexOf('async function _2(){'),world.indexOf('function z2('));
 const stages=world.slice(world.indexOf('function canChooseBreakoutStage('),world.indexOf('function B2('));
@@ -182,7 +183,7 @@ test('all public game links use their existing entry functions and cannot select
 });
 function boxFixture(options={}){
  const storage=new Map(),events=[],w={},c=vm.createContext({window:w,console,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))}});
- vm.runInContext(fs.readFileSync(path.join(root,'screw3d.js'),'utf8').replace(/export \{[^}]*\};/,''),c);
+ vm.runInContext(bundleScrew3d(file=>fs.readFileSync(path.join(root,file),'utf8')),c);
  const api={setScore(){},end:(score,detail)=>events.push(['end',score,detail?.outcome]),stageClear:score=>events.push(['clear',score]),...options};
  const game=c.screw3d(api,1);return {game,st:w.__ojjScrew3d,events,storage};
 }
