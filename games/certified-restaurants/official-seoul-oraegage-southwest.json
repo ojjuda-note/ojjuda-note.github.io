@@ -1,0 +1,190 @@
+{
+  "updatedAt": "2026-11-05",
+  "sourceName": "서울특별시 오래가게 공식 지도·서울시 선정 발표",
+  "sourceUrl": "https://oraegage.co.kr/",
+  "completeRegionalCollection": false,
+  "operatingStatusChecked": false,
+  "restaurants": [
+    {
+      "id": "local-seoul-oraegage-gs-gonghang-kalguksu",
+      "name": "공항칼국수",
+      "category": "한식",
+      "region": "서울",
+      "district": "강서구",
+      "address": "서울 강서구 공항대로 18-1 지하 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2019)",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/1251442",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2019-09-03",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "해당 연도의 서울시 오래가게 선정 이력입니다. 정확한 도로명주소는 서울 오래가게 공식 지도·서울시 발표 대조. 현재 영업 여부나 다른 미식 가이드 선정은 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/1251442"
+    },
+    {
+      "id": "local-seoul-oraegage-gs-choiwolseon-kalguksu",
+      "name": "등촌동 최월선칼국수",
+      "category": "한식",
+      "region": "서울",
+      "district": "강서구",
+      "address": "서울 강서구 화곡로64길 68",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2019)",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/1250962",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2019-09-03",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "2019년 서울시 오래가게 선정 공식 본문에는 '등촌동 최월선칼국수'로 표기됩니다. 2019년 카드뉴스에는 '취월선'이라는 상이한 표기가 있어 기사 본문을 기준으로 기록했습니다. 현재 영업 여부와 지도 위치는 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/1251442"
+    },
+    {
+      "id": "local-seoul-oraegage-ydp-samwoo-chicken",
+      "name": "삼우치킨센터",
+      "category": "기타",
+      "region": "서울",
+      "district": "영등포구",
+      "address": "서울 영등포구 시흥대로 671",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "치킨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2019)",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/1250962",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2019-09-03",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "해당 연도의 서울시 오래가게 선정 이력입니다. 정확한 도로명주소는 서울 오래가게 공식 지도·서울시 발표 대조. 현재 영업 여부나 다른 미식 가이드 선정은 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/1251442"
+    },
+    {
+      "id": "local-seoul-oraegage-ydp-sangjin-cafe",
+      "name": "상진다방",
+      "category": "디저트",
+      "region": "서울",
+      "district": "영등포구",
+      "address": "서울 영등포구 도림로133길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2019)",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/1250962",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2019-09-03",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "해당 연도의 서울시 오래가게 선정 이력입니다. 정확한 도로명주소는 서울 오래가게 공식 지도·서울시 발표 대조. 현재 영업 여부나 다른 미식 가이드 선정은 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/1251442"
+    },
+    {
+      "id": "local-seoul-oraegage-dj-apple-house",
+      "name": "애플하우스",
+      "category": "분식",
+      "region": "서울",
+      "district": "동작구",
+      "address": "서울 동작구 동작대로27다길 29 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡볶이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2021)",
+          "year": 2021,
+          "yearType": "selection",
+          "sourceUrl": "https://oraegage.co.kr/",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2021-12-06",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "해당 연도의 서울시 오래가게 선정 이력입니다. 정확한 도로명주소는 서울 오래가게 공식 지도·서울시 발표 대조. 현재 영업 여부나 다른 미식 가이드 선정은 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://oraegage.co.kr/"
+    },
+    {
+      "id": "local-seoul-oraegage-dj-teobangnae",
+      "name": "터방내",
+      "category": "디저트",
+      "region": "서울",
+      "district": "동작구",
+      "address": "서울 동작구 흑석로 101-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2019)",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/1250962",
+          "sourceName": "서울특별시 오래가게 공식 발표·공식 지도",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2019-09-03",
+          "sourceDateType": "official-selection-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "해당 연도의 서울시 오래가게 선정 이력입니다. 정확한 도로명주소는 서울 오래가게 공식 지도·서울시 발표 대조. 현재 영업 여부나 다른 미식 가이드 선정은 별도로 확인하지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/1251442"
+    }
+  ],
+  "notes": [
+    "2019년 또는 2021년 지정 사실은 현재 영업 여부가 아닙니다.",
+    "공식 선정 자료의 음식업소만 포함하며 비음식점은 제외했습니다.",
+    "좌표는 상호·지점·도로명과 일치하는 공개 근거를 확보하지 않아 null을 유지했습니다.",
+    "원본 기사 문장과 사진을 복제하지 않고 기본 사실과 URL만 사용했습니다.",
+    "강서구 칼국숫집은 서울시 2019년 기사 본문 '최월선'과 동년 카드뉴스 '취월선' 표기 차이가 있어 본문 표기를 우선했습니다."
+  ]
+}

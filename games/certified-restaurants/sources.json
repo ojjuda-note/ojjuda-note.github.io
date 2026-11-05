@@ -1477,15 +1477,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3041,
+    "uniqueRestaurants": 3047,
     "providerCounts": {
       "blue-ribbon": 525,
       "michelin": 237,
-      "local-guide": 2312,
+      "local-guide": 2318,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2018,
+    "coordinatesMissing": 2024,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1495,7 +1495,7 @@
       "대구": 117,
       "대전": 105,
       "부산": 378,
-      "서울": 332,
+      "서울": 338,
       "세종": 100,
       "울산": 36,
       "인천": 316,
@@ -1506,13 +1506,13 @@
       "충북": 214
     },
     "categoryCounts": {
-      "한식": 1780,
+      "한식": 1782,
       "중식": 120,
       "일식": 129,
-      "기타": 572,
+      "기타": 573,
       "양식": 204,
-      "분식": 19,
-      "디저트": 217
+      "분식": 20,
+      "디저트": 219
     }
   },
   "coordinateEnrichment": {
@@ -9653,61 +9653,123 @@
       "coordinatePolicy": "추정 좌표 없음; 2곳 모두 null",
       "metadataRecountNote": "기본 카탈로그 3011곳 + 기존 울산 관광 보충 8곳 + 이번 서울 블루리본 이력 2곳, 유일 ID와 상호·주소 중복 없음",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-05-seoul-slot04-oraegage-southwest",
+      "checkedAt": "2026-11-05",
+      "previousCoverage": {
+        "uniqueRestaurants": 3041,
+        "providerCounts": {
+          "blue-ribbon": 525,
+          "michelin": 237,
+          "local-guide": 2312,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2018,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 332,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1780,
+          "중식": 120,
+          "일식": 129,
+          "기타": 572,
+          "양식": 204,
+          "분식": 19,
+          "디저트": 217
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3047,
+        "providerCounts": {
+          "blue-ribbon": 525,
+          "michelin": 237,
+          "local-guide": 2318,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2024,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 338,
+          "세종": 100,
+          "울산": 36,
+          "인천": 316,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "한식": 1782,
+          "중식": 120,
+          "일식": 129,
+          "기타": 573,
+          "양식": 204,
+          "분식": 20,
+          "디저트": 219
+        }
+      },
+      "newRestaurantCount": 6,
+      "newRestaurantIds": [
+        "local-seoul-oraegage-gs-gonghang-kalguksu",
+        "local-seoul-oraegage-gs-choiwolseon-kalguksu",
+        "local-seoul-oraegage-ydp-samwoo-chicken",
+        "local-seoul-oraegage-ydp-sangjin-cafe",
+        "local-seoul-oraegage-dj-apple-house",
+        "local-seoul-oraegage-dj-teobangnae"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "newCoordinateCount": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://mediahub.seoul.go.kr/archives/1250962",
+        "https://mediahub.seoul.go.kr/archives/1251442",
+        "https://oraegage.co.kr/",
+        "https://www.ytn.co.kr/_ln/0115_202112061715298202"
+      ],
+      "scope": "서울 강서·구로·금천·영등포·동작 4회차 부분 조사. 2019·2021 서울시 오래가게 공식 선정 이력 6곳 신규. 구로·금천 오래가게 선정 사례는 이번 확인 범위에서 비음식업.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-05-seoul-slot01-blue-ribbon-history",
+    "id": "2026-11-05-seoul-slot04-oraegage-southwest",
     "checkedAt": "2026-11-05",
-    "baseCommit": "a8ab6ac6b7a83387080e59990ee3cde526a45c55",
     "previousCoverage": {
-      "uniqueRestaurants": 3019,
-      "providerCounts": {
-        "blue-ribbon": 523,
-        "michelin": 237,
-        "local-guide": 2292,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 1996,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 310,
-        "세종": 100,
-        "울산": 36,
-        "인천": 316,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "한식": 1767,
-        "중식": 119,
-        "일식": 128,
-        "기타": 572,
-        "양식": 203,
-        "분식": 17,
-        "디저트": 213
-      }
-    },
-    "currentCoverage": {
-      "uniqueRestaurants": 3021,
+      "uniqueRestaurants": 3041,
       "providerCounts": {
         "blue-ribbon": 525,
         "michelin": 237,
-        "local-guide": 2292,
+        "local-guide": 2312,
         "post-office": 240
       },
       "coordinatesAvailable": 1023,
-      "coordinatesMissing": 1998,
+      "coordinatesMissing": 2018,
       "regionalCounts": {
         "강원": 44,
         "경기": 322,
@@ -9717,7 +9779,7 @@
         "대구": 117,
         "대전": 105,
         "부산": 378,
-        "서울": 312,
+        "서울": 332,
         "세종": 100,
         "울산": 36,
         "인천": 316,
@@ -9728,29 +9790,73 @@
         "충북": 214
       },
       "categoryCounts": {
-        "한식": 1768,
-        "중식": 119,
-        "일식": 128,
+        "한식": 1780,
+        "중식": 120,
+        "일식": 129,
         "기타": 572,
         "양식": 204,
-        "분식": 17,
-        "디저트": 213
+        "분식": 19,
+        "디저트": 217
       }
     },
-    "newRestaurantCount": 2,
+    "currentCoverage": {
+      "uniqueRestaurants": 3047,
+      "providerCounts": {
+        "blue-ribbon": 525,
+        "michelin": 237,
+        "local-guide": 2318,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2024,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 322,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 338,
+        "세종": 100,
+        "울산": 36,
+        "인천": 316,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "한식": 1782,
+        "중식": 120,
+        "일식": 129,
+        "기타": 573,
+        "양식": 204,
+        "분식": 20,
+        "디저트": 219
+      }
+    },
+    "newRestaurantCount": 6,
     "newRestaurantIds": [
-      "local-seoul-visitseoul-won-daegutang",
-      "local-seoul-visitseoul-jade-and-water-oksu"
+      "local-seoul-oraegage-gs-gonghang-kalguksu",
+      "local-seoul-oraegage-gs-choiwolseon-kalguksu",
+      "local-seoul-oraegage-ydp-samwoo-chicken",
+      "local-seoul-oraegage-ydp-sangjin-cafe",
+      "local-seoul-oraegage-dj-apple-house",
+      "local-seoul-oraegage-dj-teobangnae"
     ],
     "existingRestaurantsEnriched": 0,
+    "newCoordinateCount": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://korean.visitseoul.net/area/WonDaegutang/KOPnlp03j",
-      "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5"
+      "https://mediahub.seoul.go.kr/archives/1250962",
+      "https://mediahub.seoul.go.kr/archives/1251442",
+      "https://oraegage.co.kr/",
+      "https://www.ytn.co.kr/_ln/0115_202112061715298202"
     ],
-    "scope": "서울 01회차(종로·중·용산·성동·광진) 부분 조사, 블루리본 과거 선정 이력 두 업소(용산·성동) 공식 관광기관 소개에서 확인. 정규 리본 수 및 선정 연도 미확인.",
-    "coordinatePolicy": "추정 좌표 없음; 2곳 모두 null",
-    "metadataRecountNote": "기본 카탈로그 3011곳 + 기존 울산 관광 보충 8곳 + 이번 서울 블루리본 이력 2곳, 유일 ID와 상호·주소 중복 없음",
+    "scope": "서울 강서·구로·금천·영등포·동작 4회차 부분 조사. 2019·2021 서울시 오래가게 공식 선정 이력 6곳 신규. 구로·금천 오래가게 선정 사례는 이번 확인 범위에서 비음식업.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -9863,14 +9969,14 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2306,
+    "recordCount": 2318,
     "designationEvidenceCount": 2391,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
       {
         "region": "서울",
-        "uniqueRestaurants": 155,
+        "uniqueRestaurants": 167,
         "coordinatesAvailable": 12,
         "completeRegionalCollection": false
       },
@@ -10092,6 +10198,29 @@
       "coordinatesVerified": 0,
       "operatingStatusVerified": 0,
       "notes": "이번 구의 서울시 공식 지정 7개 중 영화장은 기존 식당에 선정 이력 추가. 다른 구 8개는 별도 조사 예정."
+    },
+    "municipalSelection2019Southwest": {
+      "checkedAt": "2026-11-05",
+      "supplementFile": "games/certified-restaurants/official-seoul-oraegage-southwest.json",
+      "recordCount": 6,
+      "selectionYears": [
+        2019,
+        2021
+      ],
+      "sources": [
+        "https://mediahub.seoul.go.kr/archives/1250962",
+        "https://mediahub.seoul.go.kr/archives/1251442",
+        "https://oraegage.co.kr/",
+        "https://www.ytn.co.kr/_ln/0115_202112061715298202"
+      ],
+      "regions": [
+        "서울특별시 강서구",
+        "서울특별시 영등포구",
+        "서울특별시 동작구"
+      ],
+      "basis": "서울시 2019·2021 오래가게 지정 이력 및 공식 사이트·서울시 발표의 점포명·도로명 주소 대조. 위경도와 현재 영업 여부는 미확인",
+      "completeRegionalCollection": false,
+      "allCoordinatesVerified": false
     }
   },
   "mapCoverageAuditHistory": [
