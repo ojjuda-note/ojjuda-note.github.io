@@ -12,7 +12,7 @@
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
-  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint}=Physics;
+  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
@@ -37,8 +37,8 @@
     oval(c,0,2,14,14,'#44505B32'); oval(c,0,0,13,13,'#6B798D'); oval(c,0,-1,11.5,11.5,color);
     c.beginPath(); c.arc(0,-1,9.5,Math.PI*1.06,Math.PI*1.88); c.strokeStyle='#FFFFFF92'; c.lineWidth=1.8; c.stroke();
     // All fasteners share the same slot: the artwork does not hint at an order.
-    c.rotate(rotation-.28); round(c,-11,-4,22,8,2); c.fillStyle='#D0DCE4'; c.fill();
-    line(c,[[-9,3],[9,3]],'#667B8C',.8); c.restore();
+    c.rotate(rotation-.28); round(c,-8,-1.7,16,3.4,1.1); c.fillStyle='#405363'; c.fill();
+    line(c,[[-7,1.8],[7,1.8]],'#DBE5EC',.65); c.restore();
   }
   function metalPath(c,p){c.beginPath();p.vertices.forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
   function drawPlate(c,p){
@@ -51,7 +51,7 @@
     c.save();metalPath(c,p);c.clip();c.strokeStyle='#FFFFFF2B';c.lineWidth=.7;
     for(let y=top+5;y<bottom;y+=6){c.beginPath();c.moveTo(-p.w,y);c.lineTo(p.w,y-7);c.stroke();}
     c.restore();
-    for(const v of p.mounts){const r=(p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
+    for(const v of p.mounts){const r=(p.shaftRadius||p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
     c.restore();
   }
   function flat(api,startStage=readResumeStage()) {
@@ -147,7 +147,7 @@
       if(movesLeft()===0){tell('이동을 모두 썼어요. 1 ZU로 3회 추가해요');return;}
       const hits=st.level.holes.filter(visibleHole).map(h=>{const q=screenPoint(h);return{h,d:Math.hypot(q.x-x,q.y-y)};}).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
-      if(!hit){if(hits.length)tell('앞의 철판이 가리고 있어요');return;}
+      if(!hit){if(hits.length)tell('앞의 나사나 철판이 홈을 가리고 있어요');return;}
       const h=hit.h;
       if(h.screw!==null) {
         st.selected=st.selected===h.screw?null:h.screw;st.focus=null;
@@ -239,7 +239,15 @@
       Pictures.draw(c,st.level.picture,32,BOARD.y+8,296,BOARD.h-16,st.complete);c.restore();
       if(!st.complete){
         for(const h of st.level.holes)if(h.owner!==null)drawHole(c,h,size);
-        for(const p of st.level.plates)if(p.state!=='gone')drawPlate(c,p);
+        // Draw every head at its actual depth, including partly covered heads.
+        // The foreground metal/heads paint over them naturally; no fake lock
+        // bars, hidden-head toggles or answer markings are used.
+        const heads=st.level.screws.filter(s=>s.hole.owner!==null&&st.pending?.screw!==s.id).map(s=>({s,depth:screwDepth(st.level,s.hole)}));
+        for(const {s,depth} of heads)if(depth<0)drawScrew(c,s.hole.x,s.hole.y,'#8995A1',0,size*.8);
+        for(const p of [...st.level.plates].filter(p=>p.state!=='gone').sort((a,b)=>a.z-b.z)){
+          drawPlate(c,p);
+          for(const {s,depth} of heads)if(depth===p.z)drawScrew(c,s.hole.x,s.hole.y,SCREW_COLOR,0,size);
+        }
       }
       c.restore();
       if(!st.complete){
@@ -247,10 +255,7 @@
           const q=screenPoint(h),scale=h.owner===null?1:size*st.view.zoom;
           c.save();if(h.owner!==null){round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();}
           if(h.owner===null)drawHole(c,q);
-          if(h.screw!==null&&st.pending?.screw!==h.screw){
-            const parked=!!st.level.route&&!st.level.plates.some(p=>p.pins.some(pin=>pin.hole===h.id));
-            drawScrew(c,q.x,q.y,parked?'#8995A1':SCREW_COLOR,0,scale*(parked?0.8:1));
-          }
+          if(h.owner===null&&h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR);
           const target=st.selected!==null&&h.screw===null,selected=h.screw!==null&&st.selected===h.screw;
           if(target||selected||st.focus===h.id) {
             c.beginPath();c.arc(q.x,q.y,(target?17+Math.sin(st.t*5)*1.5:18)*scale,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();

@@ -62,12 +62,12 @@ for(let stage=1;stage<=LAST_STAGE;stage++){
   assert.ok(st.level.silhouette.some(poly=>P.polygonDistance(poly,p.x,p.y)<0),'metal pieces fit the picture silhouette');
   assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=3,'plates are polygon pieces');
   if(stage>=11)cornerCounts.add(p.vertices.length);
-  for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-radius-1.9,'every screw fits inside its metal piece');
+  for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-(st.level.interlocked?radius*.499:radius+1.9),'every screw shaft fits inside its metal piece');
   assert.ok(Math.hypot(p.mounts[0].x-p.mounts[1].x,p.mounts[0].y-p.mounts[1].y)>=32*radius/P.SCREW_RADIUS,'smaller pieces retain separate screw heads');
  }
  for(let i=0;i<st.level.screws.length;i++)for(let j=i+1;j<st.level.screws.length;j++){
   const a=st.level.screws[i].hole,b=st.level.screws[j].hole;
-  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>radius*2,'neighbouring pieces do not overlap screw heads');
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>radius*(st.level.interlocked?.56:2),'neighbouring pieces never overlap screw shafts; wider heads can interlock');
  }
  assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
  invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);

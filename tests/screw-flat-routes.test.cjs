@@ -3,8 +3,8 @@ const fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js');
 const Game=require('../screw-flat.js');
 
-// Every starting screw remains reachable. Bad releases can jam in the actual
-// rigid-body layout without a hidden route flag or a visible answer marker.
+// Only a real foreground sheet/head may cover the screwdriver slot. Bad
+// releases can jam without a hidden route flag or a visible answer marker.
 const flatSource=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
 assert.doesNotMatch(flatSource,/fillText\s*\(\s*String\(p\.orderRank\)/);
 assert.doesNotMatch(flatSource,/철판 번호 순서대로/);
@@ -23,8 +23,9 @@ global.localStorage={
  removeItem:key=>storage.delete(key)
 };
 
-// The base budget permits the economical route, but does not enforce a secret
-// order: all panels start with selectable screws.
+// The base budget permits a known route, but never enforces it. A player may
+// use any exposed screw, including screws outside that reference route.
+let layeredStages=0;
 for(let stage=26;stage<=1000;stage++){
  const level=Physics.makeFlatLevel(stage),route=level.route;
  assert.ok(route,`stage ${stage} has a fixed base route`);
@@ -41,13 +42,38 @@ for(let stage=26;stage<=1000;stage++){
  }
  assert.equal(Game.moveLimit(level),route.length);
  assert.ok(level.plates.every(p=>!p.guards),'no keeper or order badge marks the solution');
- for(const screw of level.screws)assert.ok(Physics.canUnscrew(level,screw),`stage ${stage} lets players try any screw first`);
+ const accessible=level.screws.map(s=>Physics.canUnscrew(level,s));
+ assert.ok(accessible.some(Boolean),`stage ${stage} has an exposed starting screw`);
+ if(accessible.includes(false))layeredStages++;
+ const savedOrder=level.order,savedRoute=level.route;level.order=[];level.route=[];
+ assert.deepEqual(level.screws.map(s=>Physics.canUnscrew(level,s)),accessible,'reference solution never controls access');
+ level.order=savedOrder;level.route=savedRoute;
  assert.deepEqual(Physics.makeFlatLevel(stage).route,route,'stage is reproducible');
+}
+assert.ok(layeredStages>=950,'overlapping metal and fastener heads are a regular puzzle mechanic');
+
+// Two adjacent screw heads overlap at different depths. Relocating the front
+// fastener exposes the rear slot immediately, without advancing a route.
+{
+ const level={interlocked:true,screwRadius:13,holes:[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),plates:[],screws:[]};
+ for(let id=0;id<2;id++){
+  const p={id,z:id,x:150+id*15,y:220,angle:0,vertices:[{x:-5,y:-35},{x:5,y:-35},{x:5,y:35},{x:-5,y:35}],mounts:[{x:0,y:-20},{x:0,y:20}],pins:[],holeIds:[],state:'fixed'};
+  level.plates.push(p);
+  for(const [mount,v] of p.mounts.entries()){
+   const h={id:level.holes.length,x:p.x+v.x,y:p.y+v.y,owner:id,screw:level.screws.length};level.holes.push(h);p.holeIds.push(h.id);p.pins.push({hole:h.id,mount});level.screws.push({id:h.screw,hole:h,startHole:h.id});
+  }
+ }
+ const sim=Physics.createPhysics(level),rear=level.screws[0],front=level.screws[2];
+ assert.equal(Physics.canUnscrew(level,rear),false,'the front head covers the rear slot');
+ assert.equal(sim.move(rear,level.holes[0]),false);
+ assert.ok(sim.move(front,level.holes[0]));
+ assert.equal(Physics.canUnscrew(level,rear),true,'moving the covering head exposes the real slot');
+ assert.ok(sim.move(rear,level.holes[1]));sim.destroy();
 }
 
 // Physical playthroughs across every piece-count bracket, the narrow centre
 // wedge on stage 598, and the 100-screw final stage.
-for(const stage of [26,27,35,55,80,115,160,220,450,598,650,800,1000]){
+for(const stage of [12,13,14,15,16,17,18,19,20,21,22,23,24,26,27,35,55,80,115,160,220,450,598,650,800,1000]){
  const level=Physics.makeFlatLevel(stage),sim=Physics.createPhysics(level);
  for(const [i,step] of level.route.entries()){
   const screw=level.screws[step.screw],hole=level.holes[step.to];
@@ -75,7 +101,7 @@ for(const stage of [26,100,598,1000]){
  for(let i=0;i<90;i++)sim.step(.05);
  assert.equal(first.pins.length,1,`stage ${stage} still has its misplaced screw`);
  assert.notEqual(first.state,'gone',`stage ${stage} cannot let pinned metal fall`);
- for(const id of next.holeIds)assert.ok(Physics.canUnscrew(level,level.screws[level.holes[id].screw]),'other screws remain selectable when a plate is stuck');
+ assert.ok(level.screws.some(s=>s.hole.owner!==first.id&&s.hole.owner!==null&&Physics.canUnscrew(level,s)),'exposed screws remain selectable when a plate is stuck');
  assert.ok(sim.move(screw,level.holes[0]));
  for(let i=0;i<90;i++)sim.step(.05);
  assert.equal(first.state,'gone',`stage ${stage} finally releases when the screw is moved away`);
@@ -83,18 +109,18 @@ for(const stage of [26,100,598,1000]){
  sim.destroy();
 }
 
-// Releasing a top fragment before its supporting metal is removed must let
-// gravity and collisions produce the lock-up. Its vacated holes are trapped
-// under the fallen fragment, so only the spare third socket is available.
+// Releasing an exposed upper fragment is permitted. Gravity and real contact
+// with the lower hardware, not a sequence check, keep it from falling away.
 for(const stage of [26,35,55,1000]){
  const level=Physics.makeFlatLevel(stage),sim=Physics.createPhysics(level);
- const id=level.order.at(-1),p=level.plates[level.holes[level.screws[id].startHole].owner];
+ const p=level.plates.filter(p=>p.holeIds.every(h=>Physics.canUnscrew(level,level.screws[level.holes[h].screw]))).sort((a,b)=>a.y-b.y)[0];
+ assert.ok(p,'an exposed upper fragment can be tried out of order');
  const [a,b]=p.holeIds.map(h=>level.screws[level.holes[h].screw]);
  assert.ok(sim.move(a,level.holes[0]));
  assert.ok(sim.move(b,level.holes[1]));
  for(let i=0;i<100;i++)sim.step(.05);
  assert.notEqual(p.state,'gone',`stage ${stage} top fragment catches on lower hardware`);
- for(const h of p.holeIds)assert.ok(!Physics.canAccessHole(level,level.holes[h]),`stage ${stage} cannot park in a hole blocked by loose metal`);
+ assert.ok(sim.engine.pairs.list.some(pair=>pair.isActive&&[pair.bodyA.label,pair.bodyB.label].includes('metal-'+p.id)),`stage ${stage} has a real supporting collision`);
  assert.ok(Physics.canUnscrew(level,level.screws[level.order[0]]),'the next screw itself is still selectable');
  sim.destroy();
 }
@@ -121,8 +147,6 @@ async function itemRecovery(){
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(st.shopReady,true);
  const first=st.level.route[0];
- const covered=plateAt(st.level,1);
- for(const id of covered.holeIds)assert.ok(Physics.canUnscrew(st.level,st.level.screws[st.level.holes[id].screw]),'later screws are available from the outset');
  transfer(game,first.screw,2); // Bad parking decision uses the spare socket.
  transfer(game,first.screw,first.to); // Undo it, spending one extra transfer.
  for(const step of st.level.route.slice(1,-1))transfer(game,step.screw,step.to);
@@ -145,5 +169,5 @@ async function itemRecovery(){
  game.destroy();
 }
 
-itemRecovery().then(()=>console.log('PASS: 975 unrestricted starting layouts, 13 physical playthroughs, real collision dead ends, and item-assisted recovery.'))
+itemRecovery().then(()=>console.log('PASS: 975 geometric layouts, real layered-head access, 26 physical playthroughs, collision dead ends, and item-assisted recovery.'))
  .catch(error=>{console.error(error);process.exitCode=1;});

@@ -29,11 +29,41 @@
     const q=localPoint(p,x,y);
     return polygonDistance(p.vertices,q.x,q.y)<radius;
   }
+  function segmentDistance(a,b,c,d){
+    const ux=b.x-a.x,uy=b.y-a.y,vx=d.x-c.x,vy=d.y-c.y,det=ux*vy-uy*vx;
+    if(Math.abs(det)>1e-8){
+      const x=c.x-a.x,y=c.y-a.y,t=(x*vy-y*vx)/det,s=(x*uy-y*ux)/det;
+      if(t>=0&&t<=1&&s>=0&&s<=1)return 0;
+    }
+    const distance=(p,q,r)=>{const x=r.x-q.x,y=r.y-q.y,t=clamp(((p.x-q.x)*x+(p.y-q.y)*y)/(x*x+y*y||1),0,1);return Math.hypot(p.x-q.x-t*x,p.y-q.y-t*y);};
+    return Math.min(distance(a,c,d),distance(b,c,d),distance(c,a,b),distance(d,a,b));
+  }
+  function plateBlocksSlot(p,hole,radius){
+    const dx=Math.cos(-.28)*radius*.62,dy=Math.sin(-.28)*radius*.62;
+    const a=localPoint(p,hole.x-dx,hole.y-dy),b=localPoint(p,hole.x+dx,hole.y+dy),margin=radius*.13;
+    return polygonDistance(p.vertices,a.x,a.y)<margin||polygonDistance(p.vertices,b.x,b.y)<margin||
+      p.vertices.some((v,i)=>segmentDistance(a,b,v,p.vertices[(i+1)%p.vertices.length])<margin);
+  }
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
+  function screwDepth(level,hole){
+    return Math.max(-1,...level.plates.filter(p=>p.state!=='gone'&&p.pins.some(pin=>pin.hole===hole.id)).map(p=>p.z));
+  }
   function canAccessHole(level,hole){
-    const margin=level.route?0:12*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS;
-    return !level.plates.some(p=>p.state!=='gone'&&plateCovers(p,hole.x,hole.y,margin)&&
-      !p.pins.some(pin=>pin.hole===hole.id)&&alignedMount(p,hole)<0);
+    const radius=level.screwRadius||SCREW_RADIUS,depths=new Map();
+    if(level.interlocked)for(const p of level.plates)if(p.state!=='gone')for(const pin of p.pins)depths.set(pin.hole,Math.max(depths.get(pin.hole)??-1,p.z));
+    const depth=depths.get(hole.id)??-1;
+    // Check the actual tool opening, not a predetermined release sequence.
+    // A front sheet or screw head can cover it; moving either reveals it.
+    const occupied=hole.screw!==null,margin=level.interlocked?(occupied?radius*.13:0):level.route?0:12*radius/SCREW_RADIUS;
+    if(level.plates.some(p=>p.state!=='gone'&&(!level.interlocked||p.z>depth)&&(level.interlocked&&occupied?plateBlocksSlot(p,hole,radius):plateCovers(p,hole.x,hole.y,margin))&&
+      !p.pins.some(pin=>pin.hole===hole.id)&&alignedMount(p,hole)<0))return false;
+    if(!level.interlocked)return true;
+    const dx=Math.cos(-.28),dy=Math.sin(-.28),half=occupied?radius*.62:0;
+    return !level.screws.some(s=>{
+      if(s.id===hole.screw||(depths.get(s.hole.id)??-1)<=depth)return false;
+      const x=s.hole.x-hole.x,y=s.hole.y-hole.y,t=clamp(x*dx+y*dy,-half,half);
+      return Math.hypot(x-t*dx,y-t*dy)<radius+margin;
+    });
   }
   function bareHole(level,hole){return !level.plates.some(p=>plateCovers(p,hole.x,hole.y,15*(level.screwRadius||SCREW_RADIUS)/SCREW_RADIUS));}
   function canUnscrew(level,s){return s.hole.screw===s.id&&canAccessHole(level,s.hole);}
@@ -64,6 +94,9 @@
   const SHAPE_UNLOCKS=[80,140,220,320,450,650];
   function shapeIndex(L){const extra=SHAPE_UNLOCKS.filter(stage=>L>=stage).length;return extra?(L-SHAPE_UNLOCKS[extra-1]+6+extra)%(7+extra):(L-11+6)%7;}
   const FIRST_SHAPED_STAGE=11,PIECE_INCREASES=[20,35,55,80,115];
+  // These seeds replace narrow wedges that failed the full 975-stage rigid-
+  // body playthrough. They change the metal cuts, never the access rules.
+  const RETRIED_LAYOUTS=new Set([184,303,323,570,662,685,727,731,763,773,786,796,871,917,918,927,944,976]);
   const pieceCount=L=>L<FIRST_SHAPED_STAGE?1+Math.floor(L/2):L<160?7+PIECE_INCREASES.filter(n=>L>=n).length:13+Math.floor((L-160)*37/(LAST_STAGE-160));
   function flowerOutline(first=false){
     // A convex centre and five circular caps form one concave flower without overlapping bodies.
@@ -137,20 +170,21 @@
     }
     return result;
   }
-  function fitFragment(raw,radius=SCREW_RADIUS){
+  function fitFragment(raw,radius=SCREW_RADIUS,interlocked=false){
     if(raw.length<3||!M.Vertices.isConvex(raw))return null;
     const centre=M.Vertices.centre(raw),poly=raw.map(v=>({x:centre.x+(v.x-centre.x)*.982,y:centre.y+(v.y-centre.y)*.982}));
-    try{return{raw,poly,centre,mounts:mountPair(poly,radius+2,32*radius/SCREW_RADIUS),area:M.Vertices.area(raw)};}catch(_){return null;}
+    const inset=interlocked?radius*.5:radius+2;
+    try{return{raw,poly,centre,mounts:mountPair(poly,inset,32*radius/SCREW_RADIUS),area:M.Vertices.area(raw)};}catch(_){return null;}
   }
-  function splitFragment(fragment,random,radius){
+  function splitFragment(fragment,random,radius,interlocked=false){
     const xs=fragment.raw.map(p=>p.x),ys=fragment.raw.map(p=>p.y);
     const main=Math.max(...xs)-Math.min(...xs)>Math.max(...ys)-Math.min(...ys)?0:Math.PI/2;
     const angles=[main+(random()-.5)*.65,main+Math.PI/2+(random()-.5)*.65,main,main+Math.PI/2,Math.PI/4,-Math.PI/4];
     for(const angle of angles){
       const nx=Math.cos(angle),ny=Math.sin(angle),dots=fragment.raw.map(p=>p.x*nx+p.y*ny),min=Math.min(...dots),span=Math.max(...dots)-min;
       for(const fraction of [.5,.43,.57,.36,.64]){
-        const cut=min+span*fraction,a=fitFragment(clipPlane(fragment.raw,nx,ny,cut,true),radius);if(!a)continue;
-        const b=fitFragment(clipPlane(fragment.raw,nx,ny,cut,false),radius);if(!b)continue;
+        const cut=min+span*fraction,a=fitFragment(clipPlane(fragment.raw,nx,ny,cut,true),radius,interlocked);if(!a)continue;
+        const b=fitFragment(clipPlane(fragment.raw,nx,ny,cut,false),radius,interlocked);if(!b)continue;
         // Visit the side gravity can pull away from the shared cut first.
         fragment.children=ny>=0?[b,a]:[a,b];return fragment.children;
       }
@@ -244,12 +278,13 @@
   }
   function makeShapedLevel(L){
     if(L===25)return makeInterlockedFlower25(L);
+    const interlocked=L>=12;
     const count=pieceCount(L),shape=shapeIndex(L),outline=shapeOutline(shape,L===FIRST_SHAPED_STAGE);
     const area=outline.reduce((sum,poly)=>sum+M.Vertices.area(poly),0),density=shape>=7?Math.min(1,Math.sqrt(area/75000)):1;
     const radius=SCREW_RADIUS*density/(1+Math.max(0,count-18)*.04);let leaves,roots;
     for(let attempt=0;attempt<12;attempt++){
-      const random=seeded(9041+L*7919+attempt*104729);
-      roots=outline.map(raw=>fitFragment(raw,radius));if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
+      const random=seeded(9041+L*7919+(attempt+(L===976?2:RETRIED_LAYOUTS.has(L)?1:0))*104729);
+      roots=outline.map(raw=>fitFragment(raw,radius,interlocked));if(roots.some(p=>!p))throw Error('Invalid metal outline');leaves=[...roots];
       if(L===FIRST_SHAPED_STAGE){
         // Keep the first flower's centre small and its top mounts high enough to reopen as it falls.
         const centre=roots[4],halves=[false,true].map(low=>fitFragment(clipPlane(centre.raw,1,0,181,low)));
@@ -259,7 +294,7 @@
       while(leaves.length<count){
         const candidates=leaves.filter(p=>!p.unsplittable).sort((a,b)=>b.area-a.area);let changed=false;
         for(const p of candidates){
-          const children=splitFragment(p,random,radius);
+          const children=splitFragment(p,random,radius,interlocked);
           if(children){leaves.splice(leaves.indexOf(p),1,...children);changed=true;break;}p.unsplittable=true;
         }
         if(!changed)break;
@@ -270,7 +305,7 @@
     const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[];
     for(const f of leaves){
       const p={id:plates.length,z:plates.length,row:0,col:plates.length,releaseFrom:1,x:f.centre.x,y:f.centre.y,angle:0,
-        screwRadius:radius,vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
+        screwRadius:radius,shaftRadius:interlocked?radius*.28:radius,vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
       p.w=Math.max(...p.vertices.map(v=>v.x))-Math.min(...p.vertices.map(v=>v.x));p.h=Math.max(...p.vertices.map(v=>v.y))-Math.min(...p.vertices.map(v=>v.y));
       plates.push(p);f.id=p.id;
       for(const q of f.mounts){
@@ -279,26 +314,27 @@
       }
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
-    if(L>=26)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
+    if(interlocked)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
     if(L===598){
       // This narrow centre wedge is caught by the two flanking metal faces
       // if released before they are removed.
       const wedge=ordered.splice(ordered.findIndex(p=>p.id===24),1)[0];
       ordered.splice(Math.max(ordered.findIndex(p=>p.id===13),ordered.findIndex(p=>p.id===22))+1,0,wedge);
     }
-    const level={stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
-    if(L>=26){
-      // Every fastener is reachable at the start. Wrong releases must play
-      // out in the rigid-body simulation; the game never greys out or hides
-      // a screw merely because it belongs to a later piece in the route.
-      // The base budget is the minimum number of transfers: two to release
-      // a piece, and two to park those screws before starting the next one.
+    // A plate removed earlier sits in front at shared seams. A plate behind
+    // exposes its screw only after the overlapping neighbour drops away.
+    if(interlocked)ordered.forEach((p,index)=>{p.z=ordered.length-index;});
+    const level={stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,interlocked,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>(interlocked?p.holeIds.slice().sort((a,b)=>holes[b].y-holes[a].y):p.holeIds).map(h=>holes[h].screw))};
+    if(interlocked){
+      // This route is a reproducible test solution, never a gameplay gate.
+      // Other exposed screws can be moved, including bad parking choices.
+      // A conservative reference route uses the top sockets between pieces.
+      // Players may save moves by parking directly in exposed board holes.
       const route=[];let previous=null,held=null;
-      ordered.forEach((p,index)=>{
-        if(previous){route.push({screw:held[0],to:previous.holeIds[0]},{screw:held[1],to:previous.holeIds[1]});}
-        held=p.holeIds.map(id=>holes[id].screw);
-        route.push({screw:held[0],to:0},{screw:held[1],to:1});
-        previous=p;
+      ordered.forEach(p=>{
+        if(previous)route.push({screw:held[0],to:previous.holeIds[0]},{screw:held[1],to:previous.holeIds[1]});
+        held=p.holeIds.slice().sort((a,b)=>holes[b].y-holes[a].y).map(id=>holes[id].screw);
+        route.push({screw:held[0],to:0},{screw:held[1],to:1});previous=p;
       });
       level.route=route;
     }
@@ -352,7 +388,9 @@
       for(const s of level.screws){
         let body=screwBodies.get(s.id);
         if(!body){
-          body=M.Bodies.circle(s.hole.x,s.hole.y,radius,{label:'screw-'+s.id,isStatic:true,friction:.5,frictionStatic:.8,restitution:.02,slop:.025,collisionFilter:{category:1,mask:2}});
+          // A sheet catches the screw shaft. The wider heads overlap above
+          // the sheet and are separately used for visibility/tool access.
+          body=M.Bodies.circle(s.hole.x,s.hole.y,level.interlocked?radius*.28:radius,{label:'screw-'+s.id,isStatic:true,friction:.5,frictionStatic:.8,restitution:.02,slop:.025,collisionFilter:{category:1,mask:2}});
           screwBodies.set(s.id,body);M.Composite.add(engine.world,body);
         }
         M.Body.setPosition(body,{x:s.hole.x,y:s.hole.y});
@@ -416,7 +454,7 @@
     function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
     return{step,move,destroy,engine,bodies,screwBodies};
   }
-  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,worldPoint,alignedMount,polygonDistance};
+  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,screwDepth,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

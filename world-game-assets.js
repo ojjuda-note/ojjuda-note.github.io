@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261105-flat-neutral-fasteners1';
+ const revision='20261105-flat-interlocked-physics2';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -25,7 +25,7 @@
   stacker:'1.4.3',
   breakout:'1.5.3',
   spot:'1.10.5',
-  screw:'2.10.2',
+  screw:'2.11.0',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
@@ -56,7 +56,7 @@
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.css?v=20261102-breakout-round-choice1','/games/breakout-game.js?v=20261102-breakout-pickups2'],
-  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261105-flat-neutral-fasteners1'],
+  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261105-flat-interlocked-physics2'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();
