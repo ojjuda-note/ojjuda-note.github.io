@@ -2572,7 +2572,7 @@
       "slot": 11,
       "scheduledAtKST": "2026-11-06T05:00:00+09:00",
       "checkedAtKST": "2026-11-06",
-      "status": "partial_review_with_7_official_bucheon_additions_and_4_gimpo_selection_year_updates",
+      "status": "partial_review_with_10_official_bucheon_additions_and_4_gimpo_updates",
       "assignedRegions": [
         "경기도 부천시",
         "경기도 김포시"
@@ -2581,10 +2581,10 @@
         {
           "region": "경기도 부천시",
           "baseListedCount": 21,
-          "scope": "부천시 문화관광 2026년 하반기 공식 부천맛집 명단 중 신규 5곳 상호·도로명주소·지정 분류 확인. 관광 상세의 블루리본 선정 언급 2곳은 정규 등급/연도 미확인으로 별도 구분. 기본 21곳 좌표 미확인(전수 재검증 아님).",
-          "new": 7,
+          "scope": "부천시 문화관광 2026년 하반기 공식 부천맛집 명단 중 신규 5곳 상호·도로명주소·지정 분류 확인. 관광 상세의 블루리본 선정 언급 2곳은 정규 등급/연도 미확인으로 별도 구분. 기본 21곳 좌표 미확인(전수 재검증 아님). 이어점검 부천맛집 1곳·모범음식점 2곳 공식 상세의 상호·주소·지정유형 확인, 좌표는 미확인.",
+          "new": 10,
           "updated": 0,
-          "unknownLocations": 28,
+          "unknownLocations": 31,
           "notExhaustive": true
         },
         {
@@ -2603,13 +2603,13 @@
         "김포시 뉴스포털 2026-06-22 김포맛집 신규 4곳 발표",
         "김포시 문화관광 개별 업체 기존 등록 내역(성미옥·대관령곱창본가·설반에프앤씨·미호소바)"
       ],
-      "additions": 7,
+      "additions": 10,
       "modifications": 4,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 33,
-      "locationPendingScope": "부천 기존 21곳과 김포 기존 5곳, 신규 부천 7곳 합계 33곳이 좌표 미등록. 이번 회차에 개별 위치 근거를 확인한 대상은 신규 7곳, 기존 좌표 미등록 26곳은 전수 재확인 미완료.",
+      "locationPending": 36,
+      "locationPendingScope": "부천 기존 21곳과 김포 기존 5곳, 신규 부천 7곳 합계 33곳이 좌표 미등록. 이번 회차에 개별 위치 근거를 확인한 대상은 신규 7곳, 기존 좌표 미등록 26곳은 전수 재확인 미완료. 이어점검 신규 3곳 좌표 null, 총 재확인 대기 36곳.",
       "addedRestaurantIds": [
         "local-bucheon-citytour-slot11-gyeongin570",
         "local-bucheon-citytour-slot11-myeongga-salt",
@@ -2617,7 +2617,10 @@
         "local-bucheon-citytour-slot11-suu",
         "local-bucheon-citytour-slot11-seoan",
         "blue-bucheon-citytour-slot11-simga",
-        "blue-bucheon-citytour-slot11-bucheon-agui"
+        "blue-bucheon-citytour-slot11-bucheon-agui",
+        "local-bucheon-citytour-slot11-cont-ihakgalbi",
+        "local-bucheon-citytour-slot11-cont-songtan",
+        "local-bucheon-citytour-slot11-cont-chinamong"
       ],
       "updatedRestaurantIds": [
         "local-gg-bd95fb61f13d11",
@@ -2780,6 +2783,66 @@
           "recheckCycle": 2,
           "recheckSlot": 11,
           "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-cont-ihakgalbi",
+          "name": "이학갈비",
+          "address": "경기도 부천시 원미구 석천로110번길 6, 1~2층",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천시 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131966&boardtypeid=28516&menuid=172004002001002"
+          ],
+          "result": "부천시 관광의 업소명·현 게시 주소·공식 분류 확인. 상호·주소 일치 공개 위경도 근거 미확보로 좌표 null 유지.",
+          "reason": "일치하는 검증 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일지역 점검 시 공식 가이드/주소/공개 지도 좌표 재검증; 단순 미확인으로 목록 비노출/폐업 처리 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-cont-songtan",
+          "name": "송탄금이네부대찌개",
+          "address": "경기도 부천시 소사구 옥길로 121, 씨티프라자 2층 201호",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천시 소사구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131928&boardtypeid=28516&menuid=172004002001002"
+          ],
+          "result": "부천시 관광의 업소명·현 게시 주소·공식 분류 확인. 상호·주소 일치 공개 위경도 근거 미확보로 좌표 null 유지.",
+          "reason": "일치하는 검증 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일지역 점검 시 공식 가이드/주소/공개 지도 좌표 재검증; 단순 미확인으로 목록 비노출/폐업 처리 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-cont-chinamong",
+          "name": "차이나몽",
+          "address": "경기도 부천시 소사구 범안로 78, 현대홈타운2단지 상가동 2층 203~206호",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천시 소사구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131924&boardtypeid=28516&menuid=172004002001002"
+          ],
+          "result": "부천시 관광의 업소명·현 게시 주소·공식 분류 확인. 상호·주소 일치 공개 위경도 근거 미확보로 좌표 null 유지.",
+          "reason": "일치하는 검증 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일지역 점검 시 공식 가이드/주소/공개 지도 좌표 재검증; 단순 미확인으로 목록 비노출/폐업 처리 금지"
         }
       ],
       "unresolved": [
@@ -2794,7 +2857,8 @@
         "부천 기존 21곳·김포 기존 5곳 위치 미확인 개별 재조사",
         "김포 신규 지정 4곳 외 최신 선정 목록 확인",
         "부천시 관광 블루리본 2곳 정규 발행처 개별 등급·판본 직접 검증",
-        "부천·김포 상호 이전·휴폐업 개별 근거 수집"
+        "부천·김포 상호 이전·휴폐업 개별 근거 수집",
+        "이학갈비·송탄금이네부대찌개·차이나몽의 검증 가능한 상호/주소 일치 좌표 추가 확인"
       ],
       "nextSlot": 12,
       "nextRegions": [
@@ -2803,7 +2867,33 @@
         "경기도 의왕시",
         "경기도 과천시"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "checkedAtKST": "2026-11-06",
+          "type": "same_slot_continuation",
+          "regions": [
+            "경기도 부천시",
+            "경기도 김포시"
+          ],
+          "scope": "부천시 공식 관광 업소 3곳의 상호·도로명·주소·지정분류 확인, 김포시 신규 자료 재발굴 미실시. 전수조사 아님.",
+          "added": 3,
+          "modified": 0,
+          "locationCoordinatesAdded": 0,
+          "locationHidden": 0,
+          "locationPending": 36,
+          "evidenceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131966&boardtypeid=28516&menuid=172004002001002",
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131928&boardtypeid=28516&menuid=172004002001002",
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1131924&boardtypeid=28516&menuid=172004002001002"
+          ],
+          "findings": [
+            "이학갈비: 부천시 관광 '부천맛집' 공식 분류 및 현 게시 주소 확인.",
+            "송탄금이네부대찌개·차이나몽: 부천시 관광 '모범음식점' 공식 분류, 미식 가이드 등급 아님.",
+            "부천시 관광 명단의 2026년 하반기 표시는 업소별 지정 연도와 다름. 현재 영업/폐업 별도 확정 없음."
+          ]
+        }
+      ]
     }
   ],
   "notes": [
