@@ -27,10 +27,7 @@
   function plateCovers(p,x,y,radius=0){
     if(p.state==='gone')return false;
     const q=localPoint(p,x,y);
-    if(polygonDistance(p.vertices,q.x,q.y)<radius)return true;
-    // Metal keeper strips overlap the following piece's screw heads. A screw
-    // underneath a still-attached strip cannot be reached by the screwdriver.
-    return !!p.pins.length&&(p.guards||[]).some(g=>Math.hypot(q.x-g.x,q.y-g.y)<g.radius+radius);
+    return polygonDistance(p.vertices,q.x,q.y)<radius;
   }
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
   function canAccessHole(level,hole){
@@ -291,17 +288,11 @@
     }
     const level={stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[shape],screwRadius:radius,silhouette:roots.map(p=>p.raw),plates,holes,screws,order:ordered.flatMap(p=>p.holeIds.map(h=>holes[h].screw))};
     if(L>=26){
-      // A metal keeper attached to the preceding piece covers both fasteners
-      // on the next one. The actual geometry, not a secret answer index,
-      // decides whether the player can reach and unscrew a fastener.
-      for(let i=0;i<ordered.length-1;i++){
-        const p=ordered[i],next=ordered[i+1];
-        p.guards=next.holeIds.map(id=>({
-          x:holes[id].x-p.x,y:holes[id].y-p.y,radius:Math.max(2.4,radius*.78)
-        }));
-      }
-      // The base budget is the smallest number of real screw transfers: two
-      // to release each plate, two to park those screws before the next one.
+      // Every fastener is reachable at the start. Wrong releases must play
+      // out in the rigid-body simulation; the game never greys out or hides
+      // a screw merely because it belongs to a later piece in the route.
+      // The base budget is the minimum number of transfers: two to release
+      // a piece, and two to park those screws before starting the next one.
       const route=[];let previous=null,held=null;
       ordered.forEach((p,index)=>{
         if(previous){route.push({screw:held[0],to:previous.holeIds[0]},{screw:held[1],to:previous.holeIds[1]});}
@@ -376,7 +367,9 @@
     function refreshPins(p){
       const b=bodies.get(p.id);if(!b)return;
       for(const c of joints.get(p.id)||[])M.Composite.remove(engine.world,c);joints.set(p.id,[]);
-      const fixed=routed?p.pins.length>0:p.pins.length>=2;M.Body.setStatic(b,fixed);
+      // A remaining screw is a real pivot, including on advanced stages.
+      // The plate may swing into other metal instead of being frozen in place.
+      const fixed=p.pins.length>=2;M.Body.setStatic(b,fixed);
       p.state=p.pins.length>=2?'fixed':p.pins.length?'hinged':'loose';
       // Released plates collide with the remaining screws and fixed plates.
       // The contact can leave a badly released plate physically jammed.

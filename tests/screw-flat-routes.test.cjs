@@ -3,12 +3,14 @@ const fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js');
 const Game=require('../screw-flat.js');
 
-// A concealed metal keeper, not a visible sequence or a final-step gate,
-// prevents the screwdriver from reaching the next plate's covered fasteners.
+// Every starting screw remains reachable. Bad releases can jam in the actual
+// rigid-body layout without a hidden route flag or a visible answer marker.
 const flatSource=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
 assert.doesNotMatch(flatSource,/fillText\s*\(\s*String\(p\.orderRank\)/);
 assert.doesNotMatch(flatSource,/철판 번호 순서대로/);
 assert.doesNotMatch(flatSource,/routeGateBlocked|wrongRoute/);
+assert.doesNotMatch(flatSource,/drawKeeper\(/,'do not paint the answer onto blocked screws');
+assert.doesNotMatch(flatSource,/line\(c,\[\[0,-5\],\[0,5\]\]/,'a plus-shaped head must not disclose the first movable screws');
 const physicsSource=fs.readFileSync(require.resolve('../screw-flat-physics.js'),'utf8');
 assert.doesNotMatch(physicsSource,/routeGateBlocked|routeUnlocked|routeProgress/);
 assert.doesNotMatch(physicsSource,/orderRank/);
@@ -21,8 +23,8 @@ global.localStorage={
  removeItem:key=>storage.delete(key)
 };
 
-// The base budget permits the intended economical route, while actual keeper
-// geometry hides later screws until their covering metal piece is released.
+// The base budget permits the economical route, but does not enforce a secret
+// order: all panels start with selectable screws.
 for(let stage=26;stage<=1000;stage++){
  const level=Physics.makeFlatLevel(stage),route=level.route;
  assert.ok(route,`stage ${stage} has a fixed base route`);
@@ -38,10 +40,8 @@ for(let stage=26;stage<=1000;stage++){
   slots[from]=null;slots[step.to]=step.screw;positions[step.screw]=step.to;
  }
  assert.equal(Game.moveLimit(level),route.length);
- const first=plateAt(level,0),second=plateAt(level,1);
- assert.equal(first.guards.length,2);
- for(const id of first.holeIds)assert.ok(Physics.canUnscrew(level,level.screws[level.holes[id].screw]),`stage ${stage} exposes the first piece`);
- for(const id of second.holeIds)assert.ok(!Physics.canUnscrew(level,level.screws[level.holes[id].screw]),`stage ${stage} has a real metal cover over the next screw`);
+ assert.ok(level.plates.every(p=>!p.guards),'no keeper or order badge marks the solution');
+ for(const screw of level.screws)assert.ok(Physics.canUnscrew(level,screw),`stage ${stage} lets players try any screw first`);
  assert.deepEqual(Physics.makeFlatLevel(stage).route,route,'stage is reproducible');
 }
 
@@ -62,7 +62,7 @@ for(const stage of [26,27,35,55,80,115,160,220,450,598,650,800,1000]){
 }
 
 // A misplaced fastener really holds its metal plate, not a hidden sequence
-// flag. The covering keeper also continues to shield the following plate.
+// flag. Other screws remain available even while this piece is stuck.
 for(const stage of [26,100,598,1000]){
  const level=Physics.makeFlatLevel(stage),sim=Physics.createPhysics(level);
  const [firstId,secondId,nextId]=level.order;
@@ -75,11 +75,27 @@ for(const stage of [26,100,598,1000]){
  for(let i=0;i<90;i++)sim.step(.05);
  assert.equal(first.pins.length,1,`stage ${stage} still has its misplaced screw`);
  assert.notEqual(first.state,'gone',`stage ${stage} cannot let pinned metal fall`);
- for(const id of next.holeIds)assert.equal(Physics.canUnscrew(level,level.screws[level.holes[id].screw]),false,'the next fasteners remain physically covered');
+ for(const id of next.holeIds)assert.ok(Physics.canUnscrew(level,level.screws[level.holes[id].screw]),'other screws remain selectable when a plate is stuck');
  assert.ok(sim.move(screw,level.holes[0]));
  for(let i=0;i<90;i++)sim.step(.05);
  assert.equal(first.state,'gone',`stage ${stage} finally releases when the screw is moved away`);
  for(const id of next.holeIds)assert.ok(Physics.canUnscrew(level,level.screws[level.holes[id].screw]));
+ sim.destroy();
+}
+
+// Releasing a top fragment before its supporting metal is removed must let
+// gravity and collisions produce the lock-up. Its vacated holes are trapped
+// under the fallen fragment, so only the spare third socket is available.
+for(const stage of [26,35,55,1000]){
+ const level=Physics.makeFlatLevel(stage),sim=Physics.createPhysics(level);
+ const id=level.order.at(-1),p=level.plates[level.holes[level.screws[id].startHole].owner];
+ const [a,b]=p.holeIds.map(h=>level.screws[level.holes[h].screw]);
+ assert.ok(sim.move(a,level.holes[0]));
+ assert.ok(sim.move(b,level.holes[1]));
+ for(let i=0;i<100;i++)sim.step(.05);
+ assert.notEqual(p.state,'gone',`stage ${stage} top fragment catches on lower hardware`);
+ for(const h of p.holeIds)assert.ok(!Physics.canAccessHole(level,level.holes[h]),`stage ${stage} cannot park in a hole blocked by loose metal`);
+ assert.ok(Physics.canUnscrew(level,level.screws[level.order[0]]),'the next screw itself is still selectable');
  sim.destroy();
 }
 
@@ -106,7 +122,7 @@ async function itemRecovery(){
  assert.equal(st.shopReady,true);
  const first=st.level.route[0];
  const covered=plateAt(st.level,1);
- for(const id of covered.holeIds)assert.equal(Physics.canUnscrew(st.level,st.level.screws[st.level.holes[id].screw]),false,'the next screw is physically covered');
+ for(const id of covered.holeIds)assert.ok(Physics.canUnscrew(st.level,st.level.screws[st.level.holes[id].screw]),'later screws are available from the outset');
  transfer(game,first.screw,2); // Bad parking decision uses the spare socket.
  transfer(game,first.screw,first.to); // Undo it, spending one extra transfer.
  for(const step of st.level.route.slice(1,-1))transfer(game,step.screw,step.to);
@@ -129,5 +145,5 @@ async function itemRecovery(){
  game.destroy();
 }
 
-itemRecovery().then(()=>console.log('PASS: 975 metal-covered routes, 13 physical playthroughs, no artificial finish latch, and item-assisted recovery.'))
+itemRecovery().then(()=>console.log('PASS: 975 unrestricted starting layouts, 13 physical playthroughs, real collision dead ends, and item-assisted recovery.'))
  .catch(error=>{console.error(error);process.exitCode=1;});
