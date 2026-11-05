@@ -25,7 +25,7 @@ const records = [
   { ...common, id: 'ended', title: '지난 축제', category: 'local', start: '2026-10-01', end: '2026-10-03' }
 ];
 
-async function fixture(t, { query = '', saved = [] } = {}) {
+async function fixture(t, { query = '', saved = [], embedded = false } = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   virtualConsole.on('warn', (...messages) => errors.push(messages.join(' ')));
@@ -33,6 +33,7 @@ async function fixture(t, { query = '', saved = [] } = {}) {
     url: `https://fixture.test/games/festival-schedule/index.html${query}`,
     runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole
   });
+  if (embedded) dom.reconfigure({ windowTop: {} });
   const { window } = dom;
   t.after(() => { window.close(); assert.deepEqual(errors, [], 'no runtime errors or failed data loads'); });
   const NativeDate = window.Date;
@@ -176,4 +177,15 @@ test('festival, sports and performance top-level chips filter events and retain 
   assert.equal(f.query().get('category'), 'sports');
   f.click('[data-category="all"]');
   assert.deepEqual(f.ids(), ['confirmed','undated-campus','undated-film']);
+});
+
+
+test('embedded event details keep the arcade as the previous history entry', async t => {
+  for (const embedded of [true, false]) {
+    const f = await fixture(t, { embedded });
+    const before = f.window.history.length;
+    f.click('[data-open-event="confirmed"]');
+    assert.equal(f.query().get('event'), 'confirmed');
+    assert.equal(f.window.history.length, before + (embedded ? 0 : 1));
+  }
 });

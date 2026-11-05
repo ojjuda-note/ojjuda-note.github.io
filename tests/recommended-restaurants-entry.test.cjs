@@ -41,15 +41,13 @@ function fixture(query='') {
   normal.setUser(A);normal.api.open('restaurants');const frame=normal.$('.restaurant-guide-dialog iframe');
   assert.ok(frame,'the certified directory is the parent view');assert.equal(normal.api.catalog().recommendations,undefined,'recommendations have no standalone arcade tile');
    assert.equal(new URL(frame.src).searchParams.get('member-menu'),'1');assert.equal(new URL(frame.src).searchParams.get('member-ratings'),'1','members receive the rating controls');assert.equal(normal.$('[data-rr=dialog]'),null);assert.equal(normal.calls.length,0);
-  frame.contentWindow.fixtureFilters={region:'서울',category:'한식',query:'국수',scroll:180};const retainedFilters=frame.contentWindow.fixtureFilters;
   normal.send(frame,{origin:'https://other.invalid'});normal.send(frame,{source:normal.w});normal.send(frame,{type:'unrecognized-menu'});
   assert.equal(normal.$('[data-rr=dialog]'),null,'foreign origin, wrong frame and wrong message cannot open the member view');assert.equal(normal.calls.length,0);
   normal.send(frame);await normal.memberReady();assert.equal(normal.calls[0].owner,A);assert.equal(normal.created[0].options.getUser().id,A);
-  assert.equal(normal.$('[data-rr=close]').textContent,'← 인증맛집');await normal.api.setupNavigation(()=>{});
-  assert.equal(normal.navigation().closeOverlay(),true);assert.equal(normal.$('[data-rr=dialog]'),null,'Back first closes only the recommendation child');
-  assert.equal(normal.$('.restaurant-guide-dialog iframe'),frame);assert.equal(frame.contentWindow.fixtureFilters,retainedFilters,'returning never reloads the directory browsing context');
-  assert.equal(normal.w.document.body.classList.contains('gaming'),true);assert.equal(normal.navigation().closeOverlay(),true);
-  assert.equal(normal.$('.restaurant-guide-dialog'),null,'a second Back returns to the arcade');assert.equal(normal.w.document.body.classList.contains('gaming'),false);
+  assert.equal(normal.$('[data-rr=close]').textContent,'← 오락실');await normal.api.setupNavigation(()=>{});
+  assert.equal(normal.navigation().closeOverlay(),true);
+  assert.equal(normal.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'one Back leaves both layers for the arcade');
+  assert.equal(normal.w.document.body.classList.contains('gaming'),false);
  }finally{normal.close();}
  for(const query of ['?game=recommendations','?game=restaurants&restaurantView=recommendations']){
   const guest=fixture(query);try{
@@ -98,5 +96,5 @@ function fixture(query='') {
   race.setUser(A);race.api.open('recommendations');assert.equal(race.$('.restaurant-guide-dialog'),null);race.setUser(B);ready=true;release();await tick();await tick();
   assert.equal(race.$('.restaurant-guide-dialog'),null,'assets requested by an old account cannot open a nested view');race.api.open('recommendations');await race.memberReady();assert.equal(race.calls.at(-1).owner,B);
  }finally{race.close();}
-  console.log('PASS: real nested restaurant bridge, member-only rating controls and registration, anonymous UUID and forged-message rejection, membership transitions, origin/frame guards, preserved directory context, one dirty-close confirmation, two-step Back, guest/canonical/legacy entry, account replacement and stale asset isolation');
+  console.log('PASS: real nested restaurant bridge, member-only rating controls and registration, anonymous UUID and forged-message rejection, membership transitions, origin/frame guards, directory cleanup, protected drafts and single Back to Arcade, guest/canonical/legacy entry, account replacement and stale asset isolation');
 })().catch(error=>{console.error(error);process.exitCode=1;});

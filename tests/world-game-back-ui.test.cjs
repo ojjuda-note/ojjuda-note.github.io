@@ -13,17 +13,19 @@ let world = read('world.html')
   .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
 const scripts = ['game-session.js', 'world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
   'world-tour-game.js', 'world-restaurant-guide.js', 'recommended-restaurants.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
-  'photo-ttang-bridge.js', 'matgo-bridge.js'].map(read).join('\n');
+  'photo-ttang-bridge.js', 'matgo-bridge.js', 'world-festival-schedule.js', 'world-archery-game.js',
+  'world-sacheonseong-game.js', 'world-bang-game.js', 'world-poker-game.js', 'world-roulette-game.js', 'screw-loader.js'].map(read).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
-window.backFixture={open:Al,render:H,state:g,actions:sr,allowExit:true,exits:0,exitRequests:0,
+window.backFixture={initVersion:j1,open:Al,link:openWorldGameLink,render:H,state:g,actions:sr,allowExit:true,exits:0,exitRequests:0,
   billiards:()=>ep('carom4','local'),nativeBack:()=>window.nativeBack({canGoBack:false})};
-window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
+window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture',age:25}),getClient:()=>S,visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
 window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
-D.online=false;D.isAdmin=false;S={};g.tab='arcade';
+D.online=false;D.isAdmin=false;const settled=async()=>({data:{ok:true,room:null},error:null});S={functions:{invoke:settled},rpc:settled};g.tab='arcade';
 gm(()=>sr.tab({tab:'arcade'}));H();
+if(new URL(location.href).searchParams.get('game')==='byeolcheonji')backFixture.link('byeolcheonji');
 ` + world.slice(world.indexOf('</script>', boot));
 
 const child = `<!doctype html><p>Game transport fixture</p><script>
@@ -47,7 +49,7 @@ window.childReady=true;
 </script>`;
 
 (async () => {
-  const browser = await chromium.launch({ headless:true, args:['--no-sandbox','--disable-dev-shm-usage'] });
+  const browser = await chromium.launch({ headless:true, executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined, args:['--no-sandbox','--disable-dev-shm-usage'] });
   try {
     for (const native of [false, true]) {
       const context = await browser.newContext({viewport:{width:390,height:844}});
@@ -62,6 +64,8 @@ window.childReady=true;
         if (url.origin !== origin) return route.abort();
         if (url.pathname === '/world.html') return route.fulfill({contentType:'text/html',body:world});
         if (url.pathname.startsWith('/games/')) return route.fulfill({contentType:'text/html',body:child});
+        if (url.pathname === '/star') return route.fulfill({contentType:'text/html',body:read('star/index.html')});
+        if (url.pathname === '/byeolcheonji/') return route.fulfill({contentType:'text/html',body:'<h1>별천지 빈방</h1>'});
         if (url.pathname === '/outside.html') return route.fulfill({contentType:'text/html',body:'<h1>Previous page</h1>'});
         return route.abort();
       });
@@ -83,7 +87,10 @@ window.childReady=true;
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
       const games = [
-        ['restaurants','.restaurant-guide-dialog'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
+        ['restaurants','.restaurant-guide-dialog'],['festival','.festival-schedule-dialog'],['archery','.archery-game-dialog'],
+        ['sacheonseong','.sacheonseong-game-dialog'],['bang','.bang-game-dialog'],['poker','.poker-game-dialog'],['roulette','.roulette-game-dialog'],
+        ['janggi','#bd-menu'],['chess','#bd-menu'],['carom4','#bd-menu'],['carom3','#bd-menu'],['pool8','#bd-menu'],
+        ['screw','#gov'],['mole','#gov'],['runner','#gov'],['breakout','#gov'],['stacker','#gov'],['mines','.tour-game-dialog'],['saetbyeol','.tour-game-dialog'],
         ['tour','.tour-game-dialog'],['tank','.tank-game-dialog'],['spot','.spot-game-dialog'],
         ['ttang','#ttang-overlay'],['photo_ttang','#photo-ttang-overlay'],['matgo','#matgo-overlay'],['billiards','[data-bl="close"]']
       ];
@@ -92,6 +99,9 @@ window.childReady=true;
           if (game === 'matgo') await openMatgo();
           else if (game === 'photo_ttang') await OjjudaPhotoTtangBridge.open({owner:'fixture'});
           else if (game === 'billiards') backFixture.billiards();
+          else if (game === 'poker') await OjjudaPokerGame.open({owner:'fixture',authorized:()=>true});
+          else if (game === 'roulette') await OjjudaRouletteBridge.open({owner:'fixture',client:OjjudaMatgoAccess.getClient(),authorized:()=>true});
+          else if (['janggi','chess','carom4','carom3','pool8'].includes(game)) await backFixture.link(game);
           else backFixture.open(game);
         }, game);
         await page.locator(selector).first().waitFor();
@@ -101,21 +111,38 @@ window.childReady=true;
         await main();
       }
 
-      // A legacy member link opens a child of the directory; each Back removes
-      // one view, keeping the directory frame alive between the two actions.
-      await page.evaluate(() => backFixture.open('recommendations'));
-      await page.locator('.restaurant-guide-dialog').waitFor();
-      await page.locator('.recommended-restaurants-dialog').waitFor();
-      await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
-      await page.evaluate(() => { backFixture.restaurantFrame=document.querySelector('.restaurant-guide-dialog iframe'); });
-      assert.equal(await page.locator('[data-rr=close]').innerText(),'← 인증맛집');
-      await back();
-      await page.waitForFunction(() => !document.querySelector('.recommended-restaurants-dialog') && history.state?.ojjudaWorld === 'menu');
-      assert.equal(await page.locator('.restaurant-guide-dialog').isVisible(),true,'Back from member recommendations returns to the certified directory');
-      assert.equal(await page.evaluate(() => document.querySelector('.restaurant-guide-dialog iframe')===backFixture.restaurantFrame),true,'returning preserves the original directory frame');
-      assert.equal(await page.evaluate(() => document.body.classList.contains('gaming')),true,'the parent retains its overlay state');
-      await back();
-      await main();
+      // Both public directories have a visible return and support the same browser/native Back.
+      for(const game of ['festival','restaurants']){
+        await page.evaluate(game=>backFixture.open(game),game);
+        await page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();
+        await main();
+        await page.evaluate(game=>backFixture.open(game),game);
+        await page.locator('.agit-home-link').click();
+        await main();
+      }
+      for(const action of ['back','button']){
+        await page.evaluate(()=>backFixture.open('recommendations'));
+        await page.locator('.recommended-restaurants-dialog').waitFor();
+        await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
+        if(action==='back')await back();
+        else await page.locator('[data-rr=close]').click();
+        await main();
+      }
+
+      // The return target of a shared game URL must stay on the arcade after refresh.
+      await page.evaluate(()=>{
+        history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
+        backFixture.initVersion(()=>{});
+        backFixture.open('stacker');
+      });
+      await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
+      assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
+      assert.equal(new URL(page.url()).searchParams.has('v'),false);
+      await back();await main();
+      const returned=new URL(page.url());
+      assert.equal(returned.searchParams.get('tab'),'arcade');
+      assert.equal(returned.searchParams.get('keep'),'yes');
+      for(const key of ['game','challenge','score'])assert.equal(returned.searchParams.has(key),false);
 
       // A browser confirmation must retain both the running game and its return entry.
       await page.evaluate(() => backFixture.open('stacker'));
@@ -161,8 +188,13 @@ window.childReady=true;
         await page.evaluate(() => backFixture.nativeBack());
         assert.equal(await page.evaluate(() => backFixture.exits), 1, 'only Back from the main screen may exit');
       }
+      const vacancy=await context.newPage();
+      await vacancy.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
+      await vacancy.waitForURL(origin+'/byeolcheonji/');
+      await vacancy.goBack();await vacancy.locator('.arcade-home').waitFor();
+      assert.equal(new URL(vacancy.url()).searchParams.get('game'),null,'a direct vacancy link cannot reopen itself on Back');
       await context.close();
-      console.log(`PASS: ${native?'native':'browser'} Back closes one nested restaurant view at a time, returns game bridges to Arcade, retains cancelled exits, respects Matgo confirmation and consumes stale history.`);
+      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Arcade, retains cancelled exits, respects Matgo confirmation and consumes stale history.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });
