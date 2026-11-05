@@ -1876,6 +1876,7 @@ function drawScrew(c, x, y, color, rot, scale) {
 }
 function drawBoxes(c, st) {
   const nb = st.boxes.length, buy = nb < BOX_MAX, L = boxLay(nb, buy), sc = Math.min(0.92, L.sp / 42 * 0.95), hr = Math.min(14.5, L.sp * 0.36);
+  c.save();c.beginPath();c.rect(0,BOX_Y-2,W,BOX_H+4);c.clip();
   st.boxes.forEach((b, i) => {
     const x = L.x(i), y = BOX_Y + (b && b.close ? -ease(b.close) * 26 : 0), a = b && b.close ? 1 - b.close : 1;
     c.save(); c.globalAlpha = a; rr(c, x, y, L.w, BOX_H, 16); c.fillStyle = b ? shade(COLORS[b.c], 0.78) : '#EADFD3'; c.fill();
@@ -1887,6 +1888,7 @@ function drawBoxes(c, st) {
   });
   if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = '#FFF0F1'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#EDBDC4'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3 ZU)
     c.fillStyle = '#A72E40'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#A72E40' : '#93646D'; c.fillText('3 ZU', bx + BUY_W / 2, BOX_Y + 54); }
+  c.restore();
 }
 function drawBuffer(c, st) {
   const n = st.buf.length, buy = n < BUF_MAX, L = bufLay(n, buy), sc = Math.min(0.92, L.sp / 58 * 1.05), hr = Math.min(15.5, L.sp * 0.3);

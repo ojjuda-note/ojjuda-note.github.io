@@ -45,6 +45,13 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
       };
       window.screwTest = {
         boot, fixture, tap,
+        boxHUD() {
+          boot(20);game.draw(ctx);game.draw(ctx);
+          const before=ctx.getImageData(0,0,360,50).data;
+          state.boxes[0].close=.65;game.draw(ctx);
+          const after=ctx.getImageData(0,0,360,50).data;
+          return before.every((v,i)=>v===after[i]);
+        },
         depthPixels(software=false) {
           const surface=document.createElement('canvas');surface.width=360;surface.height=540;
           const c=surface.getContext('2d'),original=HTMLCanvasElement.prototype.getContext;
@@ -170,6 +177,7 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     for(const software of [false,true])assert.deepEqual(await page.evaluate(mode=>screwTest.depthPixels(mode),software),
       {first:[255,0,0,255],reversed:[255,0,0,255],left:[0,0,255,255],right:[255,0,0,255],hud:[0,0,0,0]},
       'GPU and software use per-pixel depth, independent of painter order, without painting over the HUD');
+    assert.equal(await page.evaluate(()=>screwTest.boxHUD()),true,'closing boxes cannot move across the title or progress HUD');
     for (const big of [false, true]) {
       await page.evaluate(big => screwTest.fixture(big), big);
       let result = await page.evaluate(() => screwTest.covered());
