@@ -1,0 +1,413 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "인천관광공사 인천투어 공식 관광정보(한국관광공사 제공)",
+  "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/list.do?pageNm=food",
+  "completeRegionalCollection": false,
+  "selectionStatus": "관광 소개이며 지자체 공식 심사나 블루리본·미쉐린 선정 등급이 아님",
+  "coordinatePolicy": "좌표 미확인, 추정 좌표 사용 금지",
+  "restaurants": [
+    {
+      "id": "local-incheon-itour-apd21112609191801020",
+      "name": "신포순대",
+      "category": "분식",
+      "region": "인천",
+      "district": "제물포구",
+      "address": "인천광역시 제물포구 제물량로166번길 33",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "스모크순대곱창볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-29",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 소개에 2019년 백년가게 선정 이력이 언급됩니다. 현재 영업 여부와 새 선정·등급은 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609165908467",
+      "name": "삼미소문난냉면",
+      "category": "한식",
+      "region": "인천",
+      "district": "제물포구",
+      "address": "인천광역시 제물포구 화평로 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-19",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 정규 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467"
+    },
+    {
+      "id": "local-incheon-itour-apd21120810001294388",
+      "name": "신성루",
+      "category": "중식",
+      "region": "인천",
+      "district": "제물포구",
+      "address": "인천광역시 제물포구 우현로 19-14 (신생동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "멘보샤"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-12-08",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-19",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609143808184",
+      "name": "해송쌈밥",
+      "category": "한식",
+      "region": "인천",
+      "district": "영종구",
+      "address": "인천광역시 영종구 공항서로 177",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우렁쌈밥정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-21",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184"
+    },
+    {
+      "id": "local-incheon-itour-apd21121010002505353",
+      "name": "고목정쌈밥",
+      "category": "한식",
+      "region": "인천",
+      "district": "영종구",
+      "address": "인천광역시 영종구 용유서로172번길 10 (을왕동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "제육쌈밥정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-12-10",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-21",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353"
+    },
+    {
+      "id": "local-incheon-itour-apd21120810001398379",
+      "name": "얼레꼴레만두",
+      "category": "분식",
+      "region": "인천",
+      "district": "미추홀구",
+      "address": "인천광역시 미추홀구 한나루로 420 (학익동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡만이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-12-08",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-11-24",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609222980482",
+      "name": "변가네옹진냉면",
+      "category": "한식",
+      "region": "인천",
+      "district": "미추홀구",
+      "address": "인천광역시 미추홀구 한나루로586번길 92",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-02-27",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609133372247",
+      "name": "오목골즉석메밀우동 박문점",
+      "category": "일식",
+      "region": "인천",
+      "district": "미추홀구",
+      "address": "인천광역시 미추홀구 석정로 142 (숭의동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "메밀우동"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-03-19",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609200749690",
+      "name": "전동집",
+      "category": "한식",
+      "region": "인천",
+      "district": "연수구",
+      "address": "인천광역시 연수구 앵고개로101번길 44-16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우대갈비 청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-29",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 소개에 2019년 백년가게 선정 이력이 언급됩니다. 현재 영업 여부와 새 선정·등급은 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609194843393",
+      "name": "해월토장",
+      "category": "한식",
+      "region": "인천",
+      "district": "연수구",
+      "address": "인천광역시 연수구 송도미래로 30 송도 BRC 스마트밸리 지식산업센터 F동 304호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해월된장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-03-20",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609152449212",
+      "name": "이당비스트로",
+      "category": "양식",
+      "region": "인천",
+      "district": "남동구",
+      "address": "인천광역시 남동구 배려터로 9 (수산동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 안심 스테이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-02-27",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609224153933",
+      "name": "포청천부",
+      "category": "중식",
+      "region": "인천",
+      "district": "남동구",
+      "address": "인천광역시 남동구 소래로 644-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-02-03",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609183850727",
+      "name": "형제한우소곱창",
+      "category": "한식",
+      "region": "인천",
+      "district": "남동구",
+      "address": "인천광역시 남동구 문화서로18번길 35",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우곱창"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-07-03",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727"
+    }
+  ]
+}

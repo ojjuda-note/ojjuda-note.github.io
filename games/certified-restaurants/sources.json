@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05",
+  "checkedAt": "2026-11-06",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -1488,15 +1488,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3060,
+    "uniqueRestaurants": 3073,
     "providerCounts": {
       "blue-ribbon": 526,
-      "local-guide": 2331,
+      "local-guide": 2344,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2037,
+    "coordinatesMissing": 2050,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1509,7 +1509,7 @@
       "서울": 351,
       "세종": 100,
       "울산": 36,
-      "인천": 316,
+      "인천": 329,
       "전남": 177,
       "전북": 208,
       "제주": 113,
@@ -1519,11 +1519,11 @@
     "categoryCounts": {
       "기타": 572,
       "디저트": 220,
-      "분식": 21,
-      "양식": 206,
-      "일식": 129,
-      "중식": 122,
-      "한식": 1790
+      "분식": 23,
+      "양식": 207,
+      "일식": 130,
+      "중식": 124,
+      "한식": 1797
     }
   },
   "coordinateEnrichment": {
@@ -10107,12 +10107,12 @@
     "existingCoordinateEnrichedCount": 13
   },
   "localGovernment": {
-    "checkedAt": "2026-11-05",
+    "checkedAt": "2026-11-06",
     "provider": "local-guide",
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2331,
+    "recordCount": 2344,
     "designationEvidenceCount": 2391,
     "coordinatesAvailable": 748,
     "regionCount": 17,
@@ -10137,7 +10137,7 @@
       },
       {
         "region": "인천",
-        "uniqueRestaurants": 310,
+        "uniqueRestaurants": 323,
         "coordinatesAvailable": 0,
         "completeRegionalCollection": false
       },
@@ -10399,6 +10399,43 @@
       "unknownCoordinates": 11,
       "operatingStatusVerified": 0,
       "completeness": "5구 전체 공식/가이드 명단 전수 대조 미완료, 공개 좌표 미확인 항목 다음 순환에 이월"
+    },
+    "municipalTourism20261106Incheon": {
+      "checkedAt": "2026-11-06",
+      "recordCount": 13,
+      "sourceType": "인천관광공사 인천투어 음식점 개별 소개(한국관광공사 제공)",
+      "sourceFile": "official-incheon-itour-slot06.json",
+      "regionCounts": {
+        "제물포구": 3,
+        "영종구": 2,
+        "미추홀구": 3,
+        "연수구": 2,
+        "남동구": 3
+      },
+      "evidenceUrls": [
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727"
+      ],
+      "classification": "공식 관광 소개와 정규 심사·지자체 지정·리본 등급·현재 영업 상태는 구분",
+      "coordinateAdded": 0,
+      "coordinatesMissing": 13,
+      "currentOperatingStatusVerified": 0,
+      "notExhaustive": true,
+      "scope": "인천 제물포·영종·미추홀·연수·남동구 13개 업소만 확인; 전체 누락이나 폐업 전수 조사 아님",
+      "notes": [
+        "신동양 항목은 출처 세부 URL을 확인할 수 없어 제외; 공식 페이지 주소·상호·최초등록일·수정일을 검증한 삼미소문난냉면으로 대체. 신포순대/포청천부 수정일을 페이지 현행 표기와 재대조."
+      ]
     }
   },
   "mapCoverageAuditHistory": [

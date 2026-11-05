@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 5,
-    "scheduledAt": "2026-11-05T23:00:00+09:00",
-    "checkedAtKST": "2026-11-05",
-    "source": "scheduled execution 2026-11-05 23:00 Asia/Seoul (hourly transition)"
+    "slot": 6,
+    "scheduledAt": "2026-11-06T00:00:00+09:00",
+    "checkedAtKST": "2026-11-06",
+    "source": "scheduled execution 2026-11-06 00:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -1382,6 +1382,365 @@
         "인천광역시 남동구"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 6,
+      "scheduledAtKST": "2026-11-06T00:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_13_official_incheon_tourism_additions",
+      "assignedRegions": [
+        "인천광역시 제물포구",
+        "인천광역시 영종구",
+        "인천광역시 미추홀구",
+        "인천광역시 연수구",
+        "인천광역시 남동구"
+      ],
+      "regionAudit": [
+        {
+          "region": "인천광역시 제물포구",
+          "baseListedCount": 1,
+          "scope": "인천관광공사 공식 관광 소개에서 식당 이름·현주소·대표메뉴·페이지 수정일 확인 및 일부 좌표 누락 확인(비전수)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 영종구",
+          "baseListedCount": 0,
+          "scope": "인천관광공사 공식 관광 소개에서 식당 이름·현주소·대표메뉴·페이지 수정일 확인 및 일부 좌표 누락 확인(비전수)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 2,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 미추홀구",
+          "baseListedCount": 64,
+          "scope": "인천관광공사 공식 관광 소개에서 식당 이름·현주소·대표메뉴·페이지 수정일 확인 및 일부 좌표 누락 확인(비전수)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 67,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 연수구",
+          "baseListedCount": 26,
+          "scope": "인천관광공사 공식 관광 소개에서 식당 이름·현주소·대표메뉴·페이지 수정일 확인 및 일부 좌표 누락 확인(비전수)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 28,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 남동구",
+          "baseListedCount": 27,
+          "scope": "인천관광공사 공식 관광 소개에서 식당 이름·현주소·대표메뉴·페이지 수정일 확인 및 일부 좌표 누락 확인(비전수)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 30,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "인천관광공사 인천투어 개별 음식점 자료(한국관광공사 정보 제공)",
+        "인천시 공식 재외동포정보허브: 외국인편리음식점 현황(맛집 선정과 구분)",
+        "기존 인천 지역 지자체 선정 명단과 식당명·주소 교차대조",
+        "인천투어 신동양 후보 URL이 정보 미발견으로 확인되어 신규 등록 보류. 대체 삼미소문난냉면의 정확한 공식 페이지·주소 검증."
+      ],
+      "additions": 13,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 147,
+      "locationPendingScope": "신규13 + 해당 지역 및 기존 중구/동구 표기의 좌표 미확인 기존 134; 개별 재확인은 신규13과 기존3만 실시",
+      "legacyDistrictAliasPending": 18,
+      "addedRestaurantIds": [
+        "local-incheon-itour-apd21112609191801020",
+        "local-incheon-itour-apd21112609165908467",
+        "local-incheon-itour-apd21120810001294388",
+        "local-incheon-itour-apd21112609143808184",
+        "local-incheon-itour-apd21121010002505353",
+        "local-incheon-itour-apd21120810001398379",
+        "local-incheon-itour-apd21112609222980482",
+        "local-incheon-itour-apd21112609133372247",
+        "local-incheon-itour-apd21112609200749690",
+        "local-incheon-itour-apd21112609194843393",
+        "local-incheon-itour-apd21112609152449212",
+        "local-incheon-itour-apd21112609224153933",
+        "local-incheon-itour-apd21112609183850727"
+      ],
+      "existingItemsRechecked": [
+        "부암갈비 · 용천로 149",
+        "금산식당 · 매소홀로488번길 6-29",
+        "고려한방삼계탕 · 인주대로 404"
+      ],
+      "evidenceUrls": [
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609140512930",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171524443",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609223959612",
+        "https://www.incheon.go.kr/infohub/HUB040301"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-incheon-itour-apd21112609191801020",
+          "name": "신포순대",
+          "address": "인천광역시 제물포구 제물량로166번길 33",
+          "region": "인천광역시 제물포구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609165908467",
+          "name": "삼미소문난냉면",
+          "address": "인천광역시 제물포구 화평로 10",
+          "region": "인천광역시 제물포구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21120810001294388",
+          "name": "신성루",
+          "address": "인천광역시 제물포구 우현로 19-14 (신생동)",
+          "region": "인천광역시 제물포구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609143808184",
+          "name": "해송쌈밥",
+          "address": "인천광역시 영종구 공항서로 177",
+          "region": "인천광역시 영종구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21121010002505353",
+          "name": "고목정쌈밥",
+          "address": "인천광역시 영종구 용유서로172번길 10 (을왕동)",
+          "region": "인천광역시 영종구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21120810001398379",
+          "name": "얼레꼴레만두",
+          "address": "인천광역시 미추홀구 한나루로 420 (학익동)",
+          "region": "인천광역시 미추홀구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001398379"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609222980482",
+          "name": "변가네옹진냉면",
+          "address": "인천광역시 미추홀구 한나루로586번길 92",
+          "region": "인천광역시 미추홀구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609222980482"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609133372247",
+          "name": "오목골즉석메밀우동 박문점",
+          "address": "인천광역시 미추홀구 석정로 142 (숭의동)",
+          "region": "인천광역시 미추홀구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609133372247"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609200749690",
+          "name": "전동집",
+          "address": "인천광역시 연수구 앵고개로101번길 44-16",
+          "region": "인천광역시 연수구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609200749690"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609194843393",
+          "name": "해월토장",
+          "address": "인천광역시 연수구 송도미래로 30 송도 BRC 스마트밸리 지식산업센터 F동 304호",
+          "region": "인천광역시 연수구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609194843393"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609152449212",
+          "name": "이당비스트로",
+          "address": "인천광역시 남동구 배려터로 9 (수산동)",
+          "region": "인천광역시 남동구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609152449212"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609224153933",
+          "name": "포청천부",
+          "address": "인천광역시 남동구 소래로 644-1",
+          "region": "인천광역시 남동구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609183850727",
+          "name": "형제한우소곱창",
+          "address": "인천광역시 남동구 문화서로18번길 35",
+          "region": "인천광역시 남동구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609183850727"
+          ],
+          "result": "공식 관광정보에 업소명·지점·주소가 기재됨. 독립적인 식당 주소 일치 위경도 근거 미확보, null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "다음 순환에서 좌표 재확인. 단순 미확인으로 선정 취소·폐업 처리하지 않음"
+        },
+        {
+          "id": "local-north-1cd85b0aa9a2b7b3",
+          "name": "부암갈비",
+          "address": "인천광역시 남동구 용천로 149(간석동)",
+          "region": "인천광역시 남동구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609140512930"
+          ],
+          "result": "공식 관광자료의 상호·도로명주소와 기존 DB 일치. 별도 공개 위경도 근거 미확보, 기존 좌표 null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "주소 일치 좌표 출처 추가 조사; 영업상태는 별도 증거 없으므로 미확인"
+        },
+        {
+          "id": "local-north-598f76c28254f033",
+          "name": "금산식당",
+          "address": "인천광역시 미추홀구 매소홀로488번길 6-29(학익동)",
+          "region": "인천광역시 미추홀구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171524443"
+          ],
+          "result": "공식 관광자료의 상호·도로명주소와 기존 DB 일치. 별도 공개 위경도 근거 미확보, 기존 좌표 null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "주소 일치 좌표 출처 추가 조사; 영업상태는 별도 증거 없으므로 미확인"
+        },
+        {
+          "id": "local-north-7ce3cb13b7b877f0",
+          "name": "고려한방삼계탕",
+          "address": "인천광역시 미추홀구 인주대로 404 (주안동)",
+          "region": "인천광역시 미추홀구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609223959612"
+          ],
+          "result": "공식 관광자료의 상호·도로명주소와 기존 DB 일치. 별도 공개 위경도 근거 미확보, 기존 좌표 null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 6,
+          "action": "주소 일치 좌표 출처 추가 조사; 영업상태는 별도 증거 없으므로 미확인"
+        }
+      ],
+      "unresolved": [
+        "기존 134곳+신규 13곳의 위치 좌표 미확인(건수는 범위 현황, 개별 전수 재조사가 아님)",
+        "현재 데이터의 구 중구·동구 분류 18곳은 제물포구/영종구 구분 재매핑 필요, 이번 회차 임의 변경하지 않음",
+        "블루리본 정규 신규 선정·리본 수 및 최신 영업 여부는 이번 공개 자료만으로 미확인",
+        "일부 공식 관광 소개의 오래된 등록·수정 이력은 현재 영업을 보증하지 않으며 2026년 신규 선정으로 오인하지 않음",
+        "신동양은 기존 후보 URL에서 공식 식당 정보 미확인으로 신규 등록하지 않음. 폐업이나 선정 취소라는 뜻은 아님."
+      ],
+      "carryOver": [
+        "다음 순환 06회차에서 기존 중구·동구 별칭 포함 현 주소·좌표 누락 전수 구분 및 분쟁 좌표 재확인",
+        "13곳과 기존 부암갈비·금산식당 학익점·고려한방삼계탕의 현재 위치를 공개 지도/공식 근거로 재대조",
+        "신규 검증 가능 블루리본 명단 발굴; 공식 출처 미확보시 등급 미부여"
+      ],
+      "nextSlot": 7,
+      "nextRegions": [
+        "인천광역시 부평구",
+        "인천광역시 계양구",
+        "인천광역시 서해구",
+        "인천광역시 검단구"
+      ]
     }
   ],
   "notes": [
