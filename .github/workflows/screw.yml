@@ -11,6 +11,9 @@ on:
       - 'game-release.json'
       - 'assets/screw-flat/**'
       - 'tests/screw*.cjs'
+      - 'tests/helpers/flat-*.cjs'
+      - 'tests/helpers/certify-flat-solutions.cjs'
+      - 'tests/helpers/finalize-flat-certificates.cjs'
       - 'tests/solo-fresh-entry.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/screw.yml'
@@ -23,6 +26,9 @@ on:
       - 'game-release.json'
       - 'assets/screw-flat/**'
       - 'tests/screw*.cjs'
+      - 'tests/helpers/flat-*.cjs'
+      - 'tests/helpers/certify-flat-solutions.cjs'
+      - 'tests/helpers/finalize-flat-certificates.cjs'
       - 'tests/solo-fresh-entry.test.cjs'
       - 'tests/package*.json'
       - '.github/workflows/screw.yml'
@@ -38,7 +44,7 @@ jobs:
   screw:
     name: Saved levels, purchases and mobile controls
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

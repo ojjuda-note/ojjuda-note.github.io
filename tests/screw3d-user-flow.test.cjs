@@ -14,9 +14,9 @@ vm.runInContext(source+'\n'+fixture,context);
   for(const seed of [1,4,5,6]){
     memory.clear();const r=await context.play(20,seed,seed*7919,true);
     assert.ok(r.cleared&&r.clicks===r.total,'all real timed touches complete stage20: '+JSON.stringify(r));
-    assert.equal(r.boxes.length,3);assert.equal(r.buffer,6);
+    assert.equal(r.boxes.length,2,'the revised game begins with two color boxes');assert.equal(r.buffer,5);
     routes.push({seed,screws:r.total,clicks:r.clicks,sorts:r.sorts,detours:r.detours});
     context.last.game.destroy();
   }
-  console.log('PASS: four randomized 3-box/6-slot routes with rotating camera and real falling physics',JSON.stringify(routes));
+  console.log('PASS: four randomized 2-box/5-slot routes with rotating camera and real falling physics',JSON.stringify(routes));
 })().catch(e=>{console.error(e);process.exitCode=1;});

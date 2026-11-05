@@ -148,7 +148,7 @@ test('screw failure recovery cannot resume play during the guest login delay',()
 });
 test('screw next-stage choice rechecks guest access after pending purchase verification',async()=>{
  const f=roundFixture({id:'screw',guest:true}),pending=deferred();let continued=0;
- Object.assign(f.context.R,{screwBaseStage:1,game:{stage:1,levels:1000,stageCleared:true,prepareStageChoice:()=>pending.promise,continueStage:()=>{continued++;return true;}}});
+ Object.assign(f.context.R,{screwBaseStage:1,game:{stage:1,levels:1000,unlockedStage:2,stageCleared:true,prepareStageChoice:()=>pending.promise,continueStage:()=>{continued++;return true;}}});
  const choosing=f.context.chooseScrewStage(2);f.context.window.OjjudaGuestAccess.finished();pending.resolve(true);await choosing;
  assert.equal(continued,0);assert.equal(f.context.R.running,false);assert.equal(f.context.R.stageChanging,false);
 });
@@ -181,7 +181,7 @@ test('all public game links use their existing entry functions and cannot select
  const count=calls.length;for(const id of ['admin','<script>','screw_flat:1000',null])c.openWorldGameLink(id);assert.equal(calls.length,count);
 });
 function boxFixture(options={}){
- const storage=new Map(),events=[],w={},c=vm.createContext({window:w,console,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))}});
+ const storage=new Map(),events=[],w={},c=vm.createContext({window:w,console,crypto:require('node:crypto'),localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))}});
  // Run the real imported geometry helpers in the isolated VM as classic scripts.
  // The production game is an ESM module, while this result fixture has no loader.
  for(const file of ['screw3d-premium-models.js','screw3d-classic-styles.js','screw3d-soft-cubes.js','screw3d-replacement-models.js','screw3d-sculpted-skins.js','screw3d-depth-renderer.js']){

@@ -13,9 +13,15 @@ for(const bad of ['invalid','{}','null','[null,123,"unknown"]']){storage.set(A.C
 storage.clear();let score=0;const api={setScore:n=>score=n,end(){}};
 const game=G.flat(api),st=game.state;
 assert.equal(st.collection.size,0,'starting a stage does not earn its picture');
-// Opening the album must pause an in-flight screw without discarding the puzzle.
-const screw=st.level.screws[st.level.order[0]],target=st.level.holes[0];tap(game,screw.hole.x,screw.hole.y);tap(game,target.x,target.y);
-assert.ok(st.pending);game.onKey('a');const paused=JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates});
+// A held screw stays safe while the album is closed; the album pauses the
+// physics only after that screw has physically reached an empty slot.
+const screw=st.level.screws[st.level.order[0]],target=st.level.holes[0];tap(game,screw.hole.x,screw.hole.y);
+assert.equal(st.pending.kind,'lift');game.onKey('a');assert.equal(st.albumOpen,false,'a held screw must not vanish into the album');
+for(let i=0;i<10;i++)game.update(.05);
+tap(game,target.x,target.y);assert.equal(st.pending.kind,'place');
+for(let i=0;i<10;i++)game.update(.05);
+assert.equal(screw.hole,target);game.onKey('a');assert.equal(st.albumOpen,true);
+const paused=JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates});
 for(let i=0;i<60;i++)game.update(.05);
 assert.equal(JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates}),paused);
 tap(game,90,130);assert.equal(st.albumPicture,null,'unfinished artwork is locked');

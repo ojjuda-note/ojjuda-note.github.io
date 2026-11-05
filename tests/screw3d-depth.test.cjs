@@ -59,7 +59,7 @@ assert.equal(failing.success,true,'shader-compile failure should still fall back
 
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const engine=bundleScrew3d(f=>fs.readFileSync(require('node:path').join(__dirname,'..',f),'utf8'));
-const physics=vm.createContext({window:{},structuredClone,assert,console});
+const physics=vm.createContext({window:{},structuredClone,assert,console,crypto:require('node:crypto')});
 vm.runInContext(engine+`
   const games=[screw3d({setScore(){},getCoins:()=>0,end(){}},1)];
   const first=window.__ojjScrew3d;
@@ -73,16 +73,19 @@ vm.runInContext(engine+`
   second.lvl=structuredClone(first.lvl);
   first.touched=second.touched=true;
   first.yaw=first.pitch=0;first.zm=1;first.pan=[0,0];
-  second.yaw=2.1;second.pitch=1.2;second.zm=9;second.pan=[1500,-2500];
+  // Model rotation now changes local gravity to keep loose parts falling
+  // toward the room floor. Zoom/pan alone must remain physics-invariant.
+  first.yaw=second.yaw=2.1;first.pitch=second.pitch=1.2;
+  second.zm=9;second.pan=[1500,-2500];
   for(let frame=0;frame<20;frame++){
     games[0].update(.04);games[1].update(.04);
     const a=first.lvl.els[1],b=second.lvl.els[1];
-    assert.deepEqual(a.dyn.c,b.dyn.c,'camera yaw and pitch cannot redirect falling gravity');
-    assert.deepEqual(a.dyn.v,b.dyn.v,'the same physical state has the same velocity');
+    assert.deepEqual(a.dyn.c,b.dyn.c,'zoom/pan must not redirect gravity in a rotated model');
+    assert.deepEqual(a.dyn.v,b.dyn.v,'zoom/pan preserve the same velocity');
     assert.equal(a.state,b.state,'zoom and pan cannot remove a physical obstruction');
     const blockerA=blocked(first.lvl.screws[0],first.lvl),blockerB=blocked(second.lvl.screws[0],second.lvl);
     assert.equal(first.lvl.els.indexOf(blockerA),second.lvl.els.indexOf(blockerB),'camera-only changes cannot change blocked/free');
   }
   for(const game of games)game.destroy();
 `,physics);
-console.log('PASS: software depth fallback, graphics failures and camera-independent falling physics');
+console.log('PASS: software depth fallback, graphics failures and zoom/pan-independent falling physics');

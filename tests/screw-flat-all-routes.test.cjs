@@ -1,8 +1,9 @@
 const assert=require('node:assert/strict');
 const {Worker,isMainThread,parentPort,workerData}=require('node:worker_threads');
 
-// The twelve introductory/special layouts have input-based playthroughs in
-// screw-flat.test.cjs. Check every other level under real rigid-body physics.
+// The twelve intro/special stages and fourteen advanced examples have real
+// UI-tap playthroughs in other tests. Every advanced board is independently
+// solved in the same rigid-body engine without publishing the answer paths.
 if(isMainThread){
  const stages=Array.from({length:989},(_,i)=>i+12).filter(stage=>stage!==25);
  const batches=Array.from({length:4},(_,offset)=>stages.filter((_,i)=>i%4===offset));
@@ -11,25 +12,24 @@ if(isMainThread){
   worker.once('message',resolve);worker.once('error',reject);
   worker.once('exit',code=>{if(code)reject(Error('Flat route worker exited '+code));});
  }))).then(results=>{
-  const failures=results.flatMap(r=>r.failures);
-  assert.deepEqual(failures,[],'every generated layout must have a free, physical solution');
+  assert.deepEqual(results.flatMap(r=>r.failures),[],'every stage must have a free solution with visible screw collisions');
   assert.equal(results.reduce((n,r)=>n+r.count,0),988);
-  console.log('PASS: all 988 generated flat stages clear with the original three holes and base move budget; 12 introductory/special stages are covered by input tests.');
+  console.log('PASS: all 988 advanced stages physically clear in the real collision engine with three original spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
- const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js'),failures=[];
+ const P=require('../screw-flat-physics.js'),{solve}=require('./helpers/flat-solution-search.cjs'),failures=[];let checked=0;
  for(const stage of workerData){
-  const level=P.makeFlatLevel(stage),sim=P.createPhysics(level);let failed=null;
-  assert.equal(level.holes.length-level.screws.length,3);
-  assert.ok(level.route.length<=G.moveLimit(level));
-  for(const [step,move] of level.route.entries()){
-   if(!sim.move(level.screws[move.screw],level.holes[move.to])){failed={stage,step};break;}
-   for(let tick=0;tick<30;tick++)sim.step(.05);
-  }
-  for(let tick=0;tick<50;tick++)sim.step(.05);
-  if(!failed&&level.plates.some(p=>p.state!=='gone'))failed={stage,remaining:level.plates.filter(p=>p.state!=='gone').map(p=>p.id)};
-  if(failed)failures.push(failed);
-  sim.destroy();
+  let error=null;
+  try{
+   const level=P.makeFlatLevel(stage),result=solve(stage);
+   assert.equal(level.holes.length-level.screws.length,3);
+   assert.equal(result.reason,null,`stage ${stage}: ${result.reason}`);
+   assert.equal(result.moves,level.requiredMoves,`stage ${stage} move budget`);
+   assert.ok(result.moves<=level.requiredMoves+2);
+   assert.equal(result.remaining.length,0);
+  }catch(e){error={stage,error:e.message};}
+  if(error)failures.push(error);checked++;
+  if(checked%50===0)console.log(`Flat physics verification: ${checked}/${workerData.length} in worker ending at stage ${workerData.at(-1)}; failures ${failures.length}`);
  }
  parentPort.postMessage({count:workerData.length,failures});
 }
