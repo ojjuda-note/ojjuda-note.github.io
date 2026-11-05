@@ -1,0 +1,382 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "인천관광공사 인천투어 공식 관광정보(한국관광공사 제공)",
+  "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/list.do?pageNm=food",
+  "completeRegionalCollection": false,
+  "selectionStatus": "공식 관광 소개이며 블루리본·미쉐린 또는 지자체 정식 심사 선정 등급을 뜻하지 않음",
+  "coordinatePolicy": "상호·지점·현주소 일치 좌표 근거 미확보로 null 유지; 추정 금지",
+  "restaurants": [
+    {
+      "id": "local-incheon-itour-apd21112609193087780",
+      "name": "해물명가 동해해물탕",
+      "category": "한식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 부평문화로 108",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-04-02",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609180520327",
+      "name": "함흥냉면",
+      "category": "한식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 시장로20번길 21",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "함흥냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-19",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "2019년 중소벤처기업부 백년가게 선정 이력(공식 관광 소개 기재); 2026년 신규선정·현재 영업 확정 아님."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609190439861",
+      "name": "취선",
+      "category": "중식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 굴포로 50-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼선짜장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-02-03",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609162787758",
+      "name": "대하해물탕",
+      "category": "한식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 장제로91번길 24-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-08-21",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609142295248",
+      "name": "복화루",
+      "category": "중식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 부평대로32번길 16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-22",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 소개에 백년가게로 표기. 별도 선정연도 및 현재 영업은 이 자료만으로 확정하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248"
+    },
+    {
+      "id": "local-incheon-itour-apd21112609142198558",
+      "name": "촌집보쌈",
+      "category": "한식",
+      "region": "인천",
+      "district": "부평구",
+      "address": "인천광역시 부평구 백범로422번길 58",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-11-26",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-02-27",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558"
+    },
+    {
+      "id": "local-incheon-itour-apd21121010002312914",
+      "name": "고메돈까스",
+      "category": "양식",
+      "region": "인천",
+      "district": "계양구",
+      "address": "인천광역시 계양구 서부간선로 257 (박촌동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "왕돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2021-12-10",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-11-07",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914"
+    },
+    {
+      "id": "local-incheon-itour-itd25011713193956493",
+      "name": "블랑제리쉐종",
+      "category": "디저트",
+      "region": "인천",
+      "district": "계양구",
+      "address": "인천광역시 계양구 경명대로 1068, 102호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바게뜨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2025-01-17",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2025-01-20",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 당류저감화제과점 소개. 인증등급·선정 연도와는 구분."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493"
+    },
+    {
+      "id": "local-incheon-itour-itd22010409442372372",
+      "name": "등촌샤브칼국수 계양점",
+      "category": "한식",
+      "region": "인천",
+      "district": "계양구",
+      "address": "인천광역시 계양구 오조산로45번길 8-1, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "버섯 매운탕 칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2022-01-04",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-19",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 공식 관광 소개이며 정식 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372"
+    },
+    {
+      "id": "local-incheon-itour-itd22010409520575697",
+      "name": "등촌샤브칼국수 서해구점",
+      "category": "한식",
+      "region": "인천",
+      "district": "서해구",
+      "address": "인천광역시 서해구 탁옥로 69",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "버섯 매운탕 칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2022-01-04",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-10-23",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 설명은 서해구 심곡동 지점. '서구점' 과거 사진 표기와 현 행정명 구분."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697"
+    },
+    {
+      "id": "local-incheon-itour-itd25112513304489119",
+      "name": "청라제과",
+      "category": "디저트",
+      "region": "인천",
+      "district": "서해구",
+      "address": "인천광역시 서해구 청라커낼로288번길 8-10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "반미바게뜨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2025-11-25",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-06-12",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 당류저감화제과점 소개. 공식 관광 수록과 정규 가이드 등급을 구분."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119"
+    },
+    {
+      "id": "local-incheon-itour-itd25020711230610778",
+      "name": "아이에프베이커리",
+      "category": "디저트",
+      "region": "인천",
+      "district": "검단구",
+      "address": "인천광역시 검단구 완정로 70",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "올리브치아바타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천관광공사 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778",
+          "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
+          "sourceRegisteredAt": "2025-02-07",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778",
+          "verifiedAt": "2026-11-06",
+          "sourceAsOf": "2026-06-12",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "인천투어 당류저감화제과점 소개. 공식 관광 수록과 정규 가이드 등급을 구분."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+    }
+  ]
+}
