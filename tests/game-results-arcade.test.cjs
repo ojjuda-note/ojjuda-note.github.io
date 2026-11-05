@@ -182,7 +182,14 @@ test('all public game links use their existing entry functions and cannot select
 });
 function boxFixture(options={}){
  const storage=new Map(),events=[],w={},c=vm.createContext({window:w,console,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))}});
- vm.runInContext(fs.readFileSync(path.join(root,'screw3d.js'),'utf8').replace(/export \{[^}]*\};/,''),c);
+ // Run the real imported geometry helpers in the isolated VM as classic scripts.
+ // The production game is an ESM module, while this result fixture has no loader.
+ for(const file of ['screw3d-premium-models.js','screw3d-classic-styles.js','screw3d-soft-cubes.js','screw3d-replacement-models.js','screw3d-sculpted-skins.js']){
+  const source=fs.readFileSync(path.join(root,file),'utf8').replace(/^export (?=(?:const|function|class|let|var)\b)/gm,'');
+  vm.runInContext(source,c,{filename:file});
+ }
+ const gameSource=fs.readFileSync(path.join(root,'screw3d.js'),'utf8').replace(/^import .*;\s*$/gm,'').replace(/export \{[^}]*\};/, '');
+ vm.runInContext(gameSource,c,{filename:'screw3d.js'});
  const api={setScore(){},end:(score,detail)=>events.push(['end',score,detail?.outcome]),stageClear:score=>events.push(['clear',score]),...options};
  const game=c.screw3d(api,1);return {game,st:w.__ojjScrew3d,events,storage};
 }
