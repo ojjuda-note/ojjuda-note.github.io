@@ -1,0 +1,56 @@
+name: Apply flat screw release patch once
+on:
+  push:
+    branches: [fix/flat-visible-fastener-collisions-20261105]
+    paths: [.github/workflows/flat-solid-stages-once.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply verified small release changes to large existing files
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),{execFileSync}=require('child_process');
+          function once(source,needle,replacement,label) {
+            const index=source.indexOf(needle);
+            if(index<0 || source.indexOf(needle,index+needle.length)!==-1)throw Error(label+' must appear exactly once');
+            return source.replace(needle,replacement);
+          }
+          let world=fs.readFileSync('world.html','utf8');
+          world=once(world,'/world-game-assets.js?v=20261105-screw-stage-items2','/world-game-assets.js?v=20261105-flat-solid-stages1','asset cache');
+          const anchor='var worldRecommendedRestaurants=null,worldRecommendedClient=null;';
+          world=once(world,anchor,'// Flat-screw physics has passed puzzle checks; keep the box variant closed separately.\n_r.screw.maintenance=null;\n'+anchor,'flat entry');
+          const oldGate=world.split('\n').find(line=>line.includes('if(t==="screw"&&_r.screw.maintenance&&!worldScrewAdminTestEnabled())'));
+          if(!oldGate)throw Error('maintenance gate missing');
+          world=once(world,oldGate,' if(t==="screw"&&options.screwMode==="box"&&!worldScrewAdminTestEnabled()){M(\'나사 풀기 박스형은 공사중이에요. 평면형을 이용해 주세요.\');return;}','mode gate');
+          const oldRanking="screw_box:{name:'나사풀기 · 박스형',unit:'점',maintenance:_r.screw.maintenance},screw_flat:{name:'나사풀기 · 평면형',unit:'점',maintenance:_r.screw.maintenance},spot:_r.spot,";
+          const newRanking="screw_box:{name:'나사풀기 · 박스형',unit:'점',maintenance:'공사중'},screw_flat:{name:'나사풀기 · 평면형',unit:'점'},spot:_r.spot,";
+          world=once(world,oldRanking,newRanking,'rank mode state');
+          fs.writeFileSync('world.html',world);
+          let box=fs.readFileSync('screw3d.js','utf8');
+          box=once(box,'L: Number.isInteger(startStage)&&startStage>=1?Math.min(startStage, loadStage()):1,','L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?Math.min(startStage, loadStage()):1,','box stage guard');
+          fs.writeFileSync('screw3d.js',box);
+          for(const [path,sha] of [['world.html','1ade08d0e7d2675645ebe37b0637b8fd92d2426a'],['screw3d.js','bb6ae083377c50a0567daaad367fcbeba7022dfb']]){
+            const current=execFileSync('git',['hash-object',path],{encoding:'utf8'}).trim();
+            if(current!==sha)throw Error(path+' differs from locally verified release: '+current);
+          }
+          NODE
+      - name: Commit release and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name ojjuda-release
+          git config user.email ojjuda-release@users.noreply.github.com
+          git add world.html screw3d.js
+          git rm .github/workflows/flat-solid-stages-once.yml
+          git commit -m "Publish flat screw stage selection and verified collision updates"
+          git push origin HEAD:refs/heads/fix/flat-visible-fastener-collisions-20261105
