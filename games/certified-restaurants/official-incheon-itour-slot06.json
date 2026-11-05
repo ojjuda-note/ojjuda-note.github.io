@@ -29,7 +29,7 @@
           "sourceRegisteredAt": "2021-11-26",
           "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
           "verifiedAt": "2026-11-06",
-          "sourceAsOf": "2026-07-01",
+          "sourceAsOf": "2026-10-29",
           "sourceDateType": "official-page-last-modified",
           "status": "official_restaurant_listing",
           "selectionCriteria": "공식 관광 소개에 2019년 백년가게 선정 이력이 언급됩니다. 현재 영업 여부와 새 선정·등급은 미확인입니다."
@@ -38,16 +38,16 @@
       "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020"
     },
     {
-      "id": "local-incheon-itour-apd21112609171458854",
-      "name": "신동양",
-      "category": "중식",
+      "id": "local-incheon-itour-apd21112609165908467",
+      "name": "삼미소문난냉면",
+      "category": "한식",
       "region": "인천",
       "district": "제물포구",
-      "address": "인천광역시 제물포구 서해대로449번길 52 (신흥동1가)",
+      "address": "인천광역시 제물포구 화평로 10",
       "lat": null,
       "lng": null,
       "menu": [
-        "유니짜장"
+        "물냉면"
       ],
       "guides": [
         {
@@ -55,18 +55,18 @@
           "label": "인천관광공사 공식 음식점 소개",
           "year": null,
           "yearType": "source",
-          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
           "sourceName": "인천관광공사 인천투어 · 한국관광공사 제공 음식점 정보",
           "sourceRegisteredAt": "2021-11-26",
-          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854",
+          "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
           "verifiedAt": "2026-11-06",
-          "sourceAsOf": "2025-07-29",
+          "sourceAsOf": "2026-10-19",
           "sourceDateType": "official-page-last-modified",
           "status": "official_restaurant_listing",
-          "selectionCriteria": "공식 관광 소개에 2019년 백년가게 선정 이력이 언급됩니다. 현재 영업 여부와 새 선정·등급은 미확인입니다."
+          "selectionCriteria": "인천관광공사 공식 관광 소개이며 정규 심사·선정 등급과 현재 영업 여부는 별도 미확인입니다."
         }
       ],
-      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854"
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467"
     },
     {
       "id": "local-incheon-itour-apd21120810001294388",
@@ -370,7 +370,7 @@
           "sourceRegisteredAt": "2021-11-26",
           "sourceRegistrationUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609224153933",
           "verifiedAt": "2026-11-06",
-          "sourceAsOf": "2026-02-10",
+          "sourceAsOf": "2025-02-03",
           "sourceDateType": "official-page-last-modified",
           "status": "official_restaurant_listing",
           "selectionCriteria": "인천관광공사 공식 관광 소개이며 별도의 맛집 심사·선정 등급과 현재 영업 여부를 뜻하지 않습니다."
