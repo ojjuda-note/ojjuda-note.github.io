@@ -11,6 +11,7 @@ const code = fs.readFileSync(path.join(directory, 'app.js'), 'utf8');
 const dataset = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.json'), 'utf8'));
 const seoulSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-blue-ribbon.json'), 'utf8'));
 const northeastSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-visitseoul-northeast.json'), 'utf8'));
+const southwestSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-visitseoul-southwest.json'), 'utf8'));
 assert.deepEqual(seoulSupplement.restaurants.map(item => item.name), ['원대구탕', '제이드앤워터 옥수'], 'new Seoul history entries are present');
 assert.ok(seoulSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.guides.every(guide => guide.provider === 'blue-ribbon' && guide.label === '선정 이력' && guide.year === null && guide.yearType === 'selection' && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'new entries preserve evidence URLs, unknown grades/years and unknown coordinates');
 const northeastTourism = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_restaurant_listing'));
@@ -23,6 +24,9 @@ assert.ok(northeastSupplement.restaurants.every(item => item.lat === null && ite
 assert.ok(northeastTourism.every(item => item.guides.some(guide => guide.provider === 'local-guide' && guide.year === null && guide.status === 'official_restaurant_listing' && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'tourism introductions are not mistaken for formal awards');
 assert.ok(northeastOraegage.every(item => item.guides.some(guide => guide.provider === 'local-guide' && guide.label.includes('오래가게') && guide.year === 2026 && guide.yearType === 'selection' && guide.sourceUrl === 'https://mediahub.seoul.go.kr/archives/2019458')), 'municipal selection year and official source are preserved');
 assert.ok(northeastSupplement.restaurants.find(item => item.id === 'local-seoul-visitseoul-ddm-yeonghwajang').guides.length === 2, 'Yeonghwajang keeps both verified tourism listing and municipal selection without duplication');
+assert.equal(southwestSupplement.restaurants.length, 8, 'eight official southwest Seoul tourist introductions');
+assert.equal(new Set(southwestSupplement.restaurants.map(item => item.id)).size, 8, 'southwest official restaurant IDs remain unique');
+assert.ok(southwestSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.region === '서울' && item.guides.every(guide => guide.status === 'official_restaurant_listing' && guide.year === null && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'tourism introductions are not misrepresented as new awards or located without proof');
 const savedKey = 'ojjuda-certified-restaurants-saved-v1';
 const locationKey = 'ojjuda-certified-restaurants-location-v1';
 const viewKey = 'ojjuda-certified-restaurants-view-v1';
@@ -92,7 +96,7 @@ function fixture(options = {}) {
   window.fetch = async requested => {
     const url = new URL(requested, window.location.href);
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
-    if (['/official-ulsan-tourism.json', '/official-seoul-blue-ribbon.json', '/official-seoul-visitseoul-northeast.json'].some(file => url.pathname.endsWith(file))) {
+    if (['/official-ulsan-tourism.json', '/official-seoul-blue-ribbon.json', '/official-seoul-visitseoul-northeast.json', '/official-seoul-visitseoul-southwest.json'].some(file => url.pathname.endsWith(file))) {
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
       return { ok: true, status: 200, json: async () => ({ restaurants: [] }) };
     }
