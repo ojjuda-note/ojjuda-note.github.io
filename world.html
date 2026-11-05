@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261105-admin-polish1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261106-restaurants-incheon-slot07-1" defer></script>
+<script src="/world-game-assets.js?v=20261106-screwbox-stage-score1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -56,7 +56,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
 <script src="/guest-access.js?v=20261103-guest-one-round1" defer></script>
 <script src="/guest-visits.js?v=20261027-visits1" defer></script>
-<script src="/guest-game-scores.js?v=20261028-arcade-best1" defer></script>
+<script src="/guest-game-scores.js?v=20261106-screwbox-add-score1" defer></script>
 
 <link rel="stylesheet" href="note/notifications.css?v=0.45.61-beta">
 <link rel="stylesheet" href="note/support.css?v=20261004-design1">
@@ -1381,13 +1381,15 @@ function breakoutStagePicker(stage){
 }
 
 const SCREW_STAGE_PAGE_SIZE=25,SCREW_STAGE_LIMIT=1000;
+function screwStageStorageKey(mode,remembered=false){
+ if(mode==='flat')return remembered?'ojjuda-screw-flat-last-stage-v1':'ojjuda-screw-flat-stage-v1';
+ return (remembered?'ojjuda-screw-box-last-stage-v2':'ojjuda-screw-box-stage-v2')+':'+String(worldRewardOwner()||'guest');
+}
 function screwUnlockedStage(mode){
- const key=mode==='flat'?'ojjuda-screw-flat-stage-v1':'ojjuda-screw-stage';
- try{const level=Number(localStorage.getItem(key));return Number.isInteger(level)&&level>=1&&level<=SCREW_STAGE_LIMIT?level:1}catch{return 1}
+ try{const level=Number(localStorage.getItem(screwStageStorageKey(mode)));return Number.isInteger(level)&&level>=1&&level<=SCREW_STAGE_LIMIT?level:1}catch{return 1}
 }
 function screwRememberedStage(mode){
- const key=mode==='flat'?'ojjuda-screw-flat-last-stage-v1':'ojjuda-screw-last-stage-v1';
- try{const level=Number(localStorage.getItem(key));return Number.isInteger(level)&&level>=1?Math.min(level,screwUnlockedStage(mode)):screwUnlockedStage(mode)}catch{return screwUnlockedStage(mode)}
+ try{const level=Number(localStorage.getItem(screwStageStorageKey(mode,true)));return Number.isInteger(level)&&level>=1?Math.min(level,screwUnlockedStage(mode)):screwUnlockedStage(mode)}catch{return screwUnlockedStage(mode)}
 }
 function screwStagesMarkup(mode,page=0){
  const unlocked=screwUnlockedStage(mode),maxPage=Math.ceil(SCREW_STAGE_LIMIT/SCREW_STAGE_PAGE_SIZE)-1;
@@ -1494,7 +1496,66 @@ function pendingScrewScore(game,owner){
  try{const record=JSON.parse(localStorage.getItem(key)||'null');if(Number.isSafeInteger(record?.score)&&record.score>0&&Number.isFinite(record.at)&&record.at<=Date.now()&&Date.now()-record.at<86400000)return {key,score:record.score};}catch{}
  return {key,score:0};
 }
+// Box score is cumulative across sessions. The backend only credits increases
+// of this durable per-account/device run ID; repeats and retries are idempotent.
+function screwBoxScoreState(owner){
+ const key='ojjuda-screw-box-cumulative-v1:'+String(owner||'guest');
+ try{
+  const state=JSON.parse(localStorage.getItem(key)||'null');
+  if(typeof state?.runId==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(state.runId)&&
+   Number.isSafeInteger(state.total)&&state.total>=0&&state.total<=1999999999&&
+   Number.isSafeInteger(state.acked)&&state.acked>=0&&state.acked<=state.total)
+   return {key,...state};
+ }catch{}
+ const state={key,runId:crypto.randomUUID(),total:0,acked:0};
+ try{localStorage.setItem(key,JSON.stringify({runId:state.runId,total:0,acked:0}));}catch{}
+ return state;
+}
+function saveScrewBoxScoreState(state){
+ try{localStorage.setItem(state.key,JSON.stringify({runId:state.runId,total:state.total,acked:state.acked}));}catch{}
+}
+function createScrewBoxScoreRecorder(){
+ const owner=worldRewardOwner(),first=screwBoxScoreState(owner);
+ const base=first.total,runId=first.runId;
+ let wanted=base,saved=first.acked,worker=null,receipt=null;
+ return score=>{
+  if(!Number.isSafeInteger(score)||score<0||base+score>1999999999)return Promise.resolve({ok:false,reason:'invalid_score'});
+  if(worldRewardOwner()!==owner)return Promise.resolve({ok:false,reason:'stale'});
+  const state=screwBoxScoreState(owner);
+  if(state.runId!==runId)return Promise.resolve({ok:false,reason:'stale'});
+  wanted=Math.max(wanted,state.total,base+score);
+  state.total=wanted;state.acked=Math.max(state.acked,saved);saveScrewBoxScoreState(state);
+  if(worker)return worker;
+  worker=Promise.resolve().then(async()=>{
+   while(wanted>saved){
+    const target=wanted,request=worldRewardRequest();
+    let result={ok:false,reason:'unavailable'};
+    for(let attempt=0;attempt<3;attempt++){
+     if(request.owner!==owner||!worldRewardCurrent(request))return {ok:false,reason:'stale'};
+     try{
+      result=owner?await vl('submit_screw_box_score',{p_run_id:runId,p_score:target},request):
+       await window.OjjudaGuestScores?.submitScrewBox(target,runId)||{ok:false,reason:'unavailable'};
+     }catch{result={ok:false,reason:'network'};}
+     if(result?.ok)break;
+     if(!['too_fast','network'].includes(result?.reason))break;
+     if(attempt<2)await new Promise(resolve=>setTimeout(resolve,result.reason==='too_fast'?5100:1000));
+    }
+    if(!result?.ok){
+     if(worldRewardCurrent(request))M('박스형 점수를 임시 보관했어요. 다음 접속 때 다시 저장해요.');
+     return result||{ok:false};
+    }
+    saved=target;receipt=result;
+    const current=screwBoxScoreState(owner);
+    if(current.runId===runId){current.acked=Math.max(current.acked,saved);wanted=Math.max(wanted,current.total);saveScrewBoxScoreState(current);}
+    if(worldRewardCurrent(request))window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,guest:!owner}}));
+   }
+   return receipt;
+  }).finally(()=>{worker=null;});
+  return worker;
+ };
+}
 function createScrewScoreRecorder(game){
+ if(game==='screw_box')return createScrewBoxScoreRecorder();
  const owner=worldRewardOwner(),pending=pendingScrewScore(game,owner);let worker=null,wanted=-1,saved=-1,receipt=null;
  return score=>{
   if(!Number.isSafeInteger(score)||score<0)return Promise.resolve({ok:false,reason:'invalid_score'});
@@ -1525,10 +1586,15 @@ var screwScoreRecoveries=new Set();
 function resumeScrewScores(){
  if(!S||R?.running)return;
  const owner=worldRewardOwner();if(owner===''||owner===null&&!window.OjjudaGuestScores)return;
- for(const game of ['screw_box','screw_flat']){
-  const pending=pendingScrewScore(game,owner);if(!pending.score||screwScoreRecoveries.has(pending.key))continue;
+ const box=screwBoxScoreState(owner);
+ if(box.total>box.acked&&!screwScoreRecoveries.has(box.key)){
+  screwScoreRecoveries.add(box.key);
+  void createScrewScoreRecorder('screw_box')(0).finally(()=>screwScoreRecoveries.delete(box.key));
+ }
+ const pending=pendingScrewScore('screw_flat',owner);
+ if(pending.score&&!screwScoreRecoveries.has(pending.key)){
   screwScoreRecoveries.add(pending.key);
-  void createScrewScoreRecorder(game)(pending.score).finally(()=>screwScoreRecoveries.delete(pending.key));
+  void createScrewScoreRecorder('screw_flat')(pending.score).finally(()=>screwScoreRecoveries.delete(pending.key));
  }
 }
 async function _2(){if(!R||R.running||R.loading||R.owner!==worldRewardOwner()||window.OjjudaGuestAccess?.canPlay()===false)return;let t=R.id,factory=G2[t];
@@ -1545,7 +1611,7 @@ if(t==="breakout")R.breakoutRewardRequest=worldRewardRequest();
 if(t==="screw"){const mode=R.screwMode||"box",session=R,request={};session.loading=true;session.loadRequest=request;ti('<div class="gcard"><p role="status">게임을 불러오고 있어요…</p><button class="btn" data-g="screw-modes">게임 선택으로</button></div>');try{factory=await window.OjjudaScrewLoader.load(mode)}catch(error){if(R!==session||session.loadRequest!==request||session.owner!==worldRewardOwner())return;session.loading=false;ti(`<div class="gcard"><p role="alert">게임을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.</p><button class="btn pri" data-g="screw-start" data-mode="${mode}">다시 시도</button><button class="btn" data-g="screw-modes">게임 선택으로</button></div>`);return}if(R!==session||session.loadRequest!==request||session.owner!==worldRewardOwner())return;session.loading=false;R.ov.dataset.screwMode=mode;R.ov.querySelector(".gt").textContent=mode==="flat"?"🔩 평면형":"🔩 박스형";R.ov.querySelector("[data-g=screw-stages]").hidden=false;R.ov.querySelector("[data-g=screw-stages]").textContent="단계 선택"}R.saveScore=t==="screw"?createScrewScoreRecorder(R.screwMode==="flat"?"screw_flat":"screw_box"):null;ti(""),R.game=factory({setScore:Ja,end:S2,...(t==="breakout"?{stageClear:breakoutStageComplete}:{}),...(t==="screw"?{stageClear:score=>screwStageResult(score,"success"),stageFail:score=>screwStageResult(score,"failure"),saveScore:R.saveScore,playSfx:kind=>{
   const cues={tap:'arcadeTap',blocked:'arcadeBad',match:'arcadeBonus',win:'win',lose:'lose'};
   const cue=cues[kind];if(cue)gt[cue]?.();
-},getCanvasScale:()=>R?.cv?.getBoundingClientRect().width/Z||1,getUserId:()=>D.user?.id||null,getCoins:()=>Cn()&&Number.isFinite($.coins)?$.coins:null,buyScrew:async(e,o,n,v,attemptId)=>{if(!Cn())return{ok:!1,reason:"wallet_unavailable"};const request=worldRewardRequest();try{let r=await vl("screw_upgrade_buy_v3",{p_kind:e,p_request_id:o,p_stage:n,p_attempt_id:attemptId,p_verify_only:!!v},request);if(worldRewardCurrent(request)&&r.ok)I();return r}catch(r){if(worldRewardCurrent(request))console.error(r);return{ok:!1,reason:"server_error"}}}}:{})},t==="breakout"?R.breakoutStage:t==="screw"?R.screwStage:undefined),R.ov.querySelector("#gctrl").innerHTML=R.game.controls||(t==="breakout"?breakoutControls():""),R.running=!0,R.last=performance.now(),Ja(0);try{if(["mole","stacker"].includes(t))window.OjjudaGameChallenges?.onStart?.(t)}catch{}sf()}function sf(){R.raf=requestAnimationFrame(t=>{if(!R||!R.running)return;let e=Math.max(0,Math.min(.05,(t-R.last)/1e3));R.last=t,R.game.update(e),R&&R.running&&R.game.draw(R.ctx),R&&R.running&&sf()})}var worldResultIds=new WeakMap(),worldResultSequence=0;
+},getCanvasScale:()=>R?.cv?.getBoundingClientRect().width/Z||1,getUserId:()=>worldRewardOwner(),getCoins:()=>Cn()&&Number.isFinite($.coins)?$.coins:null,buyScrew:async(e,o,n,v,attemptId)=>{if(!Cn())return{ok:!1,reason:"wallet_unavailable"};const request=worldRewardRequest();try{let r=await vl("screw_upgrade_buy_v3",{p_kind:e,p_request_id:o,p_stage:n,p_attempt_id:attemptId,p_verify_only:!!v},request);if(worldRewardCurrent(request)&&r.ok)I();return r}catch(r){if(worldRewardCurrent(request))console.error(r);return{ok:!1,reason:"server_error"}}}}:{})},t==="breakout"?R.breakoutStage:t==="screw"?R.screwStage:undefined),R.ov.querySelector("#gctrl").innerHTML=R.game.controls||(t==="breakout"?breakoutControls():""),R.running=!0,R.last=performance.now(),Ja(0);try{if(["mole","stacker"].includes(t))window.OjjudaGameChallenges?.onStart?.(t)}catch{}sf()}function sf(){R.raf=requestAnimationFrame(t=>{if(!R||!R.running)return;let e=Math.max(0,Math.min(.05,(t-R.last)/1e3));R.last=t,R.game.update(e),R&&R.running&&R.game.draw(R.ctx),R&&R.running&&sf()})}var worldResultIds=new WeakMap(),worldResultSequence=0;
 function finishWorldGuestRound(session){
  if(session?.owner===null&&worldRewardOwner()===null)window.OjjudaGuestAccess?.finished();
 }
