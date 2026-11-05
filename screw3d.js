@@ -862,6 +862,26 @@ function addObstacleGates(M,L) {
     if(!placed)break; // Never add an unverified obstacle.
   }
 }
+// During level creation, a screw is usable only if its extraction axis
+// reaches the outside of the assembled toy. A 0.24-unit clearance test alone
+// misses fasteners sealed behind a second, more distant plate or brick.
+function exteriorHidden(s, M) {
+  const {p,a}=screwPose(s), o=add(p,mul(a,HEAD_H+0.01)), skip=[s.thru,s.into];
+  if (!M.exteriorReach) M.exteriorReach = 2.1 * Math.max(2,...M.els.map(e=>Math.hypot(...e.c)+Math.hypot(...e.geom.half)+Math.hypot(...(e.geom.cen||[0,0,0]))));
+  if (gridHit(M,o,a,M.exteriorReach,skip)) return true;
+  if (!M.exteriorSpecialNear) M.exteriorSpecialNear=new Map();
+  let near=M.exteriorSpecialNear.get(s);
+  if (!near) {
+    near=M.special.filter(E=>{
+      const v=sub(E.c,o), along=dot(v,a);
+      const partsRadius=E.parts?.length?Math.max(...E.parts.map(part=>Math.hypot(...part.pc)+Math.hypot(...part.geom.half)+Math.hypot(...(part.geom.cen||[0,0,0])))):0;
+      const r=Math.max(partsRadius,Math.hypot(...E.geom.half)+Math.hypot(...(E.geom.cen||[0,0,0])))+0.03;
+      return along+r>=0&&along-r<=M.exteriorReach&&dot(v,v)-along*along<=r*r;
+    });
+    M.exteriorSpecialNear.set(s,near);
+  }
+  return !!rayHit(o,a,M.exteriorReach,near,skip);
+}
 function buildLevel(L, alt = false) {
   const raw=applyClassicStyle(sizedModel(L,alt));
   addAngledScrews(raw,L);
@@ -870,7 +890,7 @@ function buildLevel(L, alt = false) {
   M.generating = true; // no falling or hinged parts during the solvability simulation
   const order = [], left = new Set(M.screws);
   while (left.size) {   // 지금 뺄 수 있는 나사를 한꺼번에(순서는 섞어서)
-    const av = [...left].filter(s => !blocked(s, M));
+    const av = [...left].filter(s => !blocked(s, M) && !exteriorHidden(s, M));
     if (!av.length) throw new Error(M.name + ': 풀 수 없는 모양');
     for (let i = av.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [av[i], av[j]] = [av[j], av[i]]; }
     for (const s of av) { left.delete(s); order.push(s); s.state = 'sim'; }
@@ -1198,7 +1218,7 @@ function screw3d(api,startStage) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-20-colors1',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261106-screwbox-exterior-path1',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
