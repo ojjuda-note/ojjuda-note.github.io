@@ -75,7 +75,8 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  press(game,106,514);press(game,106,514);assert.equal(buyCalls,1,'double taps start one payment');resolve();release=null;await settled(game);
  assert.equal(game.state.extraHoles,1);assert.equal(balance,9);
  const extra=game.state.level.holes.find(h=>h.extra),screw=game.state.level.screws[game.state.level.order[0]];
- press(game,screw.hole.x,screw.hole.y);press(game,extra.x,extra.y);for(let i=0;i<60;i++)game.update(.05);
+ press(game,screw.hole.x,screw.hole.y);for(let i=0;i<10;i++)game.update(.05);
+ press(game,extra.x,extra.y);for(let i=0;i<60;i++)game.update(.05);
  assert.equal(screw.hole.id,extra.id,'the purchased hole accepts a real screw');
  for(let i=0;i<2;i++){press(game,106,514);await settled(game);}
  assert.equal(game.state.extraHoles,3);assert.equal(balance,7);assert.equal(buyCalls,3);
@@ -101,10 +102,11 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  const moveBuys=buyCalls,oldBalance=balance,oldLevel=game.state.level;
  release={promise:new Promise(r=>resolve=r)};press(game,206,514);press(game,206,514);assert.equal(buyCalls,moveBuys+1);resolve();release=null;await settled(game);
  assert.equal(balance,oldBalance-1);assert.equal(game.state.extraMoves,3);assert.equal(game.state.level,oldLevel,'buying moves does not reset the puzzle');
- press(game,from.x,from.y);assert.equal(game.state.moves,game.state.moveLimit,'selection uses no move');
+ press(game,from.x,from.y);assert.equal(game.state.moves,game.state.moveLimit+1,'lifting uses a move immediately');
+ for(let i=0;i<10;i++)game.update(.05);
  press(game,destination.x,destination.y);for(let i=0;i<60;i++)game.update(.05);
  assert.equal(moving.hole,destination);assert.equal(game.state.moves,game.state.moveLimit+1);assert.equal(game.state.extraMoves,3);
- for(const target of [game.state.level.holes[1],game.state.level.holes[0]]){press(game,moving.hole.x,moving.hole.y);press(game,target.x,target.y);for(let i=0;i<60;i++)game.update(.05);assert.equal(moving.hole,target);}
+ for(const target of [game.state.level.holes[1],game.state.level.holes[0]]){press(game,moving.hole.x,moving.hole.y);for(let i=0;i<10;i++)game.update(.05);press(game,target.x,target.y);for(let i=0;i<60;i++)game.update(.05);assert.equal(moving.hole,target);}
  assert.equal(game.state.moves,game.state.moveLimit+3);press(game,moving.hole.x,moving.hole.y);press(game,270,100);assert.equal(game.state.pending,null,'a three-move pack permits exactly three moves');
  press(game,297,514);await settled(game);assert.equal(game.state.moves,0);assert.equal(game.state.extraMoves,3,'retry retains the purchased stage allowance');
  game.destroy();storage.clear();storage.set(G.STAGE_KEY,'16');game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);assert.equal(game.state.extraMoves,3,'reopening recovers moves from the server');
@@ -116,7 +118,7 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  user=poor;press(game,206,514);assert.equal(buyCalls,recoveredBuys,'wallet switching blocks extra-move purchases');game.destroy();
  game=G.flat(api,Number(storage.get(G.STAGE_KEY)));await settled(game);press(game,206,514);await settled(game);assert.equal(buyCalls,recoveredBuys,'zero balance does not buy moves');game.destroy();
  storage.set(G.STAGE_KEY,'1');game=G.flat({setScore(){},end(){}},1);game.state.moves=game.state.moveLimit-2;
- for(let i=0;i<2;i++){const screw=game.state.level.screws[i],target=game.state.level.holes[i];press(game,screw.hole.x,screw.hole.y);press(game,target.x,target.y);for(let n=0;n<100;n++)game.update(.05);}
+ for(let i=0;i<2;i++){const screw=game.state.level.screws[i],target=game.state.level.holes[i];press(game,screw.hole.x,screw.hole.y);for(let n=0;n<10;n++)game.update(.05);press(game,target.x,target.y);for(let n=0;n<100;n++)game.update(.05);}
  assert.equal(game.state.moves,game.state.moveLimit);assert.equal(game.state.complete,true,'the final allowed move may finish the picture under gravity');game.destroy();
  await db.close();console.log('PASS: stage move limits, three-move packs for one ju, uncapped repeat packs, receipt recovery and existing hole/box purchase regressions.');
  console.log('PASS: one-ju atomic purchases, three-per-stage cap, idempotency, wallet isolation, box compatibility, actual extra-hole input, retry/reopen recovery and lost responses.');

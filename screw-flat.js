@@ -4,15 +4,16 @@
   const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
   const RESUME_KEY = 'ojjuda-screw-flat-last-stage-v1';
+  const HELD={x:225,y:94};
   const EXTRA_HOLE_X=[45,315,135],PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   // Finishing requires almost four transfers per plate; keep room for mistakes
   // without making a paid extra-move purchase necessary on advanced stages.
-  const moveLimit=level=>level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
+  const moveLimit=level=>Number.isInteger(level.requiredMoves)?level.requiredMoves+2:level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
   const SCREW_COLOR = '#A3B6C7';
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
-  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
+  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
@@ -55,7 +56,7 @@
     c.restore();
   }
   function flat(api,startStage=readResumeStage()) {
-    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Set(),focus:null,
+    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,heldFrom:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
     const tell=text=>{st.message=text;st.messageTime=1.7;};
@@ -98,7 +99,7 @@
       const L=st.L,run=st.shopRun,before=hole?st.extraHoles:st.extraMoves;let id=pendingPurchase(L,kind);
       const coins=api.getCoins?.();if(!id&&(!Number.isFinite(coins)||coins<1)){tell(Number.isFinite(coins)?'1 ZU가 필요해요':'ZU 지갑을 확인해 주세요');return;}
       if(!id){id=crypto.randomUUID();if(!savePurchase(L,kind,id)){tell('구매 기록을 저장할 수 없어요');return;}}
-      st.shopBusy='buying';st.shopKind=kind;st.selected=null;st.focus=null;
+      st.shopBusy='buying';st.shopKind=kind;st.focus=null;
       try{
         const r=await api.buyScrew(kind,id,L,false);if(!currentShop(L,run))return;
         if(validCount(r,L,kind)&&(r.ok||(hole&&r.reason==='limit'))){
@@ -114,13 +115,14 @@
     }
     function start(L) {
       const keep=L===st.L&&sameWallet(),paid=keep?st.extraHoles:0,extraMoves=keep?st.extraMoves:0;st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=extraMoves;
-      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
+      st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.heldFrom=null;st.pending=null;saveResumeStage(L);
       addHoles(paid);
       resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
       if(sameWallet()&&api.buyScrew)void readUpgrades();
     }
     function openAlbum(){
+      if(st.selected!==null){tell('들고 있는 나사를 빈 구멍에 끼워 주세요');return;}
       st.collection=new Set([...st.collection,...Pictures.readCollection()]);
       st.albumOpen=true;st.albumPicture=null;st.albumFocus=null;st.selected=null;st.focus=null;
       PICTURES.forEach((p,i)=>{if(st.collection.has(p.id))Pictures.preload(i,true);});
@@ -136,7 +138,7 @@
     function tap(x,y) {
       if(st.destroyed||st.ended||st.failed)return;
       if(st.albumOpen){albumTap(x,y);return;}
-      if(st.level.plates.length>18&&y>=5&&y<=48&&x>=208&&x<=272){if(st.view.zoom>1)resetView();else{st.view.zoom=Math.max(1.8,13/st.level.screwRadius);tell('확대한 철판을 밀어서 이동해요');}return;}
+      if((st.level.plates.length>18||st.level.screwRadius<10)&&y>=5&&y<=48&&x>=208&&x<=272){if(st.view.zoom>1)resetView();else{st.view.zoom=Math.max(1.8,13/st.level.screwRadius);tell('확대한 철판을 밀어서 이동해요');}return;}
       if(y>=5&&y<=48&&x>=278&&x<=348){openAlbum();return;}
       if(st.complete) { if(y>=491&&x>=197) { if(api.stageClear)api.stageClear(st.score);else if(st.L===LAST_STAGE){st.ended=true;api.end(st.score,{outcome:'success'});}else start(st.L+1); }return; }
       if(st.shopBusy==='buying')return;
@@ -144,20 +146,30 @@
       if(y>=491&&x>=24&&x<=140){void buyUpgrade('flat_hole');return;}
       if(y>=491&&x>=148&&x<=264){void buyUpgrade('flat_moves');return;}
       if(st.pending)return;
-      if(movesLeft()===0){tell('이동을 모두 썼어요. 1 ZU로 3회 추가해요');return;}
+      if(movesLeft()===0&&st.selected===null){tell('이동을 모두 썼어요. 1 ZU로 3회 추가해요');return;}
       const hits=st.level.holes.filter(visibleHole).map(h=>{const q=screenPoint(h);return{h,d:Math.hypot(q.x-x,q.y-y)};}).filter(hit=>hit.d<=21).sort((a,b)=>a.d-b.d);
       const hit=hits.find(({h})=>canAccessHole(st.level,h));
       if(!hit){if(hits.length)tell('앞의 나사나 철판이 홈을 가리고 있어요');return;}
       const h=hit.h;
       if(h.screw!==null) {
-        st.selected=st.selected===h.screw?null:h.screw;st.focus=null;
-        if(st.selected!==null&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h)))tell(st.extraHoles<3?'빈 구멍이 없어요. 1 ZU로 구멍을 추가해요':'빈 구멍이 없어요. 다시 시작해 순서를 바꿔요');
+        if(st.selected!==null){tell('들고 있는 나사를 먼저 끼워 주세요');return;}
+        const screw=st.level.screws[h.screw];
+        if(!canUnscrew(st.level,screw)){tell('다른 철판이 가리고 있어요');return;}
+        const from=screenPoint(h);
+        if(!st.physics.lift(screw)){tell('나사를 들어 올릴 수 없어요');return;}
+        st.selected=screw.id;st.heldFrom=h.id;st.moves++;st.focus=null;
+        st.pending={kind:'lift',screw:screw.id,from,to:HELD,time:0};
         return;
       }
       if(st.selected===null){tell('옮길 나사를 먼저 눌러 주세요');return;}
       const screw=st.level.screws[st.selected];
-      if(!canUnscrew(st.level,screw)){st.selected=null;tell('철판이 내려간 뒤 다시 골라 주세요');return;}
-      st.pending={screw:screw.id,from:screw.hole.id,to:h.id,time:0};st.selected=null;st.focus=null;
+      if(!canSeatScrew(st.level,h,screw)){tell('철판이나 다른 나사에 걸리는 구멍이에요');return;}
+      // Seat at the moment the player commits the move. Waiting until the
+      // cosmetic flight finished let falling steel block an already valid
+      // destination and made identical tap orders produce different results.
+      if(!st.physics.move(screw,h)){tell('철판에 가려진 곳이에요. 다른 빈 구멍을 골라요');return;}
+      st.selected=null;st.heldFrom=null;
+      st.pending={kind:'place',screw:screw.id,from:HELD,to:screenPoint(h),toHole:h.id,time:0};st.focus=null;
     }
     function update(dt) {
       if(st.destroyed||st.ended||st.failed||st.albumOpen||st.shopBusy==='buying')return;
@@ -167,10 +179,7 @@
       if(fallen.length){st.score+=fallen.length*10;api.setScore(st.score);}
       if(st.pending) {
         const move=st.pending;move.time+=dt;
-        if(move.time>=.5) {
-          const to=st.level.holes[move.to],screw=st.level.screws[move.screw];
-          if(movesLeft()>0&&st.physics.move(screw,to))st.moves++;
-          else tell('나사나 철판에 가려진 곳이에요. 빈 구멍을 다시 골라요');
+        if(move.time>=.45) {
           st.pending=null;
         }
       }
@@ -178,9 +187,6 @@
         resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
         api.stageClear?.(st.score);
-      }else if(!st.level.route&&api.stageFail&&!st.pending&&movesLeft()===0&&!st.level.plates.some(p=>p.state==='loose')){
-        const marker=`${st.moves}:${st.extraMoves}:${st.extraHoles}`;
-        if(marker!==st.failureMarker){st.failureMarker=marker;st.failed=true;st.selected=null;st.focus=null;api.stageFail(st.score);}
       }
     }
     function drawHole(c,h,scale=1) {
@@ -212,10 +218,12 @@
     }
     function draw(c) {
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
-      const remaining=movesLeft(),blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>h.screw===null&&canAccessHole(st.level,h));
+      const remaining=movesLeft(),holding=st.selected!==null,held=holding?st.level.screws[st.selected]:null;
+      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>holding?(h.screw===null&&canSeatScrew(st.level,h,held)):(h.screw!==null&&canUnscrew(st.level,st.level.screws[h.screw])));
+      const showZoom=st.level.plates.length>18||st.level.screwRadius<10;
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
-      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,st.level.plates.length>18?178:250);
-      if(st.level.plates.length>18){round(c,208,8,64,36,13);c.fillStyle='#E5E4EF';c.fill();c.font='700 12px "Noto Sans KR",sans-serif';c.fillStyle='#625778';c.textAlign='center';c.fillText(st.view.zoom>1?'전체 보기':'＋ 확대',240,26);}
+      c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,showZoom?178:250);
+      if(showZoom){round(c,208,8,64,36,13);c.fillStyle='#E5E4EF';c.fill();c.font='700 12px "Noto Sans KR",sans-serif';c.fillStyle='#625778';c.textAlign='center';c.fillText(st.view.zoom>1?'전체 보기':'＋ 확대',240,26);}
       round(c,280,8,62,36,13);c.fillStyle='#E2EADF';c.fill();c.font='700 10px "Noto Sans KR",sans-serif';c.fillStyle='#5D7760';c.textAlign='center';c.fillText(`앨범 ${st.collection.size}/${PICTURES.length}`,311,26);
       const lowMoves=!st.complete&&remaining<=3;
       round(c,74,39,212,29,14);c.fillStyle=lowMoves?'#B74736':'#426E53';c.fill();
@@ -223,7 +231,7 @@
       round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<3?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.selected!==null?'반짝이는 빈 구멍을 눌러 주세요':st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 선택':st.level.plates.length>18?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 누른 뒤 빈 구멍에 끼워요',26,133,226);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':holding?'들고 있는 나사를 빈 구멍에 끼워요':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<3?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 뽑아요':showZoom?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 뽑아 빈 구멍에 끼워요',26,133,226);
       c.fillStyle='#8E8178';
       c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
@@ -242,12 +250,15 @@
         // Draw every head at its actual depth, including partly covered heads.
         // The foreground metal/heads paint over them naturally; no fake lock
         // bars, hidden-head toggles or answer markings are used.
-        const heads=st.level.screws.filter(s=>s.hole.owner!==null&&st.pending?.screw!==s.id).map(s=>({s,depth:screwDepth(st.level,s.hole)}));
+        const heads=st.level.screws.filter(s=>s.hole&&s.hole.owner!==null&&st.pending?.screw!==s.id).map(s=>({s,depth:screwDepth(st.level,s.hole)}));
         for(const {s,depth} of heads)if(depth<0)drawScrew(c,s.hole.x,s.hole.y,'#8995A1',0,size*.8);
-        for(const p of [...st.level.plates].filter(p=>p.state!=='gone').sort((a,b)=>a.z-b.z)){
+        const visiblePlates=[...st.level.plates].filter(p=>p.state!=='gone').sort((a,b)=>a.z-b.z);
+        for(const p of visiblePlates){
           drawPlate(c,p);
           for(const {s,depth} of heads)if(depth===p.z)drawScrew(c,s.hole.x,s.hole.y,SCREW_COLOR,0,size);
         }
+        const frontZ=Math.max(-1,...visiblePlates.map(p=>p.z));
+        for(const {s,depth} of heads)if(depth>frontZ)drawScrew(c,s.hole.x,s.hole.y,SCREW_COLOR,0,size);
       }
       c.restore();
       if(!st.complete){
@@ -255,8 +266,8 @@
           const q=screenPoint(h),scale=h.owner===null?1:size*st.view.zoom;
           c.save();if(h.owner!==null){round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();}
           if(h.owner===null)drawHole(c,q);
-          if(h.owner===null&&h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR);
-          const target=st.selected!==null&&h.screw===null,selected=h.screw!==null&&st.selected===h.screw;
+          if(h.owner===null&&h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR,0,size);
+          const target=holding&&h.screw===null&&canSeatScrew(st.level,h,held),selected=h.screw!==null&&st.selected===h.screw;
           if(target||selected||st.focus===h.id) {
             c.beginPath();c.arc(q.x,q.y,(target?17+Math.sin(st.t*5)*1.5:18)*scale,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
             if(target){c.fillStyle='#7BAF8C28';c.fill();}
@@ -264,9 +275,12 @@
           c.restore();
         }
         if(st.pending) {
-          const move=st.pending,from=screenPoint(st.level.holes[move.from]),to=screenPoint(st.level.holes[move.to]),t=clamp(move.time/.5,0,1);
-          const flight=clamp((t-.2)/.6,0,1),eased=flight*flight*(3-2*flight);
+          const move=st.pending,from=move.from,to=move.to,t=clamp(move.time/.45,0,1);
+          const eased=t*t*(3-2*t);
           drawScrew(c,from.x+(to.x-from.x)*eased,from.y+(to.y-from.y)*eased-Math.sin(t*Math.PI)*24,SCREW_COLOR,t*Math.PI*6,1+Math.sin(t*Math.PI)*.2);
+        }else if(holding){
+          c.beginPath();c.arc(HELD.x,HELD.y,16,0,Math.PI*2);c.fillStyle='#F9F2D8';c.fill();c.strokeStyle='#B49B5B';c.lineWidth=2;c.stroke();
+          drawScrew(c,HELD.x,HELD.y,SCREW_COLOR,0,.88);
         }
       }
       if(st.complete) {
@@ -325,10 +339,19 @@
           if(key==='Enter'||key===' '){if(st.albumPicture===null&&st.albumFocus!==null&&st.collection.has(PICTURES[st.albumFocus].id))st.albumPicture=st.albumFocus;return true;}
           return false;
         }
-        if(key==='Escape'){st.selected=null;st.focus=null;return true;}
+        if(key==='Escape'){
+          if(st.pending)return true;
+          if(st.selected!==null){
+            const screw=st.level.screws[st.selected],home=st.level.holes[st.heldFrom];
+            if(home&&canSeatScrew(st.level,home,screw)&&st.physics.move(screw,home)){
+              st.selected=null;st.heldFrom=null;
+            }else tell('원래 구멍이 가려졌어요. 다른 빈 구멍을 골라요');
+          }
+          st.focus=null;return true;
+        }
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
           if(st.pending)return true;
-          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null));if(!visible.length)return true;
+          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null&&canSeatScrew(st.level,h,st.level.screws[st.selected])));if(!visible.length)return true;
           const i=visible.findIndex(h=>h.id===st.focus),delta=key==='ArrowLeft'||key==='ArrowUp'?-1:1;
           st.focus=visible[i<0?(delta>0?0:visible.length-1):(i+delta+visible.length)%visible.length].id;return true;
         }

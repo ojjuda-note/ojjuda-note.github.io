@@ -12,17 +12,19 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({body:html,contentType:'text/html'});if(u.pathname==='/config.js')return route.fulfill({body:'window.OJJUDA_CONFIG={};',contentType:'text/javascript'});const file=path.resolve(root,'.'+u.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();});
  await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.entryTest);
  await page.evaluate(()=>entryTest.arcade());
- const closed=page.getByRole('button',{name:'나사 풀기 · 공사중',exact:true});
- assert.ok(await closed.isVisible()&&await closed.isDisabled());
- assert.equal(await closed.locator('small').innerText(),'공사중');
- await closed.evaluate(button=>button.click());
- for(const id of ['screw','screw_box','screw_flat']){
+ const screwCard=page.locator('[data-act="game-open"][data-v="screw"]');
+ assert.ok(await screwCard.isVisible()&&await screwCard.isEnabled(),'the repaired flat mode is available in the arcade');
+ for(const id of ['screw_box']){
   await page.evaluate(id=>entryTest.link(id),id);
-  if(id!=='screw')await page.evaluate(id=>entryTest.rank(id),id);
+  await page.evaluate(id=>entryTest.rank(id),id);
   assert.match(await page.locator('#toast').textContent(),/공사중/);
   assert.equal(await page.locator('#gov').count(),0);
  }
- assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw-loader|screw3d\.js|screw-flat\.js/.test(r.name))),false);
+ await page.evaluate(()=>entryTest.link('screw'));
+ assert.equal(await page.locator('[data-g="screw-start"][data-mode="box"]').isDisabled(),true,'the unfinished box mode remains closed');
+ assert.equal(await page.locator('[data-g="screw-start"][data-mode="flat"]').isEnabled(),true);
+ await page.evaluate(()=>entryTest.close());
+ assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw3d\.js|screw-flat\.js/.test(r.name))),false,'opening the version chooser does not load an engine');
  let expected;
  for(const id of ['mole','runner','stacker','breakout']){
  await page.evaluate(id=>entryTest.open(id),id);await page.locator('#gov .game-entry').waitFor();
