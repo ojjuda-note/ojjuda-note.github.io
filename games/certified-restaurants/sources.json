@@ -1522,8 +1522,8 @@
       "분식": 23,
       "양식": 207,
       "일식": 130,
-      "중식": 125,
-      "한식": 1796
+      "중식": 124,
+      "한식": 1797
     }
   },
   "coordinateEnrichment": {
@@ -10414,7 +10414,7 @@
       },
       "evidenceUrls": [
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609191801020",
-        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609171458854",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609165908467",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21120810001294388",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609143808184",
         "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002505353",
@@ -10432,7 +10432,10 @@
       "coordinatesMissing": 13,
       "currentOperatingStatusVerified": 0,
       "notExhaustive": true,
-      "scope": "인천 제물포·영종·미추홀·연수·남동구 13개 업소만 확인; 전체 누락이나 폐업 전수 조사 아님"
+      "scope": "인천 제물포·영종·미추홀·연수·남동구 13개 업소만 확인; 전체 누락이나 폐업 전수 조사 아님",
+      "notes": [
+        "신동양 항목은 출처 세부 URL을 확인할 수 없어 제외; 공식 페이지 주소·상호·최초등록일·수정일을 검증한 삼미소문난냉면으로 대체. 신포순대/포청천부 수정일을 페이지 현행 표기와 재대조."
+      ]
     }
   },
   "mapCoverageAuditHistory": [
