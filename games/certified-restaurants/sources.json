@@ -1477,15 +1477,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3035,
+    "uniqueRestaurants": 3041,
     "providerCounts": {
       "blue-ribbon": 525,
       "michelin": 237,
-      "local-guide": 2306,
+      "local-guide": 2312,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2012,
+    "coordinatesMissing": 2018,
     "regionalCounts": {
       "강원": 44,
       "경기": 322,
@@ -1495,7 +1495,7 @@
       "대구": 117,
       "대전": 105,
       "부산": 378,
-      "서울": 326,
+      "서울": 332,
       "세종": 100,
       "울산": 36,
       "인천": 316,
@@ -1506,12 +1506,12 @@
       "충북": 214
     },
     "categoryCounts": {
-      "한식": 1776,
+      "한식": 1780,
       "중식": 120,
-      "일식": 128,
+      "일식": 129,
       "기타": 572,
       "양식": 204,
-      "분식": 18,
+      "분식": 19,
       "디저트": 217
     }
   },
@@ -10066,7 +10066,32 @@
       "classification": "지자체 공식 관광 소개이며 정식 지정·가이드 수상과 구분",
       "coordinatesAdded": 0,
       "unknownCoordinates": 14,
-      "currentOperatingStatusVerified": 0
+      "currentOperatingStatusVerified": 0,
+      "additionalMunicipalDesignationsInSameFile": 6
+    },
+    "municipalSelection2026Oraegage": {
+      "checkedAt": "2026-11-05",
+      "selectionYear": 2026,
+      "sourceAsOf": "2026-09-21",
+      "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+      "sourceFile": "official-seoul-visitseoul-northeast.json",
+      "scope": "2026 서울시 오래가게 선정 동대문구 4·중랑구 3",
+      "newCount": 6,
+      "enrichedCount": 1,
+      "newIds": [
+        "local-seoul-oraegage2026-ddm-haengun-donkatsu",
+        "local-seoul-oraegage2026-ddm-hyeseong-kalguksu",
+        "local-seoul-oraegage2026-ddm-hongneung-galbi",
+        "local-seoul-oraegage2026-jr-mangu-ssambap",
+        "local-seoul-oraegage2026-jr-old-grandma-tteokbokki",
+        "local-seoul-oraegage2026-jr-cheongpyeong-maeuntang"
+      ],
+      "enrichedIds": [
+        "local-seoul-visitseoul-ddm-yeonghwajang"
+      ],
+      "coordinatesVerified": 0,
+      "operatingStatusVerified": 0,
+      "notes": "이번 구의 서울시 공식 지정 7개 중 영화장은 기존 식당에 선정 이력 추가. 다른 구 8개는 별도 조사 예정."
     }
   },
   "mapCoverageAuditHistory": [
