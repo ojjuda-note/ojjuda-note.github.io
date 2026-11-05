@@ -1,0 +1,131 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+  "sourceName": "성남시 시정소식지 비전성남 · 2026 힙스토어 오디션 Top 8",
+  "completeRegionalCollection": false,
+  "selectionScope": "성남시상권활성화재단 상권 브랜딩 시민투표 선정 점포 중 음식점·카페 4곳만 등록. 맛 자체의 인증·리본 등급은 아님.",
+  "restaurants": [
+    {
+      "id": "local-seongnam-hipstore2026-cafe-themallang",
+      "name": "카페 더말랑",
+      "category": "디저트",
+      "region": "경기",
+      "district": "성남시",
+      "address": "경기도 성남시 수정구 수정로 312, 지1층 B1F-3호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌀 디저트",
+        "케이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 힙스토어 선정(상권 브랜딩)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+          "sourceName": "성남시 시정소식지 비전성남 · 2026 힙스토어 Top 8",
+          "sourceAsOf": "2026-08-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "성남시상권활성화재단 시민투표 선정 점포. 상권 브랜딩 사업으로 미식 전문가 심사나 블루리본 선정은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/"
+    },
+    {
+      "id": "local-seongnam-hipstore2026-deffee",
+      "name": "디피",
+      "category": "디저트",
+      "region": "경기",
+      "district": "성남시",
+      "address": "경기도 성남시 수정구 탄리로81번길 4, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피",
+        "디저트"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 힙스토어 선정(상권 브랜딩)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+          "sourceName": "성남시 시정소식지 비전성남 · 2026 힙스토어 Top 8",
+          "sourceAsOf": "2026-08-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "성남시상권활성화재단 시민투표 선정 점포. 상권 브랜딩 사업으로 미식 전문가 심사나 블루리본 선정은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c"
+    },
+    {
+      "id": "local-seongnam-hipstore2026-yori",
+      "name": "요리천재의집",
+      "category": "한식",
+      "region": "경기",
+      "district": "성남시",
+      "address": "경기도 성남시 수정구 수정로 115-1, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 힙스토어 선정(상권 브랜딩)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+          "sourceName": "성남시 시정소식지 비전성남 · 2026 힙스토어 Top 8",
+          "sourceAsOf": "2026-08-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "성남시상권활성화재단 시민투표 선정 점포. 상권 브랜딩 사업으로 미식 전문가 심사나 블루리본 선정은 아닙니다. 2026-08-18에 변경한 새 상호로 기록."
+        }
+      ],
+      "addressSourceUrl": "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91"
+    },
+    {
+      "id": "local-seongnam-hipstore2026-gimyeonmin",
+      "name": "카페 기면민",
+      "category": "디저트",
+      "region": "경기",
+      "district": "성남시",
+      "address": "경기도 성남시 중원구 산성대로468번길 3, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "커피",
+        "케이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 힙스토어 선정(상권 브랜딩)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+          "sourceName": "성남시 시정소식지 비전성남 · 2026 힙스토어 Top 8",
+          "sourceAsOf": "2026-08-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "성남시상권활성화재단 시민투표 선정 점포. 상권 브랜딩 사업으로 미식 전문가 심사나 블루리본 선정은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe"
+    }
+  ],
+  "notes": [
+    "기념품·서점·기름집 등 비식음업 업소는 맛집 목록에서 제외.",
+    "선정연도 2026과 기사 발행일 2026-08-26을 구분. 2026-11-06은 출처 확인일.",
+    "상호·현주소를 별도 공개 업소 주소 자료와 대조했으나 위경도는 업소 일치 좌표 근거를 확인하지 못해 null.",
+    "성남시 2026 힙스토어 사업은 미식 선정·맛 평가가 아니며 이를 인증맛집 메타에 명시.",
+    "용인시 2026 조아용 맛집은 모집 공고만 확인되어 최종 선정 업소 신규 등록은 보류."
+  ]
+}

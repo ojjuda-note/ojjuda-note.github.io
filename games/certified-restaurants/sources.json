@@ -1488,18 +1488,18 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3088,
+    "uniqueRestaurants": 3092,
     "providerCounts": {
       "blue-ribbon": 526,
-      "local-guide": 2359,
+      "local-guide": 2363,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2065,
+    "coordinatesMissing": 2069,
     "regionalCounts": {
       "강원": 44,
-      "경기": 325,
+      "경기": 329,
       "경남": 319,
       "경북": 145,
       "광주": 69,
@@ -1518,12 +1518,12 @@
     },
     "categoryCounts": {
       "기타": 572,
-      "디저트": 223,
+      "디저트": 226,
       "분식": 23,
       "양식": 208,
       "일식": 130,
       "중식": 126,
-      "한식": 1806
+      "한식": 1807
     }
   },
   "coordinateEnrichment": {
@@ -10102,51 +10102,115 @@
       "scope": "수원·화성 경기노포 공식 선정과 주소 일부 조사(비전수).",
       "coordinatePolicy": "신규 3곳은 검증 좌표 미확보, lat/lng null. 임의 좌표·폐업 판정·노출 제외 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot09-seongnam-hipstores",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3088,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2359,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2065,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 325,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 223,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1806
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3092,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2363,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2069,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 329,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 226,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1807
+        }
+      },
+      "newRestaurantCount": 4,
+      "newRestaurantIds": [
+        "local-seongnam-hipstore2026-cafe-themallang",
+        "local-seongnam-hipstore2026-deffee",
+        "local-seongnam-hipstore2026-yori",
+        "local-seongnam-hipstore2026-gimyeonmin"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://snvision.seongnam.go.kr/23223",
+        "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/",
+        "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c",
+        "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91",
+        "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe",
+        "https://www.yongin.go.kr/user/bbs/BD_selectBbs.do?q_bbsCode=1020&q_bbscttSn=20260210103207155",
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE"
+      ],
+      "scope": "성남·용인 공식 선정·모집 자료와 4개 업체 주소의 부분 대조(비전수).",
+      "coordinatePolicy": "신규 4곳 좌표 null; 주소와 식당 일치 공개 좌표 근거 미확보. 임의 지도 핀·폐업/삭제 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot08-oldshops",
+    "id": "2026-11-06-gyeonggi-slot09-seongnam-hipstores",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3085,
-      "providerCounts": {
-        "blue-ribbon": 526,
-        "local-guide": 2356,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2062,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 351,
-        "세종": 100,
-        "울산": 36,
-        "인천": 341,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "기타": 572,
-        "디저트": 223,
-        "분식": 23,
-        "양식": 208,
-        "일식": 130,
-        "중식": 126,
-        "한식": 1803
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3088,
       "providerCounts": {
         "blue-ribbon": 526,
@@ -10185,23 +10249,65 @@
         "한식": 1806
       }
     },
-    "newRestaurantCount": 3,
+    "currentCoverage": {
+      "uniqueRestaurants": 3092,
+      "providerCounts": {
+        "blue-ribbon": 526,
+        "local-guide": 2363,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2069,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 329,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 351,
+        "세종": 100,
+        "울산": 36,
+        "인천": 341,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "기타": 572,
+        "디저트": 226,
+        "분식": 23,
+        "양식": 208,
+        "일식": 130,
+        "중식": 126,
+        "한식": 1807
+      }
+    },
+    "newRestaurantCount": 4,
     "newRestaurantIds": [
-      "local-ggtour-oldshops2023-suwon-honamsundae",
-      "local-ggtour-oldshops2024-suwon-ipjujip",
-      "local-ggtour-oldshops2024-suwon-song-otdak"
+      "local-seongnam-hipstore2026-cafe-themallang",
+      "local-seongnam-hipstore2026-deffee",
+      "local-seongnam-hipstore2026-yori",
+      "local-seongnam-hipstore2026-gimyeonmin"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
-      "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT",
-      "https://www.koobig.com/93794",
-      "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629",
-      "https://tour.hscity.go.kr/NEW/1tour/food1.jsp"
+      "https://snvision.seongnam.go.kr/23223",
+      "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/",
+      "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c",
+      "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91",
+      "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe",
+      "https://www.yongin.go.kr/user/bbs/BD_selectBbs.do?q_bbsCode=1020&q_bbscttSn=20260210103207155",
+      "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE"
     ],
-    "scope": "수원·화성 경기노포 공식 선정과 주소 일부 조사(비전수).",
-    "coordinatePolicy": "신규 3곳은 검증 좌표 미확보, lat/lng null. 임의 좌표·폐업 판정·노출 제외 없음.",
+    "scope": "성남·용인 공식 선정·모집 자료와 4개 업체 주소의 부분 대조(비전수).",
+    "coordinatePolicy": "신규 4곳 좌표 null; 주소와 식당 일치 공개 좌표 근거 미확보. 임의 지도 핀·폐업/삭제 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10314,8 +10420,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2359,
-    "designationEvidenceCount": 2406,
+    "recordCount": 2363,
+    "designationEvidenceCount": 2410,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
@@ -10369,7 +10475,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 293,
+        "uniqueRestaurants": 297,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -10697,6 +10803,17 @@
         "화성시 모범음식점 목록만으로 공식 미식 선정 취급하지 않음",
         "좌표 미확인을 폐업으로 분류하지 않음"
       ]
+    },
+    "municipalSelection20261106SeongnamSlot09": {
+      "checkedAt": "2026-11-06",
+      "selectionYear": 2026,
+      "selectionBasis": "2026-08-26 성남시 상권활성화재단 힙스토어 시민 투표",
+      "sourceUrl": "https://snvision.seongnam.go.kr/23223",
+      "sourceName": "성남시 시정소식지 비전성남",
+      "sourceDataFile": "games/certified-restaurants/official-seongnam-hipstores-slot09.json",
+      "selectedFoodBusinessesAdded": 4,
+      "scope": "공식 힙스토어 Top 8 중 카페 3·한식점 1. 상권 브랜딩 선정이지 미식 평가·블루리본 등급이 아님. 용인 최종 선정 업소 확인 전 신규 등록 보류.",
+      "coordinatesAdded": 0
     }
   },
   "mapCoverageAuditHistory": [
