@@ -2336,14 +2336,14 @@
       "start": "2026-11-29",
       "end": "2026-11-29",
       "region": "서울",
-      "city": "서울",
+      "city": "강남구",
       "venue": "가빈 아트홀",
-      "address": "",
+      "address": "서울 강남구 삼성로 534 B2층",
       "lat": null,
       "lng": null,
       "geoApprox": false,
       "locationStatus": "unmapped",
-      "summary": "브레이킹 K시리즈의 시즌 파이널 경기입니다. 정확한 행사장 주소는 확인 중입니다.",
+      "summary": "브레이킹 K시리즈 시즌 파이널 경기가 서울 강남구 가빈아트홀에서 열립니다.",
       "scheduleNote": "경기별 시작 시간은 협회·주최 측 공식 안내 확인",
       "priceNote": "관람료·선수 참가비는 주최 측 공식 안내 확인",
       "accessNote": "대회 참가자 모집과 일반 관람 가능 여부는 별도입니다. 관람·입장 제한과 참가 접수는 해당 종목 협회 공지를 확인하세요.",
@@ -2355,7 +2355,10 @@
         "스포츠",
         "전국대회"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "verificationSources": [
+        "https://www.gabin-arthall.com/application/art-hall.php"
+      ]
     },
     {
       "id": "ssireum-yeongam-grand-champion-2026",
