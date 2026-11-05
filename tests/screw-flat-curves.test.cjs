@@ -3,6 +3,7 @@ const M=require('../vendor/matter-0.20.0.min.js'),P=require('../screw-flat-physi
 const profiles=new Set(),sides=new Set();let count=0;
 for(let stage=1;stage<=1000;stage++){
  const level=P.makeFlatLevel(stage),sim=P.createPhysics(level);
+  assert.ok(level.plates.some(p=>p.profile),`stage ${stage} includes a whole-shaped plate`);
  for(const p of level.plates){
   const body=sim.bodies.get(p.id);
   assert.equal(body.vertices.length,p.vertices.length,`stage ${stage}: no hidden rectangle or extra rim`);

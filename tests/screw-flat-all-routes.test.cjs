@@ -17,12 +17,12 @@ if(isMainThread){
   console.log('PASS: all 988 advanced stages physically clear with only three free spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
- const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js'),{solve}=require('./helpers/flat-solution-search.cjs');
+ const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js');
  const {solve:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs'),failures=[];let checked=0;
  for(const stage of workerData){
   let error=null;
   try{
-   const level=P.makeFlatLevel(stage),result=level.plates.some(p=>p.profile)?solveAtomic(stage):solve(stage);
+   const level=P.makeFlatLevel(stage),result=solveAtomic(stage);
    assert.equal(level.holes.length-level.screws.length,P.spareHoleCount(stage));
    assert.equal(result.reason,null,`stage ${stage}: ${result.reason}`);
    assert.ok(result.moves<=G.moveLimit(level),`stage ${stage} needs ${result.moves} moves, but only ${G.moveLimit(level)} are available`);

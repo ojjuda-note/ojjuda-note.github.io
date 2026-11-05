@@ -5,9 +5,13 @@ globalThis.play=async(stage,seed,route,upgrades)=>{
   let r=seed>>>0,pr=route>>>0;
   Math.random=()=>((r=(Math.imul(r,1664525)+1013904223)>>>0)/4294967296);
   const random=()=>((pr=(Math.imul(pr,1664525)+1013904223)>>>0)/4294967296);
-  const game=screw3d({getUserId:()=>String(seed)+'-'+route,getCoins:()=>19366,
+  const getUserId=()=>String(seed)+'-'+route;
+  localStorage.setItem(stageStorageKey(STAGE_KEY,{getUserId}),String(stage));
+  const game=screw3d({getUserId,getCoins:()=>19366,
     setScore(){},end(){},buyScrew:async(kind,id,stage)=>({ok:true,stage})},stage);
-  const st=window.__ojjScrew3d,lv=st.lvl;st.touched=true;
+  const st=window.__ojjScrew3d,lv=st.lvl;
+  if(st.L!==stage)throw Error('Fixture opened the wrong stage');
+  st.touched=true;
   const tap=(x,y)=>{game.onDown(x,y,1);game.onUp(x,y,1);};
   if(upgrades){tap(320,80);for(let i=0;i<8;i++)await Promise.resolve();
     tap(320,160);for(let i=0;i<8;i++)await Promise.resolve();}

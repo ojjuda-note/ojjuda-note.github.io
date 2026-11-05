@@ -14,7 +14,7 @@ const invariant=level=>{
   assert.ok(Math.hypot(q.x-hole.x,q.y-hole.y)<2,'a remaining screw stays within two pixels of its board anchor under contact load');
  }
 };
-const relocate=(game,id,target,canBeBlocked=false)=>{
+const relocate=(game,id,target,canBeBlocked=false,wait=3)=>{
  const st=game.state,s=st.level.screws[id];
  const to=target||st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h));
  assert.ok(to,`stage ${st.L} has a bare destination for screw ${id}`);assert.ok(G.canUnscrew(st.level,s));
@@ -28,7 +28,7 @@ const relocate=(game,id,target,canBeBlocked=false)=>{
  }
  assert.equal(st.pending?.kind,'transfer','a committed move animates the head to its destination');
  assert.equal(st.moves,beforeMoves+1,'the destination tap spends one move');
- tick(game);assert.equal(st.pending,null);invariant(st.level);
+ tick(game,wait);assert.equal(st.pending,null);invariant(st.level);
  if(canBeBlocked&&s.hole!==to){assert.notEqual(s.hole,null,'a blocked transfer must not leave an invisible screw');return false;}
  assert.equal(s.hole,to);return true;
 };
@@ -98,12 +98,13 @@ for(const [stage,pieces] of [[19,7],[20,8],[34,8],[35,9],[54,9],[55,10],[80,11],
  game.destroy();
 }
 // Complete every introductory stage with only the three free spare holes.
-// Clear the petals, then move the screws that physically support the remaining centre and top petal.
-const flowerSolution=[[0,0],[1,1],[0,3],[1,4],[2,0],[3,1],[2,6],[3,5],[4,0],[5,1],[4,7],[5,8],[6,0],[7,1],[8,2],[9,9],[0,12],[11,11],[10,10],[3,3],[11,13],[2,5],[13,11],[12,14],[0,6],[11,15],[4,16],[1,13]];
+// Replay the new centre shapes through real taps while the five outer petals keep their outline.
+const flowerSolution=require('./helpers/flat-atomic-solution-search.cjs').solve(11);
+assert.equal(flowerSolution.reason,null);
 for(let stage=1;stage<=11;stage++){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
  if(stage===11){
-  for(const [id,target] of flowerSolution)relocate(game,id,st.level.holes[target]);
+  for(const {screw,to,wait} of flowerSolution.route)relocate(game,screw,st.level.holes[to],false,wait);
  }else{
  for(let i=0;i<st.level.order.length;i+=2){
   clearSupports(game);

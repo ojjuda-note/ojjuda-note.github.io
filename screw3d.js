@@ -564,7 +564,11 @@ function rayHit(o, d, len, els, skip) {
 const HEAD_H = 0.035, HEAD_R = 0.062;
 // Detached parts keep falling for four seconds, then fade gently for one.
 const DETACHED_FADE_START = 4, DETACHED_FADE_TIME = 1;
-const pieceOpacity = E => E.dyn ? Math.max(0, Math.min(1, (DETACHED_FADE_START + DETACHED_FADE_TIME - E.dyn.age) / DETACHED_FADE_TIME)) : E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1;
+function pieceOpacity(E) {
+  if (!E.dyn) return E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1;
+  const age = E.dyn.age ?? 0;
+  return Math.max(0, Math.min(1, (DETACHED_FADE_START + DETACHED_FADE_TIME - age) / DETACHED_FADE_TIME));
+}
 // Visual heads are intentionally smaller than their unchanged collision
 // radius, making the enlarged sculpted models feel like the main subject.
 const DRAW_HEAD_H = 0.029, DRAW_HEAD_R = 0.051;
@@ -1483,7 +1487,10 @@ function screw3d(api,startStage) {
     if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
     const o = topAt(x, y); if (o && o.p) return o;
     let best = null, bd = touchRadius();
-    for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && (topAt(h.x, h.y) === s || s.skinMount)) { bd = d; best = s; } }
+    for (const [s, h] of st.heads) {
+      const d = Math.hypot(h.x - x, h.y - y);
+      if (d < bd && topAt(h.x, h.y) === s) { bd = d; best = s; }
+    }
     return best;
   }
   function tap(x, y) {
