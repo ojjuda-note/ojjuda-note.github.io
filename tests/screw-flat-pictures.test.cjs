@@ -13,12 +13,15 @@ for(const bad of ['invalid','{}','null','[null,123,"unknown"]']){storage.set(A.C
 storage.clear();let score=0;const api={setScore:n=>score=n,end(){}};
 const game=G.flat(api),st=game.state;
 assert.equal(st.collection.size,0,'starting a stage does not earn its picture');
-// A held screw stays safe while the album is closed; the album pauses the
-// physics only after that screw has physically reached an empty slot.
+// Selecting a screw does not detach it; opening the album can safely cancel
+// that selection because there is no held screw or pending physics action.
 const screw=st.level.screws[st.level.order[0]],target=st.level.holes[0];tap(game,screw.hole.x,screw.hole.y);
-assert.equal(st.pending.kind,'lift');game.onKey('a');assert.equal(st.albumOpen,false,'a held screw must not vanish into the album');
-for(let i=0;i<10;i++)game.update(.05);
-tap(game,target.x,target.y);assert.equal(st.pending.kind,'place');
+const source=screw.hole;
+assert.equal(st.pending,null);assert.equal(screw.hole,source);assert.equal(st.moves,0);
+game.onKey('a');assert.equal(st.albumOpen,true,'album can open before a move is committed');
+assert.equal(st.selected,null);assert.equal(screw.hole,source,'album leaves the original pin in place');
+game.onKey('Escape');assert.equal(st.albumOpen,false);
+tap(game,source.x,source.y);tap(game,target.x,target.y);assert.equal(st.pending,null);
 for(let i=0;i<10;i++)game.update(.05);
 assert.equal(screw.hole,target);game.onKey('a');assert.equal(st.albumOpen,true);
 const paused=JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates});

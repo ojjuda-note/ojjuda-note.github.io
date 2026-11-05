@@ -19,13 +19,16 @@ const relocate=(game,id,target,canBeBlocked=false)=>{
  const to=target||st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h));
  assert.ok(to,`stage ${st.L} has a bare destination for screw ${id}`);assert.ok(G.canUnscrew(st.level,s));
  game.onKey('Escape');
- const before=s.hole;press(game,before);assert.equal(st.selected,id);assert.equal(s.hole,null,'lifting removes the screw and releases metal immediately');
- tick(game,.5);press(game,to);
- if(!st.pending&&canBeBlocked){
-  const home=st.level.holes.find(h=>h.screw===null&&P.canSeatScrew(st.level,h,s));
-  assert.ok(home,'a blocked transfer still has a physical return path');press(game,home);tick(game);invariant(st.level);return false;
+ const before=s.hole,beforeMoves=st.moves;
+ press(game,before);assert.equal(st.selected,id);assert.equal(s.hole,before,'selecting never removes the source pin');
+ assert.equal(st.moves,beforeMoves,'selection never spends a move');
+ press(game,to);
+ if(s.hole===before&&canBeBlocked){
+  game.onKey('Escape');tick(game);invariant(st.level);return false;
  }
- assert.ok(st.pending);tick(game);invariant(st.level);
+ assert.equal(st.pending,null,'a completed move is applied without a lift animation');
+ assert.equal(st.moves,beforeMoves+1,'the destination tap spends one move');
+ tick(game);invariant(st.level);
  if(canBeBlocked&&s.hole!==to){assert.notEqual(s.hole,null,'a blocked transfer must not leave an invisible screw');return false;}
  assert.equal(s.hole,to);return true;
 };
@@ -246,15 +249,16 @@ relocate(game,second);assert.equal(plate.state,'gone');assert.equal(st.score,10)
 press(game,{x:82,y:514});for(const key of ['z','Z','Backspace'])assert.equal(game.onKey(key),false);
 assert.equal(plate.state,'gone','the former undo area and shortcuts cannot restore a plate');assert.equal(st.score,10);assert.equal(st.moves,2);
 invariant(st.level);
- press(game,st.level.screws[second].hole);assert.equal(st.pending?.kind,'lift');
- press(game,st.level.holes.find(h=>h.screw===null&&G.bareHole(st.level,h)));assert.equal(st.pending?.kind,'lift','a lifted screw must finish animating before seating');
- press(game,{x:82,y:514});assert.ok(st.pending,'the former undo area does not cancel a pending lift');
+ press(game,st.level.screws[second].hole);assert.equal(st.selected,second);
+ const selectedHome=st.level.screws[second].hole,selectedMoves=st.moves;
+ press(game,{x:82,y:514});assert.equal(st.selected,second,'the former undo area does not cancel selection');
+ assert.equal(st.moves,selectedMoves);assert.equal(st.level.screws[second].hole,selectedHome,'the selected screw stays attached');
 press(game,{x:297,y:514});assert.equal(st.score,0);assert.equal(st.moves,0);assert.ok(st.level.plates.every(p=>p.pins.length===2));
 for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id).position,{x:s.hole.x,y:s.hole.y},'retry restores each screw obstacle');
- press(game,st.level.screws[0].hole);assert.equal(st.selected,0);assert.equal(st.pending?.kind,'lift');tick(game,.55);
- press(game,st.level.screws[1].hole);assert.equal(st.selected,0,'only one screw can be held');
+ press(game,st.level.screws[0].hole);assert.equal(st.selected,0);assert.equal(st.pending,null);tick(game,.55);
+ press(game,st.level.screws[1].hole);assert.equal(st.selected,1,'another screw tap replaces the selected screw');
  game.onKey('Escape');if(st.selected!==null)press(game,{x:297,y:514});invariant(st.level);
  game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);tick(game,.55);
- game.onKey('ArrowRight');game.onKey('Enter');assert.ok(st.pending);tick(game);invariant(st.level);
+ game.onKey('ArrowRight');game.onKey('Enter');assert.equal(st.selected,null);assert.equal(st.pending,null);tick(game);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
 console.log('PASS: 1000 layouts with thirteen progressive metal outlines, varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced release, three free spare holes, eleven introductory playthroughs, stage 25 and screw-support regressions.');
