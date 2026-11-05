@@ -1816,6 +1816,165 @@
         "어항"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "gwangju-on-ai-2026",
+      "title": "국립광주과학관 AI 특별전 〈모두의 AI(On-AI)〉",
+      "category": "expo",
+      "start": "2026-07-30",
+      "end": "2026-11-08",
+      "region": "광주",
+      "city": "북구",
+      "venue": "국립광주과학관 기획전시실",
+      "address": "광주광역시 북구 첨단과기로 235",
+      "lat": 35.22974,
+      "lng": 126.84994,
+      "geoApprox": true,
+      "summary": "인공지능의 원리와 생성형·피지컬 AI를 전시, 체험하며 만나는 과학관 특별전입니다.",
+      "scheduleNote": "전시 09:30~17:30 / 휴관일과 세부 운영은 과학관 공식 안내 확인",
+      "priceNote": "8,000원(광주광역시 관광 공식 전시일정 기준) / 할인·체험 조건 별도 확인",
+      "accessNote": "사전 예매·입장 연령·할인 정보는 국립광주과학관 관람 안내 확인.",
+      "sourceUrl": "https://tour.gwangju.go.kr/home/tour/culture/exhibiition.cs?m=316",
+      "sourceName": "광주광역시 관광 공식 전시일정(국립광주과학관)",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.sciencecenter.or.kr/"
+      ],
+      "tags": [
+        "AI",
+        "인공지능",
+        "로봇",
+        "과학",
+        "전시"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-act-festival-2026",
+      "title": "〈ACT 페스티벌 2026〉 전시",
+      "category": "expo",
+      "start": "2026-10-23",
+      "end": "2026-11-08",
+      "region": "광주",
+      "city": "동구",
+      "venue": "국립아시아문화전당 복합전시 3·4관",
+      "address": "광주광역시 동구 문화전당로 38",
+      "lat": 35.14683,
+      "lng": 126.9202,
+      "geoApprox": true,
+      "summary": "국립아시아문화전당에서 진행하는 2026 ACT 페스티벌의 융복합 예술 전시입니다.",
+      "scheduleNote": "화·목·금·일 10:00~18:00 / 수·토 10:00~20:00 / 매주 월요일 휴관(전시 기간 내에도 미운영)",
+      "priceNote": "무료",
+      "accessNote": "전시별 상세 운영 내용과 관람 조건은 국립아시아문화전당 공식 공지 확인.",
+      "sourceUrl": "https://tour.gwangju.go.kr/home/tour/culture/exhibiition.cs?m=316",
+      "sourceName": "광주광역시 관광 공식 전시일정(국립아시아문화전당)",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.acc.go.kr/"
+      ],
+      "tags": [
+        "예술",
+        "미디어아트",
+        "융복합",
+        "전시",
+        "페스티벌"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "busan-illustration-fair-v7-2026",
+      "title": "2026 부산일러스트레이션페어 V.7",
+      "category": "expo",
+      "start": "2026-11-06",
+      "end": "2026-11-08",
+      "region": "부산",
+      "city": "해운대구",
+      "venue": "벡스코 제2전시장 4홀",
+      "address": "부산광역시 해운대구 APEC로 30",
+      "lat": 35.1703,
+      "lng": 129.1339,
+      "geoApprox": true,
+      "summary": "일러스트 작가와 창작 브랜드의 작품 및 굿즈를 전시하고 만나는 부산 아트 페어입니다.",
+      "scheduleNote": "11/6~7 10:00~18:00, 11/8 10:00~17:00 / 매일 종료 1시간 전 입장마감",
+      "priceNote": "유료 / 현장 성인 11,000원 등 연령·예매 시기별 요금 차등, 공식 예매처 확인",
+      "accessNote": "주최 측 안내와 NOL 공식 예매처의 티켓 수령·입장 조건 확인. 11/8은 16:00 입장마감.",
+      "sourceUrl": "https://nol.yanolja.com/ticket/products/26010464",
+      "sourceName": "부산일러스트레이션페어 공식 티켓 예매처(NOL)",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://busanillustrationfair.co.kr/"
+      ],
+      "tags": [
+        "일러스트",
+        "굿즈",
+        "아트페어",
+        "전시"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jeju-citrus-expo-2026",
+      "title": "2026 제주감귤박람회",
+      "category": "expo",
+      "start": "2026-11-19",
+      "end": "2026-11-23",
+      "region": "제주",
+      "city": "서귀포시",
+      "venue": "서귀포농업기술센터 농업생태원 일원",
+      "address": "제주특별자치도 서귀포시 남원읍 중산간동로 7413",
+      "lat": 33.28785,
+      "lng": 126.60682,
+      "geoApprox": true,
+      "summary": "제주 감귤을 주제로 전시, 직거래, 농업·먹거리 체험을 운영하는 감귤박람회입니다.",
+      "scheduleNote": "11/19~23 10:00~17:00 / 전시관 10:00~16:30",
+      "priceNote": "현장 2,000원 / 사전예약·제주도민 1,000원 / 13세 미만·65세 이상 등 대상자 무료 / 체험은 별도 요금",
+      "accessNote": "사전예약은 11/18까지 방문 날짜 선택, 계정당 1회·최대 20명. 사전예약자 신분증 지참, 현장 구매도 가능.",
+      "sourceUrl": "https://jicexpo.com/guide",
+      "sourceName": "제주감귤박람회 공식 누리집",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.jicexpo.com/52",
+        "https://jicexpo.com/31"
+      ],
+      "tags": [
+        "감귤",
+        "먹거리",
+        "과일",
+        "박람회",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "sejong-mecenat-concert-2026",
+      "title": "2026 세종메세나 콘서트",
+      "category": "local",
+      "start": "2026-11-19",
+      "end": "2026-11-19",
+      "region": "세종",
+      "city": "세종시",
+      "venue": "세종예술의전당(나성동)",
+      "address": "세종특별자치시 국립박물관로 21",
+      "lat": 36.48656,
+      "lng": 127.26692,
+      "geoApprox": true,
+      "summary": "세종시문화관광재단과 세종시메세나협회가 개최하는 지역 문화예술 후원 콘서트입니다.",
+      "scheduleNote": "11/19 19:30 시작 / 러닝타임 약 120분(중간 휴식 10분 포함)",
+      "priceNote": "전석 무료",
+      "accessNote": "7세 이상 관람 가능. 무료 공연이나 예매·잔여좌석과 티켓 오픈일은 공연장 공식 안내에서 확인.",
+      "sourceUrl": "https://www.sjac.or.kr/base/nrr/performance/read?menuLevel=2&menuNo=77&performanceNo=736",
+      "sourceName": "세종예술의전당 공식 공연안내",
+      "sourceCheckedAt": "2026-11-05",
+      "verificationSources": [
+        "https://www.sjac.or.kr/base/main/view"
+      ],
+      "tags": [
+        "음악",
+        "콘서트",
+        "문화예술",
+        "무료공연"
+      ],
+      "status": "scheduled"
     }
   ]
 }
