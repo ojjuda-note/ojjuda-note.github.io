@@ -10,7 +10,9 @@ export function createReplacementModels(h) {
   const position = (a,b) => [(a[0]+b[0])*0.5,(a[1]+b[1])*0.5,(a[2]+b[2])*0.5];
   const safeAdd = (M, E, B, p, axis) => { M.els.push(E); pin(M,E,B,p,axis); return E; };
   const eye = (M, B, q, color='#172737') => {
-    const n=[0,0,1],p=add(q,[0,0,GRID/2]);
+    // The penguin's curved body projects beyond the cube. Put the real eye
+    // and its removable screw outside that skin, where fingers can reach it.
+    const n=[0,0,1],p=add(q,[0,0,GRID/2+0.205]);
     const E=cylE(0.065,0.021,add(p,[0,0,0.022]),color,rx(Math.PI/2));
     safeAdd(M,E,B,add(p,[0,0,0.044]),n);E.material='glass';
   };
