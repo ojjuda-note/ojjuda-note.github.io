@@ -1,6 +1,6 @@
 // Build the next 3D screw puzzle outside the animation / touch thread.
 // The worker never touches coins, the user's account, or game progress.
-import {makeLevel} from './screw3d.js?v=20261105-screwbox-solid-depth2';
+import {makeLevel} from './screw3d.js?v=20261105-screwbox-20-colors1';
 
 self.onmessage=event=>{
   const stage=Number(event.data?.stage);
