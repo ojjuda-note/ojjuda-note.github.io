@@ -1167,7 +1167,7 @@ function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_
 function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 function screw3d(api,startStage=loadResumeStage()) {
   const depthRenderer=createScrewDepthRenderer();
-  const st = { L: Number.isInteger(startStage)&&startStage>=1?Math.min(startStage, loadStage()):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
+  const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?Math.min(startStage, loadStage()):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
