@@ -26,9 +26,9 @@ const relocate=(game,id,target,canBeBlocked=false)=>{
  if(s.hole===before&&canBeBlocked){
   game.onKey('Escape');tick(game);invariant(st.level);return false;
  }
- assert.equal(st.pending,null,'a completed move is applied without a lift animation');
+ assert.equal(st.pending?.kind,'transfer','a committed move animates the head to its destination');
  assert.equal(st.moves,beforeMoves+1,'the destination tap spends one move');
- tick(game);invariant(st.level);
+ tick(game);assert.equal(st.pending,null);invariant(st.level);
  if(canBeBlocked&&s.hole!==to){assert.notEqual(s.hole,null,'a blocked transfer must not leave an invisible screw');return false;}
  assert.equal(s.hole,to);return true;
 };
@@ -259,6 +259,6 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
  press(game,st.level.screws[1].hole);assert.equal(st.selected,1,'another screw tap replaces the selected screw');
  game.onKey('Escape');if(st.selected!==null)press(game,{x:297,y:514});invariant(st.level);
  game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);tick(game,.55);
- game.onKey('ArrowRight');game.onKey('Enter');assert.equal(st.selected,null);assert.equal(st.pending,null);tick(game);invariant(st.level);
+ game.onKey('ArrowRight');game.onKey('Enter');assert.equal(st.selected,null);assert.equal(st.pending?.kind,'transfer');tick(game);assert.equal(st.pending,null);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
 console.log('PASS: 1000 layouts with thirteen progressive metal outlines, varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced release, three free spare holes, eleven introductory playthroughs, stage 25 and screw-support regressions.');

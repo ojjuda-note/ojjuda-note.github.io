@@ -1,30 +1,44 @@
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
 const Matter=require('../vendor/matter-0.20.0.min.js');
-const Physics=require('../screw-flat-physics.js');
-
-let curved=0,sharp=0,roundFaces=0,triangles=0,pentagons=0;
-const curvedStages=new Set();
-for(let stage=1;stage<=1000;stage++){
- const level=Physics.makeFlatLevel(stage);
- for(const plate of level.plates){
-  const face=plate.displayVertices;
-  assert.ok(Array.isArray(face)&&face.length>=3,`stage ${stage} plate ${plate.id} has a top face`);
-  assert.ok(Matter.Vertices.isConvex(face),`stage ${stage} plate ${plate.id} remains convex`);
-  for(const mount of plate.mounts){
-   assert.ok(Physics.polygonDistance(face,mount.x,mount.y)<0,`stage ${stage} plate ${plate.id} keeps its real fasteners on the metal`);
-  }
-  if(face!==plate.vertices){curved++;curvedStages.add(stage);if(face.length>=20)roundFaces++;}
-  else sharp++;
-  if(plate.vertices.length===3)triangles++;
-  if(plate.vertices.length===5)pentagons++;
- }
+const P=require('../screw-flat-physics.js');
+const types=new Set(),counts=new Map();
+const pointKey=p=>p.x.toFixed(5)+','+p.y.toFixed(5);
+function edges(plate){
+  const world=plate.contour.map(q=>P.worldPoint(plate,q));
+  return world.map((a,i)=>({a,b:world[(i+1)%world.length]}));
 }
-assert.ok(curved>5000&&sharp>5000,'round and straight-edged metal pieces are both common');
-assert.ok(curvedStages.size>=900,'curved metal is spread across nearly all stages');
-assert.ok(roundFaces>1000,'rounded and near-oval steel faces occur frequently');
-assert.ok(triangles>500&&pentagons>1000,'the solid puzzle still has triangular and pentagonal pieces');
-const renderer=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
-assert.match(renderer,/p\.displayVertices\|\|p\.vertices/,'the renderer uses the curved top face');
-assert.match(renderer,/metalPath\(c,p,true\)/,'the underlying physical rim remains visible');
-console.log(`PASS: ${curved} rounded and ${sharp} straight metal pieces, ${roundFaces} oval-like faces, triangulated/pentagonal diversity, and fasteners on solid metal across 1000 stages.`);
+for(let stage=1;stage<=1000;stage++){
+  const level=P.makeFlatLevel(stage),pairs=new Map();
+  let area=0;
+  for(const p of level.plates){
+    area+=Matter.Vertices.area(p.contour);
+    for(const mount of p.mounts)assert.ok(P.polygonDistance(p.contour,mount.x,mount.y)<0,'every screw is on its sheet');
+    const perimeter=edges(p);
+    for(const seam of p.seams){
+      if(!pairs.has(seam.id))pairs.set(seam.id,[]);
+      pairs.get(seam.id).push({p,seam,perimeter});
+    }
+  }
+  const silhouette=level.silhouette.reduce((sum,poly)=>sum+Matter.Vertices.area(poly),0);
+  assert.ok(Math.abs(area-silhouette)<.05,`stage ${stage}: sheets cover the original picture without missing or extra area`);
+  if(stage>1)assert.ok(pairs.size>0,`stage ${stage}: at least one pair has a shaped seam`);
+  for(const [id,pair] of pairs){
+    assert.equal(pair.length,2,'one toolpath cuts two neighbours');
+    const [a,b]=pair, {type,cx,cy,extent}=a.seam;
+    assert.equal(type,b.seam.type);types.add(type);counts.set(type,(counts.get(type)||0)+1);
+    const near=q=>Math.hypot(q.x-cx,q.y-cy)<extent*1.55+1e-4;
+    const other=new Set(b.perimeter.map(({a,b})=>[pointKey(a),pointKey(b)].sort().join('|')));
+    const shared=a.perimeter.filter(e=>near(e.a)&&near(e.b)&&other.has([pointKey(e.a),pointKey(e.b)].sort().join('|')));
+    const segments={round:16,oval:16,wave:12,square:3,triangle:2}[type];
+    assert.ok(shared.length>=segments,`stage ${stage} seam ${id}: the full ${type} cut fits both plates`);
+    // The very same side of a cut is metal on one sheet and air on the other.
+    const e=shared[Math.floor(shared.length/2)],dx=e.b.x-e.a.x,dy=e.b.y-e.a.y,length=Math.hypot(dx,dy);
+    const x=(e.a.x+e.b.x)/2,y=(e.a.y+e.b.y)/2;
+    for(const sign of [-1,1]){
+      const qx=x-sign*dy/length*.04,qy=y+sign*dx/length*.04;
+      assert.notEqual(P.plateCovers(a.p,qx,qy),P.plateCovers(b.p,qx,qy),`stage ${stage}, seam ${id}: complementary tool access`);
+    }
+  }
+}
+assert.deepEqual([...types].sort(),['oval','round','square','triangle','wave']);
+console.log('PASS: 1000 assembled silhouettes, seated mounts and matching physical cut edges.',Object.fromEntries(counts));

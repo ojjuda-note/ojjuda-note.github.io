@@ -4,7 +4,7 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
-world=world.replace('<script type="module">','<script src="/mobile-viewport.js"></script><script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
+world=world.replace('<script type="module">','<link rel="stylesheet" href="/screw-games.css"><script src="/mobile-viewport.js"></script><script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
@@ -18,12 +18,62 @@ world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R,
 const qa=process.env.SCREW_MODES_QA_DIR;if(qa)fs.mkdirSync(qa,{recursive:true});
 const font=process.env.SCREW_QA_FONT;
 if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans KR";src:url("/fixture-korean.ttf")}body,button{font-family:"Noto Sans KR",sans-serif}</style></head>');
-const screens=[{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:344,height:882},{width:1280,height:900}];
+const screens=[{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:344,height:882},{width:1280,height:900},{width:1920,height:1080}];
 
 async function canvasTap(page,point){
  const canvas=page.locator('#gcv'),r=await canvas.boundingBox();
  assert.ok(r&&r.width>0&&r.height>0,'the game canvas is visible');
  await page.touchscreen.tap(r.x+point.x*r.width/360,r.y+point.y*r.height/540);
+}
+async function checkFlatControls(page,cdp){
+ const r=await page.locator('#gcv').boundingBox();
+ const point=(x,y,id)=>({x:r.x+x*r.width/360,y:r.y+y*r.height/540,id});
+ const fingers=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+ const view=()=>page.evaluate(()=>screwWorld.current().game.state.view.zoom);
+ await fingers('touchStart',[point(148,314,1),point(212,314,2)]);
+ await fingers('touchMove',[point(111,314,1),point(249,314,2)]);
+ assert.ok(await view()>1.8,'spreading two fingers zooms the board');
+ await fingers('touchMove',[point(148,314,1),point(212,314,2)]);
+ await fingers('touchEnd',[]);
+ assert.ok(await view()<1.03,'pinching back restores the original view');
+ assert.equal(await page.evaluate(()=>screwWorld.current().game.state.selected),null);
+ await page.mouse.move(r.x+r.width/2,r.y+r.height*.55);
+ await page.mouse.wheel(0,-150);await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom>1.2);
+ const beforePan=await page.evaluate(()=>screwWorld.current().game.state.view.x);
+ await fingers('touchStart',[point(180,314,3)]);await fingers('touchMove',[point(216,314,3)]);await fingers('touchEnd',[]);
+ assert.ok(await page.evaluate(()=>screwWorld.current().game.state.view.x)<beforePan,'the zoomed board pans');
+ await page.mouse.wheel(0,180);await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom===1);
+ const zoomButtons=page.locator('[data-g=screw-zoom-in]');
+ if(await zoomButtons.isVisible()){
+   await zoomButtons.tap();await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom>1);
+   await page.locator('[data-g=screw-zoom-reset]').tap();await page.waitForFunction(()=>screwWorld.current().game.state.view.zoom===1);
+ }
+ await canvasTap(page,{x:224,y:26});assert.ok(await view()>1);
+ const move=await page.evaluate(()=>{
+   const g=screwWorld.current().game,level=g.state.level;
+   const screw=level.screws.find(s=>{
+     const q=g.screenPoint(s.hole);
+     return q.x>35&&q.x<325&&q.y>155&&q.y<474&&OjjudaScrewGames.canUnscrew(level,s);
+   });
+   const target=level.holes.find(h=>h.owner===null&&h.screw===null);
+   return{id:screw.id,from:g.screenPoint(screw.hole),home:screw.hole.id,to:g.screenPoint(target),target:target.id};
+ });
+ await canvasTap(page,move.from);
+ assert.deepEqual(await page.evaluate(({id})=>{
+   const st=screwWorld.current().game.state;
+   return [st.selected,st.level.screws[id].hole.id,st.moves,st.pending];
+ },move),[move.id,move.home,0,null],'selection leaves the pin and plate in place');
+ await page.evaluate(()=>{
+   document.querySelector('#gcv').addEventListener('pointerup',()=>{
+     const st=screwWorld.current().game.state;
+     window.lastFlatMove=[st.moves,st.pending?.kind,st.selected];
+   },{once:true});
+ });
+ await canvasTap(page,move.to);
+ assert.deepEqual(await page.evaluate(()=>window.lastFlatMove),[1,'transfer',null],'the second tap starts one flight');
+ await page.waitForFunction(()=>!screwWorld.current().game.state.pending);
+ assert.equal(await page.evaluate(id=>screwWorld.current().game.state.level.screws[id].hole.id,move.id),move.target);
+ await canvasTap(page,{x:258,y:26});assert.equal(await view(),1);
 }
 async function assertFullscreen(page,size){
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
@@ -73,29 +123,15 @@ async function assertFullscreen(page,size){
   assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
   assert.equal(engineRequests.some(p=>p.includes('screw3d')),false,'flat play never loads the box engine');
 
+  const cdp=await context.newCDPSession(page);
   for(const size of screens){
-   await page.setViewportSize(size);await assertFullscreen(page,size);
-   if(qa&&[320,390].includes(size.width))await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-covered-${size.width}.png`)});
+   await page.setViewportSize(size);
+   await page.evaluate(()=>screwWorld.openFlat(6));
+   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===6);
+   await assertFullscreen(page,size);await checkFlatControls(page,cdp);
+   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-${size.width}.png`)});
   }
   await page.setViewportSize({width:390,height:844});
-  const choice=await page.evaluate(()=>{
-   const game=screwWorld.current().game,level=game.state.level;
-   const screw=level.screws.find(s=>OjjudaScrewGames.canUnscrew(level,s));
-   const hole=level.holes.find(h=>h.owner===null&&h.screw===null);
-   return{id:screw.id,from:game.screenPoint(screw.hole),to:game.screenPoint(hole),toId:hole.id};
-  });
-  await canvasTap(page,choice.from);
-  assert.deepEqual(await page.evaluate(id=>{
-   const state=screwWorld.current().game.state,s=state.level.screws[id];
-   return{held:s.hole===null,selected:state.selected,moves:state.moves,pending:state.pending?.kind};
-  },choice.id),{held:true,selected:choice.id,moves:1,pending:'lift'},'the first tap physically lifts the chosen screw');
-  await page.evaluate(()=>{const g=screwWorld.current().game;for(let i=0;i<10;i++)g.update(.05);});
-  await canvasTap(page,choice.to);
-  await page.evaluate(()=>{const g=screwWorld.current().game;for(let i=0;i<10;i++)g.update(.05);});
-  assert.equal(await page.evaluate(id=>screwWorld.current().game.state.level.screws[id].hole.id,choice.id),choice.toId,'the second tap seats the screw');
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.moves),1,'seating adds no extra move');
-  if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-lift-and-seat.png')});
-
   await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-modes]').click();
   await page.evaluate(()=>screwWorld.openFlat(26));
@@ -104,9 +140,9 @@ async function assertFullscreen(page,size){
   assert.equal(await page.locator('[data-g=screw-stage][data-stage="26"]').count(),1,'the catalog opens on the remembered stage page');
   await page.locator('[data-g=screw-stage][data-stage="26"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
-  await canvasTap(page,{x:240,y:26});
+  await canvasTap(page,{x:224,y:26});
   assert.ok(await page.evaluate(()=>screwWorld.current().game.state.view.zoom>1),'small screws can be magnified');
-  await canvasTap(page,{x:240,y:26});
+  await canvasTap(page,{x:258,y:26});
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.view.zoom),1);
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-zoom-26.png')});
 
@@ -123,6 +159,7 @@ async function assertFullscreen(page,size){
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-1000.png')});
 
   page.once('dialog',dialog=>dialog.accept());await page.locator('[data-g=close]').click();
+  if(await page.locator('[data-exit-leave]').isVisible())await page.locator('[data-exit-leave]').click();
   await page.locator('#gov').waitFor({state:'detached'});
   await page.evaluate(()=>screwWorld.open('screw',{screwMode:'box'}));
   await page.waitForFunction(()=>screwWorld.current()?.screwMode==='box'&&screwWorld.current()?.game);
@@ -131,6 +168,6 @@ async function assertFullscreen(page,size){
   await page.evaluate(()=>screwWorld.close());
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: both screw modes open, responsive 320/390/844/1280px, actual flat lift-seat touch, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
+  console.log('PASS: both screw modes open, six responsive viewports up to 1920px, real pinch, wheel, pan and animated two-tap transfer, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

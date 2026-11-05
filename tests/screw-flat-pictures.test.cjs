@@ -21,9 +21,9 @@ assert.equal(st.pending,null);assert.equal(screw.hole,source);assert.equal(st.mo
 game.onKey('a');assert.equal(st.albumOpen,true,'album can open before a move is committed');
 assert.equal(st.selected,null);assert.equal(screw.hole,source,'album leaves the original pin in place');
 game.onKey('Escape');assert.equal(st.albumOpen,false);
-tap(game,source.x,source.y);tap(game,target.x,target.y);assert.equal(st.pending,null);
+tap(game,source.x,source.y);tap(game,target.x,target.y);assert.equal(st.pending?.kind,'transfer');
 for(let i=0;i<10;i++)game.update(.05);
-assert.equal(screw.hole,target);game.onKey('a');assert.equal(st.albumOpen,true);
+assert.equal(st.pending,null);assert.equal(screw.hole,target);game.onKey('a');assert.equal(st.albumOpen,true);
 const paused=JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates});
 for(let i=0;i<60;i++)game.update(.05);
 assert.equal(JSON.stringify({pending:st.pending,moves:st.moves,plates:st.level.plates}),paused);

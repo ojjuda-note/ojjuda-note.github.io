@@ -14,10 +14,15 @@ const canvas=new Proxy({}, {get(_obj,name){
 
 for(const stage of [4,26,220]){
  const game=Game.flat({setScore(){},end(){}},stage),st=game.state;
- if(stage===26){
-  press(game,{x:240,y:26});assert.ok(st.view.zoom>1,'stage 26 has an accessible zoom button');
-  press(game,{x:240,y:26});assert.equal(st.view.zoom,1);
- }
+ press(game,{x:224,y:26});assert.ok(st.view.zoom>1,`stage ${stage} has a zoom-in button`);
+ press(game,{x:258,y:26});assert.equal(st.view.zoom,1,`stage ${stage} has a zoom-out button`);
+ game.onDown(150,300,1);game.onDown(210,300,2);game.onMove(260,300,2);
+ assert.ok(st.view.zoom>1.5,`stage ${stage} supports two-finger pinch zoom`);
+ game.onUp(260,300,2);game.onUp(150,300,1);
+ assert.equal(st.moves,0,'pinch must not trigger a screw transfer');
+ assert.equal(st.selected,null,'pinch must not accidentally select a screw');
+ assert.ok(game.onWheel(-100,180,316),'desktop wheel zoom is supported');
+ assert.ok(game.zoomControl('reset'));assert.equal(st.view.zoom,1);
  const screw=st.level.screws.find(s=>Physics.canUnscrew(st.level,s));
  assert.ok(screw,`stage ${stage} has at least one physically removable screw`);
  const original=screw.hole,owner=st.level.plates[original.owner],pins=owner.pins.length;
@@ -39,13 +44,16 @@ for(const stage of [4,26,220]){
  assert.ok(target,'the selected screw can transfer to a free storage hole');
  st.moveLimit=1;
  press(game,target);
- assert.equal(st.pending,null,'the destination is applied immediately');
+ assert.equal(st.pending?.kind,'transfer','the committed screw receives a visible travel animation');
+ assert.equal(st.pending.from,original);
+ assert.equal(st.pending.to,target);
  assert.equal(st.selected,null);
  assert.equal(screw.hole,target);
  assert.equal(st.moves,1,'the completed transfer spends exactly one move');
  assert.equal(owner.pins.length,pins-1,'the plate releases only after the transfer');
  assert.ok(st.physics.screwBodies.has(screw.id),'the seated screw physically blocks metal again');
  assert.doesNotThrow(()=>game.draw(canvas));
+ advance(game,.5);assert.equal(st.pending,null,'the flight finishes without holding a virtual screw');
  game.destroy();
 }
 

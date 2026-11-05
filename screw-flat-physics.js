@@ -38,15 +38,27 @@
     for(let i=0,j=vertices.length-1;i<vertices.length;j=i++){
       const a=vertices[j],b=vertices[i],dx=b.x-a.x,dy=b.y-a.y;
       if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)inside=!inside;
-      const t=clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy),0,1);
+      const t=clamp(((x-a.x)*dx+(y-a.y)*dy)/((dx*dx+dy*dy||1)),0,1);
       distance=Math.min(distance,Math.hypot(x-a.x-t*dx,y-a.y-t*dy));
     }
     return inside?-distance:distance;
   }
+  // While a sheet is flush against the board a screwdriver must clear its cut
+  // outline. Once the sheet swings, use its inset backing for joint clearance,
+  // just as we do for contacts with other loose sheets.
+  const toolOutline=p=>p.state==='fixed'&&p.contour?p.contour:p.vertices;
   function plateCovers(p,x,y,radius=0){
     if(p.state==='gone')return false;
     const q=localPoint(p,x,y);
-    return polygonDistance(p.vertices,q.x,q.y)<radius;
+    const box=p.contourBounds;
+    if(box&&p.state==='fixed'&&(q.x<box.left-radius||q.x>box.right+radius||q.y<box.top-radius||q.y>box.bottom+radius))return false;
+    const outline=toolOutline(p);
+    if(radius>0&&outline!==p.vertices){
+      // A driver needs clearance from the backing as well as a clear entry
+      // through the cut face. It can approach a free edge from the front.
+      return polygonDistance(outline,q.x,q.y)<0||polygonDistance(p.vertices,q.x,q.y)<radius;
+    }
+    return polygonDistance(outline,q.x,q.y)<radius;
   }
   function segmentDistance(a,b,c,d){
     const ux=b.x-a.x,uy=b.y-a.y,vx=d.x-c.x,vy=d.y-c.y,det=ux*vy-uy*vx;
@@ -60,8 +72,12 @@
   function plateBlocksSlot(p,hole,radius){
     const dx=Math.cos(-.28)*radius*.62,dy=Math.sin(-.28)*radius*.62;
     const a=localPoint(p,hole.x-dx,hole.y-dy),b=localPoint(p,hole.x+dx,hole.y+dy),margin=radius*.13;
-    return polygonDistance(p.vertices,a.x,a.y)<margin||polygonDistance(p.vertices,b.x,b.y)<margin||
-      p.vertices.some((v,i)=>segmentDistance(a,b,v,p.vertices[(i+1)%p.vertices.length])<margin);
+    const box=p.contourBounds;
+    if(box&&p.state==='fixed'&&(Math.max(a.x,b.x)<box.left-margin||Math.min(a.x,b.x)>box.right+margin||
+      Math.max(a.y,b.y)<box.top-margin||Math.min(a.y,b.y)>box.bottom+margin))return false;
+    const contour=toolOutline(p);
+    return polygonDistance(contour,a.x,a.y)<margin||polygonDistance(contour,b.x,b.y)<margin||
+      contour.some((v,i)=>segmentDistance(a,b,v,contour[(i+1)%contour.length])<margin);
   }
   function alignedMount(p,hole){return p.mounts.findIndex(v=>{const q=worldPoint(p,v);return Math.hypot(q.x-hole.x,q.y-hole.y)<=2.8;});}
   function screwDepth(level,hole){
@@ -116,27 +132,88 @@
     if(dist<separation)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
   }
-  // Keep the certified rigid-body polygon stable while giving selected pieces
-  // a gently rounded top face. The underlying metal rim still matches the
-  // collision body, and every mounting screw remains inside the top face.
-  function sculptMetal(vertices,stage,id,mounts=[]){
-    if(vertices.length<4||vertices.length>9)return vertices;
-    const variety=(stage*3+id*7)%11;
-    if(variety<5)return vertices;
-    const oval=variety>=9,rounded=variety>=7,amount=oval?.38:rounded?.28:.22;
-    const result=[];
-    for(let i=0;i<vertices.length;i++){
-      const v=vertices[i],prev=vertices[(i+vertices.length-1)%vertices.length],next=vertices[(i+1)%vertices.length];
-      const smooth=oval||(rounded?i%2===(id%2):i===(id%vertices.length));
-      if(!smooth){result.push(v);continue;}
-      const a={x:v.x+(prev.x-v.x)*amount,y:v.y+(prev.y-v.y)*amount};
-      const b={x:v.x+(next.x-v.x)*amount,y:v.y+(next.y-v.y)*amount};
-      for(let j=0;j<=5;j++){
-        const t=j/5,u=1-t;
-        result.push({x:u*u*a.x+2*u*t*v.x+t*t*b.x,y:u*u*a.y+2*u*t*v.y+t*t*b.y});
+  // A cut is sampled once in board coordinates and traversed by both sheets.
+  const SEAM_TYPES=['round','triangle','square','oval','wave'];
+  function seamProfile(type,half,depth){
+    if(type==='triangle')return [[-half,0],[0,depth],[half,0]];
+    if(type==='square')return [[-half,0],[-half,depth],[half,depth],[half,0]];
+    if(type==='wave')return Array.from({length:13},(_,i)=>{
+      const t=i/12;
+      return [(2*t-1)*half,depth*Math.sin(2*Math.PI*t)*Math.sin(Math.PI*t)];
+    });
+    // A circle/ellipse has a neck and a rounded shoulder on each side.
+    const rx=type==='round'?Math.min(half,Math.abs(depth)*.55):half,ry=type==='round'?rx:Math.abs(depth)*.51;
+    const points=[];
+    for(let i=0;i<=16;i++){
+      const angle=-Math.PI*.76-Math.PI*1.48*i/16;
+      points.push([rx*Math.cos(angle),Math.sign(depth)*ry*(Math.sin(angle)+Math.sin(Math.PI*.76))]);
+    }
+    return points;
+  }
+  function fitSharedSeams(level){
+    const edges=[];
+    for(const p of level.plates){
+      const poly=p.outline;
+      for(let i=0;i<poly.length;i++){
+        const a=poly[i],b=poly[(i+1)%poly.length];
+        const length=Math.hypot(b.x-a.x,b.y-a.y);
+        if(length>=22)edges.push({p,i,a,b,length,ux:(b.x-a.x)/length,uy:(b.y-a.y)/length,cuts:[]});
       }
     }
-    return M.Vertices.isConvex(result)&&mounts.every(m=>polygonDistance(result,m.x,m.y)<-.4)?result:vertices;
+    const candidates=[];
+    for(let i=0;i<edges.length;i++)for(let j=i+1;j<edges.length;j++){
+      const e=edges[i],f=edges[j];
+      if(e.p===f.p||Math.abs(e.ux*f.uy-e.uy*f.ux)>1e-6)continue;
+      const nx=-e.uy,ny=e.ux;
+      const normal=v=>(v.x-e.a.x)*nx+(v.y-e.a.y)*ny;
+      if(Math.abs(normal(f.a))>.001||normal(e.p)*normal(f.p)>=0)continue;
+      const along=v=>(v.x-e.a.x)*e.ux+(v.y-e.a.y)*e.uy;
+      const lo=Math.max(0,Math.min(along(f.a),along(f.b))),hi=Math.min(e.length,Math.max(along(f.a),along(f.b)));
+      if(hi-lo>=22)candidates.push({e,f,lo,hi,nx,ny});
+    }
+    candidates.sort((a,b)=>(b.hi-b.lo)-(a.hi-a.lo));
+    let count=0;
+    for(const {e,f,lo,hi,nx,ny} of candidates){
+      const type=SEAM_TYPES[(level.stage-2+count)%SEAM_TYPES.length];
+      const width=hi-lo,half=Math.min(20,width*.19),mid=(lo+hi)/2;
+      const room=Math.min(...[e.p,f.p].map(p=>Math.abs((p.x-e.a.x)*nx+(p.y-e.a.y)*ny)));
+      const maxDepth=Math.min(26,width*.23,room*.55);
+      if(maxDepth<3)continue;
+      const cx=e.a.x+e.ux*mid,cy=e.a.y+e.uy*mid;
+      // Leave metal around each mounting hole and enough room at T junctions.
+      const radius=level.screwRadius||SCREW_RADIUS;
+      const pair=[e.p,f.p];
+      const mounts=pair.flatMap(p=>p.mounts.map(m=>worldPoint(p,m)));
+      let accepted=false;
+      for(const scale of [1,.72,.48]){
+        const extent=Math.max(half,maxDepth)*scale;
+        if(pair.some(p=>p.seams.some(s=>Math.hypot(cx-s.cx,cy-s.cy)<extent+s.extent+2)))continue;
+        for(const direction of [1,-1]){
+          const points=seamProfile(type,half*scale,direction*maxDepth*scale)
+            .map(([u,v])=>({x:cx+u*e.ux+v*nx,y:cy+u*e.uy+v*ny}));
+          if(points.some(q=>pair.every(p=>polygonDistance(p.outline,q.x,q.y)>1e-5)))continue;
+          if(mounts.some(m=>polygonDistance(points,m.x,m.y)<radius+1))continue;
+          for(const edge of [e,f]){
+            const forward=edge.ux*e.ux+edge.uy*e.uy>0;
+            const offset=(cx-edge.a.x)*edge.ux+(cy-edge.a.y)*edge.uy;
+            edge.cuts.push({offset,points:forward?points:points.slice().reverse()});
+            edge.p.seams.push({id:count,type,cx,cy,extent});
+          }
+          count++;accepted=true;break;
+        }
+        if(accepted)break;
+      }
+    }
+    for(const p of level.plates){
+      const cuts=new Map(edges.filter(e=>e.p===p&&e.cuts.length).map(e=>[e.i,e.cuts.sort((a,b)=>a.offset-b.offset)]));
+      const contour=p.outline.flatMap((v,i)=>[v,...(cuts.get(i)||[]).flatMap(c=>c.points)]);
+      // Draw the entire sheet with this perimeter, including its cut edge and shadow.
+      p.contour=contour.map(v=>({x:v.x-p.x,y:v.y-p.y}));
+      const xs=p.contour.map(v=>v.x),ys=p.contour.map(v=>v.y);
+      p.contourBounds={left:Math.min(...xs),right:Math.max(...xs),top:Math.min(...ys),bottom:Math.max(...ys)};
+      delete p.outline;
+    }
+    return level;
   }
   const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃','별','나비','구름','초승달','로켓','십자'];
   const SHAPE_UNLOCKS=[80,140,220,320,450,650];
@@ -1298,10 +1375,17 @@
           y:corners[(j+1)%4].y+(corners[j].y-corners[(j+1)%4].y)*.055
         }]);
         const x=M.Vertices.centre(raw).x,y=M.Vertices.centre(raw).y;
+        // Bring the two wings and successive bands to common centre/cut lines.
+        const outline=corners.map((q,i)=>{
+          const inner=i===1||i===2,top=i<2;
+          const y=top&&row<bands.length-1?(band.top+bands[row+1].bottom)/2:
+            !top&&row>0?(band.bottom+bands[row-1].top)/2:q.y;
+          return {x:inner?180:q.x,y};
+        });
         const p={id:plates.length,z:plates.length,row:3-row,col,releaseFrom:1,x,y,angle:0,
-          vertices:raw.map(v=>({x:v.x-x,y:v.y-y})),mounts:[],pins:[],holeIds:[],
+          outline,seams:[],vertices:raw.map(v=>({x:v.x-x,y:v.y-y})),mounts:[],pins:[],holeIds:[],
           state:'fixed',vx:0,vy:0,spin:0,w:Math.max(...raw.map(v=>v.x))-Math.min(...raw.map(v=>v.x)),h:band.bottom-band.top};
-        plates.push(p);silhouette.push(raw);
+        plates.push(p);silhouette.push(outline);
         // Release the bottom pin before the upper pivot, so a plate cannot
         // pretend to fall while its last fastener is still in place.
         for(const [hx,hy] of band.holes){
@@ -1310,7 +1394,6 @@
           p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
-        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     }
     return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[6],screwRadius:SCREW_RADIUS,silhouette,plates,holes,screws,order:screws.map(s=>s.id)};
@@ -1344,14 +1427,13 @@
     const plates=[],holes=createSpareHoles(L),screws=[];
     for(const f of leaves){
       const p={id:plates.length,z:plates.length,row:0,col:plates.length,releaseFrom:1,x:f.centre.x,y:f.centre.y,angle:0,
-        screwRadius:radius,shaftRadius:interlocked?radius*.28:radius,vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
+        screwRadius:radius,shaftRadius:interlocked?radius*.28:radius,outline:f.raw,seams:[],vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
       p.w=Math.max(...p.vertices.map(v=>v.x))-Math.min(...p.vertices.map(v=>v.x));p.h=Math.max(...p.vertices.map(v=>v.y))-Math.min(...p.vertices.map(v=>v.y));
       plates.push(p);f.id=p.id;
       for(const q of f.mounts){
         const h={id:holes.length,x:q.x,y:q.y,owner:p.id,screw:screws.length};holes.push(h);p.holeIds.push(h.id);
         p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});screws.push({id:screws.length,hole:h,startHole:h.id});
       }
-      p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
     if(interlocked)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
@@ -1376,7 +1458,7 @@
   }
   function makeFlatLevel(stage,layout){
     const L=clamp(Math.trunc(stage)||1,1,LAST_STAGE),count=pieceCount(L),random=seeded(431+Math.max(1,count-2)*7919);
-    if(L>=FIRST_SHAPED_STAGE)return makeShapedLevel(L,layout);
+    if(L>=FIRST_SHAPED_STAGE)return fitSharedSeams(makeShapedLevel(L,layout));
     const top=[[153,157],[207,157],[232,169],[247,192],[251,270],[109,270],[113,192],[128,169]].map(([x,y])=>({x,y}));
     let bands,counts;
     if(count===1){
@@ -1396,10 +1478,10 @@
       const cuts=[{x:left-1,slope:0}];for(let col=1;col<counts[row];col++)cuts.push({x:left+(right-left)*(col/counts[row]+(random()-.5)*.025),slope:rowSlope});cuts.push({x:right+1,slope:0});
       for(let col=0;col<counts[row];col++){
         let poly=clipLine(clipLine(band,cuts[col],midY,false),cuts[col+1],midY,true);
-        const centre=M.Vertices.centre(poly);
+        const outline=poly,centre=M.Vertices.centre(poly);
         poly=poly.map(v=>({x:centre.x+(v.x-centre.x)*.978,y:centre.y+(v.y-centre.y)*.965}));
         const mounts=mountPair(poly),vertices=poly.map(v=>({x:v.x-centre.x,y:v.y-centre.y}));
-        const p={id:plates.length,z:plates.length,row,col,releaseFrom:rowSlope>=0?1:-1,x:centre.x,y:centre.y,angle:0,vertices,mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
+        const p={id:plates.length,z:plates.length,row,col,releaseFrom:rowSlope>=0?1:-1,x:centre.x,y:centre.y,angle:0,outline,seams:[],vertices,mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
         p.w=Math.max(...vertices.map(v=>v.x))-Math.min(...vertices.map(v=>v.x));p.h=Math.max(...vertices.map(v=>v.y))-Math.min(...vertices.map(v=>v.y));
         plates.push(p);
         for(const q of mounts){
@@ -1407,10 +1489,9 @@
           p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
-        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     });
-    return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
+    return fitSharedSeams({stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))});
   }
   // A screw can leave its plate only if there is a different usable parking
   // hole. Falling metal may uncover an empty slot, so preview that motion in
