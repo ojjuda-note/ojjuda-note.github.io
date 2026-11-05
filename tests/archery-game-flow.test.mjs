@@ -5523,7 +5523,18 @@ test('real ten- and eight-point shots pay the requested stage rewards once and s
   for (const [stage,score,coins] of [[1,10,10],[2,10,11],[3,10,12],[4,10,13],[11,10,20],[11,8,9],[12,10,21],[12,8,10],[13,10,22],[13,8,11]]) {
     const app=await appHarness(progressForStage({version:1,stageCatalog:STAGE_CATALOG,coins:100,lastStage:stage,sound:false}));
     const {state}=app.api;app.until(()=>state.mode==='ready');
-    const draw=preciseMainDraw(app,score===8?{x:-.3,y:0}:{x:0,y:0});
+    let offset = score===8 ? {x:-.3,y:0} : {x:0,y:0}, aimAt;
+    if (state.stage.kind === 'rabbit') {
+      prepareAnimalCrossing(app);
+      offset = {x:0,y:0};
+      if (score===8) {
+        const target = app.engine.targetAt(state.stage,0);
+        const head = app.animals.scoreAnimalPoint({x:target.x + .59*target.radius*target.direction,
+          y:target.y + .1302*target.radius, z:target.z},target,0);
+        aimAt = arriving => app.engine.getAnimalAttachmentPoint(arriving,head.animalAttachment);
+      }
+    }
+    const draw = preciseMainDraw(app,offset,{aimAt});
     draw.pad.emit('pointerup',draw.coords);await app.flush();app.until(()=>state.mode==='settling');
     assert.equal(state.shot.result.score,score,`stage ${stage} actual hit`);
     assert.equal(app.api.progress.coins,100+coins,`stage ${stage}, score ${score}`);
