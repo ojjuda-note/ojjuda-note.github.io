@@ -25,15 +25,19 @@ function solve(stage,layout){
   const from=s.hole.id;if(!sim.lift(s)){reason='lift rejected';break;}advance();
   const entry={screw:s.id,from,to:null};route.push(entry);
   if(l.plates.every(p=>p.state==='gone')){reason=null;break;}
-  let free=l.holes.filter(h=>P.canSeatScrew(l,h,s));
-  if(!free.length){advance(6);free=l.holes.filter(h=>P.canSeatScrew(l,h,s));entry.wait=7.5;}
+  // A fixed three-slot witness remains valid when later stages offer extra
+  // parking places: use the original three, so each new stage is proven
+  // solvable without depending on an extra hole or an item purchase.
+  const certifiedDestinations=()=>l.holes.filter(h=>(h.owner!==null||h.id<3)&&P.canSeatScrew(l,h,s));
+  let free=certifiedDestinations();
+  if(!free.length){advance(6);free=certifiedDestinations();entry.wait=7.5;}
   if(!free.length){reason='no place after lift';break;}
   const detached=free.filter(h=>l.plates.every(p=>p.state==='gone'||P.alignedMount(p,h)<0));if(detached.length)free=detached;
   let placed=false;
   for(let attempt=0;attempt<4&&!placed;attempt++){
    free.sort((a,b)=>targetScore(a)-targetScore(b));const to=free[0];if(!to)break;
    advance(.4);if(sim.move(s,to)){entry.to=to.id;placed=true;break;}
-   entry.wait=(entry.wait||1.5)+.4;free=l.holes.filter(h=>P.canSeatScrew(l,h,s));
+   entry.wait=(entry.wait||1.5)+.4;free=certifiedDestinations();
   }
   if(!placed){reason='placement rejected';break;}advance();
  }

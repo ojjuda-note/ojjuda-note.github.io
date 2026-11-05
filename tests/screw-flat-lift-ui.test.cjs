@@ -137,5 +137,26 @@ for(const stage of [4,26,220]){
  press(stuck,waiting.hole);
  assert.equal(state.selected,waiting.id,'the newly available slot permits the pickup');
  stuck.destroy();
+ paidHoles=0;
+ const crowded=Game.flat(wallet,1000),higher=crowded.state;
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(higher.level.holes.filter(h=>h.owner===null).length,11);
+ for(let i=0;i<3;i++){
+  press(crowded,{x:90,y:514});
+  await new Promise(resolve=>setImmediate(resolve));
+ }
+ assert.equal(higher.extraHoles,3);
+ assert.equal(higher.level.holes.filter(h=>h.owner===null).length,14);
+ assert.doesNotThrow(()=>crowded.draw(canvas),'all fourteen storage slots render');
+ const example=higher.level.screws.find(s=>Physics.canMoveToSpare(higher.level,s));
+ assert.ok(example);
+ press(crowded,example.hole);advance(crowded);
+ assert.equal(example.hole,null);
+ const newHole=higher.level.holes.find(h=>h.extra&&Physics.canSeatScrew(higher.level,h,example));
+ assert.ok(newHole,'a high-tier paid slot is physically usable');
+ press(crowded,newHole);advance(crowded);
+ assert.equal(example.hole,newHole);
+ assert.deepEqual(higher.physics.screwBodies.get(example.id).position,{x:newHole.x,y:newHole.y});
+ crowded.destroy();
  console.log('PASS: pickup requires another empty hole, releasing a pin consumes no phantom storage, zoom, Escape, retry, and purchased holes.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

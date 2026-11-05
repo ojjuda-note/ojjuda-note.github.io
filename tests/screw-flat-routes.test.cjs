@@ -18,13 +18,21 @@ assert.doesNotMatch(flatSource,/철판 번호 순서대로|routeGateBlocked|wron
 assert.doesNotMatch(flatSource,/line\(c,\[\[0,-5\],\[0,5\]\]/,'no answer-signalling plus heads');
 const physicsSource=fs.readFileSync(require.resolve('../screw-flat-physics.js'),'utf8');
 assert.doesNotMatch(physicsSource,/routeGateBlocked|routeUnlocked|routeProgress|orderRank/);
+for(const [stage,expected] of [[1,3],[30,3],[31,3],[122,3],[123,4],[244,4],[245,5],[366,5],[367,6],[488,6],[489,7],[610,7],[611,8],[732,8],[733,9],[854,9],[855,10],[976,10],[977,11],[1000,11]]){
+ assert.equal(Physics.spareHoleCount(stage),expected,`stage ${stage} parking-hole tier`);
+}
 
 for(let stage=12;stage<=1000;stage++){
  if(stage===25)continue;
  const level=Physics.makeFlatLevel(stage);
  assert.ok(level.requiredMoves>=level.screws.length,'every original pin must actually be lifted');
- assert.equal(Game.moveLimit(level),level.requiredMoves+2);
- assert.equal(level.holes.length-level.screws.length,3);
+ assert.equal(Game.moveLimit(level),level.requiredMoves+(stage<=30?5:2));
+ assert.equal(level.holes.length-level.screws.length,Physics.spareHoleCount(stage));
+ const tray=level.holes.filter(h=>h.owner===null);
+ for(let i=0;i<tray.length;i++)for(let j=i+1;j<tray.length;j++){
+  const a=tray[i],b=tray[j];
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,`stage ${stage}: even drawn parking screw heads never overlap`);
+ }
  assert.equal(new Set(level.order).size,level.screws.length);
  for(let i=0;i<level.screws.length;i++)for(let j=i+1;j<level.screws.length;j++){
   const a=level.screws[i].hole,b=level.screws[j].hole;
@@ -35,6 +43,17 @@ for(let stage=12;stage<=1000;stage++){
  assert.deepEqual(level.screws.map(s=>Physics.canUnscrew(level,s)),access,'neither a witness nor a move budget gates screws');
  assert.deepEqual(Physics.makeFlatLevel(stage).holes,level.holes,'retry reproduces the physical board');
  assert.ok(level.plates.every(p=>!p.guards));
+}
+{
+ const level=Physics.makeFlatLevel(1000);
+ for(let i=0;i<3;i++)level.holes.push({id:level.holes.length,owner:null,screw:null,extra:true});
+ Physics.layoutSpareHoles(level);
+ const all=level.holes.filter(h=>h.owner===null);
+ assert.equal(all.length,14,'eleven level holes plus three paid holes fit the tray');
+ for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
+  const a=all[i],b=all[j];
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>=13*(a.storageScale+b.storageScale)+1.5-1e-6,'all fourteen illustrated heads stay separated');
+ }
 }
 
 // A real foreground sheet can hide a rear screwdriver slot without two
@@ -79,15 +98,21 @@ function play(game,[id,to,wait],expectBlocked=false){
   if(!game.state.complete)assert.equal(screw.hole,level.holes[to],`stage ${game.state.L} screw ${id} seats into hole ${to}: ${game.state.message}`);
  }
 }
-// The old collision-only witnesses deliberately include three bad-order
-// choices. The new guard refuses those pickups instead of stranding a screw.
+// The old collision-only witnesses include three bad-order choices. Higher
+// stages may now recover because they have more spare holes.
 const blockedWitnessSteps=new Map([[220,37],[450,72],[650,175]]);
 for(const stage of [12,21,26,35,55,80,115,160,220,450,598,650,800,1000]){
  const game=Game.flat({setScore(){},end(){}},stage);
  const route=solution(stage);
- for(let i=0;i<route.length;i++){if(game.state.complete)break;play(game,route[i],blockedWitnessSteps.get(stage)===i);if(blockedWitnessSteps.get(stage)===i)break;}
+ let denied=false;
+ for(let i=0;i<route.length;i++){
+  if(game.state.complete)break;
+  const blocked=blockedWitnessSteps.get(stage)===i&&!Physics.canMoveToSpare(game.state.level,game.state.level.screws[route[i][0]]);
+  play(game,route[i],blocked);
+  if(blocked){denied=true;break;}
+ }
  tick(game,8);
- assert.equal(game.state.complete,!blockedWitnessSteps.has(stage),`stage ${stage} completes or properly refuses the known unsafe route`);
+ assert.equal(game.state.complete,!denied,`stage ${stage} completes or properly refuses a genuinely blocked route`);
  assert.ok(game.state.moves<=route.length);assert.equal(game.state.extraHoles,0);assert.equal(game.state.extraMoves,0);game.destroy();
 }
 
@@ -97,7 +122,7 @@ async function itemRecovery(){
  const game=Game.flat(api,26),st=game.state,route=solution(26);await new Promise(resolve=>setImmediate(resolve));
  play(game,route[0]);play(game,route[1]);
  const parked=st.level.holes[0].screw;assert.notEqual(parked,null);assert.equal(st.level.holes[2].screw,null);
- play(game,[parked,2]);play(game,[parked,0]);play(game,[parked,0]); // Three real, unnecessary lifts.
+ for(const to of [2,0,2,0,2,0])play(game,[parked,to]); // Spend the six extra easy-stage lifts.
  for(const step of route.slice(2,-1))play(game,step);
  assert.equal(st.moves,st.moveLimit);assert.equal(st.complete,false);assert.equal(st.failed,true,'an exhausted route offers recovery');
  assert.equal(failures,1);assert.equal(game.resume(),true,'the result screen returns to available item controls');
@@ -105,4 +130,4 @@ async function itemRecovery(){
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
  play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover the spent-lift mistake');game.destroy();
 }
-itemRecovery().then(()=>console.log('PASS: 988 certified budgets, geometric occlusion, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
+itemRecovery().then(()=>console.log('PASS: 988 certified budgets, progressive storage holes, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});

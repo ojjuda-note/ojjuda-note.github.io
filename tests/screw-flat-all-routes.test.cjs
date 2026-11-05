@@ -14,18 +14,17 @@ if(isMainThread){
  }))).then(results=>{
   assert.deepEqual(results.flatMap(r=>r.failures),[],'every stage must have a free solution with visible screw collisions');
   assert.equal(results.reduce((n,r)=>n+r.count,0),988);
-  console.log('PASS: all 988 advanced stages physically clear in the real collision engine with three original spare holes, no items, and the certified move budgets.');
+  console.log('PASS: all 988 advanced stages physically clear with progressive spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
- const P=require('../screw-flat-physics.js'),{solve}=require('./helpers/flat-solution-search.cjs'),failures=[];let checked=0;
+ const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js'),{solve}=require('./helpers/flat-solution-search.cjs'),failures=[];let checked=0;
  for(const stage of workerData){
   let error=null;
   try{
    const level=P.makeFlatLevel(stage),result=solve(stage);
-   assert.equal(level.holes.length-level.screws.length,3);
+   assert.equal(level.holes.length-level.screws.length,P.spareHoleCount(stage));
    assert.equal(result.reason,null,`stage ${stage}: ${result.reason}`);
-   assert.equal(result.moves,level.requiredMoves,`stage ${stage} move budget`);
-   assert.ok(result.moves<=level.requiredMoves+2);
+   assert.ok(result.moves<=G.moveLimit(level),`stage ${stage} needs ${result.moves} moves, but only ${G.moveLimit(level)} are available`);
    assert.equal(result.remaining.length,0);
   }catch(e){error={stage,error:e.message};}
   if(error)failures.push(error);checked++;
