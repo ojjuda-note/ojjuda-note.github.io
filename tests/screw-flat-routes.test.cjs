@@ -60,9 +60,18 @@ const storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null
 storage.set(Game.STAGE_KEY,'1000');
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const tick=(game,seconds)=>{for(let n=0;n<Math.round(seconds*20);n++)game.update(.05);};
-function play(game,[id,to,wait]){
+function play(game,[id,to,wait],expectBlocked=false){
  const level=game.state.level,screw=level.screws[id];assert.ok(screw.hole,'source is seated before pickup');
- press(game,screw.hole);assert.equal(screw.hole,null,'tap immediately removes the physical pin');tick(game,wait||1.5);
+ if(expectBlocked){
+  const original=screw.hole,before=game.state.moves;
+  press(game,original);
+  assert.equal(screw.hole,original,'a screw with no reachable destination remains fixed');
+  assert.equal(game.state.moves,before,'a refused pickup spends no moves');
+  assert.equal(game.state.selected,null,'the hand stays empty after a refused pickup');
+  assert.match(game.state.message,/옮길 빈 구멍이 없어요/);
+  return;
+ }
+ press(game,screw.hole);assert.equal(screw.hole,null,`stage ${game.state.L} screw ${id} lifts: ${game.state.message}`);tick(game,wait||1.5);
  if(to!==null&&!game.state.complete){
   tick(game,.4); // The rigid plates have 0.4s to settle before seat attempt.
   assert.ok(Physics.canSeatScrew(level,level.holes[to],screw),`stage ${game.state.L} screw ${id} to hole ${to} is physically accessible`);
@@ -70,11 +79,15 @@ function play(game,[id,to,wait]){
   if(!game.state.complete)assert.equal(screw.hole,level.holes[to],`stage ${game.state.L} screw ${id} seats into hole ${to}: ${game.state.message}`);
  }
 }
+// The old collision-only witnesses deliberately include three bad-order
+// choices. The new guard refuses those pickups instead of stranding a screw.
+const blockedWitnessSteps=new Map([[220,37],[450,72],[650,175]]);
 for(const stage of [12,21,26,35,55,80,115,160,220,450,598,650,800,1000]){
  const game=Game.flat({setScore(){},end(){}},stage);
  const route=solution(stage);
- for(const step of route){if(game.state.complete)break;play(game,step);}
- tick(game,8);assert.equal(game.state.complete,true,`stage ${stage} certificate also clears through real taps/animations`);
+ for(let i=0;i<route.length;i++){if(game.state.complete)break;play(game,route[i],blockedWitnessSteps.get(stage)===i);if(blockedWitnessSteps.get(stage)===i)break;}
+ tick(game,8);
+ assert.equal(game.state.complete,!blockedWitnessSteps.has(stage),`stage ${stage} completes or properly refuses the known unsafe route`);
  assert.ok(game.state.moves<=route.length);assert.equal(game.state.extraHoles,0);assert.equal(game.state.extraMoves,0);game.destroy();
 }
 
@@ -92,4 +105,4 @@ async function itemRecovery(){
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
  play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover the spent-lift mistake');game.destroy();
 }
-itemRecovery().then(()=>console.log('PASS: 988 certified budgets and separate heads, geometric occlusion, 14 real-input playthroughs, unrestricted visible pickups, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
+itemRecovery().then(()=>console.log('PASS: 988 certified budgets, geometric occlusion, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
