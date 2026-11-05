@@ -1283,7 +1283,16 @@ function screw3d(api,startStage=loadResumeStage()) {
   function project(p, V) { const q = mv(V, p), sc = st.sc, k = F / (F - q[2] / sc), s = SC * st.zm / sc; return { x: CX + st.pan[0] + q[0] * s * k, y: CY + st.pan[1] - q[1] * s * k, z: q[2], k }; }
   function zoomAt(f, x, y) { const z1 = Math.max(0.6, Math.min(9, st.zm * f)), vx = (x - CX - st.pan[0]) / st.zm, vy = (y - CY - st.pan[1]) / st.zm; st.pan = [x - CX - vx * z1, y - CY - vy * z1]; st.zm = z1; }
   const BTN = [{ x: 336, y: 406, t: '+', f: () => zoomAt(1.4, CX, CY) }, { x: 336, y: 444, t: '−', f: () => zoomAt(1 / 1.4, CX, CY) }, { x: 336, y: 482, t: '⤢', f: () => { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; } }];
-  const zoomBtn = (x, y) => { const b = BTN.find(q => Math.hypot(x - q.x, y - q.y) < 17); return b && b.f; };
+  const canvasScale = () => { const n = Number(api.getCanvasScale?.()); return Number.isFinite(n) && n > 0 ? n : 1; };
+  // Keep taps comfortable on narrow displays without widening a hit across a hidden screw.
+  const touchRadius = () => Math.min(44, Math.max(20, 22 / Math.max(0.4, canvasScale())));
+  const zoomBtn = (x, y) => {
+    const reach = Math.min(45, Math.max(19, 22 / Math.max(0.4, canvasScale())));
+    // Nearest control wins where 44px touch regions overlap.
+    const b = BTN.filter(q => Math.abs(x - q.x) < reach && Math.abs(y - q.y) < reach)
+      .sort((a, b) => Math.abs(a.y - y) - Math.abs(b.y - y))[0];
+    return b && b.f;
+  };
   const coins = () => { const n = api.getCoins?.(); return Number.isFinite(n) ? n : null; };
   function grantUpgrade(kind, id) {
     if (st.appliedPurchaseIds.has(id)) return;
@@ -1447,7 +1456,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   function pick(x, y) {   // 손가락 아래 가장 앞에 보이는 것, 조금 빗나가면 가까운 보이는 나사 (돋보기로 드러난 나사가 먼저)
     if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
     const o = topAt(x, y); if (o && o.p) return o;
-    let best = null, bd = 20;
+    let best = null, bd = touchRadius();
     for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && topAt(h.x, h.y) === s) { bd = d; best = s; } }
     return best;
   }
@@ -1521,6 +1530,15 @@ function screw3d(api,startStage=loadResumeStage()) {
       st.lensHold = false; st.lens = null;
     },
     onWheel(dy, x, y) { zoomAt(Math.exp(-dy * 0.0015), x, y); st.touched = true; },
+    zoomControl(action) {
+      if (destroyed || ended) return false;
+      if (action === 'in') zoomAt(1.4, CX, CY);
+      else if (action === 'out') zoomAt(1 / 1.4, CX, CY);
+      else if (action === 'reset') { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; }
+      else return false;
+      st.touched = true;
+      return true;
+    },
     update(dt) {
       if (destroyed || ended || buying || st.next) return;
       if (walletUser && !sameWallet()) { restoreBlocked = true; say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 3); return; }
