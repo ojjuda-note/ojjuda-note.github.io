@@ -129,3 +129,13 @@
   }
   #gov[data-game="screw"][data-screw-mode="box"] #gctrl { grid-column: 1/-1; grid-row: 3; }
 }
+
+/* Shallow landscape boards get full-size zoom targets in the header. */
+@media (orientation:landscape) and (min-width:500px) and (max-height:540px) {
+  #gov[data-screw-mode="flat"] .screw-zoom-nav { display:flex; gap:4px; }
+  #gov[data-screw-mode="flat"] .screw-zoom-nav button {
+    width:44px; height:44px; touch-action:manipulation; padding:0; border:1px solid var(--line);
+    border-radius:10px; background:var(--surface-2); color:var(--ink); font-size:19px;
+  }
+  #gov[data-screw-mode="flat"]:has(.screw-stage-card, .game-result-card) .screw-zoom-nav { display:none; }
+}
