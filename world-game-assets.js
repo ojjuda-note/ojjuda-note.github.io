@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-flat-jigsaw-zoom1';
+ const revision='20261106-arcade-back-versions1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,27 +9,27 @@
   festival:'1.3.1',
   restaurants:'1.9.16',
   recommendations:'1.5.4',
-  archery:'3.1.0',
-  roulette:'1.8.2',
-  bang:'1.9.3',
-  poker:'1.5.3',
+  archery:'3.1.1',
+  roulette:'1.8.3',
+  bang:'1.9.4',
+  poker:'1.5.4',
   tank:'1.4.4',
-  mines:'1.3.4',
-  sacheonseong:'1.9.3',
+  mines:'1.3.5',
+  sacheonseong:'1.9.4',
   saetbyeol:'1.2.7',
-  tour:'1.4.3',
-  ttang:'1.4.4',
-  photo_ttang:'1.3.3',
+  tour:'1.4.4',
+  ttang:'1.4.5',
+  photo_ttang:'1.3.4',
   mole:'1.4.4',
   runner:'1.3.4',
   stacker:'1.4.4',
   breakout:'1.5.4',
-  spot:'1.10.5',
+  spot:'1.10.6',
   screw:'2.16.0',
-  janggi:'1.4.2',
-  chess:'1.4.2',
-  billiards:'1.4.2',
-  matgo:'1.4.3'
+  janggi:'1.4.3',
+  chess:'1.4.3',
+  billiards:'1.4.3',
+  matgo:'1.4.4'
  });
  const controls=['/game-controls.css?v=20261007-flow1','/game-controls.js?v=20261007-flow1'];
  const session='/game-session.js?v=20261031-fresh-games1';
