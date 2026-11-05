@@ -61,6 +61,28 @@ for(const stage of [26,27,35,55,80,115,160,220,450,598,650,800,1000]){
  sim.destroy();
 }
 
+// A misplaced fastener really holds its metal plate, not a hidden sequence
+// flag. The covering keeper also continues to shield the following plate.
+for(const stage of [26,100,598,1000]){
+ const level=Physics.makeFlatLevel(stage),sim=Physics.createPhysics(level);
+ const [firstId,secondId,nextId]=level.order;
+ const screw=level.screws[firstId],other=level.screws[secondId],original=screw.hole;
+ const first=level.plates[original.owner];
+ const next=level.plates[level.screws[nextId].hole.owner];
+ assert.ok(sim.move(screw,level.holes[0]));
+ assert.ok(sim.move(other,level.holes[1]));
+ assert.ok(sim.move(screw,original),'the wrong parking move reattaches a real fastener');
+ for(let i=0;i<90;i++)sim.step(.05);
+ assert.equal(first.pins.length,1,`stage ${stage} still has its misplaced screw`);
+ assert.notEqual(first.state,'gone',`stage ${stage} cannot let pinned metal fall`);
+ for(const id of next.holeIds)assert.equal(Physics.canUnscrew(level,level.screws[level.holes[id].screw]),false,'the next fasteners remain physically covered');
+ assert.ok(sim.move(screw,level.holes[0]));
+ for(let i=0;i<90;i++)sim.step(.05);
+ assert.equal(first.state,'gone',`stage ${stage} finally releases when the screw is moved away`);
+ for(const id of next.holeIds)assert.ok(Physics.canUnscrew(level,level.screws[level.holes[id].screw]));
+ sim.destroy();
+}
+
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const tick=(game,seconds=2)=>{for(let i=0;i<Math.round(seconds/.05);i++)game.update(.05);};
 function transfer(game,screwId,toId){
