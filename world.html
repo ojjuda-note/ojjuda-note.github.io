@@ -1144,8 +1144,12 @@ function fitWorldBoardScreen(){
  worldBoardScreenStop=()=>{observer?.disconnect();window.removeEventListener('resize',resize);window.visualViewport?.removeEventListener('resize',resize);};
  resize();
 }
+function worldScrewAdminTestEnabled(){
+ const query=new URLSearchParams(location.search);
+ return query.get('game')==='screw_box'&&query.get('screwTest')==='1'&&D.online&&!!D.user?.id&&D.isAdmin===true;
+}
 function Al(t,options={}){
- if(t==="screw"&&_r.screw.maintenance){M(`${_r.screw.name}는 ${_r.screw.maintenance}이에요.`);return;}
+ if(t==="screw"&&_r.screw.maintenance&&!worldScrewAdminTestEnabled()){M(`${_r.screw.name}는 ${_r.screw.maintenance}이에요.`);return;}
  if(t==="byeolcheonji"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
   location.assign("/star");return;
@@ -2252,7 +2256,17 @@ function openWorldGameLink(id,options={}){
  if(id==='screw_box'||id==='screw_flat')return Al('screw',{screwMode:id==='screw_flat'?'flat':'box'});
  if(['sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw','bang','tank','tour','ttang','poker','roulette','photo_ttang','archery','festival'].includes(id))return Al(id);
 }
-function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":"arcade"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1)openWorldGameLink(entry,entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined);}else if(g.tab==="place"&&D.online&&!g.place?.live)xf(g.place.id,undefined,true);else H();void resolveWorldProfilePhoto(),worldParkNotes?.route(),!bm&&(bm=true,D.online&&(Promise.all([ke(),Ji(),Gc(),Ls().catch(()=>!1),Jd().catch(()=>!1)]).then(t=>{let e=new URL(location.href),o=e.searchParams.get("admin");const notice=e.searchParams.get("notice"),target=e.searchParams.get("target");if(["guestbook","friends","media","message"].includes(notice)&&target&&target.length<=512){e.searchParams.delete("notice");e.searchParams.delete("target");history.replaceState(null,"",e.pathname+e.search+e.hash);void openWorldNotification(notice,target)}if(e.searchParams.get("tab")==="shop"){g.tab="shop";e.searchParams.delete("tab");history.replaceState(null,"",e.pathname+e.search+e.hash);H()}if(restoreWorldAdminView(o)){e.searchParams.delete("admin");try{history.replaceState(null,"",e.pathname+e.search+e.hash)}catch{}H()}else wc()&&H()}).catch(t=>console.error(t)),on({onLobby:jf}),Qs(),fy(),setInterval(kc,9e4),setTimeout(qs,8e3),setTimeout(()=>Q0().catch(t=>console.error(t)),3e3),document.addEventListener("visibilitychange",()=>{document.hidden||(kc(),qs(),worldResumePresence())})))}// Member rooms use their own account; creation is available only in administrator mode.
+function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL(location.href),tab=url.searchParams.get("tab"),place=url.searchParams.get("place");sr.tab({tab:place==="park"||tab==="park"?"park":tab==="my"||tab==="settings"?"my":"arcade"});let entry=url.searchParams.get("game");try{entry=window.OjjudaGameChallenges?.requestedGame?.()||entry}catch{}if(url.searchParams.getAll("game").length===1){
+ const gameOptions=entry==="restaurants"&&url.searchParams.get("restaurantView")==="recommendations"?{openRecommendations:true}:undefined;
+ if(entry==='screw_box'&&url.searchParams.get('screwTest')==='1'){
+  const previewOwner=D.online?D.user?.id:null;
+  if(!previewOwner)M('박스형 테스트는 관리자 로그인 후 이용할 수 있어요.');
+  else void Jd().then(allowed=>{
+   if(D.online&&D.user?.id===previewOwner&&allowed)openWorldGameLink(entry,gameOptions);
+   else M('관리자 전용 테스트 주소예요.');
+  }).catch(()=>M('관리자 권한을 확인하지 못했어요.'));
+ }else openWorldGameLink(entry,gameOptions);
+}}else if(g.tab==="place"&&D.online&&!g.place?.live)xf(g.place.id,undefined,true);else H();void resolveWorldProfilePhoto(),worldParkNotes?.route(),!bm&&(bm=true,D.online&&(Promise.all([ke(),Ji(),Gc(),Ls().catch(()=>!1),Jd().catch(()=>!1)]).then(t=>{let e=new URL(location.href),o=e.searchParams.get("admin");const notice=e.searchParams.get("notice"),target=e.searchParams.get("target");if(["guestbook","friends","media","message"].includes(notice)&&target&&target.length<=512){e.searchParams.delete("notice");e.searchParams.delete("target");history.replaceState(null,"",e.pathname+e.search+e.hash);void openWorldNotification(notice,target)}if(e.searchParams.get("tab")==="shop"){g.tab="shop";e.searchParams.delete("tab");history.replaceState(null,"",e.pathname+e.search+e.hash);H()}if(restoreWorldAdminView(o)){e.searchParams.delete("admin");try{history.replaceState(null,"",e.pathname+e.search+e.hash)}catch{}H()}else wc()&&H()}).catch(t=>console.error(t)),on({onLobby:jf}),Qs(),fy(),setInterval(kc,9e4),setTimeout(qs,8e3),setTimeout(()=>Q0().catch(t=>console.error(t)),3e3),document.addEventListener("visibilitychange",()=>{document.hidden||(kc(),qs(),worldResumePresence())})))}// Member rooms use their own account; creation is available only in administrator mode.
 var worldHouseClose=null,worldHouseOpening=false,worldHouseOwner=null,worldHouseViewer=null,worldHouseRequest=0;
 function notifyStreakSaved(owner){if(owner&&D.online&&D.user?.id===owner)window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner}}));}
 function newPracticeStreakRound(mode){return mode==='ai'&&D.online&&D.user?.id?{id:crypto.randomUUID(),owner:D.user.id,saved:false,pending:false}:null;}
