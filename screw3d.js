@@ -1242,6 +1242,8 @@ function screw3d(api,startStage=loadResumeStage()) {
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
     prepareNextLevel(L+1);
   }
+  // Keep numerical angles bounded, while allowing any number of full 360° turns in either direction.
+  const wrapTurn = a => a % (Math.PI * 2);
   const view = () => mm(rx(st.pitch), ry(st.yaw));
   function project(p, V) { const q = mv(V, p), sc = st.sc, k = F / (F - q[2] / sc), s = SC * st.zm / sc; return { x: CX + st.pan[0] + q[0] * s * k, y: CY + st.pan[1] - q[1] * s * k, z: q[2], k }; }
   function zoomAt(f, x, y) { const z1 = Math.max(0.6, Math.min(9, st.zm * f)), vx = (x - CX - st.pan[0]) / st.zm, vy = (y - CY - st.pan[1]) / st.zm; st.pan = [x - CX - vx * z1, y - CY - vy * z1]; st.zm = z1; }
@@ -1466,7 +1468,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!d) { if (y > 196) st.lens = { x, y, hold: false, t: st.t }; else st.lens = null; return; }   // 마우스를 올리면 투시 돋보기
       if (st.lensHold) { st.lens = { x, y, hold: true, t: st.t }; d.x = x; d.y = y; return; }   // 꾹 누른 채 밀면 돋보기가 따라와요
       if (!d.moved && Math.hypot(x - d.x0, y - d.y0) > 7) { d.moved = true; st.lens = null; if (st.ms && !st.next) st.ms.turns++; }
-      if (d.moved) { st.touched = true; st.yaw += (x - d.x) * 0.011; st.pitch = Math.max(-1.35, Math.min(1.35, st.pitch + (y - d.y) * 0.011)); } d.x = x; d.y = y;
+      if (d.moved) { st.touched = true; st.yaw = wrapTurn(st.yaw + (x - d.x) * 0.011); st.pitch = wrapTurn(st.pitch + (y - d.y) * 0.011); } d.x = x; d.y = y;
     },
     onUp(x, y, id = 0) {
       if (!st.ptrs.has(id)) return; // ignore unrelated/repeated pointer-up events
@@ -1556,7 +1558,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         api.stageClear?.(st.score);
         return;
       }
-      if (!st.touched) st.yaw += dt * 0.25;   // 처음엔 천천히 돌며 보여 줘요
+      if (!st.touched) st.yaw = wrapTurn(st.yaw + dt * 0.25);   // 처음엔 천천히 돌며 보여 줘요
     },
     draw(c) {
       const changing = st.lvl.els.some(e => e.state === 'on' && (e.dyn || e.hinge || e.fall))
