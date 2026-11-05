@@ -77,6 +77,22 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
             }
           }
           return {mounted,visible,tapped:false};
+        },
+        rabbitOcclusion() {
+          boot(20);
+          const shots=[];
+          for(const yaw of [0,Math.PI/2,Math.PI,3*Math.PI/2]){
+            state.yaw=yaw;state.pitch=0.18;game.draw(ctx);
+            const features=state.order.filter(it=>it.owner.faceFeature);
+            const polygons=features.flatMap(it=>it.polys);
+            shots.push({
+              plates:state.order.filter(it=>it.owner.skinPlate).length,
+              front:polygons.filter(pg=>pg.visible?.length>0).length,
+              hidden:polygons.filter(pg=>pg.visible?.length===0).length,
+              unclipped:polygons.filter(pg=>!pg.visible).length
+            });
+          }
+          return shots;
         }
       };
     ` });
@@ -102,13 +118,16 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const contact=await page.evaluate(() => screwTest.mountedTap());
     assert.ok(contact.mounted>=10&&contact.visible>=1&&contact.tapped,
       `a surface-mounted screw must remain visible and clickable: ${JSON.stringify(contact)}`);
+    const rabbit=await page.evaluate(() => screwTest.rabbitOcclusion());
+    assert.ok(rabbit.every(s=>s.plates===0&&s.unclipped===0&&s.front>0&&s.hidden>0),
+      `curved rabbit must hide rear details and detached square plates: ${JSON.stringify(rabbit)}`);
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
     if (process.env.SCREW_MODEL_QA) for (const L of [1, 5, 80]) {
       await page.evaluate(stage => { screwTest.boot(stage); }, L);
       await page.locator('canvas').screenshot({ path: path.join(process.env.SCREW_MODEL_QA, `screw-box-stage-${L}.png`) });
     }
     const perf = {};
-    for (const L of [4, 40, 160]) perf[L] = await page.evaluate(L => screwTest.perf(L), L);
+    for (const L of [4, 20, 40, 160]) perf[L] = await page.evaluate(L => screwTest.perf(L), L);
     assert.deepEqual(errors, []);
     console.log('PASS: normal/large rendering, partial occlusion, moving-block touch and three completed tutorial rounds', JSON.stringify({ play, frameMs: perf }));
   } finally { await browser.close(); }
