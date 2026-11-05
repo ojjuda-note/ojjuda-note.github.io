@@ -49,13 +49,13 @@ for(const stage of [4,26,220]){
  game.destroy();
 }
 
-// The hand cannot act as a storage slot when every other hole is occupied.
-// Vacant holes hidden by falling metal can become accessible after a lift.
+// The hand cannot act as a storage slot. Vacancies covered by another screw
+// are unusable, while loose metal may uncover a destination on release.
 {
  const game=Game.flat({setScore(){},end(){}},4),st=game.state;
  const screw=st.level.screws.find(s=>Physics.canUnscrew(st.level,s));
  const home=screw.hole,pins=st.level.plates[home.owner].pins.length;
- const free=st.level.holes.filter(h=>h.screw===null);
+ const free=st.level.holes.filter(h=>h.screw===null),original=free.map(h=>({h,x:h.x,y:h.y}));
  const blocker=st.level.screws.find(s=>s!==screw&&s.hole);
  assert.ok(free.length,'stage has spare holes to begin with');
  for(const h of free)h.screw=blocker.id;
@@ -68,7 +68,12 @@ for(const stage of [4,26,220]){
  game.onKey('ArrowRight');
  assert.equal(st.focus,null,'keyboard navigation does not select an impossible pickup');
  assert.doesNotThrow(()=>game.draw(canvas));
- for(const h of free)h.screw=null;
+ for(const {h} of original){h.screw=null;h.x=blocker.hole.x;h.y=blocker.hole.y;}
+ assert.ok(free.every(h=>!Physics.canSeatScrew(st.level,h,screw)),'empty holes obstructed by a fixed head cannot be occupied');
+ press(game,home);
+ assert.equal(st.selected,null,'even physically unavailable empty holes do not allow a pickup');
+ assert.equal(st.moves,0);
+ for(const {h,x,y} of original){h.x=x;h.y=y;}
  assert.ok(free.some(h=>Physics.canSeatScrew(st.level,h,screw)));
  press(game,home);
  assert.equal(st.moves,1,'the screw may lift when a usable place is restored');
