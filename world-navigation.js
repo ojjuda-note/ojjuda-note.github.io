@@ -229,6 +229,29 @@
         return ()=>{reset();for(const remove of removers)remove();doc.defaultView?.removeEventListener('blur',reset);};
       }
       attachDocument(document);
+      // Handle the embedded game's own arcade-exit controls before they discard the round.
+      const childExitControls = {
+        '/games/mines/index.html': '#face2',
+        '/games/sacheonseong/index.html': '#game-home',
+        '/games/spot-difference/index.html': '#game-home',
+        '/games/ojjuda-tour/index.html': '#exitBtn',
+        '/games/poker/index.html': '[data-action="exit"]',
+        '/games/matgo.html': '#exit',
+        '/games/matgo-online.html': '#exit'
+      };
+      document.addEventListener('load', event => {
+        const frame = event.target;
+        if (frame.tagName !== 'IFRAME') return;
+        const child = frame.contentDocument;
+        const selector = child && childExitControls[child.location.pathname];
+        if (!selector) return;
+        child.addEventListener('click', click => {
+          if (click.button !== 0 || click.ctrlKey || click.metaKey || click.shiftKey || click.altKey) return;
+          if (click.target.closest?.(selector) && options.playingGame?.()?.contains(frame) && requestGameExit()) {
+            click.preventDefault(); click.stopImmediatePropagation();
+          }
+        }, true);
+      }, true);
       document.addEventListener('cancel', event => {
         if (!exitingGame && event.target === options.playingGame?.() && requestGameExit()) {
           event.preventDefault();

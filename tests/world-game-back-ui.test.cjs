@@ -130,6 +130,23 @@ window.childReady=true;
         await main();
       }
 
+      // The embedded minefield also has an in-game Back button. Its own handler must
+      // not remove the round before the player picks an option in the parent dialog.
+      await page.evaluate(()=>backFixture.open('mines'));
+      const mines=page.frameLocator('.mines-game-dialog iframe');
+      await mines.locator('body').evaluate(body=>{
+        body.innerHTML='<main id="minesEntry" hidden></main><button id="face2">목록</button>';
+        body.querySelector('button').onclick=()=>body.dataset.prematureExit='true';
+      });
+      for(const choice of ['게임 계속하기','아지트로 나가기']){
+        await mines.locator('#face2').click();
+        const question=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+        assert.equal(await mines.locator('body').getAttribute('data-premature-exit'),null);
+        await question.getByRole('button',{name:choice,exact:true}).click();
+        if(choice==='게임 계속하기')assert.ok(await mines.locator('#face2').isVisible());
+      }
+      await main();
+
       // The return target of a shared game URL must stay on the arcade after refresh.
       await page.evaluate(()=>{
         history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
