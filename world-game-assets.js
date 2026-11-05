@@ -7,7 +7,7 @@
  const versions=Object.freeze({
   byeolcheonji:'1.0.3',
   festival:'1.3.1',
-  restaurants:'1.9.16',
+  restaurants:'1.9.17',
   recommendations:'1.5.4',
   archery:'3.1.1',
   roulette:'1.8.3',

@@ -109,7 +109,7 @@
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 526,
+    "recordCount": 528,
     "coordinatesCount": 244,
     "buildCounts": {
       "existingRecords": 6,
@@ -1476,6 +1476,20 @@
         }
       ],
       "caveat": "원대구탕·제이드앤워터는 과거 선정만, 두루는 2018년 소개에서 과거 3리본 수상 언급. 선정 연도와 현행 등급·현재 영업 여부 미확인. 좌표 증거 없으므로 null."
+    },
+    "bucheonMunicipalMention20261106": {
+      "checkedAt": "2026-11-06",
+      "addedMentionRecords": 2,
+      "recordIds": [
+        "blue-bucheon-citytour-slot11-simga",
+        "blue-bucheon-citytour-slot11-bucheon-agui"
+      ],
+      "sourceName": "부천시 문화관광 개별 식당 상세 페이지",
+      "sourceUrls": [
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1175793&boardtypeid=28516&menuid=172004002001002",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardid=1175809&boardtypeid=28516&menuid=172004002001002"
+      ],
+      "note": "블루리본 선정 문구는 지자체 관광페이지의 소개이며 발행처 개별 정규 등급·선정연도·현재 선정은 확인되지 않음. 서로 다른 근거 유형 구별."
     }
   },
   "mapBackground": {
@@ -1488,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3099,
+    "uniqueRestaurants": 3106,
     "providerCounts": {
       "michelin": 237,
-      "blue-ribbon": 526,
-      "local-guide": 2370,
+      "blue-ribbon": 528,
+      "local-guide": 2375,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2076,
+    "coordinatesMissing": 2083,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1506,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 336,
+      "경기": 343,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1517,7 +1531,7 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1812,
+      "한식": 1819,
       "중식": 127,
       "일식": 131,
       "기타": 572,
@@ -10309,51 +10323,119 @@
       "scope": "경기도 고양시·파주시 공식 공개 음식점/관광 안내의 7곳 신규 사실 부분 확인. 지역 전수 조사 아님.",
       "coordinatePolicy": "상호·지점·주소 일치 공개 위경도 근거가 없어 신규 7곳 지도 좌표 null. 추정 좌표 및 자동 삭제 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot11-bucheon-gimpo",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3099,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 526,
+          "local-guide": 2370,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2076,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 336,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1812,
+          "중식": 127,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 226
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3106,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2375,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2083,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 343,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1819,
+          "중식": 127,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 226
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-bucheon-citytour-slot11-gyeongin570",
+        "local-bucheon-citytour-slot11-myeongga-salt",
+        "local-bucheon-citytour-slot11-cheonghakjae",
+        "local-bucheon-citytour-slot11-suu",
+        "local-bucheon-citytour-slot11-seoan",
+        "blue-bucheon-citytour-slot11-simga",
+        "blue-bucheon-citytour-slot11-bucheon-agui"
+      ],
+      "existingRestaurantsEnriched": 4,
+      "existingRestaurantIds": [
+        "local-gg-bd95fb61f13d11",
+        "local-gg-3c0b7cb3d2ff27",
+        "local-gg-925a6b99f923bd",
+        "local-gg-9166f631b0664c"
+      ],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.bucheon.go.kr/site/program/board/basicboard/list?boardtypeid=28516&menuid=172004002001002",
+        "https://www.gimpo.go.kr/news/selectBbsNttView.do?bbsNo=466&key=9377&nttNo=978722&pageIndex=21&pageUnit=10&searchCnd=all&searchKrwd=2026"
+      ],
+      "scope": "부천 공식 2026 H2 '부천맛집' 식당 5곳 + 블루리본 공식시청 소개 2곳 신규, 김포시 2026 신규 지정 4곳 기존 항목 선정연도 보완. 전국 전수 확인 아님.",
+      "coordinatePolicy": "신규 식당 7곳 공개 위치 위경도 미검증으로 null. 김포시 기존 4곳의 기존 공식 업소별 확인 좌표 유지.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot10-goyang-paju",
+    "id": "2026-11-06-gyeonggi-slot11-bucheon-gimpo",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3092,
-      "providerCounts": {
-        "blue-ribbon": 526,
-        "local-guide": 2363,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2069,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 329,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 351,
-        "세종": 100,
-        "울산": 36,
-        "인천": 341,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "기타": 572,
-        "디저트": 226,
-        "분식": 23,
-        "양식": 208,
-        "일식": 130,
-        "중식": 126,
-        "한식": 1807
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3099,
       "providerCounts": {
         "michelin": 237,
@@ -10392,27 +10474,69 @@
         "디저트": 226
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3106,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2375,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2083,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 343,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1819,
+        "중식": 127,
+        "일식": 131,
+        "기타": 572,
+        "양식": 208,
+        "분식": 23,
+        "디저트": 226
+      }
+    },
     "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-goyang-gnews20251022-banyagwan",
-      "local-goyang-gnews20251022-myeonggyeok",
-      "local-goyang-gnews20251022-gyedanramen",
-      "local-paju-ggtour-odusannmakguksu",
-      "local-paju-tourism-yaksan-jeong",
-      "local-paju-tourism-canaan-duck",
-      "local-paju-tourism-gohyangjip"
+      "local-bucheon-citytour-slot11-gyeongin570",
+      "local-bucheon-citytour-slot11-myeongga-salt",
+      "local-bucheon-citytour-slot11-cheonghakjae",
+      "local-bucheon-citytour-slot11-suu",
+      "local-bucheon-citytour-slot11-seoan",
+      "blue-bucheon-citytour-slot11-simga",
+      "blue-bucheon-citytour-slot11-bucheon-agui"
     ],
-    "existingRestaurantsEnriched": 0,
+    "existingRestaurantsEnriched": 4,
+    "existingRestaurantIds": [
+      "local-gg-bd95fb61f13d11",
+      "local-gg-3c0b7cb3d2ff27",
+      "local-gg-925a6b99f923bd",
+      "local-gg-9166f631b0664c"
+    ],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
-      "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
-      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
-      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
-      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
+      "https://www.bucheon.go.kr/site/program/board/basicboard/list?boardtypeid=28516&menuid=172004002001002",
+      "https://www.gimpo.go.kr/news/selectBbsNttView.do?bbsNo=466&key=9377&nttNo=978722&pageIndex=21&pageUnit=10&searchCnd=all&searchKrwd=2026"
     ],
-    "scope": "경기도 고양시·파주시 공식 공개 음식점/관광 안내의 7곳 신규 사실 부분 확인. 지역 전수 조사 아님.",
-    "coordinatePolicy": "상호·지점·주소 일치 공개 위경도 근거가 없어 신규 7곳 지도 좌표 null. 추정 좌표 및 자동 삭제 없음.",
+    "scope": "부천 공식 2026 H2 '부천맛집' 식당 5곳 + 블루리본 공식시청 소개 2곳 신규, 김포시 2026 신규 지정 4곳 기존 항목 선정연도 보완. 전국 전수 확인 아님.",
+    "coordinatePolicy": "신규 식당 7곳 공개 위치 위경도 미검증으로 null. 김포시 기존 4곳의 기존 공식 업소별 확인 좌표 유지.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10525,8 +10649,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2370,
-    "designationEvidenceCount": 2417,
+    "recordCount": 2375,
+    "designationEvidenceCount": 2422,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
@@ -10580,7 +10704,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 304,
+        "uniqueRestaurants": 309,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -10944,6 +11068,24 @@
         "파주 관광 페이지 파주맛고을 3곳은 관광 소개로만 표기; 모범음식점 단독은 미포함.",
         "기존 파주 오백년누룽지백숙 주소 오탈자는 원본 대용량 파일 갱신 실패로 후속 조치."
       ]
+    },
+    "municipalSelection20261106BucheonGimpoSlot11": {
+      "checkedAt": "2026-11-06",
+      "region": [
+        "경기도 부천시",
+        "경기도 김포시"
+      ],
+      "addedBucheonCityDesignationCount": 5,
+      "existingGimpo2026SelectionConfirmedCount": 4,
+      "additionalBucheonBlueRibbonOfficialMentions": 2,
+      "files": [
+        "games/certified-restaurants/official-bucheon-gimpo-slot11.json"
+      ],
+      "sources": [
+        "https://www.bucheon.go.kr/site/program/board/basicboard/list?boardtypeid=28516&menuid=172004002001002",
+        "https://www.gimpo.go.kr/news/selectBbsNttView.do?bbsNo=466&key=9377&nttNo=978722&pageIndex=21&pageUnit=10&searchCnd=all&searchKrwd=2026"
+      ],
+      "criteria": "부천 관광의 2026년 하반기 리스트 기준일은 각 업소 지정일이 아님; 김포시 공식 2026-06-22 신규 지정 발표는 기존 네 ID의 선정연도를 2026으로 확인."
     }
   },
   "mapCoverageAuditHistory": [

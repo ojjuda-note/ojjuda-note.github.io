@@ -14,8 +14,8 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 10,
-    "scheduledAt": "2026-11-06T04:00:00+09:00",
+    "slot": 11,
+    "scheduledAt": "2026-11-06T05:00:00+09:00",
     "checkedAtKST": "2026-11-06",
     "source": "hourly slot: anchor 2026-11-05T23:00+09:00"
   },
@@ -2564,6 +2564,244 @@
       "nextRegions": [
         "경기도 부천시",
         "경기도 김포시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 11,
+      "scheduledAtKST": "2026-11-06T05:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_7_official_bucheon_additions_and_4_gimpo_selection_year_updates",
+      "assignedRegions": [
+        "경기도 부천시",
+        "경기도 김포시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 부천시",
+          "baseListedCount": 21,
+          "scope": "부천시 문화관광 2026년 하반기 공식 부천맛집 명단 중 신규 5곳 상호·도로명주소·지정 분류 확인. 관광 상세의 블루리본 선정 언급 2곳은 정규 등급/연도 미확인으로 별도 구분. 기본 21곳 좌표 미확인(전수 재검증 아님).",
+          "new": 7,
+          "updated": 0,
+          "unknownLocations": 28,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 김포시",
+          "baseListedCount": 50,
+          "scope": "김포시 2026-06-22 신규 지정 발표의 4곳과 기본 DB의 기존 ID/상호/주소를 교차 확인. 중복 신규를 만들지 않고 선정연도만 보완. 기존 50곳 중 45곳 기존 확인 좌표 유지, 5곳 좌표 미등록. 기타 업체 추가발굴은 비전수.",
+          "new": 0,
+          "updated": 4,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "부천시 문화관광 음식점 목록의 2026 하반기 부천맛집 분류 및 업체별 상세 안내",
+        "부천시 관광 상세의 블루리본 선정 안내(발행처 개별 판본·리본 수 미확인)",
+        "김포시 뉴스포털 2026-06-22 김포맛집 신규 4곳 발표",
+        "김포시 문화관광 개별 업체 기존 등록 내역(성미옥·대관령곱창본가·설반에프앤씨·미호소바)"
+      ],
+      "additions": 7,
+      "modifications": 4,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 33,
+      "locationPendingScope": "부천 기존 21곳과 김포 기존 5곳, 신규 부천 7곳 합계 33곳이 좌표 미등록. 이번 회차에 개별 위치 근거를 확인한 대상은 신규 7곳, 기존 좌표 미등록 26곳은 전수 재확인 미완료.",
+      "addedRestaurantIds": [
+        "local-bucheon-citytour-slot11-gyeongin570",
+        "local-bucheon-citytour-slot11-myeongga-salt",
+        "local-bucheon-citytour-slot11-cheonghakjae",
+        "local-bucheon-citytour-slot11-suu",
+        "local-bucheon-citytour-slot11-seoan",
+        "blue-bucheon-citytour-slot11-simga",
+        "blue-bucheon-citytour-slot11-bucheon-agui"
+      ],
+      "updatedRestaurantIds": [
+        "local-gg-bd95fb61f13d11",
+        "local-gg-3c0b7cb3d2ff27",
+        "local-gg-925a6b99f923bd",
+        "local-gg-9166f631b0664c"
+      ],
+      "existingItemsRechecked": [
+        "성미옥 · 대관령곱창본가 · 설반에프앤씨 · 미호소바(김포시 2026 신규 지정 명단, 기존 좌표/ID 보존)",
+        "부천시 공식 관광 카테고리 부천맛집 기준연도와 실제 선정연도 구분"
+      ],
+      "evidenceUrls": [
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131957",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131963",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131975",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131960",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131971",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1175793",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1175809",
+        "https://www.gimpo.go.kr/news/selectBbsNttView.do?bbsNo=466&key=9377&nttNo=978722&pageIndex=21&pageUnit=10&searchCnd=all&searchKrwd=2026",
+        "https://www.bucheon.go.kr/site/program/board/basicboard/list?boardtypeid=28516&menuid=172004002001002"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-bucheon-citytour-slot11-gyeongin570",
+          "name": "경인로570 숯불구이",
+          "address": "경기도 부천시 소사구 경인로 570",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 소사구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131957"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-myeongga-salt",
+          "name": "명가왕소금구이",
+          "address": "경기도 부천시 원미구 부일로 371-1, 1층",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131963"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-cheonghakjae",
+          "name": "청학재",
+          "address": "경기도 부천시 원미구 중동로248번길 105, 207호",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131975"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-suu",
+          "name": "수우(숯불구이전문점)",
+          "address": "경기도 부천시 원미구 길주로 280, 프리머스부천타워 203~204호, 207~208호",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131960"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "local-bucheon-citytour-slot11-seoan",
+          "name": "서안메밀집",
+          "address": "경기도 부천시 원미구 신흥로 103, 1층",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1131971"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "blue-bucheon-citytour-slot11-simga",
+          "name": "심가면옥",
+          "address": "경기도 부천시 오정구 소사로 697",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 오정구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1175793"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        },
+        {
+          "id": "blue-bucheon-citytour-slot11-bucheon-agui",
+          "name": "부천아귀",
+          "address": "경기도 부천시 원미구 계남로301번길 6",
+          "region": "경기도 부천시",
+          "aliases": [
+            "경기 부천시",
+            "부천시",
+            "부천 원미구"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.bucheon.go.kr/site/program/board/basicboard/view?boardtypeid=28516&menuid=172004002001002&boardid=1175809"
+          ],
+          "result": "공식 부천시 페이지의 업소명·상세주소 확인. 동일 업소 마커의 검증된 공개 위경도는 확보하지 못하여 null 유지.",
+          "reason": "상호·지점·현주소가 일치하는 공개 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 11,
+          "action": "다음 동일 회차에서 일치 좌표 근거 재확인; 좌표 미등록만으로 삭제·폐업 추정 금지"
+        }
+      ],
+      "unresolved": [
+        "부천시 2026년 하반기 명단 기준연도는 식당별 선정연도 아님. 개별 연도는 null 유지.",
+        "심가면옥·부천아귀 블루리본은 부천시 관광 상세의 문구이며 발행처 최신 정규 등급·판본·현재 선정은 미확인.",
+        "부천·김포 기존 좌표 미등록 26곳의 개별 검증 미완료, 이번 재검증은 신규 7곳에 한정.",
+        "부천·김포 식당 폐업·휴업·주소이전 현황 전체 조사는 미완료. 근거 없는 삭제 없음.",
+        "김포시 추가 미선정 후보·블루리본 발행처 최신 개별 등급 검증 미완료."
+      ],
+      "carryOver": [
+        "부천 공식 등록 7곳 상호·주소 일치 지도 좌표 공개 근거 탐색",
+        "부천 기존 21곳·김포 기존 5곳 위치 미확인 개별 재조사",
+        "김포 신규 지정 4곳 외 최신 선정 목록 확인",
+        "부천시 관광 블루리본 2곳 정규 발행처 개별 등급·판본 직접 검증",
+        "부천·김포 상호 이전·휴폐업 개별 근거 수집"
+      ],
+      "nextSlot": 12,
+      "nextRegions": [
+        "경기도 안양시",
+        "경기도 군포시",
+        "경기도 의왕시",
+        "경기도 과천시"
       ],
       "notExhaustive": true
     }
