@@ -31,6 +31,12 @@ vm.runInContext(sources+`
       }
     }
     const guards=m.els.filter(e=>e.guard);
+    if(['토끼','돼지','소','펭귄'].includes(m.name)){
+      const cosmetic=m.els.filter(e=>e.kind==='plate'&&!e.guard&&!e.diagonal);
+      assert.ok(cosmetic.length>0,'animal scenes have working fastening plates');
+      assert.ok(cosmetic.every(e=>e.skinPlate&&e.visualMountOnly),
+        'old square fastening plates, including multi-part ones, must not protrude from the curved animal');
+    }
     if(stage>=31)assert.ok(guards.length>=1,'hard stages include genuine extraction obstacles');
     if(stage>=31)assert.ok(m.screws.some(s=>!s.guard&&guards.includes(blocked(s,m))),
       'an intended screw is physically blocked by a removable guard');
@@ -79,9 +85,36 @@ vm.runInContext(sources+`
     upper.state='done';
     assert.equal(blocked(lower,m),null,'removing the obstruction frees the original screw');
   };
+  globalThis.checkAnimalOcclusion=()=>{
+    const triangle=[{x:50,y:50},{x:85,y:50},{x:68,y:85}];
+    const skin={isSkin:true,owner:{},alpha:1,polys:[{
+      pts:[{x:40,y:40},{x:95,y:40},{x:95,y:95},{x:40,y:95}],depth:[0,0,.8]}]};
+    const rear={owner:{faceFeature:true},polys:[{pts:triangle,depth:[0,0,.6]}]};
+    maskSculptDetails([skin,rear],null);
+    assert.equal(rear.polys[0].visible.length,0,'the body hides a rear ear, muzzle or tail completely');
+    const front={owner:{faceFeature:true},polys:[{pts:triangle,depth:[0,0,.9]}]};
+    maskSculptDetails([skin,front],null);
+    assert.equal(front.polys[0].visible.length,1,'a front ear stays visible');
+    const crossingSkin={isSkin:true,owner:{},alpha:1,polys:[{
+      pts:[{x:40,y:40},{x:66,y:40},{x:66,y:95},{x:40,y:95}],depth:[0,0,.8]}]};
+    const partial={owner:{faceFeature:true},polys:[{pts:triangle,depth:[0,0,.6]}]};
+    maskSculptDetails([crossingSkin,partial],null);
+    const area=polys=>polys.reduce((sum,p)=>sum+Math.abs(polyArea(p)),0);
+    assert.ok(area(partial.polys[0].visible)>0&&area(partial.polys[0].visible)<area([triangle]),
+      'an ear crossing the silhouette is clipped only where the front body covers it');
+    const screw={owner:{p:[0,0,0]},polys:[{pts:triangle,depth:[0,0,.6],visible:[triangle]}]};
+    maskSculptDetails([skin,screw],null);
+    assert.equal(screw.polys[0].visible.length,0,'surface geometry also hides screw heads on the far side');
+    const transparent={isSkin:true,owner:{},alpha:1,polys:[{
+      pts:skin.polys[0].pts,depth:[0,0,.8]}]};
+    const xray={owner:{faceFeature:true},polys:[{pts:triangle,depth:[0,0,.6]}]};
+    maskSculptDetails([transparent,xray],transparent.owner);
+    assert.equal(xray.polys[0].visible.length,1,'the deliberate x-ray action can reveal hidden parts');
+  };
 `,context);
 
 context.checkScrewBlocksScrew();
+context.checkAnimalOcclusion();
 const levels=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
   21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
   41,42,43,44,45,46,47,48,49,50,60,80,100,120,160,200,240,300,

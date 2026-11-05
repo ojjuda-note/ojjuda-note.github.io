@@ -2,7 +2,7 @@ import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-scre
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
-import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-surface-mount2';
+import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-occlusion3';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -1026,6 +1026,49 @@ function maskScrews(items, xrayOn, masks = [], rotationPreview = false) {
     }
   }
 }
+// The animal's face, ears and tail are separate curved objects. Rendering
+// them after the body without a depth test exposes their *back* surfaces.
+// Clip only these details and screw heads against the nearer body triangles;
+// the body remains batched for fast Canvas drawing on mobile devices.
+function maskSculptDetails(items, xrayOn) {
+  const details=items.filter(it=>it.owner.faceFeature||it.owner.p);
+  if(!details.length)return;
+  const TILE=48,cols=Math.ceil(W/TILE),rows=Math.ceil(H/TILE);
+  const tiles=Array.from({length:cols*rows},()=>[]),faces=[];
+  const range=bb=>bb[2]<0||bb[0]>W||bb[3]<0||bb[1]>H?null:[
+    Math.max(0,Math.floor(bb[0]/TILE)),Math.min(cols-1,Math.floor(bb[2]/TILE)),
+    Math.max(0,Math.floor(bb[1]/TILE)),Math.min(rows-1,Math.floor(bb[3]/TILE))];
+  for(const it of items){
+    if(!it.isSkin||it.owner===xrayOn||it.alpha<=0.5)continue;
+    for(const pg of it.polys){
+      if(!pg.depth)continue;
+      const bb=bounds2(pg.pts),r=range(bb);if(!r)continue;
+      const id=faces.length;faces.push({pg,bb});
+      for(let y=r[2];y<=r[3];y++)for(let x=r[0];x<=r[1];x++)tiles[y*cols+x].push(id);
+    }
+  }
+  for(const it of details)for(const pg of it.polys){
+    if(it.owner.faceFeature)pg.visible=[pg.pts];
+    if(!pg.depth||!pg.visible?.length)continue;
+    const bb=bounds2(pg.pts),r=range(bb);if(!r)continue;
+    const seen=new Set();
+    for(let y=r[2];y<=r[3];y++)for(let x=r[0];x<=r[1];x++)
+      for(const id of tiles[y*cols+x])seen.add(id);
+    for(const id of seen){
+      const other=faces[id];if(!boundsOverlap(bb,other.bb))continue;
+      // Inverse screen depth is larger for the surface closer to the eye.
+      // Split crossing triangles at the actual depth intersection instead
+      // of hiding an entire ear, eye or screw when only its rear is covered.
+      const delta=other.pg.depth.map((v,i)=>v-pg.depth[i]);
+      if(pg.pts.every(p=>depthAt(delta,p)<=1e-6))continue;
+      const cut=other.pg.pts.every(p=>depthAt(delta,p)>1e-6)
+        ?other.pg.pts:clipHalf(other.pg.pts,p=>depthAt(delta,p)-1e-6);
+      if(cut.length<3)continue;
+      pg.visible=pg.visible.flatMap(p=>subtractPoly(p,cut));
+      if(!pg.visible.length)break;
+    }
+  }
+}
 const LENS_R = 80;   // 투시 돋보기 반지름(px)
 function circleHitsHull(cx, cy, r, H) {   // 원이 볼록 다각형과 겹치나요?
   let inside = true;
@@ -1085,7 +1128,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-surface-mount2',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-occlusion3',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
@@ -1489,7 +1532,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
         const planesGeom=geomPlanes(geom),plush=geom.sculpted||owner.material==='fabric';
-        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
+        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), base:owner.faceFeature?paint:null, line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         if (!polys.length) return; // nothing visible; skip sorting and painting entirely
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv: geom.sculpted ? [] : wv,
@@ -1594,6 +1637,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         st.big && st.zm<1.5 && lv.screws.length>280 && (!st.touched||st.drag?.moved));
       // 나사는 앞면이 가린 영역을 잘라서 그려요. 조각 수·낙하·거리 정렬과 무관하게 같은 판정이에요.
       const plushToy=['토끼','돼지','소','펭귄'].includes(lv.name);
+      if(plushToy)maskSculptDetails(order,st.xrayOn);
       const opaqueItems=order.filter(q=>!q.owner.p);
       const paintLayers=plushToy?[
         ...opaqueItems.filter(q=>!q.isSkin&&!q.owner.guard&&!q.owner.faceFeature),
@@ -1621,6 +1665,26 @@ function screw3d(api,startStage=loadResumeStage()) {
           }
           c.restore();
           continue;
+        }
+        if(it.owner.faceFeature){
+          // Fill a curved ear/cheek/eye as a *single* soft shape. Hundreds of
+          // individually antialiased triangles leave distracting pink mesh
+          // seams even when their wireframe stroke has been disabled.
+          const groups=new Map();
+          for(const pg of it.polys)for(const pts of pg.visible||[pg.pts]){
+            const base=pg.base||pg.fill;
+            if(!groups.has(base))groups.set(base,[]);
+            groups.get(base).push(pts);
+            if(it.alpha>0.5)st.drawn.push({pts,owner:it.owner});
+          }
+          for(const [base,parts] of groups){
+            c.beginPath();
+            for(const pts of parts){pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();}
+            const g=c.createLinearGradient(it.bb[0],it.bb[1],it.bb[2],it.bb[3]);
+            g.addColorStop(0,shade(base,.11));g.addColorStop(.5,base);g.addColorStop(1,shade(base,-.12));
+            c.fillStyle=g;c.fill();
+          }
+          c.restore();continue;
         }
         for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
@@ -1663,7 +1727,7 @@ function screw3d(api,startStage=loadResumeStage()) {
           }
           if (!st.big && it.owner.flat && pg.up !== undefined && pg.pts.length === 4 && pg.lit > 0.2) {   // 판: 금속 빛 번짐
             const g2 = c.createLinearGradient(pg.pts[0].x, pg.pts[0].y, pg.pts[2].x, pg.pts[2].y); g2.addColorStop(0, 'rgba(255,255,255,0.45)'); g2.addColorStop(0.5, 'rgba(255,255,255,0)'); g2.addColorStop(1, 'rgba(90,100,140,0.18)'); c.fillStyle = g2; c.fill(); }
-          c.lineWidth = pg.soft ? 0.5 : 1; c.strokeStyle = pg.soft ? pg.fill : pg.line; c.stroke();
+          if(pg.line){c.lineWidth = pg.soft ? 0.5 : 1;c.strokeStyle=pg.soft?pg.fill:pg.line;c.stroke();}
           if (!st.big && (!pg.soft || pg.softCenter) && (!it.owner.material || it.owner.material === 'wood') && pg.up > 0.7 && it.owner.kind === 'block') {   // 블럭 윗면: 밝은 모서리 + 옅은 나뭇결
             c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1.2; c.stroke();
             if (pg.pts.length === 4) { const [p0, p1, p2, p3] = pg.pts; c.strokeStyle = 'rgba(120,80,40,0.09)'; c.lineWidth = 1; c.beginPath();
