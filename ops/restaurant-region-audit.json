@@ -16,10 +16,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 2,
-    "scheduledAt": "2026-11-05T06:00:00+09:00",
+    "slot": 4,
+    "scheduledAt": "2026-11-05T18:00:00+09:00",
     "checkedAtKST": "2026-11-05",
-    "source": "scheduled execution 2026-11-05 06:00 Asia/Seoul"
+    "source": "scheduled execution 2026-11-05 18:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -726,11 +726,339 @@
           "followUp": "서울시 공식 지도에서 좌표 검증. 도심 다른 8개 오래가게는 다음 해당 지역 회차에 대조."
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 4,
+      "scheduledAtKST": "2026-11-05T18:00:00+09:00",
+      "checkedAtKST": "2026-11-05",
+      "status": "partial_review_8_official_tourism_introductions",
+      "assignedRegions": [
+        "서울특별시 강서구",
+        "서울특별시 구로구",
+        "서울특별시 금천구",
+        "서울특별시 영등포구",
+        "서울특별시 동작구"
+      ],
+      "regionAudit": [
+        {
+          "region": "서울특별시 강서구",
+          "baseListedCount": 2,
+          "scope": "서울관광재단 Visit Seoul 공식 음식점 소개의 식당명·현재 기재 도로명주소·표기 이력 확인(부분 검색)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 구로구",
+          "baseListedCount": 0,
+          "scope": "공식 관광·지자체 공개 검색에서 명칭·주소·선정 근거를 모두 확인 가능한 식당 미발견(부분 검색)",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 금천구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 공식 음식점 소개의 식당명·현재 기재 도로명주소·표기 이력 확인(부분 검색)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 2,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 영등포구",
+          "baseListedCount": 7,
+          "scope": "서울관광재단 Visit Seoul 공식 음식점 소개의 식당명·현재 기재 도로명주소·표기 이력 확인(부분 검색)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 8,
+          "notExhaustive": true
+        },
+        {
+          "region": "서울특별시 동작구",
+          "baseListedCount": 0,
+          "scope": "서울관광재단 Visit Seoul 공식 음식점 소개의 식당명·현재 기재 도로명주소·표기 이력 확인(부분 검색)",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 2,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "서울관광재단 Visit Seoul 8개 업소 음식점·카페 상세 소개",
+        "서울시 2026 오래가게 대상 구 확인(광진·동대문·성동·중랑, 이번 4회차 대상 해당 없음)",
+        "구로구 공식 관광·맛집 출처 탐색(신규 확인 건 없음)",
+        "지자체/출판사 블루리본 정규 선정 확인 가능 정보 탐색(추가 확정 없음)"
+      ],
+      "additions": 8,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "coordinateAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 16,
+      "addedRestaurantIds": [
+        "local-seoul-visitseoul-sw-gangseo-choiwolseon",
+        "local-seoul-visitseoul-sw-gangseo-lacroute",
+        "local-seoul-visitseoul-sw-geumcheon-dongheunggwan",
+        "local-seoul-visitseoul-sw-geumcheon-francaise",
+        "local-seoul-visitseoul-sw-yeongdeungpo-sinheung",
+        "local-seoul-visitseoul-sw-yeongdeungpo-walking",
+        "local-seoul-visitseoul-sw-dongjak-teobangnae",
+        "local-seoul-visitseoul-sw-dongjak-applehouse"
+      ],
+      "existingItemsRechecked": [
+        "정인면옥",
+        "화해당",
+        "송죽장",
+        "봉래헌",
+        "콩두50",
+        "윤잇 IFC몰점",
+        "수티문",
+        "리스토란테 에오",
+        "떼헤브"
+      ],
+      "evidenceUrls": [
+        "https://korean.visitseoul.net/restaurants/2023011/KOPof5zcz",
+        "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265",
+        "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266",
+        "https://korean.visitseoul.net/restaurants/2023054/KOP8fihkt",
+        "https://korean.visitseoul.net/area/%EC%9B%8C%ED%82%B9%EC%98%A8%EB%8D%94%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C/KOP006891",
+        "https://korean.visitseoul.net/restaurants/202325/KOP5gojtd",
+        "https://korean.visitseoul.net/restaurants/2023024/KOPc29hhb",
+        "https://news.seoul.go.kr/culture/archives/530586",
+        "https://www.guro.go.kr/gurotour/index.do"
+      ],
+      "locationRechecks": [
+        {
+          "id": "jungin-myeonok",
+          "name": "정인면옥",
+          "address": "서울 영등포구 국회대로76길 10",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "hwa-hae-dang",
+          "name": "화해당",
+          "address": "서울 영등포구 국회대로62길 15",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "blue-add-봉래헌",
+          "name": "봉래헌",
+          "address": "서울 강서구 방화대로 94 메이필드호텔",
+          "region": "서울특별시 강서구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "congdu-50",
+          "name": "콩두50",
+          "address": "서울 영등포구 여의대로 24, FKI타워 50층",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "yunit-ifc-mall",
+          "name": "윤잇 IFC몰점",
+          "address": "서울 영등포구 국제금융로 10, IFC몰 L1",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "local-seoul-restaurants-686",
+          "name": "수티문",
+          "address": "서울 영등포구 국제금융로8길 27-8 지하 1층",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "local-seoul-restaurants-710",
+          "name": "리스토란테 에오",
+          "address": "서울 영등포구 여의대로 108 더현대 서울 6층 리스토란테 에오",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "local-seoul-cafe-777",
+          "name": "떼헤브",
+          "address": "서울 강서구 마곡서로 175 상가동 102호",
+          "region": "서울특별시 강서구",
+          "checkedAtKST": "2026-11-05",
+          "result": "해당 업소의 현주소와 일치하는 독립 좌표 근거 확보하지 못함. null 유지.",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "동일 지점 지도 확인, 다음 순환 보강/폐업 오판 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-gangseo-choiwolseon",
+          "name": "등촌 최월선칼국수",
+          "address": "서울 강서구 화곡로64길 68",
+          "region": "서울특별시 강서구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023011/KOPof5zcz"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-gangseo-lacroute",
+          "name": "라크루뜨 서울 본점",
+          "address": "서울 강서구 공항대로 237 111-112호",
+          "region": "서울특별시 강서구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-geumcheon-dongheunggwan",
+          "name": "동흥관",
+          "address": "서울 금천구 시흥대로63길 20",
+          "region": "서울특별시 금천구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-geumcheon-francaise",
+          "name": "프랑세즈과자점",
+          "address": "서울 금천구 남부순환로 1392",
+          "region": "서울특별시 금천구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-yeongdeungpo-sinheung",
+          "name": "신흥상회",
+          "address": "서울 영등포구 도림로126길 1",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023054/KOP8fihkt"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-yeongdeungpo-walking",
+          "name": "워킹온더클라우드",
+          "address": "서울 영등포구 63로 50 59층",
+          "region": "서울특별시 영등포구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/area/%EC%9B%8C%ED%82%B9%EC%98%A8%EB%8D%94%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C/KOP006891"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-dongjak-teobangnae",
+          "name": "터방내",
+          "address": "서울 동작구 흑석로 101-7",
+          "region": "서울특별시 동작구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/202325/KOP5gojtd"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        },
+        {
+          "id": "local-seoul-visitseoul-sw-dongjak-applehouse",
+          "name": "애플하우스",
+          "address": "서울 동작구 동작대로27다길 29 서광시티뷰 2층",
+          "region": "서울특별시 동작구",
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://korean.visitseoul.net/restaurants/2023024/KOPc29hhb"
+          ],
+          "result": "공식 관광정보의 주소만 확인, 공개 위경도 미검증",
+          "recheckCycle": 2,
+          "recheckSlot": 4,
+          "action": "좌표 null 유지, 재검토 이전 삭제 금지"
+        }
+      ],
+      "unresolved": [
+        "이번 지역 기존 좌표 누락 8곳과 신규 8곳 총 16곳은 주소 일치 공식 좌표 근거 미확보",
+        "구로구는 이번 검색에서 확인 가능한 신규 지자체 지정·관광 식당 자료를 찾지 못해 다음 배정으로 이월",
+        "블루리본 정규 등급 및 선정연도 확인 가능한 신규 명단 미확보",
+        "기존 식당의 휴폐업·이전·현재 영업 상태는 확인되지 않았으며 단순 누락으로 판단하지 않음"
+      ],
+      "carryOver": [
+        "다음 순환 04회차에서 위치 미확인 16곳과 구로구 공식 가이드 누락 우선 조사",
+        "미쉐린·블루리본 선정/수록 최신 목록 및 5구 내 기존 식당 영업 변경 재대조",
+        "2026-11-05 12시 03회차 기록이 최신 audit entries에 없어 정규 03회차 수행 여부 및 이월 기록을 별도 확인"
+      ],
+      "nextSlot": 5,
+      "nextRegions": [
+        "서울특별시 관악구",
+        "서울특별시 서초구",
+        "서울특별시 강남구",
+        "서울특별시 송파구",
+        "서울특별시 강동구"
+      ]
     }
   ],
   "notes": [
     "운영 기록은 한 회차에 한 건씩 보존한다. 누락 회차는 후속 순환 동일 번호에서 보완한다.",
     "회원 추천 데이터 및 사진은 자동 조사 대상에서 제외한다.",
-    "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다."
+    "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다.",
+    "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인."
   ]
 }
