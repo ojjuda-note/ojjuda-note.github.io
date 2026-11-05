@@ -1,0 +1,241 @@
+{
+  "updatedAt": "2026-11-05",
+  "sourceName": "서울관광재단 Visit Seoul 공식 식당·카페 소개(서남·서부권 04회차)",
+  "sourceUrl": "https://korean.visitseoul.net/",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-seoul-visitseoul-sw-gangseo-choiwolseon",
+      "name": "등촌 최월선칼국수",
+      "category": "한식",
+      "district": "강서구",
+      "address": "서울 강서구 화곡로64길 68",
+      "menu": [
+        "버섯매운탕"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "오래가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023011/KOPof5zcz",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '오래가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023011/KOPof5zcz"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-gangseo-lacroute",
+      "name": "라크루뜨 서울 본점",
+      "category": "디저트",
+      "district": "강서구",
+      "address": "서울 강서구 공항대로 237 111-112호",
+      "menu": [],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보의 식당 소개만 확인했습니다. 미쉐린·블루리본 등급이나 별도의 공식 심사·지정·현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-geumcheon-dongheunggwan",
+      "name": "동흥관",
+      "category": "중식",
+      "district": "금천구",
+      "address": "서울 금천구 시흥대로63길 20",
+      "menu": [
+        "짜장면",
+        "짬뽕",
+        "탕수육"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "백년가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '백년가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-geumcheon-francaise",
+      "name": "프랑세즈과자점",
+      "category": "디저트",
+      "district": "금천구",
+      "address": "서울 금천구 남부순환로 1392",
+      "menu": [
+        "호두파이",
+        "양파빵"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "백년가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-05-11",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '백년가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-yeongdeungpo-sinheung",
+      "name": "신흥상회",
+      "category": "분식",
+      "district": "영등포구",
+      "address": "서울 영등포구 도림로126길 1",
+      "menu": [
+        "콩나물라면"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "오래가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023054/KOP8fihkt",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '오래가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023054/KOP8fihkt"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-yeongdeungpo-walking",
+      "name": "워킹온더클라우드",
+      "category": "양식",
+      "district": "영등포구",
+      "address": "서울 영등포구 63로 50 59층",
+      "menu": [],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/area/%EC%9B%8C%ED%82%B9%EC%98%A8%EB%8D%94%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C/KOP006891",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-07-04",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보의 식당 소개만 확인했습니다. 미쉐린·블루리본 등급이나 별도의 공식 심사·지정·현재 영업 확인을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/%EC%9B%8C%ED%82%B9%EC%98%A8%EB%8D%94%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C/KOP006891"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-dongjak-teobangnae",
+      "name": "터방내",
+      "category": "디저트",
+      "district": "동작구",
+      "address": "서울 동작구 흑석로 101-7",
+      "menu": [
+        "사이폰커피",
+        "비엔나커피"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "오래가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/202325/KOP5gojtd",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '오래가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/202325/KOP5gojtd"
+    },
+    {
+      "id": "local-seoul-visitseoul-sw-dongjak-applehouse",
+      "name": "애플하우스",
+      "category": "분식",
+      "district": "동작구",
+      "address": "서울 동작구 동작대로27다길 29 서광시티뷰 2층",
+      "menu": [
+        "떡볶이",
+        "무침군만두"
+      ],
+      "region": "서울",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "오래가게 표기 · 서울관광재단 공식 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/2023024/KOPc29hhb",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 '오래가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/2023024/KOPc29hhb"
+    }
+  ],
+  "notes": [
+    "서울 강서구·금천구·영등포구·동작구의 공개 관광 소개에서 식당명·도로명주소를 대조함. 구로구는 이번 범위에서 검증 가능한 등록 대상을 찾지 못함.",
+    "백년가게·오래가게 표기는 출처 홈페이지의 표현이므로 공식 선정 연도·정규 등급·현 영업 여부로 확대 해석하지 않음.",
+    "상호·주소와 연결된 검증 가능한 위경도가 없어 새 식당 8개 모두 null로 보류. 사진·기사 전문 미복제.",
+    "서울관광재단 공식 페이지를 2026-11-05 확인. 해당 출처의 게시·수정일은 식당 선정연도가 아님."
+  ]
+}
