@@ -210,9 +210,9 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const rabbit=await page.evaluate(() => screwTest.rabbitOcclusion());
     assert.ok(rabbit.every(s=>s.plates===0&&s.unclipped===0&&s.front>0&&s.hidden>0),
       `curved rabbit must hide rear details and detached square plates: ${JSON.stringify(rabbit)}`);
-    const userFlow=await page.evaluate(async()=>{localStorage.clear();const r=await play(20,4,31676,true);last.game.destroy();return r;});
-    assert.ok(userFlow.cleared&&userFlow.clicks===123&&userFlow.boxes.length===3&&userFlow.buffer===6,
-      'seed4 previously stopped at119/123 with overlapping heads; every actual GPU touch now completes');
+    const userFlow=await page.evaluate(async()=>{localStorage.clear();localStorage.setItem(STAGE_KEY,'20');const r=await play(20,4,31676,true);last.game.destroy();return r;});
+    assert.ok(userFlow.cleared&&userFlow.clicks===123&&userFlow.boxes.length===2&&userFlow.buffer===5,
+      'seed4 must finish all stage-20 fasteners with the current two boxes and five buffer slots: '+JSON.stringify(userFlow));
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
     if (process.env.SCREW_MODEL_QA) for (const L of [1, 5, 80]) {
       await page.evaluate(stage => { screwTest.boot(stage); }, L);
