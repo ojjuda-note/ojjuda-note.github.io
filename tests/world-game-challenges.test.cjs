@@ -36,7 +36,8 @@ function fixture(id = 'stacker', options = {}) {
     onStart(game) { if (options.broken) throw Error('analytics unavailable'); events.push(['start', game]); },
     complete(game, score) { if (options.broken) throw Error('sharing unavailable'); events.push(['complete', game, score]); return null; }
   };
-  vm.runInContext(rounds + '\n' + close, context);
+  const drillControls=world.slice(world.indexOf('function syncFlatDrills()'),world.indexOf('function screwStageResult('));
+  vm.runInContext(drillControls + '\n' + rounds + '\n' + close, context);
   return { context, events, records, screens, receipt, completions };
 }
 

@@ -15,7 +15,8 @@ function fixture(){
   window:{addEventListener:noop,removeEventListener:noop,dispatchEvent:noop},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},document:{getElementById:()=>null,querySelector:()=>null,body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
   worldGameAssetRequest:0,worldClosingGames:null,worldRecommendedRestaurants:null,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
   gt:{arcadeEnd:noop},_r:{screw:{unit:'점'}},w:String,nf:noop,B2:noop});
- vm.runInContext(part('function pendingScrewScore(', 'async function _2(')+
+ vm.runInContext(part('function syncFlatDrills()', 'function screwStageResult(')+
+  part('function pendingScrewScore(', 'async function _2(')+
   part('async function _2(', 'function sf(')+part('var worldResultIds=', 'async function S2(')+part('async function S2(', 'function z2(')+
   part('function El(', 'var Cl=')+part('function M2(', 'function Ja(')+part('function Ja(', 'function D2('),context);
  context.ti=noop;context.nf=noop;

@@ -9,10 +9,10 @@ async function main(){
  create role authenticated;create role anon;create role service_role;create schema auth;create schema ojjuda_note_internal;create schema ojjuda_shop_internal;
  create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
  create function public.is_banned(uuid) returns boolean language sql as $$select false$$;
- create table public.user_private(user_id uuid primary key,coins integer);create table public.game_scores(user_id uuid,game text,score integer);
- create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,coins integer,result jsonb);
+ create table public.user_private(user_id uuid primary key,coins integer);create table public.game_scores(user_id uuid,game text,score integer,id bigint generated always as identity,created_at timestamptz default now());
+ create table ojjuda_note_internal.spend_requests(request_id uuid primary key,user_id uuid,kind text,coins integer,result jsonb,created_at timestamptz default now());
  insert into auth.users values('${member}'),('${other}');insert into public.user_private values('${member}',10),('${other}',0);
- insert into public.game_scores values('${member}','screw_flat',380);
+ insert into public.game_scores(user_id,game,score) values('${member}','screw_flat',380);
  insert into ojjuda_note_internal.spend_requests values('${randomUUID()}','${member}','screw_flat_moves',1,'{"stage":3}'),('${randomUUID()}','${member}','screw_flat_hole',1,'{"stage":6}');
  `);
  const folder=path.join(__dirname,'../supabase/migrations');
@@ -38,6 +38,17 @@ async function main(){
  assert.equal((await db.query('select coins from public.user_private where user_id=$1',[member])).rows[0].coins,10);
  assert.equal((await db.query("select has_function_privilege('authenticated','public.flat_drill_verified_clear(uuid,integer,uuid,integer,uuid)','execute') as ok")).rows[0].ok,false);
  await db.query("select set_config('test.uid',$1,false)",[other]);assert.equal((await rpc('start',run(8),{device,legacy:7})).balance,0);
+ // The older scorer recorded every fallen piece and a separate stage bonus.
+ // Two complete successive runs establish stages 6 and 7 on the server.
+ await db.query(`insert into public.game_scores(user_id,game,score,created_at)
+   select $1,'screw_flat',v,'2026-11-02 12:00+00'::timestamptz+i*interval '1 second'
+   from unnest(array[10,20,30,100,110,120,130,210]) with ordinality a(v,i)`,[member]);
+ await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(n=>n.endsWith('_reconcile_flat_drill_history.sql'))),'utf8'));
+ assert.equal((await db.query('select confirmed_stage from ojjuda_shop_internal.flat_drill_legacy_evidence where user_id=$1',[member])).rows[0].confirmed_stage,7);
+ await db.query("select set_config('test.uid',$1,false)",[member]);
+ const before=(await rpc('status',past)).balance;
+ assert.equal((await rpc('start',run(34),{device,legacy:35})).balance,before,'an unsigned browser record cannot mint unsupported ranks');
+ assert.equal((await db.query('select device_claim from ojjuda_shop_internal.flat_drill_legacy_evidence where user_id=$1',[member])).rows[0].device_claim,35);
  await db.close();
  let score=0,rankSaves=0,proof;
  const api={getUserId:()=>member,setScore:n=>{score=n;},saveScore:()=>rankSaves++,
