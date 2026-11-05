@@ -16,6 +16,8 @@ jobs:
       - name: Safely merge latest main and resolve known version conflicts
         shell: bash
         run: |
+          git config user.name ojjuda-release
+          git config user.email ojjuda-release@users.noreply.github.com
           git fetch origin main
           test "$(git rev-parse origin/main)" = "7c0bea2e6be0e937e5c3617b229461340cb2c630" || { echo 'main moved; regenerate merge safely'; exit 1; }
           git merge --no-commit --no-ff origin/main || true
