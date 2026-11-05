@@ -95,7 +95,7 @@ async function assertFullscreen(page,size){
   await page.evaluate(()=>{window.screwFixtureStage=26;});await page.locator('[data-mode=flat]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
   await page.locator('[data-g=screw-stages]').click();
-  await page.locator('[data-g=screw-stage-page][data-page="1"]').click();
+  assert.equal(await page.locator('[data-g=screw-stage][data-stage="26"]').count(),1,'the catalog opens on the remembered stage page');
   await page.locator('[data-g=screw-stage][data-stage="26"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
   await canvasTap(page,{x:240,y:26});
@@ -109,7 +109,7 @@ async function assertFullscreen(page,size){
   await page.evaluate(()=>{window.screwFixtureStage=1000;});await page.locator('[data-mode=flat]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
   await page.locator('[data-g=screw-stages]').click();
-  await page.locator('[data-g=screw-stage-page][data-page="39"]').click();
+  assert.equal(await page.locator('[data-g=screw-stage][data-stage="1000"]').count(),1,'the last page opens automatically for the remembered stage');
   await page.locator('[data-g=screw-stage][data-stage="1000"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws.length),100);
