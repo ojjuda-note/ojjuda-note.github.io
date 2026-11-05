@@ -206,6 +206,15 @@
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
         api.stageClear?.(st.score);
       }
+      // Let a released plate finish falling before judging the last move.
+      // A resumed run may buy more moves, so announce exhaustion only once
+      // for each allowance instead of immediately reopening the failure dialog.
+      const allowance=st.moveLimit+st.extraMoves;
+      if(!st.complete&&!st.pending&&st.selected===null&&st.moves>=allowance&&
+        !st.level.plates.some(p=>p.state!=='gone'&&p.pins.length===0)&&
+        st.failureMarker!==`moves:${allowance}`){
+        st.failureMarker=`moves:${allowance}`;st.failed=true;api.stageFail?.(st.score);
+      }
     }
     function drawHole(c,h,scale=1) {
       c.save();c.translate(h.x,h.y);c.scale(scale,scale);h={x:0,y:0};
