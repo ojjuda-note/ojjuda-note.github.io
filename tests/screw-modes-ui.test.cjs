@@ -56,10 +56,12 @@ async function assertFullscreen(page,size){
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
   assert.deepEqual(engineRequests,[],'choosing a mode is lazy');
   await page.locator('[data-mode=flat]').click();
-  assert.equal(await page.locator('[data-g=screw-stage]').count(),25,'flat selection first shows the stage catalog');
-  assert.deepEqual(engineRequests,[],'stage catalog also loads no game engine');
-  await page.locator('[data-g=screw-stage][data-stage="4"]').click();
-  await page.waitForFunction(()=>window.screwWorld.current()?.game?.state);
+  await page.waitForFunction(()=>window.screwWorld.current()?.game?.state?.L===4);
+  assert.equal(await page.locator('[data-g=screw-stages]').isVisible(),true,'the stage catalog is always available from the game header');
+  await page.locator('[data-g=screw-stages]').click();
+  assert.equal(await page.locator('[data-g=screw-stage]').count(),25,'the stage catalog shows 25 stages per page');
+  await page.locator('[data-g=screw-stage-back]').click();
+  await page.waitForFunction(()=>window.screwWorld.current()?.running===true);
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),4);
   assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
   assert.equal(engineRequests.some(p=>p.includes('screw3d')),false,'flat play never loads the box engine');
@@ -87,8 +89,11 @@ async function assertFullscreen(page,size){
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.moves),1,'seating adds no extra move');
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-lift-and-seat.png')});
 
+  await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-modes]').click();
   await page.evaluate(()=>{window.screwFixtureStage=26;});await page.locator('[data-mode=flat]').click();
+  await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
+  await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-stage-page][data-page="1"]').click();
   await page.locator('[data-g=screw-stage][data-stage="26"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
@@ -98,8 +103,11 @@ async function assertFullscreen(page,size){
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.view.zoom),1);
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-zoom-26.png')});
 
+  await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-modes]').click();
   await page.evaluate(()=>{window.screwFixtureStage=1000;});await page.locator('[data-mode=flat]').click();
+  await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
+  await page.locator('[data-g=screw-stages]').click();
   await page.locator('[data-g=screw-stage-page][data-page="39"]').click();
   await page.locator('[data-g=screw-stage][data-stage="1000"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
