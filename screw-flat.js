@@ -14,7 +14,7 @@
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
-  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
+  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
@@ -42,12 +42,13 @@
     c.rotate(rotation-.28); round(c,-8,-1.7,16,3.4,1.1); c.fillStyle='#405363'; c.fill();
     line(c,[[-7,1.8],[7,1.8]],'#DBE5EC',.65); c.restore();
   }
-  function metalPath(c,p){c.beginPath();p.vertices.forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
+  function metalPath(c,p,physical=false){c.beginPath();(physical?p.vertices:p.displayVertices||p.vertices).forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
   function drawPlate(c,p){
     const shades=[['#EBEFF3','#B9C8D7'],['#E2E8EC','#A5B9C5'],['#E9E6EF','#B9B5CD'],['#E7ECE8','#ADBFB6']];
-    const colors=shades[p.id%shades.length],top=Math.min(...p.vertices.map(v=>v.y)),bottom=Math.max(...p.vertices.map(v=>v.y));
+    const colors=shades[p.id%shades.length],face=p.displayVertices||p.vertices,top=Math.min(...face.map(v=>v.y)),bottom=Math.max(...face.map(v=>v.y));
     c.save();c.translate(p.x,p.y);c.rotate(p.angle);
-    c.save();c.translate(0,3);metalPath(c,p);c.fillStyle='#3F50633D';c.fill();c.restore();
+    c.save();c.translate(0,3);metalPath(c,p,true);c.fillStyle='#3F50633D';c.fill();c.restore();
+    if(p.displayVertices!==p.vertices){metalPath(c,p,true);c.fillStyle='#8192A2';c.fill();}
     const metal=c.createLinearGradient(0,top,0,bottom);metal.addColorStop(0,colors[0]);metal.addColorStop(.17,'#F6F8FA');metal.addColorStop(.55,colors[1]);metal.addColorStop(1,'#98AABB');
     metalPath(c,p);c.fillStyle=metal;c.fill();c.strokeStyle='#7F93A7';c.lineWidth=1.6;c.lineJoin='round';c.stroke();
     c.save();metalPath(c,p);c.clip();c.strokeStyle='#FFFFFF2B';c.lineWidth=.7;
@@ -84,11 +85,7 @@
     const visibleHole=h=>h.owner===null||inBoard(screenPoint(h).x,screenPoint(h).y);
     const resetView=()=>{st.view={zoom:1,x:180,y:316};};
     const movesLeft=()=>Math.max(0,st.moveLimit+st.extraMoves-st.moves);
-    // Do not lift the last screw when every other hole is occupied: the hand
-    // is not an additional storage slot. A vacant hole may be covered by a
-    // falling sheet now and become accessible once the pickup releases it.
-    const hasDestination=screw=>st.level.holes.some(h=>h!==screw.hole&&h.screw===null);
-    const canTransfer=screw=>canUnscrew(st.level,screw)&&hasDestination(screw);
+    const canTransfer=screw=>canUnscrew(st.level,screw)&&st.level.holes.some(h=>h!==screw.hole&&h.screw===null);
     function pendingPurchase(L,kind){try{const id=localStorage.getItem(purchaseKey(L,kind));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
     function savePurchase(L,kind,id){try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
     function addHoles(count){
@@ -178,7 +175,7 @@
         if(st.selected!==null){tell('들고 있는 나사를 먼저 끼워 주세요');return;}
         const screw=st.level.screws[h.screw];
         if(!canUnscrew(st.level,screw)){tell('다른 철판이 가리고 있어요');return;}
-        if(!hasDestination(screw)){tell('옮길 빈 구멍이 없어요. 구멍을 추가하거나 다시 풀어 봐요');return;}
+        if(!canMoveToSpare(st.level,screw)){tell('옮길 빈 구멍이 없어요. 구멍을 추가하거나 다시 풀어 봐요');return;}
         const from=screenPoint(h);
         if(!st.physics.lift(screw)){tell('나사를 들어 올릴 수 없어요');return;}
         st.selected=screw.id;st.heldFrom=h.id;st.moves++;st.focus=null;
