@@ -25,3 +25,25 @@
 /* The warm game palette is intentionally light, including inside dark World. */
 .gcard.screw-choice-card{color-scheme:light}
 @media(prefers-reduced-motion:reduce){.screw-choice:hover,.screw-choice:active{transform:none}}
+
+
+/* Stage catalog: 25 buttons per page, with locks until the previous stage is cleared. */
+.gcard.screw-stage-card{width:min(360px,calc(100% - 16px));max-width:360px;box-sizing:border-box;padding:16px 14px 12px;color:#413C50;background:#FCF8F2;border:1px solid #E7DED2;text-align:center}
+.screw-stage-card h3{margin:0 0 5px;font-size:18px}
+.screw-stage-summary{margin:0 0 10px;font-size:12px;color:#75665B}
+.screw-stage-summary strong{color:#278A70}
+.screw-stage-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.screw-stage-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;min-height:47px;padding:4px 1px;border-radius:10px;border:1px solid #C8DAD1;background:#E8F5ED;color:#276B56;cursor:pointer}
+.screw-stage-tile strong{font-size:14px;line-height:1.3}
+.screw-stage-tile small{font-size:9px;line-height:1.15}
+.screw-stage-tile.is-current{border:2px solid #329B7C;background:#D9F2E7}
+.screw-stage-tile.is-locked{background:#F0EAE3;border-color:#E0D7CD;color:#9C9087;cursor:not-allowed;opacity:.75}
+.screw-stage-tile.is-locked span{font-size:13px}
+.screw-stage-tile:focus-visible{outline:3px solid #A36B9D;outline-offset:2px}
+.screw-stage-paging{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-top:11px}
+.screw-stage-paging>span{font-size:12px;white-space:nowrap;color:#726858}
+.screw-stage-paging .btn{min-width:70px;min-height:35px;margin:0}
+.screw-stage-quick{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:9px}
+.screw-stage-quick .btn{min-height:34px;margin:0;font-size:11px}
+.screw-stage-help{margin:9px 0 0;font-size:10px;color:#87766A}
+@media(max-width:359px){.gcard.screw-stage-card{padding:11px 8px}.screw-stage-grid{gap:4px}.screw-stage-tile{min-height:42px}.screw-stage-tile small{font-size:8px}}
