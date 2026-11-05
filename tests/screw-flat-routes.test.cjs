@@ -1,11 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js'),Game=require('../screw-flat.js');
-const {solve:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs');
+const {solve:solveAtomic,certified}=require('./helpers/flat-atomic-solution-search.cjs');
 require('./screw-flat-heads.test.cjs');
 const witnessCache=new Map();
 function solution(stage){
  if(!witnessCache.has(stage)){
-  const result=solveAtomic(stage);
+  const result=certified(stage);
   assert.equal(result.reason,null,`stage ${stage} must physically fall: ${result.reason}`);
   witnessCache.set(stage,result.route.map(({screw,to,wait})=>[screw,to,wait]));
  }
@@ -26,7 +26,13 @@ for(let stage=12;stage<=1000;stage++){
  if(stage===25)continue;
  const level=Physics.makeFlatLevel(stage);
  assert.ok(level.requiredMoves>=level.screws.length,'every original pin must actually be lifted');
- assert.equal(Game.moveLimit(level),level.requiredMoves+(stage<=30?5:2));
+ if(stage<122){
+  assert.equal(level.parkingClearance,undefined);
+  assert.equal(Game.moveLimit(level),level.requiredMoves+(stage<=30?5:2));
+ }else{
+  assert.ok(level.parkingClearance>0&&level.parkingClearance<=1);
+  assert.equal(Game.moveLimit(level),level.challengeMoves);
+ }
  assert.equal(level.holes.length-level.screws.length,Physics.spareHoleCount(stage));
  const tray=level.holes.filter(h=>h.owner===null);
  for(let i=0;i<tray.length;i++)for(let j=i+1;j<tray.length;j++){
@@ -66,6 +72,19 @@ for(let stage=12;stage<=1000;stage++){
  }
  assert.equal(Physics.canUnscrew(level,level.screws[0]),false);
  level.plates[1].state='gone';assert.equal(Physics.canUnscrew(level,level.screws[0]),true);
+}
+
+// The center is clear, but the front sheet still covers the edge of a screw head.
+{
+ const hole={id:0,x:104,y:200,owner:0,screw:null};
+ const plate={id:0,x:90,y:200,angle:0,z:0,pins:[],mounts:[],state:'fixed',
+  vertices:[{x:-10,y:-20},{x:10,y:-20},{x:10,y:20},{x:-10,y:20}]};
+ const level={interlocked:true,screwRadius:10,holes:[hole],screws:[],plates:[plate]};
+ assert.equal(Physics.canSeatScrew(level,hole,{}),true);
+ level.parkingClearance=.6;
+ assert.equal(Physics.canSeatScrew(level,hole,{}),false);
+ plate.x-=3;
+ assert.equal(Physics.canSeatScrew(level,hole,{}),true,'the same hole opens as the sheet moves clear');
 }
 
 // A visible screw outside the certified order remains legal to pick up.
@@ -120,6 +139,32 @@ for(const [stage,seed] of atomicWitnessSeeds){
  assert.ok(game.state.moves<=route.length);assert.equal(game.state.extraHoles,0);assert.equal(game.state.extraMoves,0);game.destroy();
 }
 
+// Same opening and physical edges. An extra tray position makes a second
+// opening fit the budget without changing screw access or the ranking rules.
+async function challenge122(){
+ const stage=122,witness=certified(stage);let proof;
+ const free=Game.flat({getUserId:()=>'three-hole-player',setScore(){},drillAction:async()=>({ok:true,balance:0}),
+  verifyDrill:async p=>{proof=p;return {ok:true,balance:1,reward:'earned'};}},stage);
+ assert.equal(free.state.moveLimit,35);assert.equal(witness.reason,null);
+ for(const step of witness.route)play(free,[step.screw,step.to,step.wait]);
+ tick(free,8);assert.equal(free.state.complete,true);assert.equal(free.state.moves,35);
+ await new Promise(resolve=>setImmediate(resolve));assert.ok(proof);assert.equal(proof.events.length,35);
+ const {verifyClear}=require('../supabase/functions/flat-drill-clear/replay.cjs');
+ assert.equal(verifyClear(stage,proof.events,proof.endTick),true);
+ assert.equal(verifyClear(stage,[...proof.events,proof.events.at(-1)],proof.endTick),false);
+ free.destroy();
+ const alternate=solveAtomic(stage);
+ assert.ok(alternate.reason||alternate.moves>35,'a different three-hole opening does not fit the budget');
+ const scored=[],aided=Game.flat({getUserId:()=>'challenge-player',setScore(){},saveScore(score){scored.push(score);},
+  drillAction:async(op)=>op==='use'?{ok:true,count:1,balance:0}:{ok:true,balance:1}},stage);
+ await new Promise(resolve=>setImmediate(resolve));await aided.useDrill();
+ assert.equal(aided.state.extraHoles,1);
+ const four=solveAtomic(stage,undefined,0,{tray:4,policy:2});
+ assert.equal(four.reason,null);assert.ok(four.moves<=35);assert.ok(four.route.some(m=>m.to===aided.state.level.holes.at(-1).id));
+ for(const step of four.route)play(aided,[step.screw,step.to,step.wait]);
+ tick(aided,8);assert.equal(aided.state.complete,true);assert.equal(scored.length,1);
+ assert.match(aided.drillState.result,/아이템 사용/);aided.destroy();
+}
 async function itemRecovery(){
  let bought=0,failures=0;
  const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){failures++;},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
@@ -131,4 +176,4 @@ async function itemRecovery(){
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
  play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover an exhausted route');game.destroy();
 }
-itemRecovery().then(()=>console.log('PASS: 988 certified budgets, three base holes in every stage, three atomic two-tap UI routes, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
+challenge122().then(itemRecovery).then(()=>console.log('PASS: 988 certified budgets, three base holes in every stage, three atomic two-tap UI routes, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});

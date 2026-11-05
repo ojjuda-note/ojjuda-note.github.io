@@ -18,7 +18,7 @@ if(isMainThread){
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
  const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js');
- const {solve:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs'),failures=[];let checked=0;
+ const {certified:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs'),failures=[];let checked=0;
  for(const stage of workerData){
   let error=null;
   try{
