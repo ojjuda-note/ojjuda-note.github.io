@@ -1532,7 +1532,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
         const planesGeom=geomPlanes(geom),plush=geom.sculpted||owner.material==='fabric';
-        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
+        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), base:owner.faceFeature?paint:null, line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         if (!polys.length) return; // nothing visible; skip sorting and painting entirely
         out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv: geom.sculpted ? [] : wv,
@@ -1666,18 +1666,27 @@ function screw3d(api,startStage=loadResumeStage()) {
           c.restore();
           continue;
         }
-        for (const pg of it.polys) {
-          if(it.owner.faceFeature){
-            // Curved decorations are depth-clipped against the plush body.
-            // Paint only visible fragments; triangulation edges are *not*
-            // seams on a stuffed toy and should never be outlined.
-            for(const pts of pg.visible||[pg.pts]){
-              c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();
-              c.fillStyle=pg.fill;c.fill();
-              if(it.alpha>0.5)st.drawn.push({pts,owner:it.owner});
-            }
-            continue;
+        if(it.owner.faceFeature){
+          // Fill a curved ear/cheek/eye as a *single* soft shape. Hundreds of
+          // individually antialiased triangles leave distracting pink mesh
+          // seams even when their wireframe stroke has been disabled.
+          const groups=new Map();
+          for(const pg of it.polys)for(const pts of pg.visible||[pg.pts]){
+            const base=pg.base||pg.fill;
+            if(!groups.has(base))groups.set(base,[]);
+            groups.get(base).push(pts);
+            if(it.alpha>0.5)st.drawn.push({pts,owner:it.owner});
           }
+          for(const [base,parts] of groups){
+            c.beginPath();
+            for(const pts of parts){pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();}
+            const g=c.createLinearGradient(it.bb[0],it.bb[1],it.bb[2],it.bb[3]);
+            g.addColorStop(0,shade(base,.11));g.addColorStop(.5,base);g.addColorStop(1,shade(base,-.12));
+            c.fillStyle=g;c.fill();
+          }
+          c.restore();continue;
+        }
+        for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
           // Fine surface cues for the original models. Gameplay and hit boxes
