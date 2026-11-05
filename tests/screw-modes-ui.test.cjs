@@ -58,6 +58,7 @@ async function assertFullscreen(page,size){
   await page.locator('[data-mode=flat]').click();
   await page.waitForFunction(()=>window.screwWorld.current()?.game?.state?.L===4);
   assert.equal(await page.locator('[data-g=screw-stages]').isVisible(),true,'the stage catalog is always available from the game header');
+  assert.equal((await page.locator('[data-g=screw-stages]').textContent()).trim(),'단계 선택','the header labels the stage selector clearly');
   await page.locator('[data-g=screw-stages]').click();
   assert.equal(await page.locator('[data-g=screw-stage]').count(),25,'the stage catalog shows 25 stages per page');
   await page.locator('[data-g=screw-stage-back]').click();
