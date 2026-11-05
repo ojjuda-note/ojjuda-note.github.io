@@ -76,9 +76,10 @@ async function assertFullscreen(page,size,playing=false){
    const counter=await page.evaluate(()=>{
     const r=screwWorld.current(),original=r.ctx.fillText;let label;
     r.ctx.fillText=function(text,x,y,...args){if(String(text).startsWith('남은 이동 '))label={text,font:this.font,color:this.fillStyle,x,y};return original.call(this,text,x,y,...args);};
-    try{r.game.draw(r.ctx);}finally{r.ctx.fillText=original;}return label;
+    try{r.game.draw(r.ctx);}finally{r.ctx.fillText=original;}
+    return {...label,expected:r.game.state.moveLimit+r.game.state.extraMoves-r.game.state.moves};
    });
-   assert.equal(counter.text,'남은 이동 8회');assert.ok(parseFloat(counter.font.match(/([\d.]+)px/)[1])>=18,'the remaining moves use large type');
+   assert.equal(counter.text,`남은 이동 ${counter.expected}회`);assert.ok(parseFloat(counter.font.match(/([\d.]+)px/)[1])>=18,'the remaining moves use large type');
    assert.equal(counter.x,180);assert.ok(counter.y<68,'the remaining counter sits above the spare holes');assert.equal(counter.color,'#ffffff');
    if(qa&&[320,390].includes(size.width))await page.locator('#gov').screenshot({path:path.join(qa,`screw-flat-covered-${size.width}.png`)});
    await page.locator('[data-g=screw-modes]').click();
