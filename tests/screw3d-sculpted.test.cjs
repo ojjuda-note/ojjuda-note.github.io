@@ -6,7 +6,7 @@ const vm=require('node:vm');
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const sources=bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
 const testMath=Object.create(Math);
-const context=vm.createContext({assert,Math:testMath,console,structuredClone});
+const context=vm.createContext({assert,Math:testMath,console,structuredClone,crypto:require('node:crypto')});
 
 vm.runInContext(sources+`
   globalThis.checkConnectedAnimalMesh=whole=>{

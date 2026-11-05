@@ -3,6 +3,7 @@ const Game=require('../screw-flat.js');
 const Physics=require('../screw-flat-physics.js');
 const store=new Map();
 global.localStorage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,String(value)),removeItem:key=>store.delete(key)};
+store.set(Game.STAGE_KEY,'1000');
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const advance=(game,seconds=.55)=>{for(let i=0;i<Math.ceil(seconds/.05);i++)game.update(.05);};
 const canvas=new Proxy({}, {get(_obj,name){
@@ -72,9 +73,9 @@ for(const stage of [4,26,220]){
 (async()=>{
  let paidHoles=0;
  const wallet={getUserId:()=> 'test-user',getCoins:()=>10,setScore(){},end(){},
-  buyScrew:async(kind,_receipt,stage,verify)=>{
+  buyScrew:async(kind,_receipt,stage,verify,attempt_id)=>{
    if(!verify&&kind==='flat_hole')paidHoles++;
-   return kind==='flat_hole'?{ok:true,stage,count:paidHoles}:{ok:true,stage,count:0,extra_moves:0};
+   return kind==='flat_hole'?{ok:true,stage,attempt_id,count:paidHoles}:{ok:true,stage,attempt_id,count:0,extra_moves:0};
   }};
  const game=Game.flat(wallet,26),st=game.state;
  await new Promise(resolve=>setImmediate(resolve));

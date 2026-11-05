@@ -57,6 +57,7 @@ for(const stage of [26,55,220,598,1000]){
 }
 
 const storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
+storage.set(Game.STAGE_KEY,'1000');
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const tick=(game,seconds)=>{for(let n=0;n<Math.round(seconds*20);n++)game.update(.05);};
 function play(game,[id,to,wait]){
@@ -79,7 +80,7 @@ for(const stage of [12,21,26,35,55,80,115,160,220,450,598,650,800,1000]){
 
 async function itemRecovery(){
  let bought=0;
- const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){throw Error('advanced stages must allow item recovery before failure');},async buyScrew(kind,id,stage,read){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:undefined};}};
+ const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){throw Error('advanced stages must allow item recovery before failure');},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
  const game=Game.flat(api,26),st=game.state,route=solution(26);await new Promise(resolve=>setImmediate(resolve));
  play(game,route[0]);play(game,route[1]);
  const parked=st.level.holes[0].screw;assert.notEqual(parked,null);assert.equal(st.level.holes[2].screw,null);

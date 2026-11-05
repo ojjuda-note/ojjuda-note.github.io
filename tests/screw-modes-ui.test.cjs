@@ -47,6 +47,7 @@ async function assertFullscreen(page,size){
   page.on('pageerror',error=>errors.push(error.message));
   page.on('request',request=>{const p=new URL(request.url()).pathname;if(/(?:matter-0|screw3d|screw-flat(?:-physics|-pictures)?\.js)/.test(p))engineRequests.push(p);});
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.screwWorld);
+  await page.evaluate(()=>localStorage.setItem('ojjuda-screw-flat-stage-v1','1000'));
   assert.deepEqual(engineRequests,[],'the arcade initially loads no screw engines');
   await page.evaluate(()=>{window.screwFixtureStage=4;screwWorld.open('screw');});
   assert.equal(await page.locator('[data-g=screw-start]').count(),2,'both modes are named');
@@ -55,6 +56,9 @@ async function assertFullscreen(page,size){
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-version-menu.png')});
   assert.deepEqual(engineRequests,[],'choosing a mode is lazy');
   await page.locator('[data-mode=flat]').click();
+  assert.equal(await page.locator('[data-g=screw-stage]').count(),25,'flat selection first shows the stage catalog');
+  assert.deepEqual(engineRequests,[],'stage catalog also loads no game engine');
+  await page.locator('[data-g=screw-stage][data-stage="4"]').click();
   await page.waitForFunction(()=>window.screwWorld.current()?.game?.state);
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.L),4);
   assert.equal(await page.locator('#gov').getAttribute('data-screw-mode'),'flat');
@@ -85,6 +89,8 @@ async function assertFullscreen(page,size){
 
   await page.locator('[data-g=screw-modes]').click();
   await page.evaluate(()=>{window.screwFixtureStage=26;});await page.locator('[data-mode=flat]').click();
+  await page.locator('[data-g=screw-stage-page][data-page="1"]').click();
+  await page.locator('[data-g=screw-stage][data-stage="26"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===26);
   await canvasTap(page,{x:240,y:26});
   assert.ok(await page.evaluate(()=>screwWorld.current().game.state.view.zoom>1),'small screws can be magnified');
@@ -94,6 +100,8 @@ async function assertFullscreen(page,size){
 
   await page.locator('[data-g=screw-modes]').click();
   await page.evaluate(()=>{window.screwFixtureStage=1000;});await page.locator('[data-mode=flat]').click();
+  await page.locator('[data-g=screw-stage-page][data-page="39"]').click();
+  await page.locator('[data-g=screw-stage][data-stage="1000"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
   assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws.length),100);
   await assertFullscreen(page,{width:390,height:844});

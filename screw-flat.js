@@ -4,6 +4,7 @@
   const WIDTH = 360, HEIGHT = 540;
   const STAGE_KEY = 'ojjuda-screw-flat-stage-v1';
   const RESUME_KEY = 'ojjuda-screw-flat-last-stage-v1';
+  const ATTEMPT_KEY = 'ojjuda-screw-flat-active-attempt-v1';
   const HELD={x:225,y:94};
   const EXTRA_HOLE_X=[45,315,135],PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   // Finishing requires almost four transfers per plate; keep room for mistakes
@@ -21,7 +22,7 @@
   }
   function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(Math.max(readStage(),n))); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   // A completed level stays current until the player actually starts the next one.
-  function readResumeStage() { try { const n = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(n) && n >= 1 && n <= LAST_STAGE) return n; } catch (_) {} return readStage(); }
+  function readResumeStage() { try { const n = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(n) && n >= 1 && n <= LAST_STAGE) return Math.min(n,readStage()); } catch (_) {} return readStage(); }
   function saveResumeStage(n) { try { localStorage.setItem(RESUME_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   function makeFlatLevel(stage) {
     const level=Physics.makeFlatLevel(stage);level.picture=(level.stage-1)%PICTURES.length;level.name=PICTURES[level.picture].name;return level;
@@ -56,11 +57,28 @@
     c.restore();
   }
   function flat(api,startStage=readResumeStage()) {
-    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?startStage:1,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,heldFrom:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Set(),focus:null,
+    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?Math.min(startStage,readStage()):1,attemptId:null,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,heldFrom:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Set(),focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
+
+    const activeAttemptKey=walletUser?`${ATTEMPT_KEY}:${walletUser}`:null;
+    const isUuid=id=>typeof id==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id);
+    function finishAttempt(){
+      if(!activeAttemptKey||!st.attemptId)return;
+      try{const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');if(record?.id===st.attemptId)localStorage.setItem(activeAttemptKey,JSON.stringify({...record,done:true}));}catch(_){}
+    }
+    function selectAttempt(L,fresh=false){
+      const id=crypto.randomUUID();
+      if(!activeAttemptKey)return id;
+      try{
+        const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');
+        if(!fresh&&record?.stage===L&&record?.done!==true&&isUuid(record.id))return record.id;
+        localStorage.setItem(activeAttemptKey,JSON.stringify({id,stage:L,done:false}));
+      }catch(_){}
+      return id;
+    }
     const tell=text=>{st.message=text;st.messageTime=1.7;};
-    const purchaseKey=(L,kind)=>`${PURCHASE_KEYS[kind]}:${walletUser}:${L}`;
+    const purchaseKey=(L,kind)=>`${PURCHASE_KEYS[kind]}:${walletUser}:${L}:${st.attemptId}`;
     const inBoard=(x,y)=>x>=BOARD.x&&x<=BOARD.x+BOARD.w&&y>=BOARD.y&&y<=BOARD.y+BOARD.h;
     const screenPoint=h=>h.owner===null?{x:h.x,y:h.y}:{x:180+(h.x-st.view.x)*st.view.zoom,y:316+(h.y-st.view.y)*st.view.zoom};
     const visibleHole=h=>h.owner===null||inBoard(screenPoint(h).x,screenPoint(h).y);
@@ -74,7 +92,7 @@
     function applyUpgrade(kind,count){
       if(kind==='flat_hole')addHoles(count);else st.extraMoves=Math.max(st.extraMoves,count*3);
     }
-    const validCount=(r,L,kind)=>r?.stage===L&&Number.isSafeInteger(r.count)&&r.count>=0&&(kind==='flat_hole'?r.count<=EXTRA_HOLE_X.length:r.extra_moves===r.count*3&&Number.isSafeInteger(r.extra_moves));
+    const validCount=(r,L,kind)=>r?.stage===L&&r.attempt_id===st.attemptId&&Number.isSafeInteger(r.count)&&r.count>=0&&(kind==='flat_hole'?r.count<=EXTRA_HOLE_X.length:r.extra_moves===r.count*3&&Number.isSafeInteger(r.extra_moves));
     const currentShop=(L,run)=>!st.destroyed&&st.L===L&&st.shopRun===run&&sameWallet();
     async function readUpgrades(){
       if(st.shopBusy||!sameWallet()||!api.buyScrew)return;
@@ -82,7 +100,7 @@
       try{
         let ready=true;
         for(const kind of Object.keys(PURCHASE_KEYS)){
-          const id=pendingPurchase(L,kind),r=await api.buyScrew(kind,id,L,true);if(!currentShop(L,run))return;
+          const id=pendingPurchase(L,kind),r=await api.buyScrew(kind,id,L,true,st.attemptId);if(!currentShop(L,run))return;
           if(validCount(r,L,kind)&&(r.ok||r.reason==='not_found')){applyUpgrade(kind,r.count);if(r.ok&&id)savePurchase(L,kind,null);}
           else{ready=false;if(['request_conflict','invalid'].includes(r?.reason))savePurchase(L,kind,null);}
         }
@@ -101,7 +119,7 @@
       if(!id){id=crypto.randomUUID();if(!savePurchase(L,kind,id)){tell('구매 기록을 저장할 수 없어요');return;}}
       st.shopBusy='buying';st.shopKind=kind;st.focus=null;
       try{
-        const r=await api.buyScrew(kind,id,L,false);if(!currentShop(L,run))return;
+        const r=await api.buyScrew(kind,id,L,false,st.attemptId);if(!currentShop(L,run))return;
         if(validCount(r,L,kind)&&(r.ok||(hole&&r.reason==='limit'))){
           applyUpgrade(kind,r.count);savePurchase(L,kind,null);
           tell(r.reason==='limit'?'이 판에는 최대 3개까지 추가해요':(hole?st.extraHoles:st.extraMoves)>before?(hole?'구멍 1개를 추가했어요':'이동 3회를 추가했어요'):'구매한 내역을 확인했어요');
@@ -114,9 +132,9 @@
       finally{if(st.shopRun===run){st.shopBusy='';st.shopKind=null;}}
     }
     function start(L) {
-      const keep=L===st.L&&sameWallet(),paid=keep?st.extraHoles:0,extraMoves=keep?st.extraMoves:0;st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=extraMoves;
+      const fresh=!!st.attemptId;if(fresh)finishAttempt();st.attemptId=selectAttempt(L,fresh);
+      st.shopRun++;st.shopBusy='';st.shopKind=null;st.shopReady=false;st.extraHoles=0;st.extraMoves=0;
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.heldFrom=null;st.pending=null;saveResumeStage(L);
-      addHoles(paid);
       resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
       if(sameWallet()&&api.buyScrew)void readUpgrades();
@@ -184,7 +202,7 @@
         }
       }
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
-        resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));
+        resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));finishAttempt();
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
         api.stageClear?.(st.score);
       }
@@ -305,6 +323,7 @@
     return {state:st,update,draw,screenPoint,
       get stage(){return st.L;},
       get levels(){return LAST_STAGE;},
+      get unlockedStage(){return readStage();},
       get stageCleared(){return st.complete;},
       get stageFailed(){return st.failed;},
       get canResume(){return st.failed&&!st.destroyed&&!st.ended;},
@@ -358,7 +377,7 @@
         if(key==='Enter'||key===' '){if(st.complete)tap(267,514);else{const h=st.level.holes.find(h=>h.id===st.focus);if(h){const q=screenPoint(h);tap(q.x,q.y);}}return true;}
         return false;
       },
-      destroy(){st.destroyed=true;st.down=null;st.pointers.clear();st.physics.destroy();}
+      destroy(){finishAttempt();st.destroyed=true;st.down=null;st.pointers.clear();st.physics.destroy();}
     };
   }
   const menuHTML = typeof module !== 'undefined' && module.exports ? require('./screw-loader.js').menuHTML : window.OjjudaScrewLoader?.menuHTML;

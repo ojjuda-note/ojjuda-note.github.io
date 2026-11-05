@@ -4,7 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8'));
-const context = vm.createContext({ assert, console });
+const context = vm.createContext({ assert, console, crypto:require('node:crypto') });
 vm.runInContext(source
   .replace('  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; });',
     '  order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; }); globalThis.solution = order.slice();'), context);

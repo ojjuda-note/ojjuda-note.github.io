@@ -59,7 +59,7 @@ assert.equal(failing.success,true,'shader-compile failure should still fall back
 
 const {bundleScrew3d}=require('./screw3d-vm-bundle.cjs');
 const engine=bundleScrew3d(f=>fs.readFileSync(require('node:path').join(__dirname,'..',f),'utf8'));
-const physics=vm.createContext({window:{},structuredClone,assert,console});
+const physics=vm.createContext({window:{},structuredClone,assert,console,crypto:require('node:crypto')});
 vm.runInContext(engine+`
   const games=[screw3d({setScore(){},getCoins:()=>0,end(){}},1)];
   const first=window.__ojjScrew3d;
