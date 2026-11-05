@@ -126,7 +126,14 @@ function place(M, R, color, ps, o = {}) {   // 판 하나: 면 위 네모 R, 나
   for (const pn of got) mkScrew(M, P, pn.into, add(pn.q, mul(R.n, T)), R.n);
   return P;
 }
-function pin(M, thru, into, p, a) { M.hold.push({ p, n: a }); return mkScrew(M, thru, into, p, a); }   // 조각을 뚫고 박는 나사(뚜껑·원기둥 등)
+function pin(M, thru, into, p, a) {
+  // A sculpted ear/tail can extend past the old primitive's nominal radius.
+  // Seat its fastener on the ACTUAL attached mesh before solving the puzzle,
+  // so drawing, picking and the extraction collision all use the same point.
+  // Never draw a buried fastener over its own opaque part as a workaround.
+  if (thru.faceFeature) p = featureFastenerPoint(thru, p, a);
+  M.hold.push({ p, n: a }); return mkScrew(M, thru, into, p, a);
+}   // 조각을 뚫고 박는 나사(뚜껑·원기둥 등)
 function bridge(M, A, B, n) {   // 이웃한 두 블럭을 같은 면 위의 판으로 (판마다 블럭 하나에 나사 하나)
   const u = norm(sub(B.c, A.c)), v = cross(u, n), fa = face(A, n), fb = face(B, n), mid = mul(add(fa, fb), 0.5);
   for (const o of [0, 0.1, -0.1]) for (const t of [0.07, 0.12]) {
@@ -509,6 +516,23 @@ function geomPlanes(geom) {
     return { n, p };
   }));
   return planeCache.get(geom);
+}
+function featureFastenerPoint(E, point, axis) {
+  let exit = -Infinity;
+  for (const sh of shapes(E)) {
+    const Rt = tr(sh.R), p = mv(Rt, sub(point, sh.c)), a = mv(Rt, axis);
+    let lo = -Infinity, hi = Infinity;
+    for (const f of geomPlanes(sh.geom)) {
+      const dist = dot(f.n, sub(p, f.p)), slope = dot(f.n, a);
+      if (Math.abs(slope) < 1e-9) {
+        if (dist > 1e-7) { hi = -Infinity; break; }
+      } else if (slope < 0) lo = Math.max(lo, -dist / slope);
+      else hi = Math.min(hi, -dist / slope);
+    }
+    if (hi >= lo - 1e-7 && Number.isFinite(hi)) exit = Math.max(exit, hi);
+  }
+  if (!Number.isFinite(exit)) throw new Error('조형 부품의 나사 접점을 찾지 못했어요');
+  return add(point, mul(axis, exit + 0.002));
 }
 // 실제로 그린 볼록한 면과 교차하는 구간. 원·원뿔·지붕의 빈 모서리는 막지 않아요.
 function shapeHit(o, d, len, sh, inset = 0) {
@@ -1128,7 +1152,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-connected-plush1',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-visible-fasteners1',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)

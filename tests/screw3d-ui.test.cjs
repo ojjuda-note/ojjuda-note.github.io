@@ -78,6 +78,52 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
           }
           return {mounted,visible,tapped:false};
         },
+        completeAnimal(stage,seed) {
+          const originalRandom=Math.random;let value=seed>>>0;
+          Math.random=()=>((value=(Math.imul(value,1664525)+1013904223)>>>0)/4294967296);
+          try{
+            boot(stage);const total=state.lvl.screws.length;
+            let clicks=0,sorts=0,settled=false;
+            const angles=[];
+            for(const pitch of [.45,-.45,.9,-.9,0,1.35,-1.35])
+              for(let k=0;k<12;k++)angles.push([k*Math.PI/6,pitch]);
+            const inside=(x,y,pts)=>{
+              let hit=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+                const a=pts[i],b=pts[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)hit=!hit;
+              }return hit;
+            };
+            const top=(x,y)=>{for(let i=state.drawn.length-1;i>=0;i--)
+              if(inside(x,y,state.drawn[i].pts))return state.drawn[i].owner;return null;};
+            const advance=seconds=>{for(let i=0;i<seconds/.04;i++)game.update(.04);};
+            while(clicks<total){
+              let picked=false;
+              for(const [yaw,pitch] of [[state.yaw,state.pitch],...angles]){
+                state.yaw=yaw;state.pitch=pitch;game.draw(ctx);
+                const fits=s=>state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3);
+                const moves=[...state.heads].filter(([s,h])=>s.state==='in'&&!blocked(s,state.lvl)
+                  &&h.x>5&&h.x<315&&h.y>230&&h.y<520&&top(h.x,h.y)===s);
+                moves.sort((a,b)=>Number(fits(b[0]))-Number(fits(a[0])));
+                for(const [s,h] of moves){
+                  if(!fits(s)&&!state.buf.includes(null))continue;
+                  tap(h.x,h.y);
+                  if(s.state==='out'){clicks++;picked=true;settled=false;break;}
+                }
+                if(picked)break;
+              }
+              if(picked){advance(1.6);continue;}
+              if(state.buf.some(Boolean)&&sorts<30){tap(80,212);advance(10);sorts++;continue;}
+              // Let real released debris fall away; do not delete occluders
+              // or bypass the physics in this end-to-end browser regression.
+              if(!settled){advance(16);settled=true;continue;}
+              return {stage,seed,total,clicks,sorts,cleared:false,remaining:state.lvl.screws.filter(s=>s.state==='in').length};
+            }
+            for(let retry=0;retry<30&&!game.stageCleared;retry++){
+              if(state.buf.some(Boolean)){tap(80,212);sorts++;}
+              advance(16);
+            }
+            return {stage,seed,total,clicks,sorts,cleared:game.stageCleared,purchases};
+          }finally{Math.random=originalRandom;}
+        },
         rabbitOcclusion() {
           boot(20);
           const shots=[];
@@ -118,6 +164,13 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const contact=await page.evaluate(() => screwTest.mountedTap());
     assert.ok(contact.mounted>=10&&contact.visible>=1&&contact.tapped,
       `a surface-mounted screw must remain visible and clickable: ${JSON.stringify(contact)}`);
+    const complete=[];
+    for(const [stage,seed] of [[20,2],[20,9],[18,37],[19,37]]){
+      const result=await page.evaluate(([stage,seed])=>screwTest.completeAnimal(stage,seed),[stage,seed]);
+      assert.ok(result.cleared&&result.clicks===result.total&&result.purchases===0,
+        `every animal fastener must be reachable with real taps and no purchases: ${JSON.stringify(result)}`);
+      complete.push(result);
+    }
     const rabbit=await page.evaluate(() => screwTest.rabbitOcclusion());
     assert.ok(rabbit.every(s=>s.plates===0&&s.unclipped===0&&s.front>0&&s.hidden>0),
       `curved rabbit must hide rear details and detached square plates: ${JSON.stringify(rabbit)}`);
@@ -129,6 +182,6 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const perf = {};
     for (const L of [4, 20, 40, 160]) perf[L] = await page.evaluate(L => screwTest.perf(L), L);
     assert.deepEqual(errors, []);
-    console.log('PASS: normal/large rendering, partial occlusion, moving-block touch and three completed tutorial rounds', JSON.stringify({ play, frameMs: perf }));
+    console.log('PASS: normal/large rendering, partial occlusion, moving-block touch and completed tutorial/animal rounds', JSON.stringify({ play, complete, frameMs: perf }));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
