@@ -32,7 +32,7 @@
     const heading = el('h3', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : '회원 관리');
     const intro = el('p', referrals ? '이메일 인증이 끝난 가입을 추천인별로 한 번씩 누적 집계해요.' : withdrawn
       ? '현재 보관기간이 남은 탈퇴 기록만 표시해요. 계정정보는 탈퇴 후 1개월이 지나면 자동 삭제돼요.'
-      : '가입 현황과 계정 상태를 검색하고 관리해요. 날짜는 한국 시간을 기준으로 표시해요.', 'acct-intro');
+      : '가입 현황과 보유 쭈를 확인하고 관리해요. 날짜는 한국 시간을 기준으로 표시해요.', 'acct-intro');
     const filterBar = el('div', undefined, 'acct-filters');
     filterBar.setAttribute('role', 'group'); filterBar.setAttribute('aria-label', '회원 상태');
     const filterButtons = [];
@@ -85,11 +85,6 @@
     next.addEventListener('click', () => { if (!busy && offset + PAGE_SIZE < total) { offset += PAGE_SIZE; void refresh(); } });
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
     section.append(heading, intro); if (!withdrawn && !referrals) section.append(filterBar);
-    if (referrals) {
-      const rewards = el('a', '상품권 등록 · 지급 관리', 'btn');
-      rewards.href = '/admin/rewards.html';
-      section.append(rewards);
-    }
     section.append(form); if (!withdrawn && !referrals) section.append(sortBar);
     section.append(count, status, retry, list, pagination); container.replaceChildren(section);
 
@@ -121,7 +116,7 @@
       if (banned) head.append(el('span', '정지 중', 'vis warn-tag'));
       card.append(head, el('p', withdrawn ? record.email_masked || '이메일 없음' : record.email || '이메일 없음', 'acct-contact'));
       const details = el('dl', undefined, 'acct-details');
-      const detail = (name, value) => { details.append(el('dt', name), el('dd', value)); };
+      const detail = (name, value) => { details.append(el('dt', name), el('dd', value, name === '보유 ZU' ? 'acct-wallet-value' : '')); };
       detail('가입', date(withdrawn ? record.account_created_at : record.created_at));
       if (withdrawn) {
         detail('탈퇴', date(record.withdrawn_at)); detail('자동 삭제 예정', date(record.expires_at));
@@ -135,11 +130,6 @@
       card.append(details);
       if (!withdrawn) {
         const actions = el('div', undefined, 'acct-actions');
-        if (!record.is_admin) for (const [days, text] of (banned ? [[0, '정지 해제']] : [[7, '7일 정지'], [30, '30일 정지']])) {
-          const action = button(text, 'btn sm');
-          Object.assign(action.dataset, { act: 'adm-ban', uid: record.id, days: String(days), name: record.nickname || '' });
-          actions.append(action);
-        }
         // This callback is application-owned markup (World's existing ch renderer), never server HTML.
         if (renderActions) {
           const extra = el('span', undefined, 'acct-extra-actions');
@@ -147,6 +137,11 @@
           if (typeof markup === 'string') extra.innerHTML = markup;
           else if (markup instanceof Node) extra.append(markup);
           actions.append(extra);
+        }
+        if (!record.is_admin) for (const [days, text] of (banned ? [[0, '정지 해제']] : [[7, '7일 정지'], [30, '30일 정지']])) {
+          const action = button(text, 'btn sm');
+          Object.assign(action.dataset, { act: 'adm-ban', uid: record.id, days: String(days), name: record.nickname || '' });
+          actions.append(action);
         }
         if (actions.childElementCount) card.append(actions);
       }

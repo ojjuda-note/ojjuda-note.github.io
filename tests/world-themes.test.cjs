@@ -7,6 +7,7 @@ try{
  w.localStorage.setItem('ojjuda-world-theme-v1','summer');
  let colorListener;const colorMode={matches:false,addEventListener(type,listener){assert.equal(type,'change');colorListener=listener;}};w.matchMedia=query=>{assert.equal(query,'(prefers-color-scheme: dark)');return colorMode;};
  let now=Date.parse('2026-10-08T14:59:59Z'),scheduled,delay;const RealDate=w.Date;w.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};w.setTimeout=(callback,ms)=>{scheduled=callback;delay=ms;return 1;};w.clearTimeout=()=>{};
+ const changes=[];w.addEventListener('ojjuda:themechange',()=>changes.push(w.document.documentElement.dataset.worldTheme));
  w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
  const t=w.OjjudaThemes,at=(d,m='auto')=>t.resolve(d+'T03:00:00Z',m);
  assert.equal(t.order.length,19);
@@ -30,6 +31,7 @@ try{
  assert.equal(w.document.documentElement.dataset.worldTheme,'hangeul');assert.equal(draft.value,'작성 중인 내용');assert.equal(w.document.getElementById('draft'),draft);
  now=Date.parse('2026-10-09T15:00:01Z');w.dispatchEvent(new w.Event('pageshow'));assert.equal(t.getCurrent(),'autumn','resuming a suspended tab recalculates its date');
  w.localStorage.setItem('ojjuda-world-theme-v1','summer');t.sync();assert.equal(t.getCurrent(),'autumn','later legacy storage is ignored');
+ assert.deepEqual(changes,['autumn','hangeul','autumn'],'ticker listeners are informed once for each actual theme change');
  for(const key of t.order){assert.ok(fs.existsSync(path.join(root,'assets/design',key==='classic'?'welcome.svg':'themes/'+key+'.svg')),key+' has its own artwork');}
  assert.equal(t.scheduleFor(2027).find(e=>e.key==='buddha').date,'2027-05-13');
  console.log('PASS: all 19 designs, KST midnight, lunar holidays through 2050, holiday priority, season fallback, automatic-only mode, legacy choice ignored, midnight and resume updates and draft preservation');

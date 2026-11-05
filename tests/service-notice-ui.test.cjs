@@ -11,7 +11,7 @@ for(const from of ['/park/','/park/index.html?card=abc#reply','/note/?compose=me
  for(const key of ['card','compose'])assert.equal(redirected.searchParams.get(key),url.searchParams.get(key));
 }
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+world=world.replace('<script type="module">',`<script>${['world-themes.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt,tick:Ts,render:H,
@@ -51,7 +51,10 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    assert.equal(await page.locator('[data-act="notice-open"]:visible').count(),1,width+': one common notice');
    const movement=await page.locator('.nb-flow').evaluate(n=>{const a=n.getAnimations()[0],d=Number(a.effect.getTiming().duration);a.currentTime=d*2+100;return{iterations:a.effect.getTiming().iterations,playState:a.playState,period:Math.round(d),copies:n.children.length}});
    assert.equal(movement.iterations,Infinity,'the notice keeps moving after multiple cycles');assert.equal(movement.playState,'running');assert.equal(movement.copies,2);assert.ok(movement.period>=8000);
-   assert.equal(await page.locator('.nb-text').textContent(),notice);assert.equal(await page.locator('.nb-copy').textContent(),notice);
+   const greeting=await page.evaluate(()=>{const themes=OjjudaThemes;const theme=themes.catalog[themes.getCurrent()];return `${theme.name} · ${theme.copy}`});
+   assert.equal(await page.locator('.nb-announcement').first().textContent(),notice);
+   assert.equal(await page.locator('.nb-season').first().textContent(),greeting);
+   assert.equal(await page.locator('.nb-copy').textContent(),await page.locator('.nb-text').textContent());
    await page.locator('.nb-flow').evaluate(n=>{n.getAnimations()[0].currentTime=0;});
    assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open',width+': invitation directly below the actual shared notice');
    assert.ok(await page.locator('.ge-inline-copy').evaluate(n=>n.scrollWidth<=n.clientWidth+1),width+': complete one-line invitation text');
@@ -66,6 +69,14 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   }
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.nb-flow').evaluate(n=>getComputedStyle(n).animationName),'none');
   await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>{
+   window.originalThemes=window.OjjudaThemes;
+   window.OjjudaThemes={getCurrent:()=> 'christmas',catalog:originalThemes.catalog};
+   document.documentElement.dataset.worldTheme='christmas';
+   window.dispatchEvent(new Event('ojjuda:themechange'));
+  });
+  assert.equal(await page.locator('.nb-season').first().textContent(),'크리스마스 · 따뜻한 마음이 모이는 날.');
+  await page.evaluate(()=>{window.OjjudaThemes=window.originalThemes;window.dispatchEvent(new Event('ojjuda:themechange'));});
   // A late network response must update just the announcement, preserving the
   // live Park iframe, invitation controls, and an in-progress form selection.
   await page.evaluate(()=>{
@@ -75,7 +86,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    document.querySelector('#app .main').append(input);input.focus();input.setSelectionRange(1,4);
   });
   await page.evaluate(()=>noticeFixture.load('늦게 도착한 새 공지'));
-  assert.equal(await page.locator('.nb-text').textContent(),'늦게 도착한 새 공지');
+  assert.equal(await page.locator('.nb-announcement').first().textContent(),'늦게 도착한 새 공지');
   assert.ok(await page.evaluate(()=>document.querySelector('[data-park-app] iframe')===noticeLiveFrame),'config refresh preserves the Park frame');
   assert.ok(await page.evaluate(()=>document.querySelector('.game-friend-inline')===noticeLiveInvite),'config refresh preserves the incoming invitation row');
   assert.deepEqual(await page.locator('#notice-draft').evaluate(n=>[n===document.activeElement,n.value,n.selectionStart,n.selectionEnd]),[true,'작성 중인 글',1,4]);
@@ -85,7 +96,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   assert.equal(await page.locator('[data-act="notice-open"]').count(),1,'network delivery inserts the announcement without a shell redraw');
   assert.equal(await page.locator('.game-friend-inline').evaluate(n=>n.parentElement.previousElementSibling.dataset.act),'notice-open');
   await page.evaluate(()=>noticeFixture.set('공지 <script>window.noticeInjection=true</script>'));
-  assert.equal(await page.locator('.nb-text').textContent(),'공지 <script>window.noticeInjection=true</script>');assert.equal(await page.evaluate(()=>window.noticeInjection),undefined);
+  assert.equal(await page.locator('.nb-announcement').first().textContent(),'공지 <script>window.noticeInjection=true</script>');assert.equal(await page.evaluate(()=>window.noticeInjection),undefined);
   await page.evaluate(()=>noticeFixture.set(''));assert.equal(await page.locator('[data-act="notice-open"]').count(),0,'clearing notice removes the banner');
   await page.locator('.game-friend-inline').waitFor();assert.equal(await page.locator('.game-friend-inline').count(),1,'invitation remains when the notice is cleared');
   await page.evaluate(value=>{noticeFixture.set(value);noticeFixture.tab('my')},notice);

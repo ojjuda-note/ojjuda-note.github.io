@@ -151,6 +151,24 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.options.accounts.view), 'members');
     assert.equal(await page.evaluate(() => fixture.options.accounts.initialFilter), 'banned',
       'the suspended-member statistic opens the suspended members filter');
+    // Currency adjustments are available directly in the member directory, with audit reason and confirmation.
+    await page.evaluate(() => {
+      fixture.coinChanges = [];
+      U.adjustCoins = async (...args) => { fixture.coinChanges.push(args); return 800; };
+      const host = document.createElement('div'); host.id = 'coin-fixture';
+      host.innerHTML = fixture.options.accounts.renderActions({id:'synthetic-member',nickname:'합성 회원',coins:1000,is_admin:false});
+      fixture.options.accounts.container.append(host);
+    });
+    await page.locator('#coin-fixture .zu-adjust').click();
+    await page.locator('#am-operation').selectOption('subtract');
+    await page.locator('#am-amount').fill('200');
+    await page.locator('[data-act="adm-coins"]').click();
+    assert.equal(await page.evaluate(() => fixture.coinChanges.length), 0, 'a reason is mandatory');
+    await page.locator('#am-reason').fill('합성 테스트 정정');
+    await page.locator('[data-act="adm-coins"]').click();
+    await page.getByRole('button', {name:'차감 확정'}).click();
+    await page.waitForFunction(() => fixture.coinChanges.length === 1);
+    assert.deepEqual(await page.evaluate(() => fixture.coinChanges[0]), ['synthetic-member',-200,'합성 테스트 정정']);
 
     async function assertRefreshPreservesHost(name) {
       await mounted(name);
@@ -180,7 +198,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.evaluate(() => fixture.controllers.accounts.destroyed), true);
     for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 844 });
-      const labels = await page.locator('.adm-tabs button').evaluateAll(buttons => buttons.map(button => ({
+      const labels = await page.locator('.adm-tabs button,.adm-tabs a').evaluateAll(buttons => buttons.map(button => ({
         text: button.textContent, width: button.clientWidth, content: button.scrollWidth,
         height: button.getBoundingClientRect().height
       })));
@@ -226,7 +244,8 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.locator('[data-act="adm-limit"]').click();
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
     await area('content');
-    assert.deepEqual(await page.locator('.adm-tabs button').allTextContents(), ['카드','쪽지 관리','포토땅따먹기','위험 신호','위치 지도']);
+    assert.deepEqual(await page.locator('.adm-tabs button,.adm-tabs a').allTextContents(), ['카드','쪽지 관리','포토땅따먹기','위험 신호','위치 지도','상품권 등록']);
+    assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
     for (const id of ['cards','risk','map']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }
     await area('support'); await tab('note-users'); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), 'users');
@@ -271,7 +290,9 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
-    assert.deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['아지트로 돌아가기','원고실']);
+    assert.deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['아지트로 돌아가기']);
+    assert.equal(await page.locator('.adm-areas a').textContent(), '원고실');
+    assert.equal(await page.locator('.adm-areas').locator('button,a').last().textContent(), '원고실', 'the studio follows operations');
     assert.equal(await page.locator('.adm-site-links a').first().getAttribute('href'), '/world.html');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();

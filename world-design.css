@@ -63,6 +63,8 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .notice-tk .nb-ico{flex:none}.notice-tk .nb-track{flex:1;min-width:0;overflow:hidden;white-space:nowrap}
 .notice-tk .nb-flow{display:flex;width:max-content;animation:noticeFlow var(--notice-duration,20s) linear infinite;will-change:transform}
 .notice-tk .nb-text,.notice-tk .nb-copy{display:block;flex:none;box-sizing:content-box;min-width:var(--notice-width,0px);padding-right:48px;white-space:nowrap}
+.notice-tk .nb-divider{display:inline-block;margin:0 16px;color:var(--accent-ink);font-weight:800}
+.notice-tk .nb-season{color:var(--accent-ink);font-weight:750}
 .notice-tk:focus-visible .nb-flow{animation-play-state:paused}
 @keyframes noticeFlow{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.notice-tk .nb-flow{animation:none;width:auto}.notice-tk .nb-copy{display:none}.notice-tk .nb-text{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-right:0}}

@@ -57,8 +57,10 @@ function syncAppearance(){
 colorMode?.addEventListener?.('change',syncAppearance);
 function apply(){
  syncAppearance();
+ const previous=current;
  current=resolve();document.documentElement.dataset.worldTheme=current;
  document.querySelectorAll('[data-theme-greeting]').forEach(n=>{n.textContent=catalog[current].copy;});
+ if(previous!==current)window.dispatchEvent(new Event('ojjuda:themechange'));
 }
 function schedule(){
  clearTimeout(timer);const now=Date.now(),next=(Math.floor((now+KST)/DAY)+1)*DAY-KST;
