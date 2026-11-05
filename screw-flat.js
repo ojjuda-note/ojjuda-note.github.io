@@ -8,7 +8,11 @@
   const MAX_EXTRA_HOLES=9,PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   // Finishing requires almost four transfers per plate; keep room for mistakes
   // without making a paid extra-move purchase necessary on advanced stages.
-  const moveLimit=level=>Number.isInteger(level.requiredMoves)?level.requiredMoves+(level.stage<=30?5:2):level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
+  function moveLimit(level){
+    if(level.challengeMoves!==undefined)return level.challengeMoves;
+    if(Number.isInteger(level.requiredMoves))return level.requiredMoves+(level.stage<=30?5:2);
+    return level.route?.length??Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
+  }
   const SCREW_COLOR = '#A3B6C7';
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;

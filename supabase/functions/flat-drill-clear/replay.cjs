@@ -7,7 +7,7 @@ function verifyClear(stage,events,endTick){
   if(!Number.isInteger(stage)||stage<1||stage>1000||!Array.isArray(events)||events.length<2||events.length>1000||
     !Number.isSafeInteger(endTick)||endTick<0||endTick>maxTicks)return false;
   const level=Physics.makeFlatLevel(stage);
-  if(events.length<level.screws.length)return false;
+  if(events.length<level.screws.length||(level.challengeMoves!==undefined&&events.length>level.challengeMoves))return false;
   const sim=Physics.createPhysics(level);
   let now=0,moved=false;
   function advance(to){
