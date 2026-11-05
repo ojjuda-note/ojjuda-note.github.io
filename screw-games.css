@@ -85,3 +85,47 @@
  #gov[data-game="screw"][data-screw-mode="box"] .screw-stage-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
  #gov[data-game="screw"][data-screw-mode="box"] .screw-stage-tile{min-height:48px}
 }
+
+/* Touch guide: a dedicated row under the box-game canvas, never over its screws. */
+#gov.gov.world-game-screen[data-game="screw"][data-screw-mode="box"]:has(#gcv) > .gbox {
+  grid-template-rows: auto minmax(0,1fr) auto auto;
+}
+#gov.gov.world-game-screen[data-game="screw"][data-screw-mode="box"]:has(#gcv) > .gbox:has(> #gctrl:empty) {
+  grid-template-rows: auto minmax(0,1fr) auto;
+}
+#gov[data-game="screw"] .screw-touch-help { display: none; }
+#gov[data-game="screw"][data-screw-mode="box"] .screw-touch-help {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  gap: 2px;
+  box-sizing: border-box;
+  width: min(100%, 420px);
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: var(--surface-2, #f2eee7);
+  color: var(--ink, #34303a);
+  font-size: clamp(11px, 2.7vw, 13px);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+#gov[data-game="screw"]:has(.screw-stage-card) .screw-touch-help,
+#gov[data-game="screw"]:has(.game-result-card) .screw-touch-help { display: none; }
+@media (orientation: landscape) and (max-height: 540px) {
+  #gov.gov.world-game-screen[data-game="screw"][data-screw-mode="box"]:has(#gcv) > .gbox {
+    grid-template-rows: minmax(0,1fr) auto auto;
+  }
+  #gov.gov.world-game-screen[data-game="screw"][data-screw-mode="box"]:has(#gcv) > .gbox:has(> #gctrl:empty) {
+    grid-template-rows: minmax(0,1fr) auto;
+  }
+  #gov[data-game="screw"][data-screw-mode="box"] .screw-touch-help {
+    grid-column: 1/-1;
+    grid-row: 2;
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  #gov[data-game="screw"][data-screw-mode="box"] #gctrl { grid-column: 1/-1; grid-row: 3; }
+}
