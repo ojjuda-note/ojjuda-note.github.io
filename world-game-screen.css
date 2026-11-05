@@ -332,3 +332,14 @@ body:has(.world-board-screen) {
     padding-bottom: 3px;
   }
 }
+
+.arcade-exit-choice {
+  box-sizing:border-box; width:min(330px,calc(100vw - 32px)); margin:auto;
+  padding:24px 20px 18px; border:1px solid var(--line,#dfe4df); border-radius:16px;
+  background:var(--surface,#fff); color:var(--ink,#223a30); text-align:center;
+}
+.arcade-exit-choice::backdrop { background:rgba(17,28,23,.58); }
+.arcade-exit-choice h2 { margin:0 0 20px; font-size:19px; }
+.arcade-exit-choice div { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.arcade-exit-choice button { min-height:44px; border:1px solid var(--line,#dfe4df); border-radius:9px; background:var(--surface-2,#f2f5f0); color:var(--ink,#223a30); font:600 14px/1.4 var(--font-b,sans-serif); cursor:pointer; }
+.arcade-exit-choice [data-exit-stay] { background:var(--accent,#245a48); color:var(--on-accent,#fff); }

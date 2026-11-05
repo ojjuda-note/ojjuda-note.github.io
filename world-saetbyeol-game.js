@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog saetbyeol-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '샛별키우기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261103-guest-one-round1" allow="autoplay; fullscreen"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>샛별키우기 · 전체이용</span></header><iframe title="샛별키우기" src="/games/bulssi/index.html?v=20261106-playing-back1" allow="autoplay; fullscreen"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map();
       const boosters = new Map();
@@ -105,14 +105,14 @@
         if (message.type === 'ojjuda-game-ranking') void ranking();
         if (message.type === 'ojjuda-game-booster') void booster(message);
       }
-      function requestClose() {
+      function requestClose(fromBack = false) {
         if (!connected || !authorized()) { close(); return; }
-        send({type:'ojjuda-saetbyeol-exit-request'});
+        send({type:'ojjuda-saetbyeol-exit-request', fromBack:fromBack === true});
       }
       active = {dialog, close};
       window.addEventListener('message', receive);
       dialog.querySelector('button').addEventListener('click', requestClose);
-      dialog.addEventListener('cancel', event => { event.preventDefault(); requestClose(); });
+      dialog.addEventListener('cancel', event => { event.preventDefault(); requestClose(true); });
       document.body.append(dialog);
       document.body.classList.add('gaming');
       dialog.showModal();

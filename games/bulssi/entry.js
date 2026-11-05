@@ -96,7 +96,7 @@
     }
     if (m.type === 'ojjuda-saetbyeol-exit-request') {
       if (boost) { game.notice('부스터 결제를 확인하고 있어요. 잠시만 기다려 주세요.'); return; }
-      if (game.isRunning() && !confirm('게임을 나갈까요?\n키운 별은 자동 저장돼요.')) return;
+      if (m.fromBack !== true && game.isRunning() && !confirm('게임을 나갈까요?\n키운 별은 자동 저장돼요.')) return;
       save(game.getState()); flush(); post({type:'ojjuda-game-exit'});
     }
     if (m.type === 'ojjuda-saetbyeol-record' && flight?.id === m.runId) {

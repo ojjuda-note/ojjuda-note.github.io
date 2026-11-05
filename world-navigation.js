@@ -14,7 +14,41 @@
         history.pushState(state('menu'), '', href);
       };
       const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
+      let exitChoice = null, exitingGame = null, pendingArcadeReturn = null;
+      function requestGameExit() {
+        if (exitChoice) return true;
+        const game = options.playingGame?.();
+        if (!game || game === exitingGame) return false;
+        const dialog = document.createElement('dialog');
+        dialog.className = 'arcade-exit-choice';
+        dialog.setAttribute('aria-labelledby', 'arcade-exit-title');
+        dialog.innerHTML = '<h2 id="arcade-exit-title">아지트로 갈까요?</h2><div><button type="button" data-exit-stay autofocus>게임 계속하기</button><button type="button" data-exit-leave>아지트로 나가기</button></div>';
+        const resume = options.pauseGame?.(game);
+        function finish(leave = false) {
+          if (exitChoice?.dialog !== dialog) return;
+          exitChoice = null;
+          dialog.close();
+          dialog.remove();
+          if (leave && game.isConnected) {
+            exitingGame = game;
+            if (!options.isMain()) pendingArcadeReturn = {game, tab:options.currentTab()};
+            try {
+              const result = options.exitGame(game);
+              if (result === false && pendingArcadeReturn?.game === game) pendingArcadeReturn = null;
+            } finally { exitingGame = null; }
+          } else resume?.();
+        }
+        exitChoice = {game, dialog, finish};
+        dialog.querySelector('[data-exit-stay]').onclick = () => finish();
+        dialog.querySelector('[data-exit-leave]').onclick = () => finish(true);
+        dialog.addEventListener('cancel', event => { event.preventDefault(); finish(); });
+        document.body.append(dialog);
+        dialog.showModal();
+        return true;
+      }
       const back = () => {
+        if (exitChoice) { exitChoice.finish(); return true; }
+        if (requestGameExit()) return true;
         if (options.closeOverlay()) return true;
         if (options.handleBack?.()) return true;
         if (options.isMain()) return false;
@@ -54,6 +88,12 @@
       // game closes by its own button. A cancelled exit keeps the same guard.
       let overlayActive = !!options.hasOverlay?.();
       new MutationObserver(() => {
+        if (exitChoice && !exitChoice.game.isConnected) exitChoice.finish();
+        if (pendingArcadeReturn && !pendingArcadeReturn.game.isConnected) {
+          const {tab} = pendingArcadeReturn;
+          pendingArcadeReturn = null;
+          if (!departing && options.currentTab() === tab && !options.isMain() && options.canLeave()) options.toMain();
+        }
         const active = !!options.hasOverlay?.();
         if (active === overlayActive) return;
         overlayActive = active;
@@ -189,13 +229,30 @@
         return ()=>{reset();for(const remove of removers)remove();doc.defaultView?.removeEventListener('blur',reset);};
       }
       attachDocument(document);
+      document.addEventListener('cancel', event => {
+        if (!exitingGame && event.target === options.playingGame?.() && requestGameExit()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && exitChoice) {
+          event.preventDefault(); event.stopImmediatePropagation(); exitChoice.finish();
+        }
+      }, true);
+      document.addEventListener('click', event => {
+        const button = event.target.closest?.('.ghead [data-g="close"],[data-bl="close"],[data-bd="close"],.tour-game-header button,.roulette-game-dialog>header button,.spot-game-header button,#matgo-overlay [aria-label="맞고 닫기"],#ttang-overlay [aria-label="월드땅따먹기 닫기"],#photo-ttang-overlay [aria-label="포토땅따먹기 닫기"]');
+        if (button && options.playingGame?.()?.contains(button) && requestGameExit()) {
+          event.preventDefault(); event.stopImmediatePropagation();
+        }
+      }, true);
       document.addEventListener('click', event => {
         if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         if (!options.isMain() || !event.target.closest?.('.festival-schedule-dialog .agit-home-link,.restaurant-guide-dialog .agit-home-link')) return;
         event.preventDefault();
         back();
       });
-      return {sync, back, attachDocument, step};
+      return {sync, back, attachDocument, step, requestGameExit};
     }
   };
 })();

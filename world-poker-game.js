@@ -55,7 +55,7 @@
       const authTimer=setInterval(()=>{if(!authorized()||!access.visible(19))close();},1000);
       unsubscribe=access.subscribe(close);active={dialog,close};window.addEventListener('message',receive);
       dialog.querySelector('button').addEventListener('click',requestClose);
-      dialog.addEventListener('cancel',event=>{event.preventDefault();requestClose();});
+      dialog.addEventListener('cancel',event=>{event.preventDefault();void close();});
       document.body.append(dialog);document.body.classList.add('gaming');dialog.showModal();
     },
     close(){opening++;return active?.close()??true;}

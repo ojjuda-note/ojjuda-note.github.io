@@ -108,6 +108,7 @@ window.childReady=true;
         await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
         for (const frame of page.frames().slice(1)) await frame.waitForFunction(() => window.childReady);
         await back();
+        if(game==='billiards')await page.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
         await main();
       }
 
@@ -144,28 +145,28 @@ window.childReady=true;
       assert.equal(returned.searchParams.get('keep'),'yes');
       for(const key of ['game','challenge','score'])assert.equal(returned.searchParams.has(key),false);
 
-      // A browser confirmation must retain both the running game and its return entry.
+      async function chooseExit(selector){
+        const original=await page.locator(selector).elementHandle();
+        await back();
+        const prompt=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+        await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).click();
+        assert.equal(await original.evaluate(node=>node.isConnected),true,'continuing retains the same game');
+        await back();
+        await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
+        await main();
+      }
       await page.evaluate(() => backFixture.open('stacker'));
       await page.locator('#gov [data-g="start"]').click();
-      accept = false;
-      await back();
-      await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
-      assert.equal(await page.locator('#gov').count(), 1, 'cancel preserves the game');
-      accept = true;
-      await back();
-      await main();
-
-      // Matgo closes through the online game's own confirmation, even after its loading bar disappears.
-      await page.evaluate(async () => { backFixture.allowExit=false; await openMatgo(); });
-      await page.waitForFunction(() => document.querySelector('#matgo-overlay') && !document.getElementById('matgo-loading-bar') && history.state?.ojjudaWorld === 'menu');
-      const requests = await page.evaluate(() => backFixture.exitRequests);
-      await back();
-      await page.waitForFunction(count => backFixture.exitRequests > count, requests);
-      assert.equal(await page.locator('#matgo-overlay').count(), 1, 'denied iframe exit remains open');
-      assert.equal(await page.evaluate(() => backFixture.exits), 0);
-      await page.evaluate(() => { backFixture.allowExit=true; });
-      await back();
-      await main();
+      await chooseExit('#gov');
+      await page.locator('.bottomnav [data-tab="my"]').click();
+      await page.evaluate(()=>backFixture.open('stacker'));
+      await page.locator('#gov [data-g="start"]').click();
+      await chooseExit('#gov');
+      await page.evaluate(async()=>{backFixture.allowExit=false;await openMatgo();});
+      await page.waitForFunction(()=>document.querySelector('#matgo-overlay')&&!document.getElementById('matgo-loading-bar')&&history.state?.ojjudaWorld==='menu');
+      await page.frames()[1].evaluate(()=>{document.body.innerHTML='<section class="board"><div class="zone">게임 중</div></section>';});
+      await chooseExit('#matgo-overlay');
+      assert.equal(await page.evaluate(()=>backFixture.exits),0,'leaving a game never exits the app');
 
       // Closing from the game's own button must not leave stale history entries.
       const historySize = await page.evaluate(() => history.length);
@@ -194,7 +195,7 @@ window.childReady=true;
       await vacancy.goBack();await vacancy.locator('.arcade-home').waitFor();
       assert.equal(new URL(vacancy.url()).searchParams.get('game'),null,'a direct vacancy link cannot reopen itself on Back');
       await context.close();
-      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Arcade, retains cancelled exits, respects Matgo confirmation and consumes stale history.`);
+      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Arcade, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });

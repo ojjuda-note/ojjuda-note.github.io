@@ -82,10 +82,13 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
     assert.equal(await frame.locator('#over').isVisible(),false,'no result overlay covers the active game');
    }
    async function close(){
-    // The game requests native fullscreen on start. Leave it before clicking
-    // World's toolbar, as a browser user can do with its fullscreen control.
-    await page.evaluate(async()=>{if(document.fullscreenElement)await document.exitFullscreen();});
-    await page.locator('.tank-game-dialog .tour-game-header button').click();
+    assert.equal(await frame.locator('body').evaluate(()=>!!document.fullscreenElement),false,'system Back is available during play');
+    await page.goBack();
+    const prompt=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+    await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).click();
+    await playing();
+    await page.goBack();
+    await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
     await page.locator('.tank-game-dialog').waitFor({state:'detached'});
    }
    await frame.locator('#startSolo:not([disabled])').waitFor();await entry();

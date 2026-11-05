@@ -861,6 +861,8 @@ $('pClose').addEventListener('click',closePicker);
 $('picker').addEventListener('pointerdown',e=>{if(e.target.id==='picker')closePicker();});
 
 async function goFullscreen(){
+  // The arcade already fills the viewport. Native fullscreen would consume the first system Back.
+  if(window.parent!==window)return;
   try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}
   try{screen.orientation?.unlock?.();}catch(e){}
   await new Promise(r=>setTimeout(r,150));

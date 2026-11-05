@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog mines-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '지뢰찾기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261103-game-results1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261106-playing-back1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map(), baselines = new Map();
       let leaderFlight = null;
@@ -107,14 +107,14 @@
         if (message.type === 'ojjuda-game-result') void record(message);
         if (message.type === 'ojjuda-game-ranking') void ranking();
       }
-      function requestClose() {
+      function requestClose(fromBack = false) {
         if (!connected || !authorized()) { close(); return; }
-        send({type:'ojjuda-mines-exit-request'});
+        send({type:'ojjuda-mines-exit-request', fromBack:fromBack === true});
       }
       active = {dialog, close};
       window.addEventListener('message', receive);
       dialog.querySelector('button').addEventListener('click', requestClose);
-      dialog.addEventListener('cancel', event => { event.preventDefault(); requestClose(); });
+      dialog.addEventListener('cancel', event => { event.preventDefault(); requestClose(true); });
       document.body.append(dialog);
       document.body.classList.add('gaming');
       dialog.showModal();
