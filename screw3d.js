@@ -1,7 +1,7 @@
 import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-screwbox-sculpted-gates1';
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
-import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
+import { createReplacementModels } from './screw3d-replacement-models.js?v=20261106-screwbox-eye-fix1';
 import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-solid-depth2';
 import { createScrewDepthRenderer } from './screw3d-depth-renderer.js?v=20261105-screwbox-solid-depth2';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
