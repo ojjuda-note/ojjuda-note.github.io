@@ -12,7 +12,7 @@ vm.runInContext(source+'\n'+fixture,context);
 (async()=>{
   const routes=[];
   for(const seed of [1,4,5,6]){
-    memory.clear();memory.set('ojjuda-screw-stage','20');const r=await context.play(20,seed,seed*7919,true);
+    memory.clear();const r=await context.play(20,seed,seed*7919,true);
     assert.ok(r.cleared&&r.clicks===r.total,'all real timed touches complete stage20: '+JSON.stringify(r));
     assert.equal(r.boxes.length,2,'the revised game begins with two color boxes');assert.equal(r.buffer,5);
     routes.push({seed,screws:r.total,clicks:r.clicks,sorts:r.sorts,detours:r.detours});

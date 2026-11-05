@@ -61,7 +61,7 @@
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
 
-    const drills=Drills.create(api,walletUser,readStage());
+    const drills=Drills.create(api,walletUser,readStage(),Physics.replayVersion);
     let drillRun,drillTrace=[],usingDrill=false;
     const physicsTick=()=>Math.round(st.physics.engine.timing.timestamp*120/1000);
     async function useDrill(){

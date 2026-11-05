@@ -45,7 +45,9 @@
   }
   function plateCovers(p,x,y,radius=0){
     if(p.state==='gone')return false;
-    const q=localPoint(p,x,y);
+    const q=localPoint(p,x,y),bounds=p.localBounds;
+    if(bounds&&(q.x<bounds.min.x-radius||q.x>bounds.max.x+radius||
+      q.y<bounds.min.y-radius||q.y>bounds.max.y+radius))return false;
     return polygonDistance(p.vertices,q.x,q.y)<radius;
   }
   function segmentDistance(a,b,c,d){
@@ -60,6 +62,9 @@
   function plateBlocksSlot(p,hole,radius){
     const dx=Math.cos(-.28)*radius*.62,dy=Math.sin(-.28)*radius*.62;
     const a=localPoint(p,hole.x-dx,hole.y-dy),b=localPoint(p,hole.x+dx,hole.y+dy),margin=radius*.13;
+    const bounds=p.localBounds;
+    if(bounds&&(Math.max(a.x,b.x)<bounds.min.x-margin||Math.min(a.x,b.x)>bounds.max.x+margin||
+      Math.max(a.y,b.y)<bounds.min.y-margin||Math.min(a.y,b.y)>bounds.max.y+margin))return false;
     return polygonDistance(p.vertices,a.x,a.y)<margin||polygonDistance(p.vertices,b.x,b.y)<margin||
       p.vertices.some((v,i)=>segmentDistance(a,b,v,p.vertices[(i+1)%p.vertices.length])<margin);
   }
@@ -167,7 +172,10 @@
     const inset=level.interlocked?radius*.5+.3:radius+2;
     for(const p of level.plates){
       const first=(level.stage+p.id+variant-1)%PLATE_SHAPES.length;
-      if(level.stage>10&&(p.id+variant)%3!==0)continue;
+      // Earlier variants reshape every third sheet. Variants 24 and above
+      // try an independent silhouette in every available cell.
+      if(level.stage===11&&p.vertices.length>6)continue; // Preserve the five outer flower petals.
+      if(variant<24&&level.stage>10&&(p.id+variant)%3!==0)continue;
       for(let i=0;i<PLATE_SHAPES.length;i++){
         const kind=PLATE_SHAPES[(first+i)%PLATE_SHAPES.length],poly=fitWholeShape(p,kind);if(!poly)continue;
         let mounts=p.mounts;
@@ -1462,64 +1470,71 @@
     });
     return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
   }
-  // Offline replays cleared each listed layout with both the normal two-tap
-  // controls and three free holes. Store only the shape variant and any
-  // necessary move allowance. Other stages retain their original polygon sets.
-  const WHOLE_PLATE_LAYOUTS=new Map(`
-1,0 2,1 3,0 4,0 5,0 6,0 7,0 8,0 9,0 10,0
-12,0 13,0 14,0 15,0 16,0,22 17,0 18,0 19,0 20,1 21,0
-22,0 23,0 24,0,25 26,0 27,0 28,0 29,0 30,0 31,0 32,0
-33,0 34,0 35,1,30 36,0,31 37,1 38,0,27 39,0,30 40,0,31 41,0 42,0
-43,0,27 45,0 46,2 47,0,28 49,0,25 50,0 51,0 52,0 53,0,29 54,0
-55,0 56,1 57,0,30 58,0 59,0,37 60,0,33 61,0,39 62,0 63,0,37 64,1,32
-65,0 66,0,31 67,0 68,0,40 69,0 70,0 71,0,35 72,0,31 73,0 74,0
-75,0,30 76,0 77,0 78,0 79,1,37 80,2 81,0,39 82,1 83,0,41 84,0,42
-85,0 86,0,36 87,2,34 88,0 89,0,42 90,0,45 91,0 92,0 94,1,37 95,1
-96,2,39 97,0 98,0,38 99,0 100,1 103,2,35 104,0,40 105,0 106,2 107,1
-108,2 110,0,40 111,0,42 112,0 113,0 114,0 115,0,41 116,0,41 117,0 121,1
-122,1 123,0,39 125,0,45 127,0,53 128,0 129,1,42 130,1,42 131,0,47 132,0 134,1,46
-136,0,48 137,0,47 138,0,41 139,1 140,0 142,1 143,0 144,1,42 145,0,47 146,2
-147,0,37 148,1 149,0 150,1 151,1 152,0,42 154,0 155,0,43 156,1 157,1
-159,1 160,1 161,1,54 162,1,49 163,0,51 164,0 167,0,43 168,0,51 170,0 171,0,50
-172,0,52 173,0 174,2,45 176,1 177,2 178,0 181,0 182,0 183,1,53 184,0,60
-185,0 186,0,56 187,1,49 189,1,69 190,0 191,2 192,1 195,1,61 196,2 197,1,56
-200,2 201,0 203,1,48 204,2 205,0 206,1 207,0 208,1,72 209,0,71 212,1
-214,2 215,1 216,2,62 217,1,76 218,1 219,0,65 221,0 222,1,65 223,1 224,1
-226,0 228,1 229,0 230,0 231,0 232,0 233,0,60 237,2,65 239,0,60 240,0
-243,0 246,0 248,0,67 249,0,57 251,1,79 255,1 257,1,82 258,0,65 259,1,56 260,2,84
-264,1,82 265,1 266,0 269,2,60 270,2 271,0,73 272,2,75 273,0 274,1 275,0
-276,0 279,2,73 281,0 282,0 283,0,73 287,1 289,0,70 290,1 292,0,79 293,1
-295,0 296,0 299,2,74 300,0 303,0,75 305,0,92 306,0,93 308,0 309,0 310,2
-312,1,84 314,1,90 319,2 320,2 321,1 322,0,97 323,0,85 324,1 329,1,87 331,1,81
-332,0,93 336,0,103 337,1,107 340,0 341,2 342,1 343,2,104 345,1 347,1,100 348,1
-351,2,92 353,0 356,0,84 357,1 362,2,88 363,1,104 364,1 365,1,117 367,0,100 372,0,113
-375,1,79 381,0 383,0,108 384,0,93 393,2 395,2,102 396,2 398,0,119 402,1 406,0
-408,0 416,0 417,2 420,1 421,1,124 425,1 434,0 436,2,158 443,1,119 444,0,155
-445,2,130 447,0 450,0 451,2 452,2,138 457,0,133 463,2,133 466,1,154 471,0 473,0
-475,0 476,2,162 477,2,139 483,2 488,0,168 504,1 505,0 510,0 515,0 519,2
-522,0 523,0 532,0,167 533,1 535,2,186 538,2,160 552,0,169 555,1 558,0,159 564,0
-575,1 578,2,163 579,0,152 588,0,170 589,1 590,1,179 592,0,173 593,0,162 602,0 603,0,187
-604,2,181 606,0,166 609,2 611,2,195 619,1,182 625,0,192 626,2,202 629,0 642,2,201 659,0
-663,0,221 672,2,178 677,2,197 678,0 682,1 688,2,221 694,0,206 698,1,182 704,1,195 705,0
-707,0,230 713,0 723,0,207 733,2 736,2 737,0 746,1,208 747,0 748,1,223 752,2
-760,1,251 761,1 766,2 768,1,215 771,0,237 796,2,246 815,2,203 824,1,262 827,2,277 829,2,253
-830,1,278 831,1,261 835,0 842,2 853,0,238 855,0,272 857,0 858,0 861,1 862,1,269
-864,0,260 876,0,264 881,2,273 894,0,286 900,2 901,2,282 902,2,271 903,0 908,0 921,1,243
-923,2 924,2,284 925,2,272 927,2,295 929,0,280 937,0,304 941,1 942,2,286 944,2,289 945,2,250
-946,1,302 949,2,290 952,0,294 953,0,299 954,1,299 955,0,292 956,2,290 959,0 965,1,304 967,1,304
-969,0 970,1,299 972,1,286 975,2,324 976,1,310 980,2,304 982,2 985,0,321 989,1,297 992,0,293
-996,0 998,0,330
+  // One entry per stage, in order. Each variant has a two-tap, item-free
+  // solution using three storage holes. Only variants needing a higher move
+  // allowance include a second number. No solution sequence is shipped.
+  const WHOLE_PLATE_LAYOUTS=`
+0 1 0 0 0 0 0 0 0 0 28 0 0 0 0 0,22 0 0 0 1
+0 0 0 0,25 24 0 0 0 0 0 0 0 0 0 1,30 0,31 1 0,27 0,30 0,31
+0 0 0,27 24 0 2 0,28 24 0,25 0 0 0 0,29 0 0 1 0,30 0 0,37 0,33
+0,39 0 0,37 1,32 0 0,31 0 0,40 0 0 0,35 0,31 0 0 0,30 0 0 0 1,37 2
+0,39 1 0,41 0,42 0 0,36 2,34 0 0,42 0,45 0 0 24 1,37 1 2,39 0 0,38 0 1
+24 24 2,35 0,40 0 2 1 2 24 0,40 0,42 0 0 0 0,41 0,41 0 24 31,38 24
+1 1 0,39 24 0,45 24,39 0,53 0 1,42 1,42 0,47 0 27 1,46 24,49 0,48 0,47 0,41 1 0
+24 1 0 1,42 0,47 2 0,37 1 0 1 1 0,42 24 0 0,43 1 1 24 1 1
+1,54 1,49 0,51 0 24 27 0,43 0,51 24 0 0,50 0,52 0 2,45 24 1 2 0 24 24
+0 0 1,53 0,60 0 0,56 1,49 24 1,69 0 2 1 24 24 1,61 2 1,56 24,54 24,51 2
+0 24 1,48 2 0 1 0 1,72 0,71 24 24 1 24 2 1 2,62 1,76 1 0,65 24
+0 1,65 1 1 24 0 31 1 0 0 0 0 0,60 24 24 24 2,65 24 0,60 0
+24 24 0 24 24 0 24,62 0,67 0,57 24 1,79 24 24 24 1 24 1,82 0,65 1,56 2,84
+24,79 24 24 1,82 1 0 24 24,70 2,60 2 0,73 2,75 0 1 0 0 24,81 24,81 2,73 24
+0 0 0,73 24 24,87 24,80 1 24 0,70 1 24 0,79 1 24 0 0 24 24 2,74 0
+24 24 0,75 24 0,92 0,93 27 0 0 2 24 1,84 24 1,90 24 24 24 24 2 2
+1 0,97 0,85 1 24 24 24 27 1,87 24 1,81 0,93 24 24 24 0,103 1,107 27,97 24 0
+2 1 2,104 24 1 24 1,100 1 24,117 24 2,92 24 0 24 24 0,84 1 27 24 27,111
+24 2,88 1,104 1 1,117 24 0,100 24 24 24 24 0,113 24 24 1,79 24,101 24 24 24 24
+0 24 0,108 0,93 24 24 27,91 24 24 24 24 24 2 24 2,102 2 24 0,119 24 24
+24 1 24 27 24 0 26 0 24 24 24 24 24 24 24 0 2 24 24,97 1
+1,124 24,100 24 24 1 24 24 24 24 24 24 24,116 24 0 24 2,158 27 24 24 24
+24 24 1,119 0,155 2,130 24 0 24 24 0 2 2,138 24 24 24 24 0,133 24 24 24
+24 24 2,133 24 24 1,154 24 24 24 24 0 24 0 24 0 2,162 2,139 24 24 24
+24 24 2 24 24,117 24 24 0,168 24,119 24 24 24 24 24 24 24 24 24 24 24
+24 24 24 1 0 24 24 24,161 24 0 24 24 24 24 0 27 24 24 2 24
+24 0 0 24 24 24 27 24 24 24 24 0,167 1 24 2,186 24 24 2,160 24,133 24
+24 24 24 24 24 24 24 24 24 24 24 0,169 24 24 1 24 24 0,159 24 24
+24 24 24 0 24 24 27 24 24 24 24 24,158 24 24 1 24 24 2,163 0,152 24
+24 24 24 27,152 24 24 27 0,170 1 1,179 24 0,173 0,162 24 24 24 24 24,152 24 24
+31 0 0,187 2,181 24 0,166 24 24 2 24 2,195 24 24 24 24 24 24 24 1,182 24
+24 24 24 24 0,192 2,202 24 24 0 24 24 24 24 24 24 24 24 24 24 24
+24 2,201 24 24 24 24 24 24 24 24 24 24 24 24 24 27 24 24 0 24
+24 24 0,221 24 24 24 24 24 24 24 24 2,178 24 24 24 24 2,197 0 24 24
+24 1 24 27 24 24 24 2,221 24 24,185 24 24 24 0,206 24 24 24 1,182 24 24
+24 24 24 1,195 0 24 0,230 24 24 24 24 24 0 24 24 24 24 24 24 24
+24 24 0,207 24 24 24 27 24 24 24 24 24 2 24 24 2 0 24 24 24
+24 24 24 24 24 1,208 0 1,223 24 24 24 2 24 24 27 24 24,247 24 24 1,251
+1 24 24 24 24 2 24 1,215 24 24 0,237 24 24 24 24 24 24 24 24 24
+24 24 24 24,244 24 24 24 24 24 24 24 24 24 24 27 2,246 24 24 24 24
+24 24 24 24 24,221 24 24 24 24 24 24 24 24 24 2,203 24 24 24 24 24
+24 24 24 1,262 24,224 24 2,277 24 2,253 1,278 1,261 24 24 24 0 27,250 24 24 24 24
+24 2 27 24 24 24 24 24 24 24 27 24 0,238 24 0,272 24 0 0 24 24
+1 1,269 24 0,260 24 24 27 24 24 24 24 24 24 24 24 0,264 24 24,294 24 24
+2,273 24 24 24 24 24 24 24 24 24 24 24 24 0,286 24 24 24 24,281 24 2
+2,282 2,271 0 24 24 24 24 0 24 24 24 24 24 24 24 24 24 24 27 24
+1,243 24 2 2,284 2,272 24 2,295 24 0,280 24 27 24 24 24 24 24 0,304 24 24 24
+1 2,286 24 2,289 2,250 1,302 24 24 2,290 24 24 0,294 0,299 1,299 0,292 2,290 24 24 0 24
+24 24 24 24 1,304 24 1,304 24 0 1,299 24,268 1,286 24 24 2,324 1,310 24 24 24 2,304
+24 2 24 24 0,321 24 24 24 1,297 24 24 0,293 24 24 24 0 24,273 0,330 24 24
 `.trim().split(/\s+/).map(row=>{
-    const [stage,variant,moves]=row.split(',').map(Number);
-    return [stage,{variant,moves}];
-  }));
+    const [variant,moves]=row.split(',').map(Number);
+    return {variant,moves};
+  });
   function makeFlatLevel(stage,layout){
     const level=makeBaseLevel(stage,Array.isArray(layout)?layout:undefined);
-    const published=WHOLE_PLATE_LAYOUTS.get(level.stage);
-    const variant=layout?.profileVariant??published?.variant;
-    if(variant===undefined||variant<0)return level;
-    applyWholeShapes(level,variant);
-    if(published?.moves)level.requiredMoves=Math.max(level.requiredMoves||0,published.moves);
+    const published=WHOLE_PLATE_LAYOUTS[level.stage-1];
+    applyWholeShapes(level,layout?.profileVariant??published.variant);
+    // The perimeter is fixed in sheet-local coordinates even while it rotates.
+    for(const p of level.plates)p.localBounds=M.Bounds.create(p.vertices);
+    if(published.moves)level.requiredMoves=Math.max(level.requiredMoves||0,published.moves);
     return level;
   }
   // A screw can leave its plate only if there is a different usable parking
@@ -1624,7 +1639,7 @@
     function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
     return{step,lift,move,destroy,refreshScrews,engine,bodies,screwBodies};
   }
-  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,spareHoleCount,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
+  const api={replayVersion:'whole-plates-v2',BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,spareHoleCount,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

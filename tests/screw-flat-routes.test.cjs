@@ -1,12 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js'),Game=require('../screw-flat.js');
-const {solve}=require('./helpers/flat-solution-search.cjs');
 const {solve:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs');
 require('./screw-flat-heads.test.cjs');
 const witnessCache=new Map();
 function solution(stage){
  if(!witnessCache.has(stage)){
-  const result=solve(stage);
+  const result=solveAtomic(stage);
   assert.equal(result.reason,null,`stage ${stage} must physically fall: ${result.reason}`);
   witnessCache.set(stage,result.route.map(({screw,to,wait})=>[screw,to,wait]));
  }

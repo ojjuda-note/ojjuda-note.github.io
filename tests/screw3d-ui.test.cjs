@@ -17,14 +17,16 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
       const ctx = document.querySelector('canvas').getContext('2d');
       let game, state, testScrew, obstacle, purchases = 0;
       function boot(L = 1) {
-        localStorage.setItem(STAGE_KEY, String(L));
+        localStorage.setItem(stageStorageKey(STAGE_KEY, {}), String(L));
         game = screw3d({ setScore() {}, getCoins: () => 0, buyScrew() { purchases++; }, end() {} }, L);
-        state = window.__ojjScrew3d; state.touched = true;
+        state = window.__ojjScrew3d; if(state.L!==L)throw Error('Fixture opened the wrong stage'); state.touched = true;
       }
-      function fixture(big = false) {
+      function fixture(big = false, mounted = false, age, depth = .25) {
         boot(); const base = el('block', boxGeom([0.2,0.2,0.1]), [0,0,-0.1], I3, '#CDEFD9');
-        obstacle = cube(0,0,0,'#F4C28F'); obstacle.dyn = { c: [0,0,0.25], R:I3, t:0, sleep:1 };
+        obstacle = cube(0,0,0,'#F4C28F'); obstacle.dyn = { c: [0,0,depth], R:I3, t:0, sleep:1 };
+        if(age!==undefined)obstacle.dyn.age=age;
         testScrew = { p:[0,0,0], a:[0,0,1], thru:base, into:base, state:'in', color:0, t:0 };
+        if(mounted)testScrew.skinMount={p:testScrew.p,a:testScrew.a};
         const els = [base,obstacle];
         if (big) for(let i=0;i<350;i++) els.push(el('plate',boxGeom([0.001,0.001,0.001]),[20+i,0,0],I3,'#D9DEEE'));
         state.lvl = mapLevel({ name:'가림 검사', els, screws:[testScrew], queue:[0] });
@@ -191,6 +193,15 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
       await page.evaluate(() => screwTest.tap(180, 392));
       assert.equal((await page.evaluate(() => screwTest.covered())).state, 'out', 'cleared screw can be unscrewed immediately');
     }
+    for(const big of [false,true]){
+      await page.evaluate(big=>screwTest.fixture(big,true,0,.95),big);
+      assert.equal((await page.evaluate(()=>screwTest.covered())).visible,0);
+      await page.evaluate(()=>screwTest.tap(180,392));
+      assert.equal((await page.evaluate(()=>screwTest.covered())).state,'in','touch assistance cannot reach a covered surface mount');
+      await page.evaluate(()=>screwTest.move(.8));
+      await page.evaluate(()=>screwTest.tap(180,392));
+      assert.equal((await page.evaluate(()=>screwTest.covered())).state,'out','moving away uncovers the same mount');
+    }
     await page.evaluate(() => screwTest.fixture());
     assert.deepEqual(await page.evaluate(() => screwTest.xray()), {visible:true,blocked:true}, 'intentional x-ray reveals the screw while keeping its physical blocker');
     const play = await page.evaluate(() => screwTest.tutorials());
@@ -210,7 +221,7 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     const rabbit=await page.evaluate(() => screwTest.rabbitOcclusion());
     assert.ok(rabbit.every(s=>s.plates===0&&s.unclipped===0&&s.front>0&&s.hidden>0),
       `curved rabbit must hide rear details and detached square plates: ${JSON.stringify(rabbit)}`);
-    const userFlow=await page.evaluate(async()=>{localStorage.clear();localStorage.setItem(STAGE_KEY,'20');const r=await play(20,4,31676,true);last.game.destroy();return r;});
+    const userFlow=await page.evaluate(async()=>{localStorage.clear();const r=await play(20,4,31676,true);last.game.destroy();return r;});
     assert.ok(userFlow.cleared&&userFlow.clicks===123&&userFlow.boxes.length===2&&userFlow.buffer===5,
       'seed4 must finish all stage-20 fasteners with the current two boxes and five buffer slots: '+JSON.stringify(userFlow));
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
