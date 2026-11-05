@@ -1,13 +1,13 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-restaurants-slot11-extra1';
+ const revision='20261106-restaurants-slot12-1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   byeolcheonji:'1.0.3',
   festival:'1.3.1',
-  restaurants:'1.9.18',
+  restaurants:'1.9.19',
   recommendations:'1.5.4',
   archery:'3.1.1',
   roulette:'1.8.3',
