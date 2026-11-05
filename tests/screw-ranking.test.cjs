@@ -10,8 +10,9 @@ function fixture(){
  const context=vm.createContext({console,Promise,Number,Math,crypto:require('node:crypto'),localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},performance:{now:()=>1},
   worldRewardOwner:()=>owner,worldRewardRequest:()=>({owner}),worldRewardCurrent:r=>r.owner===owner,
   tf:async(game,score,request)=>{calls.push({game,score,request});return submit(game,score,request);},
+  vl:async(name,args,request)=>{assert.equal(name,'submit_screw_box_score');calls.push({game:'screw_box',score:args.p_score,request,runId:args.p_run_id});return submit('screw_box',args.p_score,request);},
   setTimeout:(resolve,delay)=>timers.push({resolve,delay}),M:message=>messages.push(message),
-  window:{addEventListener:noop,removeEventListener:noop},document:{getElementById:()=>null,querySelector:()=>null,body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
+  window:{addEventListener:noop,removeEventListener:noop,dispatchEvent:noop},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},document:{getElementById:()=>null,querySelector:()=>null,body:{classList:{remove:noop}}},cancelAnimationFrame:noop,
   worldGameAssetRequest:0,worldClosingGames:null,worldRecommendedRestaurants:null,R:null,G2:{},D:{user:{id:owner}},$: {},Cn:()=>false,ti:noop,sf:noop,
   gt:{arcadeEnd:noop},_r:{screw:{unit:'점'}},w:String,nf:noop,B2:noop});
  vm.runInContext(part('function pendingScrewScore(', 'async function _2(')+
@@ -74,7 +75,8 @@ function fixture(){
  const secondRun=lifecycle.session('box');await lifecycle.context._2();secondRun.api.setScore(45);
  lifecycle.context.M2({target:{closest:()=>({dataset:{g:'screw-modes'}})}});await tick();
  assert.equal(secondRun.game,null);assert.equal(lifecycle.calls[1].game,'screw_box');assert.equal(lifecycle.calls[1].score,45);
- assert.equal(lifecycle.storage.size,0,'acknowledged records leave no replay entry');
+ assert.equal(lifecycle.storage.size,1,'acknowledged box points preserve only the durable cumulative total');
+ assert.deepEqual(JSON.parse(lifecycle.storage.get('ojjuda-screw-box-cumulative-v1:member-a'))?.total,45,'box score remains cumulative for later sessions');
  const finalRun=lifecycle.session();await lifecycle.context._2();finalRun.api.setScore(100);await finalRun.api.saveScore(100);await finalRun.api.end(100);
  assert.equal(lifecycle.calls.filter(c=>c.score===100).length,1,'the final screen reuses the checkpoint receipt');
  assert.equal(finalRun.running,false);
@@ -89,7 +91,8 @@ function fixture(){
  const recoveredPage=fixture();for(const entry of interrupted.storage)recoveredPage.storage.set(...entry);
  recoveredPage.context.S={};recoveredPage.context.resumeScrewScores();await tick();
  assert.equal(recoveredPage.calls[0].score,37,'a new page retries an interrupted record when rankings mount');
- assert.equal(recoveredPage.storage.size,0,'successful recovery clears only the acknowledged record');
+ assert.equal(recoveredPage.storage.has('ojjuda-screw-pending:member-a:screw_flat'),false,'successful recovery clears only the acknowledged flat record');
+ assert.equal(recoveredPage.storage.has('ojjuda-screw-box-cumulative-v1:member-a'),true,'box cumulative state remains available across page loads');
  const differentAccount=fixture();for(const entry of interrupted.storage)differentAccount.storage.set(...entry);
  differentAccount.context.S={};differentAccount.setOwner('member-b');differentAccount.context.resumeScrewScores();await tick();
  assert.equal(differentAccount.calls.length,0,'another account never replays the previous account’s queued points');
