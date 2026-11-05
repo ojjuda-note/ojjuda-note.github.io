@@ -123,7 +123,7 @@ function writeRoute({ push = false } = {}) {
   Object.entries(values).forEach(([key, value]) => { if (value) url.searchParams.set(key, value); });
   if (url.href !== location.href) {
     try {
-      const method = push ? 'pushState' : 'replaceState';
+      const method = push && window.top === window ? 'pushState' : 'replaceState';
       history[method]({ ...history.state, festivalEvent: currentEventId || null }, '', url);
     } catch { /* Navigation state is optional in restricted embedded browsers. */ }
   }
@@ -437,6 +437,13 @@ function bindInteractions() {
   $('region').addEventListener('change', () => updateState({ region: $('region').value, selectedDate: '' }, { fit: true }));
   $('period').addEventListener('change', () => selectPeriod($('period').value));
   $('sort').addEventListener('change', () => updateState({ sort: $('sort').value }));
+  if (window.top !== window) {
+    document.querySelector('.brand').addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      resetFilters();
+    });
+  }
   $('reset').addEventListener('click', resetFilters);
   $('saved-toggle').addEventListener('click', () => {
     if (state.savedOnly) { resetFilters(); return; }

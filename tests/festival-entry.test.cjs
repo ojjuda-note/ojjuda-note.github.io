@@ -33,8 +33,8 @@ function bridgeFixture(){
  class Element extends EventTarget{
   constructor(tag){super();this.tagName=tag;this.isConnected=false;this.open=false;this.attributes={};}
   setAttribute(name,value){this.attributes[name]=value;}
-  set innerHTML(html){this.homeLink=new Element('a');this.homeLink.href='/world.html';this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
-  querySelector(selector){return selector==='iframe'?this.frame:selector==='.agit-home-link'?this.homeLink:null;}
+  set innerHTML(html){this.backButton=new Element('button');this.homeLink=new Element('a');this.homeLink.href='/world.html';this.frame=new Element('iframe');this.frame.src=html.match(/<iframe[^>]*src="([^"]+)"/)[1];}
+  querySelector(selector){return selector==='iframe'?this.frame:selector==='.agit-home-link'?this.homeLink:selector==='header button'?this.backButton:null;}
   showModal(){this.open=true;}close(){this.open=false;}remove(){this.isConnected=false;}
   focus(){focused=this;document.activeElement=this;}click(){this.dispatchEvent(new Event('click'));}
  }
@@ -52,7 +52,7 @@ assert.equal(f.focused(),first.homeLink,'the Agit home link receives initial foc
 assert.match(first.frame.src,/^\/games\/festival-schedule\/index\.html\?v=[^&]+&embedded=1$/,'the page stays on the arcade origin');
 assert.equal(first.attributes['aria-label'],'축제일정 · 테스트');
 f.api.open({owner:'member-a'});assert.equal(f.nodes.length,1,'duplicate open reuses the active dialog');
-assert.equal(first.homeLink.href,'/world.html','the logo links to Agit home');f.api.close();assert.equal(first.isConnected,false);assert.equal(first.open,false);
+assert.equal(first.homeLink.href,'/world.html','the logo links to Agit home');first.backButton.click();assert.equal(first.isConnected,false);assert.equal(first.open,false);
 assert.equal(first.frame.src,'about:blank','closing unloads the map document');
 assert.equal(f.document.body.classList.contains('gaming'),false);assert.equal(f.focused(),f.previous);
 f.api.close();assert.equal(f.nodes.length,1,'repeated close is harmless');
@@ -115,12 +115,12 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.3.0');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.3.1');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
  assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalRevision,'iframe and bridge use the same independent cache revision');
  assert.equal(world.match(/var Go="([^"]+)"/)?.[1],JSON.parse(read('version.json')).version,'the separate Agit version remains internally consistent');
- assert.ok(world.includes('.tour-game-dialog[open]>.tour-game-header button'),'app back can use the standard return control');
+ assert.ok(world.includes("gameDialog.dispatchEvent(new Event('cancel'")&&bridge.includes("addEventListener('cancel'"),'app Back runs the festival exit handler');
  console.log('PASS: festival test-only entry, lazy cold routing, isolated account access, iframe cleanup, focus return and independent release');
 })().catch(error=>{console.error(error);process.exitCode=1;});

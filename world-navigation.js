@@ -6,7 +6,13 @@
       let initialized = false, returning = false, handling = false, departing = false;
       let gesture = null, suppressClickUntil = 0, edgeReturn = null;
       const state = page => ({...(history.state || {}), ojjudaWorld: page});
-      const pushMenu = () => history.pushState(state('menu'), '', location.href);
+      let menuHref;
+      const pushMenu = (href = location.href) => {
+        const mainUrl = options.isMain() && options.arcadeReturnUrl?.();
+        if (mainUrl) history.replaceState(state('main'), '', mainUrl);
+        menuHref = href;
+        history.pushState(state('menu'), '', href);
+      };
       const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
       const back = () => {
         if (options.closeOverlay()) return true;
@@ -38,7 +44,7 @@
         handling = true;
         try { if (!programmatic) back(); }
         finally { handling = false; }
-        if (needsEntry()) pushMenu();
+        if (needsEntry()) pushMenu(menuHref);
         else history.replaceState(state('main'), '', location.href);
       });
       window.addEventListener('pagehide', () => { departing = true; returning = false; reset(); }, { capture: true });
@@ -183,6 +189,12 @@
         return ()=>{reset();for(const remove of removers)remove();doc.defaultView?.removeEventListener('blur',reset);};
       }
       attachDocument(document);
+      document.addEventListener('click', event => {
+        if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (!options.isMain() || !event.target.closest?.('.festival-schedule-dialog .agit-home-link,.restaurant-guide-dialog .agit-home-link')) return;
+        event.preventDefault();
+        back();
+      });
       return {sync, back, attachDocument, step};
     }
   };

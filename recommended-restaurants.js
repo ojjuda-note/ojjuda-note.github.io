@@ -103,7 +103,7 @@
     }
   }
 
-  function create({ client, getUser, notify = () => {}, onLogin, returnLabel = '' } = {}) {
+  function create({ client, getUser, notify = () => {}, onLogin, returnLabel = '', onReturn } = {}) {
     let current = null, destroyed = false, authSubscription = null;
     let mapGeneration = 0;
     const mapReads = new Set(), changeListeners = new Set();
@@ -737,15 +737,15 @@
       observeAuth();
       const dialog = hook(node('dialog', 'recommended-restaurants-dialog'), 'dialog'); dialog.setAttribute('aria-label', '회원 추천맛집');
       const header = node('header', 'rr-header'), backButton = button('←', 'rr-header-button', 'back'), heading = node('h1', '', '추천맛집'), closeButton = button('×', 'rr-header-button', 'close');
-      backButton.setAttribute('aria-label', '이전 화면으로'); closeButton.setAttribute('aria-label', '추천맛집 닫기');
+      backButton.setAttribute('aria-label', onReturn ? '오락실로 돌아가기' : '이전 화면으로'); closeButton.setAttribute('aria-label', '추천맛집 닫기');
       if (returnLabel) { closeButton.textContent = '← ' + returnLabel; closeButton.classList.add('rr-return-button'); closeButton.setAttribute('aria-label', returnLabel + '으로 돌아가기'); }
       header.append(backButton, heading, closeButton);
       const cleanupStatus = hook(node('aside', 'rr-cleanup-status'), 'cleanup-status'); cleanupStatus.hidden = true; cleanupStatus.setAttribute('role', 'status');
       const body = node('main', 'rr-body'); dialog.append(header, cleanupStatus, body);
       const session = { owner, dialog, body, heading, cleanupStatus, back: backButton, previousFocus: document.activeElement, previousOverflow: document.body.style.overflow, wasGaming: document.body.classList.contains('gaming'), disposed: false, view: 0, screen: 'list', reads: new Set(), filters: { query: '', category: '', region: '', mine: false }, rows: [], total: null, listVersion: 0, listBusy: false, busy: false, editor: null, detail: null, confirm: null };
       current = session;
-      backButton.onclick = () => void back(session); closeButton.onclick = () => close();
-      dialog.addEventListener('cancel', event => { event.preventDefault(); if (session.screen === 'list') close(); else void back(session); });
+      backButton.onclick = onReturn || (() => void back(session)); closeButton.onclick = onReturn || (() => close());
+      dialog.addEventListener('cancel', event => { event.preventDefault(); if (onReturn) onReturn(); else if (session.screen === 'list') close(); else void back(session); });
       dialog.addEventListener('keydown', event => { if (event.key === 'Escape') event.stopPropagation(); });
       session.authTimer = setInterval(() => { if (current === session && memberId() !== owner) close(true); }, 750);
       document.body.append(dialog); document.body.style.overflow = 'hidden'; document.body.classList.add('gaming'); dialog.showModal();
