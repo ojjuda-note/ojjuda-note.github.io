@@ -14,7 +14,7 @@ if(isMainThread){
  }))).then(results=>{
   assert.deepEqual(results.flatMap(r=>r.failures),[],'every stage must have a free solution with visible screw collisions');
   assert.equal(results.reduce((n,r)=>n+r.count,0),988);
-  console.log('PASS: all 988 advanced stages physically clear with progressive spare holes, no items, and the certified move budgets.');
+  console.log('PASS: all 988 advanced stages physically clear with only three free spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
  const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js'),{solve}=require('./helpers/flat-solution-search.cjs'),failures=[];let checked=0;
