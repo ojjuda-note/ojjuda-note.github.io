@@ -106,7 +106,7 @@ function play(game,[id,to,wait],expectBlocked=false){
 }
 // The old certified routes allowed lifting a screw before picking its new
 // hole. Verify new, separately found atomic routes through actual two-tap UI.
-const atomicWitnessSeeds=new Map([[12,96],[18,0],[26,101]]);
+const atomicWitnessSeeds=new Map([[12,0],[18,0],[26,0]]);
 for(const [stage,seed] of atomicWitnessSeeds){
  const game=Game.flat({setScore(){},end(){}},stage);
  const result=solveAtomic(stage,undefined,seed),route=result.route.map(({screw,to,wait})=>[screw,to,wait]);
@@ -124,7 +124,7 @@ for(const [stage,seed] of atomicWitnessSeeds){
 async function itemRecovery(){
  let bought=0,failures=0;
  const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){failures++;},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
- const game=Game.flat(api,26),st=game.state,route=solveAtomic(26,undefined,101).route.map(({screw,to,wait})=>[screw,to,wait]);await new Promise(resolve=>setImmediate(resolve));
+ const game=Game.flat(api,26),st=game.state,route=solveAtomic(26,undefined,0).route.map(({screw,to,wait})=>[screw,to,wait]);await new Promise(resolve=>setImmediate(resolve));
  for(const step of route.slice(0,-1))play(game,step);
  assert.equal(st.complete,false,'the final screw still supports metal');
  st.moves=st.moveLimit;
