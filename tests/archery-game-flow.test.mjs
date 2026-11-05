@@ -3,13 +3,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { STAGES as STAGE_FIXTURES } from '../games/forest-archer/engine.mjs';
+import { DISTANCE_STAGES as STAGE_FIXTURES } from '../games/forest-archer/engine.mjs';
 import { drawPasser } from '../games/forest-archer/scenery.mjs';
 
-const SAVE_KEY = 'forest-archer-progress-single-v5';
+const SAVE_KEY = 'forest-archer-progress-distance-v5';
 const PREVIOUS_SAVE_KEY = 'forest-archer-progress-v3';
 const LEGACY_SAVE_KEY = 'forest-archer-progress-v2';
-const STAGE_CATALOG = 'missions-220-v1';
+const STAGE_CATALOG = 'missions-220-distance-v1';
 const FIREARM_CATALOG = 'snipers-bullets-v1';
 const PREVIOUS_STAGE_CATALOG = 'missions-120-v1';
 const REORDERED_STAGE_CATALOG = 'missions-120-v2';
@@ -270,7 +270,7 @@ async function enterScene(app, scene) {
     wall: entry => entry.coverageMode === 'side-walls' && !entry.motion.speed,
     pillar: entry => entry.coverageMode === 'pillars' && entry.motion.speed > 0
   };
-  const stage = app.engine.STAGES.find(entry => sceneMatches[scene] ? sceneMatches[scene](entry) : entry.kind === scene);
+  const stage = app.engine.DISTANCE_STAGES.find(entry => sceneMatches[scene] ? sceneMatches[scene](entry) : entry.kind === scene);
   assert.ok(stage, `${scene} scene is available in the learning progression`);
   clearFixtureBefore(app, stage.id);app.api.startStage(stage.id);
   await app.flush();
@@ -448,10 +448,11 @@ function paintedPersonBlocks(person, target, time, player) {
 }
 
 async function equipMainGun(app, id = 20) {
+  const stageId = app.api.state.stage.id;
   assert.ok(app.api.progress.ownedBows.includes(id), 'the gun fixture owns its selected equipment');
   app.api.showShop('bow');app.api.equipItem(id);app.api.closeModal();await app.flush();
   assert.equal(app.api.activeBow().id, id);assert.equal(app.api.activeBow().weaponType, 'gun');
-  assert.equal(!!app.api.state.isEvent, false);assert.equal(app.api.state.stage.kind, 'target');
+  assert.equal(!!app.api.state.isEvent, false);assert.equal(app.api.state.stage.id, stageId);
   app.until(() => app.api.state.reloadRemaining === 0);
 }
 
@@ -574,7 +575,7 @@ test('the wind HUD distinguishes calm, either direction and tiny nonzero wind wi
     [.038, '→ 오른쪽 바람 0.038'], [-.038, '← 왼쪽 바람 0.038'],
     [.0004, '→ 오른쪽 바람 0.0004'], [-.0004, '← 왼쪽 바람 0.0004']
   ]) {
-    app.api.resetRound({...app.engine.STAGES[0], wind});await app.flush();
+    app.api.resetRound({...app.engine.DISTANCE_STAGES[0], wind});await app.flush();
     assert.equal(app.api.state.stage.wind, wind, 'formatting never changes the real wind');
     assert.equal(app.getElement('windLabel').textContent, label);
     if (wind) assert.doesNotMatch(label, /바람 0(?:\.0+)?$/, 'a real breeze must never appear as zero');
@@ -587,6 +588,7 @@ test('all four wind lessons retain their real wind and readable direction throug
     [30, -1.2, '← 왼쪽 바람 1.2'], [50, 1.3, '→ 오른쪽 바람 1.3']]
     .map(([distance, wind, label]) => [lessonStageId('wind-intro', distance), wind, label]);
   for (const [id, wind, label] of lessons) {
+    clearFixtureBefore(app, id);app.api.startStage(id);await app.flush();
     assert.equal(app.api.state.stage.id, id);assert.equal(app.api.state.stage.wind, wind);
     assert.equal(app.getElement('windLabel').textContent, label);
     app.getElement('menuBtn').emit('click');modalAction(app, 'retry');await app.flush();
@@ -597,6 +599,7 @@ test('all four wind lessons retain their real wind and readable direction throug
       app.api.finishRound();await app.flush();
       assert.equal(modalActionDisabled(app, 'next-stage'), false);
       modalAction(app, 'next-stage');await app.flush();
+      assert.equal(app.api.state.stage.id, id + 1);
     }
   }
   const resumed = await appHarness(app.snapshot());
@@ -948,8 +951,8 @@ test('both special arrows can be compared, bought once and equipped again after 
 
 for (const fixture of [
   // Aim at the physical 1.22m face, rather than the former oversized rim.
-  { id: 12, stage: 3, charge: 1, yaw: 0, pitch: -.201, effect: '1회 튕김' },
-  { id: 13, stage: 2, charge: 1, yaw: .0275, pitch: .048, effect: '근접 유도' }
+  { id: 12, stage: lessonStageId('fixed-intro', 30), charge: 1, yaw: 0, pitch: -.201, effect: '1회 튕김' },
+  { id: 13, stage: lessonStageId('fixed-intro', 20), charge: 1, yaw: .0275, pitch: .048, effect: '근접 유도' }
 ]) test(`special arrow ${fixture.id} keeps one touch, one flight and one reward through its physical effect`, async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false }));
   const { state } = app.api, pad = app.getElement('aimTouchpad');
@@ -1336,7 +1339,7 @@ test('moving-target replay follows recorded time through resizing and preserves 
   assert.deepEqual(shotAccounting(app).slice(0, 5), [1, 10, 1, 1, 1]);
 });
 
-for (const fixture of [{id: 12, bow: 11, stage: 4, charge: 1, pitch: -.1959}, {id: 13, bow: 0, stage: 2, charge: 1, pitch: .066}]) {
+for (const fixture of [{id: 12, bow: 11, stage: lessonStageId('fixed-intro', 50), charge: 1, pitch: -.1959}, {id: 13, bow: 0, stage: lessonStageId('fixed-intro', 20), charge: 1, pitch: .066}]) {
   test(`a genuine special-arrow ${fixture.id} bullseye replays its resolved path without repeating its ability`, async () => {
     const app = await appHarness(progressForStage({version: 1, stageCatalog: STAGE_CATALOG, coins: 100, ownedBows: fixture.bow ? [0, fixture.bow] : [0], bow: fixture.bow, ownedArrows: [0, fixture.id], arrow: fixture.id, lastStage: fixture.stage, sound: false}));
     const {state} = app.api, pad = app.getElement('aimTouchpad');
@@ -1376,7 +1379,7 @@ test('a new round discards an active replay and old recorded frames without repl
   const {pad, coords} = preciseMainDraw(app);pad.emit('pointerup', coords);await app.flush();
   app.until(() => state.mode === 'settling');assert.ok(state.cinematic);
   const old = state.shot, coins = app.api.progress.coins;
-  app.api.resetRound(app.engine.STAGES[0]);await app.flush();app.frames(3);
+  app.api.resetRound(app.engine.DISTANCE_STAGES[0]);await app.flush();app.frames(3);
   assert.equal(state.cinematic, null);assert.equal(state.shot, null);assert.equal(state.mode, 'ready');
   assert.equal(state.targetMarks.length, 0);assert.equal(state.effects.length, 0);assert.equal(state.used, 0);
   assert.equal(app.getElement('gameCanvas').dataset.cinematic, 'none');
@@ -1829,6 +1832,26 @@ test('expanded save validation accepts real catalog IDs and rejects invalid or u
   assert.equal(app.api.progress.unlocked, 2);assert.equal(app.api.state.stage.id, 2);
 });
 
+test('the distance course imports released mission scores and equipment once and resumes the right target', async () => {
+  const old = {version:1, launchEpoch:5, stageCatalog:'missions-220-v1', coins:537,
+    firearmCatalog:FIREARM_CATALOG, ownedBows:[0,4], bow:4, lastStage:2, best:{1:32,2:21,3:5}};
+  const store = new Map([['forest-archer-progress-single-v5', JSON.stringify(old)]]);
+  const app = await appHarness(null, {store});
+  const selected = lessonStageId('fixed-intro', 20);
+  assert.equal(app.api.state.stage.id, selected);
+  assert.equal(app.api.state.stage.distance, 20);
+  assert.equal(app.api.progress.unlocked, 2);
+  assert.deepEqual({...app.api.progress.best}, {1:32, [selected]:21, [lessonStageId('fixed-intro',30)]:5});
+  assert.equal(app.api.progress.coins, 537);
+  assert.equal(app.api.activeBow().id, 4);
+  const first = app.snapshot();
+  store.set('forest-archer-progress-single-v5', JSON.stringify({...old,coins:0,best:{}}));
+  const reopened = await appHarness(null, {store});
+  assert.deepEqual(reopened.snapshot().best, first.best);
+  assert.equal(reopened.api.progress.coins, 537);
+  assert.equal(reopened.api.state.stage.id, selected);
+});
+
 test('sequential stage locks cover the full picker, journey buttons, forged selections and direct round entry', async () => {
   const app = await appHarness({version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 201,
     coins: 375, shots: 80, hits: 63});
@@ -1844,18 +1867,18 @@ test('sequential stage locks cover the full picker, journey buttons, forged sele
   assert.deepEqual(ids(html), expected);
   for (const label of ['고정', '움직이는', '벽', '기둥', '토끼', '살쾡이', '사슴', '비둘기', '독수리', '치타'])
     assert.ok(html.includes(label), `${label} lessons remain identifiable while locked`);
-  assert.equal((html.match(/class="stage-section-title"/g) || []).length, 50);
-  assert.deepEqual(Array.from(html.matchAll(/data-stage-range="(\d+)"/g), match => Number(match[1])), [1, 21, 49, 106]);
+  assert.equal((html.match(/class="stage-section-title"/g) || []).length, app.engine.DISTANCE_GROUPS.length);
+  assert.deepEqual(Array.from(html.matchAll(/data-stage-range="(\d+)"/g), match => Number(match[1])), Array.from(app.engine.DISTANCE_GROUPS, group => group.first));
   for (const content of [journey, html]) for (const match of content.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>/g))
     assert.equal(/\bdisabled\b/.test(match[0]), Number(match[1]) !== 1, `only stage 1 starts open; checked ${match[1]}`);
   for (const card of html.matchAll(/<button\b[^>]*data-stage="(\d+)"[^>]*>[\s\S]*?<\/button>/g))
-    assert.ok(card[0].includes(`목표 점수 ${app.engine.STAGES[Number(card[1])-1].goal}점`));
+    assert.ok(card[0].includes(`목표 점수 ${app.engine.DISTANCE_STAGES[Number(card[1])-1].goal}점`));
   assert.doesNotMatch(html, /모든 단계를 자유롭게/);
   const starts = app.ammo.requests.filter(request => request.action === 'round-start').length;
   const button = app.getElement('forgedStage');button.tagName = 'BUTTON';
   for (const id of [2, 150, 201, STAGE_COUNT, 0, -1, 1.5, NaN, STAGE_COUNT + 1]) {
     button.dataset.stage = String(id);app.document.emit('click', {target: button});app.api.startStage(id);
-    if (Number.isInteger(id) && id > 0 && id <= STAGE_COUNT) app.api.resetRound(app.engine.STAGES[id - 1]);
+    if (Number.isInteger(id) && id > 0 && id <= STAGE_COUNT) app.api.resetRound(app.engine.DISTANCE_STAGES[id - 1]);
     await app.flush();assert.equal(app.api.state.stage.id, 1);assert.equal(app.snapshot().lastStage, 1);
   }
   assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts);
@@ -1920,7 +1943,7 @@ test('sequential stage locks advance past preserved real clears when their earli
   app.api.startStage(5);await app.flush();assert.equal(app.api.state.stage.id, 4);
 });
 
-test('the former final mission continues into mission 121 and both records survive another visit', async () => {
+test('mission 120 continues into mission 121 and both records survive another visit', async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, coins: 400,
     lastStage: 120, mainRounds: 2, best: { 5: 32, 120: 46 }, sound: false }));
   const { state } = app.api;
@@ -1930,7 +1953,7 @@ test('the former final mission continues into mission 121 and both records survi
   modalAction(app, 'next-stage');modalAction(app, 'next-stage');await app.flush();
   assert.equal(state.isEvent, false);assert.equal(state.stage.id, 121);assert.equal(state.modal, null);
   assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').length, starts + 1);
-  assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').at(-1).stage, 121);
+  assert.equal(app.ammo.requests.filter(request => request.action === 'round-start').at(-1).stage, STAGE_FIXTURES[120].recordId);
   assert.equal(app.api.progress.best[121], undefined, 'entering a new mission does not fabricate a completion record');
   state.score = 50;state.used = 5;state.hits = 5;app.api.finishRound();await app.flush();
   assert.equal(app.api.progress.mainRounds, 4);assert.equal(app.api.progress.coins, 437,
@@ -1938,7 +1961,7 @@ test('the former final mission continues into mission 121 and both records survi
   const reloaded = await appHarness(app.snapshot(), { server: app.ammo });
   assert.equal(reloaded.api.state.stage.id, 121);assert.equal(reloaded.api.progress.unlocked, 122);
   assert.deepEqual({ ...reloaded.api.progress.best }, {...clearsBefore(120), 5: 32, 120: 50, 121: 50});
-  assert.equal(reloaded.ammo.requests.filter(request => request.action === 'round-start').at(-1).stage, 121);
+  assert.equal(reloaded.ammo.requests.filter(request => request.action === 'round-start').at(-1).stage, STAGE_FIXTURES[120].recordId);
 });
 
 test('the Next button reaches mission 220 and final records survive reload without creating mission 221', async () => {
@@ -1962,7 +1985,7 @@ test('the Next button reaches mission 220 and final records survive reload witho
   await complete();
   assert.equal(app.api.progress.unlocked, STAGE_COUNT, 'the final clear never creates mission 221');
   assert.equal(app.api.progress.best[STAGE_COUNT], 50);
-  assert.deepEqual(app.ammo.requests.filter(request => request.action === 'round-complete').map(request => request.stage), [STAGE_COUNT - 1, STAGE_COUNT]);
+  assert.deepEqual(app.ammo.requests.filter(request => request.action === 'round-complete').map(request => request.stage), STAGE_FIXTURES.slice(-2).map(stage => stage.recordId));
   assert.match(app.getElement('modalContent').innerHTML, /data-action="next-stage"[^>]*\bdisabled\b/);
   const reloaded = await appHarness(app.snapshot());
   assert.equal(reloaded.api.progress.unlocked, STAGE_COUNT);assert.equal(reloaded.api.state.stage.id, STAGE_COUNT);
@@ -2356,7 +2379,7 @@ test('mounted scopes provide real threefold zoom only on the bow that owns them'
 for (const [width, height] of [[1000, 600], [390, 410], [844, 280]]) for (const magnification of [2, 3, 6, 8]) {
   test(`a ${magnification}× scope enlarges the target and preserves aim, reticle and controls in a ${width}×${height} view`, async () => {
     const app = await appHarness({ version: 1, stageCatalog: STAGE_CATALOG, coins: 100000, ownedBows: [0, 19], ownedArrows: [0, 1], bow: 19 });
-    const staticStage = app.engine.STAGES.find(stage => stage.kind === 'target' && !stage.motion?.amplitudeX && !stage.motion?.amplitudeY && !stage.obstacles.length && stage.distance >= 150);
+    const staticStage = app.engine.DISTANCE_STAGES.find(stage => stage.kind === 'target' && !stage.motion?.amplitudeX && !stage.motion?.amplitudeY && !stage.obstacles.length && stage.distance >= 150);
     assert.ok(staticStage, 'the range includes an unobstructed static target for checking magnification');
     app.resize(width, height);clearFixtureBefore(app, staticStage.id);app.api.startStage(staticStage.id);await app.flush();
     const {state} = app.api, originalAim = {...state.aim};
@@ -2580,7 +2603,7 @@ test('laser calibration starts collapsed and closes on Escape, menu, reset and a
   open();app.document.emit('click', { target: close });assertClosed();assert.equal(app.document.activeElement, adjust);
   open();app.document.emit('keydown', { code: 'Escape' });assertClosed();assert.equal(app.document.activeElement, adjust);
   open();app.getElement('menuBtn').emit('click');assertClosed();app.api.closeModal();await app.flush();
-  open();app.api.resetRound(app.engine.STAGES[0]);await app.flush();assertClosed();
+  open();app.api.resetRound(app.engine.DISTANCE_STAGES[0]);await app.flush();assertClosed();
   open();const pad = app.getElement('aimTouchpad');pad.emit('pointerdown');app.frames(20);assertClosed();
   assert.equal(app.api.state.mode, 'drawing');assert.equal(app.api.openLaserAdjustments(), false);
   const forged = app.getElement('forged-open-laser');forged.tagName = 'BUTTON';forged.dataset.laserAction = 'open';
@@ -3699,7 +3722,7 @@ test('stabilizers never consume stock during arrow or bullet flight, previews, r
   const cases = [
     {name: 'arrow flight', prepare: async app => {app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');assert.equal(app.api.state.mode, 'flight');}},
     {name: 'bullet flight', prepare: async app => {await equipMainGun(app);app.getElement('aimTouchpad').emit('pointerdown');app.getElement('aimTouchpad').emit('pointerup');assert.equal(app.api.state.mode, 'flight');assert.equal(app.api.state.shot.projectileType, 'bullet');}},
-    {name: 'preview', prepare: async app => {const id = app.engine.STAGES.find(stage => stage.obstacles.length).id;clearFixtureBefore(app, id);app.api.startStage(id);await app.flush();assert.equal(app.api.state.mode, 'preview');}},
+    {name: 'preview', prepare: async app => {const id = app.engine.DISTANCE_STAGES.find(stage => stage.obstacles.length).id;clearFixtureBefore(app, id);app.api.startStage(id);await app.flush();assert.equal(app.api.state.mode, 'preview');}},
     {name: 'result', prepare: async app => {app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.mode, 'finished');}},
     {name: 'record save', hold: ['round-complete'], prepare: async app => {app.api.state.used = 5;app.api.finishRound();await app.flush();assert.equal(app.api.state.roundSaving, true);}},
     {name: 'registration', hold: ['round-start'], prepare: async app => assert.equal(app.api.state.registering, true)},
@@ -4162,7 +4185,7 @@ test('cancel, blur and a hidden document clear the ten-second deadline safely', 
 
 test('every stage shares real-time arrow, target and scenery time from the first flight frame', async () => {
   const first = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false }));
-  for (const stage of first.engine.STAGES) {
+  for (const stage of first.engine.DISTANCE_STAGES) {
     // Each fixture starts independently; real navigation now waits for a shot to land.
     const app = stage.id === 1 ? first : await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: stage.id, sound: false }));
     app.until(() => app.api.state.mode === 'ready');
@@ -4497,7 +4520,7 @@ for (const reducedMotion of [false, true]) test(`a wall-stage bullseye keeps its
 
 test('near-target walkers and crowds visibly cover the real target while preserving timed shooting gaps at every distance', async () => {
   const app = await appHarness(), engine = app.engine;
-  const lessons = engine.STAGES.filter(stage => stage.passers.length);
+  const lessons = engine.DISTANCE_STAGES.filter(stage => stage.passers.length);
   assert.deepEqual([...new Set(Array.from(lessons, stage => stage.distance))].sort((a, b) => a - b), [10, 20, 30, 50, 60, 80, 100, 120, 150]);
   const boxBlocks = (person, target) => {
     const fraction = (person.z - person.depth / 2) / target.z;
@@ -4550,7 +4573,7 @@ test('near-target walkers and crowds visibly cover the real target while preserv
 
 test('a walker reverses continuously and swept collision remains exact before, across and after its turn', async () => {
   const app = await appHarness(), engine = app.engine;
-  const stage = engine.prepareStage({ ...engine.STAGES[0], distance: 20, radius: 8, height: 2, wind: 0,
+  const stage = engine.prepareStage({ ...engine.DISTANCE_STAGES[0], distance: 20, radius: 8, height: 2, wind: 0,
     obstacles: [], passers: [{ id: 9, behavior: 'shuttle', z: 12, width: .03, height: 3, depth: .02, span: 2, passDuration: .6, phase: .5 }] }, 42);
   const first = engine.passersAt(stage, 0)[0], turn = first.passEnd, epsilon = 1e-6;
   const before = engine.passersAt(stage, turn - epsilon)[0], after = engine.passersAt(stage, turn + epsilon)[0];
@@ -5311,7 +5334,7 @@ test('multiple arrows on a moving target preserve separate impact offsets and en
 
 test('obstacle stages automatically reveal the real target above every wall, ignore shots, then restore aim', async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false }));
-  for (const template of app.engine.STAGES.filter(stage => stage.obstacles.length)) {
+  for (const template of app.engine.DISTANCE_STAGES.filter(stage => stage.obstacles.length)) {
     clearFixtureBefore(app, template.id);app.api.startStage(template.id);await app.flush();
     const stageId = app.api.state.stage.id;
     const { state } = app.api, baseCamera = { ...app.api.camera }, originalAim = { ...state.aim }, previewStart = app.now;
@@ -5353,7 +5376,7 @@ test('obstacle stages automatically reveal the real target above every wall, ign
 
 test('stages without obstacles stay immediately playable and do not expose an overview button', async () => {
   const app = await appHarness(progressForStage({ version: 1, stageCatalog: STAGE_CATALOG, unlocked: STAGE_COUNT, lastStage: 1, sound: false }));
-  for (const stage of app.engine.STAGES.filter(stage => stage.obstacles.length === 0)) {
+  for (const stage of app.engine.DISTANCE_STAGES.filter(stage => stage.obstacles.length === 0)) {
     clearFixtureBefore(app, stage.id);app.api.startStage(stage.id);await app.flush();
     assert.equal(app.api.state.mode, 'ready');
     assert.equal(app.getElement('previewBtn').classList.contains('hidden'), true);
@@ -5405,7 +5428,7 @@ test('a real partial burst adds ten and eight while a single person collision in
   for(const blocker of ['obstacle','person']){
     const app=await appHarness({version:1,stageCatalog:STAGE_CATALOG,ownedBows:[0,15],bow:15,coins:100,sound:false});
     const {state}=app.api,engine=app.engine;
-    app.api.resetRound({...engine.STAGES[0],radius:.6,obstacles:[],passers:[]});await app.flush();
+    app.api.resetRound({...engine.DISTANCE_STAGES[0],radius:.6,obstacles:[],passers:[]});await app.flush();
     const draw=preciseMainDraw(app),params=app.api.shotParams(),side=engine.launchVolley(params)[2],z=5;
     const flightTime=-Math.log1p(-side.dragRate*z/side.velocity.z)/side.dragRate;
     const sideX=side.velocity.x*-Math.expm1(-side.dragRate*flightTime)/side.dragRate;
@@ -5500,7 +5523,18 @@ test('real ten- and eight-point shots pay the requested stage rewards once and s
   for (const [stage,score,coins] of [[1,10,10],[2,10,11],[3,10,12],[4,10,13],[11,10,20],[11,8,9],[12,10,21],[12,8,10],[13,10,22],[13,8,11]]) {
     const app=await appHarness(progressForStage({version:1,stageCatalog:STAGE_CATALOG,coins:100,lastStage:stage,sound:false}));
     const {state}=app.api;app.until(()=>state.mode==='ready');
-    const draw=preciseMainDraw(app,score===8?{x:-.3,y:0}:{x:0,y:0});
+    let offset = score===8 ? {x:-.3,y:0} : {x:0,y:0}, aimAt;
+    if (state.stage.kind === 'rabbit') {
+      prepareAnimalCrossing(app);
+      offset = {x:0,y:0};
+      if (score===8) {
+        const target = app.engine.targetAt(state.stage,0);
+        const head = app.animals.scoreAnimalPoint({x:target.x + .59*target.radius*target.direction,
+          y:target.y + .1302*target.radius, z:target.z},target,0);
+        aimAt = arriving => app.engine.getAnimalAttachmentPoint(arriving,head.animalAttachment);
+      }
+    }
+    const draw = preciseMainDraw(app,offset,{aimAt});
     draw.pad.emit('pointerup',draw.coords);await app.flush();app.until(()=>state.mode==='settling');
     assert.equal(state.shot.result.score,score,`stage ${stage} actual hit`);
     assert.equal(app.api.progress.coins,100+coins,`stage ${stage}, score ${score}`);

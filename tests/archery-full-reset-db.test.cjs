@@ -49,6 +49,24 @@ test('archery epoch 5 resets all game records and purchases once, blocks old wri
   assert.equal((await action('status')).main_rounds,1,'redeploy never resets new progress');assert.equal((await coin(boughtId,10,'receipt')).receipt.game_coins,100);
   assert.equal((await admin('select coins from user_private where user_id=$1',[user])).rows[0].coins,wallet-10);
   await assert.rejects(db.query('select * from ojjuda_archery_internal.coin_exchange_receipts'),/permission denied/);
+  await db.exec('reset role');
+  await db.exec(migration('_archery_distance_order.sql'));
+  const {DISTANCE_STAGES} = await import('../games/forest-archer/engine.mjs');
+  const course = await db.query('select ojjuda_archery_internal.course_stage(n) as stage from generate_series(1,220) n order by n');
+  assert.deepEqual(course.rows.map(row=>row.stage), [...DISTANCE_STAGES].sort((a,b)=>a.recordId-b.recordId).map(stage=>stage.id));
+  await db.exec('set role authenticated');
+  // Old mission 2 is now farther along than mission 13. Both past and new runs
+  // must be ranked by the displayed stage, even when its round score is lower.
+  for (const [recordId,score] of [[2,20],[13,50]]) {
+    const start = await action('round-start',5,randomUUID(),null,recordId);
+    await admin("update ojjuda_archery_internal.runs set started_at=clock_timestamp()-interval '10 seconds' where run_id=$1",[start.run_id]);
+    assert.equal((await action('round-complete',5,randomUUID(),start.run_id,recordId,score)).ranked,true);
+  }
+  const ranked = await rpc('community_game_ranking',['archery']);
+  assert.equal(ranked[0].score,20);
+  const candidate = await admin("select priority,details from ojjuda_ranking_internal.candidates('archery','-infinity','infinity')");
+  const expectedStage = DISTANCE_STAGES.find(stage=>stage.recordId===2).id;
+  assert.deepEqual([candidate.rows[0].priority,candidate.rows[0].details.stage],[expectedStage,expectedStage]);
   await db.exec('reset role;set role anon');await assert.rejects(coin(randomUUID(),10),/permission denied/);
  }finally{await db.close();}
 });
