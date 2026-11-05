@@ -1488,42 +1488,42 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3092,
+    "uniqueRestaurants": 3099,
     "providerCounts": {
-      "blue-ribbon": 526,
-      "local-guide": 2363,
       "michelin": 237,
+      "blue-ribbon": 526,
+      "local-guide": 2370,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2069,
+    "coordinatesMissing": 2076,
     "regionalCounts": {
-      "강원": 44,
-      "경기": 329,
-      "경남": 319,
-      "경북": 145,
-      "광주": 69,
-      "대구": 117,
-      "대전": 105,
-      "부산": 378,
       "서울": 351,
-      "세종": 100,
-      "울산": 36,
-      "인천": 341,
-      "전남": 177,
-      "전북": 208,
-      "제주": 113,
+      "부산": 378,
+      "충북": 214,
       "충남": 46,
-      "충북": 214
+      "울산": 36,
+      "경남": 319,
+      "강원": 44,
+      "전북": 208,
+      "경기": 336,
+      "인천": 341,
+      "제주": 113,
+      "대구": 117,
+      "전남": 177,
+      "세종": 100,
+      "대전": 105,
+      "경북": 145,
+      "광주": 69
     },
     "categoryCounts": {
+      "한식": 1812,
+      "중식": 127,
+      "일식": 131,
       "기타": 572,
-      "디저트": 226,
-      "분식": 23,
       "양식": 208,
-      "일식": 130,
-      "중식": 126,
-      "한식": 1807
+      "분식": 23,
+      "디저트": 226
     }
   },
   "coordinateEnrichment": {
@@ -10205,51 +10205,116 @@
       "scope": "성남·용인 공식 선정·모집 자료와 4개 업체 주소의 부분 대조(비전수).",
       "coordinatePolicy": "신규 4곳 좌표 null; 주소와 식당 일치 공개 좌표 근거 미확보. 임의 지도 핀·폐업/삭제 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot10-goyang-paju",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3092,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2363,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2069,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 329,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 226,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1807
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3099,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 526,
+          "local-guide": 2370,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2076,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 336,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1812,
+          "중식": 127,
+          "일식": 131,
+          "기타": 572,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 226
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-goyang-gnews20251022-banyagwan",
+        "local-goyang-gnews20251022-myeonggyeok",
+        "local-goyang-gnews20251022-gyedanramen",
+        "local-paju-ggtour-odusannmakguksu",
+        "local-paju-tourism-yaksan-jeong",
+        "local-paju-tourism-canaan-duck",
+        "local-paju-tourism-gohyangjip"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+        "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
+      ],
+      "scope": "경기도 고양시·파주시 공식 공개 음식점/관광 안내의 7곳 신규 사실 부분 확인. 지역 전수 조사 아님.",
+      "coordinatePolicy": "상호·지점·주소 일치 공개 위경도 근거가 없어 신규 7곳 지도 좌표 null. 추정 좌표 및 자동 삭제 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot09-seongnam-hipstores",
+    "id": "2026-11-06-gyeonggi-slot10-goyang-paju",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3088,
-      "providerCounts": {
-        "blue-ribbon": 526,
-        "local-guide": 2359,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2065,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 325,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 351,
-        "세종": 100,
-        "울산": 36,
-        "인천": 341,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "기타": 572,
-        "디저트": 223,
-        "분식": 23,
-        "양식": 208,
-        "일식": 130,
-        "중식": 126,
-        "한식": 1806
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3092,
       "providerCounts": {
         "blue-ribbon": 526,
@@ -10288,26 +10353,66 @@
         "한식": 1807
       }
     },
-    "newRestaurantCount": 4,
+    "currentCoverage": {
+      "uniqueRestaurants": 3099,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 526,
+        "local-guide": 2370,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2076,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 336,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1812,
+        "중식": 127,
+        "일식": 131,
+        "기타": 572,
+        "양식": 208,
+        "분식": 23,
+        "디저트": 226
+      }
+    },
+    "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-seongnam-hipstore2026-cafe-themallang",
-      "local-seongnam-hipstore2026-deffee",
-      "local-seongnam-hipstore2026-yori",
-      "local-seongnam-hipstore2026-gimyeonmin"
+      "local-goyang-gnews20251022-banyagwan",
+      "local-goyang-gnews20251022-myeonggyeok",
+      "local-goyang-gnews20251022-gyedanramen",
+      "local-paju-ggtour-odusannmakguksu",
+      "local-paju-tourism-yaksan-jeong",
+      "local-paju-tourism-canaan-duck",
+      "local-paju-tourism-gohyangjip"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://snvision.seongnam.go.kr/23223",
-      "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/",
-      "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c",
-      "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91",
-      "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe",
-      "https://www.yongin.go.kr/user/bbs/BD_selectBbs.do?q_bbsCode=1020&q_bbscttSn=20260210103207155",
-      "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE"
+      "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+      "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
+      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
+      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
+      "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
     ],
-    "scope": "성남·용인 공식 선정·모집 자료와 4개 업체 주소의 부분 대조(비전수).",
-    "coordinatePolicy": "신규 4곳 좌표 null; 주소와 식당 일치 공개 좌표 근거 미확보. 임의 지도 핀·폐업/삭제 없음.",
+    "scope": "경기도 고양시·파주시 공식 공개 음식점/관광 안내의 7곳 신규 사실 부분 확인. 지역 전수 조사 아님.",
+    "coordinatePolicy": "상호·지점·주소 일치 공개 위경도 근거가 없어 신규 7곳 지도 좌표 null. 추정 좌표 및 자동 삭제 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10420,8 +10525,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2363,
-    "designationEvidenceCount": 2410,
+    "recordCount": 2370,
+    "designationEvidenceCount": 2417,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
@@ -10475,7 +10580,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 297,
+        "uniqueRestaurants": 304,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -10814,6 +10919,31 @@
       "selectedFoodBusinessesAdded": 4,
       "scope": "공식 힙스토어 Top 8 중 카페 3·한식점 1. 상권 브랜딩 선정이지 미식 평가·블루리본 등급이 아님. 용인 최종 선정 업소 확인 전 신규 등록 보류.",
       "coordinatesAdded": 0
+    },
+    "municipalTourism20261106GoyangPajuSlot10": {
+      "checkedAt": "2026-11-06",
+      "sourceFile": "games/certified-restaurants/official-goyang-paju-slot10.json",
+      "regions": [
+        "경기도 고양시",
+        "경기도 파주시"
+      ],
+      "officialSources": [
+        "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+        "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
+        "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
+      ],
+      "newCount": 7,
+      "existingUpdated": 0,
+      "coordinatesVerified": 0,
+      "locationHidden": 0,
+      "notes": [
+        "경기도 2025-10-22 공식 음식점 기사 고양 3곳은 관광 소개일 뿐 블루리본·정식 선정 아님.",
+        "경기관광공사 분류에서 파주 오두산막국수 경기으뜸맛집 이력(연도 미확인)만 별도 표기.",
+        "파주 관광 페이지 파주맛고을 3곳은 관광 소개로만 표기; 모범음식점 단독은 미포함.",
+        "기존 파주 오백년누룽지백숙 주소 오탈자는 원본 대용량 파일 갱신 실패로 후속 조치."
+      ]
     }
   },
   "mapCoverageAuditHistory": [

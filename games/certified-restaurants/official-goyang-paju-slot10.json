@@ -1,0 +1,213 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "경기도 뉴스포털·경기관광공사·파주시 문화관광 공식 안내",
+  "sourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+  "completeRegionalCollection": false,
+  "selectionScope": "경기도 공식 음식점 소개(고양 3), 경기으뜸맛집 분류 이력(파주 1), 파주시 파주맛고을 관광 소개(파주 3)를 구분. 블루리본 직접 선정·정규 리본등급으로 오인 금지.",
+  "restaurants": [
+    {
+      "id": "local-goyang-gnews20251022-banyagwan",
+      "name": "반야관 밤리단길점",
+      "category": "중식",
+      "region": "경기",
+      "district": "고양시 일산동구",
+      "address": "경기도 고양시 일산동구 대산로11번길 14-4, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "새우가지튀김",
+        "새우완탕면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 고양 편 (2025-10-22)",
+          "sourceAsOf": "2025-10-22",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 2025-10-22 지역 먹거리 기사 소개이며 정식 미식 심사·미쉐린·블루리본 선정이 아닙니다. 영업 상태는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+    },
+    {
+      "id": "local-goyang-gnews20251022-myeonggyeok",
+      "name": "명계옥",
+      "category": "한식",
+      "region": "경기",
+      "district": "고양시 일산동구",
+      "address": "경기도 고양시 일산동구 무궁화로 32-21 메탈릭타워",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "들깨삼계탕",
+        "상황버섯삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 고양 편 (2025-10-22)",
+          "sourceAsOf": "2025-10-22",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 2025-10-22 지역 먹거리 기사 소개이며 정식 미식 심사·미쉐린·블루리본 선정이 아닙니다. 영업 상태는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+    },
+    {
+      "id": "local-goyang-gnews20251022-gyedanramen",
+      "name": "계단라멘 일산본점",
+      "category": "일식",
+      "region": "경기",
+      "district": "고양시 일산동구",
+      "address": "경기도 고양시 일산동구 율천로7번길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "계단라멘",
+        "모츠라멘"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 고양 편 (2025-10-22)",
+          "sourceAsOf": "2025-10-22",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 2025-10-22 지역 먹거리 기사 소개이며 정식 미식 심사·미쉐린·블루리본 선정이 아닙니다. 영업 상태는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_view.do?newsType=N&number=202510220923193234C049&s_code=C401"
+    },
+    {
+      "id": "local-paju-ggtour-odusannmakguksu",
+      "name": "오두산막국수",
+      "category": "한식",
+      "region": "경기",
+      "district": "파주시",
+      "address": "경기도 파주시 탄현면 성동로 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기으뜸맛집 지정 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006",
+          "sourceName": "경기관광공사 경기도 DMZ · 음식점 분류",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "경기관광공사 공식 주변 식당 표에 '경기도으뜸맛집'으로 표기. 지정 연도·현재 지정 및 운영 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.ggtour.or.kr/dmz/usr/wap/detail.do?app=13214&lang=ko&seq=20006"
+    },
+    {
+      "id": "local-paju-tourism-yaksan-jeong",
+      "name": "약산정",
+      "category": "한식",
+      "region": "경기",
+      "district": "파주시",
+      "address": "경기도 파주시 탄현면 새오리로 59-40",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "참게매운탕",
+        "참게장정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "파주시 파주맛고을 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004",
+          "sourceName": "파주시 문화관광 · 파주맛고을",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "파주시 공식 문화관광 '파주맛고을' 음식점 소개이며 미식 인증등급·지속적인 영업을 보장하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2029&q_gubun=food4&themaCode=1004"
+    },
+    {
+      "id": "local-paju-tourism-canaan-duck",
+      "name": "가나안덕 통일동산점",
+      "category": "한식",
+      "region": "경기",
+      "district": "파주시",
+      "address": "경기도 파주시 탄현면 새오리로 8, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리참숯 숯불구이",
+        "한방진흙구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "파주시 파주맛고을 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002",
+          "sourceName": "파주시 문화관광 · 파주맛고을",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "파주시 공식 문화관광 '파주맛고을' 음식점 소개이며 미식 인증등급·지속적인 영업을 보장하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2003&q_gubun=food4&themaCode=1002"
+    },
+    {
+      "id": "local-paju-tourism-gohyangjip",
+      "name": "고향집",
+      "category": "한식",
+      "region": "경기",
+      "district": "파주시",
+      "address": "경기도 파주시 탄현면 새오리로 30",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고향정식",
+        "참게장정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "파주시 파주맛고을 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003",
+          "sourceName": "파주시 문화관광 · 파주맛고을",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "파주시 공식 문화관광 '파주맛고을' 음식점 소개이며 미식 인증등급·지속적인 영업을 보장하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.paju.go.kr/user/tour/food/BD_tourPlaceFoodView.do?cntntsSn=2007&menuCode=1001&q_gubun=food3&themaCode=1003"
+    }
+  ],
+  "notes": [
+    "2025-10-22는 경기도 기사 발행일, 2026-11-06은 출처 확인일; '경기으뜸맛집' 지정 연도는 미상.",
+    "음식점·주소는 공식 페이지에 직접 일치하며 지도 위경도는 근거 미확보로 모두 null.",
+    "파주시 관광 메뉴별 '모범음식점' 단독 분류만으로는 신규 맛집을 등록하지 않음.",
+    "기존 파주 오백년누룽지백숙의 주소 표기 오탈자는 원본 데이터에 남아 후속 교정 대상으로 기록."
+  ]
+}
