@@ -9,6 +9,8 @@ const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardC
 const rewardRequest=(kind,owner,args)=>{const id=++rewardJobId;rewardCalls.push({kind,owner,args});return new Promise((resolve,reject)=>rewardJobs.set(id,{kind,owner,resolve,reject}));};
 const settleRewardJob=async(id,data,failure)=>{const job=rewardJobs.get(id);if(!job)throw Error('Missing request '+id);rewardJobs.delete(id);if(failure==='reject')job.reject(Error('fixture failure'));else job.resolve({data,error:failure?Error('fixture query error'):null});await new Promise(resolve=>setTimeout(resolve,0));};
 S={rpc(kind,args){return rewardRequest(kind,D.user?.id,args);},from(table){if(table!=='user_private')throw Error('Unexpected table');let owner;const query={select(){return query;},eq(key,value){owner=value;return query;},maybeSingle(){return rewardRequest('quiz',owner);}};return query;}};
+// This fixture exercises purchases inside the game during its public closure.
+_r.screw.maintenance=null;
 const fakeGame=()=>({controls:'',draw(){},update(){},destroy(){}});
 G2.mole=fakeGame;window.OjjudaScrewLoader={menuHTML:()=>'<p>나사게임</p>',load:async()=>api=>{screwApi=api;return fakeGame();}};
 D.online=true;D.user={id:'owner-a'};D.walletReady=true;D.doorReady=true;D.isAdmin=false;xd(false);$.coins=111;$.lastCheckin=null;g.tab='my';H();

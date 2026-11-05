@@ -9,7 +9,7 @@ world=world.replace('<script type="module">','<script src="/mobile-viewport.js">
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-world=world.slice(0,boot)+`window.screwWorld={open:Al,close:El,current:()=>R,resume(){R.last=performance.now();sf()}};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
+world=world.slice(0,boot)+`_r.screw.maintenance=null;window.screwWorld={open:Al,close:El,current:()=>R,resume(){R.last=performance.now();sf()}};g.tab='friends';H();`+world.slice(world.indexOf('</script>',boot));
 const qa=process.env.SCREW_MODES_QA_DIR;if(qa)fs.mkdirSync(qa,{recursive:true});
 const font=process.env.SCREW_QA_FONT;
 if(font)world=world.replace('</head>','<style>@font-face{font-family:"Noto Sans KR";src:url("/fixture-korean.ttf")}body,button{font-family:"Noto Sans KR",sans-serif}</style></head>');

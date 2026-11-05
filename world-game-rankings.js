@@ -86,7 +86,7 @@ const lifecycle=new AbortController(),lifecycleOptions={signal:lifecycle.signal}
 const active=()=>alive&&host.isConnected&&authorized();
 function updateGames(){
  const next=typeof getGames==='function'?getGames():games;
- const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName]));
+ const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName,game.maintenance]));
  const changed=key!==catalogKey;games=next;catalogKey=key;
  const groups=new Set(Object.keys(games).map(rankGroupFor));
  if(!groups.has(rankCategory))rankCategory=rankGroups.find(group=>groups.has(group.id))?.id||null;
@@ -151,7 +151,7 @@ function makeRow(id,game,token,playable=true,openState=null){
  const period=playable?'이번 달':'해당 월';
  const name=el('th','','board-leader-game');name.scope='row';name.title=game.name+(game.rankingBasis==='stage_score'?' · 최고 통과 단계 → 같은 단계 최고 점수 → 먼저 달성한 순':game.rankingBasis==='stage_time'?' · 최고 완료 단계 → 가장 짧은 완료 시간 → 먼저 달성한 순':game.rankingBasis==='opponents_streak'?' · 이긴 상대 수 → '+period+' 최고 연승 → 먼저 달성한 순':['picture_clears','photo_clears'].includes(game.rankingBasis)?' · '+period+' 완료한 그림 장수':game.rankingBasis==='best_round_gain'?' · '+period+' 한 판 최대 획득 골드':game.rankingBasis==='difficulty_streak'?' · 회원대결, 어려움, 보통, 쉬움 순 · 같은 난이도는 '+period+' 최고 연승순':game.rankingBasis==='difficulty_time'?' · 난이도 → 완료 시간 → 먼저 달성한 순':game.rankingBasis==='current_streak'?' · '+period+' 최고 연승 기준':'');
  labelGame(name,game);
- if(playable&&typeof onOpenGame==='function'){
+ if(playable&&!game.maintenance&&typeof onOpenGame==='function'){
   const opening=openState||{busy:false,buttons:new Set()};
   const play=button(game.name,async()=>{
    if(!active()||token!==request||opening.busy)return;

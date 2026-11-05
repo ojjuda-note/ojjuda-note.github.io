@@ -89,6 +89,10 @@ button,input,select,textarea{font-family:inherit}button,a{-webkit-tap-highlight-
 .world-redesign .arcade-adult{margin-top:34px}
 .world-redesign .arcade-card>[data-arcade-test-heading]{margin-top:34px}
 
+.world-redesign .gbtn:disabled{cursor:default}
+.world-redesign .gbtn:disabled .ge img{filter:grayscale(1)}
+.world-redesign .gbtn .game-maintenance-badge{display:block;width:fit-content;margin:3px auto 0;padding:2px 7px;border-radius:6px;background:#ffe2a8;color:#583600;font-size:11px!important;line-height:1.3;white-space:nowrap}
+
 /* New single-player games can carry a release label without a version number. */
 .world-redesign .gbtn .game-test-badge{display:block;width:fit-content;margin:5px auto 0;padding:2px 7px;border-radius:6px;background:#e1eadc;color:#4b6548;font-size:10px!important;letter-spacing:0}
 :root[data-theme=dark] .world-redesign .gbtn .game-test-badge{background:#304b3c;color:#d4e5cd}

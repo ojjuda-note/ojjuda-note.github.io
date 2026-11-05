@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');let html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const boot=html.indexOf('j1(()=>H());gm(');assert(boot>0);
-html=html.slice(0,boot)+`window.entryTest={open:Al,close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,
+html=html.slice(0,boot)+`window.entryTest={open:Al,link:openWorldGameLink,rank:openWorldBoardGame,arcade:()=>xf("arcade"),close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,
  friends(){D.online=true;D.user={id:'me'};D.boardReady=true;P.loaded=true;P.at=Date.now();P.friends=[{id:'offline',nickname:'가람'},{id:'online',nickname:'초록친구'},{id:'unsafe',nickname:'<img src=x onerror=alert(1)>'}];Ze={state:'joined',presenceState:()=>({online:[{}]})};Xs=async()=>true;xh=async()=>true;jgOnlineReady=async()=>true;$h=async()=>[];window.OjjudaArcadeRooms=null;S={rpc:async(name,args)=>{window.invited={name,args};return {data:'invite-id',error:null}}};},
  presence(state){Ze.presenceState=()=>state;window.dispatchEvent(new Event('ojjuda:friends-presence'));}
 };g.tab='friends';H();`+html.slice(html.indexOf('</script>',boot));
@@ -11,15 +11,26 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  const page=await browser.newPage({viewport,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({body:html,contentType:'text/html'});if(u.pathname==='/config.js')return route.fulfill({body:'window.OJJUDA_CONFIG={};',contentType:'text/javascript'});const file=path.resolve(root,'.'+u.pathname);return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();});
  await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.entryTest);
+ await page.evaluate(()=>entryTest.arcade());
+ const closed=page.getByRole('button',{name:'나사 풀기 · 공사중',exact:true});
+ assert.ok(await closed.isVisible()&&await closed.isDisabled());
+ assert.equal(await closed.locator('small').innerText(),'공사중');
+ await closed.evaluate(button=>button.click());
+ for(const id of ['screw','screw_box','screw_flat']){
+  await page.evaluate(id=>entryTest.link(id),id);
+  if(id!=='screw')await page.evaluate(id=>entryTest.rank(id),id);
+  assert.match(await page.locator('#toast').textContent(),/공사중/);
+  assert.equal(await page.locator('#gov').count(),0);
+ }
+ assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').some(r=>/screw-loader|screw3d\.js|screw-flat\.js/.test(r.name))),false);
  let expected;
- for(const id of ['mole','runner','stacker','breakout','screw']){
+ for(const id of ['mole','runner','stacker','breakout']){
  await page.evaluate(id=>entryTest.open(id),id);await page.locator('#gov .game-entry').waitFor();
  const metrics=await page.locator('#gov .game-entry').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,radius:getComputedStyle(el).borderRadius,title:getComputedStyle(el.querySelector('.ge-title')).fontSize,width:Math.round(el.getBoundingClientRect().width)}));
  expected??=metrics;assert.deepEqual(metrics,expected,id+': same entry design');
  const card=page.locator('#gov .game-entry');assert.ok(await card.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
- if(id!=='screw'){await page.locator('[data-g=start]').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);}
- else{for(const mode of ['box','flat']){if(mode==='flat'){await page.evaluate(()=>entryTest.close());await page.evaluate(()=>entryTest.open('screw'));}await page.locator('[data-g=screw-start][data-mode='+mode+']').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);}}
+ await page.locator('[data-g=start]').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);
  await page.evaluate(()=>entryTest.close());
  }
  await page.evaluate(()=>entryTest.friends());
@@ -47,5 +58,5 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  }
  assert.deepEqual(errors,[]);await page.close();
  }
- console.log('PASS: consistent entry cards at 320/390/1280px, six arcade starts, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
+ console.log('PASS: consistent entry cards at 320/390/1280px, four arcade starts, closed screw card and direct links, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
