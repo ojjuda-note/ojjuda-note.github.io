@@ -2,12 +2,14 @@ import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-scre
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
-import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-connected-plush1';
+import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-solid-depth2';
+import { createScrewDepthRenderer } from './screw3d-depth-renderer.js?v=20261105-screwbox-solid-depth2';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
 // 물건마다 '풀리는 순서'를 먼저 확인하고 그 순서대로 3개씩 같은 색을 칠해서, 막혀서 못 푸는 판이 없어요.
 const W = 360, H = 540, CX = 180, CY = 392, SC = 150, F = 7;
+const SCENE_TOP=232,SCENE_BOTTOM=510;
 const COLORS = ['#F0679A', '#2FB99A', '#5B8DEF', '#F2B84B', '#9B7BF0', '#FF8A5B', '#8BC34A', '#A0714F', '#E4554B', '#1FB5C9', '#3A3F66', '#9AA0A6'];
 const BOX_Y = 52, BOX_W = 150, BOX_H = 64, BUF_Y = 138, BUF_N = 5;
 const BOX_MAX = 4, BUF_MAX = BUF_N + 3, BUY_W = 50;   // 색상 상자는 최대 4개, 보관 칸은 최대 8칸 (살 수 있어요)
@@ -918,6 +920,27 @@ function withPedestal(obj, T) {
 
 const HEAD_GEOM = cylGeom(DRAW_HEAD_R, DRAW_HEAD_H / 2, 12);
 const SOCKET_GEOM = cylGeom(DRAW_HEAD_R*1.24, .010, 10);
+const screwMeshes=new Map([[1,{head:HEAD_GEOM,seat:SOCKET_GEOM}]]);
+function screwMesh(scale){
+  if(!screwMeshes.has(scale))screwMeshes.set(scale,{head:cylGeom(DRAW_HEAD_R*scale,DRAW_HEAD_H/2,12),seat:cylGeom(DRAW_HEAD_R*1.24*scale,.010,10)});
+  return screwMeshes.get(scale);
+}
+const skinViewCache=new WeakMap();
+function visibleSkinMesh(geom,owner){
+  let saved=skinViewCache.get(geom);
+  if(!saved){saved={neighbors:[...new Set(geom.faces.map(f=>f.boundary).filter(Boolean))]};skinViewCache.set(geom,saved);}
+  const moving=!!(owner.dyn||owner.fall),hidden=saved.neighbors.map(e=>!moving&&e.state==='on'&&!e.dyn&&!e.fall);
+  const stamp=hidden.map(Number).join('');if(saved.stamp===stamp)return saved.mesh;
+  const hiddenParts=new Set(saved.neighbors.filter((_,i)=>hidden[i]));
+  const verts=[],normals=[],map=new Map(),faces=[];
+  for(const f of geom.faces){
+    if(f.boundary&&hiddenParts.has(f.boundary))continue;
+    const idx=f.idx.map(old=>{if(map.has(old))return map.get(old);const id=verts.length;
+      map.set(old,id);verts.push(geom.verts[old]);if(geom.normals)normals.push(geom.normals[old]);return id;});
+    faces.push({...f,idx});
+  }
+  saved.stamp=stamp;saved.mesh={...geom,verts,faces,normals:geom.normals?normals:null};return saved.mesh;
+}
 // 그리는 순서: 두 볼록한 도형 A, B가 겹쳐 보이면, A의 한 면(또는 B의 한 면)을 기준으로 상대가 통째로 바깥쪽에 있는지 보고
 // 내 눈(카메라)이 어느 쪽에 있는지로 앞뒤를 정해요. 그 관계대로 뒤에서 앞으로 그리고, 정해지지 않으면 거리로 정해요.
 function sepFront(A, B, cam) {   // 1: A가 앞, -1: B가 앞, 0: 모름
@@ -1142,6 +1165,7 @@ function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(Math.max(lo
 function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return v; } catch (_) {} return loadStage(); }
 function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 function screw3d(api,startStage=loadResumeStage()) {
+  const depthRenderer=createScrewDepthRenderer();
   const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?startStage:1, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
@@ -1152,7 +1176,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     setTimeout(()=>{
       if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
       try {
-        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-visible-fasteners1',{type:'module'});
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-solid-depth2',{type:'module'});
         warmWorker=worker;
         worker.onmessage=event=>{
           if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
@@ -1211,6 +1235,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R,
       Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half),
       e.skinFastGeom ? Math.hypot(...e.c) + Math.max(...e.skinFastGeom.half) : 0);
+    st.modelRadius=R;
     st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
     st.sorting = 0; st.sorts = 0; st.detours = 0;
     st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
@@ -1367,8 +1392,23 @@ function screw3d(api,startStage=loadResumeStage()) {
     }
   }
   function inPoly(x, y, pts) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const a = pts[i], b = pts[j]; if ((a.y > y) !== (b.y > y) && x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; }
-  const topAt = (x, y) => { for (let i = st.drawn.length - 1; i >= 0; i--) if (inPoly(x, y, st.drawn[i].pts)) return st.drawn[i].owner; return null; };
+  const topAt = (x, y) => {
+    if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
+    let owner=null,nearest=-Infinity;
+    // Use the same inverse eye depth as the pixel depth buffer. Object/type
+    // painter order is not a picking rule, particularly at high zoom.
+    for(const it of st.order||[]){
+      if(it.alpha<=.5||it.owner===st.xrayOn||x<it.bb[0]||x>it.bb[2]||y<it.bb[1]||y>it.bb[3])continue;
+      for(const pg of it.polys){
+        if(!pg.depth||!(pg.visible||[pg.pts]).some(pts=>inPoly(x,y,pts)))continue;
+        const depth=depthAt(pg.depth,{x,y});
+        if(depth>nearest){nearest=depth;owner=it.owner;}
+      }
+    }
+    return owner;
+  };
   function pick(x, y) {   // 손가락 아래 가장 앞에 보이는 것, 조금 빗나가면 가까운 보이는 나사 (돋보기로 드러난 나사가 먼저)
+    if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
     const o = topAt(x, y); if (o && o.p) return o;
     let best = null, bd = 20;
     for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && topAt(h.x, h.y) === s) { bd = d; best = s; } }
@@ -1411,7 +1451,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (destroyed || buying || restoreBlocked || (walletUser && !sameWallet()) || Object.keys(st.purchases.pending).length || !st.next || next !== st.L + 1 || next > STAGES) return false;
       saveStage(next); start(next); return true;
     },
-    destroy() { destroyed = true; if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
+    destroy() { destroyed = true; depthRenderer.destroy();if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
       st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
     onDown(x, y, id = 0) {
       st.ptrs.set(id, { x, y });
@@ -1452,8 +1492,9 @@ function screw3d(api,startStage=loadResumeStage()) {
       if(st.sorting>0) { st.sorting=Math.max(0,st.sorting-dt); if(st.sorting===0)completeSort(); }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
-      const g = mv(tr(view()), [0, -1, 0]);   // 화면 아래(중력)를 물건 쪽 방향으로
-      const vk = st.yaw.toFixed(3) + ',' + st.pitch.toFixed(3); if (vk !== st.lastView) { st.lastView = vk; st.lvl.els.forEach(o => { if (o.dyn) o.dyn.sleep = 0; }); }   // 돌리면 중력이 바뀌니 깨워요
+      // Camera rotation/zoom must not change extraction physics or make an
+      // invisible obstacle disappear. Gravity belongs to the model's world.
+      const g = [0,-1,0];
       const fixed = st.lvl.els.filter(o => o.state === 'on' && !o.dyn);
       for (const E of st.lvl.els) {
         if (E.state !== 'on') continue;
@@ -1493,7 +1534,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (E.state !== 'on' || !E.dyn) continue;
         const candidates = nearby(E);
         for (let k = 0; k < 3; k++) stepDyn(E, candidates, gravity, physicsDt / 3);
-        const pr = project(E.dyn.c, view()); if (pr.y > H + 140 || pr.x < -220 || pr.x > W + 220 || pr.y < -260 || E.dyn.t > 14) E.state = 'gone';
+        if (Math.hypot(...E.dyn.c)>Math.max(4,st.modelRadius*3)||E.dyn.t>14) E.state='gone';
       }
       for (const s of st.lvl.screws) if (s.state === 'out') { s.t += dt; if (s.t >= 0.34) s.state = 'fly'; }
       let landedInBuffer = false, matchedBox = false;
@@ -1551,15 +1592,33 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (completedFraction > 0) { c.fillStyle = '#4B9D9A'; c.fillRect(20, 43, 320 * completedFraction, 4); }
       drawBoxes(c, st); drawBuffer(c, st);
 
+      // Zoom/pan belongs to the play field, never the boxes, storage or HUD.
+      c.save();c.beginPath();c.rect(0,SCENE_TOP,W,SCENE_BOTTOM-SCENE_TOP);c.clip();
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
-      const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [], maskItems = [];
+      const V = view(), camera=mv(tr(V),[0,0,F*st.sc]), Lg = norm([-0.35, 0.55, 0.75]), items = [], maskItems = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
+        if(geom.closed)geom=visibleSkinMesh(geom,owner);
+        if(!geom.faces.length)return;
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
         const planesGeom=geomPlanes(geom),plush=geom.sculpted||owner.material==='fabric';
-        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), base:owner.faceFeature?paint:null, line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
+        const vertexLight=geom.normals?.map(n=>Math.max(0,dot(mv(VR,n),Lg)));
+        for (const [fi, f] of geom.faces.entries()) {
+          if(f.boundary&&f.boundary.state==='on'&&!f.boundary.dyn&&!f.boundary.fall
+            &&!owner.dyn&&!owner.fall)continue;
+          if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue;
+          const normal = planesGeom[fi].n, nw = mv(R, normal);
+          if (!geom.sculpted||f.boundary) planes.push([nw, wv[f.idx[0]]]);
+          const n = mv(VR, normal); if (dot(nw,sub(camera,wv[f.idx[0]])) <= 1e-7) continue;
+          if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue;
+          const paint = f.paint || color, lit = Math.max(0, dot(n, Lg));
+          const shadeK = -(1 - (plush ? (f.boundary ? .73+.27*lit : .90+.10*lit) : (0.69 + 0.31 * lit)));
+          polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*32)/32 : shadeK),
+            colors:vertexLight&&!f.boundary?f.idx.map(i=>shade(paint,-.10+.10*vertexLight[i])):null,
+            base:owner.faceFeature?paint:null, line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center });
+        }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         if (!polys.length) return; // nothing visible; skip sorting and painting entirely
-        out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv: geom.sculpted ? [] : wv,
+        out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv: geom.sculpted&&!geom.closed ? [] : wv,
           planes, bb: [x0, y0, x1, y1], pv: geom.sculpted ? [] : pv, isSkin: !!geom.sculpted,
           hull: st.big ? null : hull2d(geom.sculpted ? [
             {x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}
@@ -1586,22 +1645,18 @@ function screw3d(api,startStage=loadResumeStage()) {
           ? CUBE_FACE_DIRS.map(n => !alive(lv.grid.get([E.cell[0] + n[0], E.cell[1] + n[1], E.cell[2] + n[2]].join(','))))
           : null;
         if (exposedFaces && !exposedFaces.some(Boolean)) continue;
-        if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
           if(E.visualOffset)sh.c=add(sh.c,E.visualOffset);
           // Outside fragments are one continuous sculpted surface, shared by
           // adjoining removable bricks. Newly uncovered interior faces retain
           // their precise physical shape after another brick falls away.
-          if (E.skinGeom && !E.dyn && !E.hinge && !E.fall) {
+          if (E.skinGeom && !E.hinge) {
             const skin = st.big ? E.skinFastGeom : E.skinGeom;
             if (skin.faces.length) solid(skin, sh.R, sh.c, sh.color, 1, E,
               E.kind === 'block' ? 0 : 0.012, items);
             // A few physical cube faces are sufficient for exact screw
             // visibility; the hundreds of decorative skin triangles need not
             // participate in expensive per-screw polygon subtraction.
-            solid(E.geom, sh.R, sh.c, sh.color, 1, E, 0, maskItems, exposedFaces);
-            const opened = exposedFaces && exposedFaces.map((on, i) => on && !E.skinOriginalFaces[i]);
-            if (opened && opened.some(Boolean)) solid(E.geom, sh.R, sh.c, sh.color, 1, E, 0, items, opened);
             continue;
           }
           if (E.kind === 'plate' && !E.dyn) {   // 블럭 밑에 깔린 판(쪽마다): 네 모서리 쪽 점이 모두 블럭 안이면 숨어요. 덮은 블럭을 투시하면 드러나요
@@ -1620,6 +1675,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (s.state !== 'in' && s.state !== 'out') continue;
         const E = s.thru, rise = s.state === 'out' ? Math.min(1, s.t / 0.34) * 0.22 : 0, spin = s.state === 'out' ? s.t * 22 : 0;
         const {p,a}=visibleScrewPose(s);
+        const headScale=s.skinMount?.drawScale||1,headRadius=DRAW_HEAD_R*headScale,headMesh=screwMesh(headScale);
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
         const hc = add(p, mul(a, DRAW_HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
         const hcs = add(hc, mul(u0, sh));
@@ -1627,24 +1683,24 @@ function screw3d(api,startStage=loadResumeStage()) {
         const covering = s.state === 'in' ? coverOf(add(logical.p,mul(logical.a,HEAD_H)),s.thru) : [];
         if (covering.length) hiddenN++;
         if (covering.length && !(st.xrayOn && covering.every(o => o === st.xrayOn))) continue;   // 블럭 밑에 깔린 나사
-        if (s.state === 'in' && !E.hinge && dot(a, fwd) < -0.15) continue;   // 뒤를 향한 나사
+        if (s.state === 'in' && dot(a,norm(sub(mv(tr(V),[0,0,F*st.sc]),p))) <= .04) continue;
         if (covering.length) found.add(s);
         if(s.skinMount&&s.state==='in'&&!s.guard&&!st.big){
           const seat=add(p,mul(a,-.006));
-          solid(SOCKET_GEOM,frame(a,u0),seat,E.skinPlateColor||'#C9C5BE',1,s,0.025,items);
+          solid(headMesh.seat,frame(a,u0),seat,E.skinPlateColor||'#C9C5BE',1,s,0.025,items);
         }
         if (st.big && s.state === 'in') {   // 조각이 많으면 나사 머리를 팔각형 하나로 (빠르게)
           const ctr = add(hcs, mul(a, DRAW_HEAD_H / 2)), w0 = mv(R, [1, 0, 0]), w1 = mv(R, [0, 0, 1]), pts = [];
-          for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * DRAW_HEAD_R), mul(w1, Math.sin(an) * DRAW_HEAD_R))), V)); }
+          for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; pts.push(project(add(ctr, add(mul(w0, Math.cos(an) * headRadius), mul(w1, Math.sin(an) * headRadius))), V)); }
           const col = COLORS[s.color], it2 = { z: project(ctr, V).z + 0.03, polys: [{ pts, depth: screenDepth(a, ctr, V, st.sc, st.zm, st.pan), fill: col, line: shade(col, -0.35) }], alpha: 1, owner: s, wv: [], planes: [], bb: bounds2(pts), hull: null };
-          if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * DRAW_HEAD_R * 0.62), mul(w1, uz * DRAW_HEAD_R * 0.62))), V));
+          if (dot(a, fwd) > 0.05) it2.cross = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(ctr, add(mul(w0, ux * headRadius * 0.62), mul(w1, uz * headRadius * 0.62))), V));
           items.push(it2); const hp = project(ctr, V); if (dot(a, fwd) > 0.12) st.heads.set(s, hp); continue;
         }
         const beforeHead=items.length;
-        solid(HEAD_GEOM, R, hcs, COLORS[s.color], 1, s, 0.03, items);
+        solid(headMesh.head, R, hcs, COLORS[s.color], 1, s, 0.03, items);
         if(items.length===beforeHead)continue;
         const it = items[items.length-1], top = mv(mm(V, R), [0, 1, 0]);
-        if (top[2] > 0.05) { const e = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(hcs, mv(R, [ux * DRAW_HEAD_R * 0.62, DRAW_HEAD_H / 2 + 0.001, uz * DRAW_HEAD_R * 0.62])), V)); it.cross = e; }
+        if (top[2] > 0.05) { const e = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([ux, uz]) => project(add(hcs, mv(R, [ux * headRadius * 0.62, DRAW_HEAD_H / 2 + 0.001, uz * headRadius * 0.62])), V)); it.cross = e; }
         if (rise > 0) it.shaft = [project(p, V), project(add(p, mul(a, rise)), V)];
         const hp = project(add(hcs, mul(a, DRAW_HEAD_H / 2)), V); if (s.state === 'in' && top[2] > 0.12) st.heads.set(s, hp); else if (s.state === 'out') st.heads.set(s, hp);
       }
@@ -1661,7 +1717,8 @@ function screw3d(api,startStage=loadResumeStage()) {
         st.big && st.zm<1.5 && lv.screws.length>280 && (!st.touched||st.drag?.moved));
       // 나사는 앞면이 가린 영역을 잘라서 그려요. 조각 수·낙하·거리 정렬과 무관하게 같은 판정이에요.
       const plushToy=['토끼','돼지','소','펭귄'].includes(lv.name);
-      if(plushToy)maskSculptDetails(order,st.xrayOn);
+      if(order.some(it=>it.isSkin))maskSculptDetails(order,st.xrayOn);
+      const depthPainted=depthRenderer.draw(c,order,target?.owner,1-.82*xa,SCENE_TOP,SCENE_BOTTOM);
       const opaqueItems=order.filter(q=>!q.owner.p);
       const paintLayers=plushToy?[
         ...opaqueItems.filter(q=>!q.isSkin&&!q.owner.guard&&!q.owner.faceFeature),
@@ -1673,7 +1730,12 @@ function screw3d(api,startStage=loadResumeStage()) {
         c.save(); c.globalAlpha = it.alpha * (target && it.owner === target.owner ? 1 - 0.82 * xa : 1);
         if (it.shaft) { c.strokeStyle = '#8C93B8'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.shaft[0].x, it.shaft[0].y); c.lineTo(it.shaft[1].x, it.shaft[1].y); c.stroke(); }
         if (it.owner.p) { c.beginPath(); for (const pg of it.polys) for (const pts of pg.visible) { pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.closePath(); } c.clip(); }
-        if (it.isSkin) {
+        if(depthPainted){
+          if(it.alpha>.5)for(const pg of it.polys)for(const pts of pg.visible||[pg.pts])
+            st.drawn.push({pts,owner:it.owner});
+          if(!it.owner.p){c.restore();continue;}
+        }
+        if (it.isSkin&&!depthPainted) {
           // Convex sculpt fragments don't self-overlap: paint every same-tone
           // triangle in one batch and avoid a Canvas fill/stroke per facet.
           const groups = new Map();
@@ -1710,7 +1772,7 @@ function screw3d(api,startStage=loadResumeStage()) {
           }
           c.restore();continue;
         }
-        for (const pg of it.polys) {
+        for (const pg of depthPainted?[]:it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
           // Fine surface cues for the original models. Gameplay and hit boxes
@@ -1761,9 +1823,17 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (it.cross && !st.big) { const cxh = (it.cross[0].x + it.cross[1].x) / 2, cyh = (it.cross[0].y + it.cross[1].y) / 2, rh = Math.hypot(it.cross[0].x - it.cross[1].x, it.cross[0].y - it.cross[1].y) / 1.24;   // 나사 머리 광택
           const g3 = c.createRadialGradient(cxh - rh * 0.35, cyh - rh * 0.4, 0, cxh, cyh, rh * 1.05); g3.addColorStop(0, 'rgba(255,255,255,0.55)'); g3.addColorStop(0.45, 'rgba(255,255,255,0.08)'); g3.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g3; c.beginPath(); c.arc(cxh, cyh, rh, 0, Math.PI * 2); c.fill();
           c.strokeStyle = 'rgba(30,30,60,0.28)'; c.lineWidth = 3.6; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.cross[0].x, it.cross[0].y); c.lineTo(it.cross[1].x, it.cross[1].y); c.moveTo(it.cross[2].x, it.cross[2].y); c.lineTo(it.cross[3].x, it.cross[3].y); c.stroke(); }
-        if (it.cross) { c.strokeStyle = 'rgba(255,255,255,0.95)'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.cross[0].x, it.cross[0].y); c.lineTo(it.cross[1].x, it.cross[1].y); c.moveTo(it.cross[2].x, it.cross[2].y); c.lineTo(it.cross[3].x, it.cross[3].y); c.stroke(); }
+        if (it.cross) { c.strokeStyle = 'rgba(255,255,255,0.95)'; c.lineWidth = Math.min(2.4,Math.max(.45,Math.hypot(it.cross[0].x-it.cross[1].x,it.cross[0].y-it.cross[1].y)*.23)); c.lineCap = 'round'; c.beginPath(); c.moveTo(it.cross[0].x, it.cross[0].y); c.lineTo(it.cross[1].x, it.cross[1].y); c.moveTo(it.cross[2].x, it.cross[2].y); c.lineTo(it.cross[3].x, it.cross[3].y); c.stroke(); }
         c.restore();
       }
+      c.restore();
+      // Hit polygons have the same viewport clipping as the actual pixels.
+      st.drawn=st.drawn.flatMap(pg=>{
+        let pts=pg.pts;
+        for(const distance of [p=>p.x,p=>W-p.x,p=>p.y-SCENE_TOP,p=>SCENE_BOTTOM-p.y])
+          pts=clipHalf(pts,distance);
+        return pts.length>=3?[{pts,owner:pg.owner}]:[];
+      });
       // Color management difficulty and a free time-costly escape from a full tray.
       const sortable=chooseSort();
       c.save();
@@ -1806,6 +1876,7 @@ function drawScrew(c, x, y, color, rot, scale) {
 }
 function drawBoxes(c, st) {
   const nb = st.boxes.length, buy = nb < BOX_MAX, L = boxLay(nb, buy), sc = Math.min(0.92, L.sp / 42 * 0.95), hr = Math.min(14.5, L.sp * 0.36);
+  c.save();c.beginPath();c.rect(0,BOX_Y-2,W,BOX_H+4);c.clip();
   st.boxes.forEach((b, i) => {
     const x = L.x(i), y = BOX_Y + (b && b.close ? -ease(b.close) * 26 : 0), a = b && b.close ? 1 - b.close : 1;
     c.save(); c.globalAlpha = a; rr(c, x, y, L.w, BOX_H, 16); c.fillStyle = b ? shade(COLORS[b.c], 0.78) : '#EADFD3'; c.fill();
@@ -1817,6 +1888,7 @@ function drawBoxes(c, st) {
   });
   if (buy) { const bx = 344 - BUY_W; rr(c, bx, BOX_Y, BUY_W, BOX_H, 14); c.fillStyle = '#FFF0F1'; c.fill(); c.setLineDash([5, 4]); c.lineWidth = 2; c.strokeStyle = '#EDBDC4'; c.stroke(); c.setLineDash([]);   // 상자 사기 (3 ZU)
     c.fillStyle = '#A72E40'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 20px sans-serif'; c.fillText('+', bx + BUY_W / 2, BOX_Y + 22); c.font = 'bold 11px sans-serif'; c.fillText('상자', bx + BUY_W / 2, BOX_Y + 41); c.fillStyle = st.coins >= 3 ? '#A72E40' : '#93646D'; c.fillText('3 ZU', bx + BUY_W / 2, BOX_Y + 54); }
+  c.restore();
 }
 function drawBuffer(c, st) {
   const n = st.buf.length, buy = n < BUF_MAX, L = bufLay(n, buy), sc = Math.min(0.92, L.sp / 58 * 1.05), hr = Math.min(15.5, L.sp * 0.3);
