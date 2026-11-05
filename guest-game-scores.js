@@ -39,9 +39,19 @@
     if (result?.ok) window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{guest:true}}));
     return result || {ok:false};
   }
+  async function submitScrewBox(score, runId) {
+    if (!Number.isSafeInteger(score) || score < 0 || score > 1999999999 ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runId || ''))
+      return {ok:false,reason:'invalid'};
+    const result = await rpc('submit_guest_screw_box_score',{
+      p_run_id:runId,p_score:score,p_guest_token:token()
+    });
+    if (result?.ok) window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{guest:true}}));
+    return result || {ok:false};
+  }
   async function ranking(game, period = 'day') {
     if (game !== 'sacheonseong' && !games.has(game)) return [];
     return await rpc('guest_game_ranking',{p_game:game,p_period:period,p_guest_token:token()}) || [];
   }
-  window.OjjudaGuestScores = Object.freeze({submit,ranking,spot:async(stage)=>rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),territory:async(runId,won)=>rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),marble:async(runId,won)=>rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})});
+  window.OjjudaGuestScores = Object.freeze({submit,submitScrewBox,ranking,spot:async(stage)=>rpc('record_spot_clear',{p_stage:stage,p_guest_token:token()}),territory:async(runId,won)=>rpc('record_ttang_result',{p_round:runId,p_won:won,p_guest_token:token()}),marble:async(runId,won)=>rpc('record_marble_result',{p_round:runId,p_won:won,p_guest_token:token()})});
 })();
