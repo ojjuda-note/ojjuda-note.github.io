@@ -562,21 +562,22 @@
     const loading = el('div', 'loading-state'); loading.append(el('span', 'loading-ring'), el('p', '', '확인된 맛집을 불러오고 있어요.')); $('cards').replaceChildren(loading);
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
-      const [response, supplementResponse, seoulResponse, northeastResponse] = await Promise.all([
+      const [response, supplementResponse, seoulResponse, northeastResponse, southwestResponse] = await Promise.all([
         fetch('./restaurants.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-oraegage2', { signal: controller.signal, cache: 'no-cache' })
+        fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-oraegage2', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-seoul-oraegage-southwest.json?v=20261105-restaurants-sw-oraegage1', { signal: controller.signal, cache: 'no-cache' })
       ]);
-      if (!response.ok || !supplementResponse.ok || !seoulResponse.ok || !northeastResponse.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status + '/' + seoulResponse.status + '/' + northeastResponse.status);
-      const [data, supplement, seoul, northeast] = await Promise.all([response.json(), supplementResponse.json(), seoulResponse.json(), northeastResponse.json()]);
-      if (!data || !Array.isArray(data.restaurants) || !supplement || !Array.isArray(supplement.restaurants) || !seoul || !Array.isArray(seoul.restaurants) || !northeast || !Array.isArray(northeast.restaurants)) throw new Error('Invalid dataset');
+      if (!response.ok || !supplementResponse.ok || !seoulResponse.ok || !northeastResponse.ok || !southwestResponse.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status + '/' + seoulResponse.status + '/' + northeastResponse.status + '/' + southwestResponse.status);
+      const [data, supplement, seoul, northeast, southwest] = await Promise.all([response.json(), supplementResponse.json(), seoulResponse.json(), northeastResponse.json(), southwestResponse.json()]);
+      if (!data || !Array.isArray(data.restaurants) || !supplement || !Array.isArray(supplement.restaurants) || !seoul || !Array.isArray(seoul.restaurants) || !northeast || !Array.isArray(northeast.restaurants) || !southwest || !Array.isArray(southwest.restaurants)) throw new Error('Invalid dataset');
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
       const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\s+/g, '').toLowerCase()).join('|');
       const knownPlaces = new Set(combined.map(identity));
-      for (const item of [...supplement.restaurants, ...seoul.restaurants, ...northeast.restaurants]) {
+      for (const item of [...supplement.restaurants, ...seoul.restaurants, ...northeast.restaurants, ...southwest.restaurants]) {
         const key = identity(item);
         if (knownIds.has(item.id) || knownPlaces.has(key)) continue;
         combined.push(item); knownIds.add(item.id); knownPlaces.add(key);
