@@ -63,7 +63,21 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
           }
           game.draw(ctx);return {stage:state.L,rounds,purchases,elapsed:Math.round(performance.now()-begin),score:state.score};
         },
-        perf(L) {boot(L);for(let i=0;i<6;i++)game.draw(ctx);const t=performance.now();for(let i=0;i<10;i++){state.yaw+=0.01;game.draw(ctx);}return Math.round((performance.now()-t)/10);}
+        perf(L) {boot(L);for(let i=0;i<6;i++)game.draw(ctx);const t=performance.now();for(let i=0;i<10;i++){state.yaw+=0.01;game.draw(ctx);}return Math.round((performance.now()-t)/10);},
+        mountedTap() {
+          boot(5);let visible=0;
+          const mounted=state.lvl.screws.filter(s=>s.skinMount&&!s.guard).length;
+          for(const pitch of [0,0.45,-0.45])for(let k=0;k<8;k++){
+            state.yaw=k*Math.PI/4;state.pitch=pitch;game.draw(ctx);
+            visible=Math.max(visible,[...state.heads.keys()].filter(s=>s.skinMount).length);
+            for(const [s,h] of state.heads){
+              if(!s.skinMount||blocked(s,state.lvl)||!state.boxes.some(b=>b&&!b.close&&b.c===s.color&&b.n+b.res<3))continue;
+              tap(h.x,h.y);
+              if(s.state==='out')return {mounted,visible,tapped:true};
+            }
+          }
+          return {mounted,visible,tapped:false};
+        }
       };
     ` });
     for (const big of [false, true]) {
@@ -85,7 +99,14 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     assert.equal(play.stage, 4, 'touch gameplay advances through all three easy rounds');
     assert.deepEqual(play.rounds, [{stage:1,screws:15},{stage:2,screws:21},{stage:3,screws:27}]);
     assert.equal(play.purchases, 0); assert.ok(play.score > 0);
+    const contact=await page.evaluate(() => screwTest.mountedTap());
+    assert.ok(contact.mounted>=10&&contact.visible>=1&&contact.tapped,
+      `a surface-mounted screw must remain visible and clickable: ${JSON.stringify(contact)}`);
     if (process.env.SCREW_SCREENSHOT) await page.screenshot({ path: process.env.SCREW_SCREENSHOT });
+    if (process.env.SCREW_MODEL_QA) for (const L of [1, 5, 80]) {
+      await page.evaluate(stage => { screwTest.boot(stage); }, L);
+      await page.locator('canvas').screenshot({ path: path.join(process.env.SCREW_MODEL_QA, `screw-box-stage-${L}.png`) });
+    }
     const perf = {};
     for (const L of [4, 40, 160]) perf[L] = await page.evaluate(L => screwTest.perf(L), L);
     assert.deepEqual(errors, []);

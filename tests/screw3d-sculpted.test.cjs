@@ -36,6 +36,21 @@ vm.runInContext(sources+`
       'an intended screw is physically blocked by a removable guard');
     for(const guard of guards){
       assert.equal(m.refs.get(guard).filter(s=>s.guard).length,3,'each gate has three removable screws');
+      if(guard.visualOffset){
+        assert.ok(guard.guardTarget.skinMount,'a moved guard stays attached to its protected curved-surface screw');
+        for(const s of m.refs.get(guard).filter(s=>s.guard))
+          assert.ok(Math.hypot(...sub(s.skinMount.p,add(s.p,guard.visualOffset)))<1e-8,
+            'all three guard screw heads follow the guard plate');
+      }
+    }
+    const mounts=m.screws.filter(s=>s.skinMount&&!s.guard);
+    assert.ok(mounts.length>=3,'every level shows actual surface-mounted screws');
+    for(const s of mounts){
+      const anchor=s.skinMount;
+      assert.ok(anchor.p.every(Number.isFinite)&&anchor.a.every(Number.isFinite));
+      assert.ok(Math.abs(Math.hypot(...anchor.a)-1)<1e-5,'surface-mounted head is normal to the curved body');
+      assert.ok(anchor.surfaceError<GRID*.03,'the fastening seat touches the rendered SDF surface');
+      assert.ok(anchor.gap<GRID*2.2,'no fastener is projected into a distant unconnected part');
     }
     assert.ok(m.screws.some(s=>s.diagonal),'functional diagonal screws are present');
     const angled=m.screws.filter(s=>s.diagonal).length;
