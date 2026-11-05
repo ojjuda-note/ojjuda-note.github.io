@@ -84,6 +84,11 @@
     const visibleHole=h=>h.owner===null||inBoard(screenPoint(h).x,screenPoint(h).y);
     const resetView=()=>{st.view={zoom:1,x:180,y:316};};
     const movesLeft=()=>Math.max(0,st.moveLimit+st.extraMoves-st.moves);
+    // Do not lift the last screw when every other hole is occupied: the hand
+    // is not an additional storage slot. A vacant hole may be covered by a
+    // falling sheet now and become accessible once the pickup releases it.
+    const hasDestination=screw=>st.level.holes.some(h=>h!==screw.hole&&h.screw===null);
+    const canTransfer=screw=>canUnscrew(st.level,screw)&&hasDestination(screw);
     function pendingPurchase(L,kind){try{const id=localStorage.getItem(purchaseKey(L,kind));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
     function savePurchase(L,kind,id){try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
     function addHoles(count){
@@ -173,6 +178,7 @@
         if(st.selected!==null){tell('들고 있는 나사를 먼저 끼워 주세요');return;}
         const screw=st.level.screws[h.screw];
         if(!canUnscrew(st.level,screw)){tell('다른 철판이 가리고 있어요');return;}
+        if(!hasDestination(screw)){tell('옮길 빈 구멍이 없어요. 구멍을 추가하거나 다시 풀어 봐요');return;}
         const from=screenPoint(h);
         if(!st.physics.lift(screw)){tell('나사를 들어 올릴 수 없어요');return;}
         st.selected=screw.id;st.heldFrom=h.id;st.moves++;st.focus=null;
@@ -246,7 +252,7 @@
     function draw(c) {
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
       const remaining=movesLeft(),holding=st.selected!==null,held=holding?st.level.screws[st.selected]:null;
-      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>holding?(h.screw===null&&canSeatScrew(st.level,h,held)):(h.screw!==null&&canUnscrew(st.level,st.level.screws[h.screw])));
+      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>holding?(h.screw===null&&canSeatScrew(st.level,h,held)):(h.screw!==null&&canTransfer(st.level.screws[h.screw])));
       const showZoom=st.level.plates.length>18||st.level.screwRadius<10;
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
       c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,showZoom?178:250);
@@ -379,7 +385,7 @@
         }
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
           if(st.pending)return true;
-          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null&&canSeatScrew(st.level,h,st.level.screws[st.selected])));if(!visible.length)return true;
+          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null&&canTransfer(st.level.screws[h.screw]):h.screw===null&&canSeatScrew(st.level,h,st.level.screws[st.selected])));if(!visible.length)return true;
           const i=visible.findIndex(h=>h.id===st.focus),delta=key==='ArrowLeft'||key==='ArrowUp'?-1:1;
           st.focus=visible[i<0?(delta>0?0:visible.length-1):(i+delta+visible.length)%visible.length].id;return true;
         }
