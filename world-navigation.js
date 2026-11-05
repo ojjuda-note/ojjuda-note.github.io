@@ -10,6 +10,7 @@
       const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
       const back = () => {
         if (options.closeOverlay()) return true;
+        if (options.handleBack?.()) return true;
         if (options.isMain()) return false;
         if (options.canLeave()) options.toMain();
         return true;

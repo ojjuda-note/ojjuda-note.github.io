@@ -5,7 +5,8 @@ const base=path.dirname(fileURLToPath(import.meta.url));
 const data=JSON.parse(fs.readFileSync(path.join(base,'events.json'),'utf8'));
 const errors=[];const fail=msg=>errors.push(msg);
 const regions=new Set(['서울','부산','대구','인천','광주','대전','울산','세종','경기','강원','충북','충남','전북','전남','경북','경남','제주']);
-const categories=new Set(['local','campus','film','expo']);
+const categories=new Set(['local','campus','film','expo','sport']);
+const sections=new Set(['festival','sports','performance']);
 const hasText=v=>typeof v==='string'&&!!v.trim();
 const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v;
 const validURL=v=>{try{return ['https:','http:'].includes(new URL(v).protocol);}catch{return false;}};
@@ -20,6 +21,9 @@ for(const e of data.events||[]){
  if(ids.has(e.id))fail(prefix+': duplicate id');ids.add(e.id);
  for(const k of ['title','region','city','venue','summary','scheduleNote','priceNote','sourceName'])if(!hasText(e[k]))fail(prefix+': missing '+k);
  if(!categories.has(e.category))fail(prefix+': invalid category');
+ if(!sections.has(e.section))fail(prefix+': invalid or missing section');
+ if(e.category==='sport'&&(!hasText(e.sportType)||e.section!=='sports'))fail(prefix+': sports must have sportType and sports section');
+ if(e.category!=='sport'&&e.section==='sports')fail(prefix+': non-sports entry in sports section');
  if(!regions.has(e.region))fail(prefix+': invalid region');
  if(e.dateStatus===undefined||e.dateStatus==='confirmed'){
   if(!validDate(e.start)||!validDate(e.end)||e.end<e.start)fail(prefix+': invalid date range');
@@ -33,6 +37,8 @@ for(const e of data.events||[]){
  if(e.locationStatus===undefined){
   if(!hasText(e.address))fail(prefix+': missing address');
   if(!validCoordinates(e))fail(prefix+': invalid Korean venue coordinates');
+ }else if(e.locationStatus==='unmapped'){
+  if(typeof e.address!=='string'||e.lat!==null||e.lng!==null)fail(prefix+': unmapped venue requires string address and null coordinates');
  }else if(e.locationStatus==='undecided'||e.locationStatus==='planned'){
   if(typeof e.address!=='string')fail(prefix+': address must be a string');
   const noCoordinates=e.lat===null&&e.lng===null;
@@ -42,5 +48,6 @@ for(const e of data.events||[]){
  if(typeof e.geoApprox!=='boolean')fail(prefix+': geoApprox must be boolean');
  if(!['scheduled','cancelled','postponed'].includes(e.status))fail(prefix+': invalid status');
  if(e.accessNote!=null&&typeof e.accessNote!=='string')fail(prefix+': invalid accessNote');
+ if(e.verificationSources!==undefined&&(!Array.isArray(e.verificationSources)||e.verificationSources.some(v=>!validURL(typeof v==='string'?v:v?.url))))fail(prefix+': invalid verificationSources');
 }
-if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else console.log(`PASS: ${data.events.length} festivals, unique IDs, confirmed/undecided dates, venue coordinates, statuses and official-source fields`);
+if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else console.log(`PASS: ${data.events.length} festival, sports and performance entries, unique IDs, sections, dates, locations, statuses and official-source fields`);

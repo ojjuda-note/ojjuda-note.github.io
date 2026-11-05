@@ -93,7 +93,7 @@ test('both the undecided shortcut and period selector show only undated records'
   assert.equal(f.$('#period').value, 'upcoming');
   assert.ok(f.ids().includes('confirmed'));
   f.change('#period', 'undecided');
-  f.click('[data-category="film"]');
+  f.click('[data-category="performance"]');
   assert.deepEqual(f.ids(), ['undated-film']);
 });
 
@@ -161,4 +161,19 @@ test('undecided deep links normalize calendar to list and history restores saved
   assert.deepEqual(f.ids(), ['undated-film']);
   assert.equal(f.$('#event-dialog').open, true);
   assert.equal(f.$('#saved-toggle').getAttribute('aria-pressed'), 'true');
+});
+
+
+test('festival, sports and performance top-level chips filter events and retain a shareable route', async t => {
+  const f = await fixture(t);
+  f.click('[data-category="festival"]');
+  assert.deepEqual(f.ids(), ['confirmed', 'undated-campus']);
+  assert.equal(f.query().get('category'), 'festival');
+  f.click('[data-category="performance"]');
+  assert.deepEqual(f.ids(), ['undated-film']);
+  f.click('[data-category="sports"]');
+  assert.deepEqual(f.ids(), []);
+  assert.equal(f.query().get('category'), 'sports');
+  f.click('[data-category="all"]');
+  assert.deepEqual(f.ids(), ['confirmed','undated-campus','undated-film']);
 });

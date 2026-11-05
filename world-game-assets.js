@@ -6,7 +6,7 @@
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   byeolcheonji:'1.0.3',
-  festival:'1.2.1',
+  festival:'1.3.0',
   restaurants:'1.9.8',
   recommendations:'1.5.3',
   archery:'3.0.0',
@@ -25,7 +25,7 @@
   stacker:'1.4.3',
   breakout:'1.5.3',
   spot:'1.10.5',
-  screw:'2.10.1',
+  screw:'2.10.2',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
@@ -38,7 +38,7 @@
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
   byeolcheonji:[],
-  festival:['/world-festival-schedule.css?v=20261104-agit-home1','/world-festival-schedule.js?v=20261104-agit-home1'],
+  festival:['/world-festival-schedule.css?v=20261105-festival-three-sections1','/world-festival-schedule.js?v=20261105-festival-three-sections1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261104-agit-home1','/world-restaurant-guide.js?v=20261105-recommendations-location-guard1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261105-recommendations-location-guard1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261105-recommendations-location-guard1'],
   archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261104-archery-admin-trial1','/world-archery-game.js?v=20261104-archery-reset5'],

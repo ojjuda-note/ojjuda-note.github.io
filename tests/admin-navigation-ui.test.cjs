@@ -290,10 +290,24 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
       assert.equal((await current()).tab, saved.tab==='events'?'cards':saved.tab==='chats'?'messages':saved.tab);
       assert.equal(await page.locator('[data-act="adm-cr"], [data-act="adm-chatlim"], [data-act="adm-content-kind"]').count(), 0);
     }
-    assert.deepEqual(await page.locator('.adm-site-links a').allTextContents(), ['아지트로 돌아가기']);
+    assert.deepEqual(await page.locator('.adm-site-links [data-act="adm-back"]').allTextContents(), ['← 관리자 메인']);
     assert.equal(await page.locator('.adm-areas a').textContent(), '원고실');
     assert.equal(await page.locator('.adm-areas').locator('button,a').last().textContent(), '원고실', 'the studio follows operations');
-    assert.equal(await page.locator('.adm-site-links a').first().getAttribute('href'), '/world.html');
+    assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
+    // Each administrator section goes straight to the dashboard, then to World.
+    await area('operations'); await tab('errors');
+    await page.locator('[data-act="adm-back"]').click();
+    assert.deepEqual(await current(), {area:'account',tab:'overview'});
+    assert.equal(await page.locator('[data-act="adm-back"]').textContent(), '← 오쭈다 메인');
+    await page.locator('[data-act="adm-back"]').click();
+    await page.waitForFunction(() => worldTest.state.place?.id === 'arcade');
+    await page.evaluate(() => worldTest.actions.tab({tab:'admin'}));
+    assert.deepEqual(await current(), {area:'account',tab:'overview'}, 'reopening admin starts at its dashboard');
+    await area('content'); await tab('risk');
+    await page.evaluate(() => history.back());
+    await page.waitForFunction(() => worldTest.admin.area === 'account' && worldTest.admin.tab === 'overview');
+    await page.evaluate(() => history.back());
+    await page.waitForFunction(() => worldTest.state.place?.id === 'arcade');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();
     await page.getByLabel(/^서비스 공지/).waitFor();

@@ -284,9 +284,14 @@ function applySculptedSkins(M,step) {
   // covered buttons. The real plates, their screw paths and their collisions
   // are unchanged. Guard straps remain clearly metal and full-sized.
   if(ANIMALS.has(M.name)&&M.name!=='수박')for(const E of M.els){
-    if(E.kind!=='plate'||E.guard||E.diagonal||E.parts)continue;
+    if(E.kind!=='plate'||E.guard||E.diagonal)continue;
     E.skinPlate=true;
     E.skinPlateColor=M.name==='돼지'?'#F0AFC2':M.name==='펭귄'?'#82939A':M.name==='소'?'#E5E1D6':'#F0E7DD';
+    // Decorative fasteners from the old cube model (including multi-part
+    // plates) cannot sit outside the new curved body. Their physical plates
+    // still exist for screw collisions and the solution order; only the old
+    // detached visual geometry is suppressed.
+    E.visualMountOnly=true;
   }
   // A cloth button should sit beneath each visible screw, not hang at the
   // old cubic plate location. Guard plates remain metal and keep their shape.
