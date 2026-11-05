@@ -55,11 +55,27 @@
     for(const v of p.mounts){const r=(p.shaftRadius||p.screwRadius||13)/13;c.save();c.translate(v.x,v.y);c.scale(r,r);oval(c,0,0,13,13,'#718397');oval(c,0,0,10,10,'#506176');oval(c,0,2,7,7,'#65798B');c.restore();}
     c.restore();
   }
+  const Drills=typeof module!=='undefined'&&module.exports?require('./screw-flat-drills.js'):window.OjjudaFlatDrills;
   function flat(api,startStage=readResumeStage()) {
     const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?Math.min(startStage,readStage()):1,attemptId:null,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Map(),pinch:null,gestureBlocked:false,focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
 
+    const drills=Drills.create(api,walletUser,readStage());
+    let drillRun,drillTrace=[],usingDrill=false;
+    const physicsTick=()=>Math.round(st.physics.engine.timing.timestamp*120/1000);
+    async function useDrill(){
+      if(usingDrill||st.shopBusy||st.pending||st.complete||st.ended||st.failed||st.destroyed)return;
+      const run=drillRun;usingDrill=true;st.shopBusy='buying';api.drillChanged?.();
+      try{
+        const r=await drills.use(run,st.extraHoles);
+        if(run!==drillRun||st.destroyed||walletUser&&!sameWallet())return;
+        if(r?.ok&&Number.isInteger(r.count)&&r.count>=1&&r.count<=MAX_EXTRA_HOLES){
+          addHoles(r.count);tell('드릴로 보관 구멍을 1개 추가했어요');
+        }else tell(r?.reason==='empty'?'보유한 드릴이 없어요':r?.reason==='limit'?'보관 구멍이 가득 찼어요':'드릴 사용을 다시 시도해 주세요');
+      }catch{if(run===drillRun&&!st.destroyed)tell('드릴 사용을 다시 확인해 주세요');}
+      finally{if(run===drillRun){usingDrill=false;st.shopBusy='';api.drillChanged?.();}}
+    }
     const activeAttemptKey=walletUser?`${ATTEMPT_KEY}:${walletUser}`:null;
     const isUuid=id=>typeof id==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id);
     function finishAttempt(){
@@ -151,6 +167,7 @@
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
       resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.pinch=null;st.gestureBlocked=false;st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
+      usingDrill=false;drillTrace=[];drillRun=drills.start(L,st.attemptId);
       if(sameWallet()&&api.buyScrew)void readUpgrades();
     }
     function openAlbum(){
@@ -204,6 +221,7 @@
       const source=screw.hole;
       if(!st.physics.move(screw,h)){tell('철판에 가려진 곳이에요. 다른 빈 구멍을 골라요');return;}
       st.pending={kind:'transfer',screw:screw.id,from:source,to:h,time:0,duration:.38};
+      drillTrace.push([physicsTick(),screw.id,h.id]);
       st.moves++;st.selected=null;st.focus=null;
     }
     function update(dt) {
@@ -216,6 +234,7 @@
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
         resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));finishAttempt();
         st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
+        drills.finish(drillRun,drillTrace,physicsTick(),st.extraHoles>0||st.extraMoves>0);
         api.stageClear?.(st.score);
       }
       // Let a released plate finish falling before judging the last move.
@@ -225,7 +244,7 @@
       if(!st.complete&&!st.pending&&st.selected===null&&st.moves>=allowance&&
         !st.level.plates.some(p=>p.state!=='gone'&&p.pins.length===0)&&
         st.failureMarker!==`moves:${allowance}`){
-        st.failureMarker=`moves:${allowance}`;st.failed=true;api.stageFail?.(st.score);
+        st.failureMarker=`moves:${allowance}`;st.failed=true;void drills.fail(drillRun);api.stageFail?.(st.score);
       }
     }
     function drawHole(c,h,scale=1) {
@@ -346,7 +365,9 @@
       c.restore();
     }
     start(st.L);
-    return {state:st,update,draw,screenPoint,
+    return {state:st,update,draw,screenPoint,useDrill,
+      get drillState(){return drills.state;},
+      get controls(){return '<button type="button" class="flat-drill-button" data-g="screw-drill">드릴 '+drills.state.balance+'개 · 구멍 추가</button>';},
       get stage(){return st.L;},
       get levels(){return LAST_STAGE;},
       get unlockedStage(){return readStage();},

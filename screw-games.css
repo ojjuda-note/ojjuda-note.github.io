@@ -139,3 +139,9 @@
   }
   #gov[data-screw-mode="flat"]:has(.screw-stage-card, .game-result-card) .screw-zoom-nav { display:none; }
 }
+
+#gov[data-screw-mode="flat"] .flat-drill-button {
+  min-height:40px; padding:5px 16px; border:1px solid #c5c7d6; border-radius:12px;
+  background:#f4f3fa; color:#403d57; font-weight:650; touch-action:manipulation;
+}
+#gov[data-screw-mode="flat"] .flat-drill-button:disabled { color:#716f7c; background:#efedf0; }
