@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 6,
-    "scheduledAt": "2026-11-06T00:00:00+09:00",
+    "slot": 7,
+    "scheduledAt": "2026-11-06T01:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled execution 2026-11-06 00:00 Asia/Seoul"
+    "source": "hourly scheduled: anchored at 2026-11-05T23:00+09:00"
   },
   "entries": [
     {
@@ -1741,6 +1741,289 @@
         "인천광역시 서해구",
         "인천광역시 검단구"
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 7,
+      "scheduledAtKST": "2026-11-06T01:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_12_official_incheon_tourism_additions",
+      "assignedRegions": [
+        "인천광역시 부평구",
+        "인천광역시 계양구",
+        "인천광역시 서해구",
+        "인천광역시 검단구"
+      ],
+      "regionAudit": [
+        {
+          "region": "인천광역시 부평구",
+          "baseListedCount": 68,
+          "scope": "인천투어 공식 식당 6곳 추가/덕수갈비·1982삼계정 기존 2곳 주소 대조(비전수)",
+          "new": 6,
+          "updated": 0,
+          "unknownLocations": 73,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 계양구",
+          "baseListedCount": 37,
+          "scope": "인천투어 공식 식당 3곳 추가/몽뻬르과자점 주소 대조(비전수)",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 40,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 서해구",
+          "baseListedCount": 1,
+          "scope": "인천투어 공식 식당 2곳 확인, 옛 서구 주소 분리 필요",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 검단구",
+          "baseListedCount": 0,
+          "scope": "인천투어 공식 식당 1곳 확인, 옛 서구 주소 분리 필요",
+          "new": 1,
+          "updated": 0,
+          "unknownLocations": 1,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "인천관광공사 인천투어(한국관광공사 제공) 공식 음식점 소개",
+        "인천시 맛있는집 기존 3곳 주소 대조"
+      ],
+      "additions": 12,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 163,
+      "locationPendingScope": "부평 기존67+신규6, 계양 기존37+신규3, 서해 기존1+신규2, 검단 신규1, 옛 서구 표기 기존46 (중복 지역 분류 재확인 전). 실제 주소 재검토 15곳만.",
+      "legacyDistrictAliasPending": 46,
+      "addedRestaurantIds": [
+        "local-incheon-itour-apd21112609193087780",
+        "local-incheon-itour-apd21112609180520327",
+        "local-incheon-itour-apd21112609190439861",
+        "local-incheon-itour-apd21112609162787758",
+        "local-incheon-itour-apd21112609142295248",
+        "local-incheon-itour-apd21112609142198558",
+        "local-incheon-itour-apd21121010002312914",
+        "local-incheon-itour-itd25011713193956493",
+        "local-incheon-itour-itd22010409442372372",
+        "local-incheon-itour-itd22010409520575697",
+        "local-incheon-itour-itd25112513304489119",
+        "local-incheon-itour-itd25020711230610778"
+      ],
+      "existingItemsRechecked": [
+        "덕수갈비",
+        "1982삼계정",
+        "몽뻬르과자점"
+      ],
+      "evidenceUrls": [
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-incheon-itour-apd21112609193087780",
+          "name": "해물명가 동해해물탕",
+          "address": "인천광역시 부평구 부평문화로 108",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609180520327",
+          "name": "함흥냉면",
+          "address": "인천광역시 부평구 시장로20번길 21",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609190439861",
+          "name": "취선",
+          "address": "인천광역시 부평구 굴포로 50-6",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609162787758",
+          "name": "대하해물탕",
+          "address": "인천광역시 부평구 장제로91번길 24-5",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609142295248",
+          "name": "복화루",
+          "address": "인천광역시 부평구 부평대로32번길 16",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21112609142198558",
+          "name": "촌집보쌈",
+          "address": "인천광역시 부평구 백범로422번길 58",
+          "region": "인천광역시 부평구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-apd21121010002312914",
+          "name": "고메돈까스",
+          "address": "인천광역시 계양구 서부간선로 257 (박촌동)",
+          "region": "인천광역시 계양구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-itd25011713193956493",
+          "name": "블랑제리쉐종",
+          "address": "인천광역시 계양구 경명대로 1068, 102호",
+          "region": "인천광역시 계양구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-itd22010409442372372",
+          "name": "등촌샤브칼국수 계양점",
+          "address": "인천광역시 계양구 오조산로45번길 8-1, 2층",
+          "region": "인천광역시 계양구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-itd22010409520575697",
+          "name": "등촌샤브칼국수 서해구점",
+          "address": "인천광역시 서해구 탁옥로 69",
+          "region": "인천광역시 서해구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-itd25112513304489119",
+          "name": "청라제과",
+          "address": "인천광역시 서해구 청라커낼로288번길 8-10",
+          "region": "인천광역시 서해구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-incheon-itour-itd25020711230610778",
+          "name": "아이에프베이커리",
+          "address": "인천광역시 검단구 완정로 70",
+          "region": "인천광역시 검단구",
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+          ],
+          "result": "공식 소개의 이름·주소 확인, 식당 일치 위경도 근거 미확보로 null",
+          "recheckCycle": 2,
+          "recheckSlot": 7,
+          "action": "다음 순환 재확인, 검증 전 삭제·폐업 처리 금지"
+        }
+      ],
+      "unresolved": [
+        "위치 좌표 미확인 범위 163곳(전수 재검토 아님)",
+        "과거 인천 서구 표기 46곳은 서해구/검단구 지점 재분류 필요",
+        "블루리본 신규 정규 선정·현 영업상태 별도 미확인",
+        "페이지 최초등록·최종수정일은 선정연도·영업확증 아님"
+      ],
+      "carryOver": [
+        "위치 미확인 163곳 차기 동일 배정 시 우선 재점검",
+        "구 서구 등록자료 46곳 현행 서해·검단 주소 검증 후 분류",
+        "공식 가이드 신규 선정 후보 추가 조사"
+      ],
+      "nextSlot": 8,
+      "nextRegions": [
+        "경기도 수원시",
+        "경기도 화성시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [

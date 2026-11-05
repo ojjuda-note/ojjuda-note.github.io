@@ -1,13 +1,13 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-flat-shapes-spare1';
+ const revision='20261106-flat-holes-curves3';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   byeolcheonji:'1.0.3',
   festival:'1.3.0',
-  restaurants:'1.9.11',
+  restaurants:'1.9.12',
   recommendations:'1.5.3',
   archery:'3.0.0',
   roulette:'1.8.2',
@@ -25,7 +25,7 @@
   stacker:'1.4.3',
   breakout:'1.5.3',
   spot:'1.10.5',
-  screw:'2.12.2',
+  screw:'2.12.5',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
@@ -56,7 +56,7 @@
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.css?v=20261102-breakout-round-choice1','/games/breakout-game.js?v=20261102-breakout-pickups2'],
-  screw:[...controls,'/screw-games.css?v=20261105-screw-stage-items1','/screw-loader.js?v=20261106-flat-shapes-spare1'],
+  screw:[...controls,'/screw-games.css?v=20261106-screwbox-responsive1','/screw-loader.js?v=20261106-flat-holes-curves3'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();

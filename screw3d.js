@@ -1174,18 +1174,21 @@ function missionText(ms) {
   return `🔄 ${ms.need}번 이하로 돌려서 깨기 · ${ms.turns}번 돌림`;
 }
 const missionOk = ms => (ms.id === 'find' ? ms.found.size >= ms.need : ms.id === 'time' ? ms.t <= ms.need : ms.id === 'turns' ? ms.turns <= ms.need : !ms.bad);
-const STAGE_KEY = 'ojjuda-screw-stage';
-const RESUME_KEY = 'ojjuda-screw-last-stage-v1';
+// Versioned, member-scoped stage keys reset only box stages to 1. Old scores stay untouched.
+const STAGE_KEY = 'ojjuda-screw-box-stage-v2';
+const RESUME_KEY = 'ojjuda-screw-box-last-stage-v2';
 const PURCHASE_KEY = 'ojjuda-screw-purchases-v2';
 const ATTEMPT_KEY = 'ojjuda-screw-active-attempt-v1';
-function loadStage() { try { const v = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(v) && v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
-function saveStage(L) { try { localStorage.setItem(STAGE_KEY, String(Math.max(loadStage(),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function stageStorageKey(prefix,api) { return prefix + ':' + String(api.getUserId?.() || 'guest'); }
+function loadStage(api) { try { const v = Number(localStorage.getItem(stageStorageKey(STAGE_KEY,api))); return Number.isInteger(v) && v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
+function saveStage(api,L) { try { localStorage.setItem(stageStorageKey(STAGE_KEY,api),String(Math.max(loadStage(api),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 // Keep the last played level separate from the highest unlocked milestone.
-function loadResumeStage() { try { const v = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return Math.min(v, loadStage()); } catch (_) {} return loadStage(); }
-function saveResumeStage(L) { try { localStorage.setItem(RESUME_KEY, String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
-function screw3d(api,startStage=loadResumeStage()) {
+function loadResumeStage(api) { try { const v = Number(localStorage.getItem(stageStorageKey(RESUME_KEY,api))); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return Math.min(v,loadStage(api)); } catch (_) {} return loadStage(api); }
+function saveResumeStage(api,L) { try { localStorage.setItem(stageStorageKey(RESUME_KEY,api),String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function screw3d(api,startStage) {
+  const initialStage = startStage === undefined ? loadResumeStage(api) : startStage;
   const depthRenderer=createScrewDepthRenderer();
-  const st = { L: Number.isInteger(startStage)&&startStage>=1&&startStage<=STAGES?Math.min(startStage, loadStage()):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
+  const st = { L: Number.isInteger(initialStage)&&initialStage>=1&&initialStage<=STAGES?Math.min(initialStage,loadStage(api)):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
@@ -1264,7 +1267,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     if(['토끼','돼지','소'].includes(st.lvl.name)) {st.yaw=-0.67;st.pitch=.29;}
     warmLevel = null;
     if(warmWorker) {warmWorker.terminate();warmWorker=null;}
-    st.ms = pickMission(L, st.lvl); saveResumeStage(L);
+    st.ms = pickMission(L, st.lvl); saveResumeStage(api,L);
     // Start big objects in fast mode so the first rendered frame does not lag.
     st.big = st.lvl.screws.length + st.lvl.els.length > 100;
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R,
@@ -1283,7 +1286,16 @@ function screw3d(api,startStage=loadResumeStage()) {
   function project(p, V) { const q = mv(V, p), sc = st.sc, k = F / (F - q[2] / sc), s = SC * st.zm / sc; return { x: CX + st.pan[0] + q[0] * s * k, y: CY + st.pan[1] - q[1] * s * k, z: q[2], k }; }
   function zoomAt(f, x, y) { const z1 = Math.max(0.6, Math.min(9, st.zm * f)), vx = (x - CX - st.pan[0]) / st.zm, vy = (y - CY - st.pan[1]) / st.zm; st.pan = [x - CX - vx * z1, y - CY - vy * z1]; st.zm = z1; }
   const BTN = [{ x: 336, y: 406, t: '+', f: () => zoomAt(1.4, CX, CY) }, { x: 336, y: 444, t: '−', f: () => zoomAt(1 / 1.4, CX, CY) }, { x: 336, y: 482, t: '⤢', f: () => { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; } }];
-  const zoomBtn = (x, y) => { const b = BTN.find(q => Math.hypot(x - q.x, y - q.y) < 17); return b && b.f; };
+  const canvasScale = () => { const n = Number(api.getCanvasScale?.()); return Number.isFinite(n) && n > 0 ? n : 1; };
+  // Keep taps comfortable on narrow displays without widening a hit across a hidden screw.
+  const touchRadius = () => Math.min(44, Math.max(20, 22 / Math.max(0.4, canvasScale())));
+  const zoomBtn = (x, y) => {
+    const reach = Math.min(45, Math.max(19, 22 / Math.max(0.4, canvasScale())));
+    // Nearest control wins where 44px touch regions overlap.
+    const b = BTN.filter(q => Math.abs(x - q.x) < reach && Math.abs(y - q.y) < reach)
+      .sort((a, b) => Math.abs(a.y - y) - Math.abs(b.y - y))[0];
+    return b && b.f;
+  };
   const coins = () => { const n = api.getCoins?.(); return Number.isFinite(n) ? n : null; };
   function grantUpgrade(kind, id) {
     if (st.appliedPurchaseIds.has(id)) return;
@@ -1447,7 +1459,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   function pick(x, y) {   // 손가락 아래 가장 앞에 보이는 것, 조금 빗나가면 가까운 보이는 나사 (돋보기로 드러난 나사가 먼저)
     if(x<0||x>W||y<SCENE_TOP||y>SCENE_BOTTOM)return null;
     const o = topAt(x, y); if (o && o.p) return o;
-    let best = null, bd = 20;
+    let best = null, bd = touchRadius();
     for (const [s, h] of st.heads) { const d = Math.hypot(h.x - x, h.y - y); if (d < bd && topAt(h.x, h.y) === s) { bd = d; best = s; } }
     return best;
   }
@@ -1477,7 +1489,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   return {
     get stage() { return st.L; },
     get levels() { return STAGES; },
-    get unlockedStage() { return loadStage(); },
+    get unlockedStage() { return loadStage(api); },
     get stageCleared() { return !!st.next; },
     get stageFailed() { return ended && !st.next; },
     async prepareStageChoice() {
@@ -1487,7 +1499,7 @@ function screw3d(api,startStage=loadResumeStage()) {
     },
     continueStage(next) {
       if (destroyed || buying || restoreBlocked || (walletUser && !sameWallet()) || Object.keys(st.purchases.pending).length || !st.next || next !== st.L + 1 || next > STAGES) return false;
-      saveStage(next); start(next); return true;
+      saveStage(api,next); start(next); return true;
     },
     destroy() { finishAttempt(); destroyed = true; depthRenderer.destroy();if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
       st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
@@ -1521,6 +1533,15 @@ function screw3d(api,startStage=loadResumeStage()) {
       st.lensHold = false; st.lens = null;
     },
     onWheel(dy, x, y) { zoomAt(Math.exp(-dy * 0.0015), x, y); st.touched = true; },
+    zoomControl(action) {
+      if (destroyed || ended) return false;
+      if (action === 'in') zoomAt(1.4, CX, CY);
+      else if (action === 'out') zoomAt(1 / 1.4, CX, CY);
+      else if (action === 'reset') { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; }
+      else return false;
+      st.touched = true;
+      return true;
+    },
     update(dt) {
       if (destroyed || ended || buying || st.next) return;
       if (walletUser && !sameWallet()) { restoreBlocked = true; say('계정이 바뀌었어요. 게임을 다시 열어 주세요', 3); return; }
@@ -1591,7 +1612,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!st.next) st.ms.t += dt;
       if (!st.next && st.lvl.screws.every(s => s.state === 'done') && !st.fly.length && st.lvl.els.every(e => e.state === 'gone')) {
         const ok = missionOk(st.ms); st.score += st.L * 10 + (ok ? st.ms.bonus : 0); api.setScore(st.score); api.saveScore?.(st.score); st.missions = (st.missions || 0) + (ok ? 1 : 0);
-        st.next = 1; sound('win'); saveStage(Math.min(STAGES, st.L + 1)); finishAttempt();
+        st.next = 1; sound('win'); saveStage(api,Math.min(STAGES, st.L + 1)); finishAttempt();
         api.stageClear?.(st.score);
         return;
       }
