@@ -117,7 +117,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
   assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
-  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','photo-stages','risk','map']);
+  assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','photo-stages','risk','map','rewards']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
   t.adminState.area='trash';t.adminState.tab='trash-cards';
   assert.ok(t.adminMarkup().includes('world-admin-trash'),'deleted cards use the unified trash screen');
