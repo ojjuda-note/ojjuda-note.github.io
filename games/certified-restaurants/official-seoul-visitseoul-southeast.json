@@ -1,0 +1,353 @@
+{
+  "updatedAt": "2026-11-05",
+  "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+  "sourceUrl": "https://korean.visitseoul.net/restaurants",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-seoul-visitseoul-se-gwanak-bongijeon",
+      "name": "봉이전",
+      "category": "한식",
+      "region": "서울",
+      "district": "관악구",
+      "address": "서울 관악구 봉천로 473-5, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬전",
+        "육전"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-02",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Bong-iJeon/KOP1gyxbd"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-gwanak-ganggangsullae",
+      "name": "강강술래 신림본동점",
+      "category": "한식",
+      "region": "서울",
+      "district": "관악구",
+      "address": "서울 관악구 남부순환로 1660",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 모둠구이",
+        "돼지 양념구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-04",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-gwanak-duremidadm",
+      "name": "두레미담 서울대점",
+      "category": "한식",
+      "region": "서울",
+      "district": "관악구",
+      "address": "서울 관악구 관악로 1 (서울대학교)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-05-05",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%91%90%EB%A0%88%EB%AF%B8%EB%8B%B4%EC%84%9C%EC%9A%B8%EB%8C%80%EC%A0%90/KOP007145"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-seocho-yeongdong-jokbal",
+      "name": "영동족발",
+      "category": "한식",
+      "region": "서울",
+      "district": "서초구",
+      "address": "서울 서초구 남부순환로 2628-18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-15",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EC%98%81%EB%8F%99%EC%A1%B1%EB%B0%9C/KOP014185"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-seocho-bongsanok",
+      "name": "봉산옥",
+      "category": "한식",
+      "region": "서울",
+      "district": "서초구",
+      "address": "서울 서초구 반포대로8길 5-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "봉산 만두국",
+        "김치말이국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-04",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/%EB%B4%89%EC%82%B0%EC%98%A5/KOP011313"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-seocho-la-saveur",
+      "name": "라싸브어",
+      "category": "양식",
+      "region": "서울",
+      "district": "서초구",
+      "address": "서울 서초구 서래로 24, 5층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "달팽이",
+        "프렌치 어니언 수프",
+        "스테이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-07-02",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%9D%BC%EC%8B%B8%EB%B8%8C%EC%96%B4/KOP004220"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-gangnam-duru",
+      "name": "두루",
+      "category": "한식",
+      "region": "서울",
+      "district": "강남구",
+      "address": "서울 강남구 선릉로148길 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지볶음",
+        "주먹밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-03",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        },
+        {
+          "provider": "blue-ribbon",
+          "label": "3리본 이력(관광기사 언급)",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
+          "sourceName": "서울관광재단 Visit Seoul 공식 음식점 소개(과거 이력)",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2018-07-22",
+          "sourceDateType": "official-page-creation",
+          "status": "historical_selection",
+          "selectionCriteria": "2018년 서울관광재단 관광 소개에서 블루리본 3개를 받은 이력을 언급했습니다. 정규 수상 연도·현재 리본 등급 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-songpa-yonggi",
+      "name": "용기수산",
+      "category": "한식",
+      "region": "서울",
+      "district": "송파구",
+      "address": "서울 송파구 양재대로 932, 가락몰 판매동 1층 C-28호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "계절 모둠회",
+        "활어회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-04",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/YonggiFisheries/KOP0fbnhd"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-songpa-dorim-lotteworld",
+      "name": "도림 롯데호텔월드점",
+      "category": "중식",
+      "region": "서울",
+      "district": "송파구",
+      "address": "서울 송파구 올림픽로 240, 롯데호텔월드 32층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "딤섬",
+        "한우자장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-25",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%8F%84%EB%A6%BC/KOP003558"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-songpa-hangukjip-lotteworldmall",
+      "name": "한국집 롯데월드몰점",
+      "category": "한식",
+      "region": "서울",
+      "district": "송파구",
+      "address": "서울 송파구 올림픽로 300, 롯데월드몰 5층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전주비빔밥",
+        "육회비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-10-27",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/HangukJipkr/KOPtlh2om"
+    },
+    {
+      "id": "local-seoul-visitseoul-se-gangdong-namhangang",
+      "name": "남한강 매운탕",
+      "category": "한식",
+      "region": "서울",
+      "district": "강동구",
+      "address": "서울 강동구 양재대로 1594",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울관광재단 공식 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237",
+          "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-06-11",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%82%A8%ED%95%9C%EA%B0%95-%EB%A7%A4%EC%9A%B4%ED%83%95/KOP030237"
+    }
+  ],
+  "notes": [
+    "관악·서초·강남·송파·강동구 공식 음식점/관광 소개의 일부만 확인했습니다. 전수목록이 아닙니다.",
+    "두루의 3리본은 2018년 관광 소개에 언급된 과거 이력이며 2026년 현재 리본 등급·선정연도를 입증하지 않습니다.",
+    "가게 이름·지점·주소·메뉴와 출처 링크만 사용. 원문 설명·사진 복제하지 않음.",
+    "현 주소와 연결된 검증 가능한 위경도 증거가 없어 모두 좌표 null. 영업 여부 별도 확인 전 미확정."
+  ]
+}
