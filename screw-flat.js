@@ -6,15 +6,15 @@
   const RESUME_KEY = 'ojjuda-screw-flat-last-stage-v1';
   const ATTEMPT_KEY = 'ojjuda-screw-flat-active-attempt-v1';
   const HELD={x:225,y:94};
-  const EXTRA_HOLE_X=[45,315,135],PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
+  const MAX_EXTRA_HOLES=3,PURCHASE_KEYS={flat_hole:'ojjuda-screw-flat-hole-pending-v1',flat_moves:'ojjuda-screw-flat-moves-pending-v1'};
   // Finishing requires almost four transfers per plate; keep room for mistakes
   // without making a paid extra-move purchase necessary on advanced stages.
-  const moveLimit=level=>Number.isInteger(level.requiredMoves)?level.requiredMoves+2:level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
+  const moveLimit=level=>Number.isInteger(level.requiredMoves)?level.requiredMoves+(level.stage<=30?5:2):level.route?level.route.length:Math.max(6,level.plates.length*4+4+Math.ceil(level.plates.length/3));
   const SCREW_COLOR = '#A3B6C7';
   const Pictures=typeof module!=='undefined'&&module.exports?require('./screw-flat-pictures.js'):window.OjjudaFlatPictures;
   const {PICTURES}=Pictures;
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
-  const {BOARD,LAST_STAGE,createPhysics,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
+  const {BOARD,LAST_STAGE,createPhysics,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
@@ -42,12 +42,13 @@
     c.rotate(rotation-.28); round(c,-8,-1.7,16,3.4,1.1); c.fillStyle='#405363'; c.fill();
     line(c,[[-7,1.8],[7,1.8]],'#DBE5EC',.65); c.restore();
   }
-  function metalPath(c,p){c.beginPath();p.vertices.forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
+  function metalPath(c,p,physical=false){c.beginPath();(physical?p.vertices:p.displayVertices||p.vertices).forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
   function drawPlate(c,p){
     const shades=[['#EBEFF3','#B9C8D7'],['#E2E8EC','#A5B9C5'],['#E9E6EF','#B9B5CD'],['#E7ECE8','#ADBFB6']];
-    const colors=shades[p.id%shades.length],top=Math.min(...p.vertices.map(v=>v.y)),bottom=Math.max(...p.vertices.map(v=>v.y));
+    const colors=shades[p.id%shades.length],face=p.displayVertices||p.vertices,top=Math.min(...face.map(v=>v.y)),bottom=Math.max(...face.map(v=>v.y));
     c.save();c.translate(p.x,p.y);c.rotate(p.angle);
-    c.save();c.translate(0,3);metalPath(c,p);c.fillStyle='#3F50633D';c.fill();c.restore();
+    c.save();c.translate(0,3);metalPath(c,p,true);c.fillStyle='#3F50633D';c.fill();c.restore();
+    if(p.displayVertices!==p.vertices){metalPath(c,p,true);c.fillStyle='#8192A2';c.fill();}
     const metal=c.createLinearGradient(0,top,0,bottom);metal.addColorStop(0,colors[0]);metal.addColorStop(.17,'#F6F8FA');metal.addColorStop(.55,colors[1]);metal.addColorStop(1,'#98AABB');
     metalPath(c,p);c.fillStyle=metal;c.fill();c.strokeStyle='#7F93A7';c.lineWidth=1.6;c.lineJoin='round';c.stroke();
     c.save();metalPath(c,p);c.clip();c.strokeStyle='#FFFFFF2B';c.lineWidth=.7;
@@ -84,15 +85,21 @@
     const visibleHole=h=>h.owner===null||inBoard(screenPoint(h).x,screenPoint(h).y);
     const resetView=()=>{st.view={zoom:1,x:180,y:316};};
     const movesLeft=()=>Math.max(0,st.moveLimit+st.extraMoves-st.moves);
+    const canTransfer=screw=>canUnscrew(st.level,screw)&&st.level.holes.some(h=>h!==screw.hole&&h.screw===null);
     function pendingPurchase(L,kind){try{const id=localStorage.getItem(purchaseKey(L,kind));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
     function savePurchase(L,kind,id){try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
     function addHoles(count){
-      while(st.extraHoles<count){const h={id:st.level.holes.length,x:EXTRA_HOLE_X[st.extraHoles],y:100,owner:null,screw:null,extra:true};st.level.holes.push(h);st.extraHoles++;}
+      if(count<=st.extraHoles)return;
+      while(st.extraHoles<count){st.level.holes.push({id:st.level.holes.length,x:0,y:100,owner:null,screw:null,extra:true});st.extraHoles++;}
+      layoutSpareHoles(st.level);
+      // Paid holes reflow the storage row; parked screws remain attached to
+      // their original hole objects and their physical bodies follow them.
+      st.physics?.refreshScrews();
     }
     function applyUpgrade(kind,count){
       if(kind==='flat_hole')addHoles(count);else st.extraMoves=Math.max(st.extraMoves,count*3);
     }
-    const validCount=(r,L,kind)=>r?.stage===L&&r.attempt_id===st.attemptId&&Number.isSafeInteger(r.count)&&r.count>=0&&(kind==='flat_hole'?r.count<=EXTRA_HOLE_X.length:r.extra_moves===r.count*3&&Number.isSafeInteger(r.extra_moves));
+    const validCount=(r,L,kind)=>r?.stage===L&&r.attempt_id===st.attemptId&&Number.isSafeInteger(r.count)&&r.count>=0&&(kind==='flat_hole'?r.count<=MAX_EXTRA_HOLES:r.extra_moves===r.count*3&&Number.isSafeInteger(r.extra_moves));
     const currentShop=(L,run)=>!st.destroyed&&st.L===L&&st.shopRun===run&&sameWallet();
     async function readUpgrades(){
       if(st.shopBusy||!sameWallet()||!api.buyScrew)return;
@@ -113,7 +120,7 @@
       if(!sameWallet()||!api.buyScrew){tell('로그인 후 구매할 수 있어요');return;}
       if(!st.shopReady){await readUpgrades();return;}
       const hole=kind==='flat_hole';
-      if(hole&&st.extraHoles>=EXTRA_HOLE_X.length){tell('이 판에는 최대 3개까지 추가해요');return;}
+      if(hole&&st.extraHoles>=MAX_EXTRA_HOLES){tell('이 판에는 최대 3개까지 추가해요');return;}
       const L=st.L,run=st.shopRun,before=hole?st.extraHoles:st.extraMoves;let id=pendingPurchase(L,kind);
       const coins=api.getCoins?.();if(!id&&(!Number.isFinite(coins)||coins<1)){tell(Number.isFinite(coins)?'1 ZU가 필요해요':'ZU 지갑을 확인해 주세요');return;}
       if(!id){id=crypto.randomUUID();if(!savePurchase(L,kind,id)){tell('구매 기록을 저장할 수 없어요');return;}}
@@ -173,6 +180,7 @@
         if(st.selected!==null){tell('들고 있는 나사를 먼저 끼워 주세요');return;}
         const screw=st.level.screws[h.screw];
         if(!canUnscrew(st.level,screw)){tell('다른 철판이 가리고 있어요');return;}
+        if(!canMoveToSpare(st.level,screw)){tell('옮길 빈 구멍이 없어요. 구멍을 추가하거나 다시 풀어 봐요');return;}
         const from=screenPoint(h);
         if(!st.physics.lift(screw)){tell('나사를 들어 올릴 수 없어요');return;}
         st.selected=screw.id;st.heldFrom=h.id;st.moves++;st.focus=null;
@@ -246,7 +254,7 @@
     function draw(c) {
       if(st.albumOpen){c.save();drawAlbum(c);c.restore();return;}
       const remaining=movesLeft(),holding=st.selected!==null,held=holding?st.level.screws[st.selected]:null;
-      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>holding?(h.screw===null&&canSeatScrew(st.level,h,held)):(h.screw!==null&&canUnscrew(st.level,st.level.screws[h.screw])));
+      const blocked=!st.complete&&!st.pending&&!st.level.holes.some(h=>holding?(h.screw===null&&canSeatScrew(st.level,h,held)):(h.screw!==null&&canTransfer(st.level.screws[h.screw])));
       const showZoom=st.level.plates.length>18||st.level.screwRadius<10;
       c.save();c.fillStyle='#F7F1E9';c.fillRect(0,0,WIDTH,HEIGHT);c.textBaseline='middle';c.textAlign='left';
       c.font='700 16px "Noto Sans KR",sans-serif';c.fillStyle='#474459';c.fillText(`${st.L}/${LAST_STAGE}단계 · ${st.complete?st.level.name:'숨은 그림'}`,22,26,showZoom?178:250);
@@ -255,12 +263,12 @@
       const lowMoves=!st.complete&&remaining<=3;
       round(c,74,39,212,29,14);c.fillStyle=lowMoves?'#B74736':'#426E53';c.fill();
       c.font='800 18px "Noto Sans KR",sans-serif';c.fillStyle='#FFFFFF';c.fillText(`남은 이동 ${remaining}회`,180,54,194);
-      round(c,24,68,312,55,18);c.fillStyle='#EAE2D9';c.fill();
+      round(c,24,68,312,62,18);c.fillStyle='#EAE2D9';c.fill();
       c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#8B7C6C';c.fillText('옮겨 끼울 빈 구멍',180,78);
       c.textAlign='left';c.font='10px "Noto Sans KR",sans-serif';c.fillStyle='#786C63';
-      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':holding?'들고 있는 나사를 빈 구멍에 끼워요':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<3?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 뽑아요':showZoom?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 뽑아 빈 구멍에 끼워요',26,133,226);
+      c.fillText(st.complete?'완성한 그림을 앨범에 모았어요!':holding?'들고 있는 나사를 빈 구멍에 끼워요':remaining===0?'이동 횟수 아이템으로 막힌 길을 풀어 봐요':blocked?(st.extraHoles<3?'추가 구멍으로 막힌 길을 열 수 있어요':'빈 구멍이 없어요 · 다시 눌러 재도전해요'):st.view.zoom>1?'철판을 밀어서 이동 · 나사를 눌러 뽑아요':showZoom?'작은 나사는 위의 확대 버튼으로 골라요':'나사를 뽑아 빈 구멍에 끼워요',26,137,226);
       c.fillStyle='#8E8178';
-      c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,133);
+      c.textAlign='right';c.fillText(`${st.level.shape||'철판'} ${st.level.plates.filter(p=>p.state!=='gone').length}조각`,333,137);
       round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.fillStyle='#DED3C7';c.fill();
       const size=(st.level.screwRadius||13)/13;
       c.save();round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();
@@ -290,10 +298,10 @@
       c.restore();
       if(!st.complete){
         for(const h of st.level.holes)if(visibleHole(h)&&canAccessHole(st.level,h)) {
-          const q=screenPoint(h),scale=h.owner===null?1:size*st.view.zoom;
+          const q=screenPoint(h),scale=h.owner===null?h.storageScale||1:size*st.view.zoom;
           c.save();if(h.owner!==null){round(c,BOARD.x,BOARD.y,BOARD.w,BOARD.h,30);c.clip();}
-          if(h.owner===null)drawHole(c,q);
-          if(h.owner===null&&h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR,0,size);
+          if(h.owner===null)drawHole(c,q,scale);
+          if(h.owner===null&&h.screw!==null&&st.pending?.screw!==h.screw)drawScrew(c,q.x,q.y,SCREW_COLOR,0,scale);
           const target=holding&&h.screw===null&&canSeatScrew(st.level,h,held),selected=h.screw!==null&&st.selected===h.screw;
           if(target||selected||st.focus===h.id) {
             c.beginPath();c.arc(q.x,q.y,(target?17+Math.sin(st.t*5)*1.5:18)*scale,0,Math.PI*2);c.strokeStyle=target?'#769B82':'#8861AC';c.lineWidth=target?2.5:3;c.stroke();
@@ -315,7 +323,7 @@
         round(c,198,493,138,42,17);c.fillStyle='#7F9B87';c.fill();c.fillStyle='#FFFFFF';c.textAlign='center';c.fillText(st.L===LAST_STAGE?'기록 보기':'다음 그림 →',267,514);
       }else{
         for(const [kind,x] of [['flat_hole',24],['flat_moves',148]]){
-          const hole=kind==='flat_hole',full=hole&&st.extraHoles>=EXTRA_HOLE_X.length,ready=sameWallet()&&!full&&!st.shopBusy,urgent=hole?blocked:remaining===0;
+          const hole=kind==='flat_hole',full=hole&&st.extraHoles>=MAX_EXTRA_HOLES,ready=sameWallet()&&!full&&!st.shopBusy,urgent=hole?blocked:remaining===0;
           round(c,x,493,116,42,16);c.fillStyle=ready?(urgent?'#C83E4D':'#FFF0F1'):'#F3E8EA';c.fill();c.lineWidth=1;c.strokeStyle=ready?'#EDBDC4':'#DDC7CC';c.stroke();c.textAlign='center';c.fillStyle=ready?(urgent?'#FFFFFF':'#A72E40'):'#93646D';c.font='700 11px "Noto Sans KR",sans-serif';
           c.fillText(st.shopBusy==='buying'&&st.shopKind===kind?'구매 중…':st.shopBusy==='checking'?'내역 확인 중…':full?'구멍 추가 완료':hole?'+ 구멍 1개 · 1 ZU':'+ 이동 3회 · 1 ZU',x+58,507,108);
           c.font='9px "Noto Sans KR",sans-serif';c.fillText(hole?`현재 판 · ${st.extraHoles}/3개 추가`:`현재 판 · ${st.extraMoves}회 추가`,x+58,523,108);
@@ -379,7 +387,7 @@
         }
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
           if(st.pending)return true;
-          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null:h.screw===null&&canSeatScrew(st.level,h,st.level.screws[st.selected])));if(!visible.length)return true;
+          const visible=st.level.holes.filter(h=>visibleHole(h)&&canAccessHole(st.level,h)&&(st.selected===null?h.screw!==null&&canTransfer(st.level.screws[h.screw]):h.screw===null&&canSeatScrew(st.level,h,st.level.screws[st.selected])));if(!visible.length)return true;
           const i=visible.findIndex(h=>h.id===st.focus),delta=key==='ArrowLeft'||key==='ArrowUp'?-1:1;
           st.focus=visible[i<0?(delta>0?0:visible.length-1):(i+delta+visible.length)%visible.length].id;return true;
         }

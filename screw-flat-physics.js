@@ -12,6 +12,21 @@
     filter.ojjudaFlat=true;M.Detector.canCollide=filter;
   }
   const seeded=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+  // Stage boundaries are inclusive: 1–30 easy, 31–122 harder with three
+  // parking holes; then add one more parking hole every 122 stages.
+  function spareHoleCount(stage){return 3+Math.max(0,Math.ceil((clamp(Math.trunc(stage)||1,1,LAST_STAGE)-122)/122));}
+  // Keep the original three certified positions fixed. New slots fill a
+  // second, smaller row; the mobile-size screw heads remain distinct even
+  // with 11 stage holes and three purchased extras (14 total).
+  const EXTRA_SPARE_X=[40,303,124,225,61,282,145,204,103,246,166];
+  function layoutSpareHoles(level){
+    const spare=level.holes.filter(h=>h.owner===null);
+    spare.forEach((h,i)=>{h.x=i<3?90+i*90:EXTRA_SPARE_X[i-3];h.y=i<3?100:120;h.storageScale=i<3?1:.64;});
+  }
+  function createSpareHoles(stage){
+    const holes=Array.from({length:spareHoleCount(stage)},(_,id)=>({id,x:0,y:100,owner:null,screw:null}));
+    layoutSpareHoles({holes});return holes;
+  }
   function worldPoint(p,v){const co=Math.cos(p.angle),si=Math.sin(p.angle);return{x:p.x+v.x*co-v.y*si,y:p.y+v.x*si+v.y*co};}
   function localPoint(p,x,y){const co=Math.cos(p.angle),si=Math.sin(p.angle),dx=x-p.x,dy=y-p.y;return{x:dx*co+dy*si,y:-dx*si+dy*co};}
   function polygonDistance(vertices,x,y){
@@ -49,7 +64,7 @@
     const attached=level.plates.filter(p=>p.state!=='gone'&&p.pins.some(pin=>pin.hole===hole.id));
     return attached.length?Math.max(...attached.map(p=>p.z)):hole.screw===null?-1:Math.max(0,...level.plates.map(p=>p.z))+1;
   }
-  function screwRadius(level,hole){return level.screwRadius||SCREW_RADIUS;}
+  function screwRadius(level,hole){return (level.screwRadius||SCREW_RADIUS)*(hole?.owner===null?(hole.storageScale||1):1);}
   function canSeatScrew(level,hole,screw){
     return hole.screw===null&&canAccessHole(level,hole)&&!level.screws.some(other=>other.hole&&other!==screw&&
       Math.hypot(other.hole.x-hole.x,other.hole.y-hole.y)<screwRadius(level,hole)+screwRadius(level,other.hole)+1.5-1e-6);
@@ -96,6 +111,28 @@
     for(const a of extremes)for(const b of extremes){const d=Math.hypot(a.x-b.x,a.y-b.y);if(d>dist){dist=d;pair=[a,b];}}
     if(dist<separation)throw Error('Metal piece screw heads overlap');
     return pair.sort((a,b)=>a.x-b.x||a.y-b.y);
+  }
+  // Keep the certified rigid-body polygon stable while giving selected pieces
+  // a gently rounded top face. The underlying metal rim still matches the
+  // collision body, and every mounting screw remains inside the top face.
+  function sculptMetal(vertices,stage,id,mounts=[]){
+    if(vertices.length<4||vertices.length>9)return vertices;
+    const variety=(stage*3+id*7)%11;
+    if(variety<5)return vertices;
+    const oval=variety>=9,rounded=variety>=7,amount=oval?.38:rounded?.28:.22;
+    const result=[];
+    for(let i=0;i<vertices.length;i++){
+      const v=vertices[i],prev=vertices[(i+vertices.length-1)%vertices.length],next=vertices[(i+1)%vertices.length];
+      const smooth=oval||(rounded?i%2===(id%2):i===(id%vertices.length));
+      if(!smooth){result.push(v);continue;}
+      const a={x:v.x+(prev.x-v.x)*amount,y:v.y+(prev.y-v.y)*amount};
+      const b={x:v.x+(next.x-v.x)*amount,y:v.y+(next.y-v.y)*amount};
+      for(let j=0;j<=5;j++){
+        const t=j/5,u=1-t;
+        result.push({x:u*u*a.x+2*u*t*v.x+t*t*b.x,y:u*u*a.y+2*u*t*v.y+t*t*b.y});
+      }
+    }
+    return M.Vertices.isConvex(result)&&mounts.every(m=>polygonDistance(result,m.x,m.y)<-.4)?result:vertices;
   }
   const SHAPE_NAMES=['보석','방패','하트','나뭇잎','원형','네모판','꽃','별','나비','구름','초승달','로켓','십자'];
   const SHAPE_UNLOCKS=[80,140,220,320,450,650];
@@ -1240,7 +1277,7 @@
       {top:240,bottom:324,leftTop:119,leftBottom:104,holes:[[139,305],[139,260]]},
       {top:151,bottom:236,leftTop:128,leftBottom:119,holes:[[149,216],[149,173]]}
     ];
-    const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[],silhouette=[];
+    const plates=[],holes=createSpareHoles(L),screws=[],silhouette=[];
     for(let row=0;row<bands.length;row++){
       const band=bands[row];
       for(let col=0;col<2;col++){
@@ -1269,6 +1306,7 @@
           p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
+        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     }
     return{stage:L,theme:(L-1)%6,shape:SHAPE_NAMES[6],screwRadius:SCREW_RADIUS,silhouette,plates,holes,screws,order:screws.map(s=>s.id)};
@@ -1299,7 +1337,7 @@
       if(leaves.length===count)break;
     }
     if(leaves.length!==count)throw Error('Metal outline has too few usable pieces');
-    const plates=[],holes=[90,180,270].map((x,id)=>({id,x,y:100,owner:null,screw:null})),screws=[];
+    const plates=[],holes=createSpareHoles(L),screws=[];
     for(const f of leaves){
       const p={id:plates.length,z:plates.length,row:0,col:plates.length,releaseFrom:1,x:f.centre.x,y:f.centre.y,angle:0,
         screwRadius:radius,shaftRadius:interlocked?radius*.28:radius,vertices:f.poly.map(v=>({x:v.x-f.centre.x,y:v.y-f.centre.y})),mounts:[],pins:[],holeIds:[],state:'fixed',vx:0,vy:0,spin:0};
@@ -1309,6 +1347,7 @@
         const h={id:holes.length,x:q.x,y:q.y,owner:p.id,screw:screws.length};holes.push(h);p.holeIds.push(h.id);
         p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});screws.push({id:screws.length,hole:h,startHole:h.id});
       }
+      p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
     }
     const ordered=[],visit=node=>node.children?node.children.forEach(visit):ordered.push(plates[node.id]);roots.forEach(visit);
     if(interlocked)ordered.splice(0,ordered.length,...gravityReleaseOrder(plates));
@@ -1345,8 +1384,7 @@
         [[109,266],[251,266],[307,372],[53,372]],[[53,372],[307,372],[318,475],[42,475]]].map(poly=>poly.map(([x,y])=>({x,y})));
       counts=count===3?[1,1,1]:count===4?[1,2,1]:count===5?[1,2,2]:[2,2,2];
     }
-    const plates=[],holes=[],screws=[];
-    for(const x of [90,180,270])holes.push({id:holes.length,x,y:100,owner:null,screw:null});
+    const plates=[],holes=createSpareHoles(L),screws=[];
     bands.forEach((band,row)=>{
       const left=Math.min(...band.map(v=>v.x)),right=Math.max(...band.map(v=>v.x));
       const midY=(Math.min(...band.map(v=>v.y))+Math.max(...band.map(v=>v.y)))/2;
@@ -1365,9 +1403,30 @@
           p.mounts.push({x:q.x-p.x,y:q.y-p.y});p.pins.push({hole:h.id,mount:p.mounts.length-1});
           screws.push({id:screws.length,hole:h,startHole:h.id});
         }
+        p.displayVertices=sculptMetal(p.vertices,L,p.id,p.mounts);
       }
     });
     return{stage:L,theme:(L-1)%6,silhouette:bands,plates,holes,screws,order:[...plates].sort((a,b)=>b.row-a.row||(a.col-b.col)*a.releaseFrom).flatMap(p=>(p.releaseFrom>0?p.holeIds:[...p.holeIds].reverse()).map(h=>holes[h].screw))};
+  }
+  // A screw can leave its plate only if there is a different usable parking
+  // hole. Falling metal may uncover an empty slot, so preview that motion in
+  // an independent rigid-body world without changing the real player's board.
+  function canMoveToSpare(level,screw){
+    if(!canUnscrew(level,screw))return false;
+    const vacancies=level.holes.filter(h=>h!==screw.hole&&h.screw===null);
+    if(!vacancies.length)return false;
+    if(vacancies.some(h=>canSeatScrew(level,h,screw)))return true;
+    const trial={...level,holes:level.holes.map(h=>({...h})),plates:level.plates.map(p=>({...p,pins:p.pins.map(pin=>({...pin}))}))};
+    trial.screws=level.screws.map(s=>({...s,hole:s.hole?trial.holes[s.hole.id]:null}));
+    const preview=createPhysics(trial),lifted=trial.screws[screw.id];
+    try{
+      if(!preview.lift(lifted))return false;
+      for(let t=0;t<150;t++){
+        preview.step(.05);
+        if(t%3===0&&vacancies.some(h=>canSeatScrew(trial,trial.holes[h.id],lifted)))return true;
+      }
+      return false;
+    }finally{preview.destroy();}
   }
   function createPhysics(level){
     const engine=M.Engine.create({positionIterations:12,velocityIterations:8,constraintIterations:8,enableSleeping:false});
@@ -1449,9 +1508,9 @@
       return gone;
     }
     function destroy(){dead=true;M.Composite.clear(engine.world,false);M.Engine.clear(engine);bodies.clear();joints.clear();screwBodies.clear();}
-    return{step,lift,move,destroy,engine,bodies,screwBodies};
+    return{step,lift,move,destroy,refreshScrews,engine,bodies,screwBodies};
   }
-  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
+  const api={BOARD,SCREW_RADIUS,LAST_STAGE,SHAPE_NAMES,makeFlatLevel,createPhysics,spareHoleCount,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,canMoveToSpare,bareHole,plateCovers,screwPoint,screwDepth,screwRadius,worldPoint,alignedMount,polygonDistance};
   if(typeof window!=='undefined')window.OjjudaFlatPhysics=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })();

@@ -32,9 +32,9 @@
         return (await import('./screw3d.js?v=20261106-screwbox-stage-score1' + (retry ? '&retry=' + retry : ''))).screw3d;
       }
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
-      await script('/screw-flat-physics.js?v=20261105-flat-solid-heads1', () => !!window.OjjudaFlatPhysics);
+      await script('/screw-flat-physics.js?v=20261106-flat-holes-curves3', () => !!window.OjjudaFlatPhysics);
       await script('/screw-flat-pictures.js?v=20261004-surprise1', () => !!window.OjjudaFlatPictures);
-      await script('/screw-flat.js?v=20261105-flat-solid-stages1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/screw-flat.js?v=20261106-flat-holes-curves3', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);
