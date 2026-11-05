@@ -141,13 +141,23 @@ for(const stage of [4,26,220]){
  const crowded=Game.flat(wallet,1000),higher=crowded.state;
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(higher.level.holes.filter(h=>h.owner===null).length,3,'even the last stage starts with only three holes');
- for(let i=0;i<3;i++){
+ for(let i=0;i<9;i++){
   press(crowded,{x:90,y:514});
   await new Promise(resolve=>setImmediate(resolve));
  }
- assert.equal(higher.extraHoles,3);
- assert.equal(higher.level.holes.filter(h=>h.owner===null).length,6,'only the three purchases create extra holes');
- assert.doesNotThrow(()=>crowded.draw(canvas),'all six storage slots render');
+ assert.equal(higher.extraHoles,9);
+ assert.equal(higher.level.holes.filter(h=>h.owner===null).length,12,'only nine purchases create extra holes');
+ assert.doesNotThrow(()=>crowded.draw(canvas),'all twelve storage slots render');
+ const allPaid=higher.level.holes.filter(h=>h.extra);
+ assert.equal(allPaid.length,9);
+ for(const h of allPaid)assert.ok(h.x>=24&&h.x<=336&&h.y>=68&&h.y<=130,'each paid hole stays inside the storage tray');
+ for(let i=0;i<allPaid.length;i++)for(let j=i+1;j<allPaid.length;j++){
+  const a=allPaid[i],b=allPaid[j];
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>13*(a.storageScale+b.storageScale)+1.5,'paid screw heads cannot overlap');
+ }
+ press(crowded,{x:90,y:514});await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(paidHoles,9,'the tenth item purchase is blocked before charging');
+ assert.equal(higher.extraHoles,9,'the tenth item cannot create a thirteenth storage hole');
  const example=higher.level.screws.find(s=>Physics.canMoveToSpare(higher.level,s));
  assert.ok(example);
  press(crowded,example.hole);advance(crowded);

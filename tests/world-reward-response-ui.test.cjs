@@ -91,8 +91,13 @@ window.rewardTest={
  for(const key of ['screw_box','screw_flat']){
   const f=await fixture(key);await f.page.evaluate(()=>rewardTest.setWalletReady(false));
   const id=await f.start('result');
-  const submitted=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>call.kind==='submit_score').at(-1);
-  assert.deepEqual(submitted,{kind:'submit_score',owner:'owner-a',args:{p_game:key,p_score:150}},'score saving remains available before wallet readiness');
+  const submitted=(await f.page.evaluate(()=>rewardTest.calls())).filter(call=>['submit_score','submit_screw_box_score'].includes(call.kind)).at(-1);
+  if(key==='screw_box'){
+   assert.equal(submitted?.kind,'submit_screw_box_score','box points use their dedicated cumulative-score RPC');
+   assert.equal(submitted?.owner,'owner-a');
+   assert.equal(submitted?.args?.p_score,150,'box score saving works before wallet readiness');
+   assert.match(submitted?.args?.p_run_id||'',/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,'cumulative box updates use a stable run ID');
+  }else assert.deepEqual(submitted,{kind:'submit_score',owner:'owner-a',args:{p_game:key,p_score:150}},'flat score saving remains available before wallet readiness');
   await f.finish(id,receipt);
   assert.deepEqual(await f.page.evaluate(()=>rewardTest.notices()),['owner-a'],'a current successful score still announces a refresh');
   assert.equal((await f.snapshot()).game,key,'box and flat keep separate result and score keys');
