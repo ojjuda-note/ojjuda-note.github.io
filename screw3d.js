@@ -1494,9 +1494,10 @@ function screw3d(api,startStage=loadResumeStage()) {
       if(st.sorting>0) { st.sorting=Math.max(0,st.sorting-dt); if(st.sorting===0)completeSort(); }
       if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
-      // Camera rotation/zoom must not change extraction physics or make an
-      // invisible obstacle disappear. Gravity belongs to the model's world.
-      const g = [0,-1,0];
+      // The toy rotates relative to the room. Keep physical gravity directed
+      // toward the visible floor, even when the model is turned upside down.
+      // Convert world/screen down into the model's local physics coordinates.
+      const g = mv(tr(view()), [0,-1,0]);
       const fixed = st.lvl.els.filter(o => o.state === 'on' && !o.dyn);
       for (const E of st.lvl.els) {
         if (E.state !== 'on') continue;
