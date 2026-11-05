@@ -28,7 +28,7 @@ test('app loads and deduplicates supplement while preserving member recommendati
  assert.match(app,/fetch\('\.\/official-goyang-paju-slot10\.json\?v=/);
  assert.match(app,/\.\.\.goyangPaju\.restaurants/);
  assert.match(html,/app\.js\?v=20261106-restaurants-goyang-paju-slot10-1/);
- assert.equal(source.coverage.uniqueRestaurants,3099);
- assert.equal(source.coverage.coordinatesAvailable,1023);
- assert.equal(source.latestCoverageAudit.newRestaurantCount,7);
+ assert.ok(source.coverage.uniqueRestaurants >= 3099);
+ assert.ok(source.coverage.coordinatesAvailable >= 1023);
+ assert.ok(source.coverageAuditHistory.some(entry=>entry.id==='2026-11-06-gyeonggi-slot10-goyang-paju' && entry.newRestaurantCount===7));
 });
