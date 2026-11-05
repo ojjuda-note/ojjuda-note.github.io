@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261105-restaurants-seoul-sw1';
+ const revision='20261105-flat-interlocked-physics2';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -18,14 +18,14 @@
   sacheonseong:'1.9.3',
   saetbyeol:'1.2.6',
   tour:'1.4.3',
-  ttang:'1.4.3',
+  ttang:'1.4.4',
   photo_ttang:'1.3.3',
   mole:'1.4.3',
   runner:'1.3.3',
   stacker:'1.4.3',
   breakout:'1.5.3',
   spot:'1.10.5',
-  screw:'2.10.2',
+  screw:'2.11.0',
   janggi:'1.4.2',
   chess:'1.4.2',
   billiards:'1.4.2',
@@ -51,12 +51,12 @@
   saetbyeol:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-saetbyeol-game.js?v=20261104-game-fullscreen1'],
   tour:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tour-game.js?v=20261104-game-fullscreen1'],
   spot:['/world-spot-game.css?v=20261104-game-fullscreen1','/world-spot-game.js?v=20261104-game-progression-lock1'],
-  ttang:['/ttang-bridge.js?v=20261104-game-fullscreen1'],
+  ttang:['/ttang-bridge.js?v=20261105-ttang-late-result1'],
   photo_ttang:['/photo-ttang-access.js?v=20261006-red1','/photo-ttang-ranking.js?v=20261021-photo-idols1','/photo-ttang-bridge.js?v=20261103-guest-one-round1'],
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.css?v=20261102-breakout-round-choice1','/games/breakout-game.js?v=20261102-breakout-pickups2'],
-  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261105-screwbox-connected-plush1'],
+  screw:[...controls,'/screw-games.css?v=20261004-design1','/screw-loader.js?v=20261105-flat-interlocked-physics2'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();

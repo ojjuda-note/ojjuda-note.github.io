@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+require('./ttang-late-results.test.cjs');
 const {chromium}=require('playwright');
 const {fixture,ids}=require('./tank-online-fixture.cjs');
 const root=path.join(__dirname,'..'),origin='https://game-idle.test';

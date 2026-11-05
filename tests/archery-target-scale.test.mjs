@@ -115,12 +115,13 @@ const fingerprint = value => createHash('sha256').update(JSON.stringify(stable(v
 test('the face-size correction preserves released animal lessons, legacy event geometry and arrow equipment', () => {
   // Captured from the deployed engine at 761825ecf8c76f75fd127271a68c8752e9508373.
   // Circular face geometry may change; unrelated arrow gear and moving
-  // animal mechanics must not be silently rebalanced with it. Guns now have
-  // their own explicit main-range progression and ballistic tests.
+  // animal mechanics must not be silently rebalanced with it. The equipment
+  // snapshot includes the later, explicitly approved doubled item prices.
+  // Guns have their own main-range progression and ballistic tests.
   const animals = STAGES.filter(stage => stage.kind !== 'target');
   assert.equal(animals.length, 58);
   assert.equal(fingerprint(animals), 'b52e88fc5489bd5e4d51860def2afa5190306c20015bf1ff8b0963c04614b324');
   assert.equal(fingerprint(Array.from({length: 10}, (_, index) => createClayEvent(index + 1))),
     '2b0d487979ec36277fedb8f20b0d4c99d7798fe6b7061fd828afa2d42f1af65a');
-  assert.equal(fingerprint({BOWS:BOWS.filter(item => item.weaponType !== 'gun'), ARROWS, SCOPES}), 'cbb8e518058169685b5a8004046c51d4b87b36ff61c09cdc50727e156ff8abb2');
+  assert.equal(fingerprint({BOWS:BOWS.filter(item => item.weaponType !== 'gun'), ARROWS, SCOPES}), 'aa985ae4b61de4cd22e367aba8ca995cf1b21484d5cd0052a530617df6feec6a');
 });

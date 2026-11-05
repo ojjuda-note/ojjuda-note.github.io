@@ -43,7 +43,9 @@ assert.ok(mountStart>0);
       window.noteAdminActive=()=>false;window.z=s=>document.querySelector(s);
     });
     await page.addScriptTag({content:read('admin/connections.js')});
-    await page.addScriptTag({content:`var ${nav} var ${segment}; ${render} ${mount}
+    await page.addScriptTag({content:`var ${nav} var ${segment};
+      function adminIsHome(){return g.tab==='admin'&&L.area==='account'&&L.tab==='overview'}
+      ${render} ${mount}
       function showConnections(){L.tab='connections';L.area=adminAreaForTab(L.tab);document.querySelector('#admin-root').innerHTML=y0();mountConnections();}
       showConnections();`});
     await page.getByText('백업 성공 확인',{exact:true}).waitFor();

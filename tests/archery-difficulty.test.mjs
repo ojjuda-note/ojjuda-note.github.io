@@ -533,8 +533,8 @@ test('bow and crossbow grades are ranked within their own families', () => {
     }
   }
   assert.ok(BOWS.filter(weapon => weapon.weaponType === 'gun').every(weapon => weapon.gearTier === 'upper' && weapon.gearLabel === '상위' && weapon.shopRank > 20));
-  assert.equal(BOWS[4].price, 500, 'the first lower bow keeps its existing 500-coin price');
-  assert.equal(BOWS[3].price, 8100);assert.equal(BOWS[19].price, 26600);
+  assert.equal(BOWS[4].price, 1000, 'the first lower bow keeps its doubled 1000-coin price');
+  assert.equal(BOWS[3].price, 16200);assert.equal(BOWS[19].price, 53200);
 });
 
 test('later optional reference grades keep the capabilities taught by earlier grades', () => {
