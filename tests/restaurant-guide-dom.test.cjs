@@ -12,6 +12,19 @@ const dataset = JSON.parse(fs.readFileSync(path.join(directory, 'restaurants.jso
 const seoulSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-blue-ribbon.json'), 'utf8'));
 const northeastSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-visitseoul-northeast.json'), 'utf8'));
 const southwestSupplement = JSON.parse(fs.readFileSync(path.join(directory, 'official-seoul-visitseoul-southwest.json'), 'utf8'));
+const bucheonContinuation = JSON.parse(fs.readFileSync(path.join(directory, 'official-bucheon-gimpo-slot11.json'), 'utf8'));
+assert.equal(bucheonContinuation.restaurants.length, 10, 'Bucheon continuation retains all ten official items');
+for (const [name, category, label] of [
+  ['이학갈비', '한식', '부천맛집'],
+  ['송탄금이네부대찌개', '한식', '모범음식점'],
+  ['차이나몽', '중식', '모범음식점']
+]) {
+  const row = bucheonContinuation.restaurants.find(r => r.name === name);
+  assert.ok(row && row.category === category && row.guides.some(g => g.provider === 'local-guide' && g.label.includes(label) && g.year === null && g.yearType === 'selection'), 'official Bucheon designation labels are distinct for ' + name);
+  assert.equal(row.lat, null, name + ' has no guessed latitude');
+  assert.equal(row.lng, null, name + ' has no guessed longitude');
+}
+
 assert.deepEqual(seoulSupplement.restaurants.map(item => item.name), ['원대구탕', '제이드앤워터 옥수'], 'new Seoul history entries are present');
 assert.ok(seoulSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.guides.every(guide => guide.provider === 'blue-ribbon' && guide.label === '선정 이력' && guide.year === null && guide.yearType === 'selection' && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'new entries preserve evidence URLs, unknown grades/years and unknown coordinates');
 const northeastTourism = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_restaurant_listing'));
@@ -96,9 +109,9 @@ function fixture(options = {}) {
   window.fetch = async requested => {
     const url = new URL(requested, window.location.href);
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
-    if (['/official-ulsan-tourism.json', '/official-seoul-blue-ribbon.json', '/official-seoul-visitseoul-northeast.json', '/official-seoul-visitseoul-southwest.json', '/official-seoul-visitseoul-southeast.json', '/official-incheon-itour-slot06.json', '/official-incheon-itour-slot07.json', '/official-gyeonggi-oldshops-slot08.json', '/official-seongnam-hipstores-slot09.json', '/official-goyang-paju-slot10.json'].some(file => url.pathname.endsWith(file))) {
+    if (['/official-ulsan-tourism.json', '/official-seoul-blue-ribbon.json', '/official-seoul-visitseoul-northeast.json', '/official-seoul-visitseoul-southwest.json', '/official-seoul-visitseoul-southeast.json', '/official-incheon-itour-slot06.json', '/official-incheon-itour-slot07.json', '/official-gyeonggi-oldshops-slot08.json', '/official-seongnam-hipstores-slot09.json', '/official-goyang-paju-slot10.json', '/official-bucheon-gimpo-slot11.json'].some(file => url.pathname.endsWith(file))) {
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
-      return { ok: true, status: 200, json: async () => ({ restaurants: [] }) };
+      return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [] }) };
     }
     assert.ok(url.pathname.endsWith('/restaurants.json'), 'the app fetches only the catalog and approved supplements'); calls.data++;
     return { ok: !(options.failOnce && calls.data === 1), status: options.failOnce && calls.data === 1 ? 503 : 200, json: async () => structuredClone(options.dataset || dataset) };
