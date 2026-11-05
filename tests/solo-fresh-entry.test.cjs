@@ -67,7 +67,7 @@ for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolv
 
 const boxStageCap=Number(read('screw3d.js').match(/\bconst STAGES\s*=\s*(\d+)\s*;/)?.[1]);
 assert.ok(Number.isSafeInteger(boxStageCap)&&boxStageCap>=1,'the box mode exposes its stage cap');
-const screwKeys={box:{stage:'ojjuda-screw-stage',resume:'ojjuda-screw-last-stage-v1',max:boxStageCap},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
+const screwKeys={box:{stage:'ojjuda-screw-box-stage-v2:guest',resume:'ojjuda-screw-box-last-stage-v2:guest',max:boxStageCap},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
 function withScrews(run,entries=[],blocked=false){
  const storage=new Map(entries),localStorage=blocked?{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
  const context=vm.createContext({console,localStorage,window:{},crypto:require('node:crypto')});
@@ -92,7 +92,16 @@ function nextScrew(game){
  assert.equal(game.continueStage(stage+1),stage<game.levels,'only a completed, non-final level can advance');
 }
 
-test('both screw modes migrate old progress and reopen independent last levels with fresh boards and preserved purchases',()=>{
+test('box screw resets legacy progress to stage one without changing old stored scores',()=>{
+ const oldKey='ojjuda-screw-stage',oldResume='ojjuda-screw-last-stage-v1';
+ withScrews(f=>{
+  assert.equal(f.box().state.L,1);
+  assert.equal(f.storage.get(oldKey),'37');
+  assert.equal(f.storage.get(oldResume),'37');
+ },[[oldKey,'37'],[oldResume,'37']]);
+});
+
+test('both screw modes reopen independent current-generation levels with fresh boards and preserved purchase records',()=>{
  const boxPurchase='ojjuda-screw-purchases-v1:'+owner+':37',flatPurchase='ojjuda-screw-flat-hole-pending-v1:'+owner+':14';
  const receipt=JSON.stringify({paid:[{kind:'buffer',id:randomUUID()}],pending:{box:randomUUID()}}),pending=randomUUID();
  withScrews(f=>{
