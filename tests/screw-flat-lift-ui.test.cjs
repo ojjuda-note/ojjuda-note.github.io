@@ -22,28 +22,28 @@ for(const stage of [4,26,220]){
  assert.ok(screw,`stage ${stage} has at least one physically removable screw`);
  const original=screw.hole,owner=st.level.plates[original.owner],pins=owner.pins.length;
  press(game,original);
- assert.equal(st.selected,screw.id,'first tap lifts the screw');
- assert.equal(st.moves,1,'the lift consumes one move');
- assert.equal(screw.hole,null,'the held screw is no longer on the board');
- assert.equal(original.screw,null);
- assert.equal(owner.pins.length,pins-1,'metal releases as soon as the screw is lifted');
- assert.ok(!st.physics.screwBodies.has(screw.id),'no invisible collision screw remains');
- assert.equal(st.pending.kind,'lift');
+ assert.equal(st.selected,screw.id,'first tap only selects the screw');
+ assert.equal(st.moves,0,'selection costs no move');
+ assert.equal(screw.hole,original,'the screw stays seated until its destination is tapped');
+ assert.equal(original.screw,screw.id);
+ assert.equal(owner.pins.length,pins,'selecting cannot release the metal');
+ assert.ok(st.physics.screwBodies.has(screw.id),'the mounted screw remains a physical obstacle');
+ assert.equal(st.pending,null,'there is no flying or held screw animation');
  assert.doesNotThrow(()=>game.draw(canvas));
  advance(game);
  assert.equal(st.pending,null);
+ assert.equal(owner.pins.length,pins,'the plate stays attached while the player thinks');
  const other=st.level.screws.find(s=>s.hole&&Physics.canUnscrew(st.level,s));
- if(other){press(game,other.hole);assert.equal(st.selected,screw.id,'a second screw cannot be lifted simultaneously');}
+ if(other&&other.id!==screw.id){press(game,other.hole);assert.equal(st.selected,other.id,'the player may choose another mounted screw');press(game,original);assert.equal(st.selected,screw.id);}
  const target=st.level.holes.find(h=>h.owner===null&&Physics.canSeatScrew(st.level,h,screw));
- assert.ok(target,'every held screw can be placed into a free storage hole');
+ assert.ok(target,'the selected screw can transfer to a free storage hole');
  st.moveLimit=1;
  press(game,target);
- assert.equal(st.pending.kind,'place','placement uses its own animation');
- advance(game);
- assert.equal(st.pending,null);
+ assert.equal(st.pending,null,'the destination is applied immediately');
  assert.equal(st.selected,null);
  assert.equal(screw.hole,target);
- assert.equal(st.moves,1,'placing does not spend an extra move');
+ assert.equal(st.moves,1,'the completed transfer spends exactly one move');
+ assert.equal(owner.pins.length,pins-1,'the plate releases only after the transfer');
  assert.ok(st.physics.screwBodies.has(screw.id),'the seated screw physically blocks metal again');
  assert.doesNotThrow(()=>game.draw(canvas));
  game.destroy();
@@ -76,8 +76,9 @@ for(const stage of [4,26,220]){
  for(const {h,x,y} of original){h.x=x;h.y=y;}
  assert.ok(free.some(h=>Physics.canSeatScrew(st.level,h,screw)));
  press(game,home);
- assert.equal(st.moves,1,'the screw may lift when a usable place is restored');
+ assert.equal(st.moves,0,'selecting a screw is not itself a move');
  assert.equal(st.selected,screw.id);
+ assert.equal(screw.hole,home,'selection still does not release the pin');
  game.destroy();
 }
 
@@ -87,14 +88,12 @@ for(const stage of [4,26,220]){
  press(game,home);advance(game);
  const count=st.moves;
  game.onKey('Escape');
- if(Physics.canSeatScrew(st.level,home,screw)){
-  assert.equal(screw.hole,home,'Escape returns an accessible screw to its original hole');
-  assert.equal(st.selected,null);
- }else{
-  assert.equal(screw.hole,null,'Escape does not teleport through a blocking plate');
-  assert.equal(st.selected,screw.id);
- }
- assert.equal(st.moves,count,'Escape does not refund spent moves');
+ assert.equal(screw.hole,home,'Escape leaves the screw exactly where it was');
+ assert.equal(st.selected,null,'Escape cancels selection');
+ assert.equal(st.moves,count,'Escape never consumes or refunds moves');
+ press(game,home);press(game,home);
+ assert.equal(st.selected,null,'a second tap on the same screw cancels selection');
+ assert.equal(st.moves,0);
  press(game,{x:302,y:514});
  assert.equal(st.selected,null,'retry clears held selection');
  assert.equal(st.moves,0);
@@ -116,7 +115,7 @@ for(const stage of [4,26,220]){
  assert.equal(st.selected,screw.id);
  press(game,{x:90,y:514});await new Promise(resolve=>setImmediate(resolve));
  assert.equal(st.extraHoles,1,'an item adds a new hole');
- assert.equal(st.selected,screw.id,'buying an item preserves the screw in hand');
+ assert.equal(st.selected,screw.id,'buying an item preserves the selected screw');
  const purchased=st.level.holes.find(h=>h.extra);
  assert.ok(Physics.canSeatScrew(st.level,purchased,screw));
  press(game,purchased);advance(game);
@@ -158,15 +157,17 @@ for(const stage of [4,26,220]){
  press(crowded,{x:90,y:514});await new Promise(resolve=>setImmediate(resolve));
  assert.equal(paidHoles,9,'the tenth item purchase is blocked before charging');
  assert.equal(higher.extraHoles,9,'the tenth item cannot create a thirteenth storage hole');
- const example=higher.level.screws.find(s=>Physics.canMoveToSpare(higher.level,s));
+ const example=higher.level.screws.find(s=>Physics.canUnscrew(higher.level,s)&&higher.level.holes.some(h=>Physics.canSeatScrew(higher.level,h,s)));
  assert.ok(example);
  press(crowded,example.hole);advance(crowded);
- assert.equal(example.hole,null);
+ assert.equal(higher.selected,example.id);
+ assert.ok(example.hole,'selection leaves the screw fastened to its original plate');
+ assert.equal(higher.moves,0);
  const newHole=higher.level.holes.find(h=>h.extra&&Physics.canSeatScrew(higher.level,h,example));
  assert.ok(newHole,'a high-tier paid slot is physically usable');
  press(crowded,newHole);advance(crowded);
  assert.equal(example.hole,newHole);
  assert.deepEqual(higher.physics.screwBodies.get(example.id).position,{x:newHole.x,y:newHole.y});
  crowded.destroy();
- console.log('PASS: pickup requires another empty hole, releasing a pin consumes no phantom storage, zoom, Escape, retry, and purchased holes.');
+ console.log('PASS: screw tap only selects, destination tap transfers atomically, zero phantom storage, zoom, Escape, retry, and purchased holes.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

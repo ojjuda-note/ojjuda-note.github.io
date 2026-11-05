@@ -141,7 +141,8 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  press(game,from.x,from.y);assert.equal(moving.hole,from,'base move limit blocks new pickup');
  press(game,206,514);await settled(game);
  assert.equal(game.state.extraMoves,3);assert.equal(game.state.level,oldLevel,'paid moves extend the current board');
- press(game,from.x,from.y);assert.equal(moving.hole,null,'the new move physically lifts the screw');
+ press(game,from.x,from.y);assert.equal(moving.hole,from,'a selected screw stays attached even after buying extra moves');
+ assert.equal(game.state.selected,moving.id);
  const seat=game.state.level.holes.find(h=>h.owner===null&&require('../screw-flat-physics.js').canSeatScrew(game.state.level,h,moving));
  assert.ok(seat);for(let i=0;i<15;i++)game.update(.05);press(game,seat.x,seat.y);
  for(let i=0;i<30;i++)game.update(.05);assert.equal(moving.hole,seat);

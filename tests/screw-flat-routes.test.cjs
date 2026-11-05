@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const Physics=require('../screw-flat-physics.js'),Game=require('../screw-flat.js');
 const {solve}=require('./helpers/flat-solution-search.cjs');
+const {solve:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs');
 require('./screw-flat-heads.test.cjs');
 const witnessCache=new Map();
 function solution(stage){
@@ -90,44 +91,45 @@ function play(game,[id,to,wait],expectBlocked=false){
   assert.match(game.state.message,/옮길 빈 구멍이 없어요/);
   return;
  }
- press(game,screw.hole);assert.equal(screw.hole,null,`stage ${game.state.L} screw ${id} lifts: ${game.state.message}`);tick(game,wait||1.5);
+ const original=screw.hole,before=game.state.moves;
+ press(game,original);
+ assert.equal(screw.hole,original,`stage ${game.state.L} screw ${id} stays seated when selected: ${game.state.message}`);
+ assert.equal(game.state.selected,id);
+ assert.equal(game.state.moves,before,'the selection tap is free');
  if(to!==null&&!game.state.complete){
-  tick(game,.4); // The rigid plates have 0.4s to settle before seat attempt.
-  assert.ok(Physics.canSeatScrew(level,level.holes[to],screw),`stage ${game.state.L} screw ${id} to hole ${to} is physically accessible`);
-  press(game,level.holes[to]);tick(game,1.5); // The screw seats immediately; artwork completes its flight.
+  assert.ok(Physics.canSeatScrew(level,level.holes[to],screw),`stage ${game.state.L} screw ${id} to hole ${to} is accessible before releasing its old pin`);
+  press(game,level.holes[to]);
+  assert.equal(game.state.moves,before+1,'the destination tap commits exactly one move');
+  tick(game,wait||1.5);
   if(!game.state.complete)assert.equal(screw.hole,level.holes[to],`stage ${game.state.L} screw ${id} seats into hole ${to}: ${game.state.message}`);
  }
 }
-// The old collision-only witnesses include three bad-order choices. Higher
-// stages may now recover because they have more spare holes.
-const blockedWitnessSteps=new Map([[220,37],[450,72],[650,175]]);
-for(const stage of [12,21,26,35,55,80,115,160,220,450,598,650,800,1000]){
+// The old certified routes allowed lifting a screw before picking its new
+// hole. Verify new, separately found atomic routes through actual two-tap UI.
+const atomicWitnessSeeds=new Map([[12,96],[18,0],[26,101]]);
+for(const [stage,seed] of atomicWitnessSeeds){
  const game=Game.flat({setScore(){},end(){}},stage);
- const route=solution(stage);
- let denied=false;
+ const result=solveAtomic(stage,undefined,seed),route=result.route.map(({screw,to,wait})=>[screw,to,wait]);
+ assert.equal(result.reason,null,`stage ${stage} has an atomic solution`);
+ assert.ok(result.moves<=Game.moveLimit(game.state.level),`stage ${stage} can be solved without buying moves`);
  for(let i=0;i<route.length;i++){
   if(game.state.complete)break;
-  const blocked=blockedWitnessSteps.get(stage)===i&&!Physics.canMoveToSpare(game.state.level,game.state.level.screws[route[i][0]]);
-  play(game,route[i],blocked);
-  if(blocked){denied=true;break;}
+  play(game,route[i]);
  }
  tick(game,8);
- assert.equal(game.state.complete,!denied,`stage ${stage} completes or properly refuses a genuinely blocked route`);
+ assert.equal(game.state.complete,true,`stage ${stage} completes with first-tap selection and immediate second-tap transfer`);
  assert.ok(game.state.moves<=route.length);assert.equal(game.state.extraHoles,0);assert.equal(game.state.extraMoves,0);game.destroy();
 }
 
 async function itemRecovery(){
  let bought=0,failures=0;
  const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){failures++;},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
- const game=Game.flat(api,26),st=game.state,route=solution(26);await new Promise(resolve=>setImmediate(resolve));
- play(game,route[0]);play(game,route[1]);
- const parked=st.level.holes[0].screw;assert.notEqual(parked,null);assert.equal(st.level.holes[2].screw,null);
- for(const to of [2,0,2,0,2,0])play(game,[parked,to]); // Spend the six extra easy-stage lifts.
- for(const step of route.slice(2,-1))play(game,step);
- assert.equal(st.moves,st.moveLimit);assert.equal(st.complete,false);assert.equal(st.failed,true,'an exhausted route offers recovery');
- assert.equal(failures,1);assert.equal(game.resume(),true,'the result screen returns to available item controls');
- const last=route.at(-1),screw=st.level.screws[last[0]],home=screw.hole;press(game,home);tick(game,.5);assert.equal(screw.hole,home,'no more pickups after the base budget');
+ const game=Game.flat(api,26),st=game.state,route=solveAtomic(26,undefined,101).route.map(({screw,to,wait})=>[screw,to,wait]);await new Promise(resolve=>setImmediate(resolve));
+ for(const step of route.slice(0,-1))play(game,step);
+ assert.equal(st.complete,false,'the final screw still supports metal');
+ st.moves=st.moveLimit;
+ const last=route.at(-1),screw=st.level.screws[last[0]],home=screw.hole;press(game,home);assert.equal(screw.hole,home,'no more pickups after the base budget');
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
- play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover the spent-lift mistake');game.destroy();
+ play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover an exhausted route');game.destroy();
 }
-itemRecovery().then(()=>console.log('PASS: 988 certified budgets, three free storage holes in every stage, 11 clear UI routes, 3 no-destination refusals, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
+itemRecovery().then(()=>console.log('PASS: 988 certified budgets, three base holes in every stage, three atomic two-tap UI routes, and item recovery.')).catch(error=>{console.error(error);process.exitCode=1;});
