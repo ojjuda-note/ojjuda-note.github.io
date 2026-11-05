@@ -1,0 +1,60 @@
+name: Finalize merged flat and box screw release
+on:
+  push:
+    branches: [fix/flat-visible-fastener-collisions-20261105]
+    paths: [.github/workflows/screw-flat-box-merge-once.yml]
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Safely merge latest main and resolve known version conflicts
+        shell: bash
+        run: |
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "7c0bea2e6be0e937e5c3617b229461340cb2c630" || { echo 'main moved; regenerate merge safely'; exit 1; }
+          git merge --no-commit --no-ff origin/main || true
+          node <<'NODE'
+          const fs=require('fs'),{execFileSync}=require('child_process');
+          const expected=['game-release.json','screw-loader.js','world-game-assets.js','world.html'];
+          const unresolved=execFileSync('git',['diff','--name-only','--diff-filter=U'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          if(JSON.stringify(unresolved)!==JSON.stringify(expected.slice().sort()))throw Error('unexpected conflicts: '+unresolved.join(','));
+          const replacement=new Map([
+            ['game-release.json',['{"revision":"20261105-flat-box-combined2"}\n']],
+            ['screw-loader.js',["        return (await import('./screw3d.js?v=20261105-flat-box-combined2' + (retry ? '&retry=' + retry : ''))).screw3d;\n"]],
+            ['world-game-assets.js',[" const revision='20261105-flat-box-combined2';\n","  screw:[...controls,'/screw-games.css?v=20261105-screw-stage-items1','/screw-loader.js?v=20261105-flat-box-combined2'],\n"]],
+            ['world.html',['<script src="/world-game-assets.js?v=20261105-flat-box-combined2" defer></script>\n']]
+          ]);
+          const conflict=/<<<<<<< HEAD\n[\s\S]*?=======\n[\s\S]*?>>>>>>> origin\/main\n/g;
+          for(const [file,changes] of replacement){
+            let count=0,source=fs.readFileSync(file,'utf8');
+            source=source.replace(conflict,()=>{if(count>=changes.length)throw Error('extra conflict in '+file);return changes[count++];});
+            if(count!==changes.length)throw Error(file+' conflicts: '+count+' expected '+changes.length);
+            fs.writeFileSync(file,source);
+          }
+          const checks={
+            'game-release.json':'66c25002f1fa78d0268bfa0d73b716fa1d067519',
+            'screw-loader.js':'25a60e872fd376efb6bff62b1153f6f69ee6532a',
+            'screw3d-stage-worker.js':'e324a58deb27321302e81d703277af233d40a8c1',
+            'screw3d.js':'96b42d2f7f4351d1769b223da8c29f4ec460e8b1',
+            'world-game-assets.js':'f024ecfad28564259d770ebddb638b88b2aee2c8',
+            'world.html':'48e7b95995b3922fb2bf444ea06f6b91ea7f22a5'
+          };
+          for(const [file,hash] of Object.entries(checks)){
+            const actual=execFileSync('git',['hash-object',file],{encoding:'utf8'}).trim();
+            if(actual!==hash)throw Error('merged '+file+' does not match reviewed file: '+actual+' expected '+hash);
+          }
+          NODE
+      - name: Commit merge and remove temporary workflow
+        run: |
+          git config user.name ojjuda-release
+          git config user.email ojjuda-release@users.noreply.github.com
+          git add game-release.json screw-loader.js screw3d-stage-worker.js screw3d.js world-game-assets.js world.html
+          git rm .github/workflows/screw-flat-box-merge-once.yml
+          git commit -m "Merge new box models with flat screw certified physics"
+          git push origin HEAD:refs/heads/fix/flat-visible-fastener-collisions-20261105
