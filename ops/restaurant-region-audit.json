@@ -14,8 +14,8 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 8,
-    "scheduledAt": "2026-11-06T02:00:00+09:00",
+    "slot": 9,
+    "scheduledAt": "2026-11-06T03:00:00+09:00",
     "checkedAtKST": "2026-11-06",
     "source": "hourly slot: anchor 2026-11-05T23:00+09:00"
   },
@@ -2159,6 +2159,171 @@
       "nextRegions": [
         "경기도 성남시",
         "경기도 용인시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 9,
+      "scheduledAtKST": "2026-11-06T03:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_4_official_seongnam_hipstore_additions",
+      "assignedRegions": [
+        "경기도 성남시",
+        "경기도 용인시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 성남시",
+          "baseListedCount": 7,
+          "scope": "성남시 공식 2026 힙스토어 선정 8곳 중 음식점/카페 4곳, 업소 주소 별도 검증(비전수). 기본 DB 7곳 중 지도가능 2곳 및 신규 4곳 기록.",
+          "new": 4,
+          "updated": 0,
+          "unknownLocations": 9,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 용인시",
+          "baseListedCount": 18,
+          "scope": "용인시 2026 조아용 맛집 공모·평가 일정 검토; 최종 선정 명단은 공식 확인하지 못해 신규 등록 보류. 기존 18곳 중 1곳 지도가능, 17곳 좌표 미확인(비전수).",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 17,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "성남시 시정소식지 비전성남 2026 힙스토어 Top 8 발표(2026-08-26)",
+        "성남 공개 업소 주소 자료 4곳(업체 소개·지역 커뮤니티·공개 영업 인허가 가공자료)",
+        "용인시 조아용 맛집 2026 모집공고(2026-02-10), 최종 명단 미확보",
+        "경기관광공사 경기노포 57선 중 성남은 기름집 2곳만 확인(인증맛집 신규 미등록)"
+      ],
+      "additions": 4,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 26,
+      "locationPendingScope": "기존 성남 7곳 중 5곳, 용인 18곳 중 17곳, 신규 성남 4곳이 좌표 미확인: 총 26곳. 기존 좌표 없는 22곳 전수 재검증은 아님.",
+      "addedRestaurantIds": [
+        "local-seongnam-hipstore2026-cafe-themallang",
+        "local-seongnam-hipstore2026-deffee",
+        "local-seongnam-hipstore2026-yori",
+        "local-seongnam-hipstore2026-gimyeonmin"
+      ],
+      "existingItemsRechecked": [
+        "고암남원추어탕 (성남시 기존 데이터 출처·주소 확인 필요)",
+        "옛터 (용인시 기존 조아용 맛집 2025 이력, 2026 선정 확정 아님)"
+      ],
+      "evidenceUrls": [
+        "https://snvision.seongnam.go.kr/23223",
+        "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/",
+        "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c",
+        "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91",
+        "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe",
+        "https://www.yongin.go.kr/user/bbs/BD_selectBbs.do?q_bbsCode=1020&q_bbscttSn=20260210103207155",
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-seongnam-hipstore2026-cafe-themallang",
+          "name": "카페 더말랑",
+          "address": "경기도 성남시 수정구 수정로 312, 지1층 B1F-3호",
+          "region": "경기도 성남시",
+          "aliases": [
+            "경기 성남시",
+            "성남시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://snvision.seongnam.go.kr/23223",
+            "https://www.daangn.com/kr/local-profile/%EC%8C%80%EB%94%94%EC%A0%80%ED%8A%B8-%EC%B9%B4%ED%8E%98-%EB%8D%94%EB%A7%90%EB%9E%91-cr2z7ayxr6nb/"
+          ],
+          "result": "공식 성남시 선정 명칭과 현재 공개 주소 자료를 대조; 동일 업소·지점의 공개 위경도 근거 미확보로 null 유지.",
+          "reason": "검증 가능한 공개 업소 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 9,
+          "action": "다음 해당 순환에서 업소명·주소 일치 좌표 검증, 추정 좌표·삭제 금지"
+        },
+        {
+          "id": "local-seongnam-hipstore2026-deffee",
+          "name": "디피",
+          "address": "경기도 성남시 수정구 탄리로81번길 4, 1층",
+          "region": "경기도 성남시",
+          "aliases": [
+            "경기 성남시",
+            "성남시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://snvision.seongnam.go.kr/23223",
+            "https://www.tabling.co.kr/place/677cd0e866de5f069886f08c"
+          ],
+          "result": "공식 성남시 선정 명칭과 현재 공개 주소 자료를 대조; 동일 업소·지점의 공개 위경도 근거 미확보로 null 유지.",
+          "reason": "검증 가능한 공개 업소 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 9,
+          "action": "다음 해당 순환에서 업소명·주소 일치 좌표 검증, 추정 좌표·삭제 금지"
+        },
+        {
+          "id": "local-seongnam-hipstore2026-yori",
+          "name": "요리천재의집",
+          "address": "경기도 성남시 수정구 수정로 115-1, 1층",
+          "region": "경기도 성남시",
+          "aliases": [
+            "경기 성남시",
+            "성남시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://snvision.seongnam.go.kr/23223",
+            "https://bizsurfing.com/%EA%B2%BD%EA%B8%B0/%EC%84%B1%EB%82%A8%EC%8B%9C%EC%88%98%EC%A0%95%EA%B5%AC/%ED%83%9C%ED%8F%89%EB%8F%99/%EB%A7%9B%EC%A7%91"
+          ],
+          "result": "공식 성남시 선정 명칭과 현재 공개 주소 자료를 대조; 동일 업소·지점의 공개 위경도 근거 미확보로 null 유지.",
+          "reason": "검증 가능한 공개 업소 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 9,
+          "action": "다음 해당 순환에서 업소명·주소 일치 좌표 검증, 추정 좌표·삭제 금지"
+        },
+        {
+          "id": "local-seongnam-hipstore2026-gimyeonmin",
+          "name": "카페 기면민",
+          "address": "경기도 성남시 중원구 산성대로468번길 3, 1층",
+          "region": "경기도 성남시",
+          "aliases": [
+            "경기 성남시",
+            "성남시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://snvision.seongnam.go.kr/23223",
+            "https://local.runmore.dev/seongnam/gift-card/jungwon/cafe"
+          ],
+          "result": "공식 성남시 선정 명칭과 현재 공개 주소 자료를 대조; 동일 업소·지점의 공개 위경도 근거 미확보로 null 유지.",
+          "reason": "검증 가능한 공개 업소 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 9,
+          "action": "다음 해당 순환에서 업소명·주소 일치 좌표 검증, 추정 좌표·삭제 금지"
+        }
+      ],
+      "unresolved": [
+        "용인시 조아용 맛집 2026 모집 공고만 확인; 최종 선정 10개 업소 목록과 최신 현황 미확보",
+        "성남 힙스토어 선정은 상권 브랜딩 지원으로 미식 심사·블루리본 등급 아님",
+        "성남·용인 좌표 미확인 26곳 중 기존 22곳은 이번 실행에서 개별 재확인 미완료",
+        "미쉐린 한국 현재 선정 지역이 서울·부산이므로 두 시에 신규 미쉐린 선정 확인되지 않음",
+        "정규 블루리본 신규 선정/개별 등급을 발행처 자료로 확증하지 못했으므로 미등록",
+        "수정·폐업·이전 상태 해당 지점의 신뢰할 만한 새 근거 없어 미변경"
+      ],
+      "carryOver": [
+        "용인시 2026 조아용 맛집 확정 명단 공식 게시 여부 재확인",
+        "성남·용인 기존 22곳 위치 미확인 개별 조사",
+        "성남 신규 4곳의 업소명·현주소 일치 지도 좌표 근거 탐색",
+        "블루리본 발행처 직접 확인 가능한 개별 정규 선정 근거 발굴"
+      ],
+      "nextSlot": 10,
+      "nextRegions": [
+        "경기도 고양시",
+        "경기도 파주시"
       ],
       "notExhaustive": true
     }
