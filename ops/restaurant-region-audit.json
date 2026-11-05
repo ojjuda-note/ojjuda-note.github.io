@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 7,
-    "scheduledAt": "2026-11-06T01:00:00+09:00",
+    "slot": 8,
+    "scheduledAt": "2026-11-06T02:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "hourly scheduled: anchored at 2026-11-05T23:00+09:00"
+    "source": "hourly slot: anchor 2026-11-05T23:00+09:00"
   },
   "entries": [
     {
@@ -2022,6 +2022,143 @@
       "nextRegions": [
         "경기도 수원시",
         "경기도 화성시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 8,
+      "scheduledAtKST": "2026-11-06T02:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_3_verified_gyeonggi_oldshop_additions",
+      "assignedRegions": [
+        "경기도 수원시",
+        "경기도 화성시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 수원시",
+          "baseListedCount": 112,
+          "scope": "공식 경기노포 57선 수원 선정 4곳 중 주소 교차검증 가능한 3곳을 추가하고 영화루는 주소 상충으로 보류(부분 조사)",
+          "new": 3,
+          "updated": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 화성시",
+          "baseListedCount": 3,
+          "scope": "경기관광공사 경기노포 화성 목록(비식당)과 화성시 관광 모범음식점 목록 대조; 독립된 미식 선정 근거 없으므로 추가 없음",
+          "new": 0,
+          "updated": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경기관광공사 2024 경기노포 57선 명단",
+        "경기관광공사 2026 호남순대 공식 소개",
+        "입주집·송할머니 옻닭집 공개 업소 주소 자료",
+        "화성시 관광 공식 모범음식점 목록"
+      ],
+      "additions": 3,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 117,
+      "locationPendingScope": "기본 DB 수원·화성 좌표 미등록 114곳, 신규 3곳. 현황 집계만이며 전수 좌표 검증을 뜻하지 않음.",
+      "addedRestaurantIds": [
+        "local-ggtour-oldshops2023-suwon-honamsundae",
+        "local-ggtour-oldshops2024-suwon-ipjujip",
+        "local-ggtour-oldshops2024-suwon-song-otdak"
+      ],
+      "existingItemsRechecked": [
+        "홍천덤바우록계탕 (화성시)",
+        "소담뜰 (화성시)"
+      ],
+      "evidenceUrls": [
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT",
+        "https://www.koobig.com/93794",
+        "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629",
+        "https://tour.hscity.go.kr/NEW/1tour/food1.jsp"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-ggtour-oldshops2023-suwon-honamsundae",
+          "name": "호남순대",
+          "address": "경기도 수원시 팔달구 팔달문로 19 지동시장 순대타운 A동 5호",
+          "region": "경기도 수원시",
+          "aliases": [
+            "경기 수원시",
+            "수원시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+            "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT"
+          ],
+          "result": "상호·선정연도·주소는 대조하였지만 동일 식당·지점의 검증된 공개 위경도 미확보",
+          "reason": "일치하는 공개 위경도 검증 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 8,
+          "action": "다음 동일 회차에서 공개 지도 교차대조, 좌표 없음만으로 폐업·삭제 처리 금지"
+        },
+        {
+          "id": "local-ggtour-oldshops2024-suwon-ipjujip",
+          "name": "입주집",
+          "address": "경기도 수원시 팔달구 팔달문로3번길 37",
+          "region": "경기도 수원시",
+          "aliases": [
+            "경기 수원시",
+            "수원시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+            "https://www.koobig.com/93794"
+          ],
+          "result": "상호·선정연도·주소는 대조하였지만 동일 식당·지점의 검증된 공개 위경도 미확보",
+          "reason": "일치하는 공개 위경도 검증 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 8,
+          "action": "다음 동일 회차에서 공개 지도 교차대조, 좌표 없음만으로 폐업·삭제 처리 금지"
+        },
+        {
+          "id": "local-ggtour-oldshops2024-suwon-song-otdak",
+          "name": "송할머니 옻닭집",
+          "address": "경기도 수원시 권선구 정조로 423",
+          "region": "경기도 수원시",
+          "aliases": [
+            "경기 수원시",
+            "수원시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+            "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629"
+          ],
+          "result": "상호·선정연도·주소는 대조하였지만 동일 식당·지점의 검증된 공개 위경도 미확보",
+          "reason": "일치하는 공개 위경도 검증 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 8,
+          "action": "다음 동일 회차에서 공개 지도 교차대조, 좌표 없음만으로 폐업·삭제 처리 금지"
+        }
+      ],
+      "unresolved": [
+        "수원 영화루 공식 2024 선정 확인, 현재 주소 출처 간 상충으로 등록 보류",
+        "수원·화성 위치 미등록 117곳 중 실제 이번에 개별 확인한 것은 신규 3곳뿐",
+        "화성시 관광 모범음식점 자료는 별도 미식 선정이 아니므로 신규 추가 보류",
+        "전체 식당 영업/폐업/누락 전수 조사 미완료"
+      ],
+      "carryOver": [
+        "영화루 실제 지점·도로명주소 재검증",
+        "해당 지역 위치 미확인 117곳 다음 순환 재확인",
+        "화성시 별도 공식 미식 선정 명단 확인"
+      ],
+      "nextSlot": 9,
+      "nextRegions": [
+        "경기도 성남시",
+        "경기도 용인시"
       ],
       "notExhaustive": true
     }
