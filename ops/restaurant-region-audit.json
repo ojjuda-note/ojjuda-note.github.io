@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 12,
-    "scheduledAt": "2026-11-06T06:00:00+09:00",
+    "slot": 13,
+    "scheduledAt": "2026-11-06T07:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "hourly slot: anchor 2026-11-05T23:00+09:00; scheduled 06:00 KST; delay 23 minutes"
+    "source": "hourly slot; anchored 2026-11-05T23:00+09:00; scheduled 07:00 KST"
   },
   "entries": [
     {
@@ -3414,6 +3414,531 @@
         "경기도 안산시",
         "경기도 시흥시",
         "경기도 광명시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 13,
+      "scheduledAtKST": "2026-11-06T07:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_7_official_food_introductions",
+      "assignedRegions": [
+        "경기도 안산시",
+        "경기도 시흥시",
+        "경기도 광명시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 안산시",
+          "baseListedCount": 11,
+          "scope": "기존 DB의 ID/주소/좌표 누락 확인, 경기도 뉴스포털의 음식점 소개 자료 1건(해당 지역) 대조. 전체 시/구 업소 전수점검이나 개별 영업상태 검증 아님.",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 13,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 시흥시",
+          "baseListedCount": 3,
+          "scope": "기존 DB의 ID/주소/좌표 누락 확인, 경기도 뉴스포털의 음식점 소개 자료 1건(해당 지역) 대조. 전체 시/구 업소 전수점검이나 개별 영업상태 검증 아님.",
+          "new": 3,
+          "updated": 0,
+          "unknownLocations": 6,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 광명시",
+          "baseListedCount": 1,
+          "scope": "기존 DB의 ID/주소/좌표 누락 확인, 경기도 뉴스포털의 음식점 소개 자료 1건(해당 지역) 대조. 전체 시/구 업소 전수점검이나 개별 영업상태 검증 아님.",
+          "new": 2,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경기도 뉴스포털 2025-12-10 안산 편",
+        "경기도 뉴스포털 2025-09-26 시흥 편",
+        "경기도 뉴스포털 2026-01-12 광명·군포 편",
+        "기존 데이터 및 12회차 보충과의 상호·주소 중복 여부/좌표 누락 확인"
+      ],
+      "additions": 7,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 22,
+      "locationPendingScope": "기존 15곳(안산11·시흥3·광명1)과 신규 7곳(안산2·시흥3·광명2). 정확한 현주소와 공개 위경도 재확인 이월.",
+      "addedRestaurantIds": [
+        "local-gg-tour-slot13-gm-eobune",
+        "local-gg-tour-slot13-gm-regularly",
+        "local-gg-tour-slot13-sh-mulwang",
+        "local-gg-tour-slot13-sh-cheongchun",
+        "local-gg-tour-slot13-sh-nurungdak",
+        "local-gg-tour-slot13-an-kantipur",
+        "local-gg-tour-slot13-an-vietnam"
+      ],
+      "updatedRestaurantIds": [],
+      "existingItemsRechecked": [
+        "기존 안산 11·시흥 3·광명 1곳은 ID/선정이력/주소·좌표 누락 확인. 최신 공개 좌표·영업 상태 독립 검증은 미완료."
+      ],
+      "evidenceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+        "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-regional-gamasot-bapsang-cheolsan",
+          "name": "가마솥밥상 철산본점",
+          "address": "경기도 광명시 안양천로 459, 2층",
+          "region": "경기도 광명시",
+          "aliases": [
+            "경기 광명시",
+            "경기도 광명시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-eunices-garden-ansan",
+          "name": "유니스의 정원",
+          "address": "경기도 안산시 상록구 반월천북길 139",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049",
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-forkner-ansan",
+          "name": "포크너",
+          "address": "경기도 안산시 단원구 예술대학로 11 해남빌딩 1층",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049",
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "blue-regional-gukbo-mandu-ansan",
+          "name": "국보만두",
+          "address": "경기도 안산시 단원구 광덕서로 62 고잔법조빌딩 101-102호",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049",
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202512100908327266C049&s_code=C049"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-0157d4b5a2b2aaaf",
+          "name": "도토리마을묵집",
+          "address": "경기도 시흥시 동서로857번길 28-22",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-fbd8114f5680a81d",
+          "name": "우강",
+          "address": "경기도 시흥시 옥구천서로313, 1층(정왕동)",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-9621b5674f056919",
+          "name": "소꼼닭",
+          "address": "경기도 시흥시 서촌상가3길 15-6 2층",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-a51b4214f157f508",
+          "name": "상록한정식",
+          "address": "경기도 안산시 상록구 해안로 705",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-a3fd3c3bc1deb6d8",
+          "name": "광양참숯불구이",
+          "address": "경기도 안산시 단원구 광덕동로 101",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-4e0d82eb7e38b860",
+          "name": "해미청",
+          "address": "경기도 안산시 상록구 각골로 47",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-558a68dd70abfdb3",
+          "name": "이천영양돌솥밥",
+          "address": "경기도 안산시 상록구 항가울로7",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-fb9236e6600037f3",
+          "name": "궁중삼계탕",
+          "address": "경기도 안산시 상록구 석호공원로 69",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-7ed8a18bead66a68",
+          "name": "복요리전문점복청",
+          "address": "경기도 안산시 단원구 원고잔로 15",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-3971d3f4366902ad",
+          "name": "여울쌈밥",
+          "address": "경기도 안산시 단원구 꽃우물1길 16-5",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-north-ee2430eb52ad0eff",
+          "name": "오양순추어탕",
+          "address": "경기도 안산시 상록구 안산천동로256",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666",
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076"
+          ],
+          "result": "기존 선정 이력·업소명·주소·좌표 미등록 확인. 이 회차에서 최신 영업과 상호/지점에 일치하는 공개 지도 위경도 독립 대조는 미완료.",
+          "reason": "좌표 미등록, 정확한 공개 위치 및 영업 상태 재확인 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 재검증, 단순 검색 실패로 삭제·폐업 처리 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-gm-eobune",
+          "name": "어부네생선구이",
+          "address": "경기도 광명시 오리로963번길 3, 1층",
+          "region": "경기도 광명시",
+          "aliases": [
+            "경기 광명시",
+            "경기도 광명시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-gm-regularly",
+          "name": "레귤러리",
+          "address": "경기도 광명시 기아로62번길 20-16, 장인빌딩",
+          "region": "경기도 광명시",
+          "aliases": [
+            "경기 광명시",
+            "경기도 광명시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-sh-mulwang",
+          "name": "물왕 시흥물왕저수지점",
+          "address": "경기도 시흥시 동서로857번길 22",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-sh-cheongchun",
+          "name": "청춘조개포차 오이도본점",
+          "address": "경기도 시흥시 오이도로 215",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-sh-nurungdak",
+          "name": "참나무누룽닭 시흥본점",
+          "address": "경기도 시흥시 중심상가3길 31-1, 한성프라자",
+          "region": "경기도 시흥시",
+          "aliases": [
+            "경기 시흥시",
+            "경기도 시흥시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-an-kantipur",
+          "name": "칸티푸르 안산점",
+          "address": "경기도 안산시 단원구 다문화2길 28",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        },
+        {
+          "id": "local-gg-tour-slot13-an-vietnam",
+          "name": "베트남고향식당",
+          "address": "경기도 안산시 단원구 중앙대로 443",
+          "region": "경기도 안산시",
+          "aliases": [
+            "경기 안산시",
+            "경기도 안산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+          ],
+          "result": "경기도 공식 기사에서 상호·지점·게재주소 확인. 최신 영업 상태와 정확히 일치하는 위경도 미확인.",
+          "reason": "동일 업소·현 주소에 일치하는 공개 좌표 근거 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 13,
+          "action": "다음 같은 지역 배정 때 지도 좌표·영업 상태 교차 검증, 임의 좌표나 목록 제외 금지"
+        }
+      ],
+      "unresolved": [
+        "호사식탁/호사식당: 공식 기사 제목·본문 상호 충돌로 추가 보류.",
+        "블루리본 직접 발행 판본·정규 리본수 추가 확인 미완료. 기존 가이드 기록 유지.",
+        "좌표 누락 22곳 위치 정확성 검증 후 차기 같은 지역 순환에서 보강.",
+        "업소별 2026년 현재 영업/폐업·이전은 별도 확인 불충분."
+      ],
+      "carryOver": [
+        "안산13·시흥6·광명3 좌표 미확인 및 정확한 지도/업소 영업 상태 추가 교차 검증",
+        "호사식탁/호사식당 이름·주소 정정 검증",
+        "공식 블루리본 개별 지도에서 신규 리본 수/판본 독립 확인"
+      ],
+      "nextSlot": 14,
+      "nextRegions": [
+        "경기도 평택시",
+        "경기도 오산시",
+        "경기도 안성시"
       ],
       "notExhaustive": true
     }

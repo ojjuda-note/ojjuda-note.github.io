@@ -1,0 +1,217 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리 (안산·시흥·광명)",
+  "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049",
+  "completeRegionalCollection": false,
+  "selectionScope": "경기도 뉴스포털 2025-09-26 시흥, 2025-12-10 안산, 2026-01-12 광명 공식 식당 소개. 정규 미식 인증, 현재 영업, 특정 연도의 선정 사실과 구분.",
+  "restaurants": [
+    {
+      "id": "local-gg-tour-slot13-gm-eobune",
+      "name": "어부네생선구이",
+      "category": "한식",
+      "region": "경기",
+      "district": "광명시",
+      "address": "경기도 광명시 오리로963번길 3, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선구이 정식",
+        "고등어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-12",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+    },
+    {
+      "id": "local-gg-tour-slot13-gm-regularly",
+      "name": "레귤러리",
+      "category": "디저트",
+      "region": "경기",
+      "district": "광명시",
+      "address": "경기도 광명시 기아로62번길 20-16, 장인빌딩",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "프렌치토스트",
+        "소금빵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-12",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049"
+    },
+    {
+      "id": "local-gg-tour-slot13-sh-mulwang",
+      "name": "물왕 시흥물왕저수지점",
+      "category": "한식",
+      "region": "경기",
+      "district": "시흥시",
+      "address": "경기도 시흥시 동서로857번길 22",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물왕철판",
+        "해물칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-09-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+    },
+    {
+      "id": "local-gg-tour-slot13-sh-cheongchun",
+      "name": "청춘조개포차 오이도본점",
+      "category": "한식",
+      "region": "경기",
+      "district": "시흥시",
+      "address": "경기도 시흥시 오이도로 215",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "조개구이",
+        "가리비타워"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-09-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+    },
+    {
+      "id": "local-gg-tour-slot13-sh-nurungdak",
+      "name": "참나무누룽닭 시흥본점",
+      "category": "한식",
+      "region": "경기",
+      "district": "시흥시",
+      "address": "경기도 시흥시 중심상가3길 31-1, 한성프라자",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "누룽지통닭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-09-26",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401"
+    },
+    {
+      "id": "local-gg-tour-slot13-an-kantipur",
+      "name": "칸티푸르 안산점",
+      "category": "기타",
+      "region": "경기",
+      "district": "안산시 단원구",
+      "address": "경기도 안산시 단원구 다문화2길 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "인도·네팔 커리",
+        "난"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-12-10",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+    },
+    {
+      "id": "local-gg-tour-slot13-an-vietnam",
+      "name": "베트남고향식당",
+      "category": "기타",
+      "region": "경기",
+      "district": "안산시 단원구",
+      "address": "경기도 안산시 단원구 중앙대로 443",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌀국수",
+        "반미"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049",
+          "sourceName": "경기도 뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-12-10",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도 공식 소개 기사 수록 이력이며 정규 가이드 평가·선정 및 현재 영업 보증이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+    }
+  ],
+  "notes": [
+    "기사 소개글과 사진 복제 없이 식당 기본 사실·출처만 수록.",
+    "기사 제목에 '호사식탁', 본문에 '호사식당'으로 상호 충돌이 있어 별도 확인 전 보류.",
+    "기존 블루리본 선정·수록 이력은 그대로 보존하고 정규 리본 등급은 추정하지 않음.",
+    "모든 신규 좌표는 명확한 가게/지점/주소 일치 공개 위경도 확보 전까지 null. 회원 추천 정보 변경 없음."
+  ]
+}

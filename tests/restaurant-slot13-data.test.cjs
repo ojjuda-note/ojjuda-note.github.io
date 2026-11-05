@@ -1,0 +1,5 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),dir=path.join(root,'games/certified-restaurants');
+const base=JSON.parse(fs.readFileSync(path.join(dir,'restaurants.json'))),add=JSON.parse(fs.readFileSync(path.join(dir,'official-gyeonggi-slot13.json'))),src=JSON.parse(fs.readFileSync(path.join(dir,'sources.json'))),audit=JSON.parse(fs.readFileSync(path.join(root,'ops/restaurant-region-audit.json')));
+assert.equal(add.restaurants.length,7);const ids=new Set(base.restaurants.map(x=>x.id));for(const x of add.restaurants){assert.ok(!ids.has(x.id));assert.equal(x.lat,null);assert.equal(x.lng,null);assert.equal(x.guides[0].status,'official_restaurant_listing');assert.equal(x.guides[0].year,null);assert.ok(x.guides[0].sourceUrl.startsWith('https://gnews.gg.go.kr/'));}
+assert.equal(src.localGovernment.municipalTourism20261106GyeonggiSlot13.recordCount,7);const a=audit.entries.find(x=>x.cycle===1&&x.slot===13);assert.equal(a?.additions,7);assert.equal(a?.locationPending,22);console.log('slot13 checks passed');
