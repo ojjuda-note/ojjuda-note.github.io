@@ -3,8 +3,14 @@ export const CATEGORIES = Object.freeze({
   local: Object.freeze({ label: '지역축제', color: '#e97746', bg: '#fff0e7', ink: '#a84e28', icon: 'sparkles' }),
   campus: Object.freeze({ label: '대학축제', color: '#6d8cdb', bg: '#edf1ff', ink: '#4964ae', icon: 'music' }),
   film: Object.freeze({ label: '영화제', color: '#a278c0', bg: '#f4ecfa', ink: '#805597', icon: 'film' }),
-  expo: Object.freeze({ label: '박람회·전시', color: '#419e85', bg: '#e8f6ee', ink: '#25765f', icon: 'grid' })
+  expo: Object.freeze({ label: '박람회·전시', color: '#419e85', bg: '#e8f6ee', ink: '#25765f', icon: 'grid' }),
+  sport: Object.freeze({ label: '스포츠', color: '#2e80b4', bg: '#e8f2fc', ink: '#27628e', icon: 'trophy' })
 });
+
+export const SECTIONS = Object.freeze({ festival: '축제', sports: '스포츠', performance: '공연/전시' });
+export function sectionOf(event) {
+  return event?.section || (event?.category === 'sport' ? 'sports' : ['film', 'expo'].includes(event?.category) ? 'performance' : 'festival');
+}
 
 export const REGIONS = Object.freeze([
   '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
@@ -170,7 +176,7 @@ export function filterEvents(events, options = {}, fallbackToday) {
     if (!undecided && !hasEventDates(event)) return false;
     if (undecided && (!['upcoming', 'all', 'undecided'].includes(period) || selectedDate)) return false;
     if (!undecided && period === 'undecided') return false;
-    if (!isAny(category) && event.category !== category) return false;
+    if (!isAny(category) && event.category !== category && sectionOf(event) !== category) return false;
     if (!isAny(region) && event.region !== region) return false;
     if (savedOnly && !savedIds.has(event.id)) return false;
     if (!undecided && range && !overlaps(event, range.start, range.end)) return false;
@@ -178,7 +184,7 @@ export function filterEvents(events, options = {}, fallbackToday) {
     if (terms.length) {
       const text = normalized([
         event.title, event.region, event.city, event.venue, event.address,
-        event.summary, event.dateNote, CATEGORIES[event.category]?.label, ...(event.tags || [])
+        event.summary, event.dateNote, CATEGORIES[event.category]?.label, SECTIONS[sectionOf(event)], event.sportType, ...(event.tags || [])
       ].join(' '));
       if (!terms.every(term => text.includes(term))) return false;
     }

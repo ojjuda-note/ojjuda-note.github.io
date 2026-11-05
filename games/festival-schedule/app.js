@@ -1,8 +1,8 @@
 import {
-  CATEGORIES, REGIONS, todayKST, parseDate, isoDate, addDays,
+  CATEGORIES, SECTIONS, sectionOf, REGIONS, todayKST, parseDate, isoDate, addDays,
   monthRange, periodRange, overlaps, eventStatus, filterEvents,
   formatRange, createICS, hasEventDates, isDateUndecided
-} from './core.js?v=20261103-festival-undecided1';
+} from './core.js?v=20261105-festival-three-sections1';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'ojjuda.festival.saved.v1';
@@ -39,7 +39,8 @@ const paths = {
   download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
   share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.5 6.6-4m-6.6 7 6.6 4"/>',
   close: '<path d="m6 6 12 12M18 6 6 18"/>',
-  check: '<path d="m4 12 5 5L20 6"/>'
+  check: '<path d="m4 12 5 5L20 6"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v6c0 5-2 7-5 7s-5-2-5-7V4Zm0 2H4v3c0 2 1.5 3 3.5 3M17 6h3v3c0 2-1.5 3-3.5 3"/>'
 };
 function svg(name) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name] || paths.sparkles}</svg>`;
@@ -70,7 +71,7 @@ function readRoute() {
   const selectedDate = validDate(p.get('date')) ? p.get('date') : '';
   return {
     query: (p.get('q') || '').slice(0, 300),
-    category: Object.hasOwn(CATEGORIES, p.get('category')) ? p.get('category') : 'all',
+    category: (Object.hasOwn(SECTIONS, p.get('category')) || Object.hasOwn(CATEGORIES, p.get('category'))) ? p.get('category') : 'all',
     region: REGIONS.includes(p.get('region')) ? p.get('region') : 'all',
     period: PERIODS.includes(p.get('period')) ? p.get('period') : 'upcoming',
     from: validDate(p.get('from')) ? p.get('from') : '',
@@ -229,13 +230,18 @@ function compactDateRange(event) {
   if (event.start === event.end) return first;
   return `${first} – ${year !== endYear ? endYear + '.' : ''}${datePart(end)}`;
 }
+function categoryLabel(event) {
+  if (event.category === 'sport') return event.sportType ? `${event.sportType} · 스포츠` : '스포츠';
+  if (sectionOf(event) === 'performance' && event.category === 'local') return '공연·연주회';
+  return CATEGORIES[event.category]?.label || '행사';
+}
 function cardMarkup(event) {
   const category = CATEGORIES[event.category];
   const status = displayStatus(event);
   const isSaved = saved.has(event.id);
   return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''} ${isDateUndecided(event) ? 'is-undecided' : ''}" data-event-card="${escapeHTML(event.id)}" style="--category-color:${category.ink}">
     <button class="card-main" data-open-event="${escapeHTML(event.id)}" aria-label="${escapeHTML(event.title)} 상세 정보">
-      <span class="card-topline"><span class="card-category">${category.label}</span><span class="card-status ${status.key}">${status.label}</span></span>
+      <span class="card-topline"><span class="card-category">${escapeHTML(categoryLabel(event))}</span><span class="card-status ${status.key}">${status.label}</span></span>
       <strong class="card-title">${escapeHTML(event.title)}</strong>
       <span class="card-meta"><span class="card-date" title="${escapeHTML(formatRange(event))}">${escapeHTML(compactDateRange(event))}</span><span class="card-location">${escapeHTML([...new Set([event.region, event.city].filter(Boolean))].join(' '))}</span></span>
     </button>
@@ -247,7 +253,7 @@ function renderList() {
     $('event-list').innerHTML = filteredEvents.map(cardMarkup).join('');
     return;
   }
-  const archive = state.period !== 'undecided' && state.category === 'campus' && events.some(event => event.category === 'campus' && hasEventDates(event) && event.end < today);
+  const archive = state.period !== 'undecided' && state.category === 'festival' && events.some(event => event.category === 'campus' && hasEventDates(event) && event.end < today);
   const reversed = state.period === 'custom' && state.from && state.to && state.from > state.to;
   const title = reversed ? '선택한 날짜를 확인해 주세요' : state.savedOnly ? '저장한 행사가 보이지 않아요' : '조건에 맞는 행사가 없어요';
   const description = reversed ? '종료일이 시작일보다 앞서 있어요.' : state.savedOnly ? '행사의 책갈피를 눌러 저장하거나, 선택한 검색 조건을 바꿔보세요.' : state.period === 'undecided' ? '이 조건에서 공식 개최 예고가 확인된 일정 미정 행사는 아직 없어요.' : archive ? '대학축제는 주로 학기 중에 열려요. 확인된 지난 축제도 볼 수 있어요.' : '지역·날짜·종류를 바꾸면 다른 즐거움을 찾을 수 있어요.';
@@ -306,7 +312,7 @@ function renderDetail(event) {
   const statusNote = status.key === 'cancelled' ? `취소된 행사입니다.${hasEventDates(event) ? ' 아래 날짜는 기존에 공지된 일정입니다.' : ''}` : status.key === 'postponed' ? `연기된 행사입니다. 새 일정은 공식 공지를 확인해 주세요.${hasEventDates(event) ? ' 아래 날짜는 기존 일정입니다.' : ''}` : undecided ? '공식 개최 계획이 발표됐어요. 정확한 날짜는 아직 발표 전이며 예정 시기는 바뀔 수 있어요.' : event.statusNote || '';
   $('event-detail').innerHTML = `<div class="detail-cover" style="--tile-bg:${cat.bg};--tile-ink:${cat.ink}">
     <button class="dialog-close" data-action="close-event" aria-label="행사 상세 닫기">${icon('close')}</button>
-    <span class="detail-kind">${icon(cat.icon)}${cat.label}<span>· ${status.label}</span></span>
+    <span class="detail-kind">${icon(cat.icon)}${escapeHTML(categoryLabel(event))}<span>· ${status.label}</span></span>
     <h2 id="detail-title">${escapeHTML(event.title)}</h2>
     <div class="detail-subtitle">${escapeHTML([event.region, event.city].filter(Boolean).join(' · '))}</div>
   </div><div class="detail-body">
@@ -651,7 +657,7 @@ function renderMapMarkers() {
       title, alt: title, riseOnHover: true,
       icon: window.L.divIcon({ className: 'festival-marker', html, iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -32] })
     });
-    const popup = `<p class="popup-heading">${count > 1 ? `이 주변의 행사 ${count}개` : CATEGORIES[group.events[0].category].label}</p>${group.events.map(event => `<button class="popup-event" data-open-event="${escapeHTML(event.id)}"><strong>${escapeHTML(event.title)}</strong><span>${escapeHTML(formatRange(event))} · ${STATUS_LABELS[eventStatus(event, today)]}</span></button>`).join('')}`;
+    const popup = `<p class="popup-heading">${count > 1 ? `이 주변의 행사 ${count}개` : escapeHTML(categoryLabel(group.events[0]))}</p>${group.events.map(event => `<button class="popup-event" data-open-event="${escapeHTML(event.id)}"><strong>${escapeHTML(event.title)}</strong><span>${escapeHTML(formatRange(event))} · ${STATUS_LABELS[eventStatus(event, today)]}</span></button>`).join('')}`;
     marker.bindPopup(popup, { maxWidth: 285, minWidth: 210, autoPanPadding: [20, 55] });
     marker.on('popupopen', event => {
       event.popup.getElement()?.querySelectorAll('[data-open-event]').forEach(button => {

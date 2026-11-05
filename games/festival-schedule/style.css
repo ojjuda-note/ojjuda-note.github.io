@@ -273,10 +273,9 @@ dialog::backdrop { background: #19342866; }
 .about-button { border-radius: 50%; background: #f0f5eb; color: #67816e; }
 .search-bar:focus-within { border-color: #8bb59b; box-shadow: 0 0 0 3px #dfede2; }
 .category-chip::before { content: ''; width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: currentColor; opacity: .75; }
-.category-chip[data-category=local] { --chip-bg: #fff1e8; --chip-ink: #9d4d2c; --chip-line: #f2d9c9; }
-.category-chip[data-category=campus] { --chip-bg: #edf3ff; --chip-ink: #49628e; --chip-line: #d9e3f4; }
-.category-chip[data-category=film] { --chip-bg: #f5edfa; --chip-ink: #795391; --chip-line: #e9dbef; }
-.category-chip[data-category=expo] { --chip-bg: #eaf7ef; --chip-ink: #397353; --chip-line: #d2e9dc; }
+.category-chip[data-category=festival] { --chip-bg: #fff1e8; --chip-ink: #9d4d2c; --chip-line: #f2d9c9; }
+.category-chip[data-category=sports] { --chip-bg: #e8f2fc; --chip-ink: #27628e; --chip-line: #cadff0; }
+.category-chip[data-category=performance] { --chip-bg: #eaf7ef; --chip-ink: #397353; --chip-line: #d2e9dc; }
 .event-card::before { content: ''; position: absolute; left: 0; top: 20px; bottom: 20px; width: 3px; border-radius: 0 3px 3px 0; background: var(--category-color, #8cad98); opacity: .65; pointer-events: none; }
 .card-location::before { content: ''; display: inline-block; width: 3px; height: 3px; margin: 0 7px 3px 0; border-radius: 50%; background: #b1bfb2; }
 .calendar-weekdays { border-radius: 7px 7px 0 0; background: #f5f8f0; }
@@ -333,7 +332,7 @@ dialog::backdrop { background: #19342866; }
   .reset-button { width: 32px; height: 34px; margin: 0 2px; }
   .reset-button .icon { width: 16px; height: 16px; }
   .filter-row { padding: 6px 0; min-height: 44px; }
-  .categories { display: grid; grid-template-columns: .78fr 1.1fr 1.1fr 1fr 1fr; width: 100%; gap: 4px; }
+  .categories { display: grid; grid-template-columns: .7fr 1fr 1fr 1.25fr; width: 100%; gap: 4px; }
   .category-chip { min-width: 0; min-height: 32px; padding: 6px 4px; gap: 4px; border-radius: 999px; font-size: 12px; }
   .category-chip > .icon { width: 12px; height: 12px; }
   .category-dot { width: 5px; height: 5px; }

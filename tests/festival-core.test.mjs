@@ -164,3 +164,17 @@ test('ICS escapes newlines and folds without splitting Korean text',()=>{
  assert.equal(unfolded.split('\r\n').filter(line=>line==='BEGIN:VEVENT').length,1);
  assert.ok(unfolded.includes('🎉'));
 });
+
+
+test('three public sections filter legacy event kinds and minority sport tournaments',()=>{
+ const sports={...fixture[0],id:'sports-sepaktakraw',title:'세팍타크로 전국대회',category:'sport',section:'sports',sportType:'세팍타크로'};
+ const performance={...fixture[0],id:'performance-recital',title:'클래식 독주회',section:'performance'};
+ const musicFestival={...fixture[0],id:'festival-music',title:'음악 페스티벌',section:'festival'};
+ const entries=[sports,performance,musicFestival];
+ assert.deepEqual(core.filterEvents(entries,{today,period:'all',category:'sports'}).map(x=>x.id),['sports-sepaktakraw']);
+ assert.deepEqual(core.filterEvents(entries,{today,period:'all',category:'performance'}).map(x=>x.id),['performance-recital']);
+ assert.deepEqual(core.filterEvents(entries,{today,period:'all',category:'festival'}).map(x=>x.id),['festival-music']);
+ assert.deepEqual(core.filterEvents(entries,{today,period:'all',category:'sports',query:'세팍타크로'}).map(x=>x.id),['sports-sepaktakraw']);
+ assert.equal(core.sectionOf({category:'film'}),'performance');
+ assert.equal(core.sectionOf({category:'local'}),'festival');
+});
