@@ -41,10 +41,10 @@
     c.rotate(rotation-.28); round(c,-8,-1.7,16,3.4,1.1); c.fillStyle='#405363'; c.fill();
     line(c,[[-7,1.8],[7,1.8]],'#DBE5EC',.65); c.restore();
   }
-  function metalPath(c,p){c.beginPath();(p.contour||p.vertices).forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
+  function metalPath(c,p){c.beginPath();p.vertices.forEach((v,i)=>i?c.lineTo(v.x,v.y):c.moveTo(v.x,v.y));c.closePath();}
   function drawPlate(c,p){
     const shades=[['#EBEFF3','#B9C8D7'],['#E2E8EC','#A5B9C5'],['#E9E6EF','#B9B5CD'],['#E7ECE8','#ADBFB6']];
-    const colors=shades[p.id%shades.length],face=p.contour||p.vertices,top=Math.min(...face.map(v=>v.y)),bottom=Math.max(...face.map(v=>v.y));
+    const colors=shades[p.id%shades.length],face=p.vertices,top=Math.min(...face.map(v=>v.y)),bottom=Math.max(...face.map(v=>v.y));
     c.save();c.translate(p.x,p.y);c.rotate(p.angle);
     c.save();c.translate(0,3);metalPath(c,p);c.fillStyle='#3F50633D';c.fill();c.restore();
     const metal=c.createLinearGradient(0,top,0,bottom);metal.addColorStop(0,colors[0]);metal.addColorStop(.17,'#F6F8FA');metal.addColorStop(.55,colors[1]);metal.addColorStop(1,'#98AABB');

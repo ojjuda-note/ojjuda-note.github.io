@@ -65,7 +65,7 @@ async function main(){
  };
  const g=G.flat(api,1);play(g);await wait();await wait();
  assert.ok(score>0&&rankSaves===1);assert.equal(g.drillState.result,'드릴 1개 획득');
- assert.ok(verifyClear(proof.stage,proof.events,proof.endTick));assert.equal(verifyClear(1,proof.events.slice(0,1),proof.endTick),false);
+ assert.equal(proof.physics,'whole-plates-v1');assert.ok(verifyClear(proof.stage,proof.events,proof.endTick));assert.equal(verifyClear(1,proof.events.slice(0,1),proof.endTick),false);
  g.destroy();store.clear();proof=null;const aided=G.flat(api,1);aided.state.extraMoves=3;play(aided);await wait();
  assert.equal(rankSaves,2,'an assisted clear is still ranked');assert.equal(proof,null,'no award requested for a purchased item');
  assert.match(aided.drillState.result,/아이템 사용/);aided.destroy();

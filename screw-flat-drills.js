@@ -94,7 +94,7 @@
       if(!api.verifyDrill||!current())return;
       const first=read(base+':first:'+run.stage,null);
       if(first&&first.run!==run.run){state.result='재도전 · 순위 반영';changed();return;}
-      const proof={...run,events,endTick},queue=read(base+':clears',{});
+      const proof={...run,physics:'whole-plates-v1',events,endTick},queue=read(base+':clears',{});
       queue[run.run]=proof;write(base+':clears',queue);state.result='드릴 지급 확인 중';changed();
       void registration.then(async()=>{await reconcile();if(read(base+':clears',{})[run.run])await reconcile();});
     }
