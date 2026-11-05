@@ -4,6 +4,34 @@ export function createPremiumModels(h) {
   const {modelCar,boxE,GRID,finish,pin,topOfE,Yax,cube,assemble,face,el,cylGeom,I3,
     boundOf,cylE,rx,add,mul,rz,coneGeom}=h;
 
+  // Rounded toys use real convex triangle meshes, including their collision
+  // planes. The fasteners still attach to the same original removable parts.
+  const plushBall=(half,rings=8,seg=14)=>{
+    const verts=[],faces=[];
+    for(let j=0;j<=rings;j++){
+      const theta=Math.PI*j/rings;
+      for(let i=0;i<seg;i++){
+        const a=i*2*Math.PI/seg;
+        verts.push([half[0]*Math.sin(theta)*Math.cos(a),
+          half[1]*Math.cos(theta),half[2]*Math.sin(theta)*Math.sin(a)]);
+      }
+    }
+    const put=(indices)=>{
+      const A=verts[indices[0]],B=verts[indices[1]],C=verts[indices[2]];
+      const u=[0,1,2].map(i=>B[i]-A[i]),v=[0,1,2].map(i=>C[i]-A[i]);
+      let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+      const cen=[0,1,2].map(i=>indices.reduce((t,k)=>t+verts[k][i],0)/indices.length);
+      if(n.reduce((sum,x,i)=>sum+x*cen[i]/half[i],0)<0){indices.reverse();n=n.map(x=>-x);}
+      const l=Math.hypot(...n);if(l>1e-8)faces.push({idx:indices,n:n.map(x=>x/l)});
+    };
+    for(let j=0;j<rings;j++)for(let i=0;i<seg;i++){
+      const ni=(i+1)%seg,a=j*seg+i,b=j*seg+ni,c=(j+1)*seg+i,d=(j+1)*seg+ni;
+      if(j>0)put([a,c,b]);
+      if(j<rings-1)put([b,c,d]);
+    }
+    return {verts,faces,half};
+  };
+
   function modelSportsCar(t=0,minS=0) {
     const M=modelCar(t,minS),L=4+t,D=2+Math.floor(t/3);
     M.name='스포츠카';
@@ -89,7 +117,9 @@ export function createPremiumModels(h) {
 
   function animalDims(t) {
     const a=Math.min(48,t);
-    return [4+Math.floor(a/2),2+Math.floor(a/6),2+Math.floor(a/10)];
+    // Grow in all three axes: a large stuffed animal should become chubby,
+    // not turn into a very long, skinny row of square bricks.
+    return [4+Math.floor(a/5),3+Math.floor(a/7),3+Math.floor(a/9)];
   }
   function modelAnimal(type,t=0,minS=0) {
     const [L,D,H]=animalDims(t),pig=type==='pig',cow=type==='cow',b=[];
@@ -97,9 +127,9 @@ export function createPremiumModels(h) {
     for(let x=0;x<L-1;x++)for(let y=1;y<=H;y++)for(let z=0;z<D;z++){
       // Hollow figurines expose inner fastening faces instead of trapping solid voxels.
       if(x>0&&x<L-2&&y>1&&y<H&&z>0&&z<D-1)continue;
-      const col=pig?(x+y+z)%6===0?'#F6A8B9':'#F2BDCA':
-        cow?(x*3+z*5+y*7)%9<3?'#444753':'#F7F6EC':
-        (x+y+z)%5===0?'#E1E3F0':'#FFF9EF';
+      const col=pig?'#F3B7C5':
+        cow?(x%7>=3&&x%7<=4&&y>=2?'#51535B':'#F7F5EC'):
+        '#FFF8EE';
       b.push(cube(x,y,z,col));
     }
     for(let z=0;z<D;z++)for(let y=H;y<=H+1;y++)
@@ -111,18 +141,43 @@ export function createPremiumModels(h) {
       for(const z of [0,D-1]) {
         const B=at(L-1,H+1,z),half=type==='rabbit'?0.34:cow?0.17:0.20;
         const E=type==='rabbit'?
-          cylE(0.11,half,add(face(B,Yax),[0,half,0]),'#F4DCE8'):
+          el('wheel',plushBall([.115,half,.14]),add(face(B,Yax),[0,half,0]),I3,'#FFF4E9'):
           el('wheel',coneGeom(cow?0.12:0.17,half,6),add(face(B,Yax),[0,half,0]),I3,cow?'#E2D3B2':'#E98FAF');
+        if(type==='rabbit') {
+          const earH=half+0.13;
+          E.parts=[
+            {geom:plushBall([.13,earH,.15]),pc:[0,-.06,0],pR:I3,color:'#FFF8ED'},
+            {geom:plushBall([.032,earH*.76,.085]),pc:[.10,-.035,0],pR:I3,color:'#ED9EB1'}
+          ];
+          E.geom=boundOf(E.parts);E.material='fabric';
+        }
+        E.faceFeature=true;
         M.els.push(E);pin(M,E,B,[E.c[0],E.c[1]+half,E.c[2]],Yax);
-        const C=at(L-1,H+1,z),nx=[1,0,0],p=face(C,nx);
-        const eye=cylE(0.077,0.022,add(p,mul(nx,0.022)),'#25283E',rz(-Math.PI/2));
+        // Put the eyes on the two rounded cheeks, visible in side views,
+        // instead of sticking them like pins onto the front of the snout.
+        const C=at(L-1,H+1,z),nx=[0,0,z===0?-1:1],p=face(C,nx);
+        const eye=cylE(0.077,0.022,add(p,mul(nx,0.022)),'#25283E',rx(z===0?-Math.PI/2:Math.PI/2));
+        eye.parts=[
+          {geom:plushBall([.074,.035,.074]),pc:[0,0,0],pR:I3,color:'#25283E'},
+          {geom:plushBall([.021,.009,.021]),pc:[-.022,.033,-.022],pR:I3,color:'#FFFFFF'}
+        ];
+        eye.geom=boundOf(eye.parts);
+        eye.faceFeature=true;
         M.els.push(eye);pin(M,eye,C,add(p,mul(nx,0.044)),nx);
       }
       const B=at(L-1,H,Math.floor(D/2)),n=[1,0,0],p=face(B,n),radius=cow?0.24:pig?0.22:0.13;
       const muzzle=cylE(radius,0.090,add(p,mul(n,0.09)),cow?'#E5AE96':pig?'#EE849F':'#F4CFD1',rz(-Math.PI/2));
+      muzzle.parts=[{geom:plushBall([radius,.09,radius]),pc:[0,0,0],pR:I3,color:muzzle.color}];
+      if(pig||cow)for(const side of [-1,1])muzzle.parts.push({
+        geom:plushBall([.034,.011,.034]),pc:[side*radius*.38,.087,0],pR:I3,color:'#96636B'
+      });
+      muzzle.geom=boundOf(muzzle.parts);
+      muzzle.faceFeature=true;
       M.els.push(muzzle);pin(M,muzzle,B,add(p,mul(n,0.18)),n);
       const back=at(0,1,Math.floor(D/2)),rear=[-1,0,0],q=face(back,rear);
       const tail=cylE(type==='rabbit'?0.16:0.085,0.08,add(q,mul(rear,0.08)),type==='rabbit'?'#FFFEFA':cow?'#46434E':'#EE93AA',rz(Math.PI/2));
+      tail.geom=plushBall([type==='rabbit'?.18:.095,type==='rabbit'?.17:.1,type==='rabbit'?.18:.1]);
+      tail.faceFeature=true;
       M.els.push(tail);pin(M,tail,back,add(q,mul(rear,0.16)),rear);
     }});
   }

@@ -1,7 +1,8 @@
-import { createPremiumModels } from './screw3d-premium-models.js?v=20261104-screw-v2';
+import { createPremiumModels } from './screw3d-premium-models.js?v=20261105-screwbox-sculpted-gates1';
 import { applyClassicStyle } from './screw3d-classic-styles.js?v=20261105-classic1';
 import { createSoftCubeGeometry } from './screw3d-soft-cubes.js?v=20261105-rounded-physics1';
 import { createReplacementModels } from './screw3d-replacement-models.js?v=20261105-screw-compact1';
+import { applySculptedSkins } from './screw3d-sculpted-skins.js?v=20261105-screwbox-sculpted-gates1';
 // 3D 나사 풀기: 나무 블럭을 쌓아 만든 큐브·집·자동차·주전자를 손가락으로 돌려 가며 나사를 빼서 분해해요.
 // 블럭끼리는 평평한 판으로 이어져 있고(판마다 블럭 하나에 나사 하나), 판이 하나도 안 남은 블럭은 떨어져요. 마지막 나사까지 빼면 아무것도 남지 않아요.
 // 나사도 3D(머리 원기둥 + 십자 홈)로 그려서 다른 조각 뒤에 있으면 가려지고, 누를 땐 손가락 아래 가장 앞에 보이는 것을 골라요.
@@ -63,6 +64,7 @@ const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1
 const CUBE_FACE_DIRS = [[-1, 0, 0], [1, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1]]; // boxGeom face order
 const SOFT_CUBE = createSoftCubeGeometry(GRID / 2, true);
 const SOFT_CUBE_FAST = createSoftCubeGeometry(GRID / 2, false);
+const FABRIC_WASHER = cylGeom(.086, .014, 10);
 const SOFT_RADIUS = GRID / 2 * 0.29;
 // ---------- 새 블럭 모양: 피자 조각(부채꼴), 원뿔, 곡선 튜브(여러 마디) ----------
 function wedgeGeom(r, hh, a0, a1, seg = 6) {
@@ -588,8 +590,10 @@ function stepDyn(E, others, g, h) {   // 중력으로 떨어지고, 박힌 조�
   const wl = Math.hypot(D.w[0], D.w[1], D.w[2]); if (wl > 1e-6) D.R = mm(axisRot(mul(D.w, 1 / wl), wl * h), D.R);
   D.w = mul(D.w, 1 - 0.6 * h); let touch = false;
   for (const Q of others) {
+    if (Q === E) continue;
     const rq = Q.rad || (Q.rad = Math.hypot(...Q.geom.half) + Math.hypot(...(Q.geom.cen || [0, 0, 0]))), re = E.rad || (E.rad = Math.hypot(...E.geom.half) + Math.hypot(...(E.geom.cen || [0, 0, 0]))), qc = pose(Q).c;
-    if (Math.hypot(qc[0] - D.c[0], qc[1] - D.c[1], qc[2] - D.c[2]) > rq + re) continue;
+    const dx = qc[0] - D.c[0], dy = qc[1] - D.c[1], dz = qc[2] - D.c[2];
+    if (dx * dx + dy * dy + dz * dz > (rq + re) * (rq + re)) continue;
     const hit = hitAny({ c: add(D.c, mv(D.R, E.geom.cen || [0, 0, 0])), R: D.R, h: E.geom.half, rounding: E.geom.soft ? SOFT_RADIUS : 0 }, Q); if (!hit) continue;
     touch = true; const n = hit.n, r = sub(hit.p, D.c); D.c = add(D.c, mul(n, hit.d * 0.8 + 0.0005));
     const vr = add(D.v, cross(D.w, r)), vn = dot(vr, n);
@@ -665,7 +669,13 @@ function screwPose(s) {
 }
 function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 빼는 길을 막나요?
   const radius2 = (HEAD_R * 2 - 0.002) ** 2, half = HEAD_H / 2 + HEAD_R - 0.002;
-  for (const z of (L.staticScrewsNear?.get(s) || L.screws)) {
+  // Buckets are valid at the original position, but hinged / falling pieces
+  // must also be considered at their current positions.
+  const moving = s.thru.hinge || s.thru.dyn || s.thru.fall;
+  const near = moving ? L.screws : (L.staticScrewsNear?.get(s) || L.screws);
+  const candidates = L.generating ? near :
+    [...new Set([...near, ...L.screws.filter(z => z.thru.hinge || z.thru.dyn || z.thru.fall)])];
+  for (const z of candidates) {
     if (z === s || z.state !== 'in' && z.state !== 'out') continue;
     const q = screwPose(z), rise = z.state === 'out' ? Math.min(1, z.t / 0.34) * 0.22 : 0;
     // Opposing heads create impossible mutual locks; allow them to disengage.
@@ -685,7 +695,11 @@ function blocked(s, L) {   // 나사 앞(바깥쪽)을 다른 조각이나 나�
   const { p, a } = screwPose(s), o = add(p, mul(a, HEAD_H + 0.01));
   const skip = [s.thru, s.into], travel = 0.24;   // 실제 풀림 이동(0.22) + 여유. 멀리 떨어진 물체는 막지 않아요.
   if (Array.isArray(L)) return rayHit(o, a, travel, L, skip);
-  return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, L.staticSpecialNear?.get(s) || L.special, skip)
+  const moving = s.thru.hinge || s.thru.dyn || s.thru.fall;
+  const near = moving ? L.special : (L.staticSpecialNear?.get(s) || L.special);
+  const candidates = L.generating ? near :
+    [...new Set([...near, ...L.special.filter(e => e.dyn || e.hinge || e.fall)])];
+  return gridHit(L, o, a, travel, skip) || rayHit(o, a, travel, candidates, skip)
     || (L.generating ? null : rayHit(o, a, travel, L.els.filter(e => L.gridEls.has(e) && (e.dyn || e.fall)), skip)) || screwHit(s, L, o, a, travel);
 }
 const STAGES = 1000;
@@ -769,9 +783,51 @@ function addAngledScrews(M, L) {
   }
   if(done-(done%3)<3)throw new Error('대각선 나사 설치 공간이 부족해요');
 }
+// Harder missions use real, detachable guard straps: the screw under a strap
+// cannot be extracted until the strap's own three fasteners are removed.
+// Orientation alternates among vertical, horizontal and 45-degree screws.
+// Every proposed obstacle is checked with the exact existing blocker logic;
+// the full level solver below still rejects all impossible assemblies.
+function addObstacleGates(M,L) {
+  if(L<31)return;
+  const gates=L>=500?3:L>=100?2:1, used=new Set();
+  const orientation=s=>{
+    const a=s.a, diagonal=[0,1,2].filter(i=>Math.abs(a[i])>.25).length>=2;
+    return diagonal?'diagonal':Math.abs(a[1])>.9?'vertical':'horizontal';
+  };
+  const order=['vertical','horizontal','diagonal'];
+  for(let g=0;g<gates;g++){
+    const preferred=order[(L+g)%3];
+    const candidates=M.screws.filter(s=>!used.has(s)&&s.state==='in'&&s.into?.kind==='block'
+      &&s.thru?.kind==='plate'&&!rayHit(add(s.p,mul(s.a,HEAD_H+.01)),s.a,.24,M.els,[s.thru,s.into]));
+    candidates.sort((a,b)=>(orientation(a)===preferred?-1:1)-(orientation(b)===preferred?-1:1)
+      ||b.p[1]-a.p[1]);
+    let placed=false;
+    for(const target of candidates.slice(0,60)){
+      const a=target.a,u=norm(cross(a,Math.abs(a[1])>.85?[0,0,1]:[0,1,0]));
+      const R=frame(a,u),c=add(target.p,mul(a,.127));
+      const gate=el('plate',boxGeom([.205,.026,.095]),c,R,'#9DAEBA',
+        {badge:true,material:'metal',guard:true});
+      if(M.els.some(o=>o!==target.thru&&o!==target.into&&o.state==='on'&&hitAny(box(gate),o)))continue;
+      const newS=[-.15,0,.15].map(offset=>({
+        p:add(add(c,mul(a,.032)),mul(u,offset)),a,thru:gate,into:target.into,
+        color:0,state:'in',t:0,guard:true
+      }));
+      if(newS.some(s=>M.screws.some(z=>z!==target&&Math.hypot(...sub(s.p,z.p))<.135)))continue;
+      const trial=mapLevel({name:M.name,els:[...M.els,gate],screws:[...M.screws,...newS]});
+      trial.generating=true;
+      if(newS.some(s=>blocked(s,trial))||blocked(target,trial)!==gate)continue;
+      M.els.push(gate);M.screws.push(...newS);
+      for(const s of newS)M.hold.push({p:s.p,n:a});
+      used.add(target);placed=true;break;
+    }
+    if(!placed)break; // Never add an unverified obstacle.
+  }
+}
 function buildLevel(L, alt = false) {
   const raw=applyClassicStyle(sizedModel(L,alt));
   addAngledScrews(raw,L);
+  addObstacleGates(raw,L);
   const M=mapLevel(raw), K=colorCount(L);   // 색상 수는 단계별 난이도 구간에 맞게 서서히 증가
   M.generating = true; // no falling or hinged parts during the solvability simulation
   const order = [], left = new Set(M.screws);
@@ -786,7 +842,9 @@ function buildLevel(L, alt = false) {
   const queue = [];
   for (let t = 0; t < order.length / 3; t++) { let c; do { c = t < K || L <= 3 ? t % K : Math.floor(Math.random() * K); } while (t >= 2 && c === queue[t - 1] && c === queue[t - 2]); queue.push(c); }
   order.forEach((s, i) => { s.color = queue[Math.floor(i / 3)]; s.solutionOrder = i + 1; });
-  return { name: M.name, els: M.els, screws: M.screws, queue, solution: order, grid: M.grid, gridEls: M.gridEls, special: M.special, mid: M.mid, refs: M.refs };
+  return applySculptedSkins({ name: M.name, els: M.els, screws: M.screws, queue, solution: order,
+    grid: M.grid, gridEls: M.gridEls, special: M.special, mid: M.mid, refs: M.refs,
+    staticSpecialNear: M.staticSpecialNear, staticScrewsNear: M.staticScrewsNear }, GRID);
 }
 // 작은 물건은 계단식 블럭 전시대 위에 올려서 나사 수를 맞춰요 (전시대도 블럭 사이에 판과 나사가 숨은 퍼즐)
 function withPedestal(obj, T) {
@@ -899,9 +957,9 @@ function subtractPoly(poly, cut) {
 }
 const bounds2 = p => [Math.min(...p.map(q => q.x)), Math.min(...p.map(q => q.y)), Math.max(...p.map(q => q.x)), Math.max(...p.map(q => q.y))];
 const boundsOverlap = (a, b) => a[0] <= b[2] && b[0] <= a[2] && a[1] <= b[3] && b[1] <= a[3];
-function maskScrews(items, xrayOn) {
+function maskScrews(items, xrayOn, masks = [], rotationPreview = false) {
   // Screen-space buckets avoid checking every visible face for every screw.
-  const faces = items.filter(it => !it.owner.p && it.owner !== xrayOn && it.alpha > 0.5)
+  const faces = items.concat(masks).filter(it => !it.owner.p && !it.isSkin && it.owner !== xrayOn && it.alpha > 0.5)
     .flatMap(it => it.polys.filter(pg => pg.depth).map(pg => ({ pg, bb: bounds2(pg.pts) })));
   const TILE = 48, cols = Math.ceil(W / TILE), rows = Math.ceil(H / TILE);
   const tiles = Array.from({ length: cols * rows }, () => []);
@@ -918,13 +976,37 @@ function maskScrews(items, xrayOn) {
   for (const it of items) if (it.owner.p) for (const pg of it.polys) {
     pg.visible = [pg.pts]; if (!pg.depth) continue;
     const bb = bounds2(pg.pts), box = tileRange(bb); if (!box) continue;
+    if(rotationPreview){
+      // On very dense levels, while the camera is *moving* and the tiny
+      // screw heads cannot be selected, keep their centre occlusion exact.
+      // Releasing the drag immediately restores full polygon clipping for
+      // picking and partially exposed screw heads.
+      const center={x:pg.pts.reduce((v,p)=>v+p.x,0)/pg.pts.length,
+        y:pg.pts.reduce((v,p)=>v+p.y,0)/pg.pts.length};
+      const ix=Math.floor(center.x/TILE),iy=Math.floor(center.y/TILE);
+      if(ix>=0&&ix<cols&&iy>=0&&iy<rows){
+        const depth=depthAt(pg.depth,center);
+        for(const id of tiles[iy*cols+ix]){
+          const other=faces[id],p=other.pg.pts;
+          if(center.x<other.bb[0]||center.x>other.bb[2]||center.y<other.bb[1]||center.y>other.bb[3])continue;
+          if(depthAt(other.pg.depth,center)<=depth+1e-6)continue;
+          let inside=false;
+          for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i].y>center.y)!==(p[j].y>center.y)
+            &&center.x<(p[j].x-p[i].x)*(center.y-p[i].y)/(p[j].y-p[i].y)+p[i].x)inside=!inside;
+          if(inside){pg.visible=[];break;}
+        }
+      }
+      continue;
+    }
     const neighbors = new Set();
     for (let y = box[2]; y <= box[3]; y++) for (let x = box[0]; x <= box[1]; x++)
       for (const id of tiles[y * cols + x]) neighbors.add(id);
     for (const i of [...neighbors].sort((a, b) => a - b)) {
       const other = faces[i]; if (!boundsOverlap(bb, other.bb)) continue;
       const d = other.pg.depth.map((v, j) => v - pg.depth[j]);
-      const front = clipHalf(other.pg.pts, p => depthAt(d, p) - 1e-6);
+      if(pg.pts.every(p=>depthAt(d,p)<=1e-6))continue;
+      const fullFront=other.pg.pts.every(p=>depthAt(d,p)>1e-6);
+      const front = fullFront?other.pg.pts:clipHalf(other.pg.pts, p => depthAt(d, p) - 1e-6);
       if (front.length < 3) continue;
       pg.visible = pg.visible.flatMap(p => subtractPoly(p, front)); if (!pg.visible.length) break;
     }
@@ -983,6 +1065,24 @@ function screw3d(api,startStage=loadResumeStage()) {
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
+  let warmWorker = null, warmLevel = null;
+  function prepareNextLevel(L) {
+    if(L>STAGES||typeof Worker!=='function'||typeof setTimeout!=='function')return;
+    setTimeout(()=>{
+      if(destroyed||st.L!==L-1||warmWorker||warmLevel?.stage===L)return;
+      try {
+        const worker = new Worker('/screw3d-stage-worker.js?v=20261105-screwbox-sculpted-gates1',{type:'module'});
+        warmWorker=worker;
+        worker.onmessage=event=>{
+          if(!destroyed&&st.L===L-1&&event.data?.stage===L&&event.data.level)
+            warmLevel={stage:L,level:event.data.level};
+          worker.terminate();if(warmWorker===worker)warmWorker=null;
+        };
+        worker.onerror=()=>{worker.terminate();if(warmWorker===worker)warmWorker=null;};
+        worker.postMessage({stage:L});
+      }catch(_) { /* unsupported browser: use the synchronous safe fallback */ }
+    },1500);
+  }
   const walletUser = api.getUserId?.() || null;
   const sameWallet = () => !destroyed && walletUser && api.getUserId?.() === walletUser;
   const purchaseKey = L => walletUser ? `${PURCHASE_KEY}:${walletUser}:${L}` : null;
@@ -1019,13 +1119,19 @@ function screw3d(api,startStage=loadResumeStage()) {
   function say(m, t) { st.msg = m; st.msgT = t; }
   // Use the arcade's existing sound setting and sound engine.
   const sound = type => { try { api.playSfx?.(type); } catch (_) { /* audio is optional */ } };
-  function start(L) { ended = false; st.over = 0; st.L = L; st.lvl = makeLevel(L); st.ms = pickMission(L, st.lvl); saveResumeStage(L);
+  function start(L) { ended = false; st.over = 0; st.L = L;
+    st.lvl = warmLevel?.stage === L ? warmLevel.level : makeLevel(L);
+    if(['토끼','돼지','소'].includes(st.lvl.name)) {st.yaw=-0.67;st.pitch=.29;}
+    warmLevel = null;
+    if(warmWorker) {warmWorker.terminate();warmWorker=null;}
+    st.ms = pickMission(L, st.lvl); saveResumeStage(L);
     // Start big objects in fast mode so the first rendered frame does not lag.
-    st.big = st.lvl.screws.length + st.lvl.els.length > 420;
+    st.big = st.lvl.screws.length + st.lvl.els.length > 100;
     let R = 0.5; for (const e of st.lvl.els) R = Math.max(R, Math.hypot(...add(e.c, e.geom.cen || [0, 0, 0])) + Math.max(...e.geom.half)); st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
     st.sorting = 0; st.sorts = 0; st.detours = 0;
     st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
     if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
+    prepareNextLevel(L+1);
   }
   const view = () => mm(rx(st.pitch), ry(st.yaw));
   function project(p, V) { const q = mv(V, p), sc = st.sc, k = F / (F - q[2] / sc), s = SC * st.zm / sc; return { x: CX + st.pan[0] + q[0] * s * k, y: CY + st.pan[1] - q[1] * s * k, z: q[2], k }; }
@@ -1167,7 +1273,7 @@ function screw3d(api,startStage=loadResumeStage()) {
   const organizeBtn=(x,y)=> x>=SORT_X&&x<=SORT_X+SORT_W&&y>=SORT_Y&&y<=SORT_Y+SORT_H
     ? organize : null;
   function release(E) {   // 나사가 빠진 뒤: 판은 1개 남으면 그 나사로 매달리고, 하나도 없으면(블럭도) 떨어져요
-    const left = st.lvl.screws.filter(s => s.state === 'in' && (s.thru === E || s.into === E));
+    const left = (st.lvl.refs?.get(E) || st.lvl.screws).filter(s => s.state === 'in' && (s.thru === E || s.into === E));
     if (!left.length) {
       const q = pose(E), h = E.geom.half, m = 8 * h[0] * h[1] * h[2] + 1e-4;
       E.dyn = { c: q.c, R: q.R, v: mul(norm(q.c), 0.35), w: [(Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5], m, I: m * (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]) / 3, sleep: 0, t: 0 };
@@ -1222,7 +1328,8 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (destroyed || buying || restoreBlocked || (walletUser && !sameWallet()) || Object.keys(st.purchases.pending).length || !st.next || next !== st.L + 1 || next > STAGES) return false;
       saveStage(next); start(next); return true;
     },
-    destroy() { destroyed = true; st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
+    destroy() { destroyed = true; if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
+      st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
     onDown(x, y, id = 0) {
       st.ptrs.set(id, { x, y });
       if (st.ptrs.size >= 2) { const [a, b] = [...st.ptrs.values()]; st.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, zm0: st.zm, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], pan0: st.pan.slice() }; st.drag = null; st.lensHold = false; st.lens = null; return; }   // 두 손가락: 벌려서 확대, 끌어서 이동
@@ -1274,10 +1381,35 @@ function screw3d(api,startStage=loadResumeStage()) {
           for (const o of fixed) { if (o === E || E.hinge.ign.has(o) || Math.hypot(...sub(o.c, me.c)) > Math.hypot(...o.geom.half) + Math.hypot(...(o.geom.cen || [0, 0, 0])) + Math.hypot(...E.geom.half)) continue; if (hitAny(me, o)) { E.hinge.th = th0; E.hinge.w *= -0.25; break; } }   // 다른 조각에 닿으면 되튕겨요
         }
       }
-      const others = E => fixed.concat(st.lvl.els.filter(o => o !== E && o.state === 'on' && o.dyn && o.dyn.sleep > 0.6));
+      const obstacles = fixed.concat(st.lvl.els.filter(o => o.state === 'on' && o.dyn && o.dyn.sleep > 0.6));
+      const gravity = mul(g, 4.2);
+      const physicsDt = Math.min(Math.max(dt, 0), 0.05); // no large hidden-tab collision leap
+      let nearby = () => obstacles;
+      if (obstacles.length > 75 && st.lvl.els.some(e => e.state === 'on' && e.dyn && e.dyn.sleep <= 0.6)) {
+        // Broadphase: the X-interval of every obstacle is indexed once per
+        // frame; only overlapping bins reach the original exact OBB test.
+        const size = 0.8, bins = new Map(), index = new Map(obstacles.map((o,i) => [o,i]));
+        for (const o of obstacles) {
+          const r = o.rad || (o.rad = Math.hypot(...o.geom.half) + Math.hypot(...(o.geom.cen || [0,0,0])));
+          const x = pose(o).c[0];
+          for (let i = Math.floor((x-r)/size); i <= Math.floor((x+r)/size); i++) {
+            if (!bins.has(i)) bins.set(i, []);
+            bins.get(i).push(o);
+          }
+        }
+        nearby = E => {
+          const r = E.rad || (E.rad = Math.hypot(...E.geom.half) + Math.hypot(...(E.geom.cen || [0,0,0])));
+          const extra = Math.hypot(...E.dyn.v) * physicsDt + 0.08;
+          const x = E.dyn.c[0], seen = new Set();
+          for (let i = Math.floor((x-r-extra)/size); i <= Math.floor((x+r+extra)/size); i++)
+            for (const o of bins.get(i) || []) seen.add(o);
+          return [...seen].sort((a,b) => index.get(a)-index.get(b));
+        };
+      }
       for (const E of st.lvl.els) {
         if (E.state !== 'on' || !E.dyn) continue;
-        for (let k = 0; k < 3; k++) stepDyn(E, others(E), mul(g, 4.2), dt / 3);
+        const candidates = nearby(E);
+        for (let k = 0; k < 3; k++) stepDyn(E, candidates, gravity, physicsDt / 3);
         const pr = project(E.dyn.c, view()); if (pr.y > H + 140 || pr.x < -220 || pr.x > W + 220 || pr.y < -260 || E.dyn.t > 14) E.state = 'gone';
       }
       for (const s of st.lvl.screws) if (s.state === 'out') { s.t += dt; if (s.t >= 0.34) s.state = 'fly'; }
@@ -1303,6 +1435,18 @@ function screw3d(api,startStage=loadResumeStage()) {
       if (!st.touched) st.yaw += dt * 0.25;   // 처음엔 천천히 돌며 보여 줘요
     },
     draw(c) {
+      const changing = st.lvl.els.some(e => e.state === 'on' && (e.dyn || e.hinge || e.fall))
+        || st.fly.length > 0 || st.drag || st.pinch || st.lens || st.shake
+        || st.msgT > 0 || st.sorting > 0 || st.over > 0
+        || st.boxes.some(b => b?.close) || !st.touched;
+      const canvasW = c.canvas?.width, canvasH = c.canvas?.height;
+      const stamp = [st.L, st.yaw, st.pitch, st.zm, ...st.pan, st.score,
+        st.boxes.length, st.buf.length, st.next, coins(),
+        Math.floor(st.ms?.t || 0), canvasW, canvasH, changing].join('|');
+      // Arcade owns this persistent Canvas and never clears it between
+      // draw() calls. Static scenes need no geometry work at all.
+      if (!changing && st.lastPaintStamp === stamp && st.t - st.lastPaintT < 2) return;
+      st.lastPaintStamp = stamp; st.lastPaintT = st.t;
       // Fullscreen/tablet canvas may have been reallocated by a resize or
       // browser graphics reset. Always restore the 360x540 logical scale
       // before clearing. Otherwise the HUD covers only the top-left quarter
@@ -1325,13 +1469,18 @@ function screw3d(api,startStage=loadResumeStage()) {
       drawBoxes(c, st); drawBuffer(c, st);
 
       { const k2 = st.zm / st.sc; c.save(); c.translate(CX + st.pan[0], CY + st.pan[1] + 128 * k2); c.scale(1, 0.17); const g4 = c.createRadialGradient(0, 0, 0, 0, 0, 130 * k2); g4.addColorStop(0, 'rgba(35,38,74,0.20)'); g4.addColorStop(0.7, 'rgba(35,38,74,0.07)'); g4.addColorStop(1, 'rgba(35,38,74,0)'); c.fillStyle = g4; c.beginPath(); c.arc(0, 0, 130 * k2, 0, Math.PI * 2); c.fill(); c.restore(); }   // 부드러운 바닥 그림자
-      const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [];
+      const V = view(), Lg = norm([-0.35, 0.55, 0.75]), items = [], maskItems = [];
       const solid = (geom, R, pc, color, alpha, owner, bias, out, exposedFaces = null) => {   // 볼록한 도형 하나: 보이는 면만
         const VR = mm(V, R), wv = geom.verts.map(v => add(pc, mv(R, v))), pv = wv.map(w => project(w, V)), polys = [], planes = [];
-        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = geomPlanes(geom)[fi].n, nw = mv(R, normal); planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(color, -(1 - (0.69 + 0.31 * Math.max(0, dot(n, Lg))))), line: shade(color, -0.28), up: nw[1], lit: Math.max(0, dot(n, Lg)), soft: !!geom.soft, softCenter: !!f.center }); }
+        const planesGeom=geomPlanes(geom),plush=geom.sculpted||owner.material==='fabric';
+        for (const [fi, f] of geom.faces.entries()) { if (exposedFaces && !(f.sides || [fi]).some(side => exposedFaces[side])) continue; const normal = planesGeom[fi].n, nw = mv(R, normal); if (!geom.sculpted) planes.push([nw, wv[f.idx[0]]]); const n = mv(VR, normal); if (n[2] <= 0.01) continue; if (st.big && owner.flat && Math.abs(normal[1]) < 0.9) continue; const paint = f.paint || color, lit = Math.max(0, dot(n, Lg)); const shadeK = -(1 - (plush ? (0.87 + 0.13 * lit) : (0.69 + 0.31 * lit))); polys.push({ pts: f.idx.map(i => pv[i]), depth: screenDepth(nw, wv[f.idx[0]], V, st.sc, st.zm, st.pan), fill: shade(paint, geom.sculpted ? Math.round(shadeK*16)/16 : shadeK), line: plush ? null : shade(paint, -0.28), up: nw[1], lit, soft: !!geom.soft, softCenter: !!f.center }); }
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const q of pv) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
         if (!polys.length) return; // nothing visible; skip sorting and painting entirely
-        out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv, planes, bb: [x0, y0, x1, y1], pv, hull: st.big ? null : hull2d(pv) });
+        out.push({ z: project(pc, V).z + bias, polys, alpha, owner, wv: geom.sculpted ? [] : wv,
+          planes, bb: [x0, y0, x1, y1], pv: geom.sculpted ? [] : pv, isSkin: !!geom.sculpted,
+          hull: st.big ? null : hull2d(geom.sculpted ? [
+            {x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}
+          ] : pv) });
       };
       st.heads = new Map();
       const lv = st.lvl, alive = b => b && b.state === 'on' && !b.dyn;
@@ -1355,13 +1504,31 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (exposedFaces && !exposedFaces.some(Boolean)) continue;
         if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
+          // Outside fragments are one continuous sculpted surface, shared by
+          // adjoining removable bricks. Newly uncovered interior faces retain
+          // their precise physical shape after another brick falls away.
+          if (E.skinGeom && !E.dyn && !E.hinge && !E.fall) {
+            const skin = st.big ? E.skinFastGeom : E.skinGeom;
+            if (skin.faces.length) solid(skin, sh.R, sh.c, sh.color, 1, E,
+              E.kind === 'block' ? 0 : 0.012, items);
+            // A few physical cube faces are sufficient for exact screw
+            // visibility; the hundreds of decorative skin triangles need not
+            // participate in expensive per-screw polygon subtraction.
+            solid(E.geom, sh.R, sh.c, sh.color, 1, E, 0, maskItems, exposedFaces);
+            const opened = exposedFaces && exposedFaces.map((on, i) => on && !E.skinOriginalFaces[i]);
+            if (opened && opened.some(Boolean)) solid(E.geom, sh.R, sh.c, sh.color, 1, E, 0, items, opened);
+            continue;
+          }
           if (E.kind === 'plate' && !E.dyn) {   // 블럭 밑에 깔린 판(쪽마다): 네 모서리 쪽 점이 모두 블럭 안이면 숨어요. 덮은 블럭을 투시하면 드러나요
             const u = [sh.R[0], sh.R[3], sh.R[6]], w = [sh.R[2], sh.R[5], sh.R[8]], hh = sh.geom.half, cs = [];
             for (const a of [0.6, -0.6]) for (const b2 of [0.5, -0.5]) cs.push(coverOf(add(sh.c, add(mul(u, a * hh[0]), mul(w, b2 * hh[2]))), E));
             if (cs.every(cv => cv.length)) { if (!(st.xrayOn && cs.some(cv => cv.every(o => o === st.xrayOn)))) continue; found.add(E); }
           }
-          const geom = E.geom.soft && sh.geom === E.geom && st.big ? SOFT_CUBE_FAST : sh.geom;
-          solid(geom, sh.R, sh.c, sh.color, E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E, E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
+          const geom = E.skinPlate && sh.geom === E.geom ? FABRIC_WASHER
+            : E.geom.soft && sh.geom === E.geom && st.big ? SOFT_CUBE_FAST : sh.geom;
+          solid(geom, sh.R, sh.c, E.skinPlate ? E.skinPlateColor : sh.color,
+            E.fall ? Math.max(0, 1 - E.fall.t / 1.3) : 1, E,
+            E.kind === 'block' ? 0 : 0.012, items, exposedFaces);
         }
       }
       for (const s of st.lvl.screws) {   // 나사: 3D 머리(원기둥) + 십자 홈, 빠질 때는 돌며 솟아오르고 나삿대가 보여요
@@ -1392,18 +1559,44 @@ function screw3d(api,startStage=loadResumeStage()) {
       // 조각이 많으면(340개 넘으면 켜고 290개 아래면 꺼요: 오가며 깜빡이지 않게) 거리순으로 빠르게 그려요
       const activePieces = lv.els.reduce((n,e) => n + (e.state === 'on'), 0)
         + lv.screws.reduce((n,s) => n + (s.state === 'in' || s.state === 'out'), 0);
-      st.big = activePieces > 420 || (st.big ? items.length > 240 : items.length > 290); const order = st.big ? items.sort((a, b) => a.z - b.z) : paintOrder(items, mv(tr(V), [0, 0, F * st.sc])); st.drawn = []; st.order = order; st.cam = mv(tr(V), [0, 0, F * st.sc]); st.hiddenN = hiddenN; st.foundN = found.size; for (const f of found) if (f.p && st.ms) st.ms.found.add(f);
+      st.big = activePieces > 100 || (st.big ? items.length > 75 : items.length > 85); const order = st.big ? items.sort((a, b) => a.z - b.z) : paintOrder(items, mv(tr(V), [0, 0, F * st.sc])); st.drawn = []; st.order = order; st.cam = mv(tr(V), [0, 0, F * st.sc]); st.hiddenN = hiddenN; st.foundN = found.size; for (const f of found) if (f.p && st.ms) st.ms.found.add(f);
       const lens = st.lens; let target = null;
       if (lens) { let nearest = -Infinity, front = null; for (const it of order) for (const pg of it.polys) if (pg.depth && inPoly(lens.x, lens.y, pg.pts)) { const z = depthAt(pg.depth, lens); if (z > nearest) { nearest = z; front = it; } } if (front && !front.owner.p && !front.owner.dyn) target = front; }   // 실제 가장 앞에 있는 조각 하나만
       const tg = target ? target.owner : null; if (!st.xr || st.xr.o !== tg) st.xr = { o: tg, t0: st.t };
       const dwell = st.lens && st.lens.hold ? 0 : 0.3, xa = tg ? Math.min(1, Math.max(0, (st.t - st.xr.t0 - dwell) / 0.18)) : 0;   // 마우스는 잠깐 멈춰야 투시가 켜지고 서서히 바뀌어요
       st.xrayOn = xa > 0.5 ? tg : null; if (xa <= 0) target = null;
-      maskScrews(order, st.xrayOn);
+      maskScrews(order, st.xrayOn, maskItems,
+        st.big && st.zm<1.5 && lv.screws.length>280 && (!st.touched||st.drag?.moved));
       // 나사는 앞면이 가린 영역을 잘라서 그려요. 조각 수·낙하·거리 정렬과 무관하게 같은 판정이에요.
-      for (const it of [...order.filter(q => !q.owner.p), ...order.filter(q => q.owner.p)]) {
+      const plushToy=['토끼','돼지','소','펭귄'].includes(lv.name);
+      const opaqueItems=order.filter(q=>!q.owner.p);
+      const paintLayers=plushToy?[
+        ...opaqueItems.filter(q=>!q.isSkin&&!q.owner.guard&&!q.owner.faceFeature),
+        ...opaqueItems.filter(q=>q.isSkin),
+        ...opaqueItems.filter(q=>q.owner.faceFeature),
+        ...opaqueItems.filter(q=>q.owner.guard)
+      ]:opaqueItems;
+      for (const it of [...paintLayers, ...order.filter(q => q.owner.p)]) {
         c.save(); c.globalAlpha = it.alpha * (target && it.owner === target.owner ? 1 - 0.82 * xa : 1);
         if (it.shaft) { c.strokeStyle = '#8C93B8'; c.lineWidth = 5; c.lineCap = 'round'; c.beginPath(); c.moveTo(it.shaft[0].x, it.shaft[0].y); c.lineTo(it.shaft[1].x, it.shaft[1].y); c.stroke(); }
         if (it.owner.p) { c.beginPath(); for (const pg of it.polys) for (const pts of pg.visible) { pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.closePath(); } c.clip(); }
+        if (it.isSkin) {
+          // Convex sculpt fragments don't self-overlap: paint every same-tone
+          // triangle in one batch and avoid a Canvas fill/stroke per facet.
+          const groups = new Map();
+          for (const pg of it.polys) {
+            if (!groups.has(pg.fill)) groups.set(pg.fill, []);
+            groups.get(pg.fill).push(pg);
+            if (it.alpha > 0.5) st.drawn.push({pts:pg.pts,owner:it.owner});
+          }
+          for (const [fill, polygons] of groups) {
+            c.beginPath();
+            for (const pg of polygons) { pg.pts.forEach((p,i) => i ? c.lineTo(p.x,p.y) : c.moveTo(p.x,p.y)); c.closePath(); }
+            c.fillStyle = fill; c.fill();
+          }
+          c.restore();
+          continue;
+        }
         for (const pg of it.polys) {
           c.beginPath(); pg.pts.forEach((p, i) => (i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y))); c.closePath();
           c.fillStyle = pg.fill; c.fill();
