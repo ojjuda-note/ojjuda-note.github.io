@@ -34,7 +34,8 @@
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
       await script('/screw-flat-physics.js?v=20261106-flat-jigsaw-zoom1', () => !!window.OjjudaFlatPhysics);
       await script('/screw-flat-pictures.js?v=20261004-surprise1', () => !!window.OjjudaFlatPictures);
-      await script('/screw-flat.js?v=20261106-flat-jigsaw-zoom1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/screw-flat-drills.js?v=20261106-flat-drills1',()=>!!window.OjjudaFlatDrills);
+      await script('/screw-flat.js?v=20261106-flat-drills1', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);
