@@ -104,7 +104,7 @@ function fixtureBoot() {
     fixture.edits.push({ kind, id, title, body });
     return new Promise(resolve => { fixture.editResult = resolve; });
   };
-  window.worldTest = { state: g, auth: D, admin: L, config: wt, actions: sr, render: H, clear: clearWorldAdminView };
+  window.worldTest = { state: g, auth: D, admin: L, adminApi: U, config: wt, actions: sr, render: H, clear: clearWorldAdminView };
   gm(() => { g.tab = 'friends'; H(); });
   H(); D.online = true; D.user = { id: 'synthetic-admin' }; D.isAdmin = true;
   restoreWorldAdminView(new URL(location.href).searchParams.get('admin')); H();
@@ -144,7 +144,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.deepEqual(await page.locator('.adm-areas button').allTextContents(),
       ['계정', '콘텐츠', '휴지통', '신고·문의', 'ZU', '운영']);
     assert.equal(await page.locator('.adm-areas').evaluate(node => node.scrollWidth <= node.clientWidth), true,
-      'all five navigation groups fit the mobile width');
+      'all six navigation groups fit the mobile width');
     await page.locator('.adm-stat').filter({ hasText: '정지 중' }).click();
     await mounted('accounts');
     assert.deepEqual(await current(), { area: 'account', tab: 'users' });
@@ -154,7 +154,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     // Currency adjustments are available directly in the member directory, with audit reason and confirmation.
     await page.evaluate(() => {
       fixture.coinChanges = [];
-      U.adjustCoins = async (...args) => { fixture.coinChanges.push(args); return 800; };
+      worldTest.adminApi.adjustCoins = async (...args) => { fixture.coinChanges.push(args); return 800; };
       const host = document.createElement('div'); host.id = 'coin-fixture';
       host.innerHTML = fixture.options.accounts.renderActions({id:'synthetic-member',nickname:'합성 회원',coins:1000,is_admin:false});
       fixture.options.accounts.container.append(host);

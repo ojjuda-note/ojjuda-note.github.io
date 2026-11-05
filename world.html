@@ -2175,6 +2175,7 @@ async function gm(t){
   closeOverlay:()=>{
    if(window.OjjudaPWA?.close())return true;
    if(worldRecommendedRestaurants?.isOpen()){if(typeof worldRecommendedRestaurants.back==='function')worldRecommendedRestaurants.back();else worldRecommendedRestaurants.close();return true;}
+   if(window.OjjudaRestaurantGuide?.isOpen()){window.OjjudaRestaurantGuide.back();return true;}
    if(worldFriendMessages?.isOpen()){worldFriendMessages.close();return true;}
    if(worldParkNotes?.close())return true;
    if(closeWorldHouse(true))return true;
