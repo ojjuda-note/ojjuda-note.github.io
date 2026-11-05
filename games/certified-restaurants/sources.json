@@ -1488,18 +1488,18 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3085,
+    "uniqueRestaurants": 3088,
     "providerCounts": {
       "blue-ribbon": 526,
-      "local-guide": 2356,
+      "local-guide": 2359,
       "michelin": 237,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2062,
+    "coordinatesMissing": 2065,
     "regionalCounts": {
       "강원": 44,
-      "경기": 322,
+      "경기": 325,
       "경남": 319,
       "경북": 145,
       "광주": 69,
@@ -1523,7 +1523,7 @@
       "양식": 208,
       "일식": 130,
       "중식": 126,
-      "한식": 1803
+      "한식": 1806
     }
   },
   "coordinateEnrichment": {
@@ -10002,51 +10002,112 @@
       "scope": "인천 1/07회차 부평·계양·서해·검단 공식 소개 일부만 확인, 완전 수집 아님.",
       "coordinatePolicy": "신규 12곳 위경도 미확인 null 유지. 미확인만으로 선정 취소·폐업 판단 금지.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot08-oldshops",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3085,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2356,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2062,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 322,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 223,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1803
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3088,
+        "providerCounts": {
+          "blue-ribbon": 526,
+          "local-guide": 2359,
+          "michelin": 237,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2065,
+        "regionalCounts": {
+          "강원": 44,
+          "경기": 325,
+          "경남": 319,
+          "경북": 145,
+          "광주": 69,
+          "대구": 117,
+          "대전": 105,
+          "부산": 378,
+          "서울": 351,
+          "세종": 100,
+          "울산": 36,
+          "인천": 341,
+          "전남": 177,
+          "전북": 208,
+          "제주": 113,
+          "충남": 46,
+          "충북": 214
+        },
+        "categoryCounts": {
+          "기타": 572,
+          "디저트": 223,
+          "분식": 23,
+          "양식": 208,
+          "일식": 130,
+          "중식": 126,
+          "한식": 1806
+        }
+      },
+      "newRestaurantCount": 3,
+      "newRestaurantIds": [
+        "local-ggtour-oldshops2023-suwon-honamsundae",
+        "local-ggtour-oldshops2024-suwon-ipjujip",
+        "local-ggtour-oldshops2024-suwon-song-otdak"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT",
+        "https://www.koobig.com/93794",
+        "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629",
+        "https://tour.hscity.go.kr/NEW/1tour/food1.jsp"
+      ],
+      "scope": "수원·화성 경기노포 공식 선정과 주소 일부 조사(비전수).",
+      "coordinatePolicy": "신규 3곳은 검증 좌표 미확보, lat/lng null. 임의 좌표·폐업 판정·노출 제외 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-incheon-slot07-tourism",
+    "id": "2026-11-06-gyeonggi-slot08-oldshops",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3073,
-      "providerCounts": {
-        "blue-ribbon": 526,
-        "local-guide": 2344,
-        "michelin": 237,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2050,
-      "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 351,
-        "세종": 100,
-        "울산": 36,
-        "인천": 329,
-        "전남": 177,
-        "전북": 208,
-        "제주": 113,
-        "충남": 46,
-        "충북": 214
-      },
-      "categoryCounts": {
-        "기타": 572,
-        "디저트": 220,
-        "분식": 23,
-        "양식": 207,
-        "일식": 130,
-        "중식": 124,
-        "한식": 1797
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3085,
       "providerCounts": {
         "blue-ribbon": 526,
@@ -10085,39 +10146,62 @@
         "한식": 1803
       }
     },
-    "newRestaurantCount": 12,
+    "currentCoverage": {
+      "uniqueRestaurants": 3088,
+      "providerCounts": {
+        "blue-ribbon": 526,
+        "local-guide": 2359,
+        "michelin": 237,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2065,
+      "regionalCounts": {
+        "강원": 44,
+        "경기": 325,
+        "경남": 319,
+        "경북": 145,
+        "광주": 69,
+        "대구": 117,
+        "대전": 105,
+        "부산": 378,
+        "서울": 351,
+        "세종": 100,
+        "울산": 36,
+        "인천": 341,
+        "전남": 177,
+        "전북": 208,
+        "제주": 113,
+        "충남": 46,
+        "충북": 214
+      },
+      "categoryCounts": {
+        "기타": 572,
+        "디저트": 223,
+        "분식": 23,
+        "양식": 208,
+        "일식": 130,
+        "중식": 126,
+        "한식": 1806
+      }
+    },
+    "newRestaurantCount": 3,
     "newRestaurantIds": [
-      "local-incheon-itour-apd21112609193087780",
-      "local-incheon-itour-apd21112609180520327",
-      "local-incheon-itour-apd21112609190439861",
-      "local-incheon-itour-apd21112609162787758",
-      "local-incheon-itour-apd21112609142295248",
-      "local-incheon-itour-apd21112609142198558",
-      "local-incheon-itour-apd21121010002312914",
-      "local-incheon-itour-itd25011713193956493",
-      "local-incheon-itour-itd22010409442372372",
-      "local-incheon-itour-itd22010409520575697",
-      "local-incheon-itour-itd25112513304489119",
-      "local-incheon-itour-itd25020711230610778"
+      "local-ggtour-oldshops2023-suwon-honamsundae",
+      "local-ggtour-oldshops2024-suwon-ipjujip",
+      "local-ggtour-oldshops2024-suwon-song-otdak"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609193087780",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609180520327",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609190439861",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609162787758",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142295248",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21112609142198558",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=APD21121010002312914",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25011713193956493",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409442372372",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD22010409520575697",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25112513304489119",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD25020711230610778"
+      "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+      "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT",
+      "https://www.koobig.com/93794",
+      "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629",
+      "https://tour.hscity.go.kr/NEW/1tour/food1.jsp"
     ],
-    "scope": "인천 1/07회차 부평·계양·서해·검단 공식 소개 일부만 확인, 완전 수집 아님.",
-    "coordinatePolicy": "신규 12곳 위경도 미확인 null 유지. 미확인만으로 선정 취소·폐업 판단 금지.",
+    "scope": "수원·화성 경기노포 공식 선정과 주소 일부 조사(비전수).",
+    "coordinatePolicy": "신규 3곳은 검증 좌표 미확보, lat/lng null. 임의 좌표·폐업 판정·노출 제외 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -10230,8 +10314,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2356,
-    "designationEvidenceCount": 2403,
+    "recordCount": 2359,
+    "designationEvidenceCount": 2406,
     "coordinatesAvailable": 748,
     "regionCount": 17,
     "regionalCoverage": [
@@ -10285,7 +10369,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 290,
+        "uniqueRestaurants": 293,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -10586,6 +10670,33 @@
       "currentOperatingStatusVerified": 0,
       "notExhaustive": true,
       "scope": "부평·계양·서해·검단구 공식 관광 소개 12곳, 전체 명단 아님"
+    },
+    "municipalSelection20261106GyeonggiSlot08": {
+      "checkedAt": "2026-11-06",
+      "sourceAsOf": "2024-09-06",
+      "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+      "sourceType": "경기관광공사 경기노포 57선 공식 선정(2023·2024년)",
+      "sourceFile": "official-gyeonggi-oldshops-slot08.json",
+      "districts": [
+        "수원시",
+        "화성시"
+      ],
+      "newCount": 3,
+      "existingUpdated": 0,
+      "newIds": [
+        "local-ggtour-oldshops2023-suwon-honamsundae",
+        "local-ggtour-oldshops2024-suwon-ipjujip",
+        "local-ggtour-oldshops2024-suwon-song-otdak"
+      ],
+      "coordinatesVerified": 0,
+      "locationHidden": 0,
+      "operatingStatusVerified": 0,
+      "locationPendingScope": "수원·화성 기본 DB 좌표 미등록 114곳 + 신규 3곳. 개별 전수 검토는 미실시.",
+      "notes": [
+        "영화루는 공식 선정 확인했으나 현재 주소 상충으로 추가 보류",
+        "화성시 모범음식점 목록만으로 공식 미식 선정 취급하지 않음",
+        "좌표 미확인을 폐업으로 분류하지 않음"
+      ]
     }
   },
   "mapCoverageAuditHistory": [

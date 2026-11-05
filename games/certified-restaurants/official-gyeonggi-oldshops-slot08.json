@@ -1,0 +1,99 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+  "sourceName": "경기관광공사 경기노포 57선 공식 선정",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-ggtour-oldshops2023-suwon-honamsundae",
+      "name": "호남순대",
+      "category": "한식",
+      "region": "경기",
+      "district": "수원시",
+      "address": "경기도 수원시 팔달구 팔달문로 19 지동시장 순대타운 A동 5호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대국밥",
+        "순대곱창볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기노포 선정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 경기노포 57선 공식 선정 명단",
+          "sourceAsOf": "2024-09-06",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_selection",
+          "selectionCriteria": "경기관광공사 공식 57선에 2023년 선정으로 기재. 현 영업과 재지정 여부는 따로 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/gto/notice/news/19c5b726-0e37-4f62-a385-13c25e76ff56?page=0&type=NOTI_REPORT"
+    },
+    {
+      "id": "local-ggtour-oldshops2024-suwon-ipjujip",
+      "name": "입주집",
+      "category": "한식",
+      "region": "경기",
+      "district": "수원시",
+      "address": "경기도 수원시 팔달구 팔달문로3번길 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곱창구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기노포 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 경기노포 57선 공식 선정 명단",
+          "sourceAsOf": "2024-09-06",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_selection",
+          "selectionCriteria": "경기관광공사 공식 57선에 2024년 선정으로 기재. 현 영업과 재지정 여부는 따로 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.koobig.com/93794"
+    },
+    {
+      "id": "local-ggtour-oldshops2024-suwon-song-otdak",
+      "name": "송할머니 옻닭집",
+      "category": "한식",
+      "region": "경기",
+      "district": "수원시",
+      "address": "경기도 수원시 권선구 정조로 423",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "옻닭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기노포 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 경기노포 57선 공식 선정 명단",
+          "sourceAsOf": "2024-09-06",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_selection",
+          "selectionCriteria": "경기관광공사 공식 57선에 2024년 선정으로 기재. 현 영업과 재지정 여부는 따로 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629"
+    }
+  ],
+  "notes": [
+    "경기관광공사 2024년 공고의 과거 선정 이력을 명확히 표시. 현재 영업이나 리본 수로 오해하지 않도록 구분.",
+    "수원 영화루는 공식 선정 자체는 확인되나 현재 주소가 서로 달라 추가 보류.",
+    "화성시 모범음식점 명단만으로 미식 선정이라고 간주하지 않음.",
+    "검증된 업소별 위경도는 확보하지 못해 좌표 null."
+  ]
+}
