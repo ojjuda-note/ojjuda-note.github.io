@@ -1,6 +1,6 @@
 {
   "updatedAt": "2026-11-05",
-  "sourceName": "서울관광재단 Visit Seoul 공식 음식점·카페 소개",
+  "sourceName": "서울관광재단 Visit Seoul 및 서울특별시 2026 오래가게 공식 명단",
   "sourceUrl": "https://korean.visitseoul.net/",
   "completeRegionalCollection": false,
   "restaurants": [
@@ -30,6 +30,19 @@
           "sourceDateType": "official-page-last-modified",
           "status": "official_restaurant_listing",
           "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
+        },
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
         }
       ],
       "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r"
@@ -409,11 +422,186 @@
         }
       ],
       "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756"
+    },
+    {
+      "id": "local-seoul-oraegage2026-ddm-haengun-donkatsu",
+      "name": "행운돈까스",
+      "category": "일식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 장한로 173",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "local-seoul-oraegage2026-ddm-hyeseong-kalguksu",
+      "name": "혜성칼국수",
+      "category": "한식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 왕산로 247-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "local-seoul-oraegage2026-ddm-hongneung-galbi",
+      "name": "홍능갈비집 본점",
+      "category": "한식",
+      "region": "서울",
+      "district": "동대문구",
+      "address": "서울 동대문구 제기로 85",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "local-seoul-oraegage2026-jr-mangu-ssambap",
+      "name": "망우찜쌈밥 본점",
+      "category": "한식",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 용마공원로2길 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "local-seoul-oraegage2026-jr-old-grandma-tteokbokki",
+      "name": "옛날할머니분식",
+      "category": "분식",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 중랑역로 14-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡볶이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "local-seoul-oraegage2026-jr-cheongpyeong-maeuntang",
+      "name": "청평매운탕",
+      "category": "한식",
+      "region": "서울",
+      "district": "중랑구",
+      "address": "서울 중랑구 공릉로 46",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "서울시 오래가게 선정(2026)",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourceName": "서울특별시 · 내 손안에 서울 2026 오래가게 공식 명단",
+          "verifiedAt": "2026-11-05",
+          "sourceAsOf": "2026-09-21",
+          "sourceDateType": "official-article-publication",
+          "status": "official_selection_list",
+          "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
     }
   ],
   "notes": [
     "공식 관광 소개 항목이지 미쉐린·블루리본 선정이나 개별 지정으로 주장하지 않음",
     "이동·폐업 등 현재 영업상태를 개별 검증하지 않음",
-    "좌표는 해당 업소와 현재 주소 일치 근거가 없어 보류; 추정 좌표를 사용하지 않음"
+    "좌표는 해당 업소와 현재 주소 일치 근거가 없어 보류; 추정 좌표를 사용하지 않음",
+    "추가 6곳은 서울시가 2026년에 지정한 오래가게(2026-09-21 공식 발표), 기존 영화장 1곳은 소개 이력과 선정 이력 병기. 공식 지정·관광 일반 소개 구분. 위경도 미확인으로 모두 null."
   ]
 }

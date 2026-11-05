@@ -566,7 +566,7 @@
         fetch('./restaurants.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-ne1', { signal: controller.signal, cache: 'no-cache' })
+        fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-oraegage2', { signal: controller.signal, cache: 'no-cache' })
       ]);
       if (!response.ok || !supplementResponse.ok || !seoulResponse.ok || !northeastResponse.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status + '/' + seoulResponse.status + '/' + northeastResponse.status);
       const [data, supplement, seoul, northeast] = await Promise.all([response.json(), supplementResponse.json(), seoulResponse.json(), northeastResponse.json()]);

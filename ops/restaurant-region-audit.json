@@ -188,7 +188,7 @@
       "slot": 2,
       "scheduledAtKST": "2026-11-05T06:00:00+09:00",
       "checkedAtKST": "2026-11-05",
-      "status": "official_tourism_introductions_and_location_recheck_partial",
+      "status": "partial_review_with_2026_municipal_designations",
       "assignedRegions": [
         "서울특별시 동대문구",
         "서울특별시 중랑구",
@@ -200,19 +200,19 @@
         {
           "region": "서울특별시 동대문구",
           "baseListedCount": 0,
-          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
-          "new": 3,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사); 2026 서울시 오래가게 공식 지정 3곳 추가 확인",
+          "new": 6,
           "updated": 0,
-          "unknownLocations": 3,
+          "unknownLocations": 6,
           "notExhaustive": true
         },
         {
           "region": "서울특별시 중랑구",
           "baseListedCount": 0,
-          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사)",
-          "new": 3,
+          "scope": "서울관광재단 Visit Seoul 개별 관광 식당 소개 주소·명칭 확인, 기존 위치 누락 목록 확인(부분 조사); 2026 서울시 오래가게 공식 지정 3곳 추가 확인",
+          "new": 6,
           "updated": 0,
-          "unknownLocations": 3,
+          "unknownLocations": 6,
           "notExhaustive": true
         },
         {
@@ -246,14 +246,15 @@
       "sourcesChecked": [
         "서울관광재단 Visit Seoul 개별 관광 음식점·카페 소개",
         "기존 미쉐린 공식 숙수도가 식당 페이지",
-        "기존 서울미식 2026 사만 커피 로스터스 선정 정보"
+        "기존 서울미식 2026 사만 커피 로스터스 선정 정보",
+        "서울시 2026년 오래가게 15개 공식 발표(2026-09-21)"
       ],
-      "additions": 14,
-      "modifications": 0,
+      "additions": 20,
+      "modifications": 1,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 16,
+      "locationPending": 22,
       "addedRestaurantIds": [
         "local-seoul-visitseoul-ddm-yeonghwajang",
         "local-seoul-visitseoul-ddm-green-field",
@@ -268,11 +269,18 @@
         "local-seoul-visitseoul-db-chilgapsan",
         "local-seoul-visitseoul-db-hamsbrot",
         "local-seoul-visitseoul-db-hanuso",
-        "local-seoul-visitseoul-db-ssangmun"
+        "local-seoul-visitseoul-db-ssangmun",
+        "local-seoul-oraegage2026-ddm-haengun-donkatsu",
+        "local-seoul-oraegage2026-ddm-hyeseong-kalguksu",
+        "local-seoul-oraegage2026-ddm-hongneung-galbi",
+        "local-seoul-oraegage2026-jr-mangu-ssambap",
+        "local-seoul-oraegage2026-jr-old-grandma-tteokbokki",
+        "local-seoul-oraegage2026-jr-cheongpyeong-maeuntang"
       ],
       "existingItemsRechecked": [
         "숙수도가 (성북구)",
-        "사만 커피 로스터스 (성북구)"
+        "사만 커피 로스터스 (성북구)",
+        "영화장 (동대문구) · 서울시 2026 오래가게 공식 선정"
       ],
       "evidenceUrls": [
         "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r",
@@ -290,7 +298,8 @@
         "https://korean.visitseoul.net/restaurants/%ED%95%98%EB%88%84%EC%86%8C/KOP008389",
         "https://korean.visitseoul.net/restaurants/%EC%8C%8D%EB%AC%B8%EB%8F%99%EC%BB%A4%ED%94%BC/KOP041756",
         "https://guide.michelin.com/kr/ko/seoul-capital-area/kr-seoul/restaurant/sooksoodoga",
-        "https://tasteofseoul.visitseoul.net/cafe/view?wm_id=792&txt_search=&wm_ca_id1%5B0%5D=H"
+        "https://tasteofseoul.visitseoul.net/cafe/view?wm_id=792&txt_search=&wm_ca_id1%5B0%5D=H",
+        "https://mediahub.seoul.go.kr/archives/2019458"
       ],
       "locationReviews": [
         {
@@ -564,17 +573,119 @@
           "recheckCycle": 2,
           "recheckSlot": 2,
           "action": "위경도 null 유지. 서로 다른 순환의 2회 검토 및 3종 독립 출처로 끝내 위치 특정 불가가 입증되기 전 비노출하지 않음"
+        },
+        {
+          "id": "local-seoul-oraegage2026-ddm-haengun-donkatsu",
+          "name": "행운돈까스",
+          "address": "서울 동대문구 장한로 173",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
+        },
+        {
+          "id": "local-seoul-oraegage2026-ddm-hyeseong-kalguksu",
+          "name": "혜성칼국수",
+          "address": "서울 동대문구 왕산로 247-1",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
+        },
+        {
+          "id": "local-seoul-oraegage2026-ddm-hongneung-galbi",
+          "name": "홍능갈비집 본점",
+          "address": "서울 동대문구 제기로 85",
+          "region": "서울특별시 동대문구",
+          "aliases": [
+            "서울 동대문구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
+        },
+        {
+          "id": "local-seoul-oraegage2026-jr-mangu-ssambap",
+          "name": "망우찜쌈밥 본점",
+          "address": "서울 중랑구 용마공원로2길 8",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
+        },
+        {
+          "id": "local-seoul-oraegage2026-jr-old-grandma-tteokbokki",
+          "name": "옛날할머니분식",
+          "address": "서울 중랑구 중랑역로 14-1",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
+        },
+        {
+          "id": "local-seoul-oraegage2026-jr-cheongpyeong-maeuntang",
+          "name": "청평매운탕",
+          "address": "서울 중랑구 공릉로 46",
+          "region": "서울특별시 중랑구",
+          "aliases": [
+            "서울 중랑구"
+          ],
+          "checkedAtKST": "2026-11-05",
+          "sourceUrls": [
+            "https://mediahub.seoul.go.kr/archives/2019458"
+          ],
+          "result": "공식 서울시 선정 명단에 명칭·지점·정확한 도로명주소가 있지만 주소와 연결된 검증 가능한 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 2,
+          "action": "위경도 null 유지, 다음 순환에 공식 지도 교차검증. 주소 확인되므로 좌표 누락만으로 목록 제외·폐업 처리 금지"
         }
       ],
       "unresolved": [
-        "새로 수록된 14곳 모두 위경도 미확인, 지도 마커 대신 주소 목록만 노출",
-        "기존 성북구 2곳 포함 위치 미확인 16곳은 재확인 대기",
+        "새로 수록된 20곳 모두 위경도 미확인, 지도 마커 대신 주소 목록만 노출",
+        "기존 성북구 2곳 포함 위치 미확인 22곳은 재확인 대기",
         "공식 관광 소개는 별도 미쉐린/블루리본 선정·사업 지정과 다름",
         "이 회차의 5구 전체 식당·현재 폐업/휴업 정보 전수 조사 미완료"
       ],
       "carryOver": [
         "현재 상호·지점명과 주소로 공개 좌표를 다시 찾아 지도 표시 가능 여부 검증",
-        "미확인 16개 식당을 해당 지역의 다음 순환 회차에서 다시 확인",
+        "미확인 22개 식당을 해당 지역의 다음 순환 회차에서 다시 확인",
         "공식 선정·가이드 추가 누락, 폐업·이전 여부 확인"
       ],
       "nextSlot": 3,
@@ -584,6 +695,36 @@
         "서울특별시 서대문구",
         "서울특별시 마포구",
         "서울특별시 양천구"
+      ],
+      "continuationChecks": [
+        {
+          "checkedAtKST": "2026-11-05",
+          "type": "seoul_oraegage_2026_selection",
+          "regions": [
+            "서울특별시 동대문구",
+            "서울특별시 중랑구"
+          ],
+          "scope": "서울시 2026-09-21 선정 명단 15곳 중 이번 2회차 해당 7개를 대조하여 신규 6개·기존 영화장 선정 이력 보강. 그 외 광진/성동 8개는 별도 지역 회차로 이월",
+          "added": 6,
+          "modified": 1,
+          "coordinateAdded": 0,
+          "locationHidden": 0,
+          "locationPending": 22,
+          "verifiedSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+          "sourcePublishedAt": "2026-09-21",
+          "addedIds": [
+            "local-seoul-oraegage2026-ddm-haengun-donkatsu",
+            "local-seoul-oraegage2026-ddm-hyeseong-kalguksu",
+            "local-seoul-oraegage2026-ddm-hongneung-galbi",
+            "local-seoul-oraegage2026-jr-mangu-ssambap",
+            "local-seoul-oraegage2026-jr-old-grandma-tteokbokki",
+            "local-seoul-oraegage2026-jr-cheongpyeong-maeuntang"
+          ],
+          "enrichedIds": [
+            "local-seoul-visitseoul-ddm-yeonghwajang"
+          ],
+          "followUp": "서울시 공식 지도에서 좌표 검증. 도심 다른 8개 오래가게는 다음 해당 지역 회차에 대조."
+        }
       ]
     }
   ],
