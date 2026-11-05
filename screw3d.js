@@ -671,8 +671,9 @@ function screwPose(s) {
   return { p: add(E.hinge.p, mv(Q, sub(s.p, E.hinge.p))), a: mv(Q, s.a) };
 }
 function visibleScrewPose(s) {
-  return s.skinMount && !s.thru.hinge && !s.thru.dyn && !s.thru.fall
-    ? s.skinMount : screwPose(s);
+  // Cosmetic cloth buttons do not jump back to their old cubical position
+  // when their hidden fastening plate starts swinging or falling.
+  return s.skinMount || screwPose(s);
 }
 function screwHit(s, L, o, a, len) {   // 앞의 나사 머리가 이 나사를 빼는 길을 막나요?
   const radius2 = (HEAD_R * 2 - 0.002) ** 2, half = HEAD_H / 2 + HEAD_R - 0.002;
@@ -1510,7 +1511,7 @@ function screw3d(api,startStage=loadResumeStage()) {
       const fwd = mv(tr(V), [0, 0, 1]);
       for (const E of st.lvl.els) {
         if (E.state === 'gone') continue;
-        if (E.visualMountOnly && !E.dyn && !E.hinge) continue;
+        if (E.visualMountOnly) continue;
         // Only prepare graphics for exposed cube faces; interior puzzle state
         // still exists for collision, screw order and scoring. When a neighbouring
         // cube falls, its previously hidden faces appear on the following frame.
@@ -1520,7 +1521,7 @@ function screw3d(api,startStage=loadResumeStage()) {
         if (exposedFaces && !exposedFaces.some(Boolean)) continue;
         if (E.flat && !E.dyn && !E.hinge && dot([E.R[1], E.R[4], E.R[7]], fwd) < -0.02) continue;   // 뒤를 향한 판
         for (const sh of shapes(E)) {
-          if(E.visualOffset&&!E.dyn&&!E.hinge)sh.c=add(sh.c,E.visualOffset);
+          if(E.visualOffset)sh.c=add(sh.c,E.visualOffset);
           // Outside fragments are one continuous sculpted surface, shared by
           // adjoining removable bricks. Newly uncovered interior faces retain
           // their precise physical shape after another brick falls away.
@@ -1555,7 +1556,8 @@ function screw3d(api,startStage=loadResumeStage()) {
         const u0 = norm(cross(a, Math.abs(a[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), R = mm(frame(a, u0), ry(spin + 0.6));
         const hc = add(p, mul(a, DRAW_HEAD_H / 2 + rise)), sh = st.shake && st.shake.s === s ? Math.sin(st.shake.t * 60) * 0.012 : 0;
         const hcs = add(hc, mul(u0, sh));
-        const covering = s.state === 'in' ? coverOf(add(screwPose(s).p,mul(screwPose(s).a,HEAD_H)),s.thru) : [];
+        const logical=screwPose(s);
+        const covering = s.state === 'in' ? coverOf(add(logical.p,mul(logical.a,HEAD_H)),s.thru) : [];
         if (covering.length) hiddenN++;
         if (covering.length && !(st.xrayOn && covering.every(o => o === st.xrayOn))) continue;   // 블럭 밑에 깔린 나사
         if (s.state === 'in' && !E.hinge && dot(a, fwd) < -0.15) continue;   // 뒤를 향한 나사
