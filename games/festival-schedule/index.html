@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#faf9f5">
-  <meta name="description" content="전국 지역축제, 대학축제, 영화제, 박람회의 공식 일정을 지도와 캘린더에서 찾아보세요.">
+  <meta name="description" content="전국 축제, 스포츠 대회, 공연과 전시의 공식 일정을 지도와 캘린더에서 찾아보세요.">
   <meta property="og:title" content="축제일정 · 전국 행사 한눈에">
-  <meta property="og:description" content="전국의 축제와 행사를 지도와 캘린더로 한눈에.">
+  <meta property="og:description" content="전국의 축제·스포츠·공연/전시를 지도와 캘린더로 한눈에.">
   <title>축제일정 · 전국 축제 지도와 캘린더</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/vendor/leaflet.css">
-  <link rel="stylesheet" href="./style.css?v=20261103-festival-undecided1">
+  <link rel="stylesheet" href="./style.css?v=20261105-festival-three-sections1">
   <script src="./assets/vendor/leaflet.js" defer></script>
-  <script src="./app.js?v=20261103-festival-undecided1" type="module"></script>
+  <script src="./app.js?v=20261105-festival-three-sections1" type="module"></script>
   <link rel="stylesheet" href="/page-share.css?v=20261104-directory-share1">
   <script src="/page-share.js?v=20261104-directory-share1" defer></script>
 </head>
@@ -39,10 +39,9 @@
   <div class="filter-row">
     <div class="categories" role="group" aria-label="행사 종류">
       <button class="category-chip active" data-category="all">전체</button>
-      <button class="category-chip" data-category="local">지역축제</button>
-      <button class="category-chip" data-category="campus">대학축제</button>
-      <button class="category-chip" data-category="film">영화제</button>
-      <button class="category-chip" data-category="expo">박람회</button>
+      <button class="category-chip" data-category="festival">축제</button>
+      <button class="category-chip" data-category="sports">스포츠</button>
+      <button class="category-chip" data-category="performance">공연/전시</button>
     </div>
   </div>
   <div class="results-toolbar">
@@ -80,7 +79,7 @@
   <footer class="data-note"><span>매일 오후 1시 확인</span><span>업데이트 <strong id="checked-at">2026.11.03</strong></span></footer>
 </main>
 <dialog id="event-dialog" class="event-dialog"><div id="event-detail"></div></dialog>
-<dialog id="about-dialog" class="about-dialog"><button class="dialog-close" data-action="close-about" aria-label="이용 안내 닫기">×</button><h2>이용 안내</h2><p>축제일정은 지역축제·대학축제·영화제·박람회의 일정을 찾아보는 페이지예요.</p><div class="about-section"><h3>어떤 정보를 모으나요?</h3><p>관광기관, 지자체, 대학, 행사 주최 측이 공개한 공식 안내에서 일정과 장소를 확인합니다. 각 행사 상세 화면에 출처와 확인 날짜를 표시해요. 전국 모든 행사를 담은 목록은 아니며, 매일 오후 1시(한국 시간) 공식 자료에서 새 행사와 일정 변경을 확인해 반영합니다. 각 행사 상세의 확인 날짜는 실제로 검증한 날짜예요.</p></div><div class="about-section"><h3>날짜가 아직 미정이라면?</h3><p>공식 개최 계획은 있지만 날짜가 발표되지 않은 행사는 ‘일정 미정’으로 모아 보여줘요. 알려진 예정 시기만 표시하며, 날짜가 발표되기 전에는 주말·월별·기간 검색과 캘린더 날짜 칸에 넣지 않습니다. 장소가 미정이거나 계획 단계이면 상세 안내를 확인해 주세요. 확인된 위치가 없으면 지도 핀은 표시하지 않아요.</p></div><div class="about-section"><h3>방문하기 전 확인해 주세요</h3><p>취소·연기, 요금, 출입 조건은 바뀔 수 있어요. 대학축제는 외부인 입장이 제한될 수 있습니다. 지도는 대표 행사장 부근을 표시하며, 정확한 입구와 세부 장소는 공식 안내를 확인해 주세요.</p></div><div class="about-section"><h3>저장과 캘린더</h3><p>관심 행사는 현재 브라우저에 저장됩니다. ‘캘린더에 추가’로 내려받는 일정 파일은 휴대폰이나 PC 캘린더에서 열 수 있어요. 변경된 일정이 자동으로 동기화되지는 않습니다.</p></div><div class="about-source"><p>지도: 통계청 행정구역 자료 · <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">southkorea-maps</a><br>상세 지도: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></div><button class="primary-button" data-action="close-about">확인</button></dialog>
+<dialog id="about-dialog" class="about-dialog"><button class="dialog-close" data-action="close-about" aria-label="이용 안내 닫기">×</button><h2>이용 안내</h2><p>축제일정은 축제·스포츠·공연/전시를 함께 찾아보는 페이지예요. 세팍타크로·스쿼시 등 비인기 종목 대회와 음악회·연주회도 포함해요.</p><div class="about-section"><h3>어떤 정보를 모으나요?</h3><p>관광기관, 지자체, 대학, 행사 주최 측이 공개한 공식 안내에서 일정과 장소를 확인합니다. 각 행사 상세 화면에 출처와 확인 날짜를 표시해요. 전국 모든 행사를 담은 목록은 아니며, 매일 오후 1시(한국 시간) 공식 자료에서 새 행사와 일정 변경을 확인해 반영합니다. 각 행사 상세의 확인 날짜는 실제로 검증한 날짜예요.</p></div><div class="about-section"><h3>날짜가 아직 미정이라면?</h3><p>공식 개최 계획은 있지만 날짜가 발표되지 않은 행사는 ‘일정 미정’으로 모아 보여줘요. 알려진 예정 시기만 표시하며, 날짜가 발표되기 전에는 주말·월별·기간 검색과 캘린더 날짜 칸에 넣지 않습니다. 장소가 미정이거나 계획 단계이면 상세 안내를 확인해 주세요. 확인된 위치가 없으면 지도 핀은 표시하지 않아요.</p></div><div class="about-section"><h3>방문하기 전 확인해 주세요</h3><p>취소·연기, 요금, 출입 조건은 바뀔 수 있어요. 대학축제는 외부인 입장이 제한될 수 있습니다. 지도는 대표 행사장 부근을 표시하며, 정확한 입구와 세부 장소는 공식 안내를 확인해 주세요.</p></div><div class="about-section"><h3>저장과 캘린더</h3><p>관심 행사는 현재 브라우저에 저장됩니다. ‘캘린더에 추가’로 내려받는 일정 파일은 휴대폰이나 PC 캘린더에서 열 수 있어요. 변경된 일정이 자동으로 동기화되지는 않습니다.</p></div><div class="about-source"><p>지도: 통계청 행정구역 자료 · <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener noreferrer">southkorea-maps</a><br>상세 지도: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p></div><button class="primary-button" data-action="close-about">확인</button></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><div class="noscript">지도와 캘린더를 사용하려면 브라우저의 JavaScript를 켜 주세요.</div></noscript>
 </body>
