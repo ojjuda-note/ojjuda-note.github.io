@@ -79,14 +79,15 @@ for(const stage of [12,21,26,35,55,80,115,160,220,450,598,650,800,1000]){
 }
 
 async function itemRecovery(){
- let bought=0;
- const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){throw Error('advanced stages must allow item recovery before failure');},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
+ let bought=0,failures=0;
+ const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){failures++;},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
  const game=Game.flat(api,26),st=game.state,route=solution(26);await new Promise(resolve=>setImmediate(resolve));
  play(game,route[0]);play(game,route[1]);
  const parked=st.level.holes[0].screw;assert.notEqual(parked,null);assert.equal(st.level.holes[2].screw,null);
  play(game,[parked,2]);play(game,[parked,0]);play(game,[parked,0]); // Three real, unnecessary lifts.
  for(const step of route.slice(2,-1))play(game,step);
- assert.equal(st.moves,st.moveLimit);assert.equal(st.complete,false);assert.equal(st.failed,false,'a live jam still permits item recovery');
+ assert.equal(st.moves,st.moveLimit);assert.equal(st.complete,false);assert.equal(st.failed,true,'an exhausted route offers recovery');
+ assert.equal(failures,1);assert.equal(game.resume(),true,'the result screen returns to available item controls');
  const last=route.at(-1),screw=st.level.screws[last[0]],home=screw.hole;press(game,home);tick(game,.5);assert.equal(screw.hole,home,'no more pickups after the base budget');
  press(game,{x:200,y:510});await new Promise(resolve=>setImmediate(resolve));assert.equal(bought,1);assert.equal(st.extraMoves,3);
  play(game,last);tick(game,8);assert.equal(st.complete,true,'three bought moves recover the spent-lift mistake');game.destroy();
