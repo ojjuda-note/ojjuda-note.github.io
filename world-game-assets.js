@@ -56,7 +56,7 @@
   mole:[...controls,'/games/mole-game.css?v=20261006-garden1','/games/mole-game.js?v=20261006-garden1'],
   runner:[...controls,'/games/runner-game.css?v=20261006-fog3','/games/runner-game.js?v=20261027-runner-size1'],
   breakout:[...controls,'/games/breakout-game.css?v=20261102-breakout-round-choice1','/games/breakout-game.js?v=20261102-breakout-pickups2'],
-  screw:[...controls,'/screw-games.css?v=20261106-screwbox-responsive1','/screw-loader.js?v=20261106-flat-open-nine-holes1'],
+  screw:[...controls,'/screw-games.css?v=20261106-screw-menu-text1','/screw-loader.js?v=20261106-flat-open-nine-holes1'],
   stacker:controls
  };
  const requests=new Map(),complete=new Set();

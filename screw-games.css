@@ -51,7 +51,7 @@
 /* Responsive box puzzle: keep the model usable on short landscape screens. */
 #gov[data-game="screw"][data-screw-mode="box"] .gcan{display:flex;align-items:center;justify-content:center}
 #gov[data-game="screw"][data-screw-mode="box"] .gcan canvas{flex-shrink:0}
-#gov[data-game="screw"][data-screw-mode="box"] .screw-zoom-nav{display:none}
+#gov[data-game="screw"] .screw-zoom-nav{display:none}
 #gov[data-game="screw"][data-screw-mode="box"] .screw-stage-card{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #gov[data-game="screw"][data-screw-mode="box"] .screw-stage-paging .btn,
 #gov[data-game="screw"][data-screw-mode="box"] .screw-stage-quick .btn{min-height:44px}
