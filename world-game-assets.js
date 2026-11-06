@@ -38,7 +38,7 @@
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
   byeolcheonji:[],
-  festival:['/world-festival-schedule.css?v=20261106-arcade-return1','/world-festival-schedule.js?v=20261106-festival-scale1'],
+  festival:['/world-festival-schedule.css?v=20261106-festival-scale1','/world-festival-schedule.js?v=20261106-festival-scale1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261104-agit-home1','/world-restaurant-guide.js?v=20261106-arcade-return1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261106-arcade-return1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261106-arcade-return1'],
   archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261104-archery-admin-trial1','/world-archery-game.js?v=20261106-archery-distance1'],
