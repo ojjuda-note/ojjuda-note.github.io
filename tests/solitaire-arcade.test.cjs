@@ -48,3 +48,76 @@ test('member sessions do not use the guest completion gate or share guest saves'
   assert.equal(requests, 0);
   w.OjjudaSolitaireGame.close(); dom.window.close();
 });
+
+test('finished records validate mode/time, deduplicate a run and retry a failed save', async () => {
+  const dom = new JSDOM('', {url:'https://ojjuda.kr/',runScripts:'outside-only'}),w=dom.window;
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+  w.eval(read('games/solitaire/rules.js'));w.eval(read('world-solitaire-game.js'));
+  let valid=true,calls=0,resolve;
+  w.OjjudaSolitaireGame.open({authorized:()=>valid,onScore:()=>{calls++;return new Promise(r=>resolve=r);}});
+  const frame=w.document.querySelector('iframe'),acks=[];
+  frame.contentWindow.postMessage=data=>acks.push(data);
+  const message={source:'ojjuda-solitaire',type:'ojjuda-game-result',completed:true,runId:'10000000-0000-4000-8000-000000000001',drawCount:3,seconds:120,score:299999880};
+  const send=(data=message)=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:frame.contentWindow,data}));
+  const settle=()=>new Promise(r=>setImmediate(r));
+  for(const wrong of [{completed:false},{seconds:60},{drawCount:1},{runId:'wrong'},{score:null}])send({...message,...wrong});
+  await settle();assert.equal(calls,0);
+  send();send();await settle();assert.equal(calls,1);
+  resolve({ok:false});await settle();assert.equal(acks.at(-1).ok,false);
+  send();await settle();assert.equal(calls,2);resolve({ok:true});await settle();assert.equal(acks.at(-1).ok,true);
+  send();await settle();assert.equal(calls,2,'saved runs reuse their receipt');
+  send({...message,score:299999940,seconds:60});await settle();assert.equal(calls,2,'same run cannot submit a different record');
+  valid=false;send({...message,runId:'10000000-0000-4000-8000-000000000002'});await settle();assert.equal(calls,2);
+  w.OjjudaSolitaireGame.close();dom.window.close();
+});
+
+test('the last card freezes the clear time before the finish animation and retries the same saved record',async()=>{
+  const {pathToFileURL}=require('node:url');
+  const engine=await import(pathToFileURL(path.join(root,'games/solitaire/engine.js')));
+  const gestures=await import(pathToFileURL(path.join(root,'games/solitaire/gestures.js')));
+  const dom=new JSDOM(read('games/solitaire/index.html'),{url:'https://ojjuda.kr/games/solitaire/index.html?owner=qa',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+  const state=engine.createGame(3);state.stock=[];state.waste=[];state.tableau=Array.from({length:7},()=>[]);
+  state.foundations=engine.SUITS.map(suit=>Array.from({length:13},(_,i)=>({id:suit+'-'+(i+1),suit,rank:i+1,up:true})));
+  state.tableau[0].push(state.foundations[3].pop());
+  const runId='10000000-0000-4000-8000-000000000003',key='ojjuda-solitaire-v1:qa',messages=[];
+  w.localStorage.setItem(key,JSON.stringify({version:1,state,history:[],elapsed:119500,started:true,runId}));
+  Object.defineProperty(w,'parent',{value:{postMessage:data=>messages.push(data)}});
+  Object.assign(w,engine,gestures,{cardFace:()=>'<img alt="">',CARD_RATIO:1.4,createViewport:()=>({prepare(){},updateSize(){}}),matchMedia:()=>({matches:true})});
+  let clock=1000,tick,finishAnimation;
+  w.Date.now=()=>clock;w.setInterval=callback=>{tick=callback;return 1;};
+  w.playWinAnimation=callback=>{finishAnimation=callback;};
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  w.eval(read('games/solitaire/rules.js'));
+  w.eval(read('games/solitaire/app.js').replace(/^import .*;\n/gm,''));
+  assert.equal(messages.length,0,'unfinished games do not submit');
+  clock=1250;
+  w.document.querySelector('[data-card-id="diamonds-13"]').click();
+  w.document.querySelector('[data-card-id="diamonds-13"]').click();
+  const record=messages.find(m=>m.type==='ojjuda-game-result');
+  assert.equal(record.seconds,120);assert.equal(record.drawCount,3);assert.equal(record.score,299999880);assert.equal(record.runId,runId);
+  clock=11250;tick();finishAnimation();
+  assert.match(w.document.querySelector('.win-stats').textContent,/02:00/);
+  const ack=ok=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:w.parent,data:{source:'ojjuda-world',type:'ojjuda-solitaire-record',runId,ok}}));
+  ack(false);assert.equal(w.document.querySelector('#retry-ranking').hidden,false);
+  w.document.querySelector('#retry-ranking').click();
+  const retried=messages.filter(m=>m.type==='ojjuda-game-result').at(-1);assert.equal(retried.seconds,120);assert.equal(retried.runId,runId);
+  ack(true);assert.equal(w.document.querySelector('#ranking-status').textContent,'순위에 기록했어요.');
+  assert.equal(JSON.parse(w.localStorage.getItem(key)).completion.saved,true);
+  w.document.querySelector('#play-again').click();w.document.querySelector('#start-new').click();
+  const next=JSON.parse(w.localStorage.getItem(key));assert.notEqual(next.runId,runId);assert.equal(next.completion,null);
+  dom.window.close();
+});
+
+test('guest client accepts solitaire and uses the same run ID for save and monthly ranking',async()=>{
+  const dom=new JSDOM('',{url:'https://ojjuda.kr/',runScripts:'outside-only'}),w=dom.window,calls=[];
+  w.OJJUDA_CONFIG={supabaseUrl:'https://project.example',supabaseKey:'public-key'};
+  w.supabase={createClient:()=>({rpc:(name,args)=>{calls.push({name,args});return{abortSignal:async()=>({data:name==='guest_game_ranking'?[]:{ok:true},error:null})};}})};
+  w.eval(read('guest-game-scores.js'));
+  const runId='10000000-0000-4000-8000-000000000004';
+  assert.equal((await w.OjjudaGuestScores.submit('solitaire',299999880,runId)).ok,true);
+  assert.equal(calls[0].args.p_game,'solitaire');assert.equal(calls[0].args.p_request_id,runId);
+  await w.OjjudaGuestScores.ranking('solitaire','month');assert.equal(calls[1].args.p_period,'month');
+  dom.window.close();
+});
