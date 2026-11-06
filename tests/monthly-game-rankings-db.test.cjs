@@ -28,6 +28,14 @@ const hash = token => createHash('sha256').update(token).digest('hex');
    const name=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith(suffix));
    await db.exec(read(name));
   }
+  // The score-bound upgrade is independently covered in solitaire-ranking-db.test.cjs.
+  // Use that deployed limit here while exercising the real monthly catalog upgrade.
+  const limit=(await db.query("select pg_get_functiondef('ojjuda_guest_internal.score_limit(text)'::regprocedure) value")).rows[0].value;
+  await db.exec(limit.replace(/when\s+'mines'/i,"WHEN 'solitaire' THEN 299999999 WHEN 'mines'"));
+  const solitaireCatalog=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_solitaire_monthly_catalog.sql'));
+  const catalogMeta=async()=>(await db.query("select prosecdef,proconfig,proacl::text from pg_proc where oid='ojjuda_ranking_internal.catalog()'::regprocedure")).rows;
+  const beforeCatalog=await catalogMeta();await db.exec(read(solitaireCatalog));await db.exec(read(solitaireCatalog));
+  assert.deepEqual(await catalogMeta(),beforeCatalog,'catalog update preserves grants and execution settings');
   const updatedFunctions=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
    where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal','ojjuda_archery_internal')`);
   for(const {definition}of updatedFunctions.rows){
@@ -45,7 +53,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const submit=(token,score,id=randomUUID(),game='runner')=>value('select public.submit_guest_game_score($1,$2,$3,$4) value',[game,score,token,id]);
   const guest=(token,period='month',game='runner')=>value('select ojjuda_guest_internal.ranking($1,$2,$3) value',[game,period,token]);
   const catalog=await value('select ojjuda_ranking_internal.catalog() value');
-  assert.equal(catalog.length,22);assert.equal(new Set(catalog).size,22);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));
+  assert.equal(catalog.length,23);assert.equal(new Set(catalog).size,23);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));
   assert.ok(catalog.includes('screw_box')&&catalog.includes('screw_flat')&&catalog.includes('billiards'));
   assert.ok(!catalog.includes('carom4')&&!catalog.includes('pool8'));
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
@@ -159,8 +167,14 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   await archeryRun(a,2,30,'2026-10-15T00:01:00Z');await archeryRun(b,1,50,'2026-10-15T00:02:00Z');
   await archeryRun(b,220,1,'2026-10-15T00:03:00Z',false);await archeryRun(banned,220,50,'2026-10-15T00:04:00Z');
   await archeryRun(b,3,50,'2026-10-31T16:00:00Z');
+  await score(a,'solitaire',199999940,'2026-10-15T00:01:00Z');
+  await score(b,'solitaire',299999880,'2026-10-15T00:02:00Z');
+  await claim(null);await clock('2026-10-15T00:03:00Z');
+  assert.equal((await submit('e'.repeat(64),299999880,randomUUID(),'solitaire')).ok,true);
+  await claim(a);await clock('2026-10-31T15:59:59Z');
+  assert.deepEqual((await ranks('solitaire')).map(r=>[r.nick,r.score]),[['Beta',299999880],['손님',299999880],['Alpha',199999940]],'normal 2 minutes outranks beginner 1 minute in the deployed monthly path; earlier ties win');
   response=await history(catalog);assert.equal(Object.keys(response.leaders).length,catalog.length);assert.ok(Object.values(response.leaders).every(Boolean));
-  const leaders=response.leaders;
+  const leaders=response.leaders;assert.equal(leaders.solitaire.nick,'Beta');
   assert.equal(leaders.archery.nick,'Alpha');assert.equal(leaders.archery.stage,2);assert.equal(leaders.archery.score,30);
   assert.equal(leaders.sacheonseong.nick,'Alpha');assert.equal(leaders.sacheonseong.stage,15);
   assert.equal(leaders.chess.nick,'Beta');assert.equal(leaders.chess.difficulty,'hard',
@@ -188,7 +202,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   await clock('2026-10-31T16:00:00Z');assert.equal((await history(['runner'])).leaders.runner.score,400);
   const closes=await Promise.all(Array.from({length:4},()=>value("select ojjuda_ranking_internal.close_month('2026-10-01') value")));
   assert.equal(closes.filter(Boolean).length,1,'overlapping close requests insert once');
-  response=await history(catalog,'2026-10-01');assert.equal(response.closed,true);assert.equal(response.pending,false);
+  response=await history(catalog,'2026-10-01');assert.equal(response.closed,true);assert.equal(response.pending,false);assert.equal(response.leaders.solitaire.score,299999880,'the same Solitaire winner survives month-end archival');
   assert.equal(response.leaders.runner.score,300,'the exact new-month record is absent from October');
   assert.equal(response.leaders.sacheonseong.stage,15);assert.equal(response.leaders.billiards.variant,'pool8');
   assert.equal(response.leaders.tank.opponents,5);
@@ -258,6 +272,6 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const sql=read(migrationName);
   assert.ok(!/insert\s+into\s+ojjuda_rewards_internal|capture_month_end\(|update\s+.*wallets/i.test(sql));
   assert.match(sql,/'0 16 \$ \* \*'/);assert.match(sql,/'5 \* \* \* \*'/);
-  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 22 shipped criteria, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
+  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 23 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
  } finally {await db.close();}
 })().catch(error=>{console.error(error.message,error.where||'',error.stack);process.exitCode=1;});
