@@ -159,6 +159,38 @@ for(const piercing of [false,true]){
   assert.equal(f.state().balls.length,1);assert.equal(f.state().balls[0].piercing,false);
   assert.equal(f.state().drops.length,0,'starting a new board ends this turn’s effects');
 }
+for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [['wide','fast'],['shrink','slow']]){
+  const f=fixture({speed}),control=fixture({speed});
+  for(const run of [f,control]){run.launch();run.missAll();}
+  for(const next of [2,3]){
+    const pickups=[sizeItem,sizeItem,sizeItem,sizeItem,'ten','pierce',...Array(6).fill(speedItem)];
+    for(const kind of pickups){
+      f.catchItem(f.hit(kind));control.catchItem(control.hit('pierce'));
+    }
+    assert.notEqual(f.state().paddle.w,80,'the size pickup is active before the clear');
+    assert.notEqual(f.state().speed,control.state().speed,'the speed pickup is active before the clear');
+    assert.equal(f.state().balls.length,10);assert.ok(f.state().balls.some(b=>b.piercing));
+    for(const run of [f,control]){
+      const s=run.state(),last=s.bricks.filter(b=>b.on&&!b.solid).at(-1);
+      for(const brick of s.bricks)if(!brick.solid)brick.on=brick===last;
+      last.hp=1;run.park();
+      Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+5.1,vx:0,vy:-s.speed});
+      run.game.update(STEP);
+      assert.equal(run.game.stageCleared,true);
+    }
+    const before=f.state();
+    assert.equal(f.game.continueStage(next),true);assert.equal(control.game.continueStage(next),true);
+    const after=f.state();
+    assert.equal(after.paddle.w,80,'each next board resets both helpful and harmful paddle sizes');
+    assert.ok(after.paddle.x>=0&&after.paddle.x+after.paddle.w<=360);
+    near(after.speed,control.state().speed,'next-board speed matches a run without speed pickups, even after reaching a limit');
+    assert.equal(after.score,before.score);assert.equal(after.lives,2,'continuing preserves the remaining lives');
+    assert.equal(after.balls.length,1);assert.equal(after.balls[0].piercing,false);assert.equal(after.balls[0].pierceBounces,0);
+    assert.equal(after.drops.length,0);assert.equal(after.waiting,true);
+    near(after.balls[0].x,after.paddle.x+after.paddle.w/2,'the new ball is centered on the reset paddle');
+    f.launch();near(Math.hypot(f.state().balls[0].vx,f.state().balls[0].vy),after.speed,'launch uses the reset speed');
+  }
+}
 {
   const f=fixture();f.launch();const initial=f.state().speed;
   assert.ok(initial>=260&&initial<=300,'the initial speed leaves more time to follow the ball');
@@ -371,9 +403,9 @@ for(const [setting,pace]of [['slow',.8],['normal',1],['fast',1.15]]){
   const s=f.state(),last=s.bricks.filter(brick=>brick.on&&!brick.solid).at(-1);
   for(const brick of s.bricks)if(!brick.solid)brick.on=brick===last;
   Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(STEP);
-  const before=f.state().speed;assert.equal(f.game.continueStage(2),true);
-  assert.equal(f.state().paddle.w,96,'continuing a level keeps the current run’s paddle size');
-  near(f.state().speed,Math.min(460,before+20),'continuing adds the usual acceleration to the item-adjusted speed');
+  assert.equal(f.game.continueStage(2),true);
+  assert.equal(f.state().paddle.w,80,'continuing a level clears the current board’s paddle-size effect');
+  near(f.state().speed,300+10*STEP,'continuing keeps five physics steps and stage acceleration but clears the slowdown');
 }
 {
   const f=fixture();f.catchItem(f.hit('pierce'));let s=f.state(),ball=s.balls[0];

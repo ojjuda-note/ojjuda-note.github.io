@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const W=360,H=540,MAX_BALLS=100,MIN_SPEED=140,MAX_SPEED=460,LEVELS=100;
-  const MIN_PADDLE=48,MAX_PADDLE=144,PADDLE_STEP=16,DROP_W=44,DROP_H=26;
+  const BASE_PADDLE=80,MIN_PADDLE=48,MAX_PADDLE=144,PADDLE_STEP=16,DROP_W=44,DROP_H=26;
   const STAGE_KEY='ojjuda-breakout-last-stage-v1';
   function readStage(){try{const n=Number(localStorage.getItem(STAGE_KEY));return Number.isInteger(n)&&n>=1&&n<=LEVELS?n:1;}catch(_){return 1;}}
   function saveStage(stage){try{localStorage.setItem(STAGE_KEY,String(stage));}catch(_){/* Storage restrictions must not interrupt play. */}}
@@ -66,9 +66,10 @@
   }
   function create(api,startStage=readStage()){
     const pace=({slow:.8,normal:1,fast:1.15})[window.OjjudaGameControls?.get('breakout').speed]||1;
-    const paddle={x:140,y:490,w:80,h:12};
+    const paddle={x:140,y:490,w:BASE_PADDLE,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,stageCleared=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
     let nextBallId=1,paddleTouchOrder=0,notice='',noticeTime=0,noticeBad=false;
+    let baseSpeed=speed;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
     brickContext?.scale(2,2);
@@ -96,7 +97,11 @@
       const next=Math.max(MIN_SPEED*pace,Math.min(MAX_SPEED*pace,value));if(next===speed)return;speed=next;
       for(const ball of balls){const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude){ball.vx=ball.vx/magnitude*speed;ball.vy=ball.vy/magnitude*speed;}}
     }
-    function faster(amount){setSpeed(speed+amount*pace);}
+    function faster(amount){
+      // Track normal progression separately so pickups cannot affect later boards.
+      baseSpeed=Math.max(MIN_SPEED*pace,Math.min(MAX_SPEED*pace,baseSpeed+amount*pace));
+      setSpeed(speed+amount*pace);
+    }
     function resizePaddle(amount){
       const center=paddle.x+paddle.w/2;
       paddle.w=Math.max(MIN_PADDLE,Math.min(MAX_PADDLE,paddle.w+amount));
@@ -260,7 +265,9 @@
       },
       continueStage(next){
         if(!stageCleared||finished||next!==level+1||next>LEVELS)return false;
-        level=next;stageCleared=false;faster(20);fillBricks();newTurn();setNotice(level+'단계');return true;
+        level=next;stageCleared=false;
+        resizePaddle(BASE_PADDLE-paddle.w);setSpeed(baseSpeed);faster(20);
+        fillBricks();newTurn();setNotice(level+'단계');return true;
       },
       finishRun(){
         if(!stageCleared||finished)return false;
