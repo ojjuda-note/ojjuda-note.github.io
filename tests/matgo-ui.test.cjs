@@ -498,14 +498,21 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
         await inside(f.page.locator('#matgo-overlay .mp-entry-back'),'entrance back');
         await inside(child.locator('#solo'),'start button');
       }
-      async function closed(){
+      async function closed(confirmExit=false){
+        if(confirmExit){
+          const prompt=f.page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+          await prompt.waitFor();
+          assert.equal(await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).isVisible(),true);
+          assert.equal(await f.page.locator('#matgo-overlay').count(),1,'the round stays mounted until exit is confirmed');
+          await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).tap();
+        }
         await f.page.waitForFunction(()=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld==='main');
         assert.equal(await f.page.locator('.arcade-home').isVisible(),true);
         assert.equal(await f.page.evaluate(()=>window.nativeExits||0),0,'game exit stays in the app');
       }
-      async function back(){
+      async function back(confirmExit=false){
         if(native)await f.page.evaluate(()=>nativeBack({canGoBack:false}));else await f.page.goBack();
-        await closed();
+        await closed(confirmExit);
       }
       await open();
       fs.mkdirSync('/tmp/matgo-safe-area-proof',{recursive:true});
@@ -545,7 +552,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       await child.locator('.modal .card .btn').last().tap();
       await f.page.screenshot({path:`/tmp/matgo-safe-area-proof/${width}-${native?'native':'browser'}.png`});
       const savedRound=f.state.round.id,savedGold=f.state.gold,savedCoins=f.state.coins;
-      await child.locator('#exit').tap();await closed();
+      await child.locator('#exit').tap();await closed(true);
       // Re-entry waits for old-round cleanup, then starts a new hand only on tap.
       await open();assert.equal(f.state.round,null);
       assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===savedRound).length,1);
@@ -556,7 +563,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       await reopened.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.ui.dealing&&!matgoTest.game.over);
       const nextRound=f.state.round.id;assert.notEqual(nextRound,savedRound,'the previous solo hand cannot resume');
       assert.equal(f.state.requests.filter(r=>r.action==='start').length,starts+2);
-      await inside(child.locator('#exit'),'reopened exit');await back();
+      await inside(child.locator('#exit'),'reopened exit');await back(true);
       await open();assert.equal(f.state.round,null);
       assert.equal(f.state.requests.filter(r=>r.action==='abandon'&&r.round_id===nextRound).length,1,'browser/native Back also retires its hand');
       assert.equal(f.state.gold,savedGold);assert.equal(f.state.coins,savedCoins);
