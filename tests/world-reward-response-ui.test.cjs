@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.join(__dirname,'..');
 // The shipped World module runs against delayed in-memory reads/RPCs only.
 const gameResults=fs.readFileSync(path.join(root,'shared/games/game-results.js'),'utf8');
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/\bsrc=["']\/game-results\.js(?:\?|["'])/.test(tag)?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>/\bsrc=["']\/shared\/games\/game-results\.js(?:\?|["'])/.test(tag)?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 const rewardJobs=new Map(),rewardTasks=new Map(),rewardResults=new Map(),rewardCalls=[];let rewardJobId=0,screwApi;const rewardNotices=[];addEventListener('ojjuda:game-record-saved',event=>rewardNotices.push(event.detail.owner));

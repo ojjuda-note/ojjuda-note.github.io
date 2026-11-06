@@ -83,6 +83,38 @@ test('search survives room return and refresh; browser back restores directory',
     d.dispatchEvent(new f.w.Event('visibilitychange'));await tick();assert.equal(d.querySelector('#directory-query').value,'주말');assert.equal(d.querySelectorAll('[data-group]').length,1);
   }finally{f.dom.window.close();}
 });
+test('Back, close and Escape preserve a group draft until discard is confirmed',async()=>{
+  const f=fixture();try{
+    await tick();const d=f.w.document;
+    d.querySelector(`[data-room="${room}"]`).click();await tick();
+    d.querySelector('[data-action=compose]').click();const form=d.querySelector('#composer'),editor=form.closest('dialog');
+    form.elements.title.value='입력 보존 점검';form.elements.body.value='뒤로 가도 사라지면 안 되는 내용';
+    f.w.history.back();await tick();await tick();
+    assert.equal(f.w.location.hash,'#room='+room);assert.equal(d.querySelector('#composer'),form);
+    assert.match(d.querySelector('dialog:last-of-type').textContent,/작성 중인 내용을 지울까요/);
+    d.querySelector('[data-no]').click();assert.equal(form.elements.body.value,'뒤로 가도 사라지면 안 되는 내용');
+    editor.querySelector('[data-close]').click();d.querySelector('[data-no]').click();
+    const escape=new f.w.Event('cancel',{cancelable:true});editor.dispatchEvent(escape);assert.equal(escape.defaultPrevented,true);d.querySelector('[data-no]').click();
+    const unload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(unload);assert.equal(unload.defaultPrevented,true);
+    editor.querySelector('[data-close]').click();d.querySelector('[data-yes]').click();await tick();
+    assert.equal(d.querySelector('dialog'),null);assert.equal(f.calls.some(([a])=>a==='save'),false);
+    const cleanUnload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(cleanUnload);assert.equal(cleanUnload.defaultPrevented,false);
+    f.w.history.back();await tick();await tick();assert.ok(d.querySelector('#directory'));
+  }finally{f.dom.window.close();}
+});
+test('Back cannot dismiss a saving group post; success releases the unload guard',async()=>{
+  let finish;
+  const f=fixture({respond:(action,p)=>action==='save'?new Promise(resolve=>{finish=()=>resolve({data:{...p,media:p.media}});}):undefined});try{
+    await tick();const d=f.w.document;d.querySelector(`[data-room="${room}"]`).click();await tick();
+    d.querySelector('[data-action=compose]').click();const form=d.querySelector('#composer');form.elements.body.value='저장 중인 글';
+    form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+    f.w.history.back();await tick();await tick();assert.equal(d.querySelector('#composer'),form);assert.equal(f.w.location.hash,'#room='+room);
+    form.closest('dialog').querySelector('[data-close]').click();assert.equal(d.querySelectorAll('dialog').length,1);
+    const unload=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(unload);assert.equal(unload.defaultPrevented,true);
+    finish();await tick();await tick();assert.equal(d.querySelector('#composer'),null);
+    const done=new f.w.Event('beforeunload',{cancelable:true});f.w.dispatchEvent(done);assert.equal(done.defaultPrevented,false);
+  }finally{f.dom.window.close();}
+});
 test('direct room links and interrupted deletion remain accessible',async()=>{
   const f=fixture({hash:'#room='+room});try{await tick();assert.equal(f.w.document.querySelector('h1').textContent,'주말 여행단');assert.ok(f.w.document.querySelector('#feed'));}finally{f.dom.window.close();}
   const g=fixture({deleting:true});try{await tick();const d=g.w.document;assert.match(d.querySelector(`[data-group="${room}"]`).textContent,/삭제 중/);d.querySelector(`[data-room="${room}"]`).click();await tick();assert.ok(d.querySelector('[data-action=resume-delete]'));}finally{g.dom.window.close();}
