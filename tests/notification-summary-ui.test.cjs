@@ -14,7 +14,7 @@ const missing=(code='PGRST202',name='public.app_notification_summary')=>({error:
 function fixture({user='member-a',handle}={}){
   const dom=new JSDOM('<main><div data-notifications-slot></div><span data-notification-badge hidden></span><i data-notification-dot hidden></i><button data-note-my></button></main>',
     {url:'https://ojjuda.kr/world.html',runScripts:'outside-only',pretendToBeVisual:true});
-  const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[];
+  const w=dom.window,calls=[],timers=[],intervals=[],broadcasts=[],channels=[],openedGroups=[];
   let identity=user,visibility='visible',clock=1000000,authCallback;
   let responder=handle||((name)=>name==='app_notification_summary'?{data:{notifications:3,retention:2}}:
     name==='app_notification_unread_count'?{data:3}:name==='list_retention_alerts'?{data:[retention(1),retention(2)]}:
@@ -28,8 +28,8 @@ function fixture({user='member-a',handle}={}){
   const invoke=async(schema,name,args)=>{calls.push({schema,name,user:identity,args});return responder(name,args,identity,schema);};
   const client={rpc:(name,args)=>invoke('public',name,args),schema:schema=>({rpc:(name,args)=>invoke(schema,name,args)}),
     auth:{onAuthStateChange(callback){authCallback=callback;}}};
-  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity});
-  return {dom,w,api,calls,channels,broadcasts,
+  w.eval(source);const api=w.OjjudaNotifications.install({client,getUserId:()=>identity,onOpenGroup:id=>openedGroups.push(id)});
+  return {dom,w,api,calls,channels,broadcasts,openedGroups,
     badge:()=>({hidden:w.document.querySelector('#note-notification-badge').hidden,text:w.document.querySelector('#note-notification-badge').textContent}),
     respond:callback=>{responder=callback;},advance:ms=>{clock+=ms;},
     async boot(){for(const callback of timers.splice(0))callback();await settle();},
@@ -133,4 +133,26 @@ test('same-account read broadcasts force a fresh count and ignore other-account 
     f.w.dispatchEvent(new f.w.Event('ojjuda:messages-read'));await settle();assert.equal(f.calls.length,2);
     assert.equal(f.broadcasts.at(-1).type,'read');assert.equal(f.broadcasts.at(-1).user,'member-a');
   }finally{f.close();}
+});
+
+test('group notifications identify the inviter and join only after acceptance',async()=>{
+  for(const action of ['accept','decline']){
+    let pending=true;
+    const notice={id:'world:group_invite:'+uuid(700),kind:'group_invite',source:'world',target_type:'group_invite',target_id:uuid(700),group_name:'우리 <script>모임',sender_name:'수빈',created_at:'2026-11-06T00:00:00Z',read_at:null};
+    const f=fixture({handle:(name,args)=>{
+      if(name==='group_invitation'){assert.equal(args.p_action,action);assert.equal(args.p_payload.id,notice.target_id);pending=false;return {data:{room_id:uuid(701)}};}
+      if(name==='app_notification_summary')return {data:{notifications:pending?1:0,retention:0}};
+      if(name==='list_retention_alerts')return {data:[]};
+      if(name==='list_app_notifications')return {data:{items:pending?[notice]:[],unread_count:pending?1:0,as_of:'2026-11-06T01:00:00Z',has_more:false}};
+      return {data:0};
+    }});
+    try{await f.boot();f.api.open();await settle();const d=f.w.document;
+      assert.match(d.querySelector('.nn-copy').textContent,/수빈.*우리 <script>모임/);assert.equal(d.querySelector('.nn-copy script'),null);
+      assert.equal(f.calls.some(c=>c.name==='group_invitation'),false);
+      d.querySelector(`[data-group-invite-action="${action}"]`).click();await settle();
+      assert.equal(f.calls.filter(c=>c.name==='group_invitation').length,1);
+      assert.deepEqual(f.openedGroups,action==='accept'?[uuid(701)]:[]);
+      if(action==='decline')assert.equal(d.querySelector('[data-group-invite-action]'),null);
+    }finally{f.close();}
+  }
 });

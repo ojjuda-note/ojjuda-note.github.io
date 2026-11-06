@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123e35"><meta name="description" content="초록 테이블 위, 익숙한 카드 한 판. 터치와 드래그로 즐기는 클래식 솔리테어.">
+<title>솔리테어 · 오쭈다 오락실</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c5142'/%3E%3Ctext x='32' y='49' text-anchor='middle' font-size='51' fill='%23f4e6c5'%3E♠%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="./style.css?v=20261106-solitaire1">
+</head>
+<body>
+<main class="app" aria-label="솔리테어">
+  <header class="topbar">
+    <button id="game-home" aria-label="오락실로 돌아가기" title="오락실로 돌아가기">←</button>
+    <button id="new-game">새 게임</button>
+    <button id="settings" aria-label="난이도 설정"><span id="mode-label">초보 · 1장</span><span aria-hidden="true">⌄</span></button>
+    <span id="time" aria-label="게임 시간">00:00</span>
+    <button id="pause" aria-label="일시 정지" title="일시 정지">Ⅱ</button>
+    <button id="help" aria-label="게임 방법" title="게임 방법">?</button>
+  </header>
+  <div id="board-viewport" class="board-viewport" aria-label="두 손가락으로 확대·축소 및 화면 이동">
+    <div id="board-canvas" class="board-canvas">
+      <div class="board" id="board" aria-label="카드 놓는 곳"><div class="top-row" id="top-row"></div><div class="tableau" id="tableau"></div></div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="play-tools">
+      <button id="undo" disabled aria-label="되돌리기"><span aria-hidden="true">↶</span> 되돌리기</button>
+      <button id="hint">힌트</button>
+      <button id="auto" hidden>자동 완성</button>
+    </div>
+    <div class="zoom-tools" aria-label="카드 크기">
+      <button id="zoom-out" aria-label="축소" title="축소">−</button>
+      <button id="zoom-fit" aria-label="화면 맞춤" title="화면 맞춤">100%</button>
+      <button id="zoom-in" aria-label="확대" title="확대">＋</button>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="dialog"><div id="dialog-content"></div></dialog>
+<div id="confetti" aria-hidden="true"></div>
+<script type="module" src="./app.js?v=20261106-solitaire1"></script>
+</body></html>

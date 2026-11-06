@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-groups1';
+ const revision='20261106-solitaire1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -15,6 +15,7 @@
   bang:'1.9.4',
   poker:'1.5.4',
   tank:'1.4.4',
+  solitaire:'1.0.0',
   mines:'1.3.5',
   sacheonseong:'1.9.4',
   saetbyeol:'1.2.7',
@@ -49,6 +50,7 @@
   sacheonseong:['/world-sacheonseong-game.css?v=20261104-game-fullscreen1','/world-sacheonseong-game.js?v=20261104-game-fullscreen1'],
   poker:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-poker-game.css?v=20261021-poker-table1','/world-poker-game.js?v=20261106-playing-back1'],
   tank:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tank-game.css?v=20261018-fullscreen1','/world-tank-game.js?v=20261106-playing-back1'],
+  solitaire:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-solitaire-game.js?v=20261106-solitaire1'],
   mines:['/world-tour-game.css?v=20261104-game-fullscreen1',minesRules,'/world-mines-game.js?v=20261106-playing-back1'],
   saetbyeol:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-saetbyeol-game.js?v=20261106-playing-back1'],
   tour:[session,'/world-tour-game.css?v=20261104-game-fullscreen1','/world-tour-game.js?v=20261104-game-fullscreen1'],
