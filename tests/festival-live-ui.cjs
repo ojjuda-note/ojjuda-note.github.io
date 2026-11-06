@@ -11,7 +11,7 @@ const snapshotDir = '/tmp/festival-live-ui';
 fs.mkdirSync(snapshotDir, { recursive: true });
 
 async function waitLoaded(page) {
-  await page.waitForFunction(() => /^\\d+$/.test(
+  await page.waitForFunction(() => /^[0-9]+$/.test(
     document.getElementById('result-count')?.textContent?.trim() || ''
   ), { timeout: 55000 });
 }
@@ -85,9 +85,9 @@ async function verifyCard(page, id, name) {
     await arcade.goto(origin + '/world.html?game=festival', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await arcade.waitForFunction(() => Array.from(document.querySelectorAll('iframe'))
       .some(frame => frame.src.includes('festival-schedule')), { timeout: 60000 });
-    const festivalFrame = arcade.frame({ url: /games\\/festival-schedule\\/index\\.html/ });
+    const festivalFrame = arcade.frames().find(frame => frame.url().includes('/games/festival-schedule/index.html'));
     assert(festivalFrame, 'Arcade festival iframe not attached');
-    await festivalFrame.waitForFunction(() => /^\\d+$/.test(
+    await festivalFrame.waitForFunction(() => /^[0-9]+$/.test(
       document.getElementById('result-count')?.textContent?.trim() || ''
     ), { timeout: 60000 });
     const arcadeCount = await festivalFrame.locator('[data-event-card]').count();
