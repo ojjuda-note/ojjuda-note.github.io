@@ -17,7 +17,7 @@
   function destination() {
     const allowed = new Set([
       'overview', 'visitors', 'connections', 'users', 'reports', 'feedback', 'errors', 'note-inquiries', 'note-users', 'words', 'note-actions',
-      'settings', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'messages',
+      'settings', 'trash-all', 'trash-accounts', 'trash-cards', 'trash-messages', 'trash-other', 'note', 'referrals', 'activity', 'note-reports', 'photo-stages', 'messages', 'groups',
       'cards', 'risk', 'map', 'notice', 'spam', 'note-cards', 'note-risk', 'note-map', 'note-settings', 'note-spam'
     ]);
     const aliases = { trash: 'trash-all', archive: 'trash-cards', withdrawn: 'trash-accounts', 'note-archive': 'trash-cards', account: 'overview', payment: 'settings', content: 'cards', world: 'cards', support: 'reports', operations: 'notice',

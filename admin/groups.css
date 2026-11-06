@@ -1,0 +1,52 @@
+.agroups { color: #243b32; width: 100%; min-width: 0; }
+.agroups * { box-sizing: border-box; }
+.agroups-heading { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; padding: .5rem 0 1rem; }
+.agroups-heading h3 { margin: 0 0 .4rem; color: #1f4938; font-size: 1.35rem; }
+.agroups-heading p { margin: 0; color: #647369; font-size: .87rem; line-height: 1.6; }
+.agroups button { appearance: none; cursor: pointer; border: 1px solid #c9d6cc; background: #fff; color: #24513d; border-radius: 10px; padding: .65rem .85rem; font-weight: 650; }
+.agroups button:hover { background: #eef5ee; }
+.agroups button:disabled { opacity: .5; cursor: wait; }
+.agroups-search { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; background: #f1f5ef; padding: .9rem; border-radius: 16px; }
+.agroups-search label { font-size: .85rem; color: #52695a; }
+.agroups-search select, .agroups-search input { min-width: 0; border: 1px solid #ced7cc; background: #fff; border-radius: 9px; padding: .68rem; color: #203c2f; }
+.agroups-search input { flex: 1 1 180px; }
+.agroups-search button { background: #2e604a; color: #fff; border-color: #2e604a; }
+.agroups-message { min-height: 2rem; padding: .8rem .15rem; font-size: .84rem; color: #65786c; }
+.agroups-message.error { color: #a43c36; }
+.agroups-list { display: flex; flex-direction: column; gap: 1rem; }
+.agroups-card { min-width: 0; background: #fff; border: 1px solid #dde5db; border-radius: 18px; padding: 1.15rem; box-shadow: 0 2px 10px #1f3c2d0b; }
+.agroups-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; color: #607265; font-size: .82rem; }
+.agroups-meta strong { color: #24513d; font-size: 1rem; }
+.agroups-meta small { margin-left: auto; padding: .3rem .6rem; background: #edf2ec; border-radius: 8px; }
+.agroups-flags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+.agroups-flag { display: inline-block; color: #8c401a; font-weight: 700; background: #fff0db; border-radius: 8px; padding: .3rem .6rem; font-size: .77rem; }
+.agroups-flag.report { background: #fbe8e7; color: #9c3935; }
+.agroups-card h4 { margin: .9rem 0 .45rem; font-size: 1.1rem; overflow-wrap: anywhere; }
+.agroups-body { margin: .65rem 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
+.agroups-muted { color: #69776c; font-size: .85rem; }
+.agroups-attachments { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .8rem; margin: .9rem 0 1rem; }
+.agroups-media { margin: 0; min-width: 0; }
+.agroups-media-frame { display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 170px; background: #edf0ec; border-radius: 12px; }
+.agroups-media-frame img, .agroups-media-frame video { width: 100%; height: auto; max-height: 540px; object-fit: contain; display: block; }
+.agroups-media-frame > span { color: #6a796e; padding: 1rem; font-size: .82rem; }
+.agroups-media figcaption { display: flex; justify-content: space-between; font-size: .75rem; color: #657568; padding: .35rem .2rem; overflow-wrap: anywhere; }
+.agroups-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; border-top: 1px solid #e3eae1; padding-top: .85rem; margin-top: .85rem; }
+.agroups-actions small { color: #7b887e; }
+.agroups-subitems { background: #f6f8f4; padding: .85rem; border-radius: 11px; margin-top: .8rem; }
+.agroups-comment + .agroups-comment { margin-top: .85rem; padding-top: .85rem; border-top: 1px solid #e3e8df; }
+.agroups-comment strong { font-size: .85rem; }
+.agroups-comment time { display: inline-block; color: #829086; font-size: .76rem; margin-left: .45rem; }
+.agroups-comment p { white-space: pre-wrap; overflow-wrap: anywhere; margin: .3rem 0; font-size: .88rem; }
+.agroups-empty { padding: 2rem 1rem; text-align: center; background: #f6f8f5; border-radius: 15px; color: #677a6b; }
+.agroups-more { display: block; width: 100%; margin-top: 1rem; }
+.agroups-more[hidden] { display: none; }
+@media(max-width: 700px) {
+  .agroups-heading { align-items: flex-start; }
+  .agroups-heading button { white-space: nowrap; }
+  .agroups-card { padding: .9rem; }
+  .agroups-attachments { grid-template-columns: 1fr; }
+  .agroups-media-frame { min-height: 110px; }
+  .agroups-search label { display: none; }
+  .agroups-search select { flex: 1 1 130px; }
+  .agroups-search button { flex: 1 1 auto; }
+}
