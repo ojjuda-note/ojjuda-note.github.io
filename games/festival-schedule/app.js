@@ -1,8 +1,8 @@
 import {
   CATEGORIES, SECTIONS, sectionOf, REGIONS, todayKST, parseDate, isoDate, addDays,
   monthRange, periodRange, overlaps, eventStatus, filterEvents,
-  formatRange, createICS, hasEventDates, isDateUndecided
-} from './core.js?v=20261105-festival-three-sections1';
+  formatRange, createICS, hasEventDates, isDateUndecided, attendanceValue, attendanceBand
+} from './core.js?v=20261106-festival-scale1';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'ojjuda.festival.saved.v1';
@@ -11,7 +11,7 @@ const MAP_URL = new URL('./assets/korea-provinces.json', import.meta.url);
 const NATIONAL_BOUNDS = [[33.0, 124.7], [38.65, 131.95]];
 const VIEW_MODES = ['map', 'calendar', 'list'];
 const PERIODS = ['upcoming', 'weekend', 'month', 'undecided', 'all', 'custom'];
-const OWN_QUERY_KEYS = ['q', 'region', 'category', 'period', 'from', 'to', 'date', 'view', 'month', 'saved', 'sort', 'event'];
+const OWN_QUERY_KEYS = ['q', 'region', 'category', 'period', 'from', 'to', 'date', 'view', 'month', 'saved', 'sort', 'scale', 'event'];
 const STATUS_LABELS = { ongoing: '진행 중', upcoming: '예정', undecided: '일정 미정', ended: '종료', cancelled: '취소', postponed: '연기' };
 const paths = {
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/>',
@@ -69,9 +69,11 @@ function readSaved() {
 function readRoute() {
   const p = new URLSearchParams(location.search);
   const selectedDate = validDate(p.get('date')) ? p.get('date') : '';
+  const sort = ['date', 'name', 'region', 'scale_desc', 'scale_asc'].includes(p.get('sort')) ? p.get('sort') : 'date';
+  const scale = ['all', 'under10k', '10kto50k', '50kto200k', '200kto1m', 'over1m', 'unknown'].includes(p.get('scale')) ? p.get('scale') : 'all';
   return {
     query: (p.get('q') || '').slice(0, 300),
-    category: (Object.hasOwn(SECTIONS, p.get('category')) || Object.hasOwn(CATEGORIES, p.get('category'))) ? p.get('category') : 'all',
+    category: scale !== 'all' || ['scale_desc','scale_asc'].includes(sort) ? 'festival' : (Object.hasOwn(SECTIONS, p.get('category')) || Object.hasOwn(CATEGORIES, p.get('category'))) ? p.get('category') : 'all',
     region: REGIONS.includes(p.get('region')) ? p.get('region') : 'all',
     period: PERIODS.includes(p.get('period')) ? p.get('period') : 'upcoming',
     from: validDate(p.get('from')) ? p.get('from') : '',
@@ -80,7 +82,7 @@ function readRoute() {
     view: p.get('period') === 'undecided' && p.get('view') !== 'map' ? 'list' : VIEW_MODES.includes(p.get('view')) ? p.get('view') : 'map',
     month: selectedDate ? selectedDate.slice(0, 7) : validMonth(p.get('month')) ? p.get('month') : today.slice(0, 7),
     savedOnly: p.get('saved') === '1',
-    sort: ['date', 'name', 'region'].includes(p.get('sort')) ? p.get('sort') : 'date'
+    sort, scale
   };
 }
 
@@ -118,6 +120,7 @@ function writeRoute({ push = false } = {}) {
     date: state.selectedDate, view: state.view === 'map' && state.period !== 'undecided' ? '' : state.view,
     month: state.month === today.slice(0, 7) ? '' : state.month,
     saved: state.savedOnly ? '1' : '', sort: state.sort === 'date' ? '' : state.sort,
+    scale: state.scale === 'all' ? '' : state.scale,
     event: currentEventId
   };
   Object.entries(values).forEach(([key, value]) => { if (value) url.searchParams.set(key, value); });
@@ -130,6 +133,10 @@ function writeRoute({ push = false } = {}) {
 }
 function updateState(changes, { fit = false } = {}) {
   state = { ...state, ...changes };
+  if (state.category !== 'festival') {
+    state.scale = 'all';
+    if (state.sort === 'scale_desc' || state.sort === 'scale_asc') state.sort = 'date';
+  }
   if (state.selectedDate && state.view === 'calendar') state.month = state.selectedDate.slice(0, 7);
   syncControls();
   render();
@@ -158,6 +165,8 @@ function syncControls() {
   $('region').value = state.region;
   $('period').value = state.period;
   $('sort').value = state.sort;
+  $('scale').value = state.scale;
+  $('scale-filter').hidden = state.category !== 'festival';
   $('date-from').value = state.from;
   $('date-to').value = state.to;
   $('custom-dates').hidden = state.period !== 'custom';
@@ -205,7 +214,7 @@ function render() {
   $('saved-count').textContent = savedCount;
   $('saved-count').hidden = savedCount === 0;
   const month = Number(state.month.slice(5, 7));
-  $('list-label').textContent = state.period === 'undecided' ? '개최 예정 · 날짜 발표 전' : state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : '가까운 일정부터';
+  $('list-label').textContent = state.period === 'undecided' ? '개최 예정 · 날짜 발표 전' : state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : state.sort === 'scale_desc' ? '방문객 규모 큰 순 · 미확인 마지막' : state.sort === 'scale_asc' ? '방문객 규모 작은 순 · 미확인 마지막' : '가까운 일정부터';
   const undecidedCount = filterEvents(events, { ...state, period: 'undecided', selectedDate: '', from: '', to: '', saved }, today).length;
   $('planning-bar').hidden = undecidedCount === 0 && state.period !== 'undecided';
   $('planning-note').textContent = state.period === 'undecided' ? '날짜가 발표되면 캘린더에 표시해요.' : '날짜 발표를 기다리는 행사도 있어요.';
@@ -235,6 +244,15 @@ function categoryLabel(event) {
   if (sectionOf(event) === 'performance' && event.category === 'local') return '공연·연주회';
   return CATEGORIES[event.category]?.label || '행사';
 }
+function attendanceText(event) {
+  const count = attendanceValue(event);
+  if (count === null) return '방문객 규모 미확인';
+  const a = event.attendance;
+  const quantity = count >= 10000 ? `${(count / 10000).toLocaleString('ko-KR', {maximumFractionDigits: 1})}만 명` : `${count.toLocaleString('ko-KR')}명`;
+  if (a.kind === 'forecast') return `${a.year}년 공식 예상 · 약 ${quantity}`;
+  if (a.kind === 'previous') return `${a.year}년 방문객 · 약 ${quantity} (참고)`;
+  return `${a.year}년 실제 방문객 · 약 ${quantity}`;
+}
 function cardMarkup(event) {
   const category = CATEGORIES[event.category];
   const status = displayStatus(event);
@@ -244,6 +262,7 @@ function cardMarkup(event) {
       <span class="card-topline"><span class="card-category">${escapeHTML(categoryLabel(event))}</span><span class="card-status ${status.key}">${status.label}</span></span>
       <strong class="card-title">${escapeHTML(event.title)}</strong>
       <span class="card-meta"><span class="card-date" title="${escapeHTML(formatRange(event))}">${escapeHTML(compactDateRange(event))}</span><span class="card-location">${escapeHTML([...new Set([event.region, event.city].filter(Boolean))].join(' '))}</span></span>
+      ${sectionOf(event) === 'festival' ? `<span class="card-attendance ${attendanceValue(event) === null ? 'is-unknown' : ''}">${escapeHTML(attendanceText(event))}</span>` : ''}
     </button>
     <button class="card-save ${isSaved ? 'saved' : ''}" data-save-event="${escapeHTML(event.id)}" aria-pressed="${isSaved}" aria-label="${escapeHTML(event.title)} ${isSaved ? '관심 행사에서 해제' : '관심 행사로 저장'}">${icon('bookmark')}</button>
   </article>`;
@@ -256,7 +275,7 @@ function renderList() {
   const archive = state.period !== 'undecided' && state.category === 'festival' && events.some(event => event.category === 'campus' && hasEventDates(event) && event.end < today);
   const reversed = state.period === 'custom' && state.from && state.to && state.from > state.to;
   const title = reversed ? '선택한 날짜를 확인해 주세요' : state.savedOnly ? '저장한 행사가 보이지 않아요' : '조건에 맞는 행사가 없어요';
-  const description = reversed ? '종료일이 시작일보다 앞서 있어요.' : state.savedOnly ? '행사의 책갈피를 눌러 저장하거나, 선택한 검색 조건을 바꿔보세요.' : state.period === 'undecided' ? '이 조건에서 공식 개최 예고가 확인된 일정 미정 행사는 아직 없어요.' : archive ? '대학축제는 주로 학기 중에 열려요. 확인된 지난 축제도 볼 수 있어요.' : '지역·날짜·종류를 바꾸면 다른 즐거움을 찾을 수 있어요.';
+  const description = state.scale !== 'all' ? '해당 규모의 공식 방문객 자료가 아직 없어요. 규모 미확인 또는 다른 구간도 확인해 보세요.' : reversed ? '종료일이 시작일보다 앞서 있어요.' : state.savedOnly ? '행사의 책갈피를 눌러 저장하거나, 선택한 검색 조건을 바꿔보세요.' : state.period === 'undecided' ? '이 조건에서 공식 개최 예고가 확인된 일정 미정 행사는 아직 없어요.' : archive ? '대학축제는 주로 학기 중에 열려요. 확인된 지난 축제도 볼 수 있어요.' : '지역·날짜·종류를 바꾸면 다른 즐거움을 찾을 수 있어요.';
   $('event-list').innerHTML = `<div class="empty-state"><span class="empty-symbol">${icon('calendar')}</span><h3>${title}</h3><p>${description}</p><button data-action="${archive ? 'campus-archive' : 'reset-filters'}">${archive ? '지난 대학축제 보기' : '전체 행사 다시 보기'}</button></div>`;
 }
 function renderCalendar() {
@@ -323,6 +342,7 @@ function renderDetail(event) {
       <dt>${icon('clock')}시간</dt><dd>${escapeHTML(event.scheduleNote || '공식 안내 확인')}</dd>
       <dt>${icon('pin')}장소</dt><dd>${escapeHTML(event.venue || '장소 미정')}${event.address ? `<small>${escapeHTML(event.address)}</small>` : ''}${hasLocation ? `<a class="venue-link" href="${escapeHTML(mapURL)}" target="_blank" rel="noopener noreferrer">네이버 지도에서 보기 ${icon('external-link')}</a>` : '<small>지도 위치가 확인되면 표시해요.</small>'}</dd>
       <dt>${icon('ticket')}요금</dt><dd>${escapeHTML(event.priceNote || '공식 안내 확인')}</dd>
+      ${sectionOf(event) === 'festival' ? `<dt>${icon('people')}방문객 규모</dt><dd>${escapeHTML(attendanceText(event))}${attendanceValue(event) !== null ? `<small>행사 전체 방문객 수 기준 · 이전 회차는 올해 예상치가 아니에요.</small><a class="venue-link" href="${escapeHTML(safeURL(event.attendance.sourceUrl))}" target="_blank" rel="noopener noreferrer">규모 근거: ${escapeHTML(event.attendance.sourceName)} ${icon('external-link')}</a>` : '<small>방문객 수가 공식 발표되면 갱신해요.</small>'}</dd>` : ''}
       <dt>${icon('people')}입장 안내</dt><dd>${escapeHTML(access)}</dd>
     </dl>
     <div class="detail-notice">${event.geoApprox ? '지도는 대표 행사장 부근을 표시해요. ' : ''}방문 전 공식 페이지에서 최신 시간·장소·입장 조건을 확인해 주세요.</div>
@@ -409,7 +429,7 @@ async function shareEvent(id) {
   }
 }
 function resetFilters() {
-  updateState({ query: '', category: 'all', region: 'all', period: 'upcoming', from: '', to: '', selectedDate: '', savedOnly: false, sort: 'date', month: today.slice(0, 7) }, { fit: true });
+  updateState({ query: '', category: 'all', region: 'all', period: 'upcoming', from: '', to: '', selectedDate: '', savedOnly: false, sort: 'date', scale: 'all', month: today.slice(0, 7) }, { fit: true });
 }
 function showCampusArchive() {
   const campus = events.filter(event => event.category === 'campus' && hasEventDates(event)).sort((a, b) => b.end.localeCompare(a.end));
@@ -436,7 +456,11 @@ function bindInteractions() {
   $('search').addEventListener('input', () => updateState({ query: $('search').value, selectedDate: '' }, { fit: true }));
   $('region').addEventListener('change', () => updateState({ region: $('region').value, selectedDate: '' }, { fit: true }));
   $('period').addEventListener('change', () => selectPeriod($('period').value));
-  $('sort').addEventListener('change', () => updateState({ sort: $('sort').value }));
+  $('sort').addEventListener('change', () => {
+    const sort = $('sort').value;
+    updateState({ sort, ...(sort.startsWith('scale_') ? { category: 'festival' } : {}) }, { fit: sort.startsWith('scale_') });
+  });
+  $('scale').addEventListener('change', () => updateState({ category: 'festival', scale: $('scale').value, selectedDate: '' }, { fit: true }));
   if (window.top !== window) {
     document.querySelector('.brand').addEventListener('click', event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -466,7 +490,7 @@ function bindInteractions() {
     if (button.dataset.saveEvent) { toggleSaved(button.dataset.saveEvent); return; }
     if (button.dataset.downloadEvent) { downloadEvent(button.dataset.downloadEvent); return; }
     if (button.dataset.shareEvent) { void shareEvent(button.dataset.shareEvent); return; }
-    if (button.dataset.category) { updateState({ category: button.dataset.category, selectedDate: '' }, { fit: true }); return; }
+    if (button.dataset.category) { updateState({ category: button.dataset.category, selectedDate: '', ...(button.dataset.category === 'festival' ? {} : { scale: 'all' }) }, { fit: true }); return; }
     if (button.dataset.view) {
       const changes = { view: button.dataset.view };
       if (changes.view === 'calendar' && state.period === 'undecided') Object.assign(changes, { period: 'upcoming', selectedDate: '' });

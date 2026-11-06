@@ -46,6 +46,15 @@ for(const e of data.events||[]){
   if(e.locationStatus==='planned'&&!noCoordinates&&!validCoordinates(e))fail(prefix+': planned venue requires valid Korean coordinates or explicit null for both');
  }else fail(prefix+': invalid locationStatus');
  if(typeof e.geoApprox!=='boolean')fail(prefix+': geoApprox must be boolean');
+ if(e.attendance!==undefined){
+  const a=e.attendance;
+  if(e.section!=='festival')fail(prefix+': attendance is festival-only');
+  if(!a||!Number.isSafeInteger(a.count)||a.count<0||!['forecast','previous','actual'].includes(a.kind))fail(prefix+': invalid official attendance value/type');
+  if(!Number.isInteger(a?.year)||a.year<2000||a.year>2100)fail(prefix+': invalid attendance year');
+  if(!hasText(a?.sourceName)||!validURL(a?.sourceUrl)||!validDate(a?.sourceCheckedAt)||a.sourceCheckedAt>data.updatedAt)fail(prefix+': attendance needs dated official source');
+  if(a?.kind==='previous'&&typeof e.start==='string'&&a.year>=Number(e.start.slice(0,4)))fail(prefix+': previous attendance must be older than this event');
+ }
+
  if(!['scheduled','cancelled','postponed'].includes(e.status))fail(prefix+': invalid status');
  if(e.accessNote!=null&&typeof e.accessNote!=='string')fail(prefix+': invalid accessNote');
  if(e.verificationSources!==undefined&&(!Array.isArray(e.verificationSources)||e.verificationSources.some(v=>!validURL(typeof v==='string'?v:v?.url))))fail(prefix+': invalid verificationSources');

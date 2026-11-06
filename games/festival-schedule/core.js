@@ -141,6 +141,22 @@ export function eventStatus(event, today = todayKST()) {
   return 'ongoing';
 }
 
+/** Total visits across a full festival edition, never venue capacity or a live crowd. */
+export function attendanceValue(event) {
+  if (sectionOf(event) !== 'festival') return null;
+  const record = event?.attendance;
+  return record && Number.isSafeInteger(record.count) && record.count >= 0
+    && ['forecast', 'previous', 'actual'].includes(record.kind) ? record.count : null;
+}
+export function attendanceBand(event) {
+  const count = attendanceValue(event);
+  if (count === null) return 'unknown';
+  if (count < 10000) return 'under10k';
+  if (count < 50000) return '10kto50k';
+  if (count < 200000) return '50kto200k';
+  if (count < 1000000) return '200kto1m';
+  return 'over1m';
+}
 function dateOrder(a, b, today) {
   const rank = event => isDateUndecided(event) ? 1 : event.end < today ? 2 : 0;
   const aRank = rank(a), bRank = rank(b);
@@ -157,7 +173,7 @@ export function filterEvents(events, options = {}, fallbackToday) {
   const {
     query = '', category = 'all', region = 'all', period = 'upcoming',
     from = '', to = '', selectedDate = '', savedOnly = false,
-    saved = new Set(), sort = 'date'
+    saved = new Set(), sort = 'date', scale = 'all'
   } = options;
   const today = options.today || fallbackToday || todayKST();
   let range;
@@ -177,6 +193,7 @@ export function filterEvents(events, options = {}, fallbackToday) {
     if (undecided && (!['upcoming', 'all', 'undecided'].includes(period) || selectedDate)) return false;
     if (!undecided && period === 'undecided') return false;
     if (!isAny(category) && event.category !== category && sectionOf(event) !== category) return false;
+    if (!isAny(scale) && (sectionOf(event) !== 'festival' || attendanceBand(event) !== scale)) return false;
     if (!isAny(region) && event.region !== region) return false;
     if (savedOnly && !savedIds.has(event.id)) return false;
     if (!undecided && range && !overlaps(event, range.start, range.end)) return false;
@@ -191,6 +208,11 @@ export function filterEvents(events, options = {}, fallbackToday) {
     return true;
   });
   return result.sort((a, b) => {
+    if (sort === 'scale_desc' || sort === 'scale_asc') {
+      const aCount = attendanceValue(a), bCount = attendanceValue(b);
+      if (aCount === null || bCount === null) return aCount === null && bCount === null ? dateOrder(a, b, today) : aCount === null ? 1 : -1;
+      return (sort === 'scale_desc' ? bCount - aCount : aCount - bCount) || dateOrder(a, b, today);
+    }
     if (sort === 'name') return koCompare(a.title, b.title) || dateOrder(a, b, today);
     if (sort === 'region') return koCompare(a.region, b.region) || dateOrder(a, b, today);
     return dateOrder(a, b, today);

@@ -40,6 +40,23 @@ test('cancellations and postponements override published dates',()=>{
  assert.equal(core.eventStatus(fixture[3],today),'ongoing');
  assert.equal(core.eventStatus(fixture[2],today),'ended');
 });
+test('official festival attendance bands, unknown and size sorting are separate from other sections',()=>{
+ const make=(id,count,kind='previous',section='festival')=>({
+   ...fixture[0],id,title:id,section,category:section==='sports'?'sport':'local',
+   ...(count===null?{}:{attendance:{count,kind,year:2025,sourceUrl:'https://official.test',sourceName:'주최 측',sourceCheckedAt:today}})
+ });
+ const events=[make('medium',70000),make('mega',1200000,'forecast'),make('small',9000),make('unknown',null),make('sport',400000,'forecast','sports')];
+ assert.equal(core.attendanceValue(events[0]),70000);
+ assert.equal(core.attendanceBand(events[0]),'50kto200k');
+ assert.equal(core.attendanceBand(events[1]),'over1m');
+ assert.equal(core.attendanceBand(events[2]),'under10k');
+ assert.equal(core.attendanceBand(events[3]),'unknown');
+ assert.equal(core.attendanceValue(events[4]),null);
+ assert.deepEqual(core.filterEvents(events,{today,period:'all',category:'festival',sort:'scale_desc'}).map(x=>x.id),['mega','medium','small','unknown']);
+ assert.deepEqual(core.filterEvents(events,{today,period:'all',category:'festival',sort:'scale_asc'}).map(x=>x.id),['small','medium','mega','unknown']);
+ assert.deepEqual(core.filterEvents(events,{today,period:'all',category:'festival',scale:'unknown'}).map(x=>x.id),['unknown']);
+ assert.deepEqual(core.filterEvents(events,{today,period:'all',scale:'over1m'}).map(x=>x.id),['mega']);
+});
 test('shared filters intersect dates, category, region, query and favorites',()=>{
  const before=JSON.stringify(fixture);
  const result=core.filterEvents(fixture,{today,period:'weekend',region:'부산',category:'local',query:'부산 축제',savedOnly:true,saved:new Set(['busan-local']),selectedDate:'2026-11-07'});
