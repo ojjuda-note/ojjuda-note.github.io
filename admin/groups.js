@@ -17,7 +17,8 @@
 
   function mount({ container, client, getAdminId, isCurrent, initialState = {} }) {
     let active = true, busy = false, more = false, request = 0;
-    let items = [], filter = initialState.filter || 'all', query = initialState.query || '';
+    const remembered = initialState || {};
+    let items = [], filter = remembered.filter || 'all', query = remembered.query || '';
     const extras = new Map(), urls = new Map(), pending = new Map();
     let watcher = null;
     if (!filters.some(([k]) => k === filter)) filter = 'all';
