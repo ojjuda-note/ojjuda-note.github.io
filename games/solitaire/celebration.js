@@ -1,5 +1,5 @@
 import {SUITS} from './engine.js?v=5';
-import {cardAsset,CARD_RATIO} from './cards.js?v=20261106-solitaire-mutedred1';
+import {cardAsset,CARD_RATIO} from './cards.js?v=20261106-solitaire-red2';
 
 export function playWinAnimation(onComplete){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){onComplete();return ()=>{};}

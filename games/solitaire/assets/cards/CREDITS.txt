@@ -5,7 +5,7 @@ License: CC0 1.0 Universal Public Domain Dedication
 https://creativecommons.org/publicdomain/zero/1.0/
 
 The 52 card faces retain their original shapes and proportions.
-Bright red fills and strokes are changed to muted wine red (#9b3040).
+Bright red fills and strokes are changed to muted wine red (#b23745).
 The custom card back uses one original Ojjuda smile-note icon on a plain white card.
 Brand icon source: https://raw.githubusercontent.com/ojjuda-note/ojjuda-note.github.io/main/favicon.svg
 The CC0 card-face license above does not apply to the Ojjuda brand icon.
