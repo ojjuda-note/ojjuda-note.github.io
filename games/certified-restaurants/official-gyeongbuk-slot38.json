@@ -1,0 +1,170 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "상주시 관광상주 공식 농가맛집·모범음식점 공개 명단",
+  "sourceUrls": [
+    "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+    "https://www.sangju.go.kr/tour/page/15158/100049.tc"
+  ],
+  "sourceScope": "1순환 38회차 영천시·상주시·경산시 조사 중 상주시 공식 음식점 목록 일부 6곳 신규 확인. 기본 목록과 운영 중인 보충 자료 31개에서 이름·주소 중복을 대조함.",
+  "verificationLimit": "공식 관광 목록에 수록된 이름·주소 사실만 확인. 영천시·경산시 전체 누락 검사는 미완료. 정규 가이드 선정 연도, 영업 지속 상태, 실제 가게 위치 좌표는 독립 확인되지 않음. 상주 67곳 전체 수록이라고 주장하지 않음.",
+  "coordinatePolicy": "상호·지점·현주소가 일치하는 공개 위도·경도 근거 없음. lat/lng null, 임의 좌표나 행정 중심점 사용하지 않음.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-sangju-slot38-durak",
+      "name": "두락",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 식산로 112",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 농가맛집 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "sourceName": "상주시 관광상주 · 농가맛집",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-slot38-sandeulga",
+      "name": "산들가家",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 화북면 용화로 10",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 농가맛집 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "sourceName": "상주시 관광상주 · 농가맛집",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-slot38-jongdari-boritdan",
+      "name": "종달이와 보릿단",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 천봉서로 110-8",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 농가맛집 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "sourceName": "상주시 관광상주 · 농가맛집",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-slot38-gaeungung",
+      "name": "개운궁",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 경상대로 2882 (개운동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점 목록",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-slot38-godaegam",
+      "name": "고대감",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 왕산로 203 (남성동, 1층)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점 목록",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-slot38-goryeogarden",
+      "name": "고려가든",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 경상대로 2870 (개운동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점 목록",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 식당 이름과 주소를 확인함. 현 영업 여부·선정 연도·정규 미쉐린/블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
