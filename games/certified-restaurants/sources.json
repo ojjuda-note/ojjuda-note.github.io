@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-06",
+  "checkedAt": "2026-11-07",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3195,
+    "uniqueRestaurants": 3202,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2464,
+      "local-guide": 2471,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2163,
+    "coordinatesMissing": 2170,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1519,7 +1519,7 @@
       "울산": 36,
       "경남": 319,
       "강원": 61,
-      "전북": 208,
+      "전북": 215,
       "경기": 382,
       "인천": 341,
       "제주": 113,
@@ -1531,13 +1531,13 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1882,
+      "한식": 1888,
       "중식": 133,
       "일식": 132,
       "기타": 580,
       "양식": 209,
       "분식": 28,
-      "디저트": 231
+      "디저트": 232
     }
   },
   "coordinateEnrichment": {
@@ -11793,51 +11793,113 @@
         "2026 광주미식주간 블루리본 공동선정 기등록 22곳 중복 없음. 정규 리본 등급 미확인.",
         "상호·지점·현주소와 일치하는 개별 좌표 증거 없어 신규 7곳 위경도 null; 회원 위치/추천 정보 미처리."
       ]
+    },
+    {
+      "id": "2026-11-07-jeonbuk-slot30-seven-tourism",
+      "checkedAt": "2026-11-07",
+      "previousCoverage": {
+        "uniqueRestaurants": 3195,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2464,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2163,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1882,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 28,
+          "디저트": 231
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3202,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2471,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2170,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1888,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 28,
+          "디저트": 232
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-jeonbuk-slot30-jeongeup-jeongwon-hanjeongsik",
+        "local-jeonbuk-slot30-jeongeup-jayeon-irae-ssanghwa",
+        "local-jeonbuk-slot30-namwon-hyeonsikdang",
+        "local-jeonbuk-slot30-namwon-chueohyang",
+        "local-jeonbuk-slot30-namwon-jirisan-chiknaengmyeon",
+        "local-jeonbuk-slot30-gimje-daeun-hanwoo",
+        "local-jeonbuk-slot30-gimje-chongche-bori"
+      ],
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "notes": [
+        "정읍·남원·김제 도 문화관광 공식 검색색인 추천 7곳. 김제시 시청 상세 및 관광공사 공식 자료 일부 교차확인.",
+        "모범음식점 표기는 별도 가이드 사실로만 보존하며 단독 미식 인증 근거로 쓰지 않음.",
+        "투어전북 상세 원문 403으로 직접 접근 불가. 정확 위경도/현재 영업 미확인으로 7곳 lat/lng null, 이전 지점 주소 충돌 2곳은 보류.",
+        "29회차 전주·군산·익산 기록은 이번 확인 시점 main에 없어 미확인 이월."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gwangju-slot28-seven-tourism",
-    "checkedAt": "2026-11-06",
+    "id": "2026-11-07-jeonbuk-slot30-seven-tourism",
+    "checkedAt": "2026-11-07",
     "previousCoverage": {
-      "uniqueRestaurants": 3188,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2457,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2156,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1877,
-        "중식": 133,
-        "일식": 132,
-        "기타": 580,
-        "양식": 209,
-        "분식": 26,
-        "디저트": 231
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3195,
       "providerCounts": {
         "michelin": 237,
@@ -11876,23 +11938,63 @@
         "디저트": 231
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3202,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2471,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2170,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1888,
+        "중식": 133,
+        "일식": 132,
+        "기타": 580,
+        "양식": 209,
+        "분식": 28,
+        "디저트": 232
+      }
+    },
     "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-gwangju-slot28-1183",
-      "local-gwangju-slot28-1304",
-      "local-gwangju-slot28-1205",
-      "local-gwangju-slot28-1291",
-      "local-gwangju-slot28-1301",
-      "local-gwangju-slot28-1184",
-      "local-gwangju-slot28-1111"
+      "local-jeonbuk-slot30-jeongeup-jeongwon-hanjeongsik",
+      "local-jeonbuk-slot30-jeongeup-jayeon-irae-ssanghwa",
+      "local-jeonbuk-slot30-namwon-hyeonsikdang",
+      "local-jeonbuk-slot30-namwon-chueohyang",
+      "local-jeonbuk-slot30-namwon-jirisan-chiknaengmyeon",
+      "local-jeonbuk-slot30-gimje-daeun-hanwoo",
+      "local-jeonbuk-slot30-gimje-chongche-bori"
     ],
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "notes": [
-      "광주 5개구 관광 상세 7곳 대조. 전체 선정·영업 전수 아님.",
-      "2026 광주미식주간 블루리본 공동선정 기등록 22곳 중복 없음. 정규 리본 등급 미확인.",
-      "상호·지점·현주소와 일치하는 개별 좌표 증거 없어 신규 7곳 위경도 null; 회원 위치/추천 정보 미처리."
+      "정읍·남원·김제 도 문화관광 공식 검색색인 추천 7곳. 김제시 시청 상세 및 관광공사 공식 자료 일부 교차확인.",
+      "모범음식점 표기는 별도 가이드 사실로만 보존하며 단독 미식 인증 근거로 쓰지 않음.",
+      "투어전북 상세 원문 403으로 직접 접근 불가. 정확 위경도/현재 영업 미확인으로 7곳 lat/lng null, 이전 지점 주소 충돌 2곳은 보류.",
+      "29회차 전주·군산·익산 기록은 이번 확인 시점 main에 없어 미확인 이월."
     ]
   },
   "latestMapCoverageAudit": {
@@ -12758,6 +12860,28 @@
       "coordinatesPending": 7,
       "operatingStatusVerified": 0,
       "coverageComplete": false
+    },
+    "municipalTourism20261107Slot30": {
+      "checkedAt": "2026-11-07",
+      "recordCount": 7,
+      "sourceFile": "official-jeonbuk-slot30.json",
+      "regionCounts": {
+        "정읍시": 2,
+        "남원시": 3,
+        "김제시": 2
+      },
+      "sourceUrls": [
+        "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+        "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+        "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+        "https://www.gimje.go.kr/tour/index.gimje?menuCd=DOM_000000304001001009",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=30f37e1a-eb76-4a7b-8a37-c1cfce7cc579"
+      ],
+      "sourceType": "provincial_official_tourism_recommendation_list",
+      "verificationLimit": "투어전북 원문 직접 열람은 403으로 차단되어 검색색인 공개 식별 사실만 확인. 최근 영업·정확한 위경도 미검증. 다른 업소·전체 명단 전수 조사 아님.",
+      "operatingStatus": "미확인",
+      "coordinates": "7곳 모두 null",
+      "formalGuideSelection": "미쉐린·정규 블루리본 신규 선정 및 정확한 선정연도 확인 주장 없음"
     }
   },
   "mapCoverageAuditHistory": [
