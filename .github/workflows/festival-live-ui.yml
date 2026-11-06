@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
+      - run: node --check tests/festival-live-ui.cjs
       - run: npx playwright install --with-deps chromium
         working-directory: tests
       - run: node tests/festival-live-ui.cjs
