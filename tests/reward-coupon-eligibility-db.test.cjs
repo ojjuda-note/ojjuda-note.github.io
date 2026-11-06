@@ -5,9 +5,9 @@ const { PGlite } = require('@electric-sql/pglite');
 
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, 'supabase', file), 'utf8');
-const core = read('rewards_core.sql');
-const admin = read('rewards_admin.sql');
-const delivery = read('rewards_message_delivery.sql');
+const core = read('scripts/rewards/rewards_core.sql');
+const admin = read('scripts/rewards/rewards_admin.sql');
+const delivery = read('scripts/rewards/rewards_message_delivery.sql');
 const scoped = read('migrations/20260930231544_scope_world_privacy_helpers.sql');
 const messages = read('migrations/20261020222420_friend_messages.sql');
 const migration = read('migrations/20261031161559_reward_coupon_recipient_eligibility.sql');

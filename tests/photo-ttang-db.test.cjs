@@ -54,6 +54,8 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
   await db.exec(uploadMigration);await db.exec(uploadMigration);
   const restrictions=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_enforce_member_restrictions_and_rpc_access.sql'))),'utf8');
   await db.exec(restrictions.match(/CREATE OR REPLACE FUNCTION ojjuda_photo_internal\.member_allowed\(\)[\s\S]*?\$\$;/)[0]);
+  const policyPerformance=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(x=>x.endsWith('_photo_stage_rls_initplans.sql'))),'utf8');
+  await db.exec(policyPerformance);await db.exec(policyPerformance);
   async function as(actor,sql,params=[],role='authenticated'){
    return db.transaction(async tx=>{await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actor||'']);await tx.exec('set local role '+role);return tx.query(sql,params);});
   }

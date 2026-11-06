@@ -180,8 +180,9 @@ function paintRecord(target,id,game,top,period='이번 달'){
  if(game.rankingBasis==='stage_score'){
   const stage=Number(top.stage);if(Number.isInteger(stage)&&stage>=1&&stage<=220)detail=stage+'단계';
  }else if(game.rankingBasis==='stage_time'){
-  value=window.OjjudaSacheonseongRanking.format(Number(top.score));
-  const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계';
+  const rules=window.OjjudaSacheonseongRanking;
+  value=rules?.format?.(Number(top.score))||'—';
+  const stage=Number(top.stage);if(rules?.game?.(stage))detail=stage+'단계';
  }else if(game.rankingBasis==='difficulty_time'){
   const record=(id==='solitaire'?window.OjjudaSolitaireRules:window.OjjudaMinesRules)?.record(Number(top.score));value=record?.time||'—';detail=record?.name||'';
  }else if(game.rankingBasis==='opponents_streak'){
