@@ -1,0 +1,144 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "충청남도 공식 충남관광 음식점 목록",
+  "sourceUrls": [
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+  ],
+  "sourceScope": "공주 3곳·계룡 2곳의 상호·주소를 공식 관광 목록에서 검증. 논산 기존 등재 4곳과 미확정 선별 후보 비교. 전수조사 아님.",
+  "verificationLimit": "관광 수록은 현행 등급·인증·영업을 증명하지 않으며 명성불고기 백년가게 표기는 관광 페이지 제목상 이력으로만 보존.",
+  "coordinatePolicy": "신규 5곳 lat/lng null: 현재 지점 정확 좌표 독립 확인 전 추정 좌표 금지; 개인 위치 활용하지 않음.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot26-gongju-mimaji",
+      "name": "미마지",
+      "category": "한식",
+      "region": "충남",
+      "district": "공주시",
+      "address": "충청남도 공주시 의당면 돌모루1길 40",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광 음식점 목록의 상호·주소 수록만 확인. 정규 블루리본, 별도 현행 인증 및 현재 영업 여부를 증명하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gongju-myeongseong-bulgogi",
+      "name": "명성불고기",
+      "category": "한식",
+      "region": "충남",
+      "district": "공주시",
+      "address": "충청남도 공주시 웅진로 200 (산성동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록(백년가게 표기)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남 공식 관광목록에서 [백년가게] 제목을 확인. 현재 지정 유지 여부·운영·지정 연도는 별도 미검증."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gongju-donghaewon",
+      "name": "동해원",
+      "category": "중식",
+      "region": "충남",
+      "district": "공주시",
+      "address": "충청남도 공주시 납다리길 22 (소학동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광 음식점 목록의 상호·주소 수록만 확인. 정규 블루리본, 별도 현행 인증 및 현재 영업 여부를 증명하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gyeryong-hwapyeong",
+      "name": "화평",
+      "category": "기타",
+      "region": "충남",
+      "district": "계룡시",
+      "address": "충청남도 계룡시 계룡대로 486",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광 음식점 목록의 상호·주소 수록만 확인. 정규 블루리본, 별도 현행 인증 및 현재 영업 여부를 증명하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gyeryong-myeonok",
+      "name": "계룡면옥",
+      "category": "한식",
+      "region": "충남",
+      "district": "계룡시",
+      "address": "충청남도 계룡시 새터산길 4",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광 음식점 목록의 상호·주소 수록만 확인. 정규 블루리본, 별도 현행 인증 및 현재 영업 여부를 증명하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
