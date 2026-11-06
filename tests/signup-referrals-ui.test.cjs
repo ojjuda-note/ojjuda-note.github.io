@@ -20,7 +20,7 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..'),origin=
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const open=async()=>{await page.goto(origin+'/?auth=signup');await page.locator('#auth-dialog[open]').waitFor();await page.locator('#signup-referrer').waitFor();};
   const fill=async()=>{
-   for(const[id,value]of Object.entries({nickname:'합성회원',email:'referral-fixture@example.invalid',password:'fixture-password','password-confirm':'fixture-password','signup-birth':'000101','signup-code':'3','signup-phone':'01012345678'}))await page.locator('#'+id).fill(value);
+   for(const[id,value]of Object.entries({nickname:'합성회원',email:'referral-fixture@ojjuda.kr',password:'fixture-password','password-confirm':'fixture-password','signup-birth':'000101','signup-code':'3','signup-phone':'01023456789'}))await page.locator('#'+id).fill(value);
    await page.locator('#age-check').check();await page.locator('#policy-check').check();
   };
   const confirm=async()=>{await page.getByRole('button',{name:'민준 추천인으로 선택',exact:true}).click();await page.getByRole('button',{name:'이 사람이 맞아요',exact:true}).click();};

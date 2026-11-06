@@ -7,7 +7,8 @@ const identity = require('../shared/auth/signup-identity.js');
 
 assert.equal(identity.validSignupEmail('member+1@gmail.com'), true);
 assert.equal(identity.validSignupEmail('member@naver.com'), true);
-for (const invalid of ['member@example.com', 'test@mailinator.com', 'name@x..com', 'name@-host.com',
+for (const invalid of ['member@example.com', 'person@example.invalid', 'person@domain.test',
+  'test@mailinator.com', 'name@x..com', 'name@-host.com',
   'name@host.c', '.name@host.com', 'name..last@host.com', 'noaddress']) {
   assert.equal(identity.validSignupEmail(invalid), false, invalid);
 }

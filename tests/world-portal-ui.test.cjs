@@ -75,7 +75,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
     await page.locator('[data-close-dialog]').click();
     await page.locator('#account-actions:not([hidden])').waitFor();
     await page.locator('[data-open-auth="signup"]').click();
-    for (const [id, value] of Object.entries({ nickname: '테스터', email: 'fixture@example.invalid', password: 'fixture-password', 'password-confirm': 'fixture-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '01012345678' })) await page.locator('#' + id).fill(value);
+    for (const [id, value] of Object.entries({ nickname: '테스터', email: 'signup-fixture@ojjuda.kr', password: 'fixture-password', 'password-confirm': 'fixture-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '01023456789' })) await page.locator('#' + id).fill(value);
     await page.locator('#age-check').check();
     await page.locator('#policy-check').check();
     await page.locator('#auth-submit').click();

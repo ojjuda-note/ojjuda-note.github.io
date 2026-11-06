@@ -97,7 +97,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   const emit = async (event, session) => { emitNow(event, session); await flush(); };
   const submit = async () => { await element('auth-form').listeners.submit({ preventDefault() {} }); await flush(); };
   const fill = () => {
-    for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-test@example.invalid', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-1234-5678' })) element(key).value = value;
+    for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
   return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, advance: ms => { clock += ms; } };
@@ -136,7 +136,7 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     assert.equal(app.signups.length, 1);
     const sent = app.signups[0];
     assert.equal(sent.options.emailRedirectTo, `https://ojjuda.kr/?next=${destination}`);
-    assert.equal(sent.options.data.phone_number, '01012345678');
+    assert.equal(sent.options.data.phone_number, '01023456789');
     assert.equal(sent.options.data.birth_yymmdd, '000101');
     assert.equal(sent.options.data.gender_code, '3');
     assert.equal(sent.options.data.age_14_or_older, true);
@@ -151,6 +151,20 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     await app.submit(); assert.equal(app.signups.length, 0, `${missing} must be required`);
     if (missing === 'age-check') assert.equal(app.element('auth-feedback').textContent, '만 14세 이상인지 확인해 주세요.');
     if (missing === 'password-confirm') assert.match(app.element('auth-feedback').textContent, /비밀번호 확인을 입력/);
+  }
+  for (const email of ['person@example.invalid', 'somebody@example.com', 'guest@mailinator.com', 'broken-email']) {
+    const app = setup('?auth=signup'); await app.flush(); app.fill();
+    app.element('email').value = email;
+    await app.submit();
+    assert.equal(app.signups.length, 0, `invalid email must not reach Auth: ${email}`);
+    assert.match(app.element('auth-feedback').textContent, /올바른 이메일/);
+  }
+  for (const phone of ['010-1234-5678', '010-1111-1111', '070-2345-6789']) {
+    const app = setup('?auth=signup'); await app.flush(); app.fill();
+    app.element('signup-phone').value = phone;
+    await app.submit();
+    assert.equal(app.signups.length, 0, `invalid phone must not reach Auth: ${phone}`);
+    assert.match(app.element('auth-feedback').textContent, /휴대전화/);
   }
   for (const destination of ['world', 'note']) {
     const app = setup(`?auth=signup&next=${destination}`); await app.flush(); app.fill();

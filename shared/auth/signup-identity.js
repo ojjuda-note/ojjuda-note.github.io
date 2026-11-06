@@ -42,6 +42,8 @@
       || local.startsWith('.') || local.endsWith('.') || local.includes('..')
       || !/^[a-z0-9!#$%&'*+/=?^_`{|}~.-]+$/i.test(local)
       || !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(domain)) return false;
+    const tld = domain.slice(domain.lastIndexOf('.') + 1);
+    if (['invalid', 'test', 'example', 'localhost', 'local'].includes(tld)) return false;
     return !unusableEmailDomains.some(blocked => domain === blocked || domain.endsWith('.' + blocked));
   }
   function normalizeSignupPhone(value) {
