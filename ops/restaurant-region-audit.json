@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 36,
-    "scheduledAt": "2026-11-07T06:00:00+09:00",
+    "slot": 37,
+    "scheduledAt": "2026-11-07T07:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "scheduled 06:00 Asia/Seoul"
+    "source": "scheduled 07:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -11433,6 +11433,505 @@
         "경상북도 안동시",
         "경상북도 영주시",
         "경상북도 문경시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 37,
+      "scheduledAtKST": "2026-11-07T07:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_with_ten_official_andong_mungyeong_listings",
+      "assignedRegions": [
+        "경상북도 안동시",
+        "경상북도 영주시",
+        "경상북도 문경시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도 안동시",
+          "baseListedCount": 2,
+          "new": 8,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 10,
+          "scope": "안동관광 공식 대표 먹거리 목록에서 상호·도로명 주소 8곳 신규 확인, 기존 2곳의 저장 위치 공란 확인. 경복궁은 안동관광 공개 명단에도 같은 주소 수록.",
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 영주시",
+          "baseListedCount": 40,
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 0,
+          "scope": "기존 영주시 등록 40곳 모두 좌표 보유 확인. 영주시 문화관광 '삼뜨락한정식','자연묵집' 현재 공개 소개와 기존 상호·주소 대조. 영주시 전체 식당 전수조사 아님.",
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 문경시",
+          "baseListedCount": 6,
+          "new": 2,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 8,
+          "scope": "KTO 대한민국 구석구석 상세 2개 식당 이름·행정지역 확인, TourAPI 2026 재게시 주소와 교차 대조. 기존 경북 우수맛집 6곳 좌표 공란 점검. 블루리본/미쉐린 새 등급 직접 확인되지 않음.",
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "안동관광 공식 대표 먹거리 공개 목록",
+        "한국관광공사 대한민국 구석구석 식당 개별 안내 2곳",
+        "공개 관광 API 2026 재게시 주소 대조",
+        "영주시 문화관광 기존 등록 식당 2곳 대조",
+        "기존 경북 으뜸음식점 이력(저장된 URL·주소)"
+      ],
+      "additions": 10,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 18,
+      "locationPendingScope": "현재 회차 안동·영주·문경 기본목록 48곳과 신규 10곳 중 좌표 없음 총 18곳. 실제 전체 지역 사업장 미확인 총수 아님.",
+      "addedRestaurantIds": [
+        "local-andong-slot37-iljik",
+        "local-andong-slot37-kkachigumeong",
+        "local-andong-slot37-50year-jesabab",
+        "local-andong-slot37-yemijeong",
+        "local-andong-slot37-hwaryeon",
+        "local-andong-slot37-nongga-tteul",
+        "local-andong-slot37-memilkkot",
+        "local-andong-slot37-jebiwon",
+        "local-mungyeong-slot37-myeongseong",
+        "local-mungyeong-slot37-donghwawon"
+      ],
+      "existingItemsRechecked": [
+        "금강옥 (경상북도 안동시 강남1길 133-16; 좌표 미등록)",
+        "경복궁 (경상북도 안동시 충효로 4439(정하동); 좌표 미등록)",
+        "우정가든 (경상북도 문경시 문경읍 온천3길 1; 좌표 미등록)",
+        "새재할매집 (경상북도 문경시 문경읍 새재로 922; 좌표 미등록)",
+        "산동네청국장 (경상북도 문경시 매봉6길 3-12; 좌표 미등록)",
+        "남원추어탕 (경상북도 문경시 매종로 56-1; 좌표 미등록)",
+        "마당바위 (경상북도 문경시 문경읍 새재로 898; 좌표 미등록)",
+        "벨라테라 (경상북도 문경시 진남1길 152; 좌표 미등록)",
+        "계림상황삼계탕 (경상북도 영주시 대학로 5-1; 좌표 기존 등록)",
+        "권가네왕갈비탕냉면 (경상북도 영주시 시청로 9; 좌표 기존 등록)",
+        "나드리 (경상북도 영주시 중앙로 89, 2층; 좌표 기존 등록)",
+        "너른마당 (경상북도 영주시 구성로 117; 좌표 기존 등록)",
+        "다성한정식 (경상북도 영주시 선비로119번길 16, 2층; 좌표 기존 등록)",
+        "대지한우식육식당 (경상북도 영주시 선비로 48; 좌표 기존 등록)",
+        "동부식당 (경상북도 영주시 풍기읍 동성로 17, 1층; 좌표 기존 등록)",
+        "동양순대 (경상북도 영주시 중앙로83번길 33; 좌표 기존 등록)",
+        "두부마을 택지2호점 (경상북도 영주시 대동로34번길 2, 2층; 좌표 기존 등록)",
+        "둥이당 (경상북도 영주시 영주로 177; 좌표 기존 등록)",
+        "마당숯불갈비 (경상북도 영주시 번영로173번길 7; 좌표 기존 등록)",
+        "부석사 식당 (경상북도 영주시 부석면 부석사로 317; 좌표 기존 등록)",
+        "산수방식당 (경상북도 영주시 풍기읍 삼가로 140; 좌표 기존 등록)",
+        "삼뜨락한정식 (경상북도 영주시 풍기읍 안풍로 307-12; 좌표 기존 등록)",
+        "서문가든 (경상북도 영주시 풍기읍 인삼로16번길 43; 좌표 기존 등록)",
+        "시장순대 (경상북도 영주시 대동로 142; 좌표 기존 등록)",
+        "아름찬동궁 (경상북도 영주시 번영로 172; 좌표 기존 등록)",
+        "아테네 레스토랑 (경상북도 영주시 영주로231번길 13; 좌표 기존 등록)",
+        "안정신대성인삼숯불 (경상북도 영주시 안정면 신재로 547; 좌표 기존 등록)",
+        "약선당 (경상북도 영주시 봉현면 신재로 887-14; 좌표 기존 등록)",
+        "약선당 영주삼계탕 (경상북도 영주시 봉현면 신재로 831; 좌표 기존 등록)",
+        "영주한우관 (경상북도 영주시 지천로 5; 좌표 기존 등록)",
+        "우정면옥 (경상북도 영주시 창진로 27; 좌표 기존 등록)",
+        "일륜월 (경상북도 영주시 대학로164번길 7-17; 좌표 기존 등록)",
+        "자미가 (경상북도 영주시 부석면 부석사로 311; 좌표 기존 등록)",
+        "자연묵집 (경상북도 영주시 안정면 회헌로 508; 좌표 기존 등록)",
+        "전통묵집식당 (경상북도 영주시 원당로163번길 24; 좌표 기존 등록)",
+        "주식회사영주청정한우 (경상북도 영주시 가흥로2번길 223; 좌표 기존 등록)",
+        "참나무생고기숯불구이 (경상북도 영주시 번영로 173; 좌표 기존 등록)",
+        "천수남원추어탕 (경상북도 영주시 풍기읍 죽령로 1548; 좌표 기존 등록)",
+        "천수식당 (경상북도 영주시 번영로 142; 좌표 기존 등록)",
+        "축산본점식육식당 (경상북도 영주시 번영로173번길 10; 좌표 기존 등록)",
+        "카페담원 (경상북도 영주시 문수면 문수로1406번길 10; 좌표 기존 등록)",
+        "한결청국장 (경상북도 영주시 풍기읍 인삼로 1-1; 좌표 기존 등록)",
+        "현대한정식 (경상북도 영주시 원당로 20; 좌표 기존 등록)",
+        "호원당식당 (경상북도 영주시 풍기읍 전구로 14; 좌표 기존 등록)",
+        "흥부가 (경상북도 영주시 대학로 92; 좌표 기존 등록)",
+        "흥주선비국밥 (경상북도 영주시 대학로 5; 좌표 기존 등록)",
+        "동천식육식당2호점 (경상북도 영주시 신재로12번길 90; 좌표 기존 등록)",
+        "풍기한방삼계탕 (경상북도 영주시 봉현면 소백로 1653; 좌표 기존 등록)"
+      ],
+      "evidenceUrls": [
+        "https://www.tourandong.com/public/sub3/sub1.cshtml",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
+        "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=262&con_uid=676&mnu_uid=10770&pageNo=4&srchCode=0&srchKwd=",
+        "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=262&con_uid=690&mnu_uid=10770&pageNo=2&srchCode=0",
+        "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2832267",
+        "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2841330"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "local-gb-top-2018-3",
+          "name": "금강옥",
+          "currentAddress": "경상북도 안동시 강남1길 133-16",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-3",
+          "name": "경복궁",
+          "currentAddress": "경상북도 안동시 충효로 4439(정하동)",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "안동관광 공식 업소명·도로명주소와 기존 데이터가 일치함. 현재 영업 여부와 동일 주소 공개 좌표는 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-5",
+          "name": "우정가든",
+          "currentAddress": "경상북도 문경시 문경읍 온천3길 1",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-6",
+          "name": "새재할매집",
+          "currentAddress": "경상북도 문경시 문경읍 새재로 922",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-6",
+          "name": "산동네청국장",
+          "currentAddress": "경상북도 문경시 매봉6길 3-12",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-3",
+          "name": "남원추어탕",
+          "currentAddress": "경상북도 문경시 매종로 56-1",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-4",
+          "name": "마당바위",
+          "currentAddress": "경상북도 문경시 문경읍 새재로 898",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-5",
+          "name": "벨라테라",
+          "currentAddress": "경상북도 문경시 진남1길 152",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소 상호·주소·원래 선정 이력과 좌표 공란을 확인함. 원자료 외부 현재 영업 여부 및 주소 일치 지도 좌표는 이번에 재검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·지점·현주소와 일치하는 공개 좌표 미확인. 선정 취소 또는 폐업 추정 불가."
+        },
+        {
+          "restaurantId": "local-andong-slot37-iljik",
+          "name": "일직식당",
+          "currentAddress": "경상북도 안동시 경동로 676",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-kkachigumeong",
+          "name": "헛제사밥까치구멍집",
+          "currentAddress": "경상북도 안동시 석주로 203",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-50year-jesabab",
+          "name": "맛50년헛제사밥",
+          "currentAddress": "경상북도 안동시 석주로 201",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-yemijeong",
+          "name": "예미정",
+          "currentAddress": "경상북도 안동시 옹정골길 111",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-hwaryeon",
+          "name": "안동화련",
+          "currentAddress": "경상북도 안동시 일직면 하나들길 150-23",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-nongga-tteul",
+          "name": "농가맛집뜰",
+          "currentAddress": "경상북도 안동시 와룡면 왼마길 21-10",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-memilkkot",
+          "name": "메밀꽃피면",
+          "currentAddress": "경상북도 안동시 도산면 선성4길 22",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-jebiwon",
+          "name": "제비원식당",
+          "currentAddress": "경상북도 안동시 번영4길 5",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경북 안동시",
+            "안동시",
+            "안동 관광"
+          ],
+          "evidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "addressEvidenceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "evidenceResult": "안동관광 공식 대표 먹거리 목록에서 상호·도로명주소 확인. 좌표·현재 영업은 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-mungyeong-slot37-myeongseong",
+          "name": "명성송어장",
+          "currentAddress": "경상북도 문경시 마성면 동성길 59",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+          "addressEvidenceUrl": "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2832267",
+          "evidenceResult": "한국관광공사 관광 음식점 상세에서 상호·행정지역 확인, 2026 관광정보 재게시의 동일 상호·도로명주소 교차 대조. 현재 영업·공식 사이트에 직접 표시된 도로명주소·공개 좌표는 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        },
+        {
+          "restaurantId": "local-mungyeong-slot37-donghwawon",
+          "name": "동화원산장식당",
+          "currentAddress": "경상북도 문경시 문경읍 새재1길 48",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "경북 문경시",
+            "문경시",
+            "문경 관광"
+          ],
+          "evidenceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
+          "addressEvidenceUrl": "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2841330",
+          "evidenceResult": "한국관광공사 관광 음식점 상세에서 상호·행정지역 확인, 2026 관광정보 재게시의 동일 상호·도로명주소 교차 대조. 현재 영업·공식 사이트에 직접 표시된 도로명주소·공개 좌표는 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 37,
+          "unresolvedReason": "상호·현주소와 연결된 공개 위도·경도 미확인. 추정 금지."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "이번 회차 18곳 위도·경도",
+          "reason": "공식 안내의 상호와 도로명주소는 일부 확인했으나 실제 주소가 일치하는 공개 위경도 근거가 확인되지 않음. 기존 8곳은 경복궁 외 원자료 현행성 추가 대조가 필요.",
+          "action": "lat/lng 미확인 상태 유지, 2순환 37회차에 각 상호·지점·현주소와 공식 지도/업소 자료 재대조."
+        },
+        {
+          "topic": "신규 10곳 가이드 선정·영업 상태",
+          "reason": "지자체·관광공사 소개를 선정/리본 공식 등급으로 간주할 수 없음. 현재 영업·이전 여부 확인 부족.",
+          "action": "관광 식당 수록 이력만 표시하고 별도 인증·영업은 미확정."
+        },
+        {
+          "topic": "영주시 40곳과 지역 전체 누락",
+          "reason": "기존 기록 40곳 좌표는 있으나 전수 영업 확인과 주소 변경 검사는 수행하지 못함.",
+          "action": "공식 영주맛집 전체 사업장 목록과 이후 순환에 대조."
+        },
+        {
+          "topic": "미쉐린·블루리본 정규 선정",
+          "reason": "이번 지역의 공식 신규 식당 명단·등급을 접근 가능한 개별 공개 출처로 검증하지 못함.",
+          "action": "정규 선정을 임의로 추가하거나 삭제하지 않음."
+        }
+      ],
+      "carryOver": [
+        "35회차 구미·김천시 기록이 이전 main 운영 기록에 아직 없어 미확인 이월. 이번 회차로 대체하지 않음.",
+        "29회차 전주·군산·익산 및 31회차 여수·순천·광양의 기록 미확인 이력 유지.",
+        "안동·영주·문경 3시의 기존 전체 선정/폐업/이전 전수 확인은 미완료. 2순환 동일 회차에 이월."
+      ],
+      "nextSlot": 38,
+      "nextRegions": [
+        "경상북도 영천시",
+        "경상북도 상주시",
+        "경상북도 경산시"
       ],
       "notExhaustive": true
     }
