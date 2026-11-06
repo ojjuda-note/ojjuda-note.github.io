@@ -1,0 +1,195 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "경기도 경기둘레길 공식 관광안내 · 모범음식점 분류",
+  "sourceUrls": [
+    "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+    "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+    "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "경기둘레길 이천38·여주34·여주32코스에서 지점명·주소와 '모범 음식점' 분류가 확인된 7곳만 추가. 공식 최신 지정 상태·선정연도 및 현재 영업 미확인.",
+  "restaurants": [
+    {
+      "id": "local-gyeonggi-slot17-icheon-songhak-seolseong",
+      "name": "이천쌀밥송학설성점",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 설성면 서동대로 8207",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-daegu-wangppol",
+      "name": "대구 왕뽈때기",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 세종로79번길 17-9",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-hyeondaeok-wolsong",
+      "name": "현대옥 여주월송점",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 여주남로 80-3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-buttumak",
+      "name": "부뚜막 삼겹살",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 여흥로109번길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-r52",
+      "name": "R52",
+      "category": "기타",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 강변로 52",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-ogamdo",
+      "name": "오감도",
+      "category": "기타",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 강천면 부평로 241-10",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-dokkaebi",
+      "name": "도깨비정원",
+      "category": "기타",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 강천면 부평로 407",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기둘레길 관광안내 · 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032",
+          "sourceName": "경기도 경기둘레길 · 주변 모범음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "경기도 관광안내에 모범 음식점으로 기재된 과거 수록 이력. 공식 재지정과 현재 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
