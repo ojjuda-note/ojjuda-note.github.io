@@ -1,0 +1,215 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "경기관광공사 2023~2024 경기노포 · 이천시 백년가게 공식 명단 · 이천시 관광 음식점 소개",
+  "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+  "completeRegionalCollection": false,
+  "selectionScope": "1순환 17회차 이천·경기 광주·여주시 공개 공식 명단 중 상호·지점·현주소를 교차 확인한 일부만 수록. 백년가게 선정 연도 불명은 연도 미확인으로 표시. 경기노포는 2023·2024 선정 이력, 현재 영업은 별도 미확인.",
+  "restaurants": [
+    {
+      "id": "local-gg-slot17-icheon-jangheung",
+      "name": "장흥회관",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 중리천로 8-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 경기노포 선정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 · 2024-09-06 경기노포 57선 공고",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "해당 연도 공식 선정·지정 이력입니다. 현재 영업과 현재 선정 여부는 별도 확인이 필요합니다."
+        },
+        {
+          "provider": "local-guide",
+          "label": "백년가게 지정 명단(선정 연도 미확인)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+          "sourceName": "이천시청 · 백년가게·백년소공인 지정업체 명단",
+          "verifiedAt": "2026-11-06",
+          "status": "official_designation_list",
+          "selectionCriteria": "공식 명단에 이름을 확인했습니다. 선정 연도 및 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-icheon-masan",
+      "name": "마산아구 이천쌀밥",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 마장면 덕평로882번길 2-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "이천쌀밥",
+        "아구찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2024 경기노포 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 · 2024-09-06 경기노포 57선 공고",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "해당 연도 공식 선정·지정 이력입니다. 현재 영업과 현재 선정 여부는 별도 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.icheon.go.kr/tour/cultureTour/manage/view.do?idx=131&mid=0303000000",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-icheon-yongin",
+      "name": "이천용인닭발본점(이천점)",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 중리천로21번길 11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "닭발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "백년가게 지정 명단(선정 연도 미확인)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+          "sourceName": "이천시청 · 백년가게·백년소공인 지정업체 명단",
+          "verifiedAt": "2026-11-06",
+          "status": "official_designation_list",
+          "selectionCriteria": "공식 명단에 이름을 확인했습니다. 선정 연도 및 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-icheon-pizza",
+      "name": "김성래피자",
+      "category": "양식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 부발읍 경충대로 2091",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "피자"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "백년가게 지정 명단(선정 연도 미확인)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+          "sourceName": "이천시청 · 백년가게·백년소공인 지정업체 명단",
+          "verifiedAt": "2026-11-06",
+          "status": "official_designation_list",
+          "selectionCriteria": "공식 명단에 이름을 확인했습니다. 선정 연도 및 현재 영업 여부는 별도 미확인입니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-icheon-imgeum",
+      "name": "임금님 쌀밥집",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시",
+      "address": "경기도 이천시 신둔면 경충대로 3134",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "이천쌀밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2024 경기노포 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 · 2024-09-06 경기노포 57선 공고",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "해당 연도 공식 선정·지정 이력입니다. 현재 영업과 현재 선정 여부는 별도 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://ygkgyou.tistory.com/2860",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-gwangju-suyang",
+      "name": "수양농장가든",
+      "category": "한식",
+      "region": "경기",
+      "district": "광주시",
+      "address": "경기도 광주시 곤지암읍 경충대로295번길 110-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "흑염소 요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 경기노포 선정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 · 2024-09-06 경기노포 57선 공고",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "해당 연도 공식 선정·지정 이력입니다. 현재 영업과 현재 선정 여부는 별도 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://nearlistblog.co.kr/entry/%EA%B0%95%EB%A0%A5%EC%B6%94%EC%B2%9C%E2%AD%90483-%ED%9D%91%EC%97%BC%EC%86%8C-%EC%88%98%EC%96%91%EB%86%8D%EC%9E%A5%EA%B0%80%EB%93%A0-%ED%9D%91%EC%97%BC%EC%86%8C-%EA%B3%A4%EC%A7%80%EC%95%94%EB%B3%B8%EC%A0%90",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gg-slot17-yeoju-namhan",
+      "name": "남한강송어횟집",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시",
+      "address": "경기도 여주시 세종대왕면 능서로 714",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "송어회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 경기노포 선정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+          "sourceName": "경기관광공사 · 2024-09-06 경기노포 57선 공고",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "해당 연도 공식 선정·지정 이력입니다. 현재 영업과 현재 선정 여부는 별도 확인이 필요합니다."
+        }
+      ],
+      "addressSourceUrl": "https://yjss.or.kr/49/?bmode=view&idx=169110227&q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&t=board",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
