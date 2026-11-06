@@ -2,13 +2,13 @@
   "updatedAt": "2026-11-06",
   "sourceName": "제천시 문화관광 및 충청북도 충북나드리 공식 음식점",
   "sourceUrls": [
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
-    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
     "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
   ],
   "completeRegionalCollection": false,
@@ -33,14 +33,14 @@
           "label": "제천 약채락 공식 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -61,14 +61,14 @@
           "label": "제천 약채락 공식 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -90,14 +90,14 @@
           "label": "제천 약채락 공식 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -119,14 +119,14 @@
           "label": "제천 약채락 공식 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -147,14 +147,14 @@
           "label": "제천 약채락 공식 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -175,14 +175,14 @@
           "label": "제천시 관광 음식점 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
@@ -203,14 +203,14 @@
           "label": "제천시 관광 음식점 소개",
           "year": null,
           "yearType": "listing",
-          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
           "sourceName": "제천시 문화관광 공식 안내",
           "verifiedAt": "2026-11-06",
           "status": "official_restaurant_listing",
           "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
       "addressSourceCheckedAt": "2026-11-06"
     },
     {
