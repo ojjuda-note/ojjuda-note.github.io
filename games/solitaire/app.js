@@ -1,8 +1,8 @@
 import './rules.js?v=20261106-solitaire-ranking1';
 import {SUITS,red,copy,createGame,getPile,canMove,move,draw,isWon,canFinish,legalMoves,suggest,validateState,visibleWasteCount,restoreWastePackets} from './engine.js?v=20261106-solitaire-ranking1';
-import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire-mutedred1';
+import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire-red2';
 import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261106-solitaire-ranking1';
-import {playWinAnimation} from './celebration.js?v=20261106-solitaire-mutedred1';
+import {playWinAnimation} from './celebration.js?v=20261106-solitaire-red2';
 import {overlappingTarget} from './drop-targets.js?v=20261106-solitaire-ranking1';
 import {createViewport} from './viewport.js?v=20261106-solitaire-ranking1';
 const $=s=>document.querySelector(s);
