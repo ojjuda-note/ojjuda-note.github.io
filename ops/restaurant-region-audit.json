@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 15,
-    "scheduledAt": "2026-11-06T09:00:00+09:00",
+    "slot": 17,
+    "scheduledAt": "2026-11-06T11:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "hourly scheduled slot at 09:00 KST, anchored 2026-11-05 23:00 slot5"
+    "source": "scheduled slot 11:00 KST; resumed at 11:30 KST"
   },
   "entries": [
     {
@@ -4385,6 +4385,479 @@
           "notes": "15회차에 이어서 확인한 2026년 수상 이력만 추가, 새로운 회차 생성 없음."
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 17,
+      "scheduledAtKST": "2026-11-06T11:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_7_gyeonggi_official_tourism_listings",
+      "assignedRegions": [
+        "경기도 이천시",
+        "경기도 광주시",
+        "경기도 여주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 이천시",
+          "baseListedCount": 2,
+          "scope": "경기둘레길 이천38 공식 모범음식점 수록 및 기존 이천 2곳 누락 확인",
+          "new": 1,
+          "updated": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 광주시",
+          "baseListedCount": 7,
+          "scope": "광주시 2026 공식 맛지도 안내 및 기존 등록 7곳 분포·좌표 누락 점검. 최신 개별 신규 업소 증빙 미확보로 미등록",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 6,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 여주시",
+          "baseListedCount": 4,
+          "scope": "경기둘레길 여주32·34 공식 모범음식점 수록 및 기존 여주 4곳 누락 확인",
+          "new": 6,
+          "updated": 0,
+          "unknownLocations": 10,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경기도 경기둘레길 이천38·여주32·여주34 공식 주변 모범음식점 안내",
+        "광주시 공식 맛지도 정보 일부",
+        "최신 저장소의 기존 3개 시 13곳 선정·주소 및 위치 누락"
+      ],
+      "additions": 7,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 19,
+      "locationPendingScope": "3개 시 기존 13개 중 12개 좌표 미확인, 신규 7곳 좌표 미확인. 총 19개 재조사 필요. 개별 기존 식당의 실영업/지도 비교는 미완료.",
+      "addedRestaurantIds": [
+        "local-gyeonggi-slot17-icheon-songhak-seolseong",
+        "local-gyeonggi-slot17-yeoju-daegu-wangppol",
+        "local-gyeonggi-slot17-yeoju-hyeondaeok-wolsong",
+        "local-gyeonggi-slot17-yeoju-buttumak",
+        "local-gyeonggi-slot17-yeoju-r52",
+        "local-gyeonggi-slot17-yeoju-ogamdo",
+        "local-gyeonggi-slot17-yeoju-dokkaebi"
+      ],
+      "updatedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+        "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
+        "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032",
+        "https://tour.gjcity.go.kr/tour/contents.do?mId=0104020600"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-north-3385ae2ca7b8e64e",
+          "name": "쇠뫼기",
+          "address": "경기도 광주시 퇴촌면 정영로 580-3",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-85f9cf47a4d23ad2",
+          "name": "한마당",
+          "address": "경기도 광주시 중부면 남한산성로 792번길 17-1",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-65c31355a0225efe",
+          "name": "수와연",
+          "address": "경기도 광주시 남종면 산수로 1680",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-f377b3a72162cd1f",
+          "name": "맛있는 발효밥상궁뜰",
+          "address": "경기도 광주시 도척면 궁평하천길38, 1층",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-23267df802f26d31",
+          "name": "고향매운탕",
+          "address": "경기도 광주시 남종면 산수로 1686",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-e726cf303b81db50",
+          "name": "능골한우가",
+          "address": "경기도 광주시 오포읍 오포로 147",
+          "region": "경기도 광주시",
+          "aliases": [
+            "경기도 광주시",
+            "경기 광주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-f8a12f5024e0c294",
+          "name": "여주본가",
+          "address": "경기도 여주시 가남읍 가남로 270-3",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-440cb79397344616",
+          "name": "강계봉진막국수",
+          "address": "경기도 여주시 대신면 천서리길 26",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-387ca2f6b689f499",
+          "name": "삼구농원",
+          "address": "경기도 여주시 세종로517번길 55-18",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-5f0c1b29dd1761c1",
+          "name": "황제능이버섯 백숙",
+          "address": "경기도 여주시 여양로 428",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-e98312bd00bcc58f",
+          "name": "증포설렁탕",
+          "address": "경기도 이천시 증신로 166",
+          "region": "경기도 이천시",
+          "aliases": [
+            "경기도 이천시",
+            "경기 이천시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-north-293ca80c1b60ad35",
+          "name": "안옥화 음식갤러리",
+          "address": "경기도 이천시 신둔면 석동로 51-12",
+          "region": "경기도 이천시",
+          "aliases": [
+            "경기도 이천시",
+            "경기 이천시"
+          ],
+          "checkedAtKST": null,
+          "sourceUrls": [
+            "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
+            "https://www.gg.go.kr/cmmn/download.do?idx=872666"
+          ],
+          "result": "기존 선정·수록 이력 보유. 이번 회차에는 식당명·지점·주소와 일치하는 확실한 지도 좌표 검증 미완료",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-icheon-songhak-seolseong",
+          "name": "이천쌀밥송학설성점",
+          "address": "경기도 이천시 설성면 서동대로 8207",
+          "region": "경기도 이천시",
+          "aliases": [
+            "경기도 이천시",
+            "경기 이천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-daegu-wangppol",
+          "name": "대구 왕뽈때기",
+          "address": "경기도 여주시 세종로79번길 17-9",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-hyeondaeok-wolsong",
+          "name": "현대옥 여주월송점",
+          "address": "경기도 여주시 여주남로 80-3",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-buttumak",
+          "name": "부뚜막 삼겹살",
+          "address": "경기도 여주시 여흥로109번길 10",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-r52",
+          "name": "R52",
+          "address": "경기도 여주시 강변로 52",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-ogamdo",
+          "name": "오감도",
+          "address": "경기도 여주시 강천면 부평로 241-10",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        },
+        {
+          "id": "local-gyeonggi-slot17-yeoju-dokkaebi",
+          "name": "도깨비정원",
+          "address": "경기도 여주시 강천면 부평로 407",
+          "region": "경기도 여주시",
+          "aliases": [
+            "경기도 여주시",
+            "경기 여주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032"
+          ],
+          "result": "경기도 관광안내의 모범 음식점 수록 명칭·주소 확인. 위치 위경도·현재 영업 미확인",
+          "unconfirmedReason": "식당의 정확한 현재 지점과 일치하는 공개 위치 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 17,
+          "action": "lat/lng null 유지, 공식·지도 교차검증 후 재확인. 현 시점 목록 제외 및 폐업 처리 금지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "광주시 2026 맛지도 신규 업소명·주소",
+          "reason": "공식 페이지의 개별 업소명과 인증 근거 미확보",
+          "action": "다음 광주시 순환 시 먼저 조사"
+        },
+        {
+          "topic": "기존 12곳 및 신규 7곳 위치",
+          "reason": "동일 지점에 대응하는 공개 근거로 좌표 확인 미완료",
+          "action": "임의 좌표·목록 제외 없이 다음 순환 17회차 재조사"
+        },
+        {
+          "topic": "경기둘레길 모범음식점 수록 연도/현 영업",
+          "reason": "수록 당시 표시는 확인했지만 현재 영업과 최신 재지정 여부는 확인 불가",
+          "action": "year null, 공식 관광 이력만 기록"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성(2026-11-06 08:00) 및 16회차 의정부·양주·동두천·포천(2026-11-06 10:00) 운영 감사 기록은 최신 main에 없어 미확인으로 이월",
+        "광주시 한마당의 예전 행정명 중부면과 현 행정명 남한산성면 상호/주소/좌표 대조",
+        "좌표 미확인 19건은 같은 지역 다음 배정에서 우선 재조사",
+        "블루리본/미쉐린 공식 최신 개별 명단 및 폐업·이전 전체 대조 미완료"
+      ],
+      "nextSlot": 18,
+      "nextRegions": [
+        "강원특별자치도 춘천시",
+        "강원특별자치도 원주시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
