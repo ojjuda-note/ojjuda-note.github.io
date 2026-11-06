@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm --prefix tests ci --ignore-scripts
-      - run: node --test games/solitaire/test/*.test.mjs tests/solitaire-arcade.test.cjs tests/game-assets-loading.test.cjs
+      - run: node --test games/solitaire/test/*.test.mjs tests/solitaire-arcade.test.cjs tests/solitaire-ranking-visibility.test.cjs tests/game-assets-loading.test.cjs
       - run: node tests/solitaire-ranking-db.test.cjs
       - run: node tests/monthly-game-rankings-db.test.cjs
       - run: node tests/game-ranking-criteria-dom.test.cjs
