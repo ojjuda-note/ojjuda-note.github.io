@@ -87,7 +87,7 @@ const lifecycle=new AbortController(),lifecycleOptions={signal:lifecycle.signal}
 const active=()=>alive&&host.isConnected&&authorized();
 function updateGames(){
  const next=typeof getGames==='function'?getGames():games;
- const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName,game.maintenance]));
+ const key=JSON.stringify(Object.entries(next).map(([id,game])=>[id,game.name,game.unit,game.rankingBasis,game.baseName,game.difficultyName,game.maintenance,game.pinInRanking]));
  const changed=key!==catalogKey;games=next;catalogKey=key;
  const groups=new Set(Object.keys(games).map(rankGroupFor));
  if(!groups.has(rankCategory))rankCategory=rankGroups.find(group=>groups.has(group.id))?.id||null;
@@ -371,7 +371,9 @@ function rankingCarousel(groups,head,token,items,onChange=()=>{},onResize=()=>{}
     function go(value){if(!active()||token!==request)return;index=(value+pages.length)%pages.length;paint();if(initialLoading)pendingAnchor=state.anchor;schedule(motion.matches?5000:5280);}
     function orderByRecords(){
      if(!active()||token!==request)return;
-     const ordered=[...group.entries].sort(([a],[b])=>Number(!!records.get(b).target?.hasScore)-Number(!!records.get(a).target?.hasScore));
+     const ordered=[...group.entries].sort(([a,ga],[b,gb])=>
+      Number(gb.pinInRanking===true)-Number(ga.pinInRanking===true)||
+      Number(!!records.get(b).target?.hasScore)-Number(!!records.get(a).target?.hasScore));
      pages.forEach((page,i)=>{
       // The last page contains only the remaining games, never earlier rows.
       const rows=ordered.slice(i*capacity,(i+1)*capacity).map(([id])=>rowFor(id));
