@@ -1,0 +1,146 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "경기관광공사 경기둘레길 주변 식당 공식 안내 · 경기도 광주시 2026 경기으뜸맛집 현황",
+  "sourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+  "completeRegionalCollection": false,
+  "selectionScope": "공식 관광정보에 상호와 도로명 주소가 있는 주변 식당 4곳만 보강. 광주시 기존 2곳 행정지명·주소 표기를 2026-10-27 공식 지정 현황과 대조하여 정정. 관광 소개와 미식 심사 인증은 구별.",
+  "restaurants": [
+    {
+      "id": "local-gyeonggi-slot17-icheon-taeheung",
+      "name": "태흥칡냉면",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시 장호원읍",
+      "address": "경기도 이천시 장호원읍 장터로67번길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칡냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기관광공사 여행길 주변 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+          "sourceName": "경기관광공사 경기둘레길 38코스 · 주변 식당",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기관광공사 경기둘레길 주변 식당 안내에 이름과 주소가 게재됨. 미쉐린·블루리본 등급·심사 선정이나 현재 영업 확인으로 해석하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-icheon-pungcheon",
+      "name": "풍천숯불민물장어",
+      "category": "한식",
+      "region": "경기",
+      "district": "이천시 장호원읍",
+      "address": "경기도 이천시 장호원읍 서동대로8965번길 52",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물장어"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기관광공사 여행길 주변 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+          "sourceName": "경기관광공사 경기둘레길 38코스 · 주변 식당",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기관광공사 경기둘레길 주변 식당 안내에 이름과 주소가 게재됨. 미쉐린·블루리본 등급·심사 선정이나 현재 영업 확인으로 해석하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-yukil",
+      "name": "육일한우거지장국밥",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시 강천면",
+      "address": "경기도 여주시 강천면 강문로 222",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우거지장국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기관광공사 여행길 주변 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10033",
+          "sourceName": "경기관광공사 경기둘레길 33코스 · 주변 식당",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기관광공사 경기둘레길 주변 식당 안내에 이름과 주소가 게재됨. 미쉐린·블루리본 등급·심사 선정이나 현재 영업 확인으로 해석하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10033",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gyeonggi-slot17-yeoju-namhangang",
+      "name": "남한강매운탕",
+      "category": "한식",
+      "region": "경기",
+      "district": "여주시 강천면",
+      "address": "경기도 여주시 강천면 강문로 254",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기관광공사 여행길 주변 음식점 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10033",
+          "sourceName": "경기관광공사 경기둘레길 33코스 · 주변 식당",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기관광공사 경기둘레길 주변 식당 안내에 이름과 주소가 게재됨. 미쉐린·블루리본 등급·심사 선정이나 현재 영업 확인으로 해석하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10033",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ],
+  "corrections": [
+    {
+      "id": "local-north-85f9cf47a4d23ad2",
+      "expectedName": "한마당",
+      "oldAddress": "경기도 광주시 중부면 남한산성로 792번길 17-1",
+      "newAddress": "경기도 광주시 남한산성면 남한산성로792번길 17-1",
+      "evidenceUrl": "https://www.gjcity.go.kr/tour/contents.do?mId=0104020300",
+      "checkedAt": "2026-11-06",
+      "reason": "광주시 경기으뜸맛집 공식 현황의 현행 남한산성면 행정주소에 맞춤. 지점·ID·선정 이력 보존."
+    },
+    {
+      "id": "local-north-e726cf303b81db50",
+      "expectedName": "능골한우가",
+      "oldAddress": "경기도 광주시 오포읍 오포로 147",
+      "newAddress": "경기도 광주시 오포로 147",
+      "evidenceUrl": "https://www.gjcity.go.kr/tour/contents.do?mId=0104020300",
+      "checkedAt": "2026-11-06",
+      "reason": "광주시 경기으뜸맛집 공식 현황의 오포로 147 표기로 행정주소 정정. 지점·ID·선정 이력 보존."
+    }
+  ],
+  "notes": [
+    "새 업소 네 곳의 위경도를 확인할 수 있는 일치 근거가 없어 모두 null. 공식 관광 목록에 등장했다는 사실만 기록하고 현재 영업은 별도로 검증하지 않음.",
+    "기존 광주시 2곳의 도로명/행정주소만 수정하고 기존 선정 등급·이력·좌표·저장 ID는 보존.",
+    "광주시는 경기도 광주시이며 광주광역시가 아님. 공식 경기으뜸맛집 5곳과 기존 항목을 대조했으며 전수 영업조사는 미완료."
+  ]
+}
