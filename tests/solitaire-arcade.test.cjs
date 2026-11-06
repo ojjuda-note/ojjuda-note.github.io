@@ -134,6 +134,29 @@ test('celebration can restart before images load and cannot trap the board on re
   }
 });
 
+test('failed card images retain a readable face, retry finitely, and recover after reconnection',async()=>{
+  const dom=new JSDOM('<div id="card"></div>',{url:'https://ojjuda.kr/games/solitaire/',runScripts:'outside-only'}),w=dom.window;
+  const timers=new Map();let serial=0;
+  w.setTimeout=fn=>{const id=++serial;timers.set(id,fn);return id;};w.clearTimeout=id=>timers.delete(id);
+  w.eval(read('games/solitaire/card-fallback.js').replace(/export /g,''));
+  w.eval(read('games/solitaire/cards.js').replace(/^import .*;\n/gm,'').replace(/export /g,'').replaceAll('import.meta.url',"'https://ojjuda.kr/games/solitaire/cards.js'"));
+  const host=w.document.querySelector('#card');host.innerHTML=w.cardFace({suit:'hearts',rank:3,up:true});
+  const image=host.querySelector('img');assert.equal(image.hidden,true);assert.match(host.querySelector('svg').textContent,/3/);assert.match(host.querySelector('svg').textContent,/♥/);
+  const fail=()=>image.dispatchEvent(new w.Event('error'));
+  const flush=()=>{const callbacks=[...timers.values()];timers.clear();callbacks.forEach(fn=>fn());};
+  for(let i=1;i<=3;i++){fail();assert.equal(image.hidden,true);assert.equal(timers.size,1);flush();assert.match(image.src,new RegExp('retry=.*-'+i+'$'));}
+  fail();assert.equal(timers.size,0,'failure cannot start an unbounded request loop');assert.equal(image.dataset.cardImage,'failed');
+  w.dispatchEvent(new w.Event('online'));assert.equal(timers.size,1);flush();
+  image.dispatchEvent(new w.Event('load'));assert.equal(image.hidden,false);assert.equal(image.dataset.cardImage,'ready');
+  fail();assert.equal(image.hidden,true);assert.equal(timers.size,1);image.dispatchEvent(new w.Event('load'));assert.equal(timers.size,0,'late success cancels a scheduled retry');
+  host.innerHTML=w.cardFace({up:false});assert.equal(host.querySelector('svg text'),null,'a fallback back never reveals a card');
+  image.dispatchEvent(new w.Event('error'));assert.equal(timers.size,0,'removed cards do not schedule more work');
+  const warmed=w.document.createElement('div');warmed.innerHTML=w.cardFace({suit:'diamonds',rank:3,up:true});
+  const warmImage=warmed.querySelector('img');Object.defineProperties(warmImage,{complete:{value:true},naturalWidth:{value:240}});host.append(warmed);
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(warmImage.hidden,false,'a card loaded off-board shows its original artwork when attached');
+  dom.window.close();
+});
+
 test('guest client accepts solitaire and uses the same run ID for save and monthly ranking',async()=>{
   const dom=new JSDOM('',{url:'https://ojjuda.kr/',runScripts:'outside-only'}),w=dom.window,calls=[];
   w.OJJUDA_CONFIG={supabaseUrl:'https://project.example',supabaseKey:'public-key'};
