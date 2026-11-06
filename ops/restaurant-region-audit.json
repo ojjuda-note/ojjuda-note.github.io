@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 22,
-    "scheduledAt": "2026-11-06T16:00:00+09:00",
+    "slot": 23,
+    "scheduledAt": "2026-11-06T17:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "2026-11-06 16:00 KST scheduled execution (review initiated later; anchor scheduled time preserved)"
+    "source": "scheduled 17:00 KST; original scheduled slot used"
   },
   "entries": [
     {
@@ -5709,6 +5709,142 @@
           ]
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 23,
+      "scheduledAtKST": "2026-11-06T17:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_3_provincial_listings_and_1_verified_coordinate",
+      "assignedRegions": [
+        "충청북도 청주시 전역(상당구·서원구·흥덕구·청원구·읍면동 포함)"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청북도 청주시",
+          "baseListedCount": 59,
+          "previousLocationMissing": 16,
+          "scope": "기등록 청주 59곳 중 좌표 미등록 16곳 우선 목록 추출, 그중 화이트크리스마스·신송보리밥·토담골 주소/지도 공개 근거 일부 재검색. 도청 공식 홍보 식당 세 곳과 중복 대조, 공공데이터 좌표 하나 확보. 청주시의 임산부 할인 음식점 명단은 맛집 선정과 다른 사업이므로 새 인증 근거로 사용하지 않음. 4개 구 및 읍면동 전체 업소 전수 확인은 아님.",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 1,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "충청북도 공식 블로그 재게시 웰로 효자촌묵집·콩가내·25시가든",
+        "충북 밥맛좋은집 기존 2026 안내 이력 대비 상호 중복 대조",
+        "공공데이터 원본을 재게시한 25시가든 공개 등록정보 위경도·상호·도로명 일치",
+        "기등록 청주 위치 미등록 16곳 점검표: 세 업소 일부 추가 검색, 나머지 후속 배정 이월",
+        "청주시 흥덕구 임산부 할인 업소 명단은 인증맛집 신규 근거로 사용하지 않음"
+      ],
+      "additions": 3,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 1,
+      "locationHidden": 0,
+      "locationPending": 18,
+      "locationPendingScope": "이전 청주시 16곳 좌표 미등록 + 신규 효자촌묵집·콩가내 2곳. 전수 개별 재확인 완료로 간주하지 않음.",
+      "addedRestaurantIds": [
+        "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+        "local-chungbuk-slot23-cheongju-kongganae",
+        "local-chungbuk-slot23-cheongju-25si-garden"
+      ],
+      "evidenceUrls": [
+        "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+        "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+        "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29",
+        "https://fmr.purpleo.co.kr/view/29170",
+        "https://www.cheongju.go.kr/www/contents.do?key=24151",
+        "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-2026-national-whitechristmas",
+          "name": "화이트크리스마스",
+          "address": "충북 청주시 흥덕구 비하로42번길 2, 2층",
+          "region": "충북 청주시 흥덕구",
+          "aliases": [
+            "충북 청주시 흥덕구",
+            "화이트크리스마스"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335"
+          ],
+          "result": "등급·주소 기존 기록 확인. 일치하는 개별 업소 위경도는 이번 범위에서 확인하지 못함",
+          "unconfirmedReason": "정확 일치하는 공개 식당 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 23,
+          "action": "원래 ID와 좌표 null 유지"
+        },
+        {
+          "id": "local-north-6fc7fcc7385fe80c",
+          "name": "신송보리밥",
+          "address": "충청북도 청주시 상당구 남사로140번길 67",
+          "region": "충북 청주시 상당구",
+          "aliases": [
+            "충북 청주 상당구",
+            "신송보리밥"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://opengo.kr/5601fb800e887edf2cf51a64"
+          ],
+          "result": "공개 인허가자료에서 상호·도로명 일치; 정확 식당 좌표 미검증",
+          "unconfirmedReason": "공개 인허가정보에 일치 개별 식당 좌표 없음",
+          "recheckCycle": 2,
+          "recheckSlot": 23,
+          "action": "좌표 null 유지, 다음 순환 지도 재확인"
+        },
+        {
+          "id": "local-north-6f3420ac800ebaa9",
+          "name": "토담골",
+          "address": "충청북도 청주시 상당구 문의면 문의시내로 21-1",
+          "region": "충북 청주시 상당구",
+          "aliases": [
+            "충북 청주 상당구 문의면",
+            "토담골"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://hut.purpleo.kr/article/3175"
+          ],
+          "result": "식당 상호·주소 확인. 공개 경위도는 건물 기반일 가능성을 배제하지 못해 식당 핀으로 채택 보류",
+          "unconfirmedReason": "실제 업소 지도 핀 좌표 독립 검증 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 23,
+          "action": "좌표 null 유지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "기등록 청주 나머지 좌표 미등록",
+          "reason": "전체 16곳 중 일부만 개별 출처 확인, 다수 개별 미재확인",
+          "action": "다음 청주 회차에 미확인 16곳 우선 대조"
+        },
+        {
+          "topic": "효자촌묵집·콩가내 정확 좌표",
+          "reason": "원본 상호·주소와 개별 지도 위치 일치 좌표 근거 미확보",
+          "action": "lat/lng null 유지, 2순환 청주에서 우선 재확인"
+        },
+        {
+          "topic": "25시가든 시군 위생사업과 도 밥맛좋은집 사업 구별",
+          "reason": "공개 모범음식점 자료에는 과거 지정취소가 있지만 충북 공식 밥맛좋은집 소개는 별개 사업",
+          "action": "모범음식점 현행 지정으로 표시 금지, 밥맛좋은집 이력만 유지"
+        }
+      ],
+      "carryOver": [
+        "이전 14·16회차 누락 기록은 이월 상태 유지",
+        "청주 전체 영업상태 및 블루리본 정규 리본 명단 대조는 완료되지 않음",
+        "청주 기존 위치 미등록 16곳과 신규 2곳을 다음 지역 순환에서 다시 확인"
+      ],
+      "nextSlot": 24,
+      "nextRegions": [
+        "충청북도 충주시",
+        "충청북도 제천시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
