@@ -1,10 +1,11 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-festival-3hour1';
+ const revision='20261106-groups1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
+  group:'1.0.0',
   byeolcheonji:'1.0.4',
   festival:'1.4.2',
   restaurants:'1.9.29',
@@ -37,6 +38,7 @@
  const restaurantRatings=['/restaurant-ratings.css?v=20261103-restaurants-ratings1','/restaurant-ratings.js?v=20261103-restaurants-ratings1'];
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
+  group:[],
   byeolcheonji:[],
   festival:['/world-festival-schedule.css?v=20261106-festival-3hour1','/world-festival-schedule.js?v=20261106-festival-3hour1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261104-agit-home1','/world-restaurant-guide.js?v=20261106-daily-menu1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261106-arcade-return1'],
