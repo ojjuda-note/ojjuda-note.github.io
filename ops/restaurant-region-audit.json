@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 32,
-    "scheduledAt": "2026-11-07T02:00:00+09:00",
+    "slot": 33,
+    "scheduledAt": "2026-11-07T03:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "scheduled 02:00 Asia/Seoul"
+    "source": "scheduled 03:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -8651,6 +8651,1244 @@
         "대구광역시 동구",
         "대구광역시 수성구"
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 33,
+      "scheduledAtKST": "2026-11-07T03:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_with_five_official_daegu_listings",
+      "assignedRegions": [
+        "대구광역시 중구",
+        "대구광역시 동구",
+        "대구광역시 수성구"
+      ],
+      "regionAudit": [
+        {
+          "region": "대구광역시 중구",
+          "baseListedCount": 24,
+          "scope": "기존 카탈로그 확인, 대구푸드 구군별인증업소·개별 정보 공개 근거 일부 대조 및 위치누락 목록 이월; 전수조사 아님",
+          "new": 3,
+          "updated": 0,
+          "locationPending": 26,
+          "notExhaustive": true
+        },
+        {
+          "region": "대구광역시 동구",
+          "baseListedCount": 13,
+          "scope": "기존 카탈로그 확인, 대구푸드 구군별인증업소·개별 정보 공개 근거 일부 대조 및 위치누락 목록 이월; 전수조사 아님",
+          "new": 1,
+          "updated": 0,
+          "locationPending": 14,
+          "notExhaustive": true
+        },
+        {
+          "region": "대구광역시 수성구",
+          "baseListedCount": 16,
+          "scope": "기존 카탈로그 확인, 대구푸드 구군별인증업소·개별 정보 공개 근거 일부 대조 및 위치누락 목록 이월; 전수조사 아님",
+          "new": 1,
+          "updated": 0,
+          "locationPending": 17,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "대구광역시 대구푸드 구군별인증업소 905개 안내 중 중구·동구·수성구 일부 확인",
+        "대구푸드 개별 음식점 공식 상호·지점·도로명주소(동아식당·원조할매곰탕집·수복찜갈비·공산한우식육식당·삼수장어 신천동로점)",
+        "대구푸드 2026 음식점 E-Book 기존 수록 이력(기존 기록과 중복 확인, 새 연도 추정 금지)",
+        "블루리본 공식 전체 지도 안내, 이 회차 정규 신규 1~3리본 업체 검증은 미완료"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 57,
+      "addedRestaurantIds": [
+        "local-daegu-slot33-dongasikdang",
+        "local-daegu-slot33-halmae-gomtang",
+        "local-daegu-slot33-subok-jjimgalbi",
+        "local-daegu-slot33-gongsan-hanwoo",
+        "local-daegu-slot33-samsu-jangeo"
+      ],
+      "existingItemsRechecked": [
+        "왕거미 (중구)",
+        "신짜오 본점 (수성구)",
+        "동봉 (수성구)"
+      ],
+      "evidenceUrls": [
+        "https://www.daegufood.go.kr/kor/food/food.asp?snm=9",
+        "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+        "https://daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1783&snm=9&ta=5&tc=L1-4",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=950&snm=9&sw=%23%EB%8C%80%EA%B5%AC%EC%8B%9C%EB%AF%BC%EC%9A%B4%EB%8F%99%EC%9E%A5&tc=L1-2",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=259&snm=9&sw=%23wifi%EA%B0%80%EB%8A%A5",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1006&snm=9&sw=%23wifi%EA%B0%80%EB%8A%A5",
+        "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=4&idx=485&snm=22&ta=6"
+      ],
+      "locationBacklog": [
+        {
+          "id": "blue-add-꼬꼬하우스",
+          "name": "꼬꼬하우스",
+          "address": "대구 동구 아양로9길 10",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=6f1616fd-1b06-4d7f-b564-16440db52a93"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-2026-national-500911",
+          "name": "오공공구일일",
+          "address": "대구 수성구 동원로1길 34",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.ypbooks.co.kr/books/202605181049540708",
+            "https://www.jobkorea.co.kr/Recruit/GI_Read/49493781"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-146",
+          "name": "신짜오 본점",
+          "address": "대구광역시 수성구 수성못6길 20-6 (두산동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food2.asp?gotoPage=7&idx=146&snm=15",
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-337",
+          "name": "미성복어불고기",
+          "address": "대구광역시 수성구 들안로 87 (상동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=74&idx=337&snm=21",
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-1865",
+          "name": "포안(PHOANH)",
+          "address": "대구광역시 중구 동덕로14길 39 (대봉동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=6&idx=1865&snm=21&ta=5"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-gohyang-chabatgol",
+          "name": "고향차밭골",
+          "address": "대구광역시 동구 팔공산로 339",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/mag.asp?snm=156"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-189",
+          "name": "상주식당",
+          "address": "대구광역시 중구 국채보상로 598-1 (동성로2가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=1&idx=189&snm=20"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "blue-daegufood-171",
+          "name": "너구리",
+          "address": "대구광역시 중구 중앙대로 439 (향촌동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=21&idx=171&snm=18"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-1b41f5ffbb125176",
+          "name": "왕거미",
+          "address": "대구광역시 중구 국채보상로 696-8(동인동4가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-720844105929bcc3",
+          "name": "극동구이",
+          "address": "대구광역시 수성구 들안로 1(상동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-83a6d4b609311a11",
+          "name": "봉산찜갈비",
+          "address": "대구광역시 중구 동덕로36길 9-18(동인동1가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-3408778ec31ef6d1",
+          "name": "미성당",
+          "address": "대구광역시 중구 명덕로 93(남산동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-957c44be2e8313aa",
+          "name": "남문납작만두",
+          "address": "대구광역시 중구 명륜로 64-1(남산동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-e411e4a68e85e07c",
+          "name": "중화반점",
+          "address": "대구광역시 중구 중앙대로 406-12(남일동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-1b2bd5be64a42550",
+          "name": "리안",
+          "address": "대구광역시 수성구 교학로4길 48(만촌동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-df644170ac596958",
+          "name": "부자숯불막창",
+          "address": "대구광역시 동구 평화로 6-1(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-8349633d88c91f26",
+          "name": "동봉",
+          "address": "대구광역시 수성구 범어천로128(범어동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-4f396acc0fab892c",
+          "name": "신암태양칼국수",
+          "address": "대구광역시 동구 신성로 63(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-7822dc436cd41bce",
+          "name": "옛집식당",
+          "address": "대구광역시 중구 달성공원로6길 48-7(시장북로)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-d4284460dca1debd",
+          "name": "국일따로국밥",
+          "address": "대구광역시 중구 국채보상로 571(전동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-9d7fd5c718b64fbe",
+          "name": "교동따로식당",
+          "address": "대구광역시 중구 경상감영1길 11(포정동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-d117eb979d07d829",
+          "name": "해금강",
+          "address": "대구광역시 동구 신암남로 133(신암4동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-bbaa85b43c47295f",
+          "name": "야자수지붕 대구교동본점",
+          "address": "대구광역시 중구 경상감영길 229(동문동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-be806aceb4842168",
+          "name": "하이타이",
+          "address": "대구광역시 중구 공평로 53(공평동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-0dea8eaa8fa1ed41",
+          "name": "낫샤바샙",
+          "address": "대구광역시 동구 동부로30길 27(신천동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-abc63ae183d1f3d0",
+          "name": "인투",
+          "address": "대구광역시 중구 동성로4길 95(공평동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-ab47e8299d8b0f0e",
+          "name": "삐에뜨라",
+          "address": "대구광역시 중구 약령길 45(남성로)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-232983f604553247",
+          "name": "멘타와이",
+          "address": "대구광역시 중구 동덕로26길 121(삼덕동3가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-54f38a39a2ff2d2c",
+          "name": "하롱베이",
+          "address": "대구광역시 수성구 무학로 97(두산동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-ea243be8a3f49931",
+          "name": "인화반점",
+          "address": "대구광역시 수성구 국채보상로 914(범어동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-02e0c8e2957cf30a",
+          "name": "7전8기8번식당",
+          "address": "대구광역시 중구 서성로13길 8 (서성로1가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-44dc7d8bed29bb4f",
+          "name": "대박국밥집",
+          "address": "대구광역시 동구 해동로3길 10(지저동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-a40296bcd01a727a",
+          "name": "K2 24시해장국식당",
+          "address": "대구광역시 동구 아양로 341(입석동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-99f5c6199ed14eca",
+          "name": "무학골가마솥돼지국밥",
+          "address": "대구광역시 동구 신암남로 145(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-1807cbfabd3fa804",
+          "name": "벙글벙글식당",
+          "address": "대구광역시 수성구 지범로39길 11-12(범물동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-3077638d33041a94",
+          "name": "2호집돼지국밥",
+          "address": "대구광역시 수성구 동대구로57길 6-18(범어동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-66a4fe4d6e12acdf",
+          "name": "지산골가마솥국밥",
+          "address": "대구광역시 수성구 수성로 232(중동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-21c21b75bd5c9498",
+          "name": "미림",
+          "address": "대구광역시 중구 국채보상로93길 6(대신동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-7b62a62f0d907705",
+          "name": "합천칼국수",
+          "address": "대구광역시 중구 큰장로28길 23(대신동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-6a09848bb9701d99",
+          "name": "방천가족족발",
+          "address": "대구광역시 중구 달구벌대로446길 7-9(대봉동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-602655b6f6cae56f",
+          "name": "똥집을잘아는남자",
+          "address": "대구광역시 동구 아양로9길 3(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-f1087b0550d9d239",
+          "name": "대발이분식",
+          "address": "대구광역시 동구 아양로37길 15(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-8954d3d5a010eb3d",
+          "name": "대성돼지국밥",
+          "address": "대구광역시 수성구 용학로42길 9(지산동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-bdd71136838fc8a2",
+          "name": "고인돌",
+          "address": "대구광역시 수성구 신매로16길 56-3(신매동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-8a95642e3feeca58",
+          "name": "미도다방",
+          "address": "대구광역시 중구 진골목길 14 (종로2가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-f34087fcf16e4927",
+          "name": "카이스샌드위치샵",
+          "address": "대구광역시 중구 봉산문화길 49(봉산동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-53f39fdfe748382a",
+          "name": "빕커피 로스터리",
+          "address": "대구광역시 중구 이천로 229-7(봉산동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-09b9e52808bf95a4",
+          "name": "낙트리(NHAC TREE)",
+          "address": "대구광역시 동구 아양로7길 71(신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-8615cd142aa9bea4",
+          "name": "인스퍼레이션디",
+          "address": "대구광역시 동구 효동로6길 57(효목동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-4ce6bd6156abff24",
+          "name": "라봉봉제과점",
+          "address": "대구광역시 수성구 지범로21길 10(지산동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-e8626a1e2a42562e",
+          "name": "데일리호스브라운",
+          "address": "대구광역시 수성구 천을로 191(매호동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-guide-51538e414e677919",
+          "name": "웨이비커피",
+          "address": "대구광역시 수성구 화랑로 74(만촌동)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/sub/d_book.asp?snm=161",
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-slot33-dongasikdang",
+          "name": "동아식당",
+          "address": "대구광역시 중구 국채보상로125길 14 (공평동)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1783&snm=9&ta=5&tc=L1-4"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-slot33-halmae-gomtang",
+          "name": "원조할매곰탕집",
+          "address": "대구광역시 중구 종로 103 (태평로3가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=950&snm=9&sw=%23%EB%8C%80%EA%B5%AC%EC%8B%9C%EB%AF%BC%EC%9A%B4%EB%8F%99%EC%9E%A5&tc=L1-2"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-slot33-subok-jjimgalbi",
+          "name": "수복찜갈비",
+          "address": "대구광역시 중구 동덕로38길 15 (동인동1가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구 중구",
+            "대구광역시 중구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=259&snm=9&sw=%23wifi%EA%B0%80%EB%8A%A5"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-slot33-gongsan-hanwoo",
+          "name": "공산한우식육식당",
+          "address": "대구광역시 동구 신암남로 162-1 (신암동)",
+          "region": "대구광역시 동구",
+          "searchAliases": [
+            "대구 동구",
+            "대구광역시 동구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1006&snm=9&sw=%23wifi%EA%B0%80%EB%8A%A5"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-daegu-slot33-samsu-jangeo",
+          "name": "삼수장어 신천동로점",
+          "address": "대구광역시 수성구 신천동로 442 (수성동4가)",
+          "region": "대구광역시 수성구",
+          "searchAliases": [
+            "대구 수성구",
+            "대구광역시 수성구"
+          ],
+          "sourceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=4&idx=485&snm=22&ta=6"
+          ],
+          "result": "상호·지점·현주소와 직접 일치하는 공개 위경도 근거 미확보; 삭제·폐업 판단 금지",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "unverifiedReason": "기존 lat/lng null 또는 신규 공식 소개에 공개 좌표 없음; 공식 지도 및 주소 교차검증 추가 필요",
+          "locationStatus": "pending_not_closed"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "대구 중구·동구·수성구 위치 재확인",
+          "reason": "기존 52곳 및 신규 5곳의 도로명주소와 교차 검증한 공개 위경도 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 33,
+          "action": "실점포 현주소·공식 지도 근거를 확인할 때만 좌표 반영; 두 순환/독립 3근거 없이 비노출·폐업 금지"
+        },
+        {
+          "topic": "대구푸드 공식 905개 업소 및 정규 블루리본 선정 전체 명단",
+          "reason": "이번 회차는 대상 3개 구 일부 업소만 대조, 기타 누락 및 영업상태 전수 확인 아님",
+          "action": "다음 순환 동일 회차에서 미수록 및 위치 의심 우선 확인"
+        },
+        {
+          "topic": "공산한우식육식당 상호 별칭",
+          "reason": "공식 업소 표제 '공산한우식육식당'에 소개문 '공산한우명가'로 표기",
+          "action": "동일 주소 별칭으로 보류, 본점명 변경 여부 별도 확인"
+        }
+      ],
+      "carryOver": [
+        "29회차 전주·군산·익산 및 31회차 여수·순천·광양의 이전 미기록은 미확인으로 보존, 33회차 수행으로 대신하지 않음.",
+        "등록이 적은 대구 동구 및 수성구 누락 업소와 현주소/위경도를 다음 순환 동일 회차 우선 검토.",
+        "최신 지자체 전체 행정개편 목록은 이번 1순환 시작 시점에 확인한 것으로 간주; 별도 전수 재검증 아님."
+      ],
+      "nextSlot": 34,
+      "nextRegions": [
+        "대구광역시 서구",
+        "대구광역시 남구",
+        "대구광역시 북구",
+        "대구광역시 달서구"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
