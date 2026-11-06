@@ -1,0 +1,34 @@
+'use strict';
+const a=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..'),dir=path.join(root,'games/certified-restaurants');
+const read=name=>JSON.parse(fs.readFileSync(path.join(dir,name),'utf8'));
+const slot=read('official-gangwon-slot20.json'),base=read('restaurants.json'),src=read('sources.json');
+const audit=JSON.parse(fs.readFileSync(path.join(root,'ops/restaurant-region-audit.json'),'utf8'));
+const all=[...base.restaurants,...fs.readdirSync(dir).filter(n=>/^official-.*\.json$/.test(n)).flatMap(n=>read(n).restaurants||[])];
+a.equal(slot.restaurants.length,5);a.equal(all.length,3162);
+a.equal(new Set(all.map(x=>x.id)).size,all.length);
+a.deepEqual(slot.restaurants.map(x=>x.district),['삼척시','태백시','태백시','태백시','태백시']);
+a.deepEqual(slot.restaurants.map(x=>x.category),['한식','한식','한식','디저트','디저트']);
+for(const x of slot.restaurants){
+ a.equal(x.region,'강원');a.ok(x.address.startsWith('강원특별자치도 '+x.district+' '));
+ a.equal(x.lat,null);a.equal(x.lng,null);a.equal(x.guides.length,1);
+ a.equal(x.guides[0].provider,'local-guide');a.equal(x.guides[0].year,null);
+ a.equal(x.guides[0].yearType,'listing');a.equal(x.guides[0].status,'official_tourism_partnership');
+ a.ok(x.guides[0].sourceUrl.startsWith('https://korean.visitkorea.or.kr/dgtourcard/'));
+ a.equal(x.addressSourceUrl,x.guides[0].sourceUrl);
+}
+a.equal(src.coverage.uniqueRestaurants,3162);a.equal(src.coverage.coordinatesAvailable,1029);
+a.equal(src.coverage.coordinatesMissing,2133);a.equal(src.coverage.regionalCounts['강원'],61);
+a.equal(src.coverage.providerCounts['local-guide'],2431);
+a.equal(src.localGovernment.municipalTourism20261106GangwonSlot20.recordCount,5);
+const log=audit.entries.find(x=>x.cycle===1&&x.slot===20);a.ok(log);
+a.equal(log.additions,5);a.equal(log.locationCoordinatesAdded,0);a.equal(log.locationHidden,0);
+a.equal(log.locationPending,5);a.equal(log.locationRechecks.length,5);a.equal(audit.active.slot,20);
+const app=fs.readFileSync(path.join(dir,'app.js'),'utf8');
+a.ok(app.includes("fetch('./official-gangwon-slot20.json?v=20261106-restaurants-slot20-1"));
+a.ok(app.includes('...slot20.restaurants'));
+const rev=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision;
+a.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/app\.js\?v=\d{8}-restaurants-/);
+a.ok(fs.readFileSync(path.join(root,'world.html'),'utf8').includes('world-game-assets.js?v='+rev));
+a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.27'/);
+console.log('restaurant slot20 verified');
