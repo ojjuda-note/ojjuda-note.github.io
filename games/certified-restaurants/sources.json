@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3202,
+    "uniqueRestaurants": 3208,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2471,
+      "local-guide": 2477,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2170,
+    "coordinatesMissing": 2176,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1524,18 +1524,18 @@
       "인천": 341,
       "제주": 113,
       "대구": 117,
-      "전남": 177,
+      "전남": 183,
       "세종": 100,
       "대전": 110,
       "경북": 145,
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1888,
+      "한식": 1893,
       "중식": 133,
       "일식": 132,
       "기타": 580,
-      "양식": 209,
+      "양식": 210,
       "분식": 28,
       "디저트": 232
     }
@@ -11897,48 +11897,9 @@
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-jeonbuk-slot30-seven-tourism",
+    "id": "2026-11-07-mokpo-naju-slot32-six-municipal-listings",
     "checkedAt": "2026-11-07",
     "previousCoverage": {
-      "uniqueRestaurants": 3195,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2464,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2163,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1882,
-        "중식": 133,
-        "일식": 132,
-        "기타": 580,
-        "양식": 209,
-        "분식": 28,
-        "디저트": 231
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3202,
       "providerCounts": {
         "michelin": 237,
@@ -11977,24 +11938,62 @@
         "디저트": 232
       }
     },
-    "newRestaurantCount": 7,
+    "currentCoverage": {
+      "uniqueRestaurants": 3208,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2477,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2176,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1893,
+        "중식": 133,
+        "일식": 132,
+        "기타": 580,
+        "양식": 210,
+        "분식": 28,
+        "디저트": 232
+      }
+    },
+    "newRestaurantCount": 6,
     "newRestaurantIds": [
-      "local-jeonbuk-slot30-jeongeup-jeongwon-hanjeongsik",
-      "local-jeonbuk-slot30-jeongeup-jayeon-irae-ssanghwa",
-      "local-jeonbuk-slot30-namwon-hyeonsikdang",
-      "local-jeonbuk-slot30-namwon-chueohyang",
-      "local-jeonbuk-slot30-namwon-jirisan-chiknaengmyeon",
-      "local-jeonbuk-slot30-gimje-daeun-hanwoo",
-      "local-jeonbuk-slot30-gimje-chongche-bori"
+      "local-mokpo-slot32-gaetnaeum",
+      "local-mokpo-slot32-gaetppeol",
+      "local-mokpo-slot32-kimgeunho",
+      "local-mokpo-slot32-tteulchae",
+      "local-mokpo-slot32-magia",
+      "local-mokpo-slot32-sinan"
     ],
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "notes": [
-      "정읍·남원·김제 도 문화관광 공식 검색색인 추천 7곳. 김제시 시청 상세 및 관광공사 공식 자료 일부 교차확인.",
-      "모범음식점 표기는 별도 가이드 사실로만 보존하며 단독 미식 인증 근거로 쓰지 않음.",
-      "투어전북 상세 원문 403으로 직접 접근 불가. 정확 위경도/현재 영업 미확인으로 7곳 lat/lng null, 이전 지점 주소 충돌 2곳은 보류.",
-      "29회차 전주·군산·익산 기록은 이번 확인 시점 main에 없어 미확인 이월."
+      "목포시 공식 으뜸맛집 공개 목록의 126개 중 일부에서 기존 데이터와 다른 식당 6곳을 선정·수록 이력으로 추가. 나주 신규 추가 없음.",
+      "목포·나주 기존 27곳 및 신규 6곳의 현재 주소에 연결된 확실한 좌표를 확보하지 못했으며 현재 영업상태 미확인.",
+      "목포 영란횟집의 기존 번화로47과 시 공식 번화로42-1 주소 충돌은 이전 확정 근거 없어 수정 유보.",
+      "현재 블루리본 전체 목록과 무관; 회원 추천 게시물·개인 위치 정보 변경 없음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -12882,6 +12881,26 @@
       "operatingStatus": "미확인",
       "coordinates": "7곳 모두 null",
       "formalGuideSelection": "미쉐린·정규 블루리본 신규 선정 및 정확한 선정연도 확인 주장 없음"
+    },
+    "municipalTourism20261107MokpoNajuSlot32": {
+      "checkedAt": "2026-11-07",
+      "sourceFile": "official-mokpo-naju-slot32.json",
+      "publisher": "목포시 문화관광",
+      "officialListUrl": "https://www.mokpo.go.kr/tour/food_100/food_100_list",
+      "officialListedCountShown": 126,
+      "addedCount": 6,
+      "regionCounts": {
+        "목포시": 6,
+        "나주시": 0
+      },
+      "coordinateVerified": 0,
+      "coordinatePendingNew": 6,
+      "existingWithoutCoordinates": 27,
+      "sourceType": "municipal_official_best_restaurants_directory",
+      "selectionEditionYear": null,
+      "currentOperatingStatusConfirmed": 0,
+      "completeReview": false,
+      "notes": "목포 으뜸맛집 공개 목록·개별 상세 6곳을 추가. 나주는 공식 지정을 뒷받침하는 개별 이름·주소를 확보하지 못하여 신규 0. 등대 표식을 정규 블루리본 등급으로 해석하지 않음. 기존 27곳 주소·좌표 추적은 운영기록에 이월."
     }
   },
   "mapCoverageAuditHistory": [

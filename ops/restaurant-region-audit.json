@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 30,
-    "scheduledAt": "2026-11-07T00:00:00+09:00",
+    "slot": 32,
+    "scheduledAt": "2026-11-07T02:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "scheduled 00:00 Asia/Seoul"
+    "source": "scheduled 02:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -7849,6 +7849,808 @@
         "전남광주통합특별시 광양시"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 32,
+      "scheduledAtKST": "2026-11-07T02:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_with_six_official_mokpo_listings",
+      "assignedRegions": [
+        "전남광주통합특별시 목포시",
+        "전남광주통합특별시 나주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시 목포시",
+          "baseListedCount": 14,
+          "scope": "목포문화관광 공식 으뜸맛집 126곳 공개 목록의 일부 및 개별 업소 3곳, 기존 독천식당·영란횟집 자료 재대조. 신규 6곳.",
+          "new": 6,
+          "updated": 0,
+          "locationPending": 20,
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 나주시",
+          "baseListedCount": 13,
+          "scope": "기존 남도음식명가·대물림향토음식점 위치 누락 항목 인벤토리 및 2026 나주밥상 지정업소 목록 탐색. 공식 개별 최신 식당명·도로명주소 미확인이라 신규 미등록.",
+          "new": 0,
+          "updated": 0,
+          "locationPending": 13,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "목포시 문화관광 공식 으뜸맛집 공개 목록 (126개 중 일부 확인)",
+        "목포시 문화관광 업소 상세페이지(뜰채낙지전문점, 마지아레스토, 신안뻘낙지, 영란횟집)",
+        "기존 나주시 남도음식명가·대물림향토음식점 명단과 나주밥상 신규 공고 탐색(추가 개별 인증 업소 미확인)",
+        "블루리본 공식 전체 지도 접근 가능 범위(목포/나주 전수 확인하지 않음)"
+      ],
+      "additions": 6,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 33,
+      "addedRestaurantIds": [
+        "local-mokpo-slot32-gaetnaeum",
+        "local-mokpo-slot32-gaetppeol",
+        "local-mokpo-slot32-kimgeunho",
+        "local-mokpo-slot32-tteulchae",
+        "local-mokpo-slot32-magia",
+        "local-mokpo-slot32-sinan"
+      ],
+      "existingItemsRechecked": [
+        "독천식당 (목포시)",
+        "영란횟집 (목포시)"
+      ],
+      "evidenceUrls": [
+        "https://www.mokpo.go.kr/tour/food_100/food_100_list",
+        "https://www.mokpo.go.kr/tour/food_100/food_100_list",
+        "https://youth.mokpo.go.kr/tour/food_100/food_100_list?idx=80236&mode=view",
+        "https://youth.mokpo.go.kr/tour/food_100/food_100_list?idx=84133&mode=view",
+        "https://munhak.mokpo.go.kr/tour/food_100/food_100_list?idx=80118&mode=view",
+        "https://www.mokpo.go.kr/tour/food_100/food_100_list?idx=80187&mode=view",
+        "https://kid.mokpo.go.kr/tour/food_100/introduce",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "locationReviews": [
+        {
+          "id": "local-namdo-598599",
+          "name": "영란횟집",
+          "address": "전남 목포시 번화로47",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list?idx=80187&mode=view"
+          ],
+          "result": "기존 주소 '번화로47'과 목포시 현재 공개 '번화로 42-1' 차이. 이전·동일 지점의 실제 주소 재검증 전 변경 보류.",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "주소 출처 충돌",
+          "locationStatus": "pending_not_closed",
+          "checkedAtKST": "2026-11-07"
+        },
+        {
+          "id": "local-namdo-598605",
+          "name": "독천식당",
+          "address": "전남 목포시 호남로 64번길 3-1",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list"
+          ],
+          "result": "공식 으뜸맛집 공개 목록에서 '호남로64번길 3-1' 확인. 주소 띄어쓰기 차이만 확인, 현좌표 근거 미확보.",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "상호·주소는 공식 목록과 실질 일치하나 좌표 없음",
+          "locationStatus": "pending_not_closed",
+          "checkedAtKST": "2026-11-07"
+        },
+        {
+          "id": "local-mokpo-slot32-gaetnaeum",
+          "name": "갯내음",
+          "address": "전남 목포시 신흥로59번길 11",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        },
+        {
+          "id": "local-mokpo-slot32-gaetppeol",
+          "name": "갯뻘마을",
+          "address": "전남 목포시 하당로44번길 14",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        },
+        {
+          "id": "local-mokpo-slot32-kimgeunho",
+          "name": "김근호해물한정식",
+          "address": "전남 목포시 정의로 4-3",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        },
+        {
+          "id": "local-mokpo-slot32-tteulchae",
+          "name": "뜰채낙지전문점",
+          "address": "전남 목포시 해양대학로 229",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://youth.mokpo.go.kr/tour/food_100/food_100_list?idx=80236&mode=view"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        },
+        {
+          "id": "local-mokpo-slot32-magia",
+          "name": "마지아레스토",
+          "address": "전남 목포시 유달로97번길 2, 1층",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://youth.mokpo.go.kr/tour/food_100/food_100_list?idx=84133&mode=view"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        },
+        {
+          "id": "local-mokpo-slot32-sinan",
+          "name": "신안뻘낙지",
+          "address": "전남 목포시 청호로 16",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "checkedAtKST": "2026-11-07",
+          "sourceUrls": [
+            "https://munhak.mokpo.go.kr/tour/food_100/food_100_list?idx=80118&mode=view"
+          ],
+          "result": "공식 목록·상세에서 상호·도로명주소 확인. 현주소와 직접 연결된 위경도 미확보.",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "좌표 미확인, 현재 영업 별도 검증 필요"
+        }
+      ],
+      "locationBacklog": [
+        {
+          "id": "local-namdo-598600",
+          "name": "나주곰탕 하얀집",
+          "address": "전라남도 나주시 금성관길 6-1",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-599256",
+          "name": "나주볼테기",
+          "address": "전라남도 나주시 건재로 225",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-3676094",
+          "name": "대가참숯불구이",
+          "address": "전남 나주시 고분로 518",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598605",
+          "name": "독천식당",
+          "address": "전남 목포시 호남로 64번길 3-1",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-3661284",
+          "name": "락식향",
+          "address": "전남 목포시 하당로 68번길 9",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-620706",
+          "name": "명인집",
+          "address": "전남 목포시 하당로 30번길 14",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-620298",
+          "name": "박병궁명인 목포설렁탕",
+          "address": "전라남도 목포시 삼향천로 4",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598611",
+          "name": "소담",
+          "address": "전라남도 목포시 원형동로 50-2",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598613",
+          "name": "신흥장어",
+          "address": "전라남도 나주시 구진포로 58",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598599",
+          "name": "영란횟집",
+          "address": "전남 목포시 번화로47",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-2216901",
+          "name": "영산포홍어",
+          "address": "전남 나주시 영산3길6",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-599261",
+          "name": "예향",
+          "address": "전남 나주시 나주천1길 79",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598615",
+          "name": "예향한정식 목포보리굴비 평화광장점",
+          "address": "전라남도 목포시 평화로 40",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598602",
+          "name": "옥정",
+          "address": "전라남도 목포시 미항로8",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-599271",
+          "name": "전통식당 사랑채",
+          "address": "전라남도 나주시 금남길 61",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-599275",
+          "name": "태광갈비",
+          "address": "전라남도 나주시 북망문길 36-15",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-2216911",
+          "name": "품장",
+          "address": "전남 나주시 노안면 건재로 524-11",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598616",
+          "name": "한국추어탕",
+          "address": "전라남도 목포시 하당로241번길11",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598619",
+          "name": "한미르 한정식",
+          "address": "전라남도 목포시 유달로112",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-2216921",
+          "name": "해미연",
+          "address": "전라남도 나주시 석전2길 20",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598621",
+          "name": "해빔목포비빔밥",
+          "address": "전라남도 목포시 미항로83",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-599277",
+          "name": "홍어1번지",
+          "address": "전라남도 나주시 영산3길 2-1",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598623",
+          "name": "황금어장",
+          "address": "전남 목포시 미항로89",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598603",
+          "name": "나주곰탕원조집60년 남평할매집",
+          "address": "전라남도 나주시 금성관길 1-1",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-607471",
+          "name": "대지회관",
+          "address": "전라남도 나주시 삼영동 삼영2길 9",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "전남 나주시",
+            "전라남도 나주시",
+            "전남광주통합특별시 나주시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598627",
+          "name": "영암식당",
+          "address": "전라남도 목포시 수문로 35번길 1",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        },
+        {
+          "id": "local-namdo-598628",
+          "name": "영해복집",
+          "address": "전라남도 목포시 해안로 237번길 14-1",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "전남 목포시",
+            "전라남도 목포시",
+            "전남광주통합특별시 목포시"
+          ],
+          "sourceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "result": "현주소와 직접 일치하는 검증 좌표 미확보; 이번 회차 전체 개별 확인은 미완료",
+          "inventoryAtKST": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "unverifiedReason": "기존 lat/lng null; 공식자료·공개지도 교차확인 추가 필요",
+          "locationStatus": "pending_not_closed"
+        }
+      ],
+      "unresolved": [
+        {
+          "name": "영란횟집",
+          "region": "전남광주통합특별시 목포시",
+          "reason": "기존 번화로47과 목포문화관광 번화로42-1 충돌. 이전 여부·현재 지점 재확인 필요",
+          "evidenceUrls": [
+            "https://www.mokpo.go.kr/tour/food_100/food_100_list?idx=80187&mode=view"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 32,
+          "action": "주소·좌표 임의 변경 금지. 실제 위치 확인한 후 기존 ID 유지 수정"
+        },
+        {
+          "topic": "나주 2026 나주밥상 선정업소 전체 명단",
+          "reason": "공모 소식은 확인했으나 개별 최신 지정업소 이름·주소·지정판본 근거 미확보",
+          "action": "다음 순환시 나주시 공식 발표/관광지정 명단 우선 확인, 무근거 추가 금지"
+        },
+        {
+          "topic": "목포·나주 33곳 위치 좌표",
+          "reason": "기존 27곳 및 신규 6곳 현주소와 일치하는 공개 위경도 미확보",
+          "action": "다음 순환 우선 검색; 두 순환·3종 증거 기준 전 삭제/비노출 금지"
+        }
+      ],
+      "carryOver": [
+        "29회차 전주·군산·익산 및 31회차 여수·순천·광양의 운영 기록은 02시 main에 없음. 미실시/미확인으로 이월, 완료 간주하지 않음.",
+        "기존 두 지역 27곳 좌표 미확인 인벤토리는 locationBacklog에 보존. 블루리본 정규 전체 목록 수집과 현재 영업 상태 전수 확인 미완료.",
+        "전체 공식 으뜸맛집 126곳 전수 대조 아니며 추가 업소는 다음 순환에서도 조사"
+      ],
+      "nextSlot": 33,
+      "nextRegions": [
+        "대구광역시 중구",
+        "대구광역시 동구",
+        "대구광역시 수성구"
+      ]
     }
   ],
   "notes": [
