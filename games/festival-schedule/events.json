@@ -188,6 +188,14 @@
       "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cmsCntntsId=2754421",
       "sourceName": "한국관광공사 대한민국 구석구석",
       "sourceCheckedAt": "2026-11-03",
+      "attendance": {
+        "count": 123000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "괴산군청 2026년 대표축제 일정 보도자료",
+        "sourceUrl": "https://www.goesan.go.kr/www/selectBbsNttView.do?bbsNo=213&integrDeptCode=&key=136&nttNo=128463&pageIndex=77&pageUnit=9&searchCnd=all&searchCtgry=&searchKrwd=",
+        "sourceCheckedAt": "2026-11-06"
+      },
       "tags": [
         "김장",
         "체험",
@@ -243,6 +251,14 @@
       "sourceUrl": "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=5c6f720a-dd3e-4e54-bd2e-0ed7a72147ee",
       "sourceName": "한국관광공사 대한민국 구석구석",
       "sourceCheckedAt": "2026-11-03",
+      "attendance": {
+        "count": 350000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "구미시청 2025년 축제 결과 보도자료",
+        "sourceUrl": "https://www.gumi.go.kr/portal/board/post/view.do?bcIdx=211&idx=828574&mid=0504020000",
+        "sourceCheckedAt": "2026-11-06"
+      },
       "tags": [
         "먹거리",
         "라면",
