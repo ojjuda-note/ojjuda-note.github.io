@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 23,
-    "scheduledAt": "2026-11-06T17:00:00+09:00",
+    "slot": 25,
+    "scheduledAt": "2026-11-06T19:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled 17:00 KST; original scheduled slot used"
+    "source": "scheduled 19:00 KST; originally scheduled slot used"
   },
   "entries": [
     {
@@ -5843,6 +5843,223 @@
       "nextRegions": [
         "충청북도 충주시",
         "충청북도 제천시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 25,
+      "scheduledAtKST": "2026-11-06T19:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_5_kto_asan_municipal_listings",
+      "assignedRegions": [
+        "충청남도 천안시",
+        "충청남도 아산시"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청남도 천안시",
+          "baseListedCount": 3,
+          "previousLocationMissing": 1,
+          "scope": "기등록 3곳·동순원 성환본점 좌표 누락 확인. KTO 대한민국 구석구석에서 천안시 향토음식점으로 소개된 먹거리순대와 공개 관광주소 2차 자료 대조 후 1곳 추가. 천안시 2026 맛집 모집공고는 지정 결과가 아니므로 신규 선정으로 세지 않음.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 2,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 아산시",
+          "baseListedCount": 1,
+          "previousLocationMissing": 0,
+          "scope": "기등록 루티니아와 중복 대조. 아산시 문화관광 포털의 공개 검색 색인에서 음식점 4곳의 상호·주소·업소 연락처 확인. 공식 포털 원문은 웹 방화벽 차단으로 직접 열람 불가, 관광 목록 수록으로만 구분하고 신규 4곳 좌표 보류.",
+          "new": 4,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 4,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "한국관광공사 대한민국 구석구석 먹거리순대 소개(천안시 지정 향토음식점 사실); 동일 업체 현주소는 2026 관광공사 TourAPI 출처를 표시한 공개 수록 자료·철도공사 주변 장소 정보를 재게시한 지도 근거 대조",
+        "아산시 문화관광 공개 음식점 목록의 검색 색인(이름·주소·전화; 원문 방화벽 차단)",
+        "블루리본 공식 지도 안내 및 기존 천안·아산 선정·공동선정 데이터",
+        "천안시 2026 맛집 신청 공고는 모집일 뿐 선정 확정이 아니므로 제외"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 6,
+      "locationPendingScope": "신규 5곳 모두 정확한 일치 좌표 미확인, 기등록 동순원 성환본점도 미등록 좌표. 주민 위치 활용/추정/인근 건물 중심값 사용하지 않음.",
+      "addedRestaurantIds": [
+        "local-chungnam-slot25-cheonan-meokgeori-sundae",
+        "local-chungnam-slot25-asan-gamasot-dubu",
+        "local-chungnam-slot25-asan-gogane-kalguksu",
+        "local-chungnam-slot25-asan-bujason-jjajang",
+        "local-chungnam-slot25-asan-oeam-pajeon-sangjeon"
+      ],
+      "existingItemsRechecked": [
+        "동순원 성환본점",
+        "청화집",
+        "박순자 아우내순대",
+        "루티니아"
+      ],
+      "evidenceUrls": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+        "https://trip.happynowinfo.com/place/699569/",
+        "https://qbh.purpleo.kr/article/230250",
+        "https://tour.asan.go.kr/tour/develop/m_food/",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-regional-dongsunwon-seonghwan",
+          "name": "동순원 성환본점",
+          "address": "충청남도 천안시 서북구 성환중앙로 33",
+          "region": "충청남도 천안시",
+          "aliases": [
+            "충남 천안시",
+            "천안시 서북구",
+            "천안 서북구 성환읍"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.linkedmap.co.kr/explore/ai-food/chungnam/%EC%B2%9C%EC%95%88%EC%8B%9C/%EB%8F%99%EC%88%9C%EC%9B%90-%EC%84%B1%ED%99%98%EB%B3%B8%EC%A0%90",
+            "https://festival.kimgoon.kr/food/2860598"
+          ],
+          "result": "기존 블루리본 수록 이력과 상호/주소 확인, 검증 가능한 업소별 공개 위경도 없음",
+          "unconfirmedReason": "정확한 주소와 업소 좌표가 동시에 확인되는 출처 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "좌표 null 유지·선정 이력 보존. 다음 같은 회차 우선 확인"
+        },
+        {
+          "id": "local-chungnam-slot25-cheonan-meokgeori-sundae",
+          "name": "먹거리순대",
+          "address": "충청남도 천안시 동남구 병천면 아우내순대길 27",
+          "region": "충청남도 천안시",
+          "aliases": [
+            "충청남도 천안시",
+            "충남 천안시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+            "https://trip.happynowinfo.com/place/699569/",
+            "https://qbh.purpleo.kr/article/230250"
+          ],
+          "result": "공식 관광 원문 또는 공식 검색 색인과 상호·주소 근거 확인. 개별 정확한 좌표와 현재 영업 확인 미완료",
+          "unconfirmedReason": "동일 상호·지점·현주소를 일치시키는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "lat/lng null 유지. 다음 순환 25회차 우선 재조사, 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-chungnam-slot25-asan-gamasot-dubu",
+          "name": "가마솥두부명가",
+          "address": "충청남도 아산시 온주길 6-7",
+          "region": "충청남도 아산시",
+          "aliases": [
+            "충청남도 아산시",
+            "충남 아산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "result": "공식 관광 원문 또는 공식 검색 색인과 상호·주소 근거 확인. 개별 정확한 좌표와 현재 영업 확인 미완료",
+          "unconfirmedReason": "동일 상호·지점·현주소를 일치시키는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "lat/lng null 유지. 다음 순환 25회차 우선 재조사, 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-chungnam-slot25-asan-gogane-kalguksu",
+          "name": "고가네칼국수",
+          "address": "충청남도 아산시 번영로 83-5 (온천동)",
+          "region": "충청남도 아산시",
+          "aliases": [
+            "충청남도 아산시",
+            "충남 아산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "result": "공식 관광 원문 또는 공식 검색 색인과 상호·주소 근거 확인. 개별 정확한 좌표와 현재 영업 확인 미완료",
+          "unconfirmedReason": "동일 상호·지점·현주소를 일치시키는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "lat/lng null 유지. 다음 순환 25회차 우선 재조사, 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-chungnam-slot25-asan-bujason-jjajang",
+          "name": "부자손짜장",
+          "address": "충청남도 아산시 음봉면 음봉로 385",
+          "region": "충청남도 아산시",
+          "aliases": [
+            "충청남도 아산시",
+            "충남 아산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "result": "공식 관광 원문 또는 공식 검색 색인과 상호·주소 근거 확인. 개별 정확한 좌표와 현재 영업 확인 미완료",
+          "unconfirmedReason": "동일 상호·지점·현주소를 일치시키는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "lat/lng null 유지. 다음 순환 25회차 우선 재조사, 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-chungnam-slot25-asan-oeam-pajeon-sangjeon",
+          "name": "외암파전 상전",
+          "address": "충청남도 아산시 송악면 외암로 1030-14, 14동 1층",
+          "region": "충청남도 아산시",
+          "aliases": [
+            "충청남도 아산시",
+            "충남 아산시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "result": "공식 관광 원문 또는 공식 검색 색인과 상호·주소 근거 확인. 개별 정확한 좌표와 현재 영업 확인 미완료",
+          "unconfirmedReason": "동일 상호·지점·현주소를 일치시키는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 25,
+          "action": "lat/lng null 유지. 다음 순환 25회차 우선 재조사, 폐업·비노출 단정 금지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "천안 먹거리순대 향토음식점 지정 연도와 현 영업상태",
+          "reason": "KTO 소개에는 정확한 지정 연도·실시간 영업 증명 없음",
+          "action": "연도 null, 현영업 미확인 유지"
+        },
+        {
+          "topic": "아산 관광자료 원문과 개별 선정",
+          "reason": "아산시 공식 웹사이트 직접 접속이 방화벽 차단; 색인 공개 명단만 확인. 관광식당 수록과 특별 인증은 다른 개념",
+          "action": "관광 목록 수록 이력으로만 표기, 차기 회차 원문 정상 접근 시 재확인"
+        },
+        {
+          "topic": "천안·아산 6곳 위치",
+          "reason": "추정 좌표 배제, 개인 위치 수집 없음",
+          "action": "2순환 25회차 우선 재조사"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성, 16회차 의정부·양주·동두천·포천, 24회차 충주·제천 운영 기록은 이 회차 확인 시점 main에 없어 미실시/미확인 이월 유지",
+        "천안·아산 두 지역 모든 맛집·폐업·이전 전수 확인 아님",
+        "아산시 원문 접근 제한, 6곳 위경도·현재 영업 여부 확인 이월"
+      ],
+      "nextSlot": 26,
+      "nextRegions": [
+        "충청남도 공주시",
+        "충청남도 논산시",
+        "충청남도 계룡시"
       ],
       "notExhaustive": true
     }

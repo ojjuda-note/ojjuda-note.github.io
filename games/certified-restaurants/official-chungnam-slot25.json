@@ -1,0 +1,164 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "한국관광공사 지정 향토음식점·아산시 문화관광 공개 음식점 자료",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+    "https://tour.asan.go.kr/tour/develop/m_food/"
+  ],
+  "sourceScope": "한국관광공사 상세소개에서 천안시 향토음식점 지정 이력 1곳, 아산시 문화관광 공개 목록에서 수록된 음식점 4곳의 상호와 공개 주소 확인. 전체 지정/전체 블루리본 명단 확인 아님. 현 영업 상태 별도 미확인.",
+  "verificationLimit": "아산시 공식 사이트 직접 접근은 웹 방화벽으로 제한. 공개 검색에 색인된 공식 아산시 명단만 식당명/주소 교차 확인. 현재 영업·개별 선정연도는 확인되지 않았음. 방문 전 업소 확인 필요.",
+  "coordinatePolicy": "전 항목 위경도 null. 해당 식당·지점·현주소와 공개 좌표를 동일하게 검증하지 못해 추정 위치 금지. 개인 위치 미수집.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot25-cheonan-meokgeori-sundae",
+      "name": "먹거리순대",
+      "category": "한식",
+      "region": "충남",
+      "district": "천안시 동남구",
+      "address": "충청남도 천안시 동남구 병천면 아우내순대길 27",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모둠순대",
+        "순대국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "천안시 지정 향토음식점 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 천안시 지정 향토음식점 소개",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "한국관광공사 관광 소개에서 천안시 지정 향토 음식점이라고 명시. 지정 연도와 현 영업 여부 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+      "addressSourceCheckedAt": "2026-11-06",
+      "addressCrosscheckUrls": [
+        "https://trip.happynowinfo.com/place/699569/",
+        "https://qbh.purpleo.kr/article/230250"
+      ],
+      "phoneText": "041-564-2544"
+    },
+    {
+      "id": "local-chungnam-slot25-asan-gamasot-dubu",
+      "name": "가마솥두부명가",
+      "category": "한식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 온주길 6-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "두부요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "아산시 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+          "sourceName": "아산시 문화관광 · 음식점 공개 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "아산시 공식 문화관광 공개 음식점 목록에 실명·주소 수록. 별도 엄격한 인증/선정, 모범음식점 지정 및 현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "041-543-8469"
+    },
+    {
+      "id": "local-chungnam-slot25-asan-gogane-kalguksu",
+      "name": "고가네칼국수",
+      "category": "분식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 번영로 83-5 (온천동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "아산시 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+          "sourceName": "아산시 문화관광 · 음식점 공개 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "아산시 공식 문화관광 공개 음식점 목록에 실명·주소 수록. 별도 엄격한 인증/선정, 모범음식점 지정 및 현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "041-549-7799"
+    },
+    {
+      "id": "local-chungnam-slot25-asan-bujason-jjajang",
+      "name": "부자손짜장",
+      "category": "중식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 음봉면 음봉로 385",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "아산시 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+          "sourceName": "아산시 문화관광 · 음식점 공개 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "아산시 공식 문화관광 공개 음식점 목록에 실명·주소 수록. 별도 엄격한 인증/선정, 모범음식점 지정 및 현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "041-544-2611"
+    },
+    {
+      "id": "local-chungnam-slot25-asan-oeam-pajeon-sangjeon",
+      "name": "외암파전 상전",
+      "category": "한식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 송악면 외암로 1030-14, 14동 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "파전"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "아산시 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+          "sourceName": "아산시 문화관광 · 음식점 공개 목록",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "아산시 공식 문화관광 공개 음식점 목록에 실명·주소 수록. 별도 엄격한 인증/선정, 모범음식점 지정 및 현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "041-541-2545"
+    }
+  ]
+}
