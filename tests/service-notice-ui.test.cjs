@@ -10,8 +10,8 @@ for(const from of ['/park/','/park/index.html?card=abc#reply','/note/?compose=me
  assert.equal(redirected.pathname,'/world.html');assert.equal(redirected.searchParams.get('place'),'park');assert.equal(redirected.hash,url.hash);
  for(const key of ['card','compose'])assert.equal(redirected.searchParams.get(key),url.searchParams.get(key));
 }
-let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${['world-themes.js','world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
+let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+world=world.replace('<script type="module">',`<script>${['app/world/world-themes.js','park/world-park-notes.js'].map(read).join('\n')}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  window.noticeFixture={set(value){wt.notice=value;H()},tab(value){g.tab=value;H()},open:()=>sr['notice-open'](),close:dt,tick:Ts,render:H,
@@ -38,7 +38,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
   const iframe=page.locator('[data-park-app] iframe');await iframe.waitFor();
   const frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
   await frame.evaluate(()=>loadNoticeStateFixture());
-  await page.addScriptTag({path:path.join(root,'game-friend-invites.js')});
+  await page.addScriptTag({path:path.join(root,'shared/games/game-friend-invites.js')});
   await page.evaluate(()=>{
    const expires_at=new Date(Date.now()+60000).toISOString(),channel={on(){return this},subscribe(){return this}};
    const client={channel:()=>channel,removeChannel(){},rpc:async()=>({data:{ok:true,server_now:new Date().toISOString(),invites:[{id:'notice-invite',kind:'matgo',sender_name:'친구',expires_at}],responses:[]}})};

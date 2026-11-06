@@ -13,7 +13,7 @@ const root=path.join(__dirname,'..');
    if(name==='community_game_monthly_leaders'){const result={};for(const game of args.p_games)result[game]=(await f.publicRpc(actor,'community_game_monthly_ranking',[game]))[0]||null;return {data:result};}
    throw Error(name);
   },functions:{invoke:async(name,{body})=>{assert.equal(name,'poker');const data=await f.call(actor,body);return {data,error:data.error?{context:{json:async()=>data}}:null};}}};
-  w.eval(fs.readFileSync(path.join(root,'arcade-rooms.js'),'utf8'));
+  w.eval(fs.readFileSync(path.join(root,'features/arcade/arcade-rooms.js'),'utf8'));
   const html=fs.readFileSync(path.join(root,'world.html'),'utf8'),part=html.slice(html.indexOf('var worldArcadeRooms=null'),html.indexOf('window.OjjudaArcadeRoomCreated='));
   w.eval(`const D={online:true,user:{id:window.__actor}},S=window.__client,g={tab:'place',place:{id:'arcade'}},M=window.__notice,Al=window.__open;function dt(){document.querySelector('#modal-root').innerHTML=''}function ct(html){document.querySelector('#modal-root').innerHTML=html}function xf(){};window.OjjudaMatgoAccess={visible:()=>window.__adult};`+part+';window.__rooms={sync:syncWorldArcadeRooms,get controller(){return worldArcadeRooms}};');
   w.__rooms.sync();
@@ -35,7 +35,7 @@ const root=path.join(__dirname,'..');
   // Exercise the actual World cancellation handler, including its versioned leave request.
   await f.call(f.users[0],{action:'create',request_id:crypto.randomUUID(),options:{title:'취소할 포커방',capacity:2}});await a.refresh();a.click('[data-arcade-action=cancel]');await until(()=>a.notices.includes('대전방을 닫았어요.'),'world cancels poker room');await b.refresh();assert.equal(b.find('.arcade-room-card'),null);
   await f.db.query('update ojjuda_poker_internal.wallets set gold=12345,rounds=2,updated_at=now() where user_id=$1',[f.users[0]]);
-  a.w.eval(fs.readFileSync(path.join(root,'world-game-rankings.js'),'utf8'));
+  a.w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-rankings.js'),'utf8'));
   a.w.OjjudaGameRankings.mount(a.find('#ranks'),{client:a.w.__client,owner:f.users[0],games:{poker:{name:'세븐포커',unit:'G',rankingBasis:'current_gold'}},onOpenGame:id=>a.opened.push({kind:id}),authorized:()=>true});
   await until(()=>a.find('[data-game=poker] .board-leader-score')?.textContent==='12,345G','poker gold ranking');
   a.click('[data-game=poker] button');await until(()=>a.opened.at(-1).kind==='poker','ranking game opens');

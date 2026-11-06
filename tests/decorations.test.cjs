@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-for(const file of ['world.html','park/index.html','note/preview.js','ju-charge.js','park/integration.js','world-park-notes.js','photo-ttang-help.js']){
+for(const file of ['world.html','park/index.html','note/preview.js','features/wallet/ju-charge.js','park/integration.js','park/world-park-notes.js','games/photo-ttang/photo-ttang-help.js']){
  assert.doesNotMatch(read(file),/OjjudaShop|data-ju-shop-open|ju-shop\.(js|css)|onUseCardDecoration|useCardDecoration/);
 }
-assert.doesNotMatch(read('ju-decorations.js'),/ju_shop_buy|ju_shop_equip|showModal|상점/);
+assert.doesNotMatch(read('features/wallet/ju-decorations.js'),/ju_shop_buy|ju_shop_equip|showModal|상점/);
 assert.ok(!fs.existsSync(path.join(root,'ju-shop.js'))&&!fs.existsSync(path.join(root,'ju-shop.css')));
 const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
 (async()=>{
@@ -11,7 +11,7 @@ const html=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  const run=code=>new vm.Script(code).runInContext(dom.getInternalVMContext());
  try{
   w.AbortSignal=AbortSignal;w.addEventListener('error',e=>errors.push(e.message));w.scrollTo=()=>{};w.requestAnimationFrame=()=>0;w.cancelAnimationFrame=()=>{};w.HTMLElement.prototype.scrollTo=()=>{};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.confirm=()=>true;
-  run(read('ju-decorations.js'));run(read('note/preview.js'));
+  run(read('features/wallet/ju-decorations.js'));run(read('note/preview.js'));
   run(`session={user:{id:'member-a'}};authKnown=ready=true;myIdentity={gender:'male'};myIdentityReady=true;myGender='male';draftController=null;autoWritingLocation=()=>{};
     window.fixtureOwned=['card_stickers'];window.fixtureCalls=[];
     OjjudaDecorations.install({getUserId:()=>session?.user?.id,client:{auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}}}},rpc:name=>({abortSignal:async()=>{

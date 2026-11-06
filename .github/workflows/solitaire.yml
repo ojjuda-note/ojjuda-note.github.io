@@ -1,10 +1,10 @@
 name: Solitaire arcade checks
 on:
   pull_request:
-    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
+    paths: ['games/solitaire/**', 'games/solitaire/world-solitaire-game.js', 'world.html', 'shared/games/world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'shared/games/guest-game-scores.js', 'shared/games/world-game-rankings.js', '.github/workflows/solitaire.yml']
   push:
     branches: [main]
-    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
+    paths: ['games/solitaire/**', 'games/solitaire/world-solitaire-game.js', 'world.html', 'shared/games/world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'shared/games/guest-game-scores.js', 'shared/games/world-game-rankings.js', '.github/workflows/solitaire.yml']
 permissions:
   contents: read
 jobs:

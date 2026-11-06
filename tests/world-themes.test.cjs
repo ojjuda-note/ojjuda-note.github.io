@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
-const root=path.join(__dirname,'..'),source=fs.readFileSync(path.join(root,'world-themes.js'),'utf8');
+const root=path.join(__dirname,'..'),source=fs.readFileSync(path.join(root,'app/world/world-themes.js'),'utf8');
 const dom=new JSDOM('<div data-world-theme-settings></div><p data-theme-greeting></p><p data-theme-status></p><textarea id="draft"></textarea>',{url:'https://ojjuda.kr',runScripts:'outside-only'});
 const w=dom.window;
 try{

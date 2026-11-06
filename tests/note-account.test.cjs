@@ -68,7 +68,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
         async rpc(name,args) { calls.push(['rpc', name, plain(args)]); if(behavior.rpc)return behavior.rpc(name,args);return {data:name==='my_account_deletion_files'?(behavior.inventory?await behavior.inventory():(behavior.files||[]).slice(0,100)):null,error:null}; }
       };
     } };
-    run(fs.readFileSync(path.join(root, 'account-deletion.js'), 'utf8'));
+    run(fs.readFileSync(path.join(root, 'features/account/account-deletion.js'), 'utf8'));
     run(source.slice(0, bootAt));
     // Keep the real account/dialog/auth-change code; unrelated feed requests are out of scope.
     run(`loadWorldBalance = async () => {}; loadModerator = async () => {}; loadNoteState = async () => {};

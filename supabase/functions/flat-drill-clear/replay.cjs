@@ -1,4 +1,4 @@
-const Physics=require('../../../screw-flat-physics.js');
+const Physics=require('../../../games/screw/screw-flat-physics.js');
 const maxTicks=120*60*60*2;
 
 // The client reports the simulation tick of each two-tap transfer. Use the same

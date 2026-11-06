@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const root = path.join(__dirname, '..'), origin = 'https://world-fresh.test';
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `

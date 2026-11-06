@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {randomUUID}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
-const world=read('world.html'),bridge=read('world-archery-game.js');
+const world=read('world.html'),bridge=read('games/forest-archer/world-archery-game.js');
 
 // Exercise the real bridge's event handlers, including stale account loads and
 // reopening. An unloaded iframe must not keep a second game running behind it.
@@ -81,14 +81,14 @@ assert.match(world,/for\(const bridge of \[window\.OjjudaArcheryGame,/,'global t
 assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct entry must wait for account and arcade initialization');
 assert.ok(world.includes('.tour-game-dialog[open]') && world.includes("gameDialog.dispatchEvent(new Event('cancel'"),'browser and app back use the tested dialog cancel handler');
 
-vm.runInContext(read('world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.1.1');
+vm.runInContext(read('shared/games/world-game-assets.js'),ctx);
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.1.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
-assert.ok(world.includes('/world-game-assets.js?v='+revision));
+assert.ok(world.includes('/shared/games/world-game-assets.js?v='+revision));
 // A bridge-only change does not reload unchanged game and ammo modules.
-const bridgeRevision=read('world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
+const bridgeRevision=read('shared/games/world-game-assets.js').match(/\/world-archery-game\.js\?v=([^'"\s]+)/)?.[1];
 assert.ok(bridgeRevision,'the archery bridge has its own cache revision');
 const releaseFixture=fixture();releaseFixture.api.open();
 const archeryRevision=new URL(releaseFixture.nodes.at(-1).frame.src,'https://ojjuda.kr').searchParams.get('v');

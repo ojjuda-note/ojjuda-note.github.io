@@ -2,20 +2,20 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {JSDOM}=require('jsdom');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
 (async()=>{
- const engine=await import('../games/matgo-engine.mjs'),art=await import('../games/matgo-art.mjs');
+ const engine=await import('../games/matgo/matgo-engine.mjs'),art=await import('../games/matgo/matgo-art.mjs');
  const dom=new JSDOM(read('games/matgo-online.html'),{url:'https://fixture.test/games/matgo-online.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  try{
   const noop=()=>{},flights=[];let cancels=0;
   w.matchMedia=()=>({matches:false});
   w.OjjudaMatgoAccess={check:async()=>{},allowed:()=>true,subscribe:noop,getClient:()=>({auth:{getSession:async()=>({})}})};
   require('./game-results-fixture.cjs')(w);
-  w.eval(read('games/matgo-view.mjs').replace(/^import .*;\n/,'').replaceAll('export function','function')+'\nwindow.view={floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt};');
+  w.eval(read('games/matgo/matgo-view.mjs').replace(/^import .*;\n/,'').replaceAll('export function','function')+'\nwindow.view={floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt};');
   w.deps={...engine,...art,...w.view,shuffledFloorSlots:noop,floorStackIds:stack=>[...stack.querySelectorAll('[data-face]')].map(n=>Number(n.dataset.face)),
    createWallet:()=>({status:async()=>({gold:5000,free_left:2})}),
    createOnlineMotion:()=>({play:(previous,next,events)=>new Promise(resolve=>flights.push({previous,next,events,resolve})),cancel:()=>{cancels++;}}),
    createOnlineSound:()=>({play:noop,cancel:noop}),cpuPortraitHTML:()=>'<span class="cpu-portrait"><img src="fixture.png"></span>',
    createVentControls:()=>({mount:noop,sync:noop})};
-  const source=read('games/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.deps;`);
+  const source=read('games/matgo/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.deps;`);
   await w.eval('(async()=>{'+source+'\nwindow.renderTest={accept,cancelPresentation,getRoom:()=>room};clearInterval(pollTimer);clearInterval(accessTimer);})()');
   const card=id=>({...engine.CARDS[id]}),stamp=r=>({...structuredClone(r),serverTime:Date.now(),deadline:new Date(Date.now()+20000).toISOString()});
   const initial={id:'render-room',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[card(0),card(8)],otherCount:2,floor:[{cards:[card(1)]},{cards:[card(12)]}],caps:[[card(20)],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};

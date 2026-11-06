@@ -1,10 +1,10 @@
 name: BANG multiplayer checks
 on:
   pull_request:
-    paths: ['games/bang/**', 'world-bang-game.js', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
+    paths: ['games/bang/**', 'games/bang/world-bang-game.js', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
   push:
     branches: [main]
-    paths: ['games/bang/**', 'world-bang-game.js', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
+    paths: ['games/bang/**', 'games/bang/world-bang-game.js', 'supabase/functions/bang/**', 'supabase/migrations/*bang*.sql', 'tests/bang-*', '.github/workflows/bang.yml']
   workflow_dispatch:
 permissions:
   contents: read

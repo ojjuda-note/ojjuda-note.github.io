@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin,cpuLevelForGold,MAX_CPU_LEVEL} from '../games/matgo-engine.mjs';
+import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin,cpuLevelForGold,MAX_CPU_LEVEL} from '../games/matgo/matgo-engine.mjs';
 import {aiChooseCard as oldChooseCard,aiChoose as oldChoose} from '../supabase/functions/matgo/engine-v4.mjs';
-import * as current from '../games/matgo-engine.mjs';
+import * as current from '../games/matgo/matgo-engine.mjs';
 import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
 import * as v9 from '../supabase/functions/matgo/engine-v9.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {replayOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';
 
-assert.equal(fs.readFileSync(new URL('../games/matgo-engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/engine.mjs',import.meta.url),'utf8'));
+assert.equal(fs.readFileSync(new URL('../games/matgo/matgo-engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/engine.mjs',import.meta.url),'utf8'));
 assert.equal(cpuLevelForGold(5000),1);
 for(let n=1;n<10;n++){
   assert.equal(cpuLevelForGold(n*100000-1),n);

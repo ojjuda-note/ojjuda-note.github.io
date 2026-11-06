@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {Game,CARDS,score,piVal,seededRandom} from '../games/matgo-engine.mjs';
+import {Game,CARDS,score,piVal,seededRandom} from '../games/matgo/matgo-engine.mjs';
 const stats={games:0,claims:0,withPi:0,withoutPi:0,doublePpuk:0,specialCaptures:0,bonuses:0,ordinaryTripleCaptures:0};
 for(let seed=1;seed<=5000;seed++){
  const r=seededRandom(seed^0x9a61b38f);let events=[],g;

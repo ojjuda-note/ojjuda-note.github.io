@@ -6,7 +6,7 @@ const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const { installRecommendedRestaurantsFixture, recommendation, deferred } = require('./helpers/recommended-restaurants-fixture.cjs');
 const root = path.resolve(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'restaurant-ratings.js'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'games/certified-restaurants/restaurant-ratings.js'), 'utf8');
 const scores = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 const pause = () => new Promise(resolve => setTimeout(resolve, 0));
 async function until(check, message) {
@@ -170,7 +170,7 @@ test('recommendation cards and details share the rating service and refresh afte
   let value = 4.5;
   state.hooks.rpc.get_restaurant_rating_summaries = args => ({ data: args.p_ids.map(id => summary(value, { id, count: 2, my_rating: value })), error: null });
   state.hooks.rpc.set_restaurant_rating = args => { value = args.p_score; return { data: summary(value, { id: args.p_id, count: 2 }), error: null }; };
-  f.window.eval(fs.readFileSync(path.join(root, 'recommended-restaurants.js'), 'utf8'));
+  f.window.eval(fs.readFileSync(path.join(root, 'games/certified-restaurants/recommended-restaurants.js'), 'utf8'));
   const ui = f.window.OjjudaRecommendedRestaurants.create({ client: state.client, getUser: state.getUser });
   t.after(() => ui.destroy());
   assert.equal(typeof ui.ratings.getSummaries, 'function', 'parent bridge can reuse the authenticated service');

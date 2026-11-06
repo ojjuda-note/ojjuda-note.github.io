@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
-const script=fs.readFileSync(path.join(__dirname,'../arcade-promotions.js'),'utf8');
+const script=fs.readFileSync(path.join(__dirname,'../features/arcade/arcade-promotions.js'),'utf8');
 const month=30*86400000,delay=()=>new Promise(resolve=>setTimeout(resolve,45));
 const button=(game)=>`<button class="gbtn" ${game==='matgo'?'data-act="matgo-open"':`data-v="${game}"`} aria-label="${game}"><span class="ge">★</span>${game}</button>`;
 (async()=>{

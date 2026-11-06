@@ -11,7 +11,7 @@ for(const asset of manifest.assets){
   assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256,asset.file);
   assert.ok(asset.file.includes(asset.sha256.slice(0,12)),'content-addressed cache key');
 }
-const pages=[['games/photo-ttang.html',60000,40],['games/matgo.html',280000,48],['games/ojjuda-tour/index.html',50000,3],['games/matgo-art.mjs',2500,48]];
+const pages=[['games/photo-ttang.html',60000,40],['games/matgo.html',280000,48],['games/ojjuda-tour/index.html',50000,3],['games/matgo/matgo-art.mjs',2500,48]];
 for(const [file,budget,count] of pages){
   const source=fs.readFileSync(path.join(root,file),'utf8');
   assert.ok(gzipSync(source).length<budget,file+' must not embed its media again');

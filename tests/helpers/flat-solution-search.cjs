@@ -1,6 +1,6 @@
 // Offline witness search only. Failure means this heuristic did not find a
 // path; it is not proof that a layout is impossible. Never loaded by the game.
-const P=require('../../screw-flat-physics.js');
+const P=require('../../games/screw/screw-flat-physics.js');
 function solve(stage,layout){
  const l=P.makeFlatLevel(stage,layout),sim=P.createPhysics(l),route=[],rank=new Map(l.order.map((id,i)=>[id,i])),seen=new Set();
  const advance=(seconds=1.5)=>{for(let t=0;t<seconds*20;t++)sim.step(.05);};

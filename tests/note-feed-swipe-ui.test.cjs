@@ -42,7 +42,7 @@ assert.ok(bootAt > 0);
       await page.addScriptTag({ content: source.slice(0, bootAt) });
       await page.addScriptTag({ content: read('note/pull-refresh.js') });
       await page.addScriptTag({ content: read('note/world-swipe.js') });
-      await page.addScriptTag({ content: read('photo-protection.js') });
+      await page.addScriptTag({ content: read('shared/media/photo-protection.js') });
       await page.evaluate(async () => {
         window.cardOpens = 0; window.refreshes = 0; window.requests = []; window.delayRecent = 0;
         openCard = () => { window.cardOpens++; };

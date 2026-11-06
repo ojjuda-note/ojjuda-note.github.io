@@ -3,7 +3,7 @@ const a='00000000-0000-4000-8000-000000000001',b='00000000-0000-4000-8000-000000
 const dom=new JSDOM(`<div data-ju-user="${neighbour}"><i class="pc-av"></i><b class="pc-name"></b></div>`,{url:'https://shop.test/',runScripts:'outside-only'}),w=dom.window;
 let owner=a,authChange,now=Date.now();const jobs=[],balances=[];
 w.Date.now=()=>now;w.AbortSignal=AbortSignal;
-w.eval(fs.readFileSync(path.join(__dirname,'../ju-decorations.js'),'utf8'));
+w.eval(fs.readFileSync(path.join(__dirname,'../features/wallet/ju-decorations.js'),'utf8'));
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 const client={auth:{onAuthStateChange(fn){authChange=fn;return{data:{subscription:{unsubscribe(){}}}};}},rpc(name,args){return{abortSignal(){return new Promise(resolve=>jobs.push({name,args,owner,resolve}));}};}};
 const data=(coins=10)=>({ok:true,coins,products:[],selected:{},owned:[{key:'profile_flower',expires_at:new Date(now+120000).toISOString()}]});

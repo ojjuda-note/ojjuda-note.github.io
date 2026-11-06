@@ -46,7 +46,7 @@ const operations = `
         const pathname = url.pathname;
         requests.push(pathname);
         if (pathname === '/world.html') return route.fulfill({contentType:'text/html', body:world});
-        if (pathname === '/world-admin-loader.js') return route.fulfill({contentType:'text/javascript', body:read('world-admin-loader.js')});
+        if (pathname === '/admin/world-admin-loader.js') return route.fulfill({contentType:'text/javascript', body:read('admin/world-admin-loader.js')});
         if (pathname === '/note/operations.js') {
           if (failures) { failures--; return route.abort(); }
           if (hold) await hold;

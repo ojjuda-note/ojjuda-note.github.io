@@ -5,7 +5,7 @@ const {JSDOM}=require('jsdom');const delay=()=>new Promise(resolve=>setTimeout(r
  const w=dom.window,observers=[],Base=w.MutationObserver;w.MutationObserver=class extends Base{constructor(fn){super(fn);observers.push(this);}};
  let closes=0,legacyCloses=0;const host=w.document.querySelector('.tour-game-dialog'),frame=host.querySelector('iframe'),legacy=w.document.querySelector('.modal-bg');host.querySelector('button').onclick=()=>closes++;
  try{
-  w.eval(fs.readFileSync(path.join(__dirname,'../multiplayer-entry.js'),'utf8'));await delay();
+  w.eval(fs.readFileSync(path.join(__dirname,'../shared/games/multiplayer-entry.js'),'utf8'));await delay();
   assert.equal(host.dataset.mpActive,'true');assert.equal(host.querySelectorAll('.mp-entry-bar').length,1);assert.equal(w.document.querySelector('#foreign').classList.contains('mp-entry-host'),false);
   host.querySelector('.mp-entry-back').click();assert.equal(closes,1,'shared back preserves original close');
   const message=(origin,source,active)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type:'ojjuda:entry:view',active}}));
@@ -25,7 +25,7 @@ const {JSDOM}=require('jsdom');const delay=()=>new Promise(resolve=>setTimeout(r
  cw.HTMLElement.prototype.getClientRects=function(){return this.hidden?[]:[{width:300,height:300}];};
  let fits=0;cw.addEventListener('resize',()=>{assert.equal(cw.document.body.dataset.mpEntry,'false','refit runs after entrance styles are removed');fits++;});
  try{
-  cw.eval(fs.readFileSync(path.join(__dirname,'../multiplayer-entry.js'),'utf8'));await delay();assert.equal(cw.document.body.dataset.mpEntry,'true');
+  cw.eval(fs.readFileSync(path.join(__dirname,'../shared/games/multiplayer-entry.js'),'utf8'));await delay();assert.equal(cw.document.body.dataset.mpEntry,'true');
   assert.equal(fits,0,'async authentication keeps the entrance active without rendering a board');
   const card=cw.document.createElement('section');card.className='game-entry';cw.document.body.append(card);cw.document.body.removeAttribute('data-mp-entry-pending');
   await Promise.resolve();await Promise.resolve();

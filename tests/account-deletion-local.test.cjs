@@ -1,7 +1,7 @@
 // Real Auth, Storage HTTP and PostgreSQL; refuses to run against a remote project.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {Client}=require(process.env.ACCOUNT_DELETION_PG_MODULE||'pg');
-const cleanup=require('../account-deletion.js');
+const cleanup=require('../features/account/account-deletion.js');
 const env=JSON.parse(fs.readFileSync(process.env.ACCOUNT_DELETION_LOCAL_ENV,'utf8'));
 const api=env.API_URL,dbURL=env.DB_URL,service=env.SERVICE_ROLE_KEY,anon=env.ANON_KEY;
 for(const url of [api,dbURL])assert.ok(['localhost','127.0.0.1','::1'].includes(new URL(url).hostname),'Only a disposable local Supabase project is allowed');

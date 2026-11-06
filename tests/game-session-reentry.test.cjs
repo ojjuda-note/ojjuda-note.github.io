@@ -4,11 +4,11 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const deferred=()=>{let resolve;const promise=new Promise(done=>resolve=done);return {promise,resolve};};
 const kinds={
- tank:{file:'world-tank-game.js',api:'OjjudaTankGame',source:'ojjuda-tank',ready:'ready',init:'tank-init',request:'request'},
- bang:{file:'world-bang-game.js',api:'OjjudaBangGame',source:'ojjuda-bang',ready:'ojjuda-game-ready',init:'ojjuda-bang-init',request:'ojjuda-bang-request'},
- poker:{file:'world-poker-game.js',api:'OjjudaPokerGame',source:'ojjuda-poker',ready:'ready',init:'poker-init',request:'rpc'},
- roulette:{file:'world-roulette-game.js',api:'OjjudaRouletteBridge',source:'ojjuda-roulette',ready:'ready',init:'roulette-init',request:'rpc'},
- marble:{file:'world-tour-game.js',api:'OjjudaTourGame',source:'ojjuda-tour',ready:'ojjuda-game-ready',init:'ojjuda-tour-init',request:'ojjuda-marble-request'}
+ tank:{file:'games/tank/world-tank-game.js',api:'OjjudaTankGame',source:'ojjuda-tank',ready:'ready',init:'tank-init',request:'request'},
+ bang:{file:'games/bang/world-bang-game.js',api:'OjjudaBangGame',source:'ojjuda-bang',ready:'ojjuda-game-ready',init:'ojjuda-bang-init',request:'ojjuda-bang-request'},
+ poker:{file:'games/poker/world-poker-game.js',api:'OjjudaPokerGame',source:'ojjuda-poker',ready:'ready',init:'poker-init',request:'rpc'},
+ roulette:{file:'games/roulette/world-roulette-game.js',api:'OjjudaRouletteBridge',source:'ojjuda-roulette',ready:'ready',init:'roulette-init',request:'rpc'},
+ marble:{file:'games/ojjuda-tour/world-tour-game.js',api:'OjjudaTourGame',source:'ojjuda-tour',ready:'ojjuda-game-ready',init:'ojjuda-tour-init',request:'ojjuda-marble-request'}
 };
 const room=(kind,patch={})=>({id:randomUUID(),code:'ABCDEF12',status:'active',mode:kind==='bang'?'multiplayer':'online',version:4,seat:0,hostSeat:0,names:['나','친구','다른 친구'],capacity:3,
  game:{tanks:[{hp:100}],players:[{bankrupt:false}]},state:{players:[{alive:true}],forfeited:[]},...patch});
@@ -30,7 +30,7 @@ async function fixture(t,kind,initial,options={}){
   return {data,error:null};
  }},rpc:async(name,{p_action,p_payload}={})=>kind==='roulette'?client.functions.invoke(name,{body:{action:p_action,...p_payload}}):({data:{ok:true},error:null})};
  w.OjjudaMatgoAccess={check:async()=>({userId:'member-a',age:25}),visible:()=>allowed,subscribe:()=>()=>{},getClient:()=>client};
- w.eval(read('game-session.js'));w.eval(read(meta.file));const api=w[meta.api];
+ w.eval(read('shared/games/game-session.js'));w.eval(read(meta.file));const api=w[meta.api];
  const open=async(params={})=>{
   await api.open({owner:'member-a',client,authorized:()=>allowed,onCoins:value=>coins.push(value),...options,...params});
   const frame=w.document.querySelector('iframe');if(frame)frame.contentWindow.postMessage=value=>messages.push(value);

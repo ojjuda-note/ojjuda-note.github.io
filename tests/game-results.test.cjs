@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('jsdom');
-const source = fs.readFileSync(path.join(__dirname, '../game-results.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../shared/games/game-results.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function fixture(t, options = {}) {
   const dom = new JSDOM('<button id="launcher">게임</button><main id="host"></main>', {

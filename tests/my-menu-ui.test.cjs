@@ -64,7 +64,7 @@ async function worldFixture(context, mobile, errors) {
   for (const match of world.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)) {
     await page.addStyleTag({ content: match[1] });
   }
-  for (const file of ['note/notifications.css', 'guide-entry.css', 'my-menu.css', 'world-design.css', 'world-themes.css']) {
+  for (const file of ['note/notifications.css', 'features/guide/guide-entry.css', 'features/profile/my-menu.css', 'app/world/world-design.css', 'app/world/world-themes.css']) {
     await page.addStyleTag({ content: read(file) });
   }
   // Execute the real renderer and door action with synthetic account data.
@@ -110,7 +110,7 @@ async function worldFixture(context, mobile, errors) {
       if (event.target.closest('[data-act="door-toggle"]')) menuActions['door-toggle']();
     });
   });
-  await page.addScriptTag({ content: read('world-park-notes.js') });
+  await page.addScriptTag({ content: read('park/world-park-notes.js') });
   await page.addScriptTag({ content: friendRenderer + renderer + noteLinkRenderer });
   await page.addScriptTag({ content: doorAction });
   await page.evaluate(() => renderMy());
@@ -185,7 +185,7 @@ async function noteFixture(context, mobile, errors) {
   await page.route('https://ojjuda.test/note/', route => route.fulfill({ contentType: 'text/html', body: html }));
   await page.route('**/favicon.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: read('favicon.svg') }));
   await page.goto('https://ojjuda.test/note/');
-  for (const file of ['note/style.css', 'note/features.css', 'note/support.css', 'note/notifications.css', 'note/world-navigation.css', 'note/account.css', 'guide-entry.css', 'my-menu.css', 'world-design.css', 'world-themes.css']) {
+  for (const file of ['note/style.css', 'note/features.css', 'note/support.css', 'note/notifications.css', 'note/world-navigation.css', 'note/account.css', 'features/guide/guide-entry.css', 'features/profile/my-menu.css', 'app/world/world-design.css', 'app/world/world-themes.css']) {
     await page.addStyleTag({ content: read(file) });
   }
   await page.evaluate(() => {

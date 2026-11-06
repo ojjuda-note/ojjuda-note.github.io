@@ -10,8 +10,8 @@ if (proof) fs.mkdirSync(proof, { recursive: true });
 // Only the boot/auth transport is replaced; no production account is contacted.
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-world = world.replace('</head>', () => '<script>' + fs.readFileSync(path.join(root, 'world-themes.js'), 'utf8') + '</script></head>');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
+world = world.replace('</head>', () => '<script>' + fs.readFileSync(path.join(root, 'app/world/world-themes.js'), 'utf8') + '</script></head>');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'World boot is available');
 world = world.slice(0, boot) + `

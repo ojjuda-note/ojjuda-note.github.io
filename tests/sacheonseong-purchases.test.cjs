@@ -5,7 +5,7 @@ const KEY='ojjuda-sacheonseong-v1',owner=randomUUID();
 async function fixture({stored=null,member=owner,buy}={}){
  const dom=new JSDOM('<body></body>',{url:'https://example.test/world.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('world-sacheonseong-game.js'));
+ w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('games/sacheonseong/world-sacheonseong-game.js'));
  const calls=[];w.OjjudaSacheonseongGame.open({owner:member,onBuy:async(kind,id,runId,stage)=>{const item={kind,id,runId,stage};calls.push(item);return buy?buy(item):{ok:false,reason:'coins'};}});
  w.document.querySelector('.ge-primary').click();const child=w.document.querySelector('iframe').contentWindow;
  child.document.write(read('games/sacheonseong/index.html'));child.document.close();

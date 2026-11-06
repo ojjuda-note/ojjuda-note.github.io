@@ -1,6 +1,6 @@
 // Offline deterministic regeneration; this resumable log is not a runtime asset.
 const {Worker,isMainThread,parentPort,workerData}=require('node:worker_threads');
-const fs=require('node:fs'),path=require('node:path'),P=require('../../screw-flat-physics.js'),{solve}=require('./flat-solution-search.cjs');
+const fs=require('node:fs'),path=require('node:path'),P=require('../../games/screw/screw-flat-physics.js'),{solve}=require('./flat-solution-search.cjs');
 function replay(stage,layout,route){
  const l=P.makeFlatLevel(stage,layout),sim=P.createPhysics(l),advance=t=>{for(let n=0;n<Math.round(t*20);n++)sim.step(.05);};let error=null;
  for(const [step,r] of route.entries()){

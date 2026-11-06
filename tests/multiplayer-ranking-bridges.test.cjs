@@ -5,7 +5,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
 (async()=>{
  const dom=new JSDOM('<body><button>게임</button></body>',{url:'https://fixture.test',runScripts:'outside-only'}),w=dom.window;
  try{
-  w.eval(read('ttang-bridge.js'));let allowed=true;const saved=[];
+  w.eval(read('games/ttang/ttang-bridge.js'));let allowed=true;const saved=[];
   w.OjjudaTtangBridge.open({owner:'a',authorized:()=>allowed,onResult:async(won,id)=>{saved.push([won,id]);return{ok:true}}});
   const frame=w.document.querySelector('iframe'),post=d=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:frame.contentWindow,data:d}));
   const first=randomUUID(),second=randomUUID();
@@ -61,7 +61,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   }
   // Validate actual parent callback isolation and invalid stage rejection.
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
-  w.eval(read('world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
+  w.eval(read('games/spot-difference/world-spot-game.js'));const pictures=[];w.OjjudaSpotGame.open({onClear:async(stage,owner)=>pictures.push([stage,owner])});
   const sf=w.document.querySelector('iframe');
   const spot=(stage,source=sf.contentWindow,origin=w.location.origin)=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{type:'ojjuda:spot-clear',stage,owner:'a'}}));
   spot(0);spot(153);spot(1,w);spot(1,sf.contentWindow,'https://other.test');spot(17);spot(49);spot(62);spot(63);spot(82);spot(83);spot(152);await tick();

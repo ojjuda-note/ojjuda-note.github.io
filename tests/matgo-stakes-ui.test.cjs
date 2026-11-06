@@ -19,7 +19,7 @@ const root=path.join(__dirname,'..');
   });
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
-   if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
+   if(url.origin!=='https://fixture.test'||['/config.js','/games/matgo/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
    const file=path.join(root,decodeURIComponent(url.pathname));
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
    if(url.pathname==='/games/matgo.html')return route.fulfill({contentType:'text/html',body:fs.readFileSync(file,'utf8').replace('startRound();\n})();','window.stakesTest={startRound,game,ui};\nstartRound();\n})();')});

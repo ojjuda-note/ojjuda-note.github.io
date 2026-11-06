@@ -4,7 +4,7 @@ const path = require('node:path');
 const { test } = require('node:test');
 const { JSDOM } = require('jsdom');
 
-const source = fs.readFileSync(path.join(__dirname, '..', 'pwa-install.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '..', 'shared/pwa/pwa-install.js'), 'utf8');
 const ANDROID = 'Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/144.0 Mobile Safari/537.36';
 const buttons = '<button type="button" id="install" data-pwa-install><span data-pwa-label>앱 설치</span>' +
   '<span data-pwa-caption>홈 화면 아이콘으로 바로 열기</span></button>' +

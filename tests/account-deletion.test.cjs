@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const cleanup=require('../account-deletion.js');
+const cleanup=require('../features/account/account-deletion.js');
 const owner='00000000-0000-4000-8000-000000000001';
 const buckets=['media','note-card-photos','note-event-photos'];
 const recommendationBucket='restaurant-recommendations';

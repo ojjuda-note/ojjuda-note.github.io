@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
-const Physics=require('../screw-flat-physics.js'),Game=require('../screw-flat.js');
+const Physics=require('../games/screw/screw-flat-physics.js'),Game=require('../games/screw/screw-flat.js');
 const {solve:solveAtomic,certified}=require('./helpers/flat-atomic-solution-search.cjs');
 require('./screw-flat-heads.test.cjs');
 const witnessCache=new Map();
@@ -12,11 +12,11 @@ function solution(stage){
  return witnessCache.get(stage);
 }
 
-const flatSource=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
+const flatSource=fs.readFileSync(require.resolve('../games/screw/screw-flat.js'),'utf8');
 assert.doesNotMatch(flatSource,/fillText\s*\(\s*String\(p\.orderRank\)/);
 assert.doesNotMatch(flatSource,/철판 번호 순서대로|routeGateBlocked|wrongRoute|drawKeeper\(/);
 assert.doesNotMatch(flatSource,/line\(c,\[\[0,-5\],\[0,5\]\]/,'no answer-signalling plus heads');
-const physicsSource=fs.readFileSync(require.resolve('../screw-flat-physics.js'),'utf8');
+const physicsSource=fs.readFileSync(require.resolve('../games/screw/screw-flat-physics.js'),'utf8');
 assert.doesNotMatch(physicsSource,/routeGateBlocked|routeUnlocked|routeProgress|orderRank/);
 for(const stage of [1,30,31,122,123,244,245,366,367,488,489,610,611,732,733,854,855,976,977,1000]){
  assert.equal(Physics.spareHoleCount(stage),3,`stage ${stage} starts with only three free holes`);

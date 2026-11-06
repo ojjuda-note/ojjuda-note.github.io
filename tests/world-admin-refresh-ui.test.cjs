@@ -7,8 +7,8 @@ const noteLinks=fs.readFileSync(path.join(root,'park/index.html'),'utf8').match(
 assert.equal(noteLinks?.length,2,'both real Note minihome shortcuts are covered');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
- .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-const nav=fs.readFileSync(path.join(root,'world-navigation.js'),'utf8');
+ .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+const nav=fs.readFileSync(path.join(root,'app/world/world-navigation.js'),'utf8');
 world=world.replace('<script type="module">',`<script>${nav}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');
 assert.ok(boot>0);

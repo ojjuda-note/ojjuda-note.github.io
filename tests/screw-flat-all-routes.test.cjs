@@ -17,7 +17,7 @@ if(isMainThread){
   console.log('PASS: all 1000 stages physically clear with only three free spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
- const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js');
+ const P=require('../games/screw/screw-flat-physics.js'),G=require('../games/screw/screw-flat.js');
  const {certified:solveAtomic}=require('./helpers/flat-atomic-solution-search.cjs'),failures=[];let checked=0;
  for(const stage of workerData){
   let error=null;

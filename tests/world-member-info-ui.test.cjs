@@ -8,7 +8,7 @@ const root = path.join(__dirname, '..');
 // Only the boot/auth transport is replaced; no production account is contacted.
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'World boot is available');
 world = world.slice(0, boot) + `
@@ -31,7 +31,7 @@ g.tab='my';H();
   await page.route('**/*',route=>new URL(route.request().url()).pathname==='/world.html'?route.fulfill({contentType:'text/html',body:world}):route.abort());
   await page.goto('https://fixture.test/world.html');
   await page.waitForFunction(()=>window.profileTest);
-  for(const file of ['signup-identity.js','world-member-info.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
+  for(const file of ['shared/auth/signup-identity.js','features/profile/world-member-info.js'])await page.addScriptTag({content:fs.readFileSync(path.join(root,file),'utf8')});
   const open=async()=>{const group=page.locator('[data-my-group="profile"]');if(!await group.evaluate(n=>n.open))await group.locator('summary').click();await page.locator('[data-act="member-info-open"]').click();};
   const save=()=>page.getByRole('button',{name:'전화번호 저장',exact:true}).click();
   await open();

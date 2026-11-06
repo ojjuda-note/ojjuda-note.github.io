@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {JSDOM} from 'jsdom';
-import {installCapturedZoom} from '../games/matgo-captured-zoom.mjs';
+import {installCapturedZoom} from '../games/matgo/matgo-captured-zoom.mjs';
 
 const dom=new JSDOM('<!doctype html><html><head></head><body><main></main></body></html>',{pretendToBeVisual:true});
 const {window:w}=dom,d=w.document;
@@ -63,7 +63,7 @@ try {
     const hand=d.querySelector('.hand .c');pointer(hand,'pointerdown');tick(500);assert.equal(viewer(),null);pointer(hand,'pointerup');cases++;
   }
   assert.equal(oldHandlerCalls,0,'legacy click handlers cannot open a second viewer');
-  const view=fs.readFileSync(new URL('../games/matgo-view.mjs',import.meta.url),'utf8');assert.match(view,/import '\.\/matgo-captured-zoom\.mjs\?/);
+  const view=fs.readFileSync(new URL('../games/matgo/matgo-view.mjs',import.meta.url),'utf8');assert.match(view,/import '\.\/matgo-captured-zoom\.mjs\?/);
   for(const file of ['matgo.html','matgo-online.mjs'])assert.ok(/matgo-view\.mjs\?v=20261028-games-touch1/.test(fs.readFileSync(new URL('../games/'+file,import.meta.url),'utf8')),file+' loads the current shared layout');
   console.log(`PASS: ${cases} captured-view cases, solo/online, both players/all groups, hold/tap/keyboard, cancellation, safe dismissal, hidden-hand exclusion and unchanged cards`);
 } finally {Date.now=realNow;dom.window.close();}

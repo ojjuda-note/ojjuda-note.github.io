@@ -4,8 +4,8 @@ const {chromium}=require('playwright');
 const {fixture,ids}=require('./tank-online-fixture.cjs');
 const root=path.join(__dirname,'..'),origin='https://game-idle.test';
 const host=`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="/multiplayer-entry.css"><button id="open">탱크게임</button>
-<script src="/world-game-assets.js"></script><script src="/multiplayer-entry.js"></script><script>
+<link rel="stylesheet" href="/shared/games/multiplayer-entry.css"><button id="open">탱크게임</button>
+<script src="/shared/games/world-game-assets.js"></script><script src="/shared/games/multiplayer-entry.js"></script><script>
 document.getElementById('open').onclick=async()=>{await OjjudaGameAssets.load('tank');OjjudaTankGame.open({owner:'fixture-member',client:{functions:{invoke:async(_,{body})=>({data:await tankFixtureInvoke(body),error:null})}}});};
 </script>`;
 

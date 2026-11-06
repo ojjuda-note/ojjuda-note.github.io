@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import * as browser from '../games/matgo-engine.mjs';
+import * as browser from '../games/matgo/matgo-engine.mjs';
 import * as server from '../supabase/functions/matgo/engine.mjs';
 import {tripleScenarios,setupTripleScenario} from './matgo-triple-fixtures.mjs';
 

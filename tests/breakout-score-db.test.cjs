@@ -60,7 +60,7 @@ END;$function$
  const read=name=>fs.readFileSync(path.join(__dirname,'../supabase/migrations',name),'utf8');
  await db.exec(read('20261005050053_community_game_ranking.sql'));
  await db.exec(read('20261005053032_current_game_win_streaks.sql'));
- await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/board_monthly_ranking.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/scripts/rankings/board_monthly_ranking.sql'),'utf8'));
  await db.exec(submitBefore);
  await db.exec(`revoke all on function ojjuda_game_internal.submit_score(text,integer) from public,anon;
  grant execute on function ojjuda_game_internal.submit_score(text,integer) to authenticated;

@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {test} = require('node:test');
 const {JSDOM} = require('jsdom');
-const source = fs.readFileSync(path.join(__dirname, '../matgo-bridge.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../games/matgo/matgo-bridge.js'), 'utf8');
 const deferred = () => {
   let resolve, reject;
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });

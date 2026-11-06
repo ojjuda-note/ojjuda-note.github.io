@@ -43,7 +43,7 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
   function host(script,actor){
    const dom=new JSDOM('<body><button>오락실</button></body>',{url:'https://ojjuda.kr/world.html',runScripts:'outside-only'}),w=dom.window;windows.push(w);
    w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-   w.eval(read('game-session.js'));w.eval(read(script));return w;
+   w.eval(read('shared/games/game-session.js'));w.eval(read(script));return w;
   }
   async function messenger(w,source,type){
    const child=w.document.querySelector('iframe').contentWindow,received=[];child.postMessage=data=>received.push(data);
@@ -52,7 +52,7 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
    return async body=>{const requestId=randomUUID();w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:child,data:{source,type,requestId,body}}));await wait(()=>received.some(r=>r.replyTo===requestId));return received.find(r=>r.replyTo===requestId).result;};
   }
   // In-game Marble creation publishes the actual room, including retries after a lost publish response.
-  const marble=host('world-tour-game.js',A),mc=client(A);let publishAttempts=0;
+  const marble=host('games/ojjuda-tour/world-tour-game.js',A),mc=client(A);let publishAttempts=0;
   const realRpc=mc.rpc;mc.rpc=async(name,args)=>name==='arcade_publish_marble'&&publishAttempts++===0?{error:{message:'offline'}}:realRpc(name,args);
   marble.OjjudaTourGame.open({owner:A,client:mc});const sendMarble=await messenger(marble,'ojjuda-tour','ojjuda-marble-request');
   const createMarble={action:'create',request_id:randomUUID(),options:{capacity:3,title:'게임에서 만든 마블',maxRound:25}};
@@ -63,7 +63,7 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
   assert.equal((await sendMarble({action:'start',room_id:mr.room.id,version:1,request_id:randomUUID()})).ok,true);
   assert.equal(await marble.OjjudaTourGame.close(),true);
   // Tank's host picker, server invitation and acceptance all refer to the same real public room.
-  const tank=host('world-tank-game.js',A);let picker;
+  const tank=host('games/tank/world-tank-game.js',A);let picker;
   tank.OjjudaFriendInvites={available:()=>true,pick:async options=>{picker=options;return true;}};
   tank.OjjudaTankGame.open({owner:A,client:client(A)});const sendTank=await messenger(tank,'ojjuda-tank','request');
   const created=await sendTank({action:'create',request_id:randomUUID(),options:{capacity:3,title:'게임에서 만든 탱크'}});assert.equal(created.ok,true);
@@ -90,7 +90,7 @@ const wait=async check=>{for(let i=0;i<300;i++){if(await check())return;await ne
   assert.match((await send(C,B,solo.room.code)).error.message,/room_unavailable/);assert.ok(!(await directory(B)).rooms.some(r=>r.match_id===solo.room.id));
   // Two real territory game documents communicate over a deterministic realtime channel fixture.
   function territory(actor,entry={}){
-   const w=host('ttang-bridge.js',actor);w.OjjudaTtangBridge.open({owner:actor,client:client(actor),...entry});
+   const w=host('games/ttang/ttang-bridge.js',actor);w.OjjudaTtangBridge.open({owner:actor,client:client(actor),...entry});
    const frame=w.document.querySelector('iframe'),game=new JSDOM(read('games/ttang.html'),{url:'https://ojjuda.kr/games/ttang.html',runScripts:'outside-only'}).window;windows.push(game);
    w.postMessage=data=>queueMicrotask(()=>{if(w.document)w.dispatchEvent(new w.MessageEvent('message',{origin:'https://ojjuda.kr',source:game,data}));});Object.defineProperty(game,'parent',{value:w});Object.defineProperty(frame,'contentWindow',{value:game});
    game.requestAnimationFrame=()=>1;game.matchMedia=()=>({matches:false});

@@ -8,17 +8,17 @@ function fixture(){
   window:{},D:{online:true,user:{id:'member-a'}},g:{tab:'place',place:{id:'arcade'}},L:{area:'',tab:''},worldNavigation:null,
   document:{body:{classList:{contains:()=>gaming}},querySelector:()=>null},
   location:{href:'https://ojjuda.kr/world.html?tab=arcade&game=screw#main',replace:url=>navigations.push(url)}});
- vm.runInContext(read('world-game-assets.js'),c);
+ vm.runInContext(read('shared/games/world-game-assets.js'),c);
  c.window.OjjudaGameRankings={refresh:async()=>{rankReads++;return true;}};
  vm.runInContext(world.slice(world.indexOf('function worldRefreshKey(){'),world.indexOf('async function gm(t){')),c);
  return{c,calls,navigations,api:c.window.OjjudaGameAssets,rankReads:()=>rankReads,setReply:v=>reply=v,setOffline:v=>offline=v,setGaming:v=>gaming=v};
 }
 (async()=>{
  const f=fixture();assert.equal(f.api.revision,manifest.revision);
- assert.ok(world.includes('/world-game-assets.js?v='+manifest.revision),'the shell, loader and manifest release IDs match');
+ assert.ok(world.includes('/shared/games/world-game-assets.js?v='+manifest.revision),'the shell, loader and manifest release IDs match');
  const appVersion=JSON.parse(read('version.json')).version;
  assert.equal(world.match(/Go="([^"]+)"/)[1],appVersion,'shell and application release manifest agree');
- assert.doesNotMatch(read('world-game-assets.js'),/\/version\.json/,'game refresh uses its own release manifest');
+ assert.doesNotMatch(read('shared/games/world-game-assets.js'),/\/version\.json/,'game refresh uses its own release manifest');
  await f.c.refreshWorldView();assert.equal(f.rankReads(),1);assert.equal(f.navigations.length,0);
  assert.equal(f.calls[0].options.cache,'no-store');assert.match(f.calls[0].url,/^\/game-release\.json\?t=\d+$/);
  f.setReply({revision:'20261026-screw-fix1'});await f.c.refreshWorldView();

@@ -52,7 +52,7 @@ const settle=()=>new Promise(resolve=>setImmediate(resolve));
   w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open')};
   let authorized=true,loseResponse=true,charges=0,block=null,lastResult;
   try{
-   w.eval(read('world-saetbyeol-game.js'));
+   w.eval(read('games/saetbyeol/world-saetbyeol-game.js'));
    w.OjjudaSaetbyeolGame.open({owner,authorized:()=>authorized,onBooster:async(id,runId,stage)=>{
     charges++; if(block)await block;
     const value=await rpc(owner,id,runId,stage);lastResult=value;

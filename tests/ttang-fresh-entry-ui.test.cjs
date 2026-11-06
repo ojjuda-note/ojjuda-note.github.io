@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const fixture=`<meta charset="utf-8"><script src="/ttang-bridge.js"></script><script>
+const fixture=`<meta charset="utf-8"><script src="/games/ttang/ttang-bridge.js"></script><script>
  window.channels=[];window.removed=[];window.scores=[];
  window.client={channel(name){const c={name,sent:[],on(_kind,_event,receive){this.receive=receive;return this;},subscribe(callback){this.ready=callback;return this;},send(value){this.sent.push(value.payload);return Promise.resolve('ok');}};channels.push(c);return c;},removeChannel(channel){removed.push(channel.name);return Promise.resolve('ok');}};
  window.openGame=options=>OjjudaTtangBridge.open({client,owner:'member',authorized:()=>true,onResult:async(won,round)=>{scores.push({won,round});return {ok:true};},...options});

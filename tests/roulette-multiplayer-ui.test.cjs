@@ -333,7 +333,7 @@ test('an exit queued during confirmation is completed even when the tab becomes 
 });
 
 test('shared entrance toolbar hides once roulette play starts',()=>{
- const dom=new JSDOM('<style>'+read('multiplayer-entry.css')+'\n'+read('world-roulette-game.css')+'</style><dialog open class="roulette-game-dialog mp-entry-host" data-mp-active="false"><header class="mp-entry-bar">공통 입구</header><header class="roulette-original">게임 목록</header><iframe></iframe></dialog>');
+ const dom=new JSDOM('<style>'+read('shared/games/multiplayer-entry.css')+'\n'+read('games/roulette/world-roulette-game.css')+'</style><dialog open class="roulette-game-dialog mp-entry-host" data-mp-active="false"><header class="mp-entry-bar">공통 입구</header><header class="roulette-original">게임 목록</header><iframe></iframe></dialog>');
  try{assert.equal(dom.window.getComputedStyle(dom.window.document.querySelector('.mp-entry-bar')).display,'none','game header styles must not reopen the shared entrance header');assert.equal(dom.window.getComputedStyle(dom.window.document.querySelector('.roulette-original')).display,'flex');}finally{dom.window.close()}
 });
 

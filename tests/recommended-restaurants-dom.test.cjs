@@ -75,7 +75,7 @@ function fixture(t, options = {}) {
       entry.picker = picker; pickers.push(entry); return picker;
     }
   };
-  window.eval(fs.readFileSync(path.join(root, 'recommended-restaurants.js'), 'utf8'));
+  window.eval(fs.readFileSync(path.join(root, 'games/certified-restaurants/recommended-restaurants.js'), 'utf8'));
   state.loginRequests = 0;
   const ui = window.OjjudaRecommendedRestaurants.create({ client: state.client, getUser: state.getUser, notify: state.notify, onLogin: () => { state.loginRequests++; } });
   const $ = selector => document.querySelector(selector);

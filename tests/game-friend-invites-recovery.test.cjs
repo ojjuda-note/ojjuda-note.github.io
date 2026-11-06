@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const {JSDOM} = require('jsdom');
 
-const source = fs.readFileSync(path.join(__dirname, '../game-friend-invites.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../shared/games/game-friend-invites.js'), 'utf8');
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 const deferred = () => {
   let resolve, reject;

@@ -4,7 +4,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
- .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+ .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.billiardTest={open:(kind,mode='local',options={})=>ep(kind,mode,options),render:bo,close:mn,state:()=>k,angle:()=>Math.atan2(k.aim.dy,k.aim.dx)*180/Math.PI};D.isAdmin=false;g.tab='home';H();`+world.slice(world.indexOf('</script>',boot));
 const distance=(a,b)=>((b-a+540)%360)-180;
@@ -15,7 +15,7 @@ const distance=(a,b)=>((b-a+540)%360)-180;
   await context.route('**/*',route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});const f=path.join(root,u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return route.abort();return route.fulfill({path:f});});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('https://fixture.test/world.html');await page.waitForFunction(()=>window.billiardTest);
-  await page.addScriptTag({path:path.join(root,'mobile-viewport.js')});
+  await page.addScriptTag({path:path.join(root,'shared/viewport/mobile-viewport.js')});
   const angle=()=>page.evaluate(()=>billiardTest.angle());
   const fixedUI=()=>page.evaluate(()=>Object.fromEntries(['.ghead','.bl-hud','.bl-can','.bl-power','.bl-msg','.bl-ctrl'].map(selector=>{
    const rect=document.querySelector(selector).getBoundingClientRect();

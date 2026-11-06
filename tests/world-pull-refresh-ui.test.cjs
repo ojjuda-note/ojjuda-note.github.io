@@ -8,7 +8,7 @@ const refresh=world.slice(world.indexOf('function worldRefreshKey(){'),world.ind
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><main class="main"><h2 id="target">메뉴</h2><input id="draft" value="작성 중"><div id="inner" style="overflow:auto;height:80px"><div style="height:500px">스크롤</div></div><iframe></iframe></main>');
-  await page.addScriptTag({content:fs.readFileSync(path.join(root,'world-pull-refresh.js'),'utf8')});
+  await page.addScriptTag({content:fs.readFileSync(path.join(root,'app/world/world-pull-refresh.js'),'utf8')});
   await page.addScriptTag({content:`
    var D={online:true,user:{id:'member'}},g={tab:'my',place:{id:'cafe',me:{gx:3,gy:7}}},L={area:'content',tab:'posts'},worldNavigation=null,worldHouseClose=null,worldParkNotes=null;
    window.reads=0;window.renders=0;window.waitRefresh=null;window.failRefresh=false;window.testOnline=true;

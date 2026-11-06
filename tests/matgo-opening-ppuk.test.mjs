@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
-import * as browser from '../games/matgo-engine.mjs';
+import * as browser from '../games/matgo/matgo-engine.mjs';
 import * as server from '../supabase/functions/matgo/engine.mjs';
-import {dealSoloRound} from '../games/matgo-tazza.mjs';
+import {dealSoloRound} from '../games/matgo/matgo-tazza.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {setupOpening,playRound} from './matgo-opening-fixture.mjs';
 import {replayOnline,advanceOnline,automaticOnline} from '../supabase/functions/matgo/online.mjs';

@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const G=require('../screw-flat.js'),A=require('../screw-flat-pictures.js');
+const G=require('../games/screw/screw-flat.js'),A=require('../games/screw/screw-flat-pictures.js');
 const storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
 const tap=(g,x,y)=>{g.onDown(x,y);g.onUp(x,y);};
 const finish=g=>{g.state.level.plates.forEach(p=>p.state='gone');g.update(.05);};

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
-import {createWallet} from '../games/matgo-wallet.mjs';
+import {createWallet} from '../games/matgo/matgo-wallet.mjs';
 const dom=new JSDOM('<html><body></body></html>',{url:'https://ojjuda.kr/games/matgo.html'});
 Object.assign(globalThis,{window:dom.window,document:dom.window.document,location:dom.window.location});
 let balance=20,fail=false,requests=[],receipts=new Map(),round=null;

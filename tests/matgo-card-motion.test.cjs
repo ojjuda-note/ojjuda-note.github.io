@@ -6,12 +6,12 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({images=false}={}){
  const dom=new JSDOM('<div class="zone me"><div class="cap"></div><div class="cap"></div><div class="cap"></div><div class="cap"></div></div>',{runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,animations=[],sounds=[],timers=[],decodes=[];
- const style=w.document.createElement('style');style.textContent=fs.readFileSync(path.join(__dirname,'../games/matgo-shared.css'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,'../games/matgo-online.css'),'utf8');w.document.head.append(style);
+ const style=w.document.createElement('style');style.textContent=fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-shared.css'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-online.css'),'utf8');w.document.head.append(style);
  w.CW=40;w.CH=60;w.ME=0;w.game={caps:[[{id:1,k:'pi'},{id:2,k:'pi'}],[]]};w.Sound={play:(...args)=>sounds.push(args)};
  w.cardSVG=c=>'<svg data-face="'+c.id+'" aria-label="검사 패">'+(images?'<image href="/card-'+c.id+'.webp"/>':'')+'</svg>';w.backSVG='<svg data-back="true"></svg>';
  w.HTMLImageElement.prototype.decode=function(){return new Promise((resolve,reject)=>decodes.push({image:this,fail:reject,finish:()=>{Object.defineProperties(this,{naturalWidth:{value:120},naturalHeight:{value:180}});resolve();}}));};
  w.HTMLCanvasElement.prototype.getContext=function(){return {fillRect(){},drawImage:image=>this.dataset.painted=image.getAttribute('src')};};
- w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-flight-art.mjs'),'utf8').replace('export function','function'));
+ w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-flight-art.mjs'),'utf8').replace('export function','function'));
  w.flightArt=w.createFlightArt({cardSVG:w.cardSVG,backSVG:w.backSVG});
  w.sleep=async()=>{};w.setTimeout=(fn,delay)=>timers.push({fn,delay});
  w.Element.prototype.animate=function(frames,options){let complete;const finished=new Promise(resolve=>{complete=resolve;});const entry={node:this,frames,options,finish:()=>{entry.ended=true;complete();},ended:false};animations.push(entry);return {finished,cancel(){complete();}};};
@@ -73,7 +73,7 @@ function fixture({images=false}={}){
  const online=fixture();try{
   const w=online.w;w.matchMedia=()=>({matches:false});
   w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div id="hand"><button data-card="1" style="opacity:.6"><svg data-face="1"></svg></button></div><div class="floor"><div class="fl"></div></div><p id="turn-label"></p></div>');
-  w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
+  w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
   const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent:()=>{}});
   const c={id:1,k:'pi'},next={seat:0,deadline:new Date(Date.now()+30000).toISOString(),serverTime:Date.now()};
   const task=motion.play({},next,[{type:'played',p:0,card:c,stack:[c]}]);await tick();
@@ -87,7 +87,7 @@ function fixture({images=false}={}){
   const f=fixture();try{
    const w=f.w;w.matchMedia=()=>({matches:false});
    w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div class="op-hand hand"><div class="c"><svg data-back="a"></svg></div><div class="c"><svg data-back="b"></svg></div></div><div class="floor"><div class="fl"><button class="stack"><span class="c"><svg data-face="1"></svg></span></button></div><div class="deck"><svg></svg></div></div><div class="caps-own">'+Array(4).fill('<div class="cap"><div class="cap-cards"></div></div>').join('')+'</div></div>');
-   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
+   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
    const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent(){}}),c={id:1,k:'pi'};
    const source=event==='take'?w.document.querySelector('.stack .c'):w.document.querySelector('.op-hand .c:last-child');
    const events=event==='take'?[{type:'take',p:0,cards:[c]}]:[{type:'played',p:1,card:{id:2,k:'pi'},stack:[]},{type:'flip',p:1,card:{id:3,k:'pi'},stack:[]}];
@@ -119,7 +119,7 @@ function fixture({images=false}={}){
   const f=fixture({images:true});try{
    const w=f.w;w.matchMedia=()=>({matches:false});
    w.document.body.insertAdjacentHTML('beforeend','<div class="board"><div id="hand"><button data-card="1"><svg data-face="1"></svg></button></div><div class="floor"><div class="fl"></div></div></div>');
-   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
+   w.eval(fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-online-motion.mjs'),'utf8').replace(/^import .*;\n/,'').replace('export function createOnlineMotion','function createOnlineMotion'));
    const motion=w.createOnlineMotion({cardSVG:w.cardSVG,backSVG:w.backSVG,sound:w.Sound,onEvent(){}}),source=w.document.querySelector('[data-card]');
    const task=motion.play({}, {seat:0,deadline:new Date(Date.now()+30000).toISOString(),serverTime:Date.now()},[{type:'played',p:0,card:{id:1},stack:[]}]);await tick();
    assert.equal(source.style.visibility,'','the original card remains visible while artwork prepares');assert.equal(f.animations.length,0);

@@ -13,12 +13,12 @@ const insets = source => source.replace(/env\(safe-area-inset-(top|bottom|left|r
 const viewports = [{width:390,height:844},{width:1280,height:900},{width:844,height:390},{width:344,height:882},{width:673,height:841}];
 
 let world = read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
-const scripts = ['mobile-viewport.js','game-entry.js','game-results.js','multiplayer-entry.js','game-session.js',
-  'world-tour-game.js','world-bang-game.js','world-mines-game.js','world-spot-game.js','world-sacheonseong-game.js'];
+const scripts = ['shared/viewport/mobile-viewport.js','shared/games/game-entry.js','shared/games/game-results.js','shared/games/multiplayer-entry.js','shared/games/game-session.js',
+  'games/ojjuda-tour/world-tour-game.js','games/bang/world-bang-game.js','games/mines/world-mines-game.js','games/spot-difference/world-spot-game.js','games/sacheonseong/world-sacheonseong-game.js'];
 world = world.replace('<script type="module">', () => scripts.map(file => `<script src="/${file}"></script>`).join('')+'<script type="module">');
 // Game-specific sheets normally load on demand. Keep their production cascade,
 // including the older viewport sheet, instead of copying fullscreen CSS here.
-world = world.replace('</head>', ['world-tour-game.css','world-spot-game.css','world-sacheonseong-game.css']
+world = world.replace('</head>', ['shared/games/world-tour-game.css','games/spot-difference/world-spot-game.css','games/sacheonseong/world-sacheonseong-game.css']
   .map(file => `<link rel="stylesheet" href="/${file}">`).join('')+'</head>');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0, 'fixture replaces only live application boot');
@@ -31,12 +31,12 @@ window.fullscreenFixture={open:Al,close:El,board:vn,closeBoard:dt,current:()=>R,
 D.online=false;D.isAdmin=false;g.tab='arcade';H();
 ` + world.slice(world.indexOf('</script>', boot));
 
-// Real multiplayer-entry.js in both windows switches the parent toolbar from
+// Real shared/games/multiplayer-entry.js in both windows switches the parent toolbar from
 // the actual visible entry. The fixture maintains a round ID and moves so a
 // remount or unexpected frame navigation is observable after folding.
 const child = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>html,body{margin:0;min-height:100%;font:16px sans-serif}button{min-height:44px;padding:8px 12px}main{padding:12px}button[hidden],section[hidden]{display:none!important}</style>
-<script src="/multiplayer-entry.js"></script></head><body><main>
+<script src="/shared/games/multiplayer-entry.js"></script></head><body><main>
 <section class="game-entry" id="entry"><h1>게임 입구</h1><button id="play">시작하기</button></section>
 <section id="playing" hidden><h1>진행 중</h1><button id="move">한 수</button><button id="finish">결과 보기</button></section>
 <section id="result" hidden><h1>게임 결과</h1><button id="replay">다시 하기</button></section>
@@ -214,7 +214,7 @@ async function resize(page, size, shortened=false) {
       await resize(page,viewports[0],true);await checkpoint(page,api+' shortened visual viewport');await fullscreen(page,selector,api+' shortened visual viewport');await frameFits(page,selector);
       if(api==='OjjudaSpotGame'){
         // The viewport sheet may be cached or loaded after a lazy game sheet.
-        await page.addStyleTag({content:insets(read('mobile-viewport.css'))});
+        await page.addStyleTag({content:insets(read('shared/viewport/mobile-viewport.css'))});
         for(const open of [true,false]){
           await checkpoint(page,`spot zoom ${open?'open':'closed'} with viewport CSS loaded last`);
           await game.evaluate(open=>parent.postMessage({type:'ojjuda:spot-zoom',open},location.origin),open);

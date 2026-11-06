@@ -11,7 +11,7 @@ test('solitaire validates iframe messages, confirms exit, saves and removes its 
   const w = dom.window;
   w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
   w.HTMLDialogElement.prototype.close = function() { this.open = false; };
-  w.eval(read('world-solitaire-game.js'));
+  w.eval(read('games/solitaire/world-solitaire-game.js'));
   let exits = 0, saves = 0, pauses = 0, resumes = 0, finished = 0;
   w.OjjudaGuestAccess = {finished:() => finished++};
   const entry = w.document.getElementById('entry'); entry.focus();
@@ -38,7 +38,7 @@ test('member sessions do not use the guest completion gate or share guest saves'
   const dom = new JSDOM('', {url:'https://ojjuda.kr/', runScripts:'outside-only'}), w = dom.window;
   w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
   w.HTMLDialogElement.prototype.close = function() { this.open = false; };
-  w.eval(read('world-solitaire-game.js'));
+  w.eval(read('games/solitaire/world-solitaire-game.js'));
   let valid = true, requests = 0;
   w.OjjudaSolitaireGame.open({owner:'member-a', authorized:() => valid, onExitRequest:() => { requests++; return true; }});
   const frame = w.document.querySelector('iframe');
@@ -53,7 +53,7 @@ test('finished records validate mode/time, deduplicate a run and retry a failed 
   const dom = new JSDOM('', {url:'https://ojjuda.kr/',runScripts:'outside-only'}),w=dom.window;
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  w.eval(read('games/solitaire/rules.js'));w.eval(read('world-solitaire-game.js'));
+  w.eval(read('games/solitaire/rules.js'));w.eval(read('games/solitaire/world-solitaire-game.js'));
   let valid=true,calls=0,resolve;
   w.OjjudaSolitaireGame.open({authorized:()=>valid,onScore:()=>{calls++;return new Promise(r=>resolve=r);}});
   const frame=w.document.querySelector('iframe'),acks=[];
@@ -114,7 +114,7 @@ test('guest client accepts solitaire and uses the same run ID for save and month
   const dom=new JSDOM('',{url:'https://ojjuda.kr/',runScripts:'outside-only'}),w=dom.window,calls=[];
   w.OJJUDA_CONFIG={supabaseUrl:'https://project.example',supabaseKey:'public-key'};
   w.supabase={createClient:()=>({rpc:(name,args)=>{calls.push({name,args});return{abortSignal:async()=>({data:name==='guest_game_ranking'?[]:{ok:true},error:null})};}})};
-  w.eval(read('guest-game-scores.js'));
+  w.eval(read('shared/games/guest-game-scores.js'));
   const runId='10000000-0000-4000-8000-000000000004';
   assert.equal((await w.OjjudaGuestScores.submit('solitaire',299999880,runId)).ok,true);
   assert.equal(calls[0].args.p_game,'solitaire');assert.equal(calls[0].args.p_request_id,runId);

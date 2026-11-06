@@ -184,12 +184,12 @@ function boxFixture(options={}){
  const storage=new Map(),events=[],w={},c=vm.createContext({window:w,console,crypto:require('node:crypto'),localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))}});
  // Run the real imported geometry helpers in the isolated VM as classic scripts.
  // The production game is an ESM module, while this result fixture has no loader.
- for(const file of ['screw3d-premium-models.js','screw3d-classic-styles.js','screw3d-soft-cubes.js','screw3d-replacement-models.js','screw3d-sculpted-skins.js','screw3d-depth-renderer.js']){
+ for(const file of ['games/screw/screw3d-premium-models.js','games/screw/screw3d-classic-styles.js','games/screw/screw3d-soft-cubes.js','games/screw/screw3d-replacement-models.js','games/screw/screw3d-sculpted-skins.js','games/screw/screw3d-depth-renderer.js']){
   const source=fs.readFileSync(path.join(root,file),'utf8').replace(/^export (?=(?:const|function|class|let|var)\b)/gm,'');
   vm.runInContext(source,c,{filename:file});
  }
- const gameSource=fs.readFileSync(path.join(root,'screw3d.js'),'utf8').replace(/^import .*;\s*$/gm,'').replace(/export \{[^}]*\};/, '');
- vm.runInContext(gameSource,c,{filename:'screw3d.js'});
+ const gameSource=fs.readFileSync(path.join(root,'games/screw/screw3d.js'),'utf8').replace(/^import .*;\s*$/gm,'').replace(/export \{[^}]*\};/, '');
+ vm.runInContext(gameSource,c,{filename:'games/screw/screw3d.js'});
  const api={setScore(){},end:(score,detail)=>events.push(['end',score,detail?.outcome]),stageClear:score=>events.push(['clear',score]),...options};
  const game=c.screw3d(api,1);return {game,st:w.__ojjScrew3d,events,storage};
 }
@@ -210,7 +210,7 @@ test('box screw pending purchases block advancement until a read-only verificati
 });
 test('flat screw move exhaustion pauses for a result and preserves the existing recovery path',t=>{
  const previous=global.localStorage,storage=new Map();global.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))};t.after(()=>{global.localStorage=previous;});
- const events=[],G=require('../screw-flat.js'),game=G.flat({setScore(){},end(){},stageFail:()=>events.push('failure'),stageClear:()=>events.push('success')},1);
+ const events=[],G=require('../games/screw/screw-flat.js'),game=G.flat({setScore(){},end(){},stageFail:()=>events.push('failure'),stageClear:()=>events.push('success')},1);
  game.state.moves=game.state.moveLimit;game.update(.05);game.update(.05);assert.deepEqual(events,['failure']);assert.equal(game.canResume,true);assert.equal(game.continueStage(2),false);
  assert.equal(game.resume(),true);game.update(.05);assert.deepEqual(events,['failure'],'continuing to the purchase controls must not immediately reopen the same failure');
  for(const plate of game.state.level.plates)plate.state='gone';game.update(.05);assert.deepEqual(events,['failure','success']);assert.equal(game.stageCleared,true);

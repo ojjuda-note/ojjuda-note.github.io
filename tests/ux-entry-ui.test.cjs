@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),origin='https://entry.test';
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/world-park-notes.js')?tag:'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,tag=>tag.includes('/park/world-park-notes.js')?tag:'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g.place?.id:g.tab,guest:()=>({guest:D.parkGuest,user:D.user,online:D.online}),start:()=>om(()=>{},H)};'+world.slice(world.indexOf('</script>',boot));
 (async()=>{
@@ -11,7 +11,7 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
    const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
    await context.route('**/*',route=>{
     const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
-    if((mode==='identity-missing'&&url.pathname==='/signup-identity.js')||(mode==='portal-missing'&&url.pathname==='/portal.js'))return route.abort();
+    if((mode==='identity-missing'&&url.pathname==='/shared/auth/signup-identity.js')||(mode==='portal-missing'&&url.pathname==='/app/portal/portal.js'))return route.abort();
     if(url.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
     const file=path.join(root,url.pathname==='/'?'index.html':url.pathname);
     return file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile()?route.fulfill({path:file}):route.abort();

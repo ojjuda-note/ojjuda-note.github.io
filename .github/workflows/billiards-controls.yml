@@ -4,16 +4,16 @@ on:
   push:
     paths:
       - 'world.html'
-      - 'mobile-viewport.js'
-      - 'mobile-viewport.css'
+      - 'shared/viewport/mobile-viewport.js'
+      - 'shared/viewport/mobile-viewport.css'
       - 'tests/billiards-controls-ui.test.cjs'
       - 'tests/billiards-ai.test.cjs'
       - '.github/workflows/billiards-controls.yml'
   pull_request:
     paths:
       - 'world.html'
-      - 'mobile-viewport.js'
-      - 'mobile-viewport.css'
+      - 'shared/viewport/mobile-viewport.js'
+      - 'shared/viewport/mobile-viewport.css'
       - 'tests/billiards-controls-ui.test.cjs'
       - 'tests/billiards-ai.test.cjs'
       - '.github/workflows/billiards-controls.yml'

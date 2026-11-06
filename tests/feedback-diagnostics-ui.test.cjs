@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const collector = read('diagnostics.js');
+const collector = read('shared/diagnostics/diagnostics.js');
 const origin = 'https://app.example.invalid';
 const api = 'https://api.example.invalid';
 
@@ -192,7 +192,7 @@ async function verifyForm() {
     const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/g)]
       .map(([, src]) => new URL(src, 'https://fixture.test/' + file));
     const index = pathname => scripts.findIndex(src => src.pathname === pathname);
-    assert(index('/diagnostics.js') >= 0 && index('/signup-identity.js') > index('/diagnostics.js'),
+    assert(index('/shared/diagnostics/diagnostics.js') >= 0 && index('/shared/auth/signup-identity.js') > index('/shared/diagnostics/diagnostics.js'),
       'collector is present and loads before application scripts');
     for (const pathname of ['/note/support.js', '/note/notifications.js']) {
       const script = scripts.find(src => src.pathname === pathname);

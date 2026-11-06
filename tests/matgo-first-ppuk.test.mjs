@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop} from '../games/matgo-engine.mjs';
+import {CARDS,Game,seededRandom,aiChooseCard,aiChoose,aiGoStop} from '../games/matgo/matgo-engine.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 
 function fixture(p=0,{hand=[1,3,16],flips=[2],other=[5,7,20]}={}){

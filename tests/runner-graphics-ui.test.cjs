@@ -3,8 +3,8 @@ const fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/world-game-assets.js')||s.includes('/game-entry.js')?s:'')
- .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')?s:'')
+ .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 // Compare the legacy physics at the same scaled torso width as the artwork.
 world=world.replace('let v=83-11*2/3,B=83+11*2/3,j=440+i', 'let v=83-18*2/3,B=83+18*2/3,j=440+i');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');

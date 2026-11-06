@@ -10,11 +10,11 @@ const origin = 'https://back.test';
 // Only auth and the child game's response are fixtures; no live accounts run.
 let world = read('world.html')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-const scripts = ['game-session.js', 'world-navigation.js', 'world-mines-game.js', 'world-saetbyeol-game.js',
-  'world-tour-game.js', 'world-restaurant-guide.js', 'recommended-restaurants.js', 'world-tank-game.js', 'world-spot-game.js', 'ttang-bridge.js',
-  'photo-ttang-bridge.js', 'matgo-bridge.js', 'world-festival-schedule.js', 'world-archery-game.js',
-  'world-sacheonseong-game.js', 'world-bang-game.js', 'world-poker-game.js', 'world-roulette-game.js', 'screw-loader.js'].map(read).join('\n');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
+const scripts = ['shared/games/game-session.js', 'app/world/world-navigation.js', 'games/mines/world-mines-game.js', 'games/saetbyeol/world-saetbyeol-game.js',
+  'games/ojjuda-tour/world-tour-game.js', 'games/certified-restaurants/world-restaurant-guide.js', 'games/certified-restaurants/recommended-restaurants.js', 'games/tank/world-tank-game.js', 'games/spot-difference/world-spot-game.js', 'games/ttang/ttang-bridge.js',
+  'games/photo-ttang/photo-ttang-bridge.js', 'games/matgo/matgo-bridge.js', 'games/festival-schedule/world-festival-schedule.js', 'games/forest-archer/world-archery-game.js',
+  'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/poker/world-poker-game.js', 'games/roulette/world-roulette-game.js', 'games/screw/screw-loader.js'].map(read).join('\n');
 world = world.replace('<script type="module">', () => `<script>${scripts}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);

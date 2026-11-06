@@ -4,7 +4,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 (async()=>{const dom=new JSDOM('<body><main></main></body>',{url:'https://fixture.test',runScripts:'outside-only'});try{
  const w=dom.window;w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
  w.ResizeObserver=class{observe(){}disconnect(){}};w.requestAnimationFrame=()=>1;w.cancelAnimationFrame=()=>{};
- w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('world-game-rankings.js'));
+ w.eval(read('games/solitaire/rules.js'));w.eval(read('games/mines/rules.js'));w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('shared/games/world-game-rankings.js'));
  const world=read('world.html'),registry=world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame'));
  const catalogStart=world.indexOf('var _r='),catalogEnd=world.indexOf(',Z=360',catalogStart);
  assert.ok(catalogStart>0&&catalogEnd>catalogStart);w.eval(world.slice(catalogStart,catalogEnd)+';');

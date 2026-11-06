@@ -1,6 +1,6 @@
 // Offline verifier for the two-tap, atomic screw transfer interaction.
 // Never loaded by the game. A failed greedy search is not an impossibility proof.
-const P=require('../../screw-flat-physics.js');
+const P=require('../../games/screw/screw-flat-physics.js');
 
 function solve(stage,layout,seed=0,{tray=3,policy=0,firstChoice=0}={}){
  const level=P.makeFlatLevel(stage,layout),route=[];

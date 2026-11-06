@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.clock.install({time:new Date('2026-10-10T12:00:00Z')});
  await page.setContent('<meta charset="utf-8"><style>body{margin:0}#app{padding:16px}</style><button id="open">친구 초대</button><div id="app"><main class="main"><button data-act="notice-open">공지</button><div data-game-friend-invite-slot></div></main></div>');
- await page.addStyleTag({path:path.join(__dirname,'../game-entry.css')});await page.addScriptTag({path:path.join(__dirname,'../game-entry.js')});await page.addScriptTag({path:path.join(__dirname,'../game-friend-invites.js')});
+ await page.addStyleTag({path:path.join(__dirname,'../shared/games/game-entry.css')});await page.addScriptTag({path:path.join(__dirname,'../shared/games/game-entry.js')});await page.addScriptTag({path:path.join(__dirname,'../shared/games/game-friend-invites.js')});
  await page.evaluate(()=>{
   window.uid='me';window.calls=[];window.inbox=[];window.replies=[];window.subscriptions=[];window.clockSkew=0;window.failList=false;window.prepared=[];window.cancelled=0;window.joined=null;
   window.friends=[{id:'off',nick:'가람',online:false},{id:'on',nick:'초록친구',online:true}];

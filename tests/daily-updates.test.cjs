@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
-const source=fs.readFileSync(path.join(__dirname,'../daily-updates.js'),'utf8');
+const source=fs.readFileSync(path.join(__dirname,'../features/daily-updates/daily-updates.js'),'utf8');
 const tick=async()=>{for(let n=0;n<5;n++)await new Promise(r=>setImmediate(r));};
 const notice={id:'2026-11-05',date:'2026-11-05',available_at:'2026-11-05T15:00:00Z',expires_at:'2026-11-06T15:00:00Z',items:['게임 뒤로가기 개선','축제·공연 일정 추가']};
 function setup({user='member-a',read=false,ready=true,block=false,rpc:custom,stored,now='2026-11-06T14:59:59.000Z'}={}){

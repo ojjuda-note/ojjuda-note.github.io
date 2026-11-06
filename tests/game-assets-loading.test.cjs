@@ -4,7 +4,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const test=require('node:test');
 const root=path.resolve(__dirname,'..');
-const source=fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8');
+const source=fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8');
 const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 
@@ -48,7 +48,7 @@ test('concurrent games share common CSS and ordered scripts',async()=>{
  const f=fixture(),first=f.api.load('mole'),second=f.api.load('runner');
  const urls=f.nodes.map(node=>node.src||node.href);
  assert.equal(urls.length,new Set(urls).size,'shared controls are inserted once');
- assert.equal(urls.filter(url=>url.startsWith('/game-controls.')).length,2);
+ assert.equal(urls.filter(url=>url.startsWith('/shared/games/game-controls.')).length,2);
  assert.ok(f.nodes.filter(node=>node.tag==='script').every(node=>node.async===false));
  f.finish();await Promise.all([first,second]);assert.equal(f.timers.size,0);
 });

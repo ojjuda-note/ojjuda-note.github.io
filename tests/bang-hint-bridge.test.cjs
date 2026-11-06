@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 test('hint purchases use the wallet callback, validate context and reject other frames or owners',async()=>{
  const dom=new JSDOM('<body></body>',{url:'https://ojjuda.kr/world.html',runScripts:'outside-only'}),w=dom.window;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- for(const file of ['game-session.js','world-bang-game.js'])w.eval(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'));
+ for(const file of ['shared/games/game-session.js','games/bang/world-bang-game.js'])w.eval(fs.readFileSync(require('node:path').join(__dirname,'..',file),'utf8'));
  let authorized=true;const buys=[],games=[],replies=[];
  w.OjjudaBangGame.open({owner:'user',authorized:()=>authorized,onHintBuy:async(...args)=>{buys.push(args);return {ok:true,coins:2};},client:{functions:{invoke:async(...args)=>{games.push(args);return {data:{ok:true}};}}}});
  const frame=w.document.querySelector('iframe').contentWindow;frame.postMessage=m=>replies.push(m);

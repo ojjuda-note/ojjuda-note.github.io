@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const P=require('../screw-flat-physics.js');
+const P=require('../games/screw/screw-flat-physics.js');
 const advance=(sim,seconds)=>{for(let n=0;n<seconds*20;n++)sim.step(.05);};
 
 // A routed/interlocked stage used to silently turn off board-parked heads.

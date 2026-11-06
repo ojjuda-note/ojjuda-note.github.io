@@ -3,7 +3,7 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
 const { JSDOM, VirtualConsole } = require('jsdom');
 const root = path.join(__dirname, '..'), read = file => fs.readFileSync(path.join(root, file), 'utf8');
 let source = read('world.html').match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-source = source.replaceAll('import.meta.env', '({})').replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+source = source.replaceAll('import.meta.env', '({})').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 source = source.slice(0, source.indexOf('j1(()=>H());gm('));
 source += `window.recommendationEntry={auth:D,actions:sr,open:openWorldGameLink,close:El,setupNavigation:gm,
  setClient:client=>S=client,getController:()=>worldRecommendedRestaurants,catalog:()=>_r,
@@ -21,9 +21,9 @@ function fixture(query='') {
  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});w.OjjudaGameAssets={ready:()=>true,load:async()=>{}};
-  w.eval(read('restaurant-ratings.js'));w.eval(read('recommended-restaurants.js'));const create=w.OjjudaRecommendedRestaurants.create;
+  w.eval(read('games/certified-restaurants/restaurant-ratings.js'));w.eval(read('games/certified-restaurants/recommended-restaurants.js'));const create=w.OjjudaRecommendedRestaurants.create;
  w.OjjudaRecommendedRestaurants.create=options=>{const controller=create(options);created.push({options,controller});return controller;};
- w.eval(read('world-restaurant-guide.js'));w.eval(source);
+ w.eval(read('games/certified-restaurants/world-restaurant-guide.js'));w.eval(source);
  w.OjjudaWorldNavigation={install(options){navigation=options;return{};}};
  const api=w.recommendationEntry,$=selector=>w.document.querySelector(selector);
  const client=()=>({auth:{onAuthStateChange(){return{data:{subscription:{unsubscribe(){}}}};}},

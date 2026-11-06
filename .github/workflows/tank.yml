@@ -1,9 +1,9 @@
 name: Tank solo and multiplayer
 on:
   push:
-    paths: ['games/tank/**', 'world-tank-game.*', 'multiplayer-entry.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
   pull_request:
-    paths: ['games/tank/**', 'world-tank-game.*', 'multiplayer-entry.*', 'world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
+    paths: ['games/tank/**', 'games/tank/world-tank-game.*', 'shared/games/multiplayer-entry.*', 'shared/games/world-game-rankings.js', 'supabase/functions/tank/**', 'supabase/migrations/*_tank_*.sql', 'tests/tank-*', 'tests/world-board-tank.test.cjs', 'tests/arcade-catalog.test.cjs', 'tests/arcade-entry-flows.test.cjs', '.github/workflows/tank.yml']
 permissions:
   contents: read
 jobs:

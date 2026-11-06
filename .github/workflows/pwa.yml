@@ -40,7 +40,7 @@ jobs:
           persist-credentials: false
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            /pwa-install.js
+            /shared/pwa/pwa-install.js
             /sw.js
             /offline.html
             /world.html

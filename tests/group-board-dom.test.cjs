@@ -197,3 +197,14 @@ test('approval and rejection cannot run together for the same applicant',async()
     pending.resolve({error:{message:'연결 실패'}});await tick();assert.equal(d.querySelector('[data-reject]').disabled,false);
   }finally{f.dom.window.close();}
 });
+
+
+test('invitation dialog immediately lists recent members and pages without duplicates',async()=>{
+ const row=n=>({user_id:'50000000-0000-4000-8000-'+String(n).padStart(12,'0'),nickname:'새 회원 '+n,created_at:'2026-11-06T00:00:00Z',invited:false});
+ const f=fixture({hash:'#room='+room,respond:(a,p)=>a==='search'?{data:p.query?[row(99)]:p.before?[row(29),row(30)]:Array.from({length:31},(_,n)=>row(n))}:undefined});try{
+  await tick();const d=f.w.document;d.querySelector('[data-action=manage]').click();await tick();d.querySelector('[data-invite]').click();await tick();
+  assert.equal(f.calls.find(([a])=>a==='search')[1].query,'');assert.equal(d.querySelectorAll('#invite-results .member').length,30);assert.match(d.querySelector('#invite-results').textContent,/새 회원 0/);
+  const more=d.querySelector('#invite-more');more.click();more.click();await tick();assert.equal(d.querySelectorAll('#invite-results .member').length,31);assert.equal(f.calls.filter(([a])=>a==='search').length,2);
+  const form=d.querySelector('#invite-search');form.elements.query.value='찾기';form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(d.querySelectorAll('#invite-results .member').length,1);assert.match(d.querySelector('#invite-results').textContent,/새 회원 99/);
+ }finally{f.dom.window.close();}
+});
