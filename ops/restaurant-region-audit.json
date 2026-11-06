@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 37,
-    "scheduledAt": "2026-11-07T07:00:00+09:00",
+    "slot": 38,
+    "scheduledAt": "2026-11-07T08:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "scheduled 07:00 Asia/Seoul"
+    "source": "scheduled 08:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -11932,6 +11932,297 @@
         "경상북도 영천시",
         "경상북도 상주시",
         "경상북도 경산시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 38,
+      "scheduledAtKST": "2026-11-07T08:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_with_six_official_sangju_tourism_listings",
+      "assignedRegions": [
+        "경상북도 영천시",
+        "경상북도 상주시",
+        "경상북도 경산시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도 영천시",
+          "baseListedCount": 1,
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 1,
+          "scope": "기존 경북 으뜸음식점 1곳 좌표 공란 확인. 영천관광 음식 카테고리만 확인; 개별 최신 업소 주소 및 공식 좌표 재확인 실패. 이월.",
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 상주시",
+          "baseListedCount": 2,
+          "new": 6,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 8,
+          "scope": "상주시 공식 농가맛집 3곳 및 모범음식점 3곳 공개 명단의 상호·주소 확인; 기존 러브리또 상호·도로명·건물번호 일치. 신규6+기존2 위치 근거 미확인. 전체 명단 조사 아님.",
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 경산시",
+          "baseListedCount": 1,
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 1,
+          "scope": "기존 으뜸음식점 1곳 좌표 공란 확인. 경산시 공식 음식점 명단을 공개 접근 범위에서 식당별 재확인하지 못함. 선정/영업 판단 유보.",
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "상주시 관광상주 농가맛집 공식 명단(이름·주소)",
+        "상주시 관광상주 모범음식점 공식 명단(접근 가능한 첫 20곳)",
+        "영천시 문화관광 포털 음식 카테고리(개별 업소 미확인)",
+        "경산시 공식 관광 개별 업소 명단 검색(확정 식당 정보 미확보)",
+        "기존 경상북도 으뜸음식점 등록의 상호·주소·좌표 확인"
+      ],
+      "additions": 6,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 10,
+      "locationPendingScope": "기본 데이터에 영천1·상주2·경산1과 신규 상주6의 좌표 공란 합계. 도시 전체 식당 수 아님.",
+      "addedRestaurantIds": [
+        "local-sangju-slot38-durak",
+        "local-sangju-slot38-sandeulga",
+        "local-sangju-slot38-jongdari-boritdan",
+        "local-sangju-slot38-gaeungung",
+        "local-sangju-slot38-godaegam",
+        "local-sangju-slot38-goryeogarden"
+      ],
+      "existingItemsRechecked": [
+        "농가맛집 숲속안골길 (경상북도 영천시 안골길 20-75(괴연동); 좌표 null)",
+        "새감포복집 (경상북도 상주시 낙양3길 39-51; 좌표 null)",
+        "러브리또 (경상북도 상주시 동수1길 88, 1층 (서문동); 좌표 null)",
+        "더반 (경상북도 경산시 삼성현로 185; 좌표 null)"
+      ],
+      "evidenceUrls": [
+        "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+        "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+        "https://www.yc.go.kr/tour",
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "local-gb-top-2025-2",
+          "name": "농가맛집 숲속안골길",
+          "currentAddress": "경상북도 영천시 안골길 20-75(괴연동)",
+          "region": "경상북도 영천시",
+          "searchAliases": [
+            "경상북도 영천시",
+            "영천시",
+            "경북 영천시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소의 식당명·주소·과거 선정 근거 보존. 공식 현재 업소·지도 좌표 재확인에는 미도달.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-5",
+          "name": "새감포복집",
+          "currentAddress": "경상북도 상주시 낙양3길 39-51",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소의 식당명·주소·과거 선정 근거 보존. 공식 현재 업소·지도 좌표 재확인에는 미도달.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-4",
+          "name": "러브리또",
+          "currentAddress": "경상북도 상주시 동수1길 88, 1층 (서문동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-6",
+          "name": "더반",
+          "currentAddress": "경상북도 경산시 삼성현로 185",
+          "region": "경상북도 경산시",
+          "searchAliases": [
+            "경상북도 경산시",
+            "경산시",
+            "경북 경산시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 저장소의 식당명·주소·과거 선정 근거 보존. 공식 현재 업소·지도 좌표 재확인에는 미도달.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-durak",
+          "name": "두락",
+          "currentAddress": "경상북도 상주시 식산로 112",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-sandeulga",
+          "name": "산들가家",
+          "currentAddress": "경상북도 상주시 화북면 용화로 10",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-jongdari-boritdan",
+          "name": "종달이와 보릿단",
+          "currentAddress": "경상북도 상주시 천봉서로 110-8",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15157/100048.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-gaeungung",
+          "name": "개운궁",
+          "currentAddress": "경상북도 상주시 경상대로 2882 (개운동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-godaegam",
+          "name": "고대감",
+          "currentAddress": "경상북도 상주시 왕산로 203 (남성동, 1층)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-goryeogarden",
+          "name": "고려가든",
+          "currentAddress": "경상북도 상주시 경상대로 2870 (개운동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "경상북도 상주시",
+            "상주시",
+            "경북 상주시"
+          ],
+          "evidenceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "evidenceResult": "공식 상주시 관광 명단에서 상호·현주소 대조. 위도·경도와 현재 영업 여부는 확인되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 38,
+          "unresolvedReason": "이름·지점·현주소와 연결되는 공개 위도·경도 근거 미확인. 선정 취소·폐업·좌표 추정 금지."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "영천·상주·경산 10곳 식당별 좌표",
+          "reason": "상호·현주소와 일치하는 공개 위도·경도 확인 불가.",
+          "action": "기존 ID 보존 및 null 유지. 2순환 38회차에 공식 업소/행정/지도로 재검증."
+        },
+        {
+          "topic": "영천·경산 신규 맛집 조사",
+          "reason": "공식 최신 개별 음식점 명단에서 이름과 현주소를 함께 확보하지 못함.",
+          "action": "다음 배정의 미확인 대상 우선."
+        },
+        {
+          "topic": "상주시 공식 관광 명단의 선정/영업/정규 등급",
+          "reason": "공식 수록 사실과 별도 현재 영업 또는 미쉐린·블루리본 정규 리본 등급을 구분해야 함.",
+          "action": "관광 목록 수록 이력만 표시. 폐업·등급 추정 금지."
+        }
+      ],
+      "carryOver": [
+        "35회차 구미·김천시의 저장 기록이 없어 차후 동일 회차 재확인 대상으로 보존.",
+        "29회차 전주·군산·익산 및 31회차 여수·순천·광양의 미완료 점검 보존.",
+        "영천·상주·경산의 영업상태·주소이전·좌표 미확인 항목은 2순환 38회차에 우선 재검토."
+      ],
+      "nextSlot": 39,
+      "nextRegions": [
+        "부산광역시 중구",
+        "부산광역시 서구",
+        "부산광역시 동구",
+        "부산광역시 영도구",
+        "부산광역시 부산진구"
       ],
       "notExhaustive": true
     }
