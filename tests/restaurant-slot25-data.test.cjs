@@ -15,7 +15,7 @@ const app = fs.readFileSync(path.join(root, 'games/certified-restaurants/app.js'
 test('천안·아산 회차는 시/공공관광 식당 5곳만 추가하고 중복 또는 추정좌표가 없다', () => {
   assert.equal(slot.restaurants.length, 5);
   const ids = new Set(base.restaurants.map(item => item.id));
-  const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\\s+/g, '').toLowerCase()).join('|');
+  const identity = item => [item.region, item.name, item.address].map(v => String(v || '').replace(/\s+/g, '').toLowerCase()).join('|');
   const places = new Set(base.restaurants.map(identity));
   const added = new Set();
   for (const row of slot.restaurants) {
@@ -39,9 +39,9 @@ test('천안·아산 회차는 시/공공관광 식당 5곳만 추가하고 중�
 test('수록 이력과 지정 이력을 구분하고 추천맛집을 수정하지 않는다', () => {
   assert.equal(slot.restaurants[0].guides[0].yearType, 'selection');
   slot.restaurants.slice(1).forEach(row => assert.equal(row.guides[0].yearType, 'listing'));
-  assert.match(app, /official-chungnam-slot25\\.json/);
-  assert.match(app, /\\.\\.\\.slot25\\.restaurants/);
-  assert.match(app, /state\\.recommended/);
+  assert.match(app, /official-chungnam-slot25\.json/);
+  assert.match(app, /\.\.\.slot25\.restaurants/);
+  assert.match(app, /state\.recommended/);
   assert.match(app, /ojjuda-certified-restaurants-saved-v1/);
 });
 
