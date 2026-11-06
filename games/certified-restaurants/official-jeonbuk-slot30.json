@@ -1,0 +1,235 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "전북특별자치도 투어전북 공식 추천음식(정읍·남원·김제) 및 김제시 문화관광",
+  "sourceUrls": [
+    "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+    "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+    "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+    "https://www.gimje.go.kr/tour/index.gimje?menuCd=DOM_000000304001001009",
+    "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=30f37e1a-eb76-4a7b-8a37-c1cfce7cc579"
+  ],
+  "sourceScope": "1순환 30회차 정읍 2·남원 3·김제 2곳. 정부 관광 검색 색인에 보인 상호·주소를 정리; 김제 대운은 시청 원문, 남원 현식당은 관광공사 자료 대조. 미쉐린/정규 블루리본 선정 주장 아님.",
+  "verificationLimit": "투어전북 원문 직접 열람은 403으로 차단되어 검색색인 공개 식별 사실만 확인. 최근 영업·정확한 위경도 미검증. 다른 업소·전체 명단 전수 조사 아님.",
+  "coordinatePolicy": "정확한 개별 업소 좌표 증거 없어 7곳 모두 lat/lng null; 주변건물 추정 및 사용자 위치 이용 금지.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-jeonbuk-slot30-jeongeup-jeongwon-hanjeongsik",
+      "name": "정원한정식",
+      "category": "한식",
+      "region": "전북",
+      "district": "정읍시",
+      "address": "전북특별자치도 정읍시 내장산로 925",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산채정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-jeongeup-jayeon-irae-ssanghwa",
+      "name": "자연이래쌍화차",
+      "category": "디저트",
+      "region": "전북",
+      "district": "정읍시",
+      "address": "전북특별자치도 정읍시 중앙1길 156",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌍화차"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003005000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-namwon-hyeonsikdang",
+      "name": "현식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "남원시",
+      "address": "전북특별자치도 남원시 의총로 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        },
+        {
+          "provider": "local-guide",
+          "label": "관광공사 2025 여행기사 식당 정보 수록",
+          "year": 2025,
+          "yearType": "publication",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=30f37e1a-eb76-4a7b-8a37-c1cfce7cc579",
+          "sourceName": "한국관광공사 대한민국 구석구석 2025년 3월 기사",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "2025.03 작성 여행기사의 업체 식별·도로명주소 재확인. 선정연도 또는 현 영업 보증 아님"
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-namwon-chueohyang",
+      "name": "추어향",
+      "category": "한식",
+      "region": "전북",
+      "district": "남원시",
+      "address": "전북특별자치도 남원시 요천로 1455",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-namwon-jirisan-chiknaengmyeon",
+      "name": "지리산칡냉면",
+      "category": "한식",
+      "region": "전북",
+      "district": "남원시",
+      "address": "전북특별자치도 남원시 주천면 정령치로 92 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칡냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003006000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-gimje-daeun-hanwoo",
+      "name": "대운한우암소회관",
+      "category": "한식",
+      "region": "전북",
+      "district": "김제시",
+      "address": "전북특별자치도 김제시 금산면 모악로 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        },
+        {
+          "provider": "local-guide",
+          "label": "김제시 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gimje.go.kr/tour/index.gimje?menuCd=DOM_000000304001001009",
+          "sourceName": "김제시 문화관광 금산면 음식점 공식 목록",
+          "verifiedAt": "2026-11-07",
+          "status": "official_municipal_model_restaurant",
+          "selectionCriteria": "김제시가 모범업소로 수록한 사실. 모범음식점 표기 자체를 미식가이드 선정으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-jeonbuk-slot30-gimje-chongche-bori",
+      "name": "총체보리한우정육식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "김제시",
+      "address": "전북특별자치도 김제시 백산면 옥석길 2-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "전북문화관광 추천음식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+          "sourceName": "전북특별자치도 투어전북 공식 추천음식",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "도 문화관광 공식 지역 추천음식 업소 소개. 심사선정·블루리본 등급·현재 영업 확인과 구분; 공식 웹 원문은 일부 접근제한으로 공개 검색 색인 기준 확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003004000",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
