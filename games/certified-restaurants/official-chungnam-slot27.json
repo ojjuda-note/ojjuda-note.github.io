@@ -1,0 +1,242 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "충청남도 공식 충남관광 음식점 개별 상세",
+  "sourceUrls": [
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
+  ],
+  "sourceScope": "당진 3곳·서산 3곳·보령 2곳의 상호·주소·대표메뉴 일부를 충남관광 개별 식당 페이지에서 확인. 전체 업소 전수조사 아님.",
+  "verificationLimit": "관광 수록과 정규 인증·블루리본 리본등급·현행 영업상태는 구분. 보령 팔도강산은 관광 페이지 제목의 백년가게 표기만 기록.",
+  "coordinatePolicy": "신규 8곳 모두 개별 업체 상호·현주소와 일치하는 공개 좌표 미확보로 lat/lng null. 추정 좌표, 개인 위치 미사용.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+      "name": "삼형제감자탕",
+      "category": "한식",
+      "region": "충남",
+      "district": "당진시",
+      "address": "충청남도 당진시 송악읍 신흥동길 83",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-dangjin-daedeulbo",
+      "name": "대들보",
+      "category": "한식",
+      "region": "충남",
+      "district": "당진시",
+      "address": "충청남도 당진시 미락2안길 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-dangjin-cafe-raw",
+      "name": "카페로우",
+      "category": "디저트",
+      "region": "충남",
+      "district": "당진시",
+      "address": "충청남도 당진시 남부로 453-32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "로우크림라떼"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-seosan-jingukjip",
+      "name": "진국집",
+      "category": "한식",
+      "region": "충남",
+      "district": "서산시",
+      "address": "충청남도 서산시 관아문길 19-10 (읍내동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "게국지 세트"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-seosan-anheung-ilpum",
+      "name": "안흥일품꽃게장",
+      "category": "한식",
+      "region": "충남",
+      "district": "서산시",
+      "address": "충청남도 서산시 양열로 212",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "간장게장정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-seosan-gabo",
+      "name": "가보",
+      "category": "중식",
+      "region": "충남",
+      "district": "서산시",
+      "address": "충청남도 서산시 호수공원9로 47, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "가보짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-boryeong-daechon-islands",
+      "name": "대천 섬과섬사이조개구이",
+      "category": "한식",
+      "region": "충남",
+      "district": "보령시",
+      "address": "충청남도 보령시 해수욕장10길 24",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬조개찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 식당 소개에 상호·주소가 수록된 사실. 미쉐린/정규 블루리본 선정, 별도 인증이나 현 영업 증명은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot27-boryeong-paldo-gangsan",
+      "name": "팔도강산",
+      "category": "한식",
+      "region": "충남",
+      "district": "보령시",
+      "address": "충청남도 보령시 대해로 893",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물뚝배기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 관광 음식점 수록(백년가게 표기)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111",
+          "sourceName": "충청남도 공식 충남관광 · 음식점 상세",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광 페이지의 [백년가게] 표기는 수록 당시 안내. 현행 지정 유지 여부·선정 연도·현재 영업은 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
