@@ -1,0 +1,11 @@
+// Local vector fallback keeps a playable card visible when an image request fails.
+const SUITS={spades:'♠',hearts:'♥',clubs:'♣',diamonds:'♦'};
+const ROWS={1:[[0,0]],2:[[0,-95],[0,95]],3:[[0,-95],[0,0],[0,95]],4:[[-52,-95],[52,-95],[-52,95],[52,95]],5:[[-52,-95],[52,-95],[0,0],[-52,95],[52,95]],6:[[-52,-95],[52,-95],[-52,0],[52,0],[-52,95],[52,95]],7:[[-52,-95],[52,-95],[0,-48],[-52,0],[52,0],[-52,95],[52,95]],8:[[-52,-95],[52,-95],[0,-48],[-52,0],[52,0],[0,48],[-52,95],[52,95]],9:[[-52,-105],[52,-105],[-52,-35],[52,-35],[0,0],[-52,35],[52,35],[-52,105],[52,105]],10:[[-52,-105],[52,-105],[0,-70],[-52,-35],[52,-35],[-52,35],[52,35],[0,70],[-52,105],[52,105]]};
+const BACK='<g transform="translate(57.882353 105.882353) scale(.242647059)"><path fill="#245A48" d="M100 0H354Q369 0 381 12L499 130Q512 143 512 165V428Q512 512 428 512H84Q0 512 0 428V100Q0 0 100 0Z"/><path fill="#FFF" d="M346 37Q346 22 358 31L476 149Q485 161 470 161H395Q346 161 346 112Z"/><path d="M108 290Q256 420 404 290" fill="none" stroke="#FFF" stroke-width="60" stroke-linecap="round"/></g>';
+export function cardFallback(card){
+  const back=!card?.up&&!card?.rank,suit=SUITS[card?.suit]||'',rank=Number(card?.rank),label={1:'A',11:'J',12:'Q',13:'K'}[rank]||String(rank),color=['hearts','diamonds'].includes(card?.suit)?'#b23745':'#111';
+  const corner=`<text x="14" y="37" font-size="34">${label}</text><text x="17" y="62" font-size="25">${suit}</text>`;
+  const pips=(ROWS[rank]||[]).map(([x,y])=>`<text transform="translate(${120+x} ${168+y})${y>0?' rotate(180)':''}" text-anchor="middle" dominant-baseline="central" font-size="68">${suit}</text>`).join('');
+  const center=rank>10?`<rect x="46" y="69" width="148" height="198" rx="8" fill="none" stroke="currentColor"/><text x="120" y="166" text-anchor="middle" font-size="94">${label}</text><text x="120" y="231" text-anchor="middle" font-size="66">${suit}</text>`:pips;
+  return `<svg class="card-fallback" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" aria-hidden="true" focusable="false"><rect x=".5" y=".5" width="239" height="335" rx="12" fill="#fff" stroke="#c8cec8"/>${back?BACK:`<g fill="${color}" color="${color}" font-family="Georgia,Times New Roman,serif">${corner}<g transform="rotate(180 120 168)">${corner}</g>${center}</g>`}</svg>`;
+}
