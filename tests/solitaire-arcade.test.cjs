@@ -105,9 +105,33 @@ test('the last card freezes the clear time before the finish animation and retri
   const retried=messages.filter(m=>m.type==='ojjuda-game-result').at(-1);assert.equal(retried.seconds,120);assert.equal(retried.runId,runId);
   ack(true);assert.equal(w.document.querySelector('#ranking-status').textContent,'순위에 기록했어요.');
   assert.equal(JSON.parse(w.localStorage.getItem(key)).completion.saved,true);
-  w.document.querySelector('#play-again').click();w.document.querySelector('#start-new').click();
+  w.document.querySelector('#play-again').click();
+  assert.equal(w.document.querySelector('#dialog').open,false,'restart immediately deals a fresh hand');
   const next=JSON.parse(w.localStorage.getItem(key));assert.notEqual(next.runId,runId);assert.equal(next.completion,null);
+  assert.equal(next.state.drawCount,3);assert.equal(next.state.stock.length,24);assert.equal(next.elapsed,0);assert.equal(next.history.length,0);
+  w.document.querySelector('#stock').click();assert.equal(JSON.parse(w.localStorage.getItem(key)).state.waste.length,3,'the new hand accepts input');
   dom.window.close();
+});
+
+test('celebration can restart before images load and cannot trap the board on rendering failure',()=>{
+  for(const scenario of ['restart','timeout','no-canvas','canvas-error']){
+    const dom=new JSDOM('<div class="pile" data-type="foundation" data-col="0"></div>',{runScripts:'outside-only'}),w=dom.window;
+    const timers=new Map(),frames=new Map();let timerId=0,frameId=0,completed=0,restarted=0;
+    Object.assign(w,{SUITS:['hearts'],CARD_RATIO:1.4,cardAsset:()=>'/card.svg',matchMedia:()=>({matches:false}),Image:class{},
+      setTimeout:fn=>{const id=++timerId;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id),
+      requestAnimationFrame:fn=>{const id=++frameId;frames.set(id,fn);return id;},cancelAnimationFrame:id=>frames.delete(id)});
+    w.HTMLCanvasElement.prototype.getContext=function(){if(scenario==='canvas-error')throw Error('canvas unavailable');return scenario==='no-canvas'?null:{scale(){}};};
+    w.eval(read('games/solitaire/celebration.js').replace(/^import .*;\n/gm,'').replace('export function','function'));
+    const cancel=w.playWinAnimation(()=>completed++,{onRestart:()=>restarted++});
+    if(scenario==='restart'){
+      w.document.querySelector('[data-restart]').click();assert.equal(restarted,1);assert.equal(completed,0);
+    }else if(scenario==='timeout'){
+      for(const callback of [...timers.values()])callback();assert.equal(completed,1);
+    }else assert.equal(completed,1,'unsupported canvas immediately opens the result');
+    assert.equal(w.document.querySelector('.win-celebration'),null);assert.equal(timers.size,0);assert.equal(frames.size,0);
+    cancel();w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter'}));
+    assert.equal(completed+restarted,1,'completion or restart happens exactly once');dom.window.close();
+  }
 });
 
 test('guest client accepts solitaire and uses the same run ID for save and monthly ranking',async()=>{
