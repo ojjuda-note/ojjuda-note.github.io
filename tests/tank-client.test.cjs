@@ -60,7 +60,9 @@ const wait=async fn=>{for(let i=0;i<600;i++){if(await fn())return;await new Prom
   a.eval('draw()');assert.equal(a.eval('TS'),a.eval('tankRenderEngine.view().TS'));
   assert.ok(a.canvasScales.some(([x,y])=>x===.5175&&y===.5175),'tank rendering uses the enlarged physics scale');
   assert.deepEqual(Array.from(a.eval('WEAPONS.map(w=>w.r)')),[28.8,50.4,16.8,28.8,28.8,28.8,28.8,120,200,28.8,57.6,21.6,28.8,86.4,16.8],'the picker metadata agrees with enlarged weapon radii');
-  assert.equal(a.orientationLocks.length,0);assert.equal(a.orientationUnlocks,1);assert.equal(a.fullscreenCalls,1);
+  assert.equal(a.orientationLocks.length,0);
+  assert.equal(a.orientationUnlocks,0,'embedded games leave the host orientation unchanged');
+  assert.equal(a.fullscreenCalls,0,'embedded games preserve system Back instead of entering native fullscreen');
   const beforeResize=a.eval('JSON.stringify(tankRenderEngine.snapshot())');
   viewport.width=844;viewport.height=390;a.dispatchEvent(new a.Event('resize'));a.TankOnline.tick();
   assert.equal(get(a,'cv').style.width,'844px');assert.equal(get(a,'cv').style.height,'390px');
