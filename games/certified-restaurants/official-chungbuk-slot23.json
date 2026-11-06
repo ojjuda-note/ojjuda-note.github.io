@@ -1,0 +1,109 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "충청북도 공식 밥맛좋은집 홍보자료",
+  "sourceUrls": [
+    "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+    "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+    "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
+  ],
+  "coordinateEvidenceUrls": [
+    "https://fmr.purpleo.co.kr/view/29170"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "청주시 공식 식당 소개 중 기존 목록에 없는 3곳만 추가. 밥맛좋은집 지정 이력과 현재 영업은 별개. 정규 블루리본 리본 수와 무관. 신규 3곳 중 25시가든 1곳의 주소·상호·공공데이터 원본 좌표를 검증; 다른 2곳은 위치 추정 금지.",
+  "restaurants": [
+    {
+      "id": "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+      "name": "효자촌묵집",
+      "category": "한식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 상당구 남일면 단재로 469",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "묵밥",
+        "묵정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북 밥맛좋은집 지정 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+          "sourceName": "충청북도 공식 누리소통망 · 밥맛좋은집 식당 소개(웰로 공개 재게시)",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충청북도 공식 홍보 글에서 밥맛좋은집으로 소개. 개별 지정 연도와 현재 영업 여부는 확인되지 않아 추정하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot23-cheongju-kongganae",
+      "name": "콩가내",
+      "category": "한식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 청원구 주성로 61",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "콩국수",
+        "들깨수제비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북 밥맛좋은집 지정 이력",
+          "year": 2017,
+          "yearType": "selection",
+          "sourceUrl": "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+          "sourceName": "충청북도 공식 누리소통망 · 밥맛좋은집 식당 소개(웰로 공개 재게시)",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충청북도 공식 소개에서 2017년 밥맛좋은집 지정 명시. 2026년 재선정 또는 현재 영업 확인으로 해석하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot23-cheongju-25si-garden",
+      "name": "25시가든",
+      "category": "한식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 청원구 내수읍 신기초정로 675-14",
+      "lat": 36.720274,
+      "lng": 127.599263,
+      "menu": [
+        "두루치기백반",
+        "된장찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북 밥맛좋은집 지정 이력",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29",
+          "sourceName": "충청북도 공식 누리소통망 · 밥맛좋은집 식당 소개(웰로 공개 재게시)",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충청북도 공식 소개에서 밥맛좋은집 지정 업소로 설명. 개별 선정 연도와 현재 영업은 미확인. 별도 모범음식점 지정 이력과 혼동하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29",
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSource": {
+        "name": "공공데이터 원본 위경도 필드를 재게시한 업소별 등록정보",
+        "url": "https://fmr.purpleo.co.kr/view/29170",
+        "method": "해당 업소의 일치 상호·도로명주소 및 원본 위도·경도 필드 대조",
+        "checkedAt": "2026-11-06"
+      }
+    }
+  ]
+}
