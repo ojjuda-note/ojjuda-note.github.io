@@ -1,0 +1,16 @@
+.daily-updates-dialog{box-sizing:border-box;width:min(420px,calc(100% - 32px));max-height:calc(100dvh - 48px);margin:auto;padding:0;border:1px solid var(--line,#dce5df);border-radius:24px;background:var(--surface,#fff);color:var(--ink,#23372e);box-shadow:0 24px 80px #122c2830;font-family:var(--font-b,system-ui,sans-serif);overflow:hidden}
+.daily-updates-dialog::backdrop{background:#102b2666;backdrop-filter:blur(5px)}
+.daily-updates-content{display:flex;flex-direction:column;max-height:calc(100dvh - 50px)}
+.daily-updates-heading{padding:27px 26px 18px;flex:none}
+.daily-updates-date{margin:0 0 8px;color:var(--ink-2,#657a6f);font-size:12px;font-weight:600;letter-spacing:.04em}
+.daily-updates-title{margin:0;font-size:23px;font-weight:750;letter-spacing:-.04em;line-height:1.4}
+.daily-updates-list{list-style:none;margin:0 26px;padding:0;overflow:auto;overscroll-behavior:contain;min-height:0;scrollbar-width:thin}
+.daily-updates-list li{display:flex;align-items:flex-start;gap:12px;padding:15px 0;border-top:1px solid var(--line,#e5ece7);font-size:15px;line-height:1.6;overflow-wrap:anywhere;word-break:keep-all}
+.daily-updates-list li::before{content:'✓';display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;background:var(--accent-soft,#e8f3ed);color:var(--accent-ink,#28614c);font-size:12px;font-weight:800;flex:none}
+.daily-updates-footer{padding:18px 26px 24px;flex:none}
+.daily-updates-confirm{width:100%;min-height:48px;border:0;border-radius:14px;background:var(--accent-ink,#28614c);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.daily-updates-confirm:disabled{opacity:.65;cursor:wait}
+.daily-updates-confirm:focus-visible{outline:3px solid var(--accent,#77bba1);outline-offset:3px}
+.daily-updates-status{margin:0 0 10px;color:var(--ink-2,#657a6f);font-size:12px;line-height:1.5}
+.daily-updates-status:empty{display:none}
+@media(max-width:360px){.daily-updates-heading{padding:23px 20px 16px}.daily-updates-list{margin:0 20px}.daily-updates-footer{padding:16px 20px 20px}.daily-updates-title{font-size:21px}}
