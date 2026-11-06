@@ -1502,19 +1502,19 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3170,
+    "uniqueRestaurants": 3178,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2439,
+      "local-guide": 2447,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2138,
+    "coordinatesMissing": 2146,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
-      "충북": 217,
+      "충북": 225,
       "충남": 46,
       "울산": 36,
       "경남": 319,
@@ -1531,13 +1531,13 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1865,
+      "한식": 1871,
       "중식": 130,
       "일식": 132,
       "기타": 579,
-      "양식": 209,
+      "양식": 210,
       "분식": 25,
-      "디저트": 230
+      "디저트": 231
     }
   },
   "coordinateEnrichment": {
@@ -11378,51 +11378,123 @@
       "locationPending": 18,
       "locationHidden": 0,
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-chungbuk-slot24-official-tourism",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3170,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2439,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2138,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1865,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3178,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2447,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2146,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 225,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1871,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 210,
+          "분식": 25,
+          "디저트": 231
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-chungbuk-slot24-jecheon-gangwon-dakgalbi",
+        "local-chungbuk-slot24-jecheon-baubonga",
+        "local-chungbuk-slot24-jecheon-hyangchon",
+        "local-chungbuk-slot24-jecheon-tteuran-e",
+        "local-chungbuk-slot24-jecheon-sanmaru",
+        "local-chungbuk-slot24-jecheon-neutinamu",
+        "local-chungbuk-slot24-jecheon-cowboygrill",
+        "local-chungbuk-slot24-chungju-naemilseojae"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
+      ],
+      "coordinateEvidenceUrls": [],
+      "scope": "충주·제천 기존 54곳과 공개 공식 관광업소 일부를 대조해 제천 7, 충주 1곳 추가. 관광 등재는 정규 인증·현 영업을 보장하지 않음. 전체 명단 전수 대조 아님.",
+      "coordinatesAdded": 0,
+      "locationPending": 24,
+      "locationHidden": 0,
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-chungbuk-slot23-three-provincial-promotions",
+    "id": "2026-11-06-chungbuk-slot24-official-tourism",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3167,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2436,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1031,
-      "coordinatesMissing": 2136,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1862,
-        "중식": 130,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 25,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3170,
       "providerCounts": {
         "michelin": 237,
@@ -11461,25 +11533,72 @@
         "디저트": 230
       }
     },
-    "newRestaurantCount": 3,
+    "currentCoverage": {
+      "uniqueRestaurants": 3178,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2447,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2146,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 225,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1871,
+        "중식": 130,
+        "일식": 132,
+        "기타": 579,
+        "양식": 210,
+        "분식": 25,
+        "디저트": 231
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
-      "local-chungbuk-slot23-cheongju-kongganae",
-      "local-chungbuk-slot23-cheongju-25si-garden"
+      "local-chungbuk-slot24-jecheon-gangwon-dakgalbi",
+      "local-chungbuk-slot24-jecheon-baubonga",
+      "local-chungbuk-slot24-jecheon-hyangchon",
+      "local-chungbuk-slot24-jecheon-tteuran-e",
+      "local-chungbuk-slot24-jecheon-sanmaru",
+      "local-chungbuk-slot24-jecheon-neutinamu",
+      "local-chungbuk-slot24-jecheon-cowboygrill",
+      "local-chungbuk-slot24-chungju-naemilseojae"
     ],
     "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
-      "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
-      "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+      "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
     ],
-    "coordinateEvidenceUrls": [
-      "https://fmr.purpleo.co.kr/view/29170"
-    ],
-    "scope": "청주 본체 59곳·좌표 누락 16곳을 기준으로 충청북도 공식 맛집 소개 세 곳을 비교해 신규 3곳 확인. 다른 외식업소 전수조사는 아님.",
-    "coordinatesAdded": 1,
-    "locationPending": 18,
+    "coordinateEvidenceUrls": [],
+    "scope": "충주·제천 기존 54곳과 공개 공식 관광업소 일부를 대조해 제천 7, 충주 1곳 추가. 관광 등재는 정규 인증·현 영업을 보장하지 않음. 전체 명단 전수 대조 아님.",
+    "coordinatesAdded": 0,
+    "locationPending": 24,
     "locationHidden": 0,
     "notExhaustive": true
   },
@@ -12291,6 +12410,30 @@
       "noEstimatedCoordinates": true,
       "notExhaustive": true,
       "note": "25시가든 모범음식점 과거 지정취소 정보는 별도 사업 기록이고 이 자료에서는 밥맛좋은집 소개만 증명함."
+    },
+    "municipalTourism20261106ChungbukSlot24": {
+      "checkedAt": "2026-11-06",
+      "recordCount": 8,
+      "regionCounts": {
+        "충주시": 1,
+        "제천시": 7
+      },
+      "sourceFile": "official-chungbuk-slot24.json",
+      "officialSources": [
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
+      ],
+      "sourceType": "official_tourism_restaurant_introduction",
+      "coordinatesVerified": 0,
+      "locationPending": 24,
+      "completeRegionalCollection": false,
+      "notice": "정규 등급·선정연도·현재 영업상태 미확인, 관광 소개만 수록."
     }
   },
   "mapCoverageAuditHistory": [
