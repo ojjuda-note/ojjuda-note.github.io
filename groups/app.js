@@ -83,42 +83,14 @@ async function loadFeed(append=false,{quiet=false}={}){
   if(append){const ids=new Set(posts.map(p=>p.id));box.insertAdjacentHTML('beforeend',incoming.filter(p=>!ids.has(p.id)).map(postCard).join(''));}
   else if(signatures.get(box)!==JSON.stringify(next)+(next.length?'':date?'dated':'all')){clearMedia();box.innerHTML=next.map(postCard).join('')||`<div class="empty"><strong>${date?'이 날짜의 기록이 없어요.':'아직 올라온 기록이 없어요.'}</strong></div>`;}
   posts=next;signatures.set(box,JSON.stringify(posts)+(posts.length?'':date?'dated':'all'));if(days)renderCalendar(days);$('#load-more').hidden=!more;
-  $('#result-caption').textContent=date?`${date.replaceAll('-','.')}의 기록 · 최근 올린 순서`:'최근 올린 순서';$('[data-action=clear-date]').hidden=!date;setupCarousels();observeMedia();
+  $('#result-caption').textContent=date?`${date.replaceAll('-','.')}의 기록 · 최근 올린 순서`:'최근 올린 순서';$('[data-action=clear-date]').hidden=!date;observeMedia();
  }catch(e){if(ticket===epoch&&box.isConnected){if(e?.code==='42501'){clearMedia();posts=[];if($('#calendar'))$('#calendar').replaceChildren();signatures.delete(box);box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else if(!quiet&&!signatures.has(box)){box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else notify(failure(e));}}
  finally{if(ticket===epoch){loading=false;if($('#load-more'))$('#load-more').disabled=false;}}
 }
 function renderCalendar(days){const [y,m]=month.split('-').map(Number),first=new Date(Date.UTC(y,m-1,1)).getUTCDay(),box=$('#calendar');box.innerHTML=`<section class="calendar"><header class="calendar-head"><button data-month="-1" aria-label="이전 달">‹</button><h2>${y}년 ${m}월</h2><button data-month="1" aria-label="다음 달">›</button></header><div class="calendar-grid">${['일','월','화','수','목','금','토'].map(x=>`<span class="weekday">${x}</span>`).join('')}${'<span></span>'.repeat(first)}${days.map(d=>`<button class="day ${d.day===today()?'today':''} ${d.day===date?'selected':''} ${d.events?'has-event':''}" data-date="${d.day}" aria-label="${d.day}, 기록 ${d.count}개, 일정 ${d.events}개" aria-pressed="${date===d.day}">${Number(d.day.slice(-2))}${d.count?`<span>${d.events?'일정 '+d.events+'개':'기록 '+d.count+'개'}</span>`:''}</button>`).join('')}</div></section>`;}
-function postCard(p){return `<article class="post" data-post="${p.id}"><header class="post-head"><div><div class="author">${esc(p.author_name)} <span class="metadata">· ${esc(p.room_name)}</span></div><div class="metadata">${dateText(p.created_at)}${p.updated_at!==p.created_at?' · 수정됨':''}</div></div><span class="tag ${p.kind==='post'?'':'event'}">${{post:'이야기',event:'약속',trip:'여행'}[p.kind]}</span></header>${p.title?`<h3>${esc(p.title)}</h3>`:''}${p.kind!=='post'?`<div class="schedule"><strong>▦ ${dateText(p.starts_at,p.all_day)} ~ ${dateText(p.ends_at,p.all_day)}${p.all_day?' · 종일':''}</strong>${p.location?`⌖ ${esc(p.location)}`:''}</div>`:''}${p.body?`<p class="body">${esc(p.body)}</p>`:''}${p.media.length?`<div class="media-carousel"><div class="media-track" tabindex="0" aria-label="첨부 사진 넘기기">${p.media.map((f,i)=>`<div class="media-slot" data-media-post="${p.id}" data-media-index="${i}"><button data-load-media="${p.id}" data-index="${i}">${f.mime.startsWith('video/')?'▶ 동영상 보기':'사진 불러오기'}</button></div>`).join('')}</div>${p.media.length>1?`<div class="media-nav"><button type="button" data-media-prev="${p.id}" aria-label="이전 사진">‹</button><span data-media-count aria-live="polite">1 / ${p.media.length}</span><button type="button" data-media-next="${p.id}" aria-label="다음 사진">›</button></div>`:''}</div>`:''}<footer class="post-foot"><button data-comments="${p.id}">댓글 ${p.comment_count||0}</button>${p.author_id===user.id?`<div><button data-edit="${p.id}">수정</button><button class="danger" data-delete="${p.id}">삭제</button></div>`:''}</footer></article>`;}
+function postCard(p){return `<article class="post" data-post="${p.id}"><header class="post-head"><div><div class="author">${esc(p.author_name)} <span class="metadata">· ${esc(p.room_name)}</span></div><div class="metadata">${dateText(p.created_at)}${p.updated_at!==p.created_at?' · 수정됨':''}</div></div><span class="tag ${p.kind==='post'?'':'event'}">${{post:'이야기',event:'약속',trip:'여행'}[p.kind]}</span></header>${p.title?`<h3>${esc(p.title)}</h3>`:''}${p.kind!=='post'?`<div class="schedule"><strong>▦ ${dateText(p.starts_at,p.all_day)} ~ ${dateText(p.ends_at,p.all_day)}${p.all_day?' · 종일':''}</strong>${p.location?`⌖ ${esc(p.location)}`:''}</div>`:''}${p.body?`<p class="body">${esc(p.body)}</p>`:''}${p.media.length?`<div class="media-grid">${p.media.map((f,i)=>`<div class="media-slot" data-media-post="${p.id}" data-media-index="${i}"><button data-load-media="${p.id}" data-index="${i}">${f.mime.startsWith('video/')?'▶ 동영상 보기':'사진 불러오기'}</button></div>`).join('')}</div>`:''}<footer class="post-foot"><button data-comments="${p.id}">댓글 ${p.comment_count||0}</button>${p.author_id===user.id?`<div><button data-edit="${p.id}">수정</button><button class="danger" data-delete="${p.id}">삭제</button></div>`:''}</footer></article>`;}
 function observeMedia(){observer?.disconnect();observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const p=posts.find(p=>p.id===e.target.dataset.mediaPost),f=p?.media[+e.target.dataset.mediaIndex];if(f?.mime.startsWith('image/'))void loadMedia(e.target,p,f);observer.unobserve(e.target);}},{rootMargin:'180px'});document.querySelectorAll('.media-slot:not([data-loaded])').forEach(n=>observer.observe(n));}
 
-function setupCarousels(){
- for(const wrap of document.querySelectorAll('.media-carousel')){
-  const track=wrap.querySelector('.media-track');
-  if(!track||track.dataset.bound)continue;
-  track.dataset.bound='yes';
-  const sync=()=>{
-   const total=track.children.length;
-   const index=Math.min(total-1,Math.max(0,Math.round(track.scrollLeft/Math.max(1,track.clientWidth))));
-   wrap.dataset.current=String(index);
-   const count=wrap.querySelector('[data-media-count]');if(count)count.textContent=(index+1)+' / '+total;
-   const prev=wrap.querySelector('[data-media-prev]'),next=wrap.querySelector('[data-media-next]');
-   if(prev)prev.disabled=index===0;
-   if(next)next.disabled=index===total-1;
-  };
-  track.addEventListener('scroll',sync,{passive:true});
-  track.addEventListener('keydown',e=>{
-   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();slideCarousel(wrap,e.key==='ArrowRight'?1:-1);}
-  });
-  sync();
- }
-}
-function slideCarousel(wrap,step){
- const track=wrap?.querySelector('.media-track');if(!track)return;
- const index=Number(wrap.dataset.current||0),total=track.children.length;
- const next=Math.max(0,Math.min(total-1,index+step));
- wrap.dataset.current=String(next);
- track.scrollTo({left:next*track.clientWidth,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-}
 function openGallery(p,start=0){
  const media=p?.media||[];if(!media.length)return;
  const d=dialog('첨부 보기','<div class="gallery-stage" role="group" aria-label="첨부 미리보기">불러오는 중…</div>'+(media.length>1?'<div class="gallery-nav"><button type="button" data-gallery-prev aria-label="이전 사진">‹</button><span data-gallery-count aria-live="polite"></span><button type="button" data-gallery-next aria-label="다음 사진">›</button></div>':''));
@@ -177,7 +149,6 @@ if(b.dataset.view){view=b.dataset.view;render();await loadFeed();return;}
 if(b.dataset.filter){filter=b.dataset.filter;render();await loadFeed();return;}
 if(b.dataset.date){date=b.dataset.date;await loadFeed();return;}
 if(b.dataset.month){const [y,m]=month.split('-').map(Number);month=new Date(Date.UTC(y,m-1+Number(b.dataset.month),1)).toISOString().slice(0,7);date='';await loadFeed();return;}
-if(b.dataset.mediaPrev!==undefined||b.dataset.mediaNext!==undefined){slideCarousel(b.closest('.media-carousel'),b.dataset.mediaNext!==undefined?1:-1);return;}
 if(b.dataset.loadMedia){const p=posts.find(p=>p.id===b.dataset.loadMedia);await loadMedia(b.parentElement,p,p.media[+b.dataset.index]);return;}
 if(b.dataset.edit){compose(posts.find(p=>p.id===b.dataset.edit));return;}
 if(b.dataset.delete){const p=posts.find(p=>p.id===b.dataset.delete);confirmAction('이 기록을 삭제할까요?','첨부와 댓글도 함께 삭제돼요.',async()=>{const result=await api('remove',{id:p.id});await removeFiles(result.media.map(f=>f.path));await loadFeed();notify('삭제했어요.');});return;}
