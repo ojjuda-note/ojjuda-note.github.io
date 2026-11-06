@@ -3,7 +3,7 @@
   'use strict';
   let active = null;
   window.OjjudaSolitaireGame = {
-    open({owner = null, authorized = () => true, onExitRequest = null} = {}) {
+    open({owner = null, authorized = () => true, onExitRequest = null, onScore = null} = {}) {
       if (active) { active.dialog.focus(); return; }
       const previous = document.activeElement;
       const wasGaming = document.body.classList.contains('gaming');
@@ -12,10 +12,27 @@
       dialog.setAttribute('aria-label', '솔리테어');
       const frame = document.createElement('iframe');
       frame.title = '솔리테어';
-      frame.src = '/games/solitaire/index.html?v=20261106-solitaire1&owner=' + encodeURIComponent(owner || 'guest');
+      frame.src = '/games/solitaire/index.html?v=20261106-solitaire-ranking1&owner=' + encodeURIComponent(owner || 'guest');
       frame.allow = 'autoplay; fullscreen';
       dialog.append(frame);
       let guestFinished = false;
+      const records = new Map();
+      async function record(message) {
+        const {runId, drawCount, seconds, score} = message;
+        if (message.completed !== true || typeof runId !== 'string' ||
+            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId) ||
+            score == null || window.OjjudaSolitaireRules?.score(drawCount, seconds) !== score) return;
+        let pending = records.get(runId);
+        if (pending && pending.score !== score) return;
+        if (!pending) {
+          pending = {score, promise:Promise.resolve().then(() => authorized() && typeof onScore === 'function' ? onScore(score, runId) : {ok:false}).catch(() => ({ok:false}))};
+          records.set(runId, pending);
+        }
+        const result = await pending.promise;
+        if (result?.ok !== true) records.delete(runId);
+        else if (records.size > 100) records.delete(records.keys().next().value);
+        if (active?.dialog === dialog && authorized()) frame.contentWindow.postMessage({source:'ojjuda-world',type:'ojjuda-solitaire-record',runId,ok:result?.ok === true},location.origin);
+      }
       function controls() { return frame.contentWindow?.OjjudaSolitaireControls; }
       function close() {
         if (active?.dialog !== dialog) return;
@@ -29,6 +46,7 @@
       function receive(event) {
         if (event.origin !== location.origin || event.source !== frame.contentWindow || !authorized()) return;
         if (event.data?.source !== 'ojjuda-solitaire') return;
+        if (event.data.type === 'ojjuda-game-result') void record(event.data);
         if (event.data.type === 'ojjuda-game-exit-request' && onExitRequest?.() !== true) close();
         if (event.data.type === 'ojjuda-game-finished' && !owner && !guestFinished) {
           guestFinished = true;

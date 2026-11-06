@@ -22,6 +22,7 @@ const rankingConditions={
  sacheonseong:'완료한 단계가 높은 순, 같은 단계에서는 완료 시간이 짧은 순으로 정해요.',
  tank:'상대 수가 많은 대전 기록을 우선하고, 같은 상대 수에서는 해당 월 최고 연승으로 정해요.',
  saetbyeol:'해당 월에 기록한 가장 높은 성장 점수로 정해요.',
+ solitaire:'보통 → 초보 순으로 우선하고, 같은 난이도에서는 클리어 시간이 짧은 순으로 정해요. 시간이 같으면 먼저 달성한 순이에요.',
  mines:'난이도가 높은 순, 같은 난이도에서는 완료 시간이 짧은 순으로 정해요. 기본 8개 난이도만 집계해요.',
  tour:streakCondition,
  billiards:boardCondition+' 4구·3쿠션·포켓볼을 통합 표시하며, 종목별 연승은 합산하지 않아요.',
@@ -182,7 +183,7 @@ function paintRecord(target,id,game,top,period='이번 달'){
   value=window.OjjudaSacheonseongRanking.format(Number(top.score));
   const stage=Number(top.stage);if(window.OjjudaSacheonseongRanking.game(stage))detail=stage+'단계';
  }else if(game.rankingBasis==='difficulty_time'){
-  const record=window.OjjudaMinesRules?.record(Number(top.score));value=record?.time||'—';detail=record?.name||'';
+  const record=(id==='solitaire'?window.OjjudaSolitaireRules:window.OjjudaMinesRules)?.record(Number(top.score));value=record?.time||'—';detail=record?.name||'';
  }else if(game.rankingBasis==='opponents_streak'){
   const n=Number(top.opponents);if(Number.isInteger(n)&&n>=1&&n<=11)detail=n+'명 상대';
  }else if(game.rankingBasis==='difficulty_streak'){
