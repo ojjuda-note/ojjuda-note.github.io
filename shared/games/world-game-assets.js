@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261107-group-draft-guard1';
+ const revision='20261107-ranking-loader-guard1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -17,7 +17,7 @@
   tank:'1.4.5',
   solitaire:'1.1.7',
   mines:'1.3.6',
-  sacheonseong:'1.9.5',
+  sacheonseong:'1.9.6',
   saetbyeol:'1.2.8',
   tour:'1.4.5',
   ttang:'1.4.6',
