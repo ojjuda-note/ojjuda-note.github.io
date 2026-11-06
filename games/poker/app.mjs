@@ -30,7 +30,7 @@ let visual={game:null,cards:[],shown:[],bets:[],pot:0,finished:false,street:0};
 let movePending=false,lastClockWarning='',dismissedStart=null;
 const faces=['C','H','D','S'];
 const cardBack = '<span class="back-border" aria-hidden="true"><span class="back-emblem">♠<small>OJJUDA</small></span></span>';
-const cardFace = c => `<img class="card-face" src="cards/${faces[suit(c)]}-${face(c)}.svg" alt="" draggable="false" decoding="async">`;
+const cardFace = c => `<img class="card-face" src="cards/${faces[suit(c)]}-${face(c)}.svg?v=20261106-poker-red1" alt="" draggable="false" decoding="async">`;
 let peekedCard = null, peekDrag = null, peekReveal = null, peekPointer = null, peekClickUntil = 0;
 const finalCardKey = () => game?.players[0].cards.length === 7 ? `${game._roomId}:${game._round}:${game.players[0].cards[6]}` : null;
 const finalCardCovered = () => !!finalCardKey() && game.phase !== 'finished' && peekedCard !== finalCardKey();
