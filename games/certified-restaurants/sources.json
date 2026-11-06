@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3188,
+    "uniqueRestaurants": 3195,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2457,
+      "local-guide": 2464,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2156,
+    "coordinatesMissing": 2163,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1528,15 +1528,15 @@
       "세종": 100,
       "대전": 110,
       "경북": 145,
-      "광주": 69
+      "광주": 76
     },
     "categoryCounts": {
-      "한식": 1877,
+      "한식": 1882,
       "중식": 133,
       "일식": 132,
       "기타": 580,
       "양식": 209,
-      "분식": 26,
+      "분식": 28,
       "디저트": 231
     }
   },
@@ -11693,51 +11693,112 @@
       ],
       "scope": "당진 3, 서산 3, 보령 2곳 충남관광 공식 상세에서 식당명·주소·간단한 메뉴 확인. 관광 수록 이력을 현행 인증·현재 영업·정규 블루리본 등급으로 오인하지 않음. 정확 좌표 근거 없는 8곳 null. 전수 조사 아님.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gwangju-slot28-seven-tourism",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3188,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2457,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2156,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1877,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 26,
+          "디저트": 231
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3195,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2464,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2163,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1882,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 28,
+          "디저트": 231
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-gwangju-slot28-1183",
+        "local-gwangju-slot28-1304",
+        "local-gwangju-slot28-1205",
+        "local-gwangju-slot28-1291",
+        "local-gwangju-slot28-1301",
+        "local-gwangju-slot28-1184",
+        "local-gwangju-slot28-1111"
+      ],
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "notes": [
+        "광주 5개구 관광 상세 7곳 대조. 전체 선정·영업 전수 아님.",
+        "2026 광주미식주간 블루리본 공동선정 기등록 22곳 중복 없음. 정규 리본 등급 미확인.",
+        "상호·지점·현주소와 일치하는 개별 좌표 증거 없어 신규 7곳 위경도 null; 회원 위치/추천 정보 미처리."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-chungnam-slot27-eight-province-tourism",
+    "id": "2026-11-06-gwangju-slot28-seven-tourism",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3180,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2449,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2148,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 56,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1871,
-        "중식": 132,
-        "일식": 132,
-        "기타": 580,
-        "양식": 209,
-        "분식": 26,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3188,
       "providerCounts": {
         "michelin": 237,
@@ -11776,35 +11837,63 @@
         "디저트": 231
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3195,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2464,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2163,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1882,
+        "중식": 133,
+        "일식": 132,
+        "기타": 580,
+        "양식": 209,
+        "분식": 28,
+        "디저트": 231
+      }
+    },
+    "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
-      "local-chungnam-slot27-dangjin-daedeulbo",
-      "local-chungnam-slot27-dangjin-cafe-raw",
-      "local-chungnam-slot27-seosan-jingukjip",
-      "local-chungnam-slot27-seosan-anheung-ilpum",
-      "local-chungnam-slot27-seosan-gabo",
-      "local-chungnam-slot27-boryeong-daechon-islands",
-      "local-chungnam-slot27-boryeong-paldo-gangsan"
+      "local-gwangju-slot28-1183",
+      "local-gwangju-slot28-1304",
+      "local-gwangju-slot28-1205",
+      "local-gwangju-slot28-1291",
+      "local-gwangju-slot28-1301",
+      "local-gwangju-slot28-1184",
+      "local-gwangju-slot28-1111"
     ],
-    "existingRestaurantsEnriched": 0,
-    "coordinatesAdded": 0,
-    "locationPending": 8,
-    "locationHidden": 0,
-    "sourceAuditFile": "ops/restaurant-region-audit.json",
-    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot27.json",
-    "officialSourceUrls": [
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
-    ],
-    "scope": "당진 3, 서산 3, 보령 2곳 충남관광 공식 상세에서 식당명·주소·간단한 메뉴 확인. 관광 수록 이력을 현행 인증·현재 영업·정규 블루리본 등급으로 오인하지 않음. 정확 좌표 근거 없는 8곳 null. 전수 조사 아님.",
-    "notExhaustive": true
+    "modificationCount": 0,
+    "coordinateAddedCount": 0,
+    "locationExcludedCount": 0,
+    "notes": [
+      "광주 5개구 관광 상세 7곳 대조. 전체 선정·영업 전수 아님.",
+      "2026 광주미식주간 블루리본 공동선정 기등록 22곳 중복 없음. 정규 리본 등급 미확인.",
+      "상호·지점·현주소와 일치하는 개별 좌표 증거 없어 신규 7곳 위경도 null; 회원 위치/추천 정보 미처리."
+    ]
   },
   "latestMapCoverageAudit": {
     "id": "2026-11-04-yeosu-map-expansion",
@@ -11916,7 +12005,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2406,
+    "recordCount": 2413,
     "designationEvidenceCount": 2431,
     "coordinatesAvailable": 754,
     "regionCount": 17,
@@ -11947,7 +12036,7 @@
       },
       {
         "region": "광주",
-        "uniqueRestaurants": 49,
+        "uniqueRestaurants": 56,
         "coordinatesAvailable": 49,
         "completeRegionalCollection": false
       },
@@ -12633,6 +12722,42 @@
       "locationUnverifiedCount": 5,
       "currentOperatingStatusVerifiedCount": 0,
       "designationPolicy": "공식 관광 수록과 블루리본 정규 등급·현재 영업 구분"
+    },
+    "municipalTourism20261106GwangjuSlot28": {
+      "checkedAt": "2026-11-06",
+      "sourceType": "과거 광주광역시 공식 관광정보의 추천식당 수록·선정 이력",
+      "sourceFile": "official-gwangju-slot28.json",
+      "recordCount": 7,
+      "regionCounts": {
+        "동구": 3,
+        "서구": 1,
+        "남구": 1,
+        "북구": 1,
+        "광산구": 1
+      },
+      "restaurantIds": [
+        "local-gwangju-slot28-1183",
+        "local-gwangju-slot28-1304",
+        "local-gwangju-slot28-1205",
+        "local-gwangju-slot28-1291",
+        "local-gwangju-slot28-1301",
+        "local-gwangju-slot28-1184",
+        "local-gwangju-slot28-1111"
+      ],
+      "listingSources": [
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1183",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1304",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1205",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1291",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1301",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1184",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1111"
+      ],
+      "selectionVerified": "강의리추어탕 2024년 맛집 태그 1건만 이력 표기; 나머지는 관광 추천식당 수록",
+      "coordinateVerified": 0,
+      "coordinatesPending": 7,
+      "operatingStatusVerified": 0,
+      "coverageComplete": false
     }
   },
   "mapCoverageAuditHistory": [
