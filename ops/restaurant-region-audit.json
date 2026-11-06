@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 21,
-    "scheduledAt": "2026-11-06T15:00:00+09:00",
+    "slot": 22,
+    "scheduledAt": "2026-11-06T16:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "2026-11-06 15:00 KST scheduled execution"
+    "source": "2026-11-06 16:00 KST scheduled execution (review initiated later; anchor scheduled time preserved)"
   },
   "entries": [
     {
@@ -5603,6 +5603,112 @@
         "세종특별자치시 전역"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 22,
+      "scheduledAtKST": "2026-11-06T16:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_no_verified_restaurant_changes",
+      "assignedRegions": [
+        "세종특별자치시 전역"
+      ],
+      "regionAudit": [
+        {
+          "region": "세종특별자치시 전역",
+          "baseListedCount": 100,
+          "officialListDisplayedCount": 100,
+          "scope": "최신 main 100개 식당의 2025/2026 공동선정 이력 및 좌표 누락 집계; 공식 세종미식여행 100개 전체 수와 첫 페이지 9개 상호·주소·2026 선정 대조, 왕천파닭 및 바이핸커피 상세 확인. 전체 100개 개별 대조·실제 영업상태 전수확인 아님.",
+          "new": 0,
+          "updated": 0,
+          "missingCoordinates": 0,
+          "locationRecheckCandidates": 1,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "세종시문화관광재단 공식 세종미식여행 2025/2026 선정 명단(100곳)",
+        "세종시문화관광재단 2026 세종사랑맛집 선정 공지 목록(2026-09-22)",
+        "세종미식여행 개별 식당 상세 왕천파닭·바이핸커피, 메인 안내 및 2026 선정 첫 페이지",
+        "블루리본 공동선정과 정규 리본 수 구분: 명단은 공동선정 근거이며 정규 리본 개수를 증명하지 않음"
+      ],
+      "additions": 0,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 1,
+      "existingItemsRechecked": [
+        "밭으로",
+        "황가네손칼국수",
+        "해피미쌀국수",
+        "프리퀀트",
+        "포시즌베리",
+        "파스타코타",
+        "파스타이오",
+        "커넥트윗 조치원정수장",
+        "초향각",
+        "왕천파닭",
+        "바이핸커피"
+      ],
+      "evidenceUrls": [
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001",
+        "https://www.sjcf.or.kr/foodtrip/index.do",
+        "https://www.sjcf.or.kr/foodtrip/bbsctt/list.do?key=2508080005",
+        "https://www.sjcf.or.kr/foodtrip/bluer/view.do?bluerSn=2510200063&key=2508200001",
+        "https://www.sjcf.or.kr/foodtrip/bluer/view.do?bluerSn=2510200061&key=2508200001"
+      ],
+      "unresolved": [
+        {
+          "restaurantId": "blue-sejong-2510200063",
+          "name": "왕천파닭",
+          "currentStoredAddress": "세종 조치원읍 조치원8길 16 왕천파닭",
+          "region": "세종특별자치시",
+          "regionSearchAliases": [
+            "세종",
+            "조치원읍",
+            "세종특별자치시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 22,
+          "reason": "공식 개별 식당 상세에는 조치원8길 16, 같은 공식 홈페이지 메인 소개 슬라이드에는 조치원6길 13-12로 표기. 같은 지점의 이전/오표기 또는 다른 지점 여부 미확정. 개별 상세 공식 Kakao 길찾기 좌표는 기존 DB와 일치하나 현주소 충돌을 해소하지 못해 주소·좌표·노출 변경 및 폐업 처리 보류.",
+          "evidenceUrls": [
+            "https://www.sjcf.or.kr/foodtrip/bluer/view.do?bluerSn=2510200063&key=2508200001",
+            "https://www.sjcf.or.kr/foodtrip/index.do"
+          ],
+          "action": "서로 다른 공식 지도·업소·행정 출처로 지점과 현재 실제 주소 확인 후 재검토; 단일 홈페이지 배너 표기만으로 이전을 확정하지 말 것."
+        },
+        {
+          "topic": "세종 공동선정 100곳 중 이 회차 개별 미검토 기록 및 현재 영업 여부",
+          "reason": "이 회차에 공식 전체 100개 개별 페이지를 판독하지는 못함. 미쉐린 및 블루리본 정규 리본 수 전체 대조 불가",
+          "action": "다음 세종 배정에서 누락·이전·실제 영업과 정확한 위치 재확인. 공식 선정 이력과 현재 영업은 분리."
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성 및 16회차 의정부·양주·동두천·포천의 이전 감사 기록 미확인 이월은 유지",
+        "왕천파닭 상충 공식 주소 2종의 정확한 현 위치를 다음 세종 회차에 우선 대조",
+        "기존 세종 100곳 중 첫 페이지 9곳과 일부 개별 페이지 밖의 식당은 개별 재확인 필요; 이 회차는 전수 확인 아님"
+      ],
+      "nextSlot": 23,
+      "nextRegions": [
+        "충청북도 청주시"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-sejong-2510200063",
+          "name": "왕천파닭",
+          "address": "세종 조치원읍 조치원8길 16",
+          "recheckCycle": 2,
+          "recheckSlot": 22,
+          "reason": "공식 메인과 공식 개별 상세 도로명 주소 불일치",
+          "checkedAt": "2026-11-06",
+          "evidenceUrls": [
+            "https://www.sjcf.or.kr/foodtrip/index.do",
+            "https://www.sjcf.or.kr/foodtrip/bluer/view.do?bluerSn=2510200063&key=2508200001"
+          ]
+        }
+      ]
     }
   ],
   "notes": [
