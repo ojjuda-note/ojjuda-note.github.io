@@ -5221,7 +5221,10 @@
         "KTO 디지털 관광주민증 음식점 개별 공개 5건",
         "태백시 태백관광 음식점 페이지 일부 교차 대조",
         "속초시 공식 관광 포털 접근 실패",
-        "블루리본 정규 전체 명단 직접 확인 불가; 미쉐린 2026 공식 강원 신규 명단 미확인"
+        "블루리본 정규 전체 명단 직접 확인 불가; 미쉐린 2026 공식 강원 신규 명단 미확인",
+        "추가 점검: 속초시 2026 모범(으뜸)음식점 색인 일부(원문 시간초과; 지정 구분 확인 불가)",
+        "강원도청 2026-05-14 체험농장 명단: 태백 초록뿔언덕사슴목장 주소 교차확인",
+        "KTO 태백 엄마손닭갈비/엄마손태백물닭갈비 표시명·관리주체 별칭 확인"
       ],
       "additions": 5,
       "modifications": 0,
@@ -5244,7 +5247,9 @@
         "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
         "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
         "https://tour.taebaek.go.kr/tour/story/taste",
-        "https://www.sokchotour.com/"
+        "https://www.sokchotour.com/",
+        "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+        "https://gwd.go.kr/portal/partinfo/livestock/livestockIndustry/ranch"
       ],
       "locationRechecks": [
         {
@@ -5379,7 +5384,44 @@
         "대전광역시 유성구",
         "대전광역시 대덕구"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "id": "20261106-slot20-sokcho-ganwon-crosscheck",
+          "checkedAtKST": "2026-11-06",
+          "kind": "same_slot_continuation",
+          "sources": [
+            {
+              "region": "강원특별자치도 속초시",
+              "url": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+              "sourceName": "속초시 속초관광 2026 모범(으뜸)음식점 명단",
+              "result": "검색 색인에서 2026년 모범(으뜸)음식점 명단·상호·주소·메뉴 일부 확인. 원문 직접 열람 시 타임아웃이어서 모범/으뜸 구별과 가이드 선정 기준 확인 불가. 단순 모범음식점만으로 신규 인증 등록 금지; 확인 후보로 이월.",
+              "scope": "색인 일부. 전수 확인 아님.",
+              "action": "원문 접근 복구 시 으뜸 지정 기준 및 개별 상호·주소 재확인"
+            },
+            {
+              "region": "강원특별자치도 태백시",
+              "url": "https://gwd.go.kr/portal/partinfo/livestock/livestockIndustry/ranch",
+              "sourceName": "강원특별자치도청 축산관련 체험농장 운영 현황 (2026-05-14 갱신)",
+              "result": "기등록 초록뿔언덕사슴목장 이름·태백시 고원로 369 주소가 강원도청 공개 목록과 일치. 같은 위치 위경도는 미제공. 도청의 체험농장 등재가 블루리본 선정이나 현재 영업확정 의미는 아님.",
+              "action": "기등록 주소 유지, 좌표 null 유지; 다음 순환에서 정확한 지도 좌표 확인"
+            },
+            {
+              "region": "강원특별자치도 태백시",
+              "url": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
+              "sourceName": "한국관광공사 디지털 관광주민증 엄마손닭갈비 제휴 업소 상세",
+              "result": "노출명은 엄마손닭갈비, 관리주체는 엄마손태백물닭갈비. 기등록 명칭과 동일 주소 황지연못길 9 확인. 서로 다른 업소로 중복 등록하면 안 됨.",
+              "action": "현재 ID 유지, 표기 별칭만 재확인 후보에 기록"
+            }
+          ],
+          "additions": 0,
+          "modifications": 0,
+          "locationCoordinatesAdded": 0,
+          "locationHidden": 0,
+          "locationPendingRetained": 5,
+          "note": "기존 1순환 20회차에 증거를 추가하는 보완 기록. 별도 신규 회차가 아니고 미확인 주소·좌표를 삭제·추정 처리하지 않음."
+        }
+      ]
     }
   ],
   "notes": [
