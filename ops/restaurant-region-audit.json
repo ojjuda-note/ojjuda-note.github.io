@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 25,
-    "scheduledAt": "2026-11-06T19:00:00+09:00",
+    "slot": 26,
+    "scheduledAt": "2026-11-06T20:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled 19:00 KST; originally scheduled slot used"
+    "source": "scheduled 20:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -6060,6 +6060,365 @@
         "충청남도 공주시",
         "충청남도 논산시",
         "충청남도 계룡시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 26,
+      "scheduledAtKST": "2026-11-06T20:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_five_verified_provincial_tourism_listings",
+      "assignedRegions": [
+        "충청남도 공주시",
+        "충청남도 논산시",
+        "충청남도 계룡시"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청남도 공주시",
+          "baseListedCount": 4,
+          "previousLocationMissing": 2,
+          "scope": "기등록 4곳·충남 공식 음식점 90쪽 대조. 신규 미마지/명성불고기/동해원 상호와 주소 확인. 영업 전수확인 아님.",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 논산시",
+          "baseListedCount": 4,
+          "previousLocationMissing": 3,
+          "scope": "기등록 4곳·충남미식주간 공동선정 출처 대조. 지산농원 화악길62/70 충돌, 합동 선정 와이너리·송어장, 정확 주소 미확인 후보는 보류. 신규확증 없음.",
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 계룡시",
+          "baseListedCount": 1,
+          "previousLocationMissing": 1,
+          "scope": "기등록 커피토트와 충남관광 공식 1쪽 대조. 화평/계룡면옥 추가, 오후의산책 주소 불분명 이월.",
+          "new": 2,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "충청남도 공식 충남관광 음식점 1쪽·90쪽",
+        "충남미식주간 2025 블루리본 × 문화관광재단 공동선정 목록과 기존 KTO 소개 사실"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 11,
+      "locationPendingScope": "기존 6곳 + 신규 5곳 좌표 재확인 대기. 현재 목록에 미수록된 위치·상호 미분리 공동선정 후보 6곳은 별도 unresolved.",
+      "addedRestaurantIds": [
+        "local-chungnam-slot26-gongju-mimaji",
+        "local-chungnam-slot26-gongju-myeongseong-bulgogi",
+        "local-chungnam-slot26-gongju-donghaewon",
+        "local-chungnam-slot26-gyeryong-hwapyeong",
+        "local-chungnam-slot26-gyeryong-myeonok"
+      ],
+      "evidenceUrls": [
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90",
+        "https://www.monthler.kr/programs/3632",
+        "https://cnctf.or.kr/site/misic/index.php"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "blue-chungnam-joint-커피토트-로스터즈",
+          "name": "커피토트 로스터즈",
+          "currentStoredAddress": "충청남도 계룡시 엄사면 엄사중앙로 95 2층",
+          "region": "충청남도 계룡시",
+          "regionSearchAliases": [
+            "충청남도 계룡시",
+            "충남 계룡시",
+            "계룡시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-만복정",
+          "name": "만복정",
+          "currentStoredAddress": "충청남도 논산시 상월면 대촌4길 81",
+          "region": "충청남도 논산시",
+          "regionSearchAliases": [
+            "충청남도 논산시",
+            "충남 논산시",
+            "논산시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-평매매운탕",
+          "name": "평매매운탕",
+          "currentStoredAddress": "충청남도 논산시 가야곡면 산노1길 89-21",
+          "region": "충청남도 논산시",
+          "regionSearchAliases": [
+            "충청남도 논산시",
+            "충남 논산시",
+            "논산시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-꽃비원홈앤키친",
+          "name": "꽃비원홈앤키친",
+          "currentStoredAddress": "충청남도 논산시 연무읍 연무로166번길 12-21",
+          "region": "충청남도 논산시",
+          "regionSearchAliases": [
+            "충청남도 논산시",
+            "충남 논산시",
+            "논산시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "local-gongju-bapkkot-hana",
+          "name": "밥꽃하나피었네",
+          "currentStoredAddress": "충남 공주시 계룡면 신원사로 502",
+          "region": "충청남도 공주시",
+          "regionSearchAliases": [
+            "충청남도 공주시",
+            "충남 공주시",
+            "공주시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "local-gongju-yega-geumbyeok",
+          "name": "예가",
+          "currentStoredAddress": "충남 공주시 금벽로 535",
+          "region": "충청남도 공주시",
+          "regionSearchAliases": [
+            "충청남도 공주시",
+            "충남 공주시",
+            "공주시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "선정·주소 기록은 있으나 지점과 일치하는 공개 위경도 근거 미확보",
+          "evidenceUrls": [
+            "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf"
+          ],
+          "action": "현지 주소와 개별 업소 좌표 독립 확인. 좌표 없음만으로 폐업·비노출 금지"
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-mimaji",
+          "name": "미마지",
+          "currentStoredAddress": "충청남도 공주시 의당면 돌모루1길 40",
+          "region": "충청남도 공주시",
+          "regionSearchAliases": [
+            "충청남도 공주시",
+            "충남 공주시",
+            "공주시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "공식 관광 수록 주소는 확인, 정확한 개별 업소 좌표 증거 없음",
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "action": "현재 업소 명칭·주소·개별 핀 동일성 증명 전 좌표 null 유지"
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-myeongseong-bulgogi",
+          "name": "명성불고기",
+          "currentStoredAddress": "충청남도 공주시 웅진로 200 (산성동)",
+          "region": "충청남도 공주시",
+          "regionSearchAliases": [
+            "충청남도 공주시",
+            "충남 공주시",
+            "공주시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "공식 관광 수록 주소는 확인, 정확한 개별 업소 좌표 증거 없음",
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "action": "현재 업소 명칭·주소·개별 핀 동일성 증명 전 좌표 null 유지"
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-donghaewon",
+          "name": "동해원",
+          "currentStoredAddress": "충청남도 공주시 납다리길 22 (소학동)",
+          "region": "충청남도 공주시",
+          "regionSearchAliases": [
+            "충청남도 공주시",
+            "충남 공주시",
+            "공주시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "공식 관광 수록 주소는 확인, 정확한 개별 업소 좌표 증거 없음",
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "action": "현재 업소 명칭·주소·개별 핀 동일성 증명 전 좌표 null 유지"
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gyeryong-hwapyeong",
+          "name": "화평",
+          "currentStoredAddress": "충청남도 계룡시 계룡대로 486",
+          "region": "충청남도 계룡시",
+          "regionSearchAliases": [
+            "충청남도 계룡시",
+            "충남 계룡시",
+            "계룡시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "공식 관광 수록 주소는 확인, 정확한 개별 업소 좌표 증거 없음",
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do"
+          ],
+          "action": "현재 업소 명칭·주소·개별 핀 동일성 증명 전 좌표 null 유지"
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gyeryong-myeonok",
+          "name": "계룡면옥",
+          "currentStoredAddress": "충청남도 계룡시 새터산길 4",
+          "region": "충청남도 계룡시",
+          "regionSearchAliases": [
+            "충청남도 계룡시",
+            "충남 계룡시",
+            "계룡시"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "reason": "공식 관광 수록 주소는 확인, 정확한 개별 업소 좌표 증거 없음",
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do"
+          ],
+          "action": "현재 업소 명칭·주소·개별 핀 동일성 증명 전 좌표 null 유지"
+        }
+      ],
+      "unresolved": [
+        {
+          "name": "마치고",
+          "region": "충청남도 공주시",
+          "reason": "자료에서 제민천3길6-1과 봉황로16 주소가 섞여 있고 현행 주소에 대한 공식 대조자료를 확보하지 못함.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        },
+        {
+          "name": "옛날배씨네집",
+          "region": "충청남도 공주시",
+          "reason": "공식 선정 지도에서 상호는 확인했으나 현행 주소·정확한 업소를 공식 공개자료로 대조하지 못함.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        },
+        {
+          "name": "서울식당",
+          "region": "충청남도 공주시",
+          "reason": "공주에 마곡사·갑사 등 동명 식당이 있고 선정 지도만으로 정확한 업소를 분리할 수 없음.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        },
+        {
+          "name": "오후의산책",
+          "region": "충청남도 계룡시",
+          "reason": "공식 선정 지도에서 상호는 확인했으나 현행 주소·정확한 업소를 공식 공개자료로 대조하지 못함.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        },
+        {
+          "name": "지산농원",
+          "region": "충청남도 논산시",
+          "reason": "KTO 현재 상세 주소는 화악길62이며 과거 공식 기사는 화악길70. 응답 contentStatus=8의 의미도 확인되지 않아 이번 반영 대상에서 보류.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        },
+        {
+          "name": "양촌와이너리·물바위송어장",
+          "region": "충청남도 논산시",
+          "reason": "공식 선정 지도에 두 업소가 하나의 합동 항목으로 표시. 와이너리 주소만 확인되어 임의 분할·단일 마커 지정 보류.",
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 26,
+          "action": "공식 지도 선정 명단과 현주소·지점 독립 검증 전 등록/폐업 여부 보류"
+        }
+      ],
+      "carryOver": [
+        "14·16·24 회차 기록 미확인 이월 유지",
+        "논산 주소 충돌·합동선정, 공주 동명이점, 계룡 오후의산책은 다음 회차에서 재확인",
+        "좌표 미확인 11곳과 미등재 6개 공동선정 후보 재조사. 전체 맛집·영업 전수 점검 아님"
+      ],
+      "nextSlot": 27,
+      "nextRegions": [
+        "충청남도 당진시",
+        "충청남도 서산시",
+        "충청남도 보령시"
       ],
       "notExhaustive": true
     }
