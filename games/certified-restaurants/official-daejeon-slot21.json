@@ -1,0 +1,195 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "대전광역시 대전의 맛 3대·30년 인증 전통업소",
+  "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+  "completeRegionalCollection": false,
+  "selectionScope": "시청 공식 인증업소 6곳(웹페이지 진로집 중복 노출 제외) 중 기존 성심당의 이력을 병합하고 누락 5곳만 신규. 정규 블루리본/미쉐린 등급 아님. 선정 연도 및 현 영업 미확인. 공개 일치 좌표 2곳만 반영.",
+  "restaurants": [
+    {
+      "id": "local-daejeon-traditional-jinrojip",
+      "name": "진로집",
+      "category": "한식",
+      "region": "대전",
+      "district": "중구",
+      "address": "대전광역시 중구 중교로 45-5 (대흥동)",
+      "lat": 36.32589,
+      "lng": 127.42473,
+      "menu": [
+        "두부두루치기",
+        "수육",
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대전 3대·30년 전통업소",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+          "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+        }
+      ],
+      "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "042-226-0914",
+      "coordinateSource": {
+        "name": "대전한콕 공개 장소 정보(네이버 지도 공개정보 정리)",
+        "url": "https://daejeon.ferrorium.com/p/food/11724775",
+        "method": "상호·정확 주소·전화가 시청 공식 명단과 일치하는 좌표",
+        "checkedAt": "2026-11-06"
+      }
+    },
+    {
+      "id": "local-daejeon-traditional-jeokdeok",
+      "name": "적덕식당",
+      "category": "한식",
+      "region": "대전",
+      "district": "동구",
+      "address": "대전광역시 동구 우암로 220-3 (가양동)",
+      "lat": 36.34309,
+      "lng": 127.44122,
+      "menu": [
+        "두부오징어",
+        "양념족발구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대전 3대·30년 전통업소",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+          "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+        }
+      ],
+      "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "042-633-4293",
+      "coordinateSource": {
+        "name": "대전한콕 공개 장소 정보(네이버 지도 공개정보 정리)",
+        "url": "https://daejeon.ferrorium.com/p/food/11843043",
+        "method": "상호·정확 주소·전화가 시청 공식 명단과 일치하는 좌표",
+        "checkedAt": "2026-11-06"
+      }
+    },
+    {
+      "id": "local-daejeon-traditional-sonamu",
+      "name": "소나무집",
+      "category": "한식",
+      "region": "대전",
+      "district": "중구",
+      "address": "대전광역시 중구 대종로460번길 59 (대흥동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오징어찌개",
+        "칼국수사리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대전 3대·30년 전통업소",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+          "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+        }
+      ],
+      "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "042-256-1464"
+    },
+    {
+      "id": "local-daejeon-traditional-gwangcheon",
+      "name": "광천식당",
+      "category": "한식",
+      "region": "대전",
+      "district": "중구",
+      "address": "대전광역시 중구 대종로505번길 29 (선화동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수육",
+        "두부두루치기",
+        "오징어두루치기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대전 3대·30년 전통업소",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+          "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+        }
+      ],
+      "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "042-226-4751"
+    },
+    {
+      "id": "local-daejeon-traditional-sutgolwonjo",
+      "name": "숯골원조냉면식당",
+      "category": "한식",
+      "region": "대전",
+      "district": "유성구",
+      "address": "대전광역시 유성구 신성로 122 (신성동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물냉면",
+        "비빔냉면",
+        "백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대전 3대·30년 전통업소",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+          "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+          "verifiedAt": "2026-11-06",
+          "status": "official_selection_list",
+          "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+        }
+      ],
+      "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "addressSourceCheckedAt": "2026-11-06",
+      "phoneText": "042-861-6730",
+      "aliases": [
+        "숯골원조냉면"
+      ]
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "blue-daejeon-sungsimdang-main",
+      "expectedName": "성심당 본점",
+      "expectedAddress": "대전 중구 대종로480번길 15",
+      "guide": {
+        "provider": "local-guide",
+        "label": "대전 3대·30년 전통업소",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+        "sourceName": "대전광역시 · 대전의 맛 3대30년 전통업소",
+        "verifiedAt": "2026-11-06",
+        "status": "official_selection_list",
+        "selectionCriteria": "3대 또는 30년 이상 영업 업소 중 대전시 인증 전통업소. 정확한 인증 연도 및 현재 영업 여부는 별도 미확인"
+      }
+    }
+  ]
+}
