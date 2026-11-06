@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 13,
-    "scheduledAt": "2026-11-06T07:00:00+09:00",
+    "slot": 15,
+    "scheduledAt": "2026-11-06T09:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "hourly slot; anchored 2026-11-05T23:00+09:00; scheduled 07:00 KST"
+    "source": "hourly scheduled slot at 09:00 KST, anchored 2026-11-05 23:00 slot5"
   },
   "entries": [
     {
@@ -3941,12 +3941,222 @@
         "경기도 안성시"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 15,
+      "scheduledAtKST": "2026-11-06T09:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_5_historical_2023_guri_selections",
+      "assignedRegions": [
+        "경기도 남양주시",
+        "경기도 구리시",
+        "경기도 하남시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 남양주시",
+          "baseListedCount": 6,
+          "scope": "기등록 식당의 좌표 누락 5곳 확인, 개별 현재 영업·좌표 증명 이월",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 구리시",
+          "baseListedCount": 0,
+          "scope": "2023 구리시 100대맛집 10곳 공식 명단 중 개별 공개 주소가 확인된 5곳만 과거 선정 이력 추가",
+          "new": 5,
+          "updated": 0,
+          "unknownLocations": 5,
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 하남시",
+          "baseListedCount": 4,
+          "scope": "기등록 4곳의 좌표 누락 확인 및 시청 경기으뜸맛집 명단 대조; 현재 좌표·영업 이월",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "구리시청 2023년 공식 맛집 지정 발표",
+        "구리시 문화관광 주소 2곳",
+        "공개 주소자료·지자체 연계 노포 소개 3곳",
+        "하남시 경기으뜸맛집 공식 목록",
+        "기존 등록 남양주·하남 식당"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 14,
+      "locationPendingScope": "남양주 기존5·하남 기존4·구리 신규5; 확인 가능한 공개 위경도 미확보",
+      "addedRestaurantIds": [
+        "local-guri-slot15-nature",
+        "local-guri-slot15-obaek",
+        "local-guri-slot15-memillang",
+        "local-guri-slot15-haeseong",
+        "local-guri-slot15-halmae"
+      ],
+      "updatedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
+        "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
+        "https://market.koreacharts.com/store/content/20333041.html",
+        "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
+        "https://www.hanam.go.kr/www/contents.do?key=6225"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-guri-slot15-nature",
+          "name": "자연에서 온 추어탕",
+          "address": "경기도 구리시 우미내길 4-1",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 자연에서 온 추어탕"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362"
+          ],
+          "result": "과거 구리시 지정·공개 식당 주소 확인. 현 영업·동일 지점 공개 위경도 미검증.",
+          "reason": "위경도와 현재 영업 확인 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-obaek",
+          "name": "오백년 누룽지백숙",
+          "address": "경기도 구리시 벌말로 73",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 오백년 누룽지백숙"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353"
+          ],
+          "result": "과거 구리시 지정·공개 식당 주소 확인. 현 영업·동일 지점 공개 위경도 미검증.",
+          "reason": "위경도와 현재 영업 확인 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-memillang",
+          "name": "메밀랑",
+          "address": "경기도 구리시 아차산로 463, 1층",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 메밀랑"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90"
+          ],
+          "result": "과거 구리시 지정·공개 식당 주소 확인. 현 영업·동일 지점 공개 위경도 미검증.",
+          "reason": "위경도와 현재 영업 확인 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-haeseong",
+          "name": "해성손칼국수",
+          "address": "경기도 구리시 검배로94번길 12",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 해성손칼국수"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://market.koreacharts.com/store/content/20333041.html"
+          ],
+          "result": "과거 구리시 지정·공개 식당 주소 확인. 현 영업·동일 지점 공개 위경도 미검증.",
+          "reason": "위경도와 현재 영업 확인 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-halmae",
+          "name": "할매보쌈",
+          "address": "경기도 구리시 동구릉로 79",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 할매보쌈"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436"
+          ],
+          "result": "과거 구리시 지정·공개 식당 주소 확인. 현 영업·동일 지점 공개 위경도 미검증.",
+          "reason": "위경도와 현재 영업 확인 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "구리 2023 공식 명단 중 나머지 5곳",
+          "names": [
+            "고목나무집",
+            "워낭소리",
+            "고향동태탕",
+            "옥화식당",
+            "차이나타운 본점"
+          ],
+          "reason": "현 지점·정확한 업소 주소 추가 대조 필요"
+        },
+        {
+          "topic": "남양주 기존 5곳·하남 기존 4곳",
+          "reason": "확실한 공개 지도 좌표/영업 상태 교차 검증 미완료"
+        }
+      ],
+      "carryOver": [
+        "14회차(2026-11-06 08:00, 평택·오산·안성)는 main 감사 기록이 없어 수행 확인 불가. 15회차에서 완료 처리하지 않음.",
+        "구리 2023 발표 나머지 5곳 주소 검증",
+        "남양주 기존5·하남 기존4·구리 신규5 좌표 및 영업 재확인"
+      ],
+      "nextSlot": 16,
+      "nextRegions": [
+        "경기도 의정부시",
+        "경기도 양주시",
+        "경기도 동두천시",
+        "경기도 포천시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
     "운영 기록은 한 회차에 한 건씩 보존한다. 누락 회차는 후속 순환 동일 번호에서 보완한다.",
     "회원 추천 데이터 및 사진은 자동 조사 대상에서 제외한다.",
     "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다.",
-    "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인."
+    "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인.",
+    "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음"
   ]
 }

@@ -1,0 +1,161 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "구리시청 공식 2023 지정 발표 및 공개 개별 업소 주소",
+  "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+  "completeRegionalCollection": false,
+  "selectionScope": "구리시 2023년 지정 10곳 중 개별 주소 근거를 별도 확인한 5곳만 등록; 2026년 영업 및 지속 선정은 확인되지 않음.",
+  "restaurants": [
+    {
+      "id": "local-guri-slot15-nature",
+      "name": "자연에서 온 추어탕",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 우미내길 4-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 100대 맛집 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-obaek",
+      "name": "오백년 누룽지백숙",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 벌말로 73",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 100대 맛집 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-memillang",
+      "name": "메밀랑",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 아차산로 463, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 100대 맛집 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-haeseong",
+      "name": "해성손칼국수",
+      "category": "분식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 검배로94번길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 100대 맛집 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://market.koreacharts.com/store/content/20333041.html",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-halmae",
+      "name": "할매보쌈",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 동구릉로 79",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 100대 맛집 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        },
+        {
+          "provider": "local-guide",
+          "label": "2023 구리 노포식당 지정 이력",
+          "year": 2023,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+          "sourceName": "구리시청 · 2023년 구리 100대 맛집 지정 발표",
+          "sourceAsOf": "2023-10-26",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2023년 구리시 공식 지정 이력. 현 영업 및 현재 지정 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ],
+  "notes": [
+    "블루리본 정규 리본 등급이 아닌 지방자치단체의 2023년 공식 지정 이력",
+    "확실한 현 지점 위경도 근거 없어 null 유지",
+    "원본 설명·사진 복제하지 않음"
+  ]
+}
