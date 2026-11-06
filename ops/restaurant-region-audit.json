@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 34,
-    "scheduledAt": "2026-11-07T04:00:00+09:00",
+    "slot": 36,
+    "scheduledAt": "2026-11-07T06:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "scheduled 04:00 Asia/Seoul"
+    "source": "scheduled 06:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -11077,6 +11077,362 @@
       "nextRegions": [
         "경상북도 구미시",
         "경상북도 김천시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 36,
+      "scheduledAtKST": "2026-11-07T06:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_with_eight_official_pohang_gyeongju_listings",
+      "assignedRegions": [
+        "경상북도 포항시",
+        "경상북도 경주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도 포항시",
+          "baseListedCount": 3,
+          "new": 4,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 7,
+          "scope": "포항시 퐝퐝여행 공식 음식점 공개 목록 첫 화면 중 이름·주소를 확인한 4곳 추가. 기존 3곳 위치 미확인 목록 조사 기록 정리. 공식 포항 맛집 별도 목록은 현재 0건으로 표시됨.",
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 경주시",
+          "baseListedCount": 4,
+          "new": 4,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "locationPending": 8,
+          "scope": "경주시 문화관광 한식·양식 공식 식당 목록에서 이름·주소를 확인한 4곳 추가. 기존 4곳의 좌표 미확인 이력 보존.",
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "포항시 퐝퐝여행 공식 음식점 목록",
+        "경주시 문화관광 한식 음식점 1쪽",
+        "경주시 문화관광 양식 음식점 3쪽",
+        "블루리본/미쉐린 포항·경주 추가 선정자료 공개 검색(식당별 정규 등급·판본 확정 불가)"
+      ],
+      "additions": 8,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 15,
+      "locationPendingScope": "이번 포항·경주 2개시 기존 기본 카탈로그 7곳과 신규 8곳만 확인. 지역 전체 미확인 업소 전수 목록 아님.",
+      "addedRestaurantIds": [
+        "local-pohang-slot36-ugong-sushi-namgu",
+        "local-pohang-slot36-marado-hoesikdang",
+        "local-pohang-slot36-gwasuwon-saenggogi",
+        "local-pohang-slot36-jangnyong-jangeo",
+        "local-gyeongju-slot36-sambu-sikdang",
+        "local-gyeongju-slot36-gohyang-milmyeon",
+        "local-gyeongju-slot36-hwangnam-kalguksu",
+        "local-gyeongju-slot36-seasoning"
+      ],
+      "existingItemsRechecked": [
+        "현대밀면 (경주시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "어향원 (경주시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "카페 스니프 (경주시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "금산삼계탕고디탕 (포항시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "대복삼계탕 (포항시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "포항고깃집 엄지척 (포항시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)",
+        "아사달 (경주시) 원자료·좌표 없음 확인(외부 출처 현행성 별도 재검증 필요)"
+      ],
+      "evidenceUrls": [
+        "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+        "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+        "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd="
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "blue-gyeongju-hyeondae-milmyeon",
+          "name": "현대밀면",
+          "currentAddress": "경상북도 경주시 화랑로 61",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?cmd=2&con_uid=7285&mnu_uid=4830",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "blue-gyeongju-eohyangwon",
+          "name": "어향원",
+          "currentAddress": "경상북도 경주시 화랑로 76-1",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?mnu_uid=4695",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "blue-kinock-cafe-sniff",
+          "name": "카페 스니프",
+          "currentAddress": "경상북도 경주시 보문로 280-12 호텔 1층",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://m.kyowon.co.kr/Media/News_detail?iscont=&nttId=1163&searchword=",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "local-gb-top-2020-1",
+          "name": "금산삼계탕고디탕",
+          "currentAddress": "경상북도 포항시 북구 중흥로 145 (죽도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-3",
+          "name": "대복삼계탕",
+          "currentAddress": "경상북도 포항시 남구 인덕로8번길 13-6",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-1",
+          "name": "포항고깃집 엄지척",
+          "currentAddress": "경상북도 포항시 남구 해동로 48-1, 1층 (해도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-2",
+          "name": "아사달",
+          "currentAddress": "경상북도 경주시 보문로 182-27(북군동) 한화리조트 \"아사달\"",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+          "evidenceResult": "기존 식당 ID·주소·선정 원자료 URL은 저장소에서 확인. 외부 지도 좌표 및 현재 영업 근거는 이번 회차에서 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "상호·현 주소와 일치하는 공개 좌표 미확인. 폐업·선정취소 판단 없음."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-ugong-sushi-namgu",
+          "name": "우공초밥 포항남구점",
+          "currentAddress": "경상북도 포항시 남구 상공로 47-1 (상도동) 1층",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-marado-hoesikdang",
+          "name": "마라도회식당",
+          "currentAddress": "경상북도 포항시 북구 해안로 217-1 (두호동) 1층",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-gwasuwon-saenggogi",
+          "name": "과수원 생고기",
+          "currentAddress": "경상북도 포항시 북구 양학로17번길 5 (득량동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-jangnyong-jangeo",
+          "name": "장룡민물장어나라",
+          "currentAddress": "경상북도 포항시 남구 희망대로 911 (해도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "경북 포항시",
+            "포항시"
+          ],
+          "evidenceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-sambu-sikdang",
+          "name": "삼부식당",
+          "currentAddress": "경상북도 경주시 봉황로51번길 14",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-gohyang-milmyeon",
+          "name": "고향밀면",
+          "currentAddress": "경상북도 경주시 태종로791번길 7",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-hwangnam-kalguksu",
+          "name": "황남칼국수",
+          "currentAddress": "경상북도 경주시 봉황로 40-1",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-seasoning",
+          "name": "시즈닝",
+          "currentAddress": "경상북도 경주시 첨성로99번길 25-2 (황남동)",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "경북 경주시",
+            "경주시"
+          ],
+          "evidenceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd=",
+          "evidenceResult": "시 공식 관광 음식점 목록에서 상호·주소 수록 확인. 현재 영업이나 주소 일치 위경도는 검증 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 36,
+          "unresolvedReason": "공식 음식점 목록에 위치 좌표가 확인되지 않음. 추정 좌표 금지."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "포항·경주 신규 8곳과 기존 7곳 위치",
+          "reason": "공식 관광 목록 이름·주소와 기본 저장소에 기록된 기존 원자료는 확인했으나 각각의 현주소와 직접 연결된 공개 위도·경도를 확보하지 못함. 기존 7곳 외부 원문 현행성 재검증 안 됨.",
+          "action": "모두 lat/lng null 유지. 동일 지역 다음 순환 배정 시 공개 지도·업소/가이드 자료 교차 확인."
+        },
+        {
+          "topic": "지역 블루리본 정규 리본 수/선정 연도, 현재 영업",
+          "reason": "블루리본 공식 전체 지도 명단 접근 및 최신 영업 근거 미확정",
+          "action": "공식 선정/수록 증거 및 영업 상태 개별 확인 전에는 기존 이력 유지하고 변경하지 않음."
+        },
+        {
+          "topic": "포항시 공식 관광 '포항 맛집' 별도 목록",
+          "reason": "현재 공식 페이지 0건 표시, '음식점' 목록 202건 중 일부만 검사. 페이지 0건을 폐업 근거로 해석하지 않음.",
+          "action": "공식 지역 가이드/제휴 명단 다음 순환에 확대 대조."
+        }
+      ],
+      "carryOver": [
+        "35회차 경상북도 구미·김천시 조사 기록이 최신 main 운영 파일에서 아직 확인되지 않아 미확인으로 보존. 이번 36회차로 대체하지 않음.",
+        "기존 29회차 전주·군산·익산, 31회차 여수·순천·광양도 기록 미확인 상태 유지.",
+        "신규 8곳 현 영업·주소 일치 좌표 확인 및 기존 7곳 외부 원문 현행성 추가 대조는 다음 순환 동일 지역에 이월."
+      ],
+      "nextSlot": 37,
+      "nextRegions": [
+        "경상북도 안동시",
+        "경상북도 영주시",
+        "경상북도 문경시"
       ],
       "notExhaustive": true
     }
