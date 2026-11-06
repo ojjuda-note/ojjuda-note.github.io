@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-solitaire-new1';
+ const revision='20261106-solitaire-visible1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -15,7 +15,7 @@
   bang:'1.9.4',
   poker:'1.5.4',
   tank:'1.4.4',
-  solitaire:'1.1.1',
+  solitaire:'1.1.2',
   mines:'1.3.5',
   sacheonseong:'1.9.4',
   saetbyeol:'1.2.7',
