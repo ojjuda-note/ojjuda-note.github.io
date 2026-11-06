@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3221,
+    "uniqueRestaurants": 3229,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2490,
+      "local-guide": 2498,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2189,
+    "coordinatesMissing": 2197,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1527,15 +1527,15 @@
       "전남": 183,
       "세종": 100,
       "대전": 110,
-      "경북": 145,
+      "경북": 153,
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1904,
+      "한식": 1910,
       "중식": 133,
-      "일식": 132,
+      "일식": 133,
       "기타": 581,
-      "양식": 210,
+      "양식": 211,
       "분식": 28,
       "디저트": 233
     }
@@ -12092,51 +12092,113 @@
         "서·남·북·달서구 각각 공식 주소를 확인한 소개식당 2곳씩 추가. 정규 리본·현 영업상태·좌표 미검증.",
         "기존 46곳+신규 8곳 위경도 null; 위치 재확인 이월. 회원 추천 정보는 변경하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-07-gyeongbuk-slot36-eight-official-tourism-listings",
+      "checkedAt": "2026-11-07",
+      "previousCoverage": {
+        "uniqueRestaurants": 3221,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2490,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2189,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1904,
+          "중식": 133,
+          "일식": 132,
+          "기타": 581,
+          "양식": 210,
+          "분식": 28,
+          "디저트": 233
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3229,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2498,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2197,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 153,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1910,
+          "중식": 133,
+          "일식": 133,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 233
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-pohang-slot36-ugong-sushi-namgu",
+        "local-pohang-slot36-marado-hoesikdang",
+        "local-pohang-slot36-gwasuwon-saenggogi",
+        "local-pohang-slot36-jangnyong-jangeo",
+        "local-gyeongju-slot36-sambu-sikdang",
+        "local-gyeongju-slot36-gohyang-milmyeon",
+        "local-gyeongju-slot36-hwangnam-kalguksu",
+        "local-gyeongju-slot36-seasoning"
+      ],
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "notes": [
+        "포항시 공식 관광 음식점 4곳과 경주시 공식 관광 음식점 4곳의 상호·주소 수록 확인.",
+        "기존 포항 3곳·경주 4곳 및 신규 8곳 좌표 미확인: 15곳 재확인 후보. 외부 위치 근거 없는 좌표 미추정.",
+        "리본 수/가이드 선정 연도/현 영업 상태 검증하지 않았으며 회원 추천은 변경하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-daegu-slot34-eight-official-directory-restaurants",
+    "id": "2026-11-07-gyeongbuk-slot36-eight-official-tourism-listings",
     "checkedAt": "2026-11-07",
     "previousCoverage": {
-      "uniqueRestaurants": 3213,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2482,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2181,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 122,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1898,
-        "중식": 133,
-        "일식": 132,
-        "기타": 580,
-        "양식": 210,
-        "분식": 28,
-        "디저트": 232
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3221,
       "providerCounts": {
         "michelin": 237,
@@ -12175,23 +12237,63 @@
         "디저트": 233
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3229,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2498,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2197,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 153,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1910,
+        "중식": 133,
+        "일식": 133,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 233
+      }
+    },
     "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-daegu-slot34-jjingoya",
-      "local-daegu-slot34-sebok-haemuljjim",
-      "local-daegu-slot34-pungjin-gomtang",
-      "local-daegu-slot34-badawa-daerim",
-      "local-daegu-slot34-indobangranggi",
-      "local-daegu-slot34-achimeul-gidarineunppang",
-      "local-daegu-slot34-yeonhwajeong-samgyetang-bon",
-      "local-daegu-slot34-hobak-chueotang"
+      "local-pohang-slot36-ugong-sushi-namgu",
+      "local-pohang-slot36-marado-hoesikdang",
+      "local-pohang-slot36-gwasuwon-saenggogi",
+      "local-pohang-slot36-jangnyong-jangeo",
+      "local-gyeongju-slot36-sambu-sikdang",
+      "local-gyeongju-slot36-gohyang-milmyeon",
+      "local-gyeongju-slot36-hwangnam-kalguksu",
+      "local-gyeongju-slot36-seasoning"
     ],
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "notes": [
-      "서·남·북·달서구 각각 공식 주소를 확인한 소개식당 2곳씩 추가. 정규 리본·현 영업상태·좌표 미검증.",
-      "기존 46곳+신규 8곳 위경도 null; 위치 재확인 이월. 회원 추천 정보는 변경하지 않음."
+      "포항시 공식 관광 음식점 4곳과 경주시 공식 관광 음식점 4곳의 상호·주소 수록 확인.",
+      "기존 포항 3곳·경주 4곳 및 신규 8곳 좌표 미확인: 15곳 재확인 후보. 외부 위치 근거 없는 좌표 미추정.",
+      "리본 수/가이드 선정 연도/현 영업 상태 검증하지 않았으며 회원 추천은 변경하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -13141,6 +13243,32 @@
       "currentOperatingStatusConfirmed": 0,
       "completeReview": false,
       "notes": "각 구 공개 음식점 목록에서 2곳씩 이름·현주소를 확인. 소개 이력과 현재 영업/선정연도/정규 블루리본 등급은 별개."
+    },
+    "municipalTourism20261107GyeongbukSlot36": {
+      "checkedAt": "2026-11-07",
+      "sourceFile": "official-gyeongbuk-slot36.json",
+      "publishers": [
+        "포항시 문화관광 퐝퐝여행",
+        "경주시 문화관광"
+      ],
+      "officialListUrls": [
+        "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+        "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+        "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd="
+      ],
+      "addedCount": 8,
+      "regionCounts": {
+        "경상북도 포항시": 4,
+        "경상북도 경주시": 4
+      },
+      "coordinateVerified": 0,
+      "coordinatePendingNew": 8,
+      "baseExistingWithoutCoordinates": 7,
+      "sourceType": "municipal_official_tourism_restaurant_listing",
+      "yearOfSelection": null,
+      "currentOperatingStatusConfirmed": 0,
+      "completeReview": false,
+      "notes": "공식 관광 음식점 목록에 수록된 사실과 주소만 확인. 공식 가이드 신규 선정·정규 리본 수·현재 영업 확인과 구별."
     }
   },
   "mapCoverageAuditHistory": [
