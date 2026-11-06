@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3138,
+    "uniqueRestaurants": 3145,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2407,
+      "local-guide": 2414,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2115,
+    "coordinatesMissing": 2122,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 375,
+      "경기": 382,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,11 +1531,11 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1842,
+      "한식": 1848,
       "중식": 130,
       "일식": 131,
       "기타": 575,
-      "양식": 208,
+      "양식": 209,
       "분식": 24,
       "디저트": 228
     }
@@ -10748,21 +10748,129 @@
       "scope": "남양주·구리·하남 부분조사. 구리 2023 공식 지정 10곳 중 개별 상호·주소 별도 대조된 5곳만 이력 추가, 남은 5곳과 기존 위치·영업 재확인 이월.",
       "coordinatePolicy": "신규 공개 위경도 미확보로 모두 null 유지, 기존 위치·ID 변경 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot17-icheon-gwangju-yeoju",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3138,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2407,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2115,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 375,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1842,
+          "중식": 130,
+          "일식": 131,
+          "기타": 575,
+          "양식": 208,
+          "분식": 24,
+          "디저트": 228
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3145,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2414,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2122,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1848,
+          "중식": 130,
+          "일식": 131,
+          "기타": 575,
+          "양식": 209,
+          "분식": 24,
+          "디저트": 228
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-gg-slot17-icheon-jangheung",
+        "local-gg-slot17-icheon-masan",
+        "local-gg-slot17-icheon-yongin",
+        "local-gg-slot17-icheon-pizza",
+        "local-gg-slot17-icheon-imgeum",
+        "local-gg-slot17-gwangju-suyang",
+        "local-gg-slot17-yeoju-namhan"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "existingRestaurantIds": [],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+        "https://www.icheon.go.kr/tour/cultureTour/manage/view.do?idx=131&mid=0303000000"
+      ],
+      "otherAddressEvidenceUrls": [
+        "https://nearlistblog.co.kr/entry/%EA%B0%95%EB%A0%A5%EC%B6%94%EC%B2%9C%E2%AD%90483-%ED%9D%91%EC%97%BC%EC%86%8C-%EC%88%98%EC%96%91%EB%86%8D%EC%9E%A5%EA%B0%80%EB%93%A0-%ED%9D%91%EC%97%BC%EC%86%8C-%EA%B3%A4%EC%A7%80%EC%95%94%EB%B3%B8%EC%A0%90",
+        "https://yjss.or.kr/49/?bmode=view&idx=169110227&q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&t=board",
+        "https://ygkgyou.tistory.com/2860"
+      ],
+      "scope": "경기도 이천·광주·여주 일부 공식 선정·지정 7곳; 현재 영업과 블루리본 정규 등급 미확인, 기존 지자체 등록 전수조사 아님.",
+      "coordinatePolicy": "공개된 동일 식당·현주소의 위경도 근거 미확보로 신규 전부 null. 위치 근사·사용자 위치·폐업 추정 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot15-namyangju-guri-hanam",
+    "id": "2026-11-06-gyeonggi-slot17-icheon-gwangju-yeoju",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3124,
+      "uniqueRestaurants": 3138,
       "providerCounts": {
         "michelin": 237,
         "blue-ribbon": 528,
-        "local-guide": 2393,
+        "local-guide": 2407,
         "post-office": 240
       },
       "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2101,
+      "coordinatesMissing": 2115,
       "regionalCounts": {
         "서울": 351,
         "부산": 378,
@@ -10772,7 +10880,7 @@
         "경남": 319,
         "강원": 44,
         "전북": 208,
-        "경기": 361,
+        "경기": 375,
         "인천": 341,
         "제주": 113,
         "대구": 117,
@@ -10783,76 +10891,79 @@
         "광주": 69
       },
       "categoryCounts": {
-        "한식": 1832,
-        "중식": 128,
+        "한식": 1842,
+        "중식": 130,
         "일식": 131,
-        "기타": 574,
-        "양식": 208,
-        "분식": 23,
-        "디저트": 228
-      }
-    },
-    "currentCoverage": {
-      "uniqueRestaurants": 3129,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2398,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2106,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 366,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1836,
-        "중식": 128,
-        "일식": 131,
-        "기타": 574,
+        "기타": 575,
         "양식": 208,
         "분식": 24,
         "디저트": 228
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3145,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2414,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2122,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1848,
+        "중식": 130,
+        "일식": 131,
+        "기타": 575,
+        "양식": 209,
+        "분식": 24,
+        "디저트": 228
+      }
+    },
+    "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-guri-slot15-nature",
-      "local-guri-slot15-obaek",
-      "local-guri-slot15-memillang",
-      "local-guri-slot15-haeseong",
-      "local-guri-slot15-halmae"
+      "local-gg-slot17-icheon-jangheung",
+      "local-gg-slot17-icheon-masan",
+      "local-gg-slot17-icheon-yongin",
+      "local-gg-slot17-icheon-pizza",
+      "local-gg-slot17-icheon-imgeum",
+      "local-gg-slot17-gwangju-suyang",
+      "local-gg-slot17-yeoju-namhan"
     ],
     "existingRestaurantsEnriched": 0,
     "existingRestaurantIds": [],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
-      "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
-      "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
-      "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
-      "https://market.koreacharts.com/store/content/20333041.html",
-      "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
-      "https://www.hanam.go.kr/www/contents.do?key=6225"
+      "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+      "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+      "https://www.icheon.go.kr/tour/cultureTour/manage/view.do?idx=131&mid=0303000000"
     ],
-    "scope": "남양주·구리·하남 부분조사. 구리 2023 공식 지정 10곳 중 개별 상호·주소 별도 대조된 5곳만 이력 추가, 남은 5곳과 기존 위치·영업 재확인 이월.",
-    "coordinatePolicy": "신규 공개 위경도 미확보로 모두 null 유지, 기존 위치·ID 변경 없음.",
+    "otherAddressEvidenceUrls": [
+      "https://nearlistblog.co.kr/entry/%EA%B0%95%EB%A0%A5%EC%B6%94%EC%B2%9C%E2%AD%90483-%ED%9D%91%EC%97%BC%EC%86%8C-%EC%88%98%EC%96%91%EB%86%8D%EC%9E%A5%EA%B0%80%EB%93%A0-%ED%9D%91%EC%97%BC%EC%86%8C-%EA%B3%A4%EC%A7%80%EC%95%94%EB%B3%B8%EC%A0%90",
+      "https://yjss.or.kr/49/?bmode=view&idx=169110227&q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&t=board",
+      "https://ygkgyou.tistory.com/2860"
+    ],
+    "scope": "경기도 이천·광주·여주 일부 공식 선정·지정 7곳; 현재 영업과 블루리본 정규 등급 미확인, 기존 지자체 등록 전수조사 아님.",
+    "coordinatePolicy": "공개된 동일 식당·현주소의 위경도 근거 미확보로 신규 전부 null. 위치 근사·사용자 위치·폐업 추정 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -11497,6 +11608,32 @@
       ],
       "additionalOfficialSourceUpdatedAt": "2026-10-28",
       "notes": "2023년 지정 발표의 공표일(2023-10-26), 2025년 지정 명단, 2026년 경연대회 수상 기록(공식 페이지 최종수정 2026-10-28)과 이번 확인일(2026-11-06)은 서로 다른 값."
+    },
+    "municipalSelection20261106GyeonggiSlot17": {
+      "checkedAt": "2026-11-06",
+      "scope": "이천·광주·여주 공식 경기노포 2023/2024 선정을 지자체·공개 주소와 대조하고 이천시청 백년가게 명단 일부 확인. 연도와 현재 영업 별개.",
+      "recordCount": 7,
+      "restaurantIds": [
+        "local-gg-slot17-icheon-jangheung",
+        "local-gg-slot17-icheon-masan",
+        "local-gg-slot17-icheon-yongin",
+        "local-gg-slot17-icheon-pizza",
+        "local-gg-slot17-icheon-imgeum",
+        "local-gg-slot17-gwangju-suyang",
+        "local-gg-slot17-yeoju-namhan"
+      ],
+      "officialSourceUrls": [
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "https://www.icheon.go.kr/biz/contents.do?mid=0313000000",
+        "https://www.icheon.go.kr/tour/cultureTour/manage/view.do?idx=131&mid=0303000000"
+      ],
+      "additionalAddressUrls": [
+        "https://nearlistblog.co.kr/entry/%EA%B0%95%EB%A0%A5%EC%B6%94%EC%B2%9C%E2%AD%90483-%ED%9D%91%EC%97%BC%EC%86%8C-%EC%88%98%EC%96%91%EB%86%8D%EC%9E%A5%EA%B0%80%EB%93%A0-%ED%9D%91%EC%97%BC%EC%86%8C-%EA%B3%A4%EC%A7%80%EC%95%94%EB%B3%B8%EC%A0%90",
+        "https://yjss.or.kr/49/?bmode=view&idx=169110227&q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&t=board",
+        "https://ygkgyou.tistory.com/2860"
+      ],
+      "coordinatesAvailable": 0,
+      "completeRegionalCollection": false
     }
   },
   "mapCoverageAuditHistory": [
