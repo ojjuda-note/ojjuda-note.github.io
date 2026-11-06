@@ -2,12 +2,12 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {JSDOM}=require('jsdom');const root=path.join(__dirname,'..');
 const id='00000000-0000-4000-8000-000000000001',room='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',entry='20000000-0000-4000-8000-000000000001';
 const tick=()=>new Promise(r=>setTimeout(r,10));
-function fixture({empty=false,guest=false,publicGroups=true,hash='',deleting=false,invited=false,respond,coldReads=false}={}){
+function fixture({empty=false,guest=false,member=false,publicGroups=true,hash='',deleting=false,invited=false,respond,coldReads=false}={}){
   const dom=new JSDOM('<main id="app"></main><div id="toast"></div>',{url:'https://ojjuda.kr/groups/'+hash,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
   w.IntersectionObserver=class{observe(){}disconnect(){}};w.URL.createObjectURL=()=> 'blob:fixture';w.URL.revokeObjectURL=()=>{};w.OJJUDA_CONFIG={supabaseUrl:'https://example.supabase.co',supabaseKey:'public'};
   let pendingInvite=invited;
-  let list=empty?[]:[{id:room,name:'주말 여행단',description:'우리의 다음 여행',owner_id:id,member_count:2,created_at:'2026-11-01T00:00:00Z',deleting}],saved,requested=false;
+  let list=empty?[]:[{id:room,name:'주말 여행단',description:'우리의 다음 여행',owner_id:member?other:id,member_count:2,created_at:'2026-11-01T00:00:00Z',deleting}],saved,requested=false;
   w.supabase={createClient:()=>({auth:{getUser:async()=>({data:{user:guest?null:{id}}}),onAuthStateChange:()=>{}},storage:{from:()=>({upload:async()=>({}),remove:async()=>({})})},rpc:async(name,args)=>{
     let {p_action:a,p_payload:p}=args;if(name==='group_home'){a='home';p={query:args.p_query};}
     calls.push([a,p]);const response=respond?.(a,p,name);if(response!==undefined)return response;let data=[];
@@ -220,4 +220,23 @@ test('failed invitation search hides the old cursor and retries from the first p
   form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
   assert.equal(f.calls.filter(([a])=>a==='search').at(-1)[1].before,undefined);assert.match(d.querySelector('#invite-results').textContent,/회원 99/);
  }finally{f.dom.window.close();}
+});
+
+
+test('every group member can share from the room while only the owner can rotate links',async()=>{
+ for(const member of [false,true]){
+  const f=fixture({member,hash:'#room='+room});try{
+   await tick();const d=f.w.document,shared=[],copied=[];
+   f.w.navigator.share=async data=>shared.push(data);f.w.navigator.clipboard={writeText:async text=>copied.push(text)};
+   d.querySelector('[data-action=share]').click();await tick();
+   assert.equal(f.calls.filter(([a])=>a==='link').length,1);assert.equal(f.calls.some(([a])=>a==='members'||a==='requests'),false,'sharing does not load management data');
+   assert.equal(!!d.querySelector('[data-renew-link]'),!member);
+   d.querySelector('[data-share-link]').click();await tick();assert.equal(shared[0].url,'https://ojjuda.kr/groups/#invite='+entry);
+   d.querySelector('[data-copy-link]').click();await tick();assert.equal(copied[0],shared[0].url);
+   assert.equal(f.calls.some(([a])=>a==='send'),false);
+  }finally{f.dom.window.close();}
+ }
+ for(const options of [{},{guest:true,hash:'#room='+room},{deleting:true,hash:'#room='+room}]){
+  const f=fixture(options);try{await tick();assert.equal(f.w.document.querySelector('[data-action=share]'),null);}finally{f.dom.window.close();}
+ }
 });
