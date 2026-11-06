@@ -21,7 +21,7 @@
   saetbyeol:'1.2.8',
   tour:'1.4.5',
   ttang:'1.4.6',
-  photo_ttang:'1.3.5',
+  photo_ttang:'1.3.6',
   mole:'1.4.5',
   runner:'1.3.5',
   stacker:'1.4.5',
