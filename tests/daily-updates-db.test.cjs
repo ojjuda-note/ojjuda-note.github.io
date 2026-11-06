@@ -1,0 +1,47 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {PGlite}=require('@electric-sql/pglite');
+const migration=fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261106081807_daily_update_notices.sql'),'utf8');
+test('daily release boundary, verified public content, account isolation and permanent acknowledgments',async()=>{
+ const db=new PGlite();
+ try{
+ await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
+ CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ GRANT USAGE ON SCHEMA auth TO anon,authenticated;
+ INSERT INTO auth.users VALUES('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000002');`);
+ await db.exec(migration);
+ const value=async(sql,params=[]) => (await db.query(sql,params)).rows[0].v;
+ const today=await value("select ((statement_timestamp() at time zone 'Asia/Seoul')::date)::text v");
+ const yesterday=await value("select ((statement_timestamp() at time zone 'Asia/Seoul')::date-1)::text v");
+ const older=await value("select ((statement_timestamp() at time zone 'Asia/Seoul')::date-2)::text v");
+ const item={text:'게임 뒤로가기 개선',category:'games',source_sha:'a'.repeat(40),deployment_url:'https://github.com/ojjuda-note/ojjuda-note.github.io/actions/runs/123'};
+ const publish=(date,items=[item])=>value('select ojjuda_updates_internal.publish_daily_notice($1,$2::jsonb) v',[date,JSON.stringify(items)]);
+ const get=()=>value('select public.get_daily_update_notice() v');
+ assert.equal((await get()).notice,null);
+ assert.equal(await publish(today),true);
+ assert.equal((await get()).notice,null,'today cannot appear before the following KST midnight');
+ assert.equal(await publish(older),true);assert.equal(await publish(yesterday),true);
+ assert.equal(await value("select available_at = (report_date+1)::timestamp at time zone 'Asia/Seoul' v from ojjuda_updates_internal.daily_notices where report_date=$1",[yesterday]),true);
+ assert.equal(await publish(yesterday,[{...item,text:'다르게 바꿈'}]),false,'duplicate runs preserve the existing notice');
+ assert.equal((await get()).notice.items[0],item.text);
+ for(const items of [[],[{...item,category:'admin'}],[{...item,text:'원고실 그림 교체'}],[{...item,text:'관리자 메뉴 개선'}],[{...item,source_sha:''}],[{...item,deployment_url:'https://example.test'}],[{...item,text:null}],[{...item,text:'x'.repeat(81)}]]) await assert.rejects(publish(older,items));
+ await db.exec('SET ROLE anon');
+ assert.equal((await get()).notice.id,yesterday);
+ await assert.rejects(db.query('select * from ojjuda_updates_internal.daily_notices'));
+ await assert.rejects(db.query('select public.acknowledge_daily_update_notice($1)',[yesterday]));
+ await assert.rejects(db.query('select ojjuda_updates_internal.publish_daily_notice($1,$2::jsonb)',[yesterday,JSON.stringify([item])]));
+ await db.exec("RESET ROLE; SET ROLE authenticated; SELECT set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false)");
+ assert.equal((await get()).viewer,'00000000-0000-4000-8000-000000000001');
+ await assert.rejects(db.query('select public.acknowledge_daily_update_notice($1)',[today]));
+ assert.equal(await value('select public.acknowledge_daily_update_notice($1) v',[yesterday]),true);
+ assert.equal(await value('select public.acknowledge_daily_update_notice($1) v',[yesterday]),true);
+ assert.equal((await get()).notice,null,'never fall back to older unread notices');
+ await assert.rejects(db.query('select * from ojjuda_updates_internal.notice_reads'));
+ await db.exec("SELECT set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000002',false)");
+ assert.equal((await get()).notice.id,yesterday,'other accounts retain their unread notice');
+ await db.exec("SELECT set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false)");
+ assert.equal((await get()).notice,null,'a fresh session of the same account stays dismissed');
+ await db.exec("RESET ROLE; SELECT set_config('request.jwt.claim.sub','',false)");
+ const body=await get();assert.equal(body.notice.items[0],item.text);assert.ok(!JSON.stringify(body).includes('deployment_url'));
+ } finally {await db.close();}
+});

@@ -1,0 +1,25 @@
+name: Prepare daily update popup source
+on:
+  push:
+    branches: [feat/daily-update-popup]
+    paths: [ops/prepare-daily-updates-world.py]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/daily-update-popup
+          sparse-checkout: |
+            ops
+            .github/workflows
+      - name: Apply tested World integration
+        run: |
+          python ops/prepare-daily-updates-world.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add world.html
+          git commit -m 'feat: connect tested daily update popup to World'
+          git push origin HEAD:feat/daily-update-popup
