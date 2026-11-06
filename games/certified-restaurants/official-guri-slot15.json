@@ -1,9 +1,9 @@
 {
   "updatedAt": "2026-11-06",
-  "sourceName": "구리시청 2023 지정 발표 · 2025 지정현황 · 2023 경연대회 수상업소",
+  "sourceName": "구리시청 2023 지정 발표 · 2025 지정현황 · 2023 경연대회 수상업소 · 2026 경연대회 공식 수상 현황",
   "sourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
   "completeRegionalCollection": false,
-  "selectionScope": "2023년 구리시 공식 지정 10곳의 지점·주소를 공개 자료와 대조해 수록. 2025년 별도 지정 이력은 구리시 최신 공개 지정현황에 있는 4곳에만 표시. 2026년 현재 영업은 별도 미확인.",
+  "selectionScope": "2023년 구리시 공식 지정 10곳의 지점·주소를 공개 자료와 대조해 수록. 2025년 별도 지정 이력은 구리시 최신 공개 지정현황에 있는 4곳에만 표시. 2026년 현재 영업은 별도 미확인. 2026년 제11회 구리 맛자랑 경연대회 공식 현황에서 이름과 주소가 명확한 4곳을 수상 등급별 추가. 선정·수상 기록과 현재 영업은 별도.",
   "restaurants": [
     {
       "id": "local-guri-slot15-nature",
@@ -334,12 +334,121 @@
       ],
       "addressSourceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
       "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-award26-yangchon",
+      "name": "양촌리 돌판구이",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 경춘로244번길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 제11회 구리 맛자랑 경연대회 대상",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+          "sourceName": "구리시청 · 맛자랑 경연대회 수상업소 현황",
+          "sourceAsOf": "2026",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2026년 구리시 경연대회 대상 수상 기록. 현 영업 여부는 별도 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-award26-chuan",
+      "name": "촨촨촨",
+      "category": "중식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 검배로72번길 11-21",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 제11회 구리 맛자랑 경연대회 최우수상",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+          "sourceName": "구리시청 · 맛자랑 경연대회 수상업소 현황",
+          "sourceAsOf": "2026",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2026년 구리시 경연대회 최우수상 수상 기록. 현 영업 여부는 별도 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-award26-seoulmaeuntang",
+      "name": "서울매운탕",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 이문안로113번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 제11회 구리 맛자랑 경연대회 우수상",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+          "sourceName": "구리시청 · 맛자랑 경연대회 수상업소 현황",
+          "sourceAsOf": "2026",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2026년 구리시 경연대회 우수상 수상 기록. 현 영업 여부는 별도 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-guri-slot15-award26-sodamchon",
+      "name": "소담촌 구리수택점",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 이문안로 147",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 제11회 구리 맛자랑 경연대회 우수상",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+          "sourceName": "구리시청 · 맛자랑 경연대회 수상업소 현황",
+          "sourceAsOf": "2026",
+          "verifiedAt": "2026-11-06",
+          "status": "historical_designation",
+          "selectionCriteria": "2026년 구리시 경연대회 우수상 수상 기록. 현 영업 여부는 별도 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.guri.go.kr/www/contents.do?key=6537",
+      "addressSourceCheckedAt": "2026-11-06"
     }
   ],
   "notes": [
     "블루리본 정규 리본 등급이 아닌 지방자치단체의 2023년 공식 지정 이력",
     "확실한 현 지점 위경도 근거 없어 null 유지",
     "원본 설명·사진 복제하지 않음",
-    "2023년 지정 10곳 가운데 나머지 5곳을 구리시 공식 2025 지정 명단 4곳과 2023 경연대회 수상업소 주소 1곳으로 대조함; 현 영업 확인 아님"
+    "2023년 지정 10곳 가운데 나머지 5곳을 구리시 공식 2025 지정 명단 4곳과 2023 경연대회 수상업소 주소 1곳으로 대조함; 현 영업 확인 아님",
+    "2026-10-28 최종 수정된 구리시청 제11회(2026년) 경연대회 수상 명단에서 4곳 확인, 수상 연도 2026/확인일 2026-11-06 구분. 좌표 및 현재 영업 추측 금지."
   ]
 }
