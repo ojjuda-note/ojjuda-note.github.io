@@ -208,3 +208,16 @@ test('invitation dialog immediately lists recent members and pages without dupli
   const form=d.querySelector('#invite-search');form.elements.query.value='찾기';form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(d.querySelectorAll('#invite-results .member').length,1);assert.match(d.querySelector('#invite-results').textContent,/새 회원 99/);
  }finally{f.dom.window.close();}
 });
+
+
+test('failed invitation search hides the old cursor and retries from the first page',async()=>{
+ const row=n=>({user_id:'50000000-0000-4000-8000-'+String(n).padStart(12,'0'),nickname:'회원 '+n,created_at:'2026-11-06T00:00:00Z'});let failed=false;
+ const f=fixture({hash:'#room='+room,respond:(a,p)=>a!=='search'?undefined:p.query&&!failed?(failed=true,{error:{message:'일시적인 연결 오류'}}):{data:p.query?[row(99)]:Array.from({length:31},(_,n)=>row(n))}});try{
+  await tick();const d=f.w.document;d.querySelector('[data-action=manage]').click();await tick();d.querySelector('[data-invite]').click();await tick();
+  const more=d.querySelector('#invite-more'),form=d.querySelector('#invite-search');assert.equal(more.hidden,false);
+  form.elements.query.value='다른 회원';form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+  assert.equal(more.hidden,true);assert.equal(d.querySelectorAll('#invite-results .member').length,0);
+  form.dispatchEvent(new f.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+  assert.equal(f.calls.filter(([a])=>a==='search').at(-1)[1].before,undefined);assert.match(d.querySelector('#invite-results').textContent,/회원 99/);
+ }finally{f.dom.window.close();}
+});
