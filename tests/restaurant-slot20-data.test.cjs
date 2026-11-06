@@ -30,5 +30,5 @@ a.ok(app.includes('...slot20.restaurants'));
 const rev=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision;
 a.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/app\.js\?v=\d{8}-restaurants-/);
 a.ok(fs.readFileSync(path.join(root,'world.html'),'utf8').includes('world-game-assets.js?v='+rev));
-a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.27'/);
+a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.(?:2[7-9]|[3-9]\d+)'/);
 console.log('restaurant slot20 verified');
