@@ -3947,7 +3947,7 @@
       "slot": 15,
       "scheduledAtKST": "2026-11-06T09:00:00+09:00",
       "checkedAtKST": "2026-11-06",
-      "status": "partial_review_with_5_historical_2023_guri_selections",
+      "status": "partial_review_with_10_historical_2023_guri_selections",
       "assignedRegions": [
         "경기도 남양주시",
         "경기도 구리시",
@@ -3966,10 +3966,10 @@
         {
           "region": "경기도 구리시",
           "baseListedCount": 0,
-          "scope": "2023 구리시 100대맛집 10곳 공식 명단 중 개별 공개 주소가 확인된 5곳만 과거 선정 이력 추가",
-          "new": 5,
+          "scope": "2023 구리시 지정 10곳 중 앞서 등록한 5곳에 더해, 구리시 2025 지정현황 4곳·2023 경연 수상업소 1곳으로 주소 교차 확인해 5곳 추가. 2026 영업·위경도 미확인.",
+          "new": 10,
           "updated": 0,
-          "unknownLocations": 5,
+          "unknownLocations": 10,
           "notExhaustive": true
         },
         {
@@ -3987,21 +3987,28 @@
         "구리시 문화관광 주소 2곳",
         "공개 주소자료·지자체 연계 노포 소개 3곳",
         "하남시 경기으뜸맛집 공식 목록",
-        "기존 등록 남양주·하남 식당"
+        "기존 등록 남양주·하남 식당",
+        "구리시청 2025년 와구리맛집 지정업소 공식 명단과 주소",
+        "구리시청 2023년 음식경연대회 최우수상 수상업소 소재지"
       ],
-      "additions": 5,
+      "additions": 10,
       "modifications": 0,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 14,
-      "locationPendingScope": "남양주 기존5·하남 기존4·구리 신규5; 확인 가능한 공개 위경도 미확보",
+      "locationPending": 19,
+      "locationPendingScope": "남양주 기존5·하남 기존4·구리 신규10; 2026년 영업·공개 위경도 교차 검증 미완료",
       "addedRestaurantIds": [
         "local-guri-slot15-nature",
         "local-guri-slot15-obaek",
         "local-guri-slot15-memillang",
         "local-guri-slot15-haeseong",
-        "local-guri-slot15-halmae"
+        "local-guri-slot15-halmae",
+        "local-guri-slot15-gomok",
+        "local-guri-slot15-wonang",
+        "local-guri-slot15-gohyang",
+        "local-guri-slot15-okhwa",
+        "local-guri-slot15-chinatown"
       ],
       "updatedRestaurantIds": [],
       "evidenceUrls": [
@@ -4011,7 +4018,9 @@
         "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
         "https://market.koreacharts.com/store/content/20333041.html",
         "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
-        "https://www.hanam.go.kr/www/contents.do?key=6225"
+        "https://www.hanam.go.kr/www/contents.do?key=6225",
+        "https://www.guri.go.kr/www/contents.do?key=6016",
+        "https://www.guri.go.kr/www/contents.do?key=6537"
       ],
       "locationRechecks": [
         {
@@ -4118,29 +4127,127 @@
           "recheckCycle": 2,
           "recheckSlot": 15,
           "action": "후속 배정에 재조사, 추정 좌표·비노출·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-gomok",
+          "name": "고목나무집",
+          "address": "경기도 구리시 안골로 12-1",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 고목나무집"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6016"
+          ],
+          "result": "2023년 지정 명단과 구리시 공식 개별 주소 근거 확인. 현 영업과 업소별 정확한 위경도 별도 미확인.",
+          "reason": "현 지점 위경도·2026 영업상태 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-wonang",
+          "name": "워낭소리",
+          "address": "경기도 구리시 갈매중앙로 89-8",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 워낭소리"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6016"
+          ],
+          "result": "2023년 지정 명단과 구리시 공식 개별 주소 근거 확인. 현 영업과 업소별 정확한 위경도 별도 미확인.",
+          "reason": "현 지점 위경도·2026 영업상태 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-gohyang",
+          "name": "고향동태탕",
+          "address": "경기도 구리시 체육관로 147-5",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 고향동태탕"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6016"
+          ],
+          "result": "2023년 지정 명단과 구리시 공식 개별 주소 근거 확인. 현 영업과 업소별 정확한 위경도 별도 미확인.",
+          "reason": "현 지점 위경도·2026 영업상태 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-okhwa",
+          "name": "옥화식당",
+          "address": "경기도 구리시 검배로 59",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 옥화식당"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "result": "2023년 지정 명단과 구리시 공식 개별 주소 근거 확인. 현 영업과 업소별 정확한 위경도 별도 미확인.",
+          "reason": "현 지점 위경도·2026 영업상태 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-chinatown",
+          "name": "차이나타운 본점",
+          "address": "경기도 구리시 안골로 46",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기 구리시",
+            "경기도 구리시",
+            "구리시 차이나타운 본점"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6016"
+          ],
+          "result": "2023년 지정 명단과 구리시 공식 개별 주소 근거 확인. 현 영업과 업소별 정확한 위경도 별도 미확인.",
+          "reason": "현 지점 위경도·2026 영업상태 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
         }
       ],
       "unresolved": [
         {
-          "topic": "구리 2023 공식 명단 중 나머지 5곳",
-          "names": [
-            "고목나무집",
-            "워낭소리",
-            "고향동태탕",
-            "옥화식당",
-            "차이나타운 본점"
-          ],
-          "reason": "현 지점·정확한 업소 주소 추가 대조 필요"
-        },
-        {
           "topic": "남양주 기존 5곳·하남 기존 4곳",
           "reason": "확실한 공개 지도 좌표/영업 상태 교차 검증 미완료"
+        },
+        {
+          "topic": "구리 2023 공식 지정 10곳",
+          "reason": "모두 주소 근거 확인, 2026년 현재 영업·정확한 위경도 10곳 미확인; 2025 지정 이력 4곳과 현재 영업 여부 혼동 금지"
         }
       ],
       "carryOver": [
         "14회차(2026-11-06 08:00, 평택·오산·안성)는 main 감사 기록이 없어 수행 확인 불가. 15회차에서 완료 처리하지 않음.",
-        "구리 2023 발표 나머지 5곳 주소 검증",
-        "남양주 기존5·하남 기존4·구리 신규5 좌표 및 영업 재확인"
+        "남양주 기존5·하남 기존4·구리 신규5 좌표 및 영업 재확인",
+        "구리 2023 공식 지정 10곳 정확한 현재 지도 좌표·2026 영업상태 재점검"
       ],
       "nextSlot": 16,
       "nextRegions": [
@@ -4149,7 +4256,30 @@
         "경기도 동두천시",
         "경기도 포천시"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "checkedAtKST": "2026-11-06",
+          "type": "same_slot_continuation",
+          "regions": [
+            "경기도 남양주시",
+            "경기도 구리시",
+            "경기도 하남시"
+          ],
+          "scope": "추가 구리시 공식 2025 와구리맛집/2023 경연대회 명단과 2023 100대맛집 지정 교차 확인. 남양주·하남 조사 이월, 전수조사 아님.",
+          "added": 5,
+          "modified": 0,
+          "locationCoordinatesAdded": 0,
+          "locationHidden": 0,
+          "locationPending": 19,
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "notes": "동일 1순환 15회차 이어하기(중복 회차 신설 없음)."
+        }
+      ]
     }
   ],
   "notes": [

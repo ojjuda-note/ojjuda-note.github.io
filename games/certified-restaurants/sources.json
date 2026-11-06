@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3129,
+    "uniqueRestaurants": 3134,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2398,
+      "local-guide": 2403,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2106,
+    "coordinatesMissing": 2111,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 366,
+      "경기": 371,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,10 +1531,10 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1836,
-      "중식": 128,
+      "한식": 1839,
+      "중식": 129,
       "일식": 131,
-      "기타": 574,
+      "기타": 575,
       "양식": 208,
       "분식": 24,
       "디저트": 228
@@ -11464,13 +11464,13 @@
     },
     "municipalSelection20261106GuriSlot15": {
       "checkedAt": "2026-11-06",
-      "sourceName": "구리시청 2023년 구리 100대 맛집",
+      "sourceName": "구리시청 2023 지정 발표 · 2025 지정현황 · 2023 음식경연대회",
       "sourcePublicationDate": "2023-10-26",
       "officialSourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
       "regions": [
         "구리시"
       ],
-      "recordCount": 5,
+      "recordCount": 10,
       "provider": "local-guide",
       "guideStatus": "historical_designation",
       "selectionYear": 2023,
@@ -11482,9 +11482,12 @@
         "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
         "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
         "https://market.koreacharts.com/store/content/20333041.html",
-        "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436"
+        "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
+        "https://www.guri.go.kr/www/contents.do?key=6016",
+        "https://www.guri.go.kr/www/contents.do?key=6537"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "followUp": "2026년 현재 영업과 정확한 지점 위경도는 별도로 확인. 이번 5곳은 근사 좌표를 넣지 않음."
     }
   },
   "mapCoverageAuditHistory": [
