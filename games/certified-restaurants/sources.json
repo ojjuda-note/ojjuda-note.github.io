@@ -110,7 +110,7 @@
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
     "recordCount": 528,
-    "coordinatesCount": 244,
+    "coordinatesCount": 245,
     "buildCounts": {
       "existingRecords": 6,
       "highestMatchedMichelin": 32,
@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3145,
+    "uniqueRestaurants": 3153,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2414,
+      "local-guide": 2422,
       "post-office": 240
     },
-    "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2122,
+    "coordinatesAvailable": 1028,
+    "coordinatesMissing": 2125,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1518,7 +1518,7 @@
       "충남": 46,
       "울산": 36,
       "경남": 319,
-      "강원": 44,
+      "강원": 52,
       "전북": 208,
       "경기": 382,
       "인천": 341,
@@ -1531,12 +1531,12 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1846,
+      "한식": 1852,
       "중식": 130,
       "일식": 131,
-      "기타": 578,
+      "기타": 579,
       "양식": 208,
-      "분식": 24,
+      "분식": 25,
       "디저트": 228
     }
   },
@@ -10851,51 +10851,124 @@
       "scope": "경기 이천·광주·여주 17회차 부분조사. 경기둘레길 관광안내의 '모범 음식점' 분류 7곳을 선정·발행 연도 미확인 과거 수록으로 구분. 광주 기존등록 확인, 신규 검증 전 보류.",
       "coordinatePolicy": "상호·지점·현주소와 일치하는 공개 좌표 근거 미확보로 신규 위경도 null; 기존 ID·좌표 변경 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gangwon-slot18-chuncheon-wonju",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3145,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2414,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2122,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1846,
+          "중식": 130,
+          "일식": 131,
+          "기타": 578,
+          "양식": 208,
+          "분식": 24,
+          "디저트": 228
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3153,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2422,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1028,
+        "coordinatesMissing": 2125,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 52,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1852,
+          "중식": 130,
+          "일식": 131,
+          "기타": 579,
+          "양식": 208,
+          "분식": 25,
+          "디저트": 228
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-gangwon-slot18-chuncheon-silbi-makguksu",
+        "local-gangwon-slot18-chuncheon-yupori-makguksu",
+        "local-gangwon-slot18-chuncheon-gamja-island-bon",
+        "local-gangwon-slot18-chuncheon-myeongga-makguksu",
+        "local-gangwon-slot18-wonju-yejin-mandu",
+        "local-gangwon-slot18-wonju-namgyeong-musil",
+        "local-gangwon-slot18-wonju-deokcheon-makguksu",
+        "local-gangwon-slot18-wonju-mihyang"
+      ],
+      "existingRestaurantsEnriched": 1,
+      "existingRestaurantIds": [
+        "blue-regional-tongnamujip-dakgalbi-chuncheon"
+      ],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=102",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=325",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=47",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
+      ],
+      "scope": "강원 춘천·원주 18회차. 공식 관광 8곳 소개 이력 부분조사, 기존 춘천 블루리본 1곳 좌표 보강. 리본 등급·판본 임의 추가 없음.",
+      "coordinatePolicy": "춘천시 관광 상세에 같은 지점·현주소 및 지도 링크 위경도가 확인되는 경우만 5곳 설정. 원주 4곳은 null 유지.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot17-icheon-gwangju-yeoju",
+    "id": "2026-11-06-gangwon-slot18-chuncheon-wonju",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3138,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2407,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2115,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 375,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1842,
-        "중식": 130,
-        "일식": 131,
-        "기타": 575,
-        "양식": 208,
-        "분식": 24,
-        "디저트": 228
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3145,
       "providerCounts": {
         "michelin": 237,
@@ -10934,26 +11007,74 @@
         "디저트": 228
       }
     },
-    "newRestaurantCount": 7,
+    "currentCoverage": {
+      "uniqueRestaurants": 3153,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2422,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1028,
+      "coordinatesMissing": 2125,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 52,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1852,
+        "중식": 130,
+        "일식": 131,
+        "기타": 579,
+        "양식": 208,
+        "분식": 25,
+        "디저트": 228
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-gyeonggi-slot17-icheon-songhak-seolseong",
-      "local-gyeonggi-slot17-yeoju-daegu-wangppol",
-      "local-gyeonggi-slot17-yeoju-hyeondaeok-wolsong",
-      "local-gyeonggi-slot17-yeoju-buttumak",
-      "local-gyeonggi-slot17-yeoju-r52",
-      "local-gyeonggi-slot17-yeoju-ogamdo",
-      "local-gyeonggi-slot17-yeoju-dokkaebi"
+      "local-gangwon-slot18-chuncheon-silbi-makguksu",
+      "local-gangwon-slot18-chuncheon-yupori-makguksu",
+      "local-gangwon-slot18-chuncheon-gamja-island-bon",
+      "local-gangwon-slot18-chuncheon-myeongga-makguksu",
+      "local-gangwon-slot18-wonju-yejin-mandu",
+      "local-gangwon-slot18-wonju-namgyeong-musil",
+      "local-gangwon-slot18-wonju-deokcheon-makguksu",
+      "local-gangwon-slot18-wonju-mihyang"
     ],
-    "existingRestaurantsEnriched": 0,
-    "existingRestaurantIds": [],
+    "existingRestaurantsEnriched": 1,
+    "existingRestaurantIds": [
+      "blue-regional-tongnamujip-dakgalbi-chuncheon"
+    ],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10038",
-      "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10034",
-      "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10032"
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=102",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=325",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=47",
+      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y",
+      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
+      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
+      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
     ],
-    "scope": "경기 이천·광주·여주 17회차 부분조사. 경기둘레길 관광안내의 '모범 음식점' 분류 7곳을 선정·발행 연도 미확인 과거 수록으로 구분. 광주 기존등록 확인, 신규 검증 전 보류.",
-    "coordinatePolicy": "상호·지점·현주소와 일치하는 공개 좌표 근거 미확보로 신규 위경도 null; 기존 ID·좌표 변경 없음.",
+    "scope": "강원 춘천·원주 18회차. 공식 관광 8곳 소개 이력 부분조사, 기존 춘천 블루리본 1곳 좌표 보강. 리본 등급·판본 임의 추가 없음.",
+    "coordinatePolicy": "춘천시 관광 상세에 같은 지점·현주소 및 지도 링크 위경도가 확인되는 경우만 5곳 설정. 원주 4곳은 null 유지.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -11066,9 +11187,9 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2386,
+    "recordCount": 2394,
     "designationEvidenceCount": 2425,
-    "coordinatesAvailable": 748,
+    "coordinatesAvailable": 752,
     "regionCount": 17,
     "regionalCoverage": [
       {
@@ -11127,8 +11248,8 @@
       },
       {
         "region": "강원",
-        "uniqueRestaurants": 37,
-        "coordinatesAvailable": 0,
+        "uniqueRestaurants": 45,
+        "coordinatesAvailable": 4,
         "completeRegionalCollection": false
       },
       {
@@ -11626,6 +11747,39 @@
       "sourceFile": "games/certified-restaurants/official-gyeonggi-slot17.json",
       "notExhaustive": true,
       "followUp": "경기도 광주시 개별 목록 인증 근거 추가 확인, 기존 3개시 12곳과 신규 7곳 현재 영업·좌표 재조사."
+    },
+    "municipalTourism20261106GangwonSlot18": {
+      "checkedAt": "2026-11-06",
+      "sourceName": "춘천시 춘천여행ON · 원주시 원주관광",
+      "officialSourceUrls": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=102",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=325",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=47",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
+      ],
+      "regions": [
+        "춘천시",
+        "원주시"
+      ],
+      "recordsAddedByRegion": {
+        "춘천시": 4,
+        "원주시": 4
+      },
+      "recordCount": 8,
+      "provider": "local-guide",
+      "guideStatus": "official_tourism_listing",
+      "selectionYearVerified": false,
+      "operatingStatusEstablished": false,
+      "coordinateVerifiedCount": 4,
+      "existingBlueRibbonCoordinateEnriched": 1,
+      "sourceFile": "games/certified-restaurants/official-gangwon-slot18.json",
+      "notExhaustive": true,
+      "followUp": "원주시 4곳 정확한 좌표 미확인. 2순환 18회차 우선 재조사하고 현재 영업·가이드 선정 여부는 별도 확인."
     }
   },
   "mapCoverageAuditHistory": [
