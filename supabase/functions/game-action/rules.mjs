@@ -22,7 +22,7 @@ export function verifyAction(game, user, body) {
     const engine = boards[game.kind];
     let state = engine.init(game.janggi_layout || {});
     for (const input of game.moves) {
-      const move = engine.find(state, input);
+      const move = engine.find(state, input, true);
       if (!move) fail('invalid_history');
       state = engine.apply(state, move);
     }
@@ -30,6 +30,7 @@ export function verifyAction(game, user, body) {
     const input = body.p_move;
     if (!input || typeof input !== 'object' || Array.isArray(input)) fail('bad_move');
     if (!input.pass && (!Number.isInteger(input.f) || !Number.isInteger(input.t))) fail('bad_move');
+    if (engine.repeats?.(state, input)) fail('repeated_move');
     const legal = engine.find(state, input);
     if (!legal) fail('illegal_move');
     const move = legal.pass ? { pass: 1 } : { f: legal.f, t: legal.t, ...(legal.p ? { p: legal.p } : {}) };
@@ -74,7 +75,7 @@ export function verifyComputerAction(game,user) {
     if (game.kind === 'janggi' && !['c','h'].every(s=>['eheh','hehe','ehhe','heeh'].includes(game.janggi_layout?.[s]))) return null;
     let state=engine.init(game.janggi_layout||{});
     for (const stored of game.moves) {
-      const move=engine.find(state,stored);if(!move)fail('invalid_history');state=engine.apply(state,move);
+      const move=engine.find(state,stored,true);if(!move)fail('invalid_history');state=engine.apply(state,move);
     }
     const move=engine.best(state,'normal',250);if(!move)fail('game_already_over');
     action='game_move';input=move.pass?{pass:1}:{f:move.f,t:move.t,...(move.p?{p:move.p}:{})};

@@ -28,7 +28,7 @@
   breakout:'1.5.5',
   spot:'1.10.7',
   screw:'2.21.1',
-  janggi:'1.4.4',
+  janggi:'1.5.0',
   chess:'1.4.4',
   billiards:'1.4.4',
   matgo:'1.4.6'
