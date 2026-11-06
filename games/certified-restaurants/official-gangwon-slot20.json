@@ -1,0 +1,156 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "삼척 1곳·태백 4곳 KTO 관광주민증 식음료 제휴 확인. 속초 공식 자료 조회 실패로 신규 미확정. 정규 가이드 선정·현재 영업 미확인. 공개 좌표 근거 없음.",
+  "restaurants": [
+    {
+      "id": "local-gangwon-slot20-samcheok-nolbu-jokbal",
+      "name": "놀부족발앤허갈닭강정",
+      "category": "한식",
+      "region": "강원",
+      "district": "삼척시",
+      "address": "강원특별자치도 삼척시 근덕면 교가1길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발",
+        "닭강정"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_partnership",
+          "selectionCriteria": "한국관광공사의 관광혜택 제휴 음식점 목록에 수록된 사실이며 미쉐린·블루리본 선정이나 현재 영업을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-slot20-taebaek-eomma-dakgalbi",
+      "name": "엄마손태백물닭갈비",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 황지연못길 9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물닭갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_partnership",
+          "selectionCriteria": "한국관광공사의 관광혜택 제휴 음식점 목록에 수록된 사실이며 미쉐린·블루리본 선정이나 현재 영업을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-slot20-taebaek-seoul-dakgalbi",
+      "name": "서울닭갈비",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 장성1길 190",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물닭갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_partnership",
+          "selectionCriteria": "한국관광공사의 관광혜택 제휴 음식점 목록에 수록된 사실이며 미쉐린·블루리본 선정이나 현재 영업을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-slot20-taebaek-greenhorn",
+      "name": "초록뿔언덕사슴목장",
+      "category": "디저트",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 고원로 369",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "카페 음료"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_partnership",
+          "selectionCriteria": "한국관광공사의 관광혜택 제휴 음식점 목록에 수록된 사실이며 미쉐린·블루리본 선정이나 현재 영업을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-slot20-taebaek-cafe-bomnune",
+      "name": "인생상점 카페봄눈",
+      "category": "디저트",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 서학로 1081",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "카페 음료"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+          "verifiedAt": "2026-11-06",
+          "status": "official_tourism_partnership",
+          "selectionCriteria": "한국관광공사의 관광혜택 제휴 음식점 목록에 수록된 사실이며 미쉐린·블루리본 선정이나 현재 영업을 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
