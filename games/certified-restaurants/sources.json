@@ -1502,19 +1502,19 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3167,
+    "uniqueRestaurants": 3170,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2436,
+      "local-guide": 2439,
       "post-office": 240
     },
-    "coordinatesAvailable": 1031,
-    "coordinatesMissing": 2136,
+    "coordinatesAvailable": 1032,
+    "coordinatesMissing": 2138,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
-      "충북": 214,
+      "충북": 217,
       "충남": 46,
       "울산": 36,
       "경남": 319,
@@ -1531,7 +1531,7 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1862,
+      "한식": 1865,
       "중식": 130,
       "일식": 132,
       "기타": 579,
@@ -11275,51 +11275,115 @@
       "locationPending": 96,
       "locationHidden": 0,
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-chungbuk-slot23-three-provincial-promotions",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3167,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2436,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1031,
+        "coordinatesMissing": 2136,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1862,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3170,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2439,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2138,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1865,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "newRestaurantCount": 3,
+      "newRestaurantIds": [
+        "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+        "local-chungbuk-slot23-cheongju-kongganae",
+        "local-chungbuk-slot23-cheongju-25si-garden"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+        "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+        "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
+      ],
+      "coordinateEvidenceUrls": [
+        "https://fmr.purpleo.co.kr/view/29170"
+      ],
+      "scope": "청주 본체 59곳·좌표 누락 16곳을 기준으로 충청북도 공식 맛집 소개 세 곳을 비교해 신규 3곳 확인. 다른 외식업소 전수조사는 아님.",
+      "coordinatesAdded": 1,
+      "locationPending": 18,
+      "locationHidden": 0,
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-daejeon-slot21-traditional-certifications",
+    "id": "2026-11-06-chungbuk-slot23-three-provincial-promotions",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3162,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2431,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1029,
-      "coordinatesMissing": 2133,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1857,
-        "중식": 130,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 25,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3167,
       "providerCounts": {
         "michelin": 237,
@@ -11358,26 +11422,64 @@
         "디저트": 230
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3170,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2439,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2138,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1865,
+        "중식": 130,
+        "일식": 132,
+        "기타": 579,
+        "양식": 209,
+        "분식": 25,
+        "디저트": 230
+      }
+    },
+    "newRestaurantCount": 3,
     "newRestaurantIds": [
-      "local-daejeon-traditional-jinrojip",
-      "local-daejeon-traditional-jeokdeok",
-      "local-daejeon-traditional-sonamu",
-      "local-daejeon-traditional-gwangcheon",
-      "local-daejeon-traditional-sutgolwonjo"
+      "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+      "local-chungbuk-slot23-cheongju-kongganae",
+      "local-chungbuk-slot23-cheongju-25si-garden"
     ],
-    "existingRestaurantsEnriched": 1,
+    "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+      "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+      "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+      "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
     ],
     "coordinateEvidenceUrls": [
-      "https://daejeon.ferrorium.com/p/food/11724775",
-      "https://daejeon.ferrorium.com/p/food/11843043"
+      "https://fmr.purpleo.co.kr/view/29170"
     ],
-    "scope": "대전 5개 구 기등록 명단·위치 누락과 대전시 공식 3대30년 인증업소 명단 부분 대조. 명단 중 진로집 1건 중복 제거, 기존 성심당 선정 정보 병합. 전수조사 및 현재 영업 판단 아님.",
-    "coordinatesAdded": 2,
-    "locationPending": 96,
+    "scope": "청주 본체 59곳·좌표 누락 16곳을 기준으로 충청북도 공식 맛집 소개 세 곳을 비교해 신규 3곳 확인. 다른 외식업소 전수조사는 아님.",
+    "coordinatesAdded": 1,
+    "locationPending": 18,
     "locationHidden": 0,
     "notExhaustive": true
   },
@@ -11491,9 +11593,9 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2403,
-    "designationEvidenceCount": 2428,
-    "coordinatesAvailable": 753,
+    "recordCount": 2406,
+    "designationEvidenceCount": 2431,
+    "coordinatesAvailable": 754,
     "regionCount": 17,
     "regionalCoverage": [
       {
@@ -12163,6 +12265,32 @@
       "selectionYear": null,
       "currentOperatingStatusVerified": 0,
       "notes": "정규 미쉐린/블루리본 등급 아님. 숯골원조냉면식당 신성로 122와 기존 숯골원냉면 본점 신성로84번길18은 서로 다른 지점. 기존 성심당은 ID와 저장 기능을 유지."
+    },
+    "municipalSelection20261106ChungbukSlot23": {
+      "checkedAt": "2026-11-06",
+      "sourceName": "충청북도 공식 누리소통망의 밥맛좋은집 소개",
+      "sourceUrls": [
+        "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
+        "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
+        "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
+      ],
+      "coordinateSourceUrl": "https://fmr.purpleo.co.kr/view/29170",
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "supplementFile": "official-chungbuk-slot23.json",
+      "addedCount": 3,
+      "coordinatesAdded": 1,
+      "selectionYearsKnown": {
+        "콩가내": 2017
+      },
+      "unknownSelectionYears": [
+        "효자촌묵집",
+        "25시가든"
+      ],
+      "historicalDesignationOnly": true,
+      "currentOperatingStatusesConfirmed": 0,
+      "noEstimatedCoordinates": true,
+      "notExhaustive": true,
+      "note": "25시가든 모범음식점 과거 지정취소 정보는 별도 사업 기록이고 이 자료에서는 밥맛좋은집 소개만 증명함."
     }
   },
   "mapCoverageAuditHistory": [
