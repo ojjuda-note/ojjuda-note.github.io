@@ -165,6 +165,28 @@ test('undecided deep links normalize calendar to list and history restores saved
 });
 
 
+test('visitor size filter and sorting are shareable and excluded from sports', async t => {
+ const f=await fixture(t);
+ f.click('[data-category="festival"]');
+ assert.equal(f.$('#scale-filter').hidden,false);
+ f.change('#scale','unknown');
+ assert.deepEqual(f.ids(),['confirmed','undated-campus']);
+ assert.equal(f.query().get('scale'),'unknown');
+ f.change('#scale','over1m');
+ assert.deepEqual(f.ids(),[]);
+ assert.match(f.$('#event-list').textContent,/공식 방문객 자료/);
+ f.change('#scale','all');
+ f.change('#sort','scale_desc');
+ assert.equal(f.query().get('sort'),'scale_desc');
+ f.click('[data-category="sports"]');
+ assert.equal(f.$('#scale-filter').hidden,true);
+ assert.equal(f.query().get('scale'),null);
+ assert.equal(f.query().get('sort'),null);
+ const shared=await fixture(t,{query:'?category=festival&scale=unknown&sort=scale_asc&view=list'});
+ assert.equal(shared.$('#scale').value,'unknown');
+ assert.equal(shared.$('#sort').value,'scale_asc');
+ assert.equal(shared.$('#scale-filter').hidden,false);
+});
 test('festival, sports and performance top-level chips filter events and retain a shareable route', async t => {
   const f = await fixture(t);
   f.click('[data-category="festival"]');
