@@ -26,7 +26,7 @@ a.equal(audit.entries.filter(x=>x.cycle===1&&x.slot===17).length,1);
 a.equal(audit.entries.find(x=>x.cycle===1&&x.slot===17).locationPending,19);
 a.ok(app.includes("fetch('./official-gyeonggi-slot17.json?v=20261106-restaurants-slot17-1"));
 a.ok(app.includes('...slot17.restaurants'));
-a.ok(/^20261106-restaurants-slot(17|18|19)-/.test(JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision));
+a.ok(/^20261106-restaurants-slot(17|18|19|20)-/.test(JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision));
 a.ok(fs.readFileSync(path.join(d,'index.html'),'utf8').includes('app.js?v='+JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision));
 a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'), /restaurants:'1\.9\.(?:24|25|26)'/);
 console.log('restaurant slot17 verified');

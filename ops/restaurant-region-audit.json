@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 19,
-    "scheduledAt": "2026-11-06T13:00:00+09:00",
+    "slot": 20,
+    "scheduledAt": "2026-11-06T14:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "2026-11-06 13:00 KST scheduled; started approximately 13:56 KST"
+    "source": "2026-11-06 14:00 KST scheduled execution"
   },
   "entries": [
     {
@@ -5174,6 +5174,210 @@
         "강원특별자치도 속초시",
         "강원특별자치도 삼척시",
         "강원특별자치도 태백시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 20,
+      "scheduledAtKST": "2026-11-06T14:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_5_kto_tourism_partner_listings",
+      "assignedRegions": [
+        "강원특별자치도 속초시",
+        "강원특별자치도 삼척시",
+        "강원특별자치도 태백시"
+      ],
+      "regionAudit": [
+        {
+          "region": "강원특별자치도 속초시",
+          "baseListedCount": 0,
+          "scope": "속초관광 공식 포털 응답 타임아웃/접근 제한. 이전 보도만으로 선정·폐업 추정하지 않음",
+          "new": 0,
+          "updated": 0,
+          "unknownLocations": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "강원특별자치도 삼척시",
+          "baseListedCount": 0,
+          "scope": "KTO 디지털 관광주민증 공식 식음료 제휴업소 상호·주소 일부 확인. 현재 영업·가이드 등급은 미확인",
+          "new": 1,
+          "updated": 0,
+          "unknownLocations": 1,
+          "notExhaustive": true
+        },
+        {
+          "region": "강원특별자치도 태백시",
+          "baseListedCount": 0,
+          "scope": "KTO 디지털 관광주민증 공식 식음료 제휴 4곳, 태백관광 공식 음식점 목록 일부 교차 대조. 영업/등급 미확인",
+          "new": 4,
+          "updated": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "KTO 디지털 관광주민증 음식점 개별 공개 5건",
+        "태백시 태백관광 음식점 페이지 일부 교차 대조",
+        "속초시 공식 관광 포털 접근 실패",
+        "블루리본 정규 전체 명단 직접 확인 불가; 미쉐린 2026 공식 강원 신규 명단 미확인"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 5,
+      "locationPendingScope": "삼척 1곳·태백 4곳의 현주소는 공식확인. 현재 개별 식당명·주소의 공개 좌표를 확정하지 못함.",
+      "addedRestaurantIds": [
+        "local-gangwon-slot20-samcheok-nolbu-jokbal",
+        "local-gangwon-slot20-taebaek-eomma-dakgalbi",
+        "local-gangwon-slot20-taebaek-seoul-dakgalbi",
+        "local-gangwon-slot20-taebaek-greenhorn",
+        "local-gangwon-slot20-taebaek-cafe-bomnune"
+      ],
+      "evidenceUrls": [
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
+        "https://tour.taebaek.go.kr/tour/story/taste",
+        "https://www.sokchotour.com/"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-gangwon-slot20-samcheok-nolbu-jokbal",
+          "name": "놀부족발앤허갈닭강정",
+          "address": "강원특별자치도 삼척시 근덕면 교가1길 7",
+          "region": "강원특별자치도 삼척시",
+          "aliases": [
+            "강원특별자치도 삼척시",
+            "강원도 삼척시",
+            "강원 삼척시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036"
+          ],
+          "result": "KTO 공식 관광 식음료 제휴업소에 동일 상호·주소 확인; 개별 좌표는 확인되지 않음",
+          "unconfirmedReason": "현주소와 식당명·지점에 일치하는 독립적 지도좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 20,
+          "action": "lat/lng null 유지. 다음 같은 회차에서 우선 재확인."
+        },
+        {
+          "id": "local-gangwon-slot20-taebaek-eomma-dakgalbi",
+          "name": "엄마손태백물닭갈비",
+          "address": "강원특별자치도 태백시 황지연못길 9",
+          "region": "강원특별자치도 태백시",
+          "aliases": [
+            "강원특별자치도 태백시",
+            "강원도 태백시",
+            "강원 태백시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002"
+          ],
+          "result": "KTO 공식 관광 식음료 제휴업소에 동일 상호·주소 확인; 개별 좌표는 확인되지 않음",
+          "unconfirmedReason": "현주소와 식당명·지점에 일치하는 독립적 지도좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 20,
+          "action": "lat/lng null 유지. 다음 같은 회차에서 우선 재확인."
+        },
+        {
+          "id": "local-gangwon-slot20-taebaek-seoul-dakgalbi",
+          "name": "서울닭갈비",
+          "address": "강원특별자치도 태백시 장성1길 190",
+          "region": "강원특별자치도 태백시",
+          "aliases": [
+            "강원특별자치도 태백시",
+            "강원도 태백시",
+            "강원 태백시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002"
+          ],
+          "result": "KTO 공식 관광 식음료 제휴업소에 동일 상호·주소 확인; 개별 좌표는 확인되지 않음",
+          "unconfirmedReason": "현주소와 식당명·지점에 일치하는 독립적 지도좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 20,
+          "action": "lat/lng null 유지. 다음 같은 회차에서 우선 재확인."
+        },
+        {
+          "id": "local-gangwon-slot20-taebaek-greenhorn",
+          "name": "초록뿔언덕사슴목장",
+          "address": "강원특별자치도 태백시 고원로 369",
+          "region": "강원특별자치도 태백시",
+          "aliases": [
+            "강원특별자치도 태백시",
+            "강원도 태백시",
+            "강원 태백시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002"
+          ],
+          "result": "KTO 공식 관광 식음료 제휴업소에 동일 상호·주소 확인; 개별 좌표는 확인되지 않음",
+          "unconfirmedReason": "현주소와 식당명·지점에 일치하는 독립적 지도좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 20,
+          "action": "lat/lng null 유지. 다음 같은 회차에서 우선 재확인."
+        },
+        {
+          "id": "local-gangwon-slot20-taebaek-cafe-bomnune",
+          "name": "인생상점 카페봄눈",
+          "address": "강원특별자치도 태백시 서학로 1081",
+          "region": "강원특별자치도 태백시",
+          "aliases": [
+            "강원특별자치도 태백시",
+            "강원도 태백시",
+            "강원 태백시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002"
+          ],
+          "result": "KTO 공식 관광 식음료 제휴업소에 동일 상호·주소 확인; 개별 좌표는 확인되지 않음",
+          "unconfirmedReason": "현주소와 식당명·지점에 일치하는 독립적 지도좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 20,
+          "action": "lat/lng null 유지. 다음 같은 회차에서 우선 재확인."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "속초시 추가 공식 명단",
+          "reason": "속초 공식 관광 포털 접근 제한",
+          "action": "동일 지역 다음 회차 우선 조사"
+        },
+        {
+          "topic": "삼척1·태백4 정확한 좌표",
+          "reason": "공개 지도 원문에서 동일 이름·지점·주소 좌표 미확보",
+          "action": "lat/lng null로 보존 후 재조사"
+        },
+        {
+          "topic": "정규 블루리본·영업 상태",
+          "reason": "정규 공식 전체명단과 개별 현 영업 일괄 검증 불가",
+          "action": "선정 및 현재 영업 별도 재조사"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성 및 16회차 의정부·양주·동두천·포천 기록 미확인 이월",
+        "속초시 공식 포털 접근 문제 이월",
+        "삼척·태백 5곳 위치/현 영업 미확인 이월",
+        "해당 3개 도시 전체 식당 전수조사 아님"
+      ],
+      "nextSlot": 21,
+      "nextRegions": [
+        "대전광역시 동구",
+        "대전광역시 중구",
+        "대전광역시 서구",
+        "대전광역시 유성구",
+        "대전광역시 대덕구"
       ],
       "notExhaustive": true
     }
