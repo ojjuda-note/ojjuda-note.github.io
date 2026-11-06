@@ -40,7 +40,7 @@ function fixture(){
  }finally{await db.close();}
  // First reproduce the real stage-clear callbacks, before any terminal game over.
  const records=[],storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
- const flat=require('../screw-flat.js').flat({setScore:noop,end:()=>assert.fail('early stage cannot end the run'),saveScore:score=>records.push(score)});
+ const flat=require('../games/screw/screw-flat.js').flat({setScore:noop,end:()=>assert.fail('early stage cannot end the run'),saveScore:score=>records.push(score)});
  flat.state.level.plates.forEach(p=>p.state='gone');flat.update(.05);
  assert.equal(records.length,1,'a completed flat stage saves before reaching stage 1000');
  assert.equal(records[0],flat.state.score);flat.update(.05);assert.equal(records.length,1);flat.destroy();

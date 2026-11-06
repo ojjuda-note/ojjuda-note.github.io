@@ -29,6 +29,6 @@ a.ok(app.includes("fetch('./official-gangwon-slot20.json?v=20261106-restaurants-
 a.ok(app.includes('...slot20.restaurants'));
 const rev=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision;
 a.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/app\.js\?v=\d{8}-restaurants-/);
-a.ok(fs.readFileSync(path.join(root,'world.html'),'utf8').includes('world-game-assets.js?v='+rev));
-a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.27'/);
+a.ok(fs.readFileSync(path.join(root,'world.html'),'utf8').includes('shared/games/world-game-assets.js?v='+rev));
+a.match(fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8'),/restaurants:'1\.9\.27'/);
 console.log('restaurant slot20 verified');

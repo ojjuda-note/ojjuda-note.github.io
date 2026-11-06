@@ -22,7 +22,7 @@ const validId = value => (typeof value === 'string' || Number.isSafeInteger(valu
 // independently keep only fixed codes, safe route names and bounded numbers.
 const DIAGNOSTIC_PATHS = new Set([
   ...['list_app_notifications', 'app_notification_unread_count', 'mark_app_notifications_read'].map(name => '/rest/v1/rpc/' + name),
-  '/world.html', '/note/', '/note/index.html', '/screw3d.js', '/photo-protection.js', '/diagnostics.js',
+  '/world.html', '/note/', '/note/index.html', '/games/screw/screw3d.js', '/shared/media/photo-protection.js', '/shared/diagnostics/diagnostics.js',
   '/note/preview.js', '/note/navigation.js', '/note/support.js', '/note/operations.js', '/note/admin.js',
   '/note/notifications.js', '/note/drafts.js', '/note/feed-swipe.js', '/note/map.js', '/note/notice-ticker.js',
   '/note/pull-refresh.js', '/admin/connections.js',

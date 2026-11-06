@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const G=require('../screw-flat.js'),P=require('../screw-flat-physics.js'),M=require('../vendor/matter-0.20.0.min.js');
+const G=require('../games/screw/screw-flat.js'),P=require('../games/screw/screw-flat-physics.js'),M=require('../vendor/matter-0.20.0.min.js');
 const {STAGE_KEY,LAST_STAGE}=G,storage=new Map();global.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value))};
 const press=(game,h)=>{game.onDown(h.x,h.y,1);game.onUp(h.x,h.y,1);};
 const tick=(game,seconds=3)=>{for(let n=0;n<Math.round(seconds/.05);n++)game.update(.05);};

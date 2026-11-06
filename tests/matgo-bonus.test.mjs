@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import * as current from '../games/matgo-engine.mjs';
+import * as current from '../games/matgo/matgo-engine.mjs';
 import * as legacy from '../supabase/functions/matgo/engine-v4.mjs';
 import * as previous from '../supabase/functions/matgo/engine-v5.mjs';
 import * as previous7 from '../supabase/functions/matgo/engine-v7.mjs';

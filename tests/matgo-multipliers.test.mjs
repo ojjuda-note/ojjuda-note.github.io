@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import * as browser from '../games/matgo-engine.mjs';
+import * as browser from '../games/matgo/matgo-engine.mjs';
 import * as server from '../supabase/functions/matgo/engine.mjs';
 import * as legacy from '../supabase/functions/matgo/engine-v7.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
@@ -28,7 +28,7 @@ async function finish(engine, {winner=0, loserPi=8, loserGo=0, gwangbak=false, w
   return {result,g};
 }
 
-assert.equal(fs.readFileSync(new URL('../games/matgo-engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/engine.mjs',import.meta.url),'utf8'));
+assert.equal(fs.readFileSync(new URL('../games/matgo/matgo-engine.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/engine.mjs',import.meta.url),'utf8'));
 for(const [name,engine] of [['browser',browser],['server',server]]) {
   // User rule: a winner with pi points doubles against 0..8 pi; 9 pi is safe.
   // Check both seats and every combination of pi/gwang/go penalties.

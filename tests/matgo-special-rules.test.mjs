@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {CARDS, Game, seededRandom, aiChooseCard, aiChoose, aiGoStop} from '../games/matgo-engine.mjs';
+import {CARDS, Game, seededRandom, aiChooseCard, aiChoose, aiGoStop} from '../games/matgo/matgo-engine.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 
 let cases=0;

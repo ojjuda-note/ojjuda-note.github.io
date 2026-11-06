@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
-const world=read('world.html'),bridge=read('world-festival-schedule.js'),assets=read('world-game-assets.js');
+const world=read('world.html'),bridge=read('games/festival-schedule/world-festival-schedule.js'),assets=read('shared/games/world-game-assets.js');
 function section(start,end){
  const from=world.indexOf(start),to=world.indexOf(end,from);
  assert.ok(from>=0&&to>from,'the tested production section exists: '+start);
@@ -95,8 +95,8 @@ function routeFixture(){
  assert.equal(boot.window.OjjudaGameAssets.ready('festival'),false);
  boot.my();assert.equal(cold.resources.length,2);assert.equal(cold.opens.length,0,'direct entry waits for both lazy assets');
  const urls=cold.resources.map(node=>node.src||node.href);
- assert.ok(urls.some(url=>url.startsWith('/world-festival-schedule.js?v=')));
- assert.ok(urls.some(url=>url.startsWith('/world-festival-schedule.css?v=')));
+ assert.ok(urls.some(url=>url.startsWith('/games/festival-schedule/world-festival-schedule.js?v=')));
+ assert.ok(urls.some(url=>url.startsWith('/games/festival-schedule/world-festival-schedule.css?v=')));
  await cold.finish();assert.equal(cold.opens.length,1,'a cold direct link opens after arcade initialization');
  assert.equal(boot.window.OjjudaGameAssets.ready('festival'),true);
  assert.deepEqual(Object.keys(cold.opens[0]).sort(),['authorized','owner'],'the informational page receives no score, wallet or authenticated client hooks');
@@ -114,7 +114,7 @@ function routeFixture(){
   assert.equal(pending.opens.length,0,label+' cancels a pending cold entry');
  }
  const revision=JSON.parse(read('game-release.json')).revision;
- assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
+ assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/shared/games/world-game-assets.js?v='+revision));
  assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.4.2');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');

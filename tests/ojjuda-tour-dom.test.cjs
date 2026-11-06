@@ -94,7 +94,7 @@ try {
   const w = host.window;
   w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
   w.HTMLDialogElement.prototype.close = function() { this.open = false; };
-  w.eval(read('game-session.js'));w.eval(read('world-tour-game.js'));
+  w.eval(read('shared/games/game-session.js'));w.eval(read('games/ojjuda-tour/world-tour-game.js'));
   const opener = w.document.getElementById('opener');
   opener.focus();
   w.OjjudaTourGame.open({nickname:'민준', owner:'member-123'});
@@ -163,7 +163,7 @@ function eliminationGame(embedded=false) {
   try {
     const w=resultHost.window,calls=[],receipts=[];let allowed=true,finish;
     w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
-    w.eval(read('game-session.js'));w.eval(read('world-tour-game.js'));
+    w.eval(read('shared/games/game-session.js'));w.eval(read('games/ojjuda-tour/world-tour-game.js'));
     w.OjjudaTourGame.open({authorized:()=>allowed,onScore:(score,id)=>{calls.push([score,id]);return new Promise(resolve=>{finish=resolve})}});
     const child=w.document.querySelector('iframe').contentWindow;child.postMessage=data=>receipts.push(data);
     const payload={source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:'10000000-0000-4000-8000-000000000001',players:2,myRank:2,ranking:[{human:false,assets:4000,bankrupt:false},{human:true,assets:0,bankrupt:true}]};

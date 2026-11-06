@@ -32,7 +32,7 @@ async function until(test, message, timeout = 2600) {
     w.g = { tab: 'place', place: { id: 'arcade', ch: 1 }, bdInvites: 0 };
     w.Pt = { arcade: { chat: true, arcade: true } };
     w.worldPlacePresenceText = () => '지금 1명';
-    w.eval(fs.readFileSync(path.join(root, 'matgo-access.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(root, 'games/matgo/matgo-access.js'), 'utf8'));
     const access = w.OjjudaMatgoAccess;
     access.configure({
       auth: {
@@ -46,7 +46,7 @@ async function until(test, message, timeout = 2600) {
     const adultGames = { matgo: { name: '맞고', unit: 'G' }, poker: { name: '세븐포커', unit: 'G' }, roulette: { name: '룰렛', unit: 'G' }, photo_ttang: { name: '포토땅따먹기', unit: '장' } };
     const getGames = () => ({ ...ordinaryGames, ...(access.visible() ? adultGames : {}) });
     const rankClient = { rpc: async (_name, args) => { rankingReads.push([...args.p_games]); return { data: { tank: { nick: '회원', score: 3 } } }; } };
-    w.eval(fs.readFileSync(path.join(root, 'world-game-rankings.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(root, 'shared/games/world-game-rankings.js'), 'utf8'));
     const rankRows = () => [...new Set([...rankHost.querySelectorAll('[data-game]')].map(row => row.dataset.game))];
     const rankAdultSection = () => rankHost.querySelector('[data-rank-group=adult]');
     const mountRankings = () => { const owner = w.D.user?.id; w.OjjudaGameRankings.mount(rankHost, { client: rankClient, owner, games: getGames(), getGames, authorized: () => w.D.online && w.D.user?.id === owner }); };

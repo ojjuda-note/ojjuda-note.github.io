@@ -4,7 +4,7 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
-world=world.replace('<script type="module">','<link rel="stylesheet" href="/screw-games.css"><script src="/mobile-viewport.js"></script><script src="/screw-loader.js"></script><script src="/world-navigation.js"></script><script src="/game-results.js"></script><script type="module">');
+world=world.replace('<script type="module">','<link rel="stylesheet" href="/games/screw/screw-games.css"><script src="/shared/viewport/mobile-viewport.js"></script><script src="/games/screw/screw-loader.js"></script><script src="/app/world/world-navigation.js"></script><script src="/shared/games/game-results.js"></script><script type="module">');
 assert.equal(world.split('R.game=factory({').length,2);
 world=world.replace('R.game=factory({','R.game=((api)=>factory(api,window.screwFixtureStage))({');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);

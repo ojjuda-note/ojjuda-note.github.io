@@ -38,13 +38,13 @@ async function fixture(context, source, rpc) {
     await page.addScriptTag({ content: read('note/navigation.js') });
     await page.locator('[data-note-my]:visible').first().click();
   }
-  await page.addStyleTag({ content: read('my-menu.css') + read('ju-charge.css') + read('ju-coins.css') });
+  await page.addStyleTag({ content: read('features/profile/my-menu.css') + read('features/wallet/ju-charge.css') + read('ju-coins/ju-coins.css') });
   if (process.env.JU_CHARGE_FONT) {
     const font = fs.readFileSync(process.env.JU_CHARGE_FONT).toString('base64');
     await page.addStyleTag({ content: `@font-face{font-family:ChargeQA;src:url(data:font/otf;base64,${font})}:root{--font-b:ChargeQA,sans-serif;--font-d:ChargeQA,sans-serif}body,.ju-charge-dialog{font-family:ChargeQA,sans-serif}` });
     await page.evaluate(() => document.fonts.ready);
   }
-  await page.addScriptTag({ content: read('ju-charge.js') });
+  await page.addScriptTag({ content: read('features/wallet/ju-charge.js') });
   await page.evaluate(source => {
     window.chargeUser = 'synthetic-user';
     window.chargeBalance = 70;

@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'screw*.js'
+      - 'games/screw/**'
       - 'vendor/poly-decomp*'
       - 'supabase/functions/flat-drill-clear*/**'
-      - 'screw-games.css'
+      - 'games/screw/screw-games.css'
       - 'world.html'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'assets/screw-flat/**'
       - 'tests/screw*.cjs'
@@ -21,12 +21,12 @@ on:
       - '.github/workflows/screw.yml'
   pull_request:
     paths:
-      - 'screw*.js'
+      - 'games/screw/**'
       - 'vendor/poly-decomp*'
       - 'supabase/functions/flat-drill-clear*/**'
-      - 'screw-games.css'
+      - 'games/screw/screw-games.css'
       - 'world.html'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'assets/screw-flat/**'
       - 'tests/screw*.cjs'

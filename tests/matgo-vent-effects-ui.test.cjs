@@ -2,8 +2,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
 (async()=>{
- const {CARDS}=await import('../games/matgo-engine.mjs');
- const {VENT_EFFECTS}=await import('../games/matgo-deck-tools.mjs');
+ const {CARDS}=await import('../games/matgo/matgo-engine.mjs');
+ const {VENT_EFFECTS}=await import('../games/matgo/matgo-deck-tools.mjs');
  fs.mkdirSync(proof,{recursive:true});
  const browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
  const errors=[];
@@ -30,9 +30,9 @@ const root=path.join(__dirname,'..'),proof='/tmp/matgo-vent-proof';
   },{muted,room,tableOnly});
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
-   if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
+   if(url.origin!=='https://fixture.test'||['/config.js','/games/matgo/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-   if(url.pathname==='/games/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.ventTest={vent,renderRoom,redraw:()=>{viewKey="";renderRoom();},snapshot:()=>JSON.stringify(room.game)};'});
+   if(url.pathname==='/games/matgo/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.ventTest={vent,renderRoom,redraw:()=>{viewKey="";renderRoom();},snapshot:()=>JSON.stringify(room.game)};'});
    return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('https://fixture.test/games/matgo-online.html?room_id='+room.id);await page.locator('#matgo-vent').waitFor();

@@ -19,9 +19,9 @@ async function pageFor(t,route,options={}){
   const url=new URL(request.request().url()),name=url.pathname;
   if(url.hostname==='cdn.jsdelivr.net')return request.fulfill({contentType:'application/javascript',body:''});
   if(name==='/config.js')return request.fulfill({contentType:'application/javascript',body:'window.OJJUDA_CONFIG={supabaseUrl:"https://mock.invalid",supabaseKey:"test"};'});
-  if(name==='/message-fixture')return request.fulfill({contentType:'text/html',body:'<!doctype html><meta charset="utf-8"><body><script src="/friend-messages.js"></script></body>'});
+  if(name==='/message-fixture')return request.fulfill({contentType:'text/html',body:'<!doctype html><meta charset="utf-8"><body><script src="/features/friends/friend-messages.js"></script></body>'});
   if(name==='/admin/reward-coupon-reader.js')return request.fulfill({contentType:'application/javascript',body:'window.OjjudaCouponReader={async read(){return {code:"TESTCOUPON1234",expires:"2099-01-01",warnings:[]};}};'});
-  const allowed=['/gift.html','/reward-coupon.js','/admin/rewards.html','/admin/rewards.js','/admin/rewards.css','/admin/style.css','/admin/reward-coupon-parser.js','/admin/reward-coupon-batch.js','/admin/reward-coupon-manager.js','/friend-messages.js'];
+  const allowed=['/gift.html','/features/rewards/reward-coupon.js','/admin/rewards.html','/admin/rewards.js','/admin/rewards.css','/admin/style.css','/admin/reward-coupon-parser.js','/admin/reward-coupon-batch.js','/admin/reward-coupon-manager.js','/features/friends/friend-messages.js'];
   if(!allowed.includes(name))return request.fulfill({status:404,body:''});
   const type=name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'application/javascript';
   return request.fulfill({contentType:type,body:await fs.readFile(path.join(ROOT,name))});

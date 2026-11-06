@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const fixture=`<meta charset="utf-8"><script src="/ttang-bridge.js"></script><script>
+const fixture=`<meta charset="utf-8"><script src="/games/ttang/ttang-bridge.js"></script><script>
 window.scores=[];window.openGame=options=>OjjudaTtangBridge.open({owner:'member',authorized:()=>true,onResult:async(won,round)=>{scores.push({won,round});return {ok:true};},...options});
 </script>`;
 function state(){

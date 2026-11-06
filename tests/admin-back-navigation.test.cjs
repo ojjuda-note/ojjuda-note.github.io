@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'world-navigation.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'app/world/world-navigation.js'), 'utf8');
 const rewardNavigation = fs.readFileSync(path.join(root, 'admin/back-navigation.js'), 'utf8');
 const start = html.indexOf('function adminIsHome()');
 const end = html.indexOf('document.addEventListener("DOMContentLoaded",mountAdminModule', start);

@@ -4,7 +4,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'photo-ttang.html'), 'utf8');
-const script = fs.readFileSync(path.join(root, 'photo-ttang-page.js'), 'utf8');
+const script = fs.readFileSync(path.join(root, 'games/photo-ttang/photo-ttang-page.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 (async () => {

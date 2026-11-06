@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const source = fs.readFileSync(require('node:path').join(__dirname,'..','screw3d-depth-renderer.js'),'utf8').replace('export function','function');
+const source = fs.readFileSync(require('node:path').join(__dirname,'..','games/screw/screw3d-depth-renderer.js'),'utf8').replace('export function','function');
 
 function exercise(mode) {
   const canvases=[];

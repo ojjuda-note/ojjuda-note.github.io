@@ -7,7 +7,7 @@ function dialogs(w){w.HTMLDialogElement.prototype.showModal=function(){this.open
 function sacheon(t,saved,buy){
  const dom=new JSDOM('<body><button>오락실</button></body>',{url:'https://fixture.test/world.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;dialogs(w);
  w.localStorage.setItem(KEY,JSON.stringify(saved));w.localStorage.setItem('ojjuda-sacheonseong-records-v1',JSON.stringify({5:[{id:'best',duration:1234,at:1700000000000,rulesVersion:3}],7:[{id:'best-seven',duration:5678,at:1700000000001,rulesVersion:3,hints:1,shuffles:0}]}));
- for(const file of ['games/sacheonseong/ranking.js','world-sacheonseong-game.js'])w.eval(read(file));
+ for(const file of ['games/sacheonseong/ranking.js','games/sacheonseong/world-sacheonseong-game.js'])w.eval(read(file));
  const calls=[];let child;
  async function enter(){
   w.OjjudaSacheonseongGame.open({owner,onBuy:async(kind,id,runId,stage)=>{const item={kind,id,runId,stage,owner};calls.push(item);return buy?.(item);}});
@@ -65,7 +65,7 @@ for(const [stage,kind]of [[5,'hint'],[7,'hint'],[7,'shuffle']])test(`an unresolv
  f.w.OjjudaSacheonseongGame.close();await f.enter();assertGarden(f.state(),stage);assert.equal(f.state().hints,0);assert.equal(f.state().shuffles,0);assert.equal(f.state().pendingPurchase,undefined);assert.equal(f.calls.length,1,'a consumed receipt is not recovered a second time');assert.equal(balance,17);assert.deepEqual(f.records(),records);
 });
 
-const boxStageCap=Number(read('screw3d.js').match(/\bconst STAGES\s*=\s*(\d+)\s*;/)?.[1]);
+const boxStageCap=Number(read('games/screw/screw3d.js').match(/\bconst STAGES\s*=\s*(\d+)\s*;/)?.[1]);
 assert.ok(Number.isSafeInteger(boxStageCap)&&boxStageCap>=1,'the box mode exposes its stage cap');
 const screwKeys={box:{stage:'ojjuda-screw-box-stage-v2:guest',resume:'ojjuda-screw-box-last-stage-v2:guest',max:boxStageCap},flat:{stage:'ojjuda-screw-flat-stage-v1',resume:'ojjuda-screw-flat-last-stage-v1',max:1000}};
 function withScrews(run,entries=[],blocked=false){
@@ -75,7 +75,7 @@ function withScrews(run,entries=[],blocked=false){
  const previous=global.localStorage,games=[],records=[];global.localStorage=localStorage;
  const api={setScore(){},end(){},saveScore:score=>records.push(score)};
  try{
-  const G=require('../screw-flat.js');
+  const G=require('../games/screw/screw-flat.js');
   run({storage,records,box(stage){const game=context.screw3d(api,stage);game.state=context.window.__ojjScrew3d;return game;},flat(stage){const game=G.flat(api,stage);games.push(game);return game;}});
  }finally{for(const game of games)game.destroy();global.localStorage=previous;}
 }

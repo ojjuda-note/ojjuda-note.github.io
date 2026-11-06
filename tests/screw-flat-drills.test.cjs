@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{randomUUID}=require('node:crypto');
-const {PGlite}=require('@electric-sql/pglite'),P=require('../screw-flat-physics.js'),G=require('../screw-flat.js');
+const {PGlite}=require('@electric-sql/pglite'),P=require('../games/screw/screw-flat-physics.js'),G=require('../games/screw/screw-flat.js');
 const {verifyClear}=require('../supabase/functions/flat-drill-clear/replay.cjs');
 const store=new Map();global.localStorage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)};
 const wait=()=>new Promise(r=>setImmediate(r));

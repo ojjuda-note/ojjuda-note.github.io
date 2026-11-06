@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
- .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+ .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 S=window.fixtureClient;D.online=true;D.user={id:'adult-member'};window.OjjudaMatgoAccess.configure(S);await window.OjjudaMatgoAccess.check();
@@ -15,7 +15,7 @@ host.addEventListener('click',e=>{const b=e.target.closest('[data-act="game-open
 `+world.slice(world.indexOf('</script>',boot));
 world=world.replace('</head>',`<script>
 window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{id:'adult-member'}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},rpc:async name=>({data:name==='get_my_member_identity'?{age:fixtureAge,locked:true}:[]}),from:()=>{const q={select:()=>q,eq:()=>q,order:()=>q,limit:()=>q,then:resolve=>Promise.resolve({data:[],error:null}).then(resolve)};return q;}};
-</script><script src="/matgo-access.js"></script><script src="/photo-ttang-access.js"></script><script src="/ttang-bridge.js"></script><script src="/photo-ttang-ranking.js"></script><script src="/photo-ttang-bridge.js"></script></head>`);
+</script><script src="/games/matgo/matgo-access.js"></script><script src="/games/photo-ttang/photo-ttang-access.js"></script><script src="/games/ttang/ttang-bridge.js"></script><script src="/games/photo-ttang/photo-ttang-ranking.js"></script><script src="/games/photo-ttang/photo-ttang-bridge.js"></script></head>`);
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{

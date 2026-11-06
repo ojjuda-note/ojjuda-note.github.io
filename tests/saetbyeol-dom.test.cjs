@@ -190,8 +190,8 @@ const world = read('world.html');
 assert.match(world, /saetbyeol:\{name:"샛별키우기",emoji:"⭐",unit:"점"/);
 assert.ok(world.includes('saetbyeol:_r.saetbyeol'), 'Saetbyeol remains in the ranking catalog');
 assert.match(world, /OjjudaSaetbyeolGame\.open\(\{owner,client:S,authorized/);
-assert.match(read('world-game-assets.js'), /saetbyeol:\[/);
-assert.match(read('guest-game-scores.js'), /'saetbyeol'/);
+assert.match(read('shared/games/world-game-assets.js'), /saetbyeol:\[/);
+assert.match(read('shared/games/guest-game-scores.js'), /'saetbyeol'/);
 console.log('PASS: Saetbyeol entry, growth scoring, retries, account isolation, admin-only demo and menu/ranking wiring');
 
 (async () => {
@@ -207,7 +207,7 @@ console.log('PASS: Saetbyeol entry, growth scoring, retries, account isolation, 
   }};
   const settle = () => new Promise(resolve => setImmediate(resolve));
   try {
-    w.eval(read('world-saetbyeol-game.js'));
+    w.eval(read('games/saetbyeol/world-saetbyeol-game.js'));
     w.OjjudaSaetbyeolGame.open({owner,client,authorized:()=>authorized,onScore:async (...args) => { scores.push(args); return {ok:true}; }});
     const frame = w.document.querySelector('iframe');
     frame.contentWindow.postMessage = data => sent.push(data);

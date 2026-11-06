@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 // Only authentication, database transport and room presence are replaced.
 let world = fs.readFileSync(path.join(root, 'world.html'), 'utf8')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + `
@@ -41,7 +41,7 @@ g.tab='my';H();
       ? route.fulfill({ contentType: 'text/html', body: world }) : route.abort());
     await page.goto('https://fixture.test/world.html');
     await page.waitForFunction(() => window.matgoTest);
-    for (const file of ['signup-identity.js', 'world-member-info.js', 'matgo-access.js', 'matgo-bridge.js']) {
+    for (const file of ['shared/auth/signup-identity.js', 'features/profile/world-member-info.js', 'games/matgo/matgo-access.js', 'games/matgo/matgo-bridge.js']) {
       await page.addScriptTag({ content: fs.readFileSync(path.join(root, file), 'utf8') });
     }
     await page.evaluate(async () => {

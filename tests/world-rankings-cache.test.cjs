@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('jsdom');
-const source = fs.readFileSync(process.env.OJJUDA_RANKINGS_JS || path.join(__dirname, '../world-game-rankings.js'), 'utf8');
+const source = fs.readFileSync(process.env.OJJUDA_RANKINGS_JS || path.join(__dirname, '../shared/games/world-game-rankings.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const games = { tank: { name: '탱크게임', unit: '연승' }, chess: { name: '체스', unit: '연승' } };
 const adultGames = {

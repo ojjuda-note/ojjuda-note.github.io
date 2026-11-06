@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import * as E from '../games/matgo-engine.mjs';
-import {dealSoloRound} from '../games/matgo-tazza.mjs';
+import * as E from '../games/matgo/matgo-engine.mjs';
+import {dealSoloRound} from '../games/matgo/matgo-tazza.mjs';
 import {playRound} from './matgo-opening-fixture.mjs';
 const {fixture,A,B}=createRequire(import.meta.url)('./matgo-online-fixture.cjs');
 const f=await fixture({adaptive:true,openingPpuk:false}),{db,call}=f;

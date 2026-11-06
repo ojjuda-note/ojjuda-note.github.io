@@ -63,8 +63,8 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     if(url.origin!=='https://fixture.test')return route.fulfill({status:200,contentType:'text/javascript',body:''});
     let file=path.join(root,decodeURIComponent(url.pathname));
     if(url.pathname==='/world.html'){
-      let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-      html=html.replace('<script type="module">',`<script>${['matgo-access.js','matgo-bridge.js','multiplayer-entry.js','mobile-viewport.js','world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
+      let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+      html=html.replace('<script type="module">',`<script>${['games/matgo/matgo-access.js','games/matgo/matgo-bridge.js','shared/games/multiplayer-entry.js','shared/viewport/mobile-viewport.js','app/world/world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
       html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,auth:D,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});
@@ -390,7 +390,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     const f=await fixture();await f.page.goto('https://fixture.test/games/matgo.html');await f.page.locator('#matgo-start-play').click();
     await f.page.waitForFunction(()=>window.matgoTest&&!matgoTest.ui.busy&&!matgoTest.game.over);
     await f.page.evaluate(async({p,route})=>{
-      const E=await import('/games/matgo-engine.mjs');const {setupOpening}=await import('/tests/matgo-opening-fixture.mjs');
+      const E=await import('/games/matgo/matgo-engine.mjs');const {setupOpening}=await import('/tests/matgo-opening-fixture.mjs');
       const {game:g,render}=matgoTest;setupOpening(g,E,{p,route,opponent:[49]});window.openingNotices=[];
       const original=g.ui.event.bind(g.ui);g.ui.event=async(type,data)=>{if(type==='ppukget')openingNotices.push(data);return original(type,data);};render();
     },{p,route});

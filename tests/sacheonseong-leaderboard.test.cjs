@@ -8,7 +8,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
  try{
   w.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}});
   w.ResizeObserver=class{observe(){}disconnect(){}};
-  w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('world-game-rankings.js'));
+  w.eval(read('games/sacheonseong/ranking.js'));w.eval(read('shared/games/world-game-rankings.js'));
   const R=w.OjjudaSacheonseongRanking,host=w.document.querySelector('main'),requests=[],opened=[];
   let winner={nick:'높은 단계',stage:7,score:R.score(79560)};
   const client={rpc:async(name,args)=>{assert.equal(name,'community_game_monthly_leaders');requests.push([...args.p_games]);return {data:{sacheonseong:winner}};}};
@@ -32,7 +32,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
   w.OjjudaGameRankings.mount(null);
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  w.eval(read('world-sacheonseong-game.js'));
+  w.eval(read('games/sacheonseong/world-sacheonseong-game.js'));
   const queried=[];
   w.OjjudaSacheonseongGame.open({onRanking:async stage=>{queried.push(stage);return [winner];}});
   w.document.querySelector('.ge-primary').click();

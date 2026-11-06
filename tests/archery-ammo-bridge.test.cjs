@@ -6,7 +6,7 @@ const vm=require('node:vm');
 const {randomUUID}=require('node:crypto');
 
 const root=path.resolve(__dirname,'..');
-const bridge=fs.readFileSync(path.join(root,'world-archery-game.js'),'utf8');
+const bridge=fs.readFileSync(path.join(root,'games/forest-archer/world-archery-game.js'),'utf8');
 const world=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const origin='https://ojjuda.test',owner='11111111-1111-4111-8111-111111111111';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));

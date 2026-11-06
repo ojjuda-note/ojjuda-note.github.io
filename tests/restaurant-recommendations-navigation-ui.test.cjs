@@ -10,8 +10,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const origin = 'https://nesting.test';
 const owner = '11111111-1111-4111-8111-111111111111';
 const shell = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="/world-restaurant-guide.css"><link rel="stylesheet" href="/games/certified-restaurants/vendor/leaflet.css"><link rel="stylesheet" href="/restaurant-location-picker.css"><link rel="stylesheet" href="/restaurant-ratings.css"><link rel="stylesheet" href="/recommended-restaurants.css">
-<button id="open">인증맛집</button><script src="/games/certified-restaurants/vendor/leaflet.js"></script><script src="/restaurant-location-picker.js"></script><script>${read('restaurant-ratings.js')}\n${read('recommended-restaurants.js')}\n${read('world-restaurant-guide.js')}</script>
+<link rel="stylesheet" href="/games/certified-restaurants/world-restaurant-guide.css"><link rel="stylesheet" href="/games/certified-restaurants/vendor/leaflet.css"><link rel="stylesheet" href="/games/certified-restaurants/restaurant-location-picker.css"><link rel="stylesheet" href="/games/certified-restaurants/restaurant-ratings.css"><link rel="stylesheet" href="/games/certified-restaurants/recommended-restaurants.css">
+<button id="open">인증맛집</button><script src="/games/certified-restaurants/vendor/leaflet.js"></script><script src="/games/certified-restaurants/restaurant-location-picker.js"></script><script>${read('games/certified-restaurants/restaurant-ratings.js')}\n${read('games/certified-restaurants/recommended-restaurants.js')}\n${read('games/certified-restaurants/world-restaurant-guide.js')}</script>
 <script>
  (${installRecommendedRestaurantsFixture.toString()})(window,{user:{id:${JSON.stringify(owner)}}});
  const member=OjjudaRecommendedRestaurants.create({client:rrFixture.client,getUser:rrFixture.getUser,returnLabel:'인증맛집'});
@@ -31,7 +31,7 @@ test('370px nested member view preserves directory state and half-point ratings 
    if(url.origin!==origin){escaped.push(url.href);return route.abort();}
    if(url.pathname==='/fixture.html')return route.fulfill({contentType:'text/html',body:shell});
    if(url.pathname==='/games/certified-restaurants/index.html')directoryLoads++;
-   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/world-restaurant-guide.css','/recommended-restaurants.css','/restaurant-ratings.js','/restaurant-ratings.css','/restaurant-location-picker.js','/restaurant-location-picker.css'].includes(url.pathname))return route.abort();
+   if(!url.pathname.startsWith('/games/certified-restaurants/')&&!['/games/certified-restaurants/world-restaurant-guide.css','/games/certified-restaurants/recommended-restaurants.css','/games/certified-restaurants/restaurant-ratings.js','/games/certified-restaurants/restaurant-ratings.css','/games/certified-restaurants/restaurant-location-picker.js','/games/certified-restaurants/restaurant-location-picker.css'].includes(url.pathname))return route.abort();
    const file=path.resolve(root,'.'+url.pathname);
    if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.abort();
    return route.fulfill({path:file});

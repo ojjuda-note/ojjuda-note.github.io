@@ -5,7 +5,7 @@ const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 let source=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-source=source.replaceAll('import.meta.env','({})').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+source=source.replaceAll('import.meta.env','({})').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 source=source.slice(0,source.indexOf('j1(()=>H());gm('));
 source+='\nwindow.worldTest={state:g,auth:D,actions:sr,render:H,start:my,model:$,rankGames:worldRankGames,adminTabs:adminTabsByArea,adminState:L,adminMarkup:y0,presence(){bg();return jt;},connectPresence(client,channel){S=client;Wo=channel;}};';
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -17,8 +17,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.fetch=async()=>({ok:true,json:async()=>({}),text:async()=>''});
  w.OjjudaParkNotes={install:()=>({markup:()=>'<section data-park-app>공원 카드</section>',sync(){},route(){},canLeave:()=>true,preserveShell:()=>false})};
- w.eval(fs.readFileSync(path.join(root,'world-game-rankings.js'),'utf8'));
- w.eval(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-rankings.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8'));
  w.eval(source);
  return dom;
 }

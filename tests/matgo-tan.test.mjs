@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import * as browser from '../games/matgo-engine.mjs';
+import * as browser from '../games/matgo/matgo-engine.mjs';
 import * as server from '../supabase/functions/matgo/engine.mjs';
-import {dealSoloRound,TAZZA_MODES} from '../games/matgo-tazza.mjs';
+import {dealSoloRound,TAZZA_MODES} from '../games/matgo/matgo-tazza.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 
 function finishFixture(engine,{mode='tan',cpuMode='standard',points=0}={}){

@@ -2,12 +2,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const identity = require('../signup-identity.js');
-const source = fs.readFileSync(path.join(__dirname, '../portal.js'), 'utf8');
+const identity = require('../shared/auth/signup-identity.js');
+const source = fs.readFileSync(path.join(__dirname, '../app/portal/portal.js'), 'utf8');
 const entrance = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const entryScript = entrance.match(/<script id="world-default-entry">([\s\S]*?)<\/script>/)?.[1];
 assert.ok(entryScript, 'the root route runs before loading the account controller');
-assert.ok(entrance.indexOf('id="world-default-entry"') < entrance.indexOf('src="/portal-availability.js'));
+assert.ok(entrance.indexOf('id="world-default-entry"') < entrance.indexOf('src="/shared/auth/portal-availability.js'));
 function initialRoute(path) {
   const navigations = [], location = new URL(path, 'https://ojjuda.kr');
   location.replace = target => navigations.push(target);

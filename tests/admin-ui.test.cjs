@@ -22,7 +22,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
     await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><div id="modal-root"></div>');
 
     // Load the actual World entrypoint's dependencies, in their real order.
-    // This catches the missing signup-identity.js regression after signup unification.
+    // This catches the missing shared/auth/signup-identity.js regression after signup unification.
     const scripts = [...read('world.html').matchAll(/<script\b[^>]*\bsrc="([^"]+)"[^>]*>/g)]
       .map(match => match[1].split('?')[0])
       .filter(src => /\/(?:signup-identity|admin\/member-identity)\.js$/.test(src));
@@ -154,7 +154,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       contentType: 'text/html', body: read('index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')
     }));
     await recoveryPage.goto('https://ojjuda.kr/?auth=forgot');
-    for (const file of ['signup-identity.css', 'portal.css']) await recoveryPage.addStyleTag({ content: read(file) });
+    for (const file of ['shared/auth/signup-identity.css', 'app/portal/portal.css']) await recoveryPage.addStyleTag({ content: read(file) });
     await recoveryPage.evaluate(() => {
       window.recoveryCalls = [];
       window.OJJUDA_CONFIG = { supabaseUrl: 'https://example.invalid', supabaseKey: 'test' };
@@ -163,7 +163,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
         functions: { async invoke(name, options) { recoveryCalls.push({ name, ...options }); return { data: options.body.action === 'reset' ? { reset: true } : { verified: true, reset_token: 'a'.repeat(64), expires_in: 300 } }; } }
       }) };
     });
-    for (const file of ['signup-identity.js', 'portal.js']) await recoveryPage.addScriptTag({ content: read(file) });
+    for (const file of ['shared/auth/signup-identity.js', 'app/portal/portal.js']) await recoveryPage.addScriptTag({ content: read(file) });
     await recoveryPage.locator('#recovery-phone').waitFor({ state: 'visible' });
     assert.equal(await recoveryPage.locator('#password').isVisible(), false);
     await recoveryPage.locator('#email').fill('member@example.invalid');

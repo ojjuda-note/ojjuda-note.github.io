@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.FRIEND_MESSAGE_PROOF_DIR||'/tmp/friend-message-proof';fs.mkdirSync(proof,{recursive:true});
-let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',()=>'<link rel="stylesheet" href="/admin/friend-messages.css"><script>'+['world-navigation.js','world-themes.js','friend-messages.js','note/notifications.js','admin/friend-messages.js'].map(read).join('\n')+'</script><script type="module">');
+let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+world=world.replace('<script type="module">',()=>'<link rel="stylesheet" href="/admin/friend-messages.css"><script>'+['app/world/world-navigation.js','app/world/world-themes.js','features/friends/friend-messages.js','note/notifications.js','admin/friend-messages.js'].map(read).join('\n')+'</script><script type="module">');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 function fixtureBoot(){
  const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',C='00000000-0000-4000-8000-000000000003';

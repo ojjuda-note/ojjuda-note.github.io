@@ -1,11 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const engine=fs.readFileSync(path.join(root,'games/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
+const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
- .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/world-game-assets.js')||s.includes('/game-entry.js')||s.includes('/game-results.js'))?s:'')
- .replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+ .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')||s.includes('/shared/games/game-results.js'))?s:'')
+ .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 world=world.replace('</head>','<style>@font-face{font-family:"Gowun Dodum";src:url("/qa-font.ttf")}</style></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
@@ -65,9 +65,9 @@ g.tab='friends';H();
    await context.route('**/*',route=>{
     const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();
     if(u.pathname==='/world.html')return route.fulfill({contentType:'text/html',body:world});
-    if(u.pathname==='/games/breakout-game.js')return route.fulfill({contentType:'text/javascript',body:engine});
-    if(u.pathname==='/game-controls.js')return route.fulfill({path:path.join(root,'game-controls.js')});
-    if(u.pathname==='/game-controls.css')return route.fulfill({path:path.join(root,'game-controls.css')});
+    if(u.pathname==='/games/breakout/breakout-game.js')return route.fulfill({contentType:'text/javascript',body:engine});
+    if(u.pathname==='/shared/games/game-controls.js')return route.fulfill({path:path.join(root,'shared/games/game-controls.js')});
+    if(u.pathname==='/shared/games/game-controls.css')return route.fulfill({path:path.join(root,'shared/games/game-controls.css')});
     if(u.pathname==='/qa-font.ttf'&&fs.existsSync('/root/.local/share/fonts/qa-gowun-dodum.ttf'))return route.fulfill({path:'/root/.local/share/fonts/qa-gowun-dodum.ttf'});
     const file=path.join(root,u.pathname);if(file.startsWith(root+path.sep)&&fs.existsSync(file)&&fs.statSync(file).isFile())return route.fulfill({path:file});
     return route.abort();

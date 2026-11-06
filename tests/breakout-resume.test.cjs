@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const test=require('node:test');
 const KEY='ojjuda-breakout-last-stage-v1';
-const original=fs.readFileSync(path.join(__dirname,'../games/breakout-game.js'),'utf8');
+const original=fs.readFileSync(path.join(__dirname,'../games/breakout/breakout-game.js'),'utf8');
 // Observe real game transitions without adding a test interface to the shipped engine.
 const source=original.replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);

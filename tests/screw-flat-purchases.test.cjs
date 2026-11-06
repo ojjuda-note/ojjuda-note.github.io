@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{randomUUID}=require('node:crypto');
-const {PGlite}=require('@electric-sql/pglite'),G=require('../screw-flat.js');
+const {PGlite}=require('@electric-sql/pglite'),G=require('../games/screw/screw-flat.js');
 const root=path.join(__dirname,'..'),storage=new Map();
 global.localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)};
 const press=(game,x,y)=>{game.onDown(x,y,1);game.onUp(x,y,1);};
@@ -136,14 +136,14 @@ const settled=async game=>{for(let i=0;i<400&&game.state.shopBusy;i++)await new 
  game=G.flat(api,16);await settled(game);press(game,206,514);await settled(game);
  assert.equal(game.state.extraMoves,0,'empty wallet cannot buy extra moves');game.destroy();
  user=other;game=G.flat(api,16);await settled(game);game.state.moves=game.state.moveLimit;
- const moving=game.state.level.screws.find(s=>s.hole&&require('../screw-flat-physics.js').canUnscrew(game.state.level,s));
+ const moving=game.state.level.screws.find(s=>s.hole&&require('../games/screw/screw-flat-physics.js').canUnscrew(game.state.level,s));
  const from=moving.hole,oldLevel=game.state.level;
  press(game,from.x,from.y);assert.equal(moving.hole,from,'base move limit blocks new pickup');
  press(game,206,514);await settled(game);
  assert.equal(game.state.extraMoves,3);assert.equal(game.state.level,oldLevel,'paid moves extend the current board');
  press(game,from.x,from.y);assert.equal(moving.hole,from,'a selected screw stays attached even after buying extra moves');
  assert.equal(game.state.selected,moving.id);
- const seat=game.state.level.holes.find(h=>h.owner===null&&require('../screw-flat-physics.js').canSeatScrew(game.state.level,h,moving));
+ const seat=game.state.level.holes.find(h=>h.owner===null&&require('../games/screw/screw-flat-physics.js').canSeatScrew(game.state.level,h,moving));
  assert.ok(seat);for(let i=0;i<15;i++)game.update(.05);press(game,seat.x,seat.y);
  for(let i=0;i<30;i++)game.update(.05);assert.equal(moving.hole,seat);
  const moveAttempt=game.state.attemptId;press(game,297,514);await settled(game);

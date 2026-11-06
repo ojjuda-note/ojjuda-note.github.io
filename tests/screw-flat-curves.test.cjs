@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
-const M=require('../vendor/matter-0.20.0.min.js'),P=require('../screw-flat-physics.js');
-const Partitions=require('../screw-flat-partitions.js');
+const M=require('../vendor/matter-0.20.0.min.js'),P=require('../games/screw/screw-flat-physics.js');
+const Partitions=require('../games/screw/screw-flat-partitions.js');
 let count=0,concave=0;
 for(let stage=1;stage<=1000;stage++){
  const level=P.makeFlatLevel(stage),sim=P.createPhysics(level);
@@ -47,7 +47,7 @@ for(const angle of [0,.7,-1.2]){
  }
  sim.destroy();
 }
-const renderer=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
+const renderer=fs.readFileSync(require.resolve('../games/screw/screw-flat.js'),'utf8');
 assert.match(renderer,/function metalPath\(c,p\)\{c\.beginPath\(\);p\.vertices\.forEach/);
 
 // Use real SAT and rigid-body contacts, both while flush and after rotation.

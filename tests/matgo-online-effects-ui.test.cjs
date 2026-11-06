@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
 (async()=>{
-  const {CARDS}=await import('../games/matgo-engine.mjs');
+  const {CARDS}=await import('../games/matgo/matgo-engine.mjs');
   const browser=await chromium.launch({headless:true,executablePath:process.env.MATGO_CHROMIUM,args:['--no-sandbox','--autoplay-policy=user-gesture-required']});
   const errors=[];
   const initial={id:'12345678-1234-1234-1234-123456789012',round:1,version:1,status:'active',seat:0,names:['나','상대'],bots:[false,false],departed:[false,false],ready:[false,false],gold:[5000,5000],autoCount:0,eventCount:0,events:[],game:{hand:[CARDS[0],CARDS[8]],otherCount:2,floor:[{cards:[CARDS[1]]}],caps:[[],[]],deckCount:20,turn:0,go:[0,0],bomb:[0,0],shake:[0,0],ppukCount:[0,0],firstPpukGold:[0,0],over:false,prompt:{type:'play',p:0}}};
@@ -26,9 +26,9 @@ const root=path.join(__dirname,'..');
     },{muted,room:stamp(roomState),enter});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url()),file=path.join(root,decodeURIComponent(url.pathname));
-      if(url.origin!=='https://fixture.test'||['/config.js','/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
+      if(url.origin!=='https://fixture.test'||['/config.js','/games/matgo/matgo-access.js'].includes(url.pathname))return route.fulfill({contentType:'text/javascript',body:''});
       if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-      if(url.pathname==='/games/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.effectsTest={accept,cancelPresentation};'});
+      if(url.pathname==='/games/matgo/matgo-online.mjs')return route.fulfill({contentType:'text/javascript',body:fs.readFileSync(file,'utf8')+'\nwindow.effectsTest={accept,cancelPresentation};'});
       return route.fulfill({path:file,contentType:/\.(mjs|js)$/.test(file)?'text/javascript':url.pathname.endsWith('.css')?'text/css':undefined});
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));

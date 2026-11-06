@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {JSDOM} from 'jsdom';
-import {cpuPortraitHTML} from '../games/matgo-opponent.mjs';
-import * as engine from '../games/matgo-engine.mjs';
-import {floorLayout,heldPairMonths} from '../games/matgo-view.mjs';
-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo-tazza.mjs';
-import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo-table-flip.mjs';
-import {createVentControls,VENT_EFFECTS,pickVentEffect} from '../games/matgo-deck-tools.mjs';
+import {cpuPortraitHTML} from '../games/matgo/matgo-opponent.mjs';
+import * as engine from '../games/matgo/matgo-engine.mjs';
+import {floorLayout,heldPairMonths} from '../games/matgo/matgo-view.mjs';
+import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from '../games/matgo/matgo-tazza.mjs';
+import {shuffledFloorSlots,createTableFlipScene} from '../games/matgo/matgo-table-flip.mjs';
+import {createVentControls,VENT_EFFECTS,pickVentEffect} from '../games/matgo/matgo-deck-tools.mjs';
 
 assert.equal(VENT_EFFECTS.length,10);
 for(let i=0;i<VENT_EFFECTS.length;i++)assert.equal(pickVentEffect(()=>(i+.5)/VENT_EFFECTS.length),VENT_EFFECTS[i]);

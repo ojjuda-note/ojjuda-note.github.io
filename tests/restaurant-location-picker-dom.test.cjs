@@ -4,7 +4,7 @@ const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
-const source = fs.readFileSync(path.join(__dirname, '..', 'restaurant-location-picker.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '..', 'games/certified-restaurants/restaurant-location-picker.js'), 'utf8');
 
 function emitter(base = {}) {
   const listeners = new Map();

@@ -27,7 +27,7 @@ test('game styles preserve readable results and reachable share/replay controls 
       const html = fs.readFileSync(path.join(root, fixture.file), 'utf8');
       const head = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)[1].replace(/<script\b[\s\S]*?<\/script>/gi, '');
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      response.end('<!doctype html><html lang="ko"><head>' + head + '</head><body class="' + (fixture.bodyClass || '') + '">' + fixture.body + '<script src="/game-results.js"></script></body></html>');
+      response.end('<!doctype html><html lang="ko"><head>' + head + '</head><body class="' + (fixture.bodyClass || '') + '">' + fixture.body + '<script src="/shared/games/game-results.js"></script></body></html>');
       return;
     }
     const file = path.resolve(root, '.' + decodeURIComponent(url.pathname));

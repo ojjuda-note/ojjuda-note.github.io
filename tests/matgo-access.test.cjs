@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
-const source = fs.readFileSync(path.join(__dirname, '../matgo-access.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../games/matgo/matgo-access.js'), 'utf8');
 function fixture(age = 19) {
   const values = new Map(); let callback;
   const state = { user: { id: 'member-a' }, identity: { age, locked: true }, error: null, rpcCalls: 0 };

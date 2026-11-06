@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('jsdom');
-const source = fs.readFileSync(process.env.OJJUDA_ROOMS_JS || path.join(__dirname, '../arcade-rooms.js'), 'utf8');
+const source = fs.readFileSync(process.env.OJJUDA_ROOMS_JS || path.join(__dirname, '../features/arcade/arcade-rooms.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const room = (patch = {}) => ({ room_no: 17, kind: 'chess', title: '친구와 체스', host_name: '회원', players: 1, capacity: 2, status: 'waiting', is_member: true, is_host: true, match_id: null, ...patch });
 

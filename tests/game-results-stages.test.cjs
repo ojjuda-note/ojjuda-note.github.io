@@ -15,7 +15,7 @@ function shared(window){
   window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new window.Event('close'));};
   window.HTMLElement.prototype.scrollIntoView=function(){};
   window.scrollTo=()=>{};window.confirm=()=>true;
-  window.eval(read('game-results.js'));
+  window.eval(read('shared/games/game-results.js'));
 }
 function assertResult(container,outcome){
   const card=container.querySelector('.game-result-card');
@@ -110,7 +110,7 @@ test('saetbyeol remains a popup exception and preserves its original growth and 
     const stage=g.state.stage;g.run.boss.hp=0;assert.equal(g.winBoss(),true);f.tick(900);assert.equal(g.state.stage,stage+1);
     assert.equal(f.$('.game-result-card'),null,'boss evolution retains its original story overlay');
     assert.doesNotMatch(read('games/bulssi/index.html'),/game-results\.(?:js|css)|OjjudaGameResults|resultOverlay/);
-    assert.doesNotMatch(read('world-saetbyeol-game.js'),/retainResult|web-share/);
+    assert.doesNotMatch(read('games/saetbyeol/world-saetbyeol-game.js'),/retainResult|web-share/);
   }finally{f.w.close();}
 });
 

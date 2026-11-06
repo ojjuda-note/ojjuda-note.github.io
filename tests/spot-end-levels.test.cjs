@@ -6,7 +6,7 @@ function fixture(pos=48,allDone=false){
  w.Date.now=()=>now;w.setTimeout=(fn,ms)=>{const id=++timerId;timers.set(id,{fn,at:now+ms});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=fn=>intervals.push(fn);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.scrollTo=()=>{};w.confirm=()=>true;
  w.JjudaWallet={getState:()=>({userId:'member-a',coins:100}),subscribe:fn=>fn({userId:'member-a',coins:100}),refresh:async()=>{},recordClear:async(owner,stage)=>{scores.push(stage);return {ok:true};},buy:request=>{charges.push(request);return new Promise(()=>{});}};
- w.eval(fs.readFileSync(path.join(root,'../../game-results.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'../../shared/games/game-results.js'),'utf8'));
  for(const file of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(file));
  const puzzles=w.JJUDA_PUZZLES,order=Array.from(w.JjudaGame.difficultyOrder(puzzles)),position=pos==='last'?order.length-1:pos,current=order[position];
  w.localStorage.setItem('jjuda-spot-six-v1',JSON.stringify({version:2,current,order:[...order].reverse(),completed:allDone?puzzles.filter((_,i)=>i!==current).map(p=>p.id):order.slice(0,position).map(index=>puzzles[index].id)}));

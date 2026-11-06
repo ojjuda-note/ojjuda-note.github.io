@@ -3,9 +3,9 @@ const fs=require('node:fs'),path=require('node:path');
 const {fixture,A,B,C,MINOR}=require('./matgo-online-fixture.cjs');
 (async()=>{
  const f=await fixture({adaptive:true,thousandStake:false}),{db,call}=f;
- const current=await import('../games/matgo-engine.mjs');
+ const current=await import('../games/matgo/matgo-engine.mjs');
  const legacy=await import('../supabase/functions/matgo/engine-v10.mjs');
- const {dealSoloRound}=await import('../games/matgo-tazza.mjs');
+ const {dealSoloRound}=await import('../games/matgo/matgo-tazza.mjs');
  const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
  const start=()=>call(A,{action:'start',rules_version:13,stakes_version:1});
  const status=()=>call(A,{action:'status'});

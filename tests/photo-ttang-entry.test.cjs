@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {JSDOM}=require('jsdom'),root=path.resolve(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'games/photo-ttang.html'),'utf8'),entry=fs.readFileSync(path.join(root,'photo-ttang-entry.js'),'utf8');
+const html=fs.readFileSync(path.join(root,'games/photo-ttang.html'),'utf8'),entry=fs.readFileSync(path.join(root,'games/photo-ttang/photo-ttang-entry.js'),'utf8');
 const photo=(id,owner='other',visibility='public',status='approved')=>({id,owner,visibility,status,nick:'친구 <사진>',image_path:id+'.jpg',mask_rle:'0,120000',level:1});
 (async()=>{
  const dom=new JSDOM(html,{url:'https://fixture.test/photo',runScripts:'outside-only'}),w=dom.window;

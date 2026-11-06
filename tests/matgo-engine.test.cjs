@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
-const source = fs.readFileSync(path.join(__dirname, '../games/matgo-engine.mjs'), 'utf8').replace(/export function/g,'function').replace(/export \{[^}]+\};/g,'');
+const source = fs.readFileSync(path.join(__dirname, '../games/matgo/matgo-engine.mjs'), 'utf8').replace(/export function/g,'function').replace(/export \{[^}]+\};/g,'');
 const context = vm.createContext({ Math, URLSearchParams });
 vm.runInContext(source+'\nglobalThis.api={Game,CARDS,aiChooseCard,aiGoStop,aiChoose};', context);
 const { Game, CARDS, aiChooseCard, aiGoStop, aiChoose } = context.api;

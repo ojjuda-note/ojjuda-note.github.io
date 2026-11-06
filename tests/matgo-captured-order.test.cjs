@@ -4,7 +4,7 @@ const {JSDOM}=require('jsdom');
 const source=fs.readFileSync(path.join(__dirname,'../games/matgo.html'),'utf8');
 const start=source.indexOf('function syncCards('),end=source.indexOf('\nfunction showCaptured(',start);
 assert.ok(start>=0&&end>start,'load the actual solo card synchronizer');
-const dependencies=Promise.all([import('../games/matgo-engine.mjs'),import('../games/matgo-art.mjs'),import('../games/matgo-captured-zoom.mjs')]);
+const dependencies=Promise.all([import('../games/matgo/matgo-engine.mjs'),import('../games/matgo/matgo-art.mjs'),import('../games/matgo/matgo-captured-zoom.mjs')]);
 async function fixture(t){
  const [engine,art,zoom]=await dependencies;
  const groups=()=>'<div class="caps">'+['광','열끗','띠','피'].map(name=>`<div class="cap" data-g="${name}"><span class="lb">${name} 0</span></div>`).join('')+'</div>';

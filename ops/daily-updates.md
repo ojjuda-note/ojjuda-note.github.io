@@ -25,7 +25,7 @@ select ojjuda_updates_internal.publish_daily_notice(
 
 ## 표시와 확인
 
-- `world.html`에서 `daily-updates.js` / `.css`를 읽는다. 공원도 같은 셸을 사용한다.
+- `world.html`에서 `features/daily-updates/daily-updates.js` / `.css`를 읽는다. 공원도 같은 셸을 사용한다.
 - 자정 공개부터 다음 자정까지 정확히 24시간만 유효하다. 그 기간 첫 접속 때 표시하며, 확인한 공지는 다시 띄우지 않는다. 미확인 공지도 다음 자정에 만료된다. 이전 날짜 공지는 다시 띄우지 않는다.
 - 로그인한 회원: `auth.uid()`로 본인 확인 기록을 서버에 저장해 재로그인·다른 기기에서도 유지한다.
 - 비회원: 같은 브라우저 저장소에 기록한다.

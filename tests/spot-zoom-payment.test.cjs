@@ -70,7 +70,7 @@ function fixture(){
  const host=new JSDOM('<!doctype html><body><button id="arcade">오락실</button></body>',{url:'https://fixture.test/world.html?tab=arcade',runScripts:'outside-only'});
  try{
   const w=host.window;w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};let closed=0;
-  w.eval(fs.readFileSync(path.join(root,'../../world-spot-game.js'),'utf8'));w.OjjudaSpotGame.open({onClose:()=>closed++});
+  w.eval(fs.readFileSync(path.join(root,'../../games/spot-difference/world-spot-game.js'),'utf8'));w.OjjudaSpotGame.open({onClose:()=>closed++});
   const frame=w.document.querySelector('iframe'),send=(origin,source)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type:'ojjuda:spot-home'}}));
   assert.equal(w.document.querySelector('.spot-game-header button').textContent,'아지트 홈');
   send('https://other.test',frame.contentWindow);send(w.location.origin,w);assert.ok(w.document.querySelector('.spot-game-dialog'),'ignore foreign home requests');

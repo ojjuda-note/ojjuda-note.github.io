@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const identity = require('../signup-identity.js');
+const identity = require('../shared/auth/signup-identity.js');
 const today = '2026-09-29';
 for (const [birth, code, gender, age] of [
   ['120929', '3', 'male', 14], ['120929', '4', 'female', 14],

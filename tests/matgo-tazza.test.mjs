@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import * as engine from '../games/matgo-engine.mjs';
+import * as engine from '../games/matgo/matgo-engine.mjs';
 import * as legacyEngine from '../supabase/functions/matgo/engine-v9.mjs';
-import {dealSoloRound,selectTazzaSeed,openingValue,createTazzaQueue,TAZZA_MODES,isTazzaCard} from '../games/matgo-tazza.mjs';
+import {dealSoloRound,selectTazzaSeed,openingValue,createTazzaQueue,TAZZA_MODES,isTazzaCard} from '../games/matgo/matgo-tazza.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {verifyRound as verifyV8} from '../supabase/functions/matgo/verify-v8.mjs';
 import {createHandler} from '../supabase/functions/matgo/handler.mjs';
 import {advanceOnline} from '../supabase/functions/matgo/online.mjs';
 const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop,aiChooseGukjin}=engine;
-assert.equal(fs.readFileSync(new URL('../games/matgo-tazza.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/tazza.mjs',import.meta.url),'utf8'));
+assert.equal(fs.readFileSync(new URL('../games/matgo/matgo-tazza.mjs',import.meta.url),'utf8'),fs.readFileSync(new URL('../supabase/functions/matgo/tazza.mjs',import.meta.url),'utf8'));
 const queue=createTazzaQueue();
 assert.equal(queue.queued,false);queue.toggle();assert.equal(queue.begin(),true);
 queue.toggle();assert.equal(queue.queued,true,'cannot change the reserved choice during a start request');

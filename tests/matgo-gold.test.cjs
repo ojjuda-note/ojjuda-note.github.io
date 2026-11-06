@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require('@electric-sql/pglite');
 (async()=>{
-  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop}=await import('../games/matgo-engine.mjs');
+  const {Game,seededRandom,aiChooseCard,aiChoose,aiGoStop}=await import('../games/matgo/matgo-engine.mjs');
   const {verifyRound}=await import('../supabase/functions/matgo/verify.mjs');
-  assert.equal(fs.readFileSync(path.join(__dirname,'../games/matgo-engine.mjs'),'utf8'),fs.readFileSync(path.join(__dirname,'../supabase/functions/matgo/engine.mjs'),'utf8'));
+  assert.equal(fs.readFileSync(path.join(__dirname,'../games/matgo/matgo-engine.mjs'),'utf8'),fs.readFileSync(path.join(__dirname,'../supabase/functions/matgo/engine.mjs'),'utf8'));
   let losses=0,zeroes=0,twoBombs=0,transcript,round;
   for(let seed=1;seed<=100;seed++){
     round={seed,gold:5000,first:seed%2,carry:1};let game;

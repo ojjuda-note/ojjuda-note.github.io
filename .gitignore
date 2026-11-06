@@ -1,2 +1,6 @@
 /house-test/qa/
-/tests/node_modules/
+/tests/node_modules
+
+/.qa/
+/.openai/
+/supabase/.temp/

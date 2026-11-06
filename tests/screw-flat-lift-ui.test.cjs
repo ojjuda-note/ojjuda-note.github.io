@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
-const Game=require('../screw-flat.js');
-const Physics=require('../screw-flat-physics.js');
+const Game=require('../games/screw/screw-flat.js');
+const Physics=require('../games/screw/screw-flat-physics.js');
 const store=new Map();
 global.localStorage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,String(value)),removeItem:key=>store.delete(key)};
 store.set(Game.STAGE_KEY,'1000');

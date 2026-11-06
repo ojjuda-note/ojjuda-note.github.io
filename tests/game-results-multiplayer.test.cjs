@@ -16,7 +16,7 @@ test('bang guest completion requests automatic login only once from the active a
  const w=fixture(t);const finished=[];let allowed=true;
  w.OjjudaGuestAccess={finished:options=>finished.push(options)};
  w.OjjudaGameSession={create:()=>({enter:callback=>callback(),run:callback=>callback(),close:()=>true})};
- w.eval(read('world-bang-game.js'));w.OjjudaBangGame.open({authorized:()=>allowed});
+ w.eval(read('games/bang/world-bang-game.js'));w.OjjudaBangGame.open({authorized:()=>allowed});
  const frame=w.document.querySelector('iframe'),send=(source=frame.contentWindow,origin=w.location.origin,type='ojjuda-bang-local-finished')=>w.dispatchEvent(new w.MessageEvent('message',{source,origin,data:{source:'ojjuda-bang',type}}));
  send(w);send(frame.contentWindow,'https://other.invalid');assert.equal(finished.length,0);
  send();assert.deepEqual(finished,[undefined]);send();assert.equal(finished.length,1,'a repeated local completion cannot consume a second trial');
@@ -26,14 +26,14 @@ test('bang guest completion requests automatic login only once from the active a
 
 const guestRound='10000000-0000-4000-8000-000000000001';
 const iframeCompletions=[
- {name:'mines',file:'world-mines-game.js',api:'OjjudaMinesGame',message:{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:guestRound}},
- {name:'saetbyeol',file:'world-saetbyeol-game.js',api:'OjjudaSaetbyeolGame',message:{source:'ojjuda-saetbyeol',type:'ojjuda-game-finished',runId:guestRound,demo:false}},
- {name:'spot',file:'world-spot-game.js',api:'OjjudaSpotGame',message:{type:'ojjuda:spot-finished'}},
- {name:'sacheonseong',file:'world-sacheonseong-game.js',api:'OjjudaSacheonseongGame',message:{source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:guestRound,stage:1}},
- {name:'tank',file:'world-tank-game.js',api:'OjjudaTankGame',message:{source:'ojjuda-tank',type:'finished'}},
- {name:'tour',file:'world-tour-game.js',api:'OjjudaTourGame',message:{source:'ojjuda-tour',type:'ojjuda-game-finished',game:'ojjuda-tour',runId:guestRound}},
- {name:'ttang',file:'ttang-bridge.js',api:'OjjudaTtangBridge',start:{type:'ojjuda:ttang:start',round:guestRound,mode:'solo'},message:{type:'ojjuda:ttang:result',round:guestRound,mode:'solo',win:false}},
- {name:'bang',file:'world-bang-game.js',api:'OjjudaBangGame',message:{source:'ojjuda-bang',type:'ojjuda-bang-local-finished'}}
+ {name:'mines',file:'games/mines/world-mines-game.js',api:'OjjudaMinesGame',message:{source:'ojjuda-mines',type:'ojjuda-game-finished',runId:guestRound}},
+ {name:'saetbyeol',file:'games/saetbyeol/world-saetbyeol-game.js',api:'OjjudaSaetbyeolGame',message:{source:'ojjuda-saetbyeol',type:'ojjuda-game-finished',runId:guestRound,demo:false}},
+ {name:'spot',file:'games/spot-difference/world-spot-game.js',api:'OjjudaSpotGame',message:{type:'ojjuda:spot-finished'}},
+ {name:'sacheonseong',file:'games/sacheonseong/world-sacheonseong-game.js',api:'OjjudaSacheonseongGame',message:{source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:guestRound,stage:1}},
+ {name:'tank',file:'games/tank/world-tank-game.js',api:'OjjudaTankGame',message:{source:'ojjuda-tank',type:'finished'}},
+ {name:'tour',file:'games/ojjuda-tour/world-tour-game.js',api:'OjjudaTourGame',message:{source:'ojjuda-tour',type:'ojjuda-game-finished',game:'ojjuda-tour',runId:guestRound}},
+ {name:'ttang',file:'games/ttang/ttang-bridge.js',api:'OjjudaTtangBridge',start:{type:'ojjuda:ttang:start',round:guestRound,mode:'solo'},message:{type:'ojjuda:ttang:result',round:guestRound,mode:'solo',win:false}},
+ {name:'bang',file:'games/bang/world-bang-game.js',api:'OjjudaBangGame',message:{source:'ojjuda-bang',type:'ojjuda-bang-local-finished'}}
 ];
 for(const game of iframeCompletions)for(const mode of ['guest','member','stale'])test(`${game.name} completion: ${mode} session respects one-round login and frame identity`,t=>{
  const w=fixture(t),finished=[];let allowed=true;
@@ -60,7 +60,7 @@ test('tour zero-asset win, loss and draw results consume the guest round even wh
   const w=fixture(t),finished=[];let writes=0;
   w.OjjudaGuestAccess={finished:options=>finished.push(options)};
   w.OjjudaGameSession={create:({dispose})=>({enter:callback=>callback(),run:callback=>callback(),close:()=>{dispose();return true;}})};
-  w.eval(read('world-tour-game.js'));w.OjjudaTourGame.open({onScore:async()=>{writes++;return {ok:false};}});
+  w.eval(read('games/ojjuda-tour/world-tour-game.js'));w.OjjudaTourGame.open({onScore:async()=>{writes++;return {ok:false};}});
   const frame=w.document.querySelector('iframe'),message={source:'ojjuda-tour',type:'ojjuda-game-result',game:'ojjuda-tour',runId:guestRound,completed:true,won,myRank:1,players:2,ranking:[{human:true,assets:0,bankrupt},{human:false,assets:0,bankrupt:false}]};
   const send=()=>w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,origin:w.location.origin,data:message}));
   send();await new Promise(resolve=>setImmediate(resolve));send();await new Promise(resolve=>setImmediate(resolve));
@@ -191,7 +191,7 @@ for(const scenario of [
  {name:'a slower same-difficulty completion reports the real time gap',before:39950,after:39950,me:false,difficulty:2,seconds:70,expected:'success',text:'20초'}
 ])test('mines monthly ranking: '+scenario.name,async t=>{
  const w=fixture(t),sent=[],scores=[];let readCount=0;
- w.eval(read('games/mines/rules.js'));w.eval(read('world-mines-game.js'));
+ w.eval(read('games/mines/rules.js'));w.eval(read('games/mines/world-mines-game.js'));
  w.OjjudaMinesGame.open({owner:'10000000-0000-0000-0000-000000000001',onRanking:async()=>[{score:readCount++?scenario.after:scenario.before,me:readCount>1&&scenario.me}],onScore:async(score,id)=>{scores.push([score,id]);return {ok:true};}});
  const frame=w.document.querySelector('iframe');frame.contentWindow.postMessage=message=>sent.push(message);
  const send=message=>w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,origin:w.location.origin,data:{source:'ojjuda-mines',...message}}));

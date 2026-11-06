@@ -4,7 +4,7 @@ on:
     paths:
       - 'games/festival-schedule/**'
       - 'world-festival-schedule.*'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'world.html'
       - 'tests/festival-*'
@@ -14,7 +14,7 @@ on:
     paths:
       - 'games/festival-schedule/**'
       - 'world-festival-schedule.*'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - 'game-release.json'
       - 'world.html'
       - 'tests/festival-*'

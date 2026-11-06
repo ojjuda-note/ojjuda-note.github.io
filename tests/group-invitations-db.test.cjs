@@ -7,7 +7,7 @@ test('member invitations: private notifications, explicit acceptance, shared lin
 const db=new PGlite();try{
 await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;create schema ojjuda_account_deletion;create schema ojjuda_restaurants_internal;
 create table auth.users(id uuid primary key,is_anonymous boolean default false,deleted_at timestamptz,banned_until timestamptz);
-create table public.profiles(id uuid primary key references auth.users(id),nickname text);
+create table public.profiles(id uuid primary key references auth.users(id),nickname text,created_at timestamptz not null default now());
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
 create function public.is_banned(uuid) returns boolean language sql stable as $$select false$$;
 create function ojjuda_account_deletion.pending() returns boolean language sql stable as $$select coalesce(current_setting('test.pending',true),'')='yes'$$;
@@ -32,8 +32,8 @@ create function ojjuda_note_internal.visible_notifications() returns table(id uu
 create function ojjuda_note_internal.mark_notifications_read(uuid[],timestamptz,timestamptz) returns integer language sql as $$select 0$$;
 create function ojjuda_note.list_retention_alerts() returns table(id uuid,card_id uuid,created_at timestamptz,archive_due_at timestamptz,read_at timestamptz) language sql as $$select null::uuid,null::uuid,null::timestamptz,null::timestamptz,null::timestamptz where false$$;
 grant usage on schema ojjuda_note to authenticated;`);
-for(const suffix of ['_shared_app_notifications.sql','_friend_messages.sql','_notification_summary_and_retired_reads.sql','_private_group_board.sql','_group_member_invitations.sql','_group_reliability_performance.sql'])await db.exec(migration(suffix));
-for(let n=1;n<=6;n++){await db.query('insert into auth.users(id) values($1)',[uid(n)]);await db.query('insert into public.profiles values($1,$2)',[uid(n),'회원'+n]);}
+for(const suffix of ['_shared_app_notifications.sql','_friend_messages.sql','_notification_summary_and_retired_reads.sql','_private_group_board.sql','_group_member_invitations.sql','_group_reliability_performance.sql','_group_recent_member_invitations.sql'])await db.exec(migration(suffix));
+for(let n=1;n<=6;n++){await db.query('insert into auth.users(id) values($1)',[uid(n)]);await db.query("insert into public.profiles(id,nickname,created_at) values($1,$2,'2026-11-01'::timestamptz+($3||' minutes')::interval)",[uid(n),'회원'+n,String(n)]);}
 const as=async n=>db.exec(`reset role;set role ${n?'authenticated':'anon'};select set_config('request.jwt.claim.sub','${n?uid(n):''}',false);`);
 const val=async(q,p=[])=>(await db.query(q,p)).rows[0]?.value;
 const api=async(action,p={})=>val('select public.group_invitation($1,$2::jsonb) value',[action,JSON.stringify(p)]);
@@ -45,7 +45,8 @@ const room=(await board('create_room',{name:'우리 여행 <script>',description
 const legacy=(await board('invite',{room_id:room})).code,link=(await api('link',{room_id:room})).code;
 assert.notEqual(legacy,link,'approval-only codes never become direct-join links');
 assert.equal((await api('search',{room_id:room,query:'회원2'}))[0].user_id,uid(2));
-assert.deepEqual(await api('search',{room_id:room,query:''}),[]);
+assert.deepEqual((await api('search',{room_id:room,query:''})).map(x=>x.user_id),[6,5,4,3,2].map(uid));
+const firstRecent=await api('search',{room_id:room});assert.deepEqual((await api('search',{room_id:room,before:firstRecent[1].created_at,before_id:firstRecent[1].user_id})).map(x=>x.user_id),[4,3,2].map(uid));
 const invite=await api('send',{room_id:room,user_id:uid(2)});
 assert.equal((await api('send',{room_id:room,user_id:uid(2)})).id,invite.id,'retry does not duplicate or reset notification');
 await assert.rejects(api('send',{room_id:room,user_id:uid(1)}));
@@ -104,5 +105,12 @@ try{
 await db.exec('reset role');await db.query('update auth.users set is_anonymous=true where id=$1',[uid(6)]);await as(6);await assert.rejects(api('received'));
 assert.equal(await val("select has_function_privilege('anon','public.group_invitation(text,jsonb)','execute') value"),false);
 assert.equal(await val("select has_function_privilege('authenticated','ojjuda_groups_internal.invitable_peer(uuid)','execute') value"),false);
+await db.exec('reset role');
+for(let n=20;n<60;n++){await db.query('insert into auth.users(id) values($1)',[uid(n)]);await db.query("insert into public.profiles(id,nickname,created_at) values($1,$2,'2026-11-06T00:00:00Z')",[uid(n),'신규'+n]);}
+await as(1);const recentPage=await api('search',{room_id:safeRoom,query:'신규'});
+assert.equal(recentPage.length,31);assert.deepEqual(recentPage.slice(0,30).map(x=>x.user_id),Array.from({length:30},(_,i)=>uid(59-i)));
+const lastRecent=recentPage[29],olderRecent=await api('search',{room_id:safeRoom,query:'신규',before:lastRecent.created_at,before_id:lastRecent.user_id});
+assert.equal(olderRecent.length,10);assert.equal(new Set([...recentPage.slice(0,30),...olderRecent].map(x=>x.user_id)).size,40);
+
 }finally{await db.close();}
 });

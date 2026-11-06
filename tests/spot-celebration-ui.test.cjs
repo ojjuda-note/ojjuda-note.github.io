@@ -372,7 +372,7 @@ const completedBefore=index=>fixtureOrder.slice(0,fixtureOrder.indexOf(index)).m
    assert.deepEqual(paid.errors,[]);await paid.context.close();
   }
   const host=await browser.newPage();await host.route('**/*',route=>route.fulfill({body:'<!doctype html><body></body>',contentType:'text/html'}));await host.goto('https://fixture.test/');
-  await host.addScriptTag({path:path.join(root,'world-spot-game.js')});
+  await host.addScriptTag({path:path.join(root,'games/spot-difference/world-spot-game.js')});
   await host.evaluate(()=>{window.recorded=[];window.hostFail=false;OjjudaSpotGame.open({onClear:async(stage,owner)=>{if(hostFail)throw Error('offline');recorded.push({stage,owner})}});window.scoreMessage=(stage,origin=location.origin,fromFrame=true)=>dispatchEvent(new MessageEvent('message',{origin,source:fromFrame?document.querySelector('iframe').contentWindow:window,data:{type:'ojjuda:spot-clear',stage,owner:'member-a'}}));for(const invalid of [0,153,152.5,'152'])scoreMessage(invalid);scoreMessage(6,'https://other.test');scoreMessage(6,location.origin,false);for(const stage of [62,63,82,83,152])scoreMessage(stage);});
   await host.waitForFunction(()=>recorded.length===5);assert.deepEqual(await host.evaluate(()=>recorded),[62,63,82,83,152].map(stage=>({stage,owner:'member-a'})),'only valid old/new scores from the same-origin game frame are accepted');
   await host.evaluate(()=>{hostFail=true;scoreMessage(6)});await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).waitFor();await host.evaluate(()=>hostFail=false);await host.getByRole('button',{name:'완료 기록 다시 저장',exact:true}).click();await host.waitForFunction(()=>recorded.length===6);assert.equal(await host.evaluate(()=>recorded[5].stage),6);

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import {CARDS,Game,score,seededRandom,aiChoose,aiChooseCard,aiGoStop,aiChooseGukjin} from '../games/matgo-engine.mjs';
-import {heldPairMonths} from '../games/matgo-view.mjs';
+import {CARDS,Game,score,seededRandom,aiChoose,aiChooseCard,aiGoStop,aiChooseGukjin} from '../games/matgo/matgo-engine.mjs';
+import {heldPairMonths} from '../games/matgo/matgo-view.mjs';
 import {verifyRound} from '../supabase/functions/matgo/verify.mjs';
 import {replayOnline,advanceOnline,automaticOnline,onlineView} from '../supabase/functions/matgo/online.mjs';
 

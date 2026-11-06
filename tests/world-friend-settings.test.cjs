@@ -6,7 +6,7 @@ const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
 let source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1]
   .replaceAll('import.meta.env', '({})')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
 source = source.slice(0, source.indexOf('j1(()=>H());gm('));
 source += '\nwindow.friendTest={auth:D,state:g,model:P,actions:sr,render:H,load:ke,notice:openWorldNotification,setClient(client){S=client;}};';
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));

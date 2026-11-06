@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),root=path.join(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8'),origin='https://guest-access.test';
 const strip=html=>html.replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'');
-let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-const helpers=['game-session.js','world-navigation.js','guest-access.js','game-results.js','world-park-notes.js','world-mines-game.js','world-saetbyeol-game.js','world-tour-game.js','world-tank-game.js','world-spot-game.js','ttang-bridge.js'].map(read).join('\n');
+let world=strip(read('world.html')).replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+const helpers=['shared/games/game-session.js','app/world/world-navigation.js','shared/auth/guest-access.js','shared/games/game-results.js','park/world-park-notes.js','games/mines/world-mines-game.js','games/saetbyeol/world-saetbyeol-game.js','games/ojjuda-tour/world-tour-game.js','games/tank/world-tank-game.js','games/spot-difference/world-spot-game.js','games/ttang/ttang-bridge.js'].map(read).join('\n');
 world=world.replace('<script type="module">',()=>`<script>${helpers}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`window.guestFixture={open:Al,close:El,finish:score=>S2(score),board:(kind)=>savePracticeStreak({kind,mode:'local'},'draw'),member:()=>{D.online=true;D.parkGuest=false;D.user={id:'member'};},park:()=>sr.tab({tab:'park'})};

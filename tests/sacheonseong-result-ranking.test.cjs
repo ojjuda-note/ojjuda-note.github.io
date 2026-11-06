@@ -8,7 +8,7 @@ async function fixture(options={}){
   const dom=new JSDOM('<body></body>',{url:'https://fixture.test/world.html',runScripts:'outside-only',pretendToBeVisual:true});
   const parent=dom.window;let now=options.now??Date.parse('2026-11-15T12:00:00Z'),allowed=true,rankingCalls=0,resolveRanking;
   parent.Date.now=()=>now;parent.HTMLDialogElement.prototype.showModal=function(){this.open=true;};parent.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  parent.eval(read('games/sacheonseong/ranking.js'));parent.eval(read('world-sacheonseong-game.js'));
+  parent.eval(read('games/sacheonseong/ranking.js'));parent.eval(read('games/sacheonseong/world-sacheonseong-game.js'));
   const rules=parent.OjjudaSacheonseongRanking,calls=[];
   const row=(stage,duration,me=false)=>({stage,score:rules.score(duration),me,nick:me?'나':'1등',source:'member_record'});
   parent.OjjudaSacheonseongGame.open({owner,authorized:()=>allowed,onScore:async(stage,score,id)=>{calls.push({stage,score,id});return {ok:options.recordOk!==false};},onRanking:async stage=>{
@@ -26,7 +26,7 @@ async function fixture(options={}){
   parent.postMessage=data=>parent.dispatchEvent(new parent.MessageEvent('message',{data,origin:parent.location.origin,source:w}));
   const $=id=>w.document.getElementById(id);Object.defineProperties($('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
   w.localStorage.setItem('ojjuda-sacheonseong-v1',JSON.stringify({stage:options.stage??9,unlocked:15,sound:false}));
-  w.eval(read('game-results.js'));
+  w.eval(read('shared/games/game-results.js'));
   for(const file of ['engine','faces','ranking','server'])w.eval(read('games/sacheonseong/'+file+'.js'));
   const generate=w.TileGarden.generate;w.TileGarden.generate=(...args)=>{const result=generate(...args);result.grid=result.grid.map(row=>row.map(()=>w.TileGarden.EMPTY));result.grid[0][0]=result.grid[0][1]=0;return result;};
   w.eval(read('games/sacheonseong/app.js'));await flush();await flush();

@@ -45,7 +45,7 @@ const root=path.join(__dirname,'..');
  }finally{await db.close();}
  const dom=new JSDOM('<div data-arcade-rooms></div><div data-arcade-room-feed></div><div id="modal"></div>',{url:'https://ojjuda.kr',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  const opened=[],created=[],cancelled=[];
- w.eval(fs.readFileSync(path.join(root,'arcade-rooms.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'features/arcade/arcade-rooms.js'),'utf8'));
  const cards=['tank','tour','ttang'].map((kind,i)=>({kind,native:true,room_no:kind+'-ABCD',match_id:randomUUID(),code:'ABCD0001',title:'같이 <script>',host_name:'친구',status:'waiting',players:1,capacity:kind==='tank'?12:kind==='tour'?8:2,is_host:false,is_member:false}));
  const controller=w.OjjudaArcadeRooms.create({client:{rpc:async()=>({data:{ok:true,rooms:[],mine:null,can_matgo:true}})},getUserId:()=>A,matgoAllowed:()=>true,extraRooms:async()=>cards,
   notify:()=>{},canOpen:()=>false,goArcade:()=>{},renderModal:html=>w.document.getElementById('modal').innerHTML=html,closeModal:()=>w.document.getElementById('modal').replaceChildren(),
@@ -71,7 +71,7 @@ const root=path.join(__dirname,'..');
    else assert.ok(game==='screw'?catalog.screw_box&&catalog.screw_flat:catalog[game],game+' must be in board rankings');
   }
   assert.equal(catalog.tank.unit,'연승');assert.ok(catalog.tour);
-  w.eval(fs.readFileSync(path.join(root,'ttang-bridge.js'),'utf8'));
+  w.eval(fs.readFileSync(path.join(root,'games/ttang/ttang-bridge.js'),'utf8'));
   const lifecycle=[],code='a'.repeat(24),roomId=randomUUID();
   w.OjjudaTtangBridge.open({owner:A,client:{rpc:async(_,body)=>{lifecycle.push(body.p_action);return {data:{ok:true}};}},hostCode:code,arcadeRoom:roomId});
   const frame=w.document.querySelector('#ttang-overlay iframe');let hosted=null;

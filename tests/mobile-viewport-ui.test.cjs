@@ -6,8 +6,8 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const stripScripts = html => html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 let world = read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
-  .replace('import { screw3d as screwGame } from "./screw3d.js";', 'const screwGame={};');
-world = world.replace('<script type="module">', `<script>${read('world-navigation.js')}</script><script type="module">`);
+  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
+world = world.replace('<script type="module">', `<script>${read('app/world/world-navigation.js')}</script><script type="module">`);
 const boot = world.indexOf('j1(()=>H());gm(');
 assert.ok(boot > 0);
 world = world.slice(0, boot) + 'window.worldTest={state:g,actions:sr,render:H,modal:ct};g.tab="friends";H();' + world.slice(world.indexOf('</script>', boot));
@@ -69,7 +69,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
         await page.goto(`https://fixture.test/${source === 'world' ? 'world.html' : 'note/'}`);
         if (source === 'world') await page.waitForFunction(() => window.worldTest);
         else await page.addScriptTag({content:read('note/navigation.js')});
-        await page.addScriptTag({content:read('mobile-viewport.js')});
+        await page.addScriptTag({content:read('shared/viewport/mobile-viewport.js')});
         if (process.env.MOBILE_VIEWPORT_FONT) {
           const font = fs.readFileSync(process.env.MOBILE_VIEWPORT_FONT).toString('base64');
           await page.addStyleTag({content:`@font-face{font-family:ViewportQA;src:url(data:font/ttf;base64,${font})}:root{--font-b:ViewportQA,sans-serif;--font-d:ViewportQA,sans-serif}body{font-family:ViewportQA,sans-serif}`});
@@ -91,7 +91,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           const nav = await page.locator('.bottomnav').boundingBox();
           await assertInside(page, page.locator('#last-content'), {bottom:nav.y}, `${source} last content`);
         }
-        await page.addScriptTag({content:read('ju-charge.js')});
+        await page.addScriptTag({content:read('features/wallet/ju-charge.js')});
         await page.evaluate(source => {
           OjjudaCharge.install({source,getUserId:()=> 'viewport-test',client:{rpc:async()=>({data:{ok:true,enabled:true,coins:70,used:0,limit:5,left:5}})}});
           OjjudaCharge.open();
@@ -130,7 +130,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
           await page.locator('.modal').evaluate(node => node.scrollTop = node.scrollHeight);
           await assertInside(page, page.locator('#modal-save'), area, 'world modal save');
           await page.evaluate(() => document.querySelector('#modal-root').innerHTML='');
-          await page.addScriptTag({content:read('world-spot-game.js')});
+          await page.addScriptTag({content:read('games/spot-difference/world-spot-game.js')});
           await page.evaluate(() => OjjudaSpotGame.open());
           const frame = await page.locator('.spot-game-dialog iframe').boundingBox();
           assert.ok(frame.y + frame.height <= viewport.height-48+1, 'embedded game stays above system navigation');
@@ -146,7 +146,7 @@ async function assertInside(page, locator, {top = 0, bottom}, label) {
       }
       const portal = await context.newPage();
       await portal.goto('https://fixture.test/');
-      await portal.addScriptTag({content:read('mobile-viewport.js')});
+      await portal.addScriptTag({content:read('shared/viewport/mobile-viewport.js')});
       await portal.addStyleTag({content:':root{--app-safe-bottom:48px;--app-safe-top:24px}'});
       await portal.evaluate(() => document.querySelector('#auth-dialog').showModal());
       await visibleArea(portal, Math.min(320,viewport.height), 20);

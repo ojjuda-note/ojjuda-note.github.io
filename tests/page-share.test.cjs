@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
-const script = fs.readFileSync(path.join(root, 'page-share.js'), 'utf8');
+const script = fs.readFileSync(path.join(root, 'shared/share/page-share.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 function fixture(t, page, options = {}) {
@@ -28,8 +28,8 @@ function fixture(t, page, options = {}) {
   const button = window.document.querySelector('[data-share-page]');
   assert.equal(button.dataset.sharePage, page);
   assert.match(button.getAttribute('aria-label'), /페이지 공유/);
-  assert.ok(window.document.querySelector('script[src^="/page-share.js?v="]'));
-  assert.ok(window.document.querySelector('link[href^="/page-share.css?v="]'));
+  assert.ok(window.document.querySelector('script[src^="/shared/share/page-share.js?v="]'));
+  assert.ok(window.document.querySelector('link[href^="/shared/share/page-share.css?v="]'));
   return { window, document: window.document, button, shares, copies };
 }
 
@@ -92,7 +92,7 @@ for (const clipboard of [false, true]) {
 }
 
 test('both embedded pages allow native sharing and clipboard writes', () => {
-  for (const file of ['world-festival-schedule.js', 'world-restaurant-guide.js']) {
+  for (const file of ['games/festival-schedule/world-festival-schedule.js', 'games/certified-restaurants/world-restaurant-guide.js']) {
     const bridge = fs.readFileSync(path.join(root, file), 'utf8');
     assert.match(bridge, /allow="geolocation; clipboard-write; web-share"/);
   }

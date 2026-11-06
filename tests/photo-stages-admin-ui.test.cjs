@@ -21,8 +21,8 @@ function boot(){
  gm(()=>{g.tab='friends';H();});
  D.online=true;D.user={id:actor};D.isAdmin=true;g.tab='admin';L.area='content';L.tab='photo-stages';H();
 }
-let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
-world=world.replace('<script type="module">',`<script>${read('world-navigation.js')}\n${read('admin/photo-stages.js')}</script><script type="module">`);
+let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
+world=world.replace('<script type="module">',`<script>${read('app/world/world-navigation.js')}\n${read('admin/photo-stages.js')}</script><script type="module">`);
 const start=world.indexOf('j1(()=>H());gm(');assert.ok(start>0);world=world.slice(0,start)+`(${boot.toString()})();`+world.slice(world.indexOf('</script>',start));
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});

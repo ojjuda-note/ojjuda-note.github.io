@@ -4,7 +4,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const {JSDOM} = require('jsdom');
 
-const source = fs.readFileSync(process.env.OJJUDA_GAME_FRIEND_INVITES_JS || path.join(__dirname, '../game-friend-invites.js'), 'utf8');
+const source = fs.readFileSync(process.env.OJJUDA_GAME_FRIEND_INVITES_JS || path.join(__dirname, '../shared/games/game-friend-invites.js'), 'utf8');
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
 async function fixture(t, initiallyHidden = false) {

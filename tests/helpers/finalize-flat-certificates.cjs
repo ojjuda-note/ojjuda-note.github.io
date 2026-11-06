@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const log=path.join(__dirname,'../fixtures/flat-certified-work.jsonl');
-const file=path.join(root,'screw-flat-physics.js');
+const file=path.join(root,'games/screw/screw-flat-physics.js');
 const entries=fs.readFileSync(log,'utf8').trim().split('\n').map(JSON.parse).sort((a,b)=>a.stage-b.stage);
 if(entries.length!==988||entries.some(r=>r.error||!r.route||r.moves!==r.route.length))throw Error('Incomplete physics certificates');
 const stages=Array.from({length:989},(_,i)=>i+12).filter(stage=>stage!==25);

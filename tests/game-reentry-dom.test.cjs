@@ -8,7 +8,7 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
   const dom=new JSDOM('<html data-viewport-page="matgo-solo"><body></body></html>',{url:'https://fixture.test',runScripts:'outside-only'}),w=dom.window;
   try{
    w.localStorage.setItem('ojjuda-matgo-sound',muted?'off':'on');
-   w.eval(read('games/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;window.openSolo=openMatgoSolo;');
+   w.eval(read('games/matgo/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;window.openSolo=openMatgoSolo;');
    assert.equal(w.openSolo({isTrusted:false}),false,'synthetic clicks cannot hand off a start');
    assert.equal(w.sessionStorage.getItem('ojjuda-matgo-entry-handoff'),null);
    let started=false;const pending=w.entry();pending.then(()=>{started=true;});await Promise.resolve();
@@ -23,7 +23,7 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
   const dom=new JSDOM('<html data-viewport-page="matgo-solo"><body></body></html>',{url:'https://fixture.test/games/matgo.html?entry=once',runScripts:'outside-only'}),w=dom.window;
   try{
    if(!['reloaded','query-only'].includes(kind))w.sessionStorage.setItem('ojjuda-matgo-entry-handoff',JSON.stringify({id:kind==='mismatch'?'other':'once',at:Date.now()+(kind==='expired'?-61000:kind==='future'?60000:0)}));
-   w.eval(read('games/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;');
+   w.eval(read('games/matgo/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;');
    let started=false;const pending=w.entry();pending.then(()=>started=true);await Promise.resolve();
    assert.equal(started,kind==='valid',kind+' handoff');
    assert.equal(!!w.document.querySelector('#matgo-start-play'),kind!=='valid',kind+' entrance');
@@ -39,7 +39,7 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
    frame.setAttribute('data-matgo-start-handoff',JSON.stringify({id:kind==='mismatch'?'other':'once',at:Date.now()-(kind==='expired'?61000:0)}));
    Object.defineProperty(w,'frameElement',{value:frame});
    Object.defineProperty(w,'sessionStorage',{get(){throw Error('storage blocked');}});
-   w.eval(read('games/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;');
+   w.eval(read('games/matgo/matgo-start.mjs').replace(/export function/g,'function')+'\nwindow.entry=waitForMatgoStart;');
    let started=false;w.entry().then(()=>started=true);await Promise.resolve();
    assert.equal(started,kind==='valid',kind+' frame handoff without storage');
    assert.equal(frame.hasAttribute('data-matgo-start-handoff'),false,'frame intent is consumed once');
@@ -60,7 +60,7 @@ const wait=async check=>{for(let i=0;i<400;i++){if(check())return;await new Prom
    w.OjjudaMatgoAccess={check:()=>accessReady,allowed:()=>true,subscribe:()=>()=>{},getClient:()=>({functions:{invoke},auth:{getSession:async()=>({data:{session:null}})}})};
    const noop=()=>{},wallet={status:async()=>(await invoke('matgo',{body:{action:'status'}})).data};
    w.__entryDeps={shuffledFloorSlots:noop,floorStackIds:noop,CARDS:[],isPi:noop,piVal:noop,score:noop,floorLayout:noop,heldPairMonths:noop,piClaimMessage:noop,cardSVG:noop,backSVG:noop,createWallet:()=>wallet,invokeMatgo:(_access,body)=>invoke('matgo',{body}),createOnlineMotion:()=>({cancel:noop}),createOnlineSound:()=>({cancel:noop}),cpuPortraitHTML:noop,createVentControls:()=>({sync:noop})};
-   const source=read('games/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.__entryDeps;`);
+   const source=read('games/matgo/matgo-online.mjs').replace(/^import \{([^}]+)\} from '[^']+';/gm,(_,names)=>`const {${names.replace(/ as /g,':')}}=window.__entryDeps;`);
    const boot=w.eval('(async()=>{'+source+'\n})()');
    assert.equal(w.document.querySelector('#gate').hidden,true,'the old loading screen never precedes the entrance');
    assert.ok(w.document.querySelector('#content[inert] .game-entry.mp-entry'),'the styled entrance is present before authentication');

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const { JSDOM } = require('jsdom');
-const source = fs.readFileSync(path.join(__dirname,'../game-challenges.js'),'utf8');
+const source = fs.readFileSync(path.join(__dirname,'../shared/games/game-challenges.js'),'utf8');
 const KEY = 'ojjuda.game-growth.v1';
 const tick = async () => { for(let i=0;i<5;i++) await new Promise(resolve=>setImmediate(resolve)); };
 let checks = 0;

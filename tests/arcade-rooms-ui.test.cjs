@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),{fixture,A,B,C,MINOR}=require('./arcade-rooms-fixture.cjs');
 const root=path.join(__dirname,'..');
-let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./screw3d.js";','const screwGame={};');
+let world=fs.readFileSync(path.join(root,'world.html'),'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
 S=window.fixtureClient;P.loaded=true;P.friends=[];
@@ -10,7 +10,7 @@ window.arcadeTest={actions:sr,render:H,auth:D,state:g,client:S,rooms:()=>worldAr
  switchActor:id=>{D.user={id};window.fixtureActor=id;worldArcadeRooms.sync()}};
 g.tab='friends';H();
 `+world.slice(world.indexOf('</script>',boot));
-world=world.replace('</head>','<script src="/game-entry.js" defer></script><script src="/arcade-rooms.js"></script><script src="/matgo-access.js"></script><script src="/matgo-bridge.js"></script></head>');
+world=world.replace('</head>','<script src="/shared/games/game-entry.js" defer></script><script src="/features/arcade/arcade-rooms.js"></script><script src="/games/matgo/matgo-access.js"></script><script src="/games/matgo/matgo-bridge.js"></script></head>');
 (async()=>{
  const f=await fixture();const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox']});
  const errors=[];

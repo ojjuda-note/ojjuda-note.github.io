@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const original=fs.readFileSync(path.join(__dirname,'../games/breakout-game.js'),'utf8');
+const original=fs.readFileSync(path.join(__dirname,'../games/breakout/breakout-game.js'),'utf8');
 // Inspect the engine only in this local fixture; the shipped module has no test API.
 const source=original.replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     game.previewStage=stageBricks;game.testStage=n=>{level=n;fillBricks();newTurn();};

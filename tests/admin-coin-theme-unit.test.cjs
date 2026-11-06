@@ -76,7 +76,7 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&
 }
 
 {
-  const source=fs.readFileSync(path.join(root,'world-themes.js'),'utf8');
+  const source=fs.readFileSync(path.join(root,'app/world/world-themes.js'),'utf8');
   let now=Date.parse('2026-11-05T03:00:00Z');
   const changes=[],greeting={textContent:''};
   class Clock extends Date {

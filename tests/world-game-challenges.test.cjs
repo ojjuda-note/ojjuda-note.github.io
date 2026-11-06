@@ -115,7 +115,7 @@ for (const id of ['stacker', 'mole', 'poker', 'roulette', 'admin', '<script>']) 
   });
 }
 
-const guestSource = fs.readFileSync(path.join(__dirname, '../guest-access.js'), 'utf8');
+const guestSource = fs.readFileSync(path.join(__dirname, '../shared/auth/guest-access.js'), 'utf8');
 const guestKey = 'ojjuda.guest-round-completed.v1';
 function guestFixture({ guest = true, blockedStorage = false, storage = new Map() } = {}) {
   const navigations = [], timers = new Map(), listeners = new Map();
@@ -213,8 +213,8 @@ function overlayFixture(t, { shareModule = false } = {}) {
   w.eval(guestSource); w.OjjudaGuestAccess.configure(() => true);
   if (shareModule) {
     Object.defineProperty(w.navigator, 'share', { configurable: true, value: async data => shared.push(data) });
-    w.eval(fs.readFileSync(path.join(__dirname, '../game-challenges.js'), 'utf8'));
-    w.eval(fs.readFileSync(path.join(__dirname, '../game-results.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(__dirname, '../shared/games/game-challenges.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(__dirname, '../shared/games/game-results.js'), 'utf8'));
   } else {
     w.OjjudaGameChallenges = {
       onOpen: game => events.push(['visit', game]),

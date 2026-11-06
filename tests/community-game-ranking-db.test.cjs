@@ -46,7 +46,7 @@ const {PGlite}=require('@electric-sql/pglite');
  assert.equal((await db.query("select prosecdef from pg_proc where oid='public.community_game_ranking(text)'::regprocedure")).rows[0].prosecdef,false);
  await db.exec(`create table public.board_games(id uuid,p1 uuid,p2 uuid,result text,updated_at timestamptz,kind text,status text);
  create table ojjuda_game_internal.practice_results(user_id uuid,round_id uuid,created_at timestamptz,game text,difficulty text,outcome text);`);
- await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/board_monthly_ranking.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/scripts/rankings/board_monthly_ranking.sql'),'utf8'));
  await db.exec(`delete from game_scores;
  insert into game_scores(user_id,game,score,created_at) values
  ('${a}','runner',400,date_trunc('month',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul'),

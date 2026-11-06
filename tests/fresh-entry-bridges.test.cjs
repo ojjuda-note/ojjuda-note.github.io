@@ -9,11 +9,11 @@ function fixture(name){
 }
 
 test('an inactive ttang bridge closes synchronously so the shared entry gate can finish',()=>{
- const f=fixture('ttang-bridge.js');f.load();try{assert.equal(f.w.OjjudaTtangBridge.close(),true);}finally{f.dispose();}
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();try{assert.equal(f.w.OjjudaTtangBridge.close(),true);}finally{f.dispose();}
 });
 
 for(const fail of [false,true])test('photo close releases an unfinished age check; late '+(fail?'failure':'success')+' cannot affect the new entry',async()=>{
- const f=fixture('photo-ttang-bridge.js'),old=deferred(),fresh=deferred();let calls=0;
+ const f=fixture('games/photo-ttang/photo-ttang-bridge.js'),old=deferred(),fresh=deferred();let calls=0;
  f.w.OjjudaPhotoTtangAccess={configure(){},check:()=>++calls===1?old.promise:fresh.promise,allowed:()=>true,subscribe:()=>()=>{}};f.load();
  try{
   const first=f.w.openPhotoTtang({owner:'member'});f.w.OjjudaPhotoTtangBridge.close();
@@ -25,7 +25,7 @@ for(const fail of [false,true])test('photo close releases an unfinished age chec
 });
 
 function matgoFixture(invoke){
- const f=fixture('matgo-bridge.js');f.w.owner='member-a';
+ const f=fixture('games/matgo/matgo-bridge.js');f.w.owner='member-a';
  const client={auth:{getSession:async()=>({data:{session:f.w.owner?{user:{id:f.w.owner},access_token:'fixture-'+f.w.owner}:null}})},functions:{invoke}};
  f.w.OjjudaMatgoAccess={check:async()=>({userId:f.w.owner}),getClient:()=>client,subscribe:()=>()=>{}};f.load();return f;
 }
@@ -94,7 +94,7 @@ test('matgo public-room handoff preserves the explicitly created fresh room',asy
 });
 
 test('photo parent close disposes the active board before iframe removal and keeps completion/purchase storage',async()=>{
- const f=fixture('photo-ttang-bridge.js');
+ const f=fixture('games/photo-ttang/photo-ttang-bridge.js');
  f.w.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'member'}),allowed:()=>true,subscribe:()=>()=>{}};f.load();
  try{
   f.w.localStorage.setItem('ojjuda-photo-ttang','{"0":{"done":1}}');f.w.localStorage.setItem('pending-photo-purchase','receipt');
@@ -110,7 +110,7 @@ test('photo parent close disposes the active board before iframe removal and kee
 });
 
 for(const mode of ['host','join'])test('old ttang iframe load cannot '+mode+' a previous invitation in a new frame',async()=>{
- const f=fixture('ttang-bridge.js');f.load();const oldCode='a'.repeat(24),newCode='b'.repeat(24),calls=[];
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const oldCode='a'.repeat(24),newCode='b'.repeat(24),calls=[];
  try{
   f.w.OjjudaTtangBridge.open({owner:'member',[mode+'Code']:oldCode});const old=f.frame();let disposed=0;
   old.contentWindow.OjjudaTtang={dispose(){assert.ok(old.isConnected);disposed++;}};
@@ -123,7 +123,7 @@ for(const mode of ['host','join'])test('old ttang iframe load cannot '+mode+' a 
 });
 
 test('ttang close records the current unfinished round once and late room creation leaves only its own old room',async()=>{
- const f=fixture('ttang-bridge.js');f.load();const created=deferred(),calls=[],scores=[];
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const created=deferred(),calls=[],scores=[];
  const client={rpc(name,args){calls.push({...args});return args.p_action==='create'?created.promise:Promise.resolve({data:{ok:true}});}};
  try{
   f.w.OjjudaTtangBridge.open({client,owner:'member',onResult:async(won,round)=>{scores.push({won,round});return {ok:true};}});
@@ -139,7 +139,7 @@ test('ttang close records the current unfinished round once and late room creati
 });
 
 test('ttang failed old-room cleanup blocks a new public room until the same room is retired successfully',async()=>{
- const f=fixture('ttang-bridge.js');f.load();const calls=[];let fail=true;
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const calls=[];let fail=true;
  const client={async rpc(name,args){calls.push({...args});if(args.p_action==='leave'&&fail)return {error:{message:'offline'}};return {data:{ok:true,room:{id:'new-room',code:'b'.repeat(24)}}};}};
  try{
   f.w.OjjudaTtangBridge.open({client,owner:'member',arcadeRoom:'old-room'});f.frame().contentWindow.OjjudaTtang={dispose(){}};
@@ -154,7 +154,7 @@ test('ttang failed old-room cleanup blocks a new public room until the same room
 });
 
 test('ttang late room creation after an account change cannot send a leave as the new account',async()=>{
- const f=fixture('ttang-bridge.js');f.load();const created=deferred(),calls=[];let owner='A';
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const created=deferred(),calls=[];let owner='A';
  const client={rpc(name,args){calls.push({...args});return created.promise;}};
  try{
   f.w.OjjudaTtangBridge.open({client,owner:'A',authorized:()=>owner==='A'});f.frame().contentWindow.OjjudaTtang={host:async()=>{throw Error('old frame');},dispose(){}};

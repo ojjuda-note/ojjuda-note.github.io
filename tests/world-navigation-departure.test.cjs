@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
-const source = fs.readFileSync(path.join(__dirname, '../world-navigation.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../app/world/world-navigation.js'), 'utf8');
 
 function fixture() {
   let overlay = false, mutations, backCalls = 0, closeCalls = 0;

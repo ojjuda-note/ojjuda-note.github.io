@@ -153,7 +153,7 @@ const world=read('world.html');
 assert.match(world,/mines:\{name:"지뢰찾기",emoji:"🚩",unit:"초"/);
 assert.match(world,/mines:_r.mines/);assert.match(world,/OjjudaMinesGame\.open\(\{owner,authorized/);
 assert.match(world,/if\(entryGame==='mines'\)Al\('mines'\)/);
-assert.match(read('guest-game-scores.js'),/'mines'/);assert.match(read('world-game-assets.js'),/mines:\[/);
+assert.match(read('shared/games/guest-game-scores.js'),/'mines'/);assert.match(read('shared/games/world-game-assets.js'),/mines:\[/);
 console.log('PASS: Minesweeper entry, 8 preset wins, first-click safety, custom exclusions, retries, stale-round cleanup, touch gestures, save validation and account isolation');
 
 (async()=>{
@@ -163,7 +163,7 @@ console.log('PASS: Minesweeper entry, 8 preset wins, first-click safety, custom 
   w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
   const settle=()=>new Promise(resolve=>setImmediate(resolve));
   try {
-    w.eval(read('games/mines/rules.js'));w.eval(read('world-mines-game.js'));
+    w.eval(read('games/mines/rules.js'));w.eval(read('games/mines/world-mines-game.js'));
     w.OjjudaMinesGame.open({owner,authorized:()=>authorized,onScore:async(...args)=>{scores.push(args);return {ok:true};}});
     const frame=w.document.querySelector('iframe');frame.contentWindow.postMessage=data=>sent.push(data);
     const receive=(data,origin=w.location.origin,sender=frame.contentWindow)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source:sender,data:{source:'ojjuda-mines',...data}}));

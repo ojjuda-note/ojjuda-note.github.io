@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
-const source = fs.readFileSync(path.join(__dirname, '../guest-access.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../shared/auth/guest-access.js'), 'utf8');
 const key = 'ojjuda.guest-round-completed.v1';
 
 function fixture({ guest = true, used = false, storageFails = false } = {}) {

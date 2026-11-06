@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
-const code = fs.readFileSync(path.join(__dirname, '../world-restaurant-guide.js'), 'utf8');
+const code = fs.readFileSync(path.join(__dirname, '../games/certified-restaurants/world-restaurant-guide.js'), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 
 function fixture(owner = 'member-a') {

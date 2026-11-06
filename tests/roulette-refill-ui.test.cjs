@@ -192,7 +192,7 @@ test('the parent bridge forwards refill and publishes the returned ZU balance wi
   let fail=false;
   const client={rpc:async(name,args)=>{calls.push({name,args:clone(args)});return{data:fail?{ok:false,error:'insufficient_zzu'}:{ok:true,wallet:wallet({gold:10999,coins:15,free_left:0,refill_cost:10,can_refill:false,charged:10}),room:null},error:null}}};
   w.OjjudaMatgoAccess={check:async()=>({userId:me,age:25}),visible:()=>true,subscribe:()=>()=>{},getClient:()=>client};
-  w.eval(read('game-session.js'));w.eval(read('world-roulette-game.js'));
+  w.eval(read('shared/games/game-session.js'));w.eval(read('games/roulette/world-roulette-game.js'));
   await w.OjjudaRouletteBridge.open({owner:me,client,onCoins:value=>coins.push(value)});
   const child=w.document.querySelector('iframe').contentWindow;child.postMessage=value=>responses.push(clone(value));
   const send=(id,body)=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:child,data:{source:'ojjuda-roulette',type:'rpc',id,body}}));

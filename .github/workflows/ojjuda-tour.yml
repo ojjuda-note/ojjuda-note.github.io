@@ -4,7 +4,7 @@ on:
     paths:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
-      - 'game-friend-invites.js'
+      - 'shared/games/game-friend-invites.js'
       - 'supabase/migrations/*_marble_friend_invites.sql'
       - 'supabase/migrations/*_tour_game_rankings.sql'
       - 'supabase/migrations/*_marble_online_rooms.sql'
@@ -15,7 +15,7 @@ on:
     paths:
       - 'games/ojjuda-tour/**'
       - 'world-tour-game.*'
-      - 'game-friend-invites.js'
+      - 'shared/games/game-friend-invites.js'
       - 'supabase/migrations/*_marble_friend_invites.sql'
       - 'supabase/migrations/*_tour_game_rankings.sql'
       - 'supabase/migrations/*_marble_online_rooms.sql'

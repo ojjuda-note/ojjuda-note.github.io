@@ -18,7 +18,7 @@ const fixture=`<meta charset="utf-8"><div id="toast"></div><script>
  return {data:structuredClone(data)};
  }}};
  window.OjjudaMatgoAccess={check:async()=>({userId:fixtureOwner,age:25}),allowed:()=>true,getClient:()=>fixtureClient,subscribe:()=>()=>{}};
- </script><script src="/matgo-bridge.js"></script>`;
+ </script><script src="/games/matgo/matgo-bridge.js"></script>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox']});
  try{

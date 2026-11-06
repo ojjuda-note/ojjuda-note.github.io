@@ -136,7 +136,7 @@ test('Matgo settlement receipts describe the exact server-settled round without 
 
     for(const rulesVersion of [11,12,13])await t.test('real Edge replay returns its first receipt for rules '+rulesVersion+' and ignores client balances',async()=>{
       const [E,{dealSoloRound},{playRound}]=await Promise.all([
-        import('../games/matgo-engine.mjs'),import('../games/matgo-tazza.mjs'),import('./matgo-opening-fixture.mjs')]);
+        import('../games/matgo/matgo-engine.mjs'),import('../games/matgo/matgo-tazza.mjs'),import('./matgo-opening-fixture.mjs')]);
       await reset(B);const begun=await start(B);
       // Historical browsers retain these server snapshots after a rules update.
       await db.query('update ojjuda_matgo_internal.wallets set round_rules_version=$2,round_cpu_level=2,round_seed=1 where user_id=$1',[B,rulesVersion]);

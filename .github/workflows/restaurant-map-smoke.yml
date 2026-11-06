@@ -3,20 +3,20 @@ name: Restaurant recommendation map smoke checks
 on:
   pull_request:
     paths:
-      - 'recommended-restaurants.js'
+      - 'games/certified-restaurants/recommended-restaurants.js'
       - 'games/certified-restaurants/app.js'
       - 'tests/recommended-restaurants-dom.test.cjs'
       - 'tests/restaurant-guide-ui.test.cjs'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - '.github/workflows/restaurant-map-smoke.yml'
   push:
     branches: [main]
     paths:
-      - 'recommended-restaurants.js'
+      - 'games/certified-restaurants/recommended-restaurants.js'
       - 'games/certified-restaurants/app.js'
       - 'tests/recommended-restaurants-dom.test.cjs'
       - 'tests/restaurant-guide-ui.test.cjs'
-      - 'world-game-assets.js'
+      - 'shared/games/world-game-assets.js'
       - '.github/workflows/restaurant-map-smoke.yml'
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
         run: npm --prefix tests ci --ignore-scripts
       - name: Check client code syntax
         run: |
-          node --check recommended-restaurants.js
+          node --check games/certified-restaurants/recommended-restaurants.js
           node --check games/certified-restaurants/app.js
       - name: Check recommendation editing and coordinate safeguards without browser download
         run: node --test tests/recommended-restaurants-dom.test.cjs

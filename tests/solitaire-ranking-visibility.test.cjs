@@ -11,7 +11,7 @@ for(const width of [360,1200])test(`Solitaire stays on the first ranking page be
   const world=read('world.html'),start=world.indexOf('var _r='),end=world.indexOf(',Z=360',start);
   w.eval(world.slice(start,end)+';');w.D={online:true,user:{id:'test-owner'}};
   w.eval(world.slice(world.indexOf('function worldRankGames(){'),world.indexOf('function openWorldBoardGame')));
-  for(const file of ['games/solitaire/rules.js','games/mines/rules.js','games/sacheonseong/ranking.js','world-game-rankings.js'])w.eval(read(file));
+  for(const file of ['games/solitaire/rules.js','games/mines/rules.js','games/sacheonseong/ranking.js','shared/games/world-game-rankings.js'])w.eval(read(file));
   const games=w.worldRankGames(),rows=Object.fromEntries(Object.keys(games).map(id=>[id,id==='solitaire'?null:{nick:'검사용 기록',score:1}]));
   const opened=[],host=w.document.querySelector('main'),month=new Date(Date.now()+8*3600000).toISOString().slice(0,7);
   const client={rpc:async name=>({data:name==='community_game_monthly_history'?{month,currentMonth:month,closed:false,months:[{month}],leaders:rows}:rows})};
