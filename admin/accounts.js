@@ -112,8 +112,9 @@
       const head = el('div', undefined, 'acct-member-heading');
       head.append(el('strong', record.nickname || '닉네임 없음'));
       if (!withdrawn && record.is_admin) head.append(el('span', '관리자', 'vis'));
-      const banned = !withdrawn && Number.isFinite(Date.parse(record.banned_until)) && Date.parse(record.banned_until) > Date.now();
-      if (banned) head.append(el('span', '정지 중', 'vis warn-tag'));
+      const permanent = !withdrawn && record.banned_until === 'infinity';
+      const banned = permanent || (!withdrawn && Number.isFinite(Date.parse(record.banned_until)) && Date.parse(record.banned_until) > Date.now());
+      if (banned) head.append(el('span', permanent ? '영구정지' : '정지 중', 'vis warn-tag'));
       card.append(head, el('p', withdrawn ? record.email_masked || '이메일 없음' : record.email || '이메일 없음', 'acct-contact'));
       const details = el('dl', undefined, 'acct-details');
       const detail = (name, value) => { details.append(el('dt', name), el('dd', value, name === '보유 ZU' ? 'acct-wallet-value' : '')); };
@@ -124,7 +125,7 @@
         detail('마지막 방문', date(record.last_seen));
         detail('방문횟수', Math.max(0, Number(record.visit_count) || 0).toLocaleString('ko-KR') + '회');
         if (record.last_active) detail('마지막 활동', `${date(record.last_active)}${activityKinds[record.last_active_kind] ? ' · ' + activityKinds[record.last_active_kind] : ''}`);
-        if (banned) detail('정지 종료', date(record.banned_until));
+        if (banned) detail(permanent ? '정지 기간' : '정지 종료', permanent ? '무기한 · 관리자 해제 가능' : date(record.banned_until));
         detail('보유 ZU', Number(record.coins || 0).toLocaleString('ko-KR') + ' ZU');
       }
       card.append(details);
@@ -138,8 +139,10 @@
           else if (markup instanceof Node) extra.append(markup);
           actions.append(extra);
         }
-        if (!record.is_admin) for (const [days, text] of (banned ? [[0, '정지 해제']] : [[7, '7일 정지'], [30, '30일 정지']])) {
-          const action = button(text, 'btn sm');
+        if (!record.is_admin) for (const [days, text] of (banned
+          ? (permanent ? [[0, '정지 해제']] : [[0, '정지 해제'], [-1, '영구정지']])
+          : [[7, '7일 정지'], [30, '30일 정지'], [-1, '영구정지']])) {
+          const action = button(text, days === -1 ? 'btn sm acct-permanent-action' : 'btn sm');
           Object.assign(action.dataset, { act: 'adm-ban', uid: record.id, days: String(days), name: record.nickname || '' });
           actions.append(action);
         }

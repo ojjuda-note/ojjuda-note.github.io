@@ -23,6 +23,7 @@
 .acct-actions,.acct-extra-actions{display:flex;flex-wrap:wrap;gap:6px}
 .acct-actions{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .acct-actions button{min-height:40px}.acct-extra-actions:empty{display:none}
+.acct-actions .acct-permanent-action{border-color:var(--danger,#a14e4e);color:var(--danger,#a14e4e);background:transparent}
 .acct-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap}
 .acct-pagination button{min-height:44px}.acct-page-label{font-size:13px;color:var(--ink-2)}
 .acct-directory [hidden]{display:none!important}

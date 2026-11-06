@@ -28,6 +28,7 @@
 | 맛집·추천 | `games/certified-restaurants/` | `DB RPC` |
 | 그룹 | `groups/` | `group_board / group_invitation / group_home RPC` |
 | 별천지 | `byeolcheonji/` | `byeolcheonji` |
+| 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
 
@@ -42,4 +43,4 @@
 
 ## 검사
 
-`node scripts/check-source-layout.mjs`는 이전 경로 잔존, 새 소스 누락, 최상위 코드 재혼입, 로컬 리소스 연결, 운영 함수 16개의 소스 누락을 검사합니다. 이동 대응표는 `docs/source-layout.json`에 있습니다.
+`node scripts/check-source-layout.mjs`는 이전 경로 잔존, 새 소스 누락, 최상위 코드 재혼입, 로컬 리소스 연결, 운영 함수 17개의 소스 누락을 검사합니다. 이동 대응표는 `docs/source-layout.json`에 있습니다.

@@ -179,6 +179,7 @@
     "games/photo-ttang.html"
   ],
   "serverFunctions": [
+    "admin-ban",
     "auto-house-media",
     "bang",
     "byeolcheonji",

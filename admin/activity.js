@@ -5,6 +5,7 @@
   const MAX_OFFSET = 2147483647; // PostgreSQL integer parameter range.
   const labels = {
     ban: '계정 이용 제한', unban: '계정 이용 제한 해제', report: '신고 처리', feedback: '문의 처리',
+    member_permanent_ban: '회원 영구정지', member_temporary_ban: '회원 기간정지', member_unban: '회원 정지 해제',
     config: '운영 설정 변경', delete: '자료 삭제', edit: '카드 수정',
     guestbook_hide: '방명록 숨김', guestbook_unhide: '방명록 복구', coins: 'ZU 조정',
     item_give: '아이템 지급', item_take: '아이템 회수', rename: '닉네임 변경',
@@ -32,7 +33,7 @@
     if (Number.isFinite(d.delta)) out.push(['ZU 변경', `${d.delta > 0 ? '+' : ''}${number(d.delta)} ZU`]);
     if (row.action === 'rename') out.push(['이전 닉네임', d.old || '없음'], ['새 닉네임', row.target || d.new || '없음']);
     if (Array.isArray(d.fields)) out.push(['수정 항목', d.fields.map(k => fields[k] || k).join(', ')]);
-    if (Number.isSafeInteger(d.days)) out.push(['이용 제한', d.days ? `${d.days}일` : '해제']);
+    if (Number.isSafeInteger(d.days)) out.push(['이용 제한', d.days === -1 ? '영구정지' : d.days ? `${d.days}일` : '해제']);
     if (Number.isSafeInteger(d.count)) out.push(['처리한 자료', `${number(d.count)}개`]);
     if (Object.hasOwn(d, 'restricted_until')) out.push(['제한 종료', d.restricted_until ? date(d.restricted_until) : '종료 시각 없음']);
     if (Number.isSafeInteger(d.notice_length)) out.push(['공지 길이', `${number(d.notice_length)}자`]);

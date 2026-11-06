@@ -30,12 +30,34 @@
     if (!/^(?:010\d{8}|01[16789]\d{7,8}|02\d{7,8}|0(?:[3-6][1-5]|70)\d{7,8})$/.test(phone)) throw new Error('전화번호를 확인해 주세요.');
     return phone;
   }
+  const unusableEmailDomains = [
+    'example.com', 'example.net', 'example.org', 'mailinator.com', 'yopmail.com',
+    'tempmail.com', 'temp-mail.org', '10minutemail.com', 'guerrillamail.com',
+    'sharklasers.com', 'trashmail.com', 'getnada.com', 'maildrop.cc', 'dispostable.com'
+  ];
+  function validSignupEmail(value) {
+    const address = String(value || '').trim().toLowerCase();
+    const [local, domain, extra] = address.split('@');
+    if (extra !== undefined || !local || !domain || local.length > 64 || address.length > 254
+      || local.startsWith('.') || local.endsWith('.') || local.includes('..')
+      || !/^[a-z0-9!#$%&'*+/=?^_`{|}~.-]+$/i.test(local)
+      || !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(domain)) return false;
+    return !unusableEmailDomains.some(blocked => domain === blocked || domain.endsWith('.' + blocked));
+  }
+  function normalizeSignupPhone(value) {
+    const phone = normalizePhone(value), lastEight = phone.slice(3);
+    if (!/^010\d{8}$/.test(phone) || /^(\d)\1{7}$/.test(lastEight)
+      || ['01234567', '12345678', '87654321'].includes(lastEight)) {
+      throw new Error('가입할 때는 정상적인 010 휴대전화 번호를 입력해 주세요.');
+    }
+    return phone;
+  }
   function fields(prefix) {
     return `<div class="member-identity-fields" data-identity-prefix="${prefix}">
       <div class="field"><label for="${prefix}-birth">생년월일 6자리 · 성별 숫자 1자리</label>
       <div class="identity-digits"><input class="inp identity-birth" id="${prefix}-birth" type="text" inputmode="numeric" maxlength="6" size="8" autocomplete="off" placeholder="YYMMDD" required><span aria-hidden="true">−</span><input class="inp identity-code" id="${prefix}-code" type="text" inputmode="numeric" maxlength="1" autocomplete="off" placeholder="1" aria-label="성별 숫자 1자리" required><span class="identity-mask" aria-hidden="true">******</span></div>
       <p class="identity-result" id="${prefix}-result" role="status" aria-live="polite"></p></div>
-      <div class="field"><label for="${prefix}-phone">전화번호</label><input class="inp" id="${prefix}-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="010-0000-0000" required></div>
+      <div class="field"><label for="${prefix}-phone">휴대전화 번호</label><input class="inp" id="${prefix}-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="010-0000-0000" required></div>
       <p class="identity-hint">회원정보는 비공개로 관리해요. 전화번호는 수정할 수 있고, 생년월일과 성별은 저장 후 직접 수정할 수 없어요. 입력 정보만으로 본인인증이 되지는 않아요.</p>
     </div>`;
   }
@@ -43,10 +65,11 @@
     const birthSix = form.querySelector(`#${prefix}-birth`).value.trim();
     const genderCode = form.querySelector(`#${prefix}-code`).value.trim();
     const parsed = parseBirth(birthSix, genderCode, todayKorea(), enforceAge);
-    const phone = normalizePhone(form.querySelector(`#${prefix}-phone`).value);
+    const phone = prefix === 'signup' ? normalizeSignupPhone(form.querySelector(`#${prefix}-phone`).value)
+      : normalizePhone(form.querySelector(`#${prefix}-phone`).value);
     return { ...parsed, birthSix, genderCode, phone };
   }
-  const api = { MIN_AGE, todayKorea, ageAt, parseBirth, normalizePhone, fields, read };
+  const api = { MIN_AGE, todayKorea, ageAt, parseBirth, normalizePhone, normalizeSignupPhone, validSignupEmail, fields, read };
   root.OjjudaIdentity = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document !== 'undefined') document.addEventListener('input', event => {

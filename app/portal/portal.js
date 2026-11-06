@@ -81,6 +81,9 @@
     if (text.startsWith('추천인')) return error.message;
     if (text.includes('rejoin_wait_3_days')) return '탈퇴 후 3일(72시간)이 지난 뒤 다시 가입할 수 있어요.';
     if (text.includes('phone_already_registered') || text.includes('member_identity_phone_number_key')) return '이미 가입된 전화번호예요. 기존 계정으로 로그인해 주세요.';
+    if (text.includes('invalid_signup_email')) return '이메일 형식 또는 일회용 이메일 주소를 확인해 주세요.';
+    if (text.includes('invalid_signup_phone')) return '정상적인 010 휴대전화 번호를 입력해 주세요.';
+    if (text.includes('user is banned') || text.includes('account_banned')) return '정지된 계정이에요. 관리자에게 문의해 주세요.';
     if (authMode === 'signup' && text.includes('database error')) return '이미 가입된 전화번호인지 확인해 주세요. 탈퇴 후 3일(72시간) 동안도 같은 이메일이나 전화번호로 다시 가입할 수 없어요.';
     if (text.includes('recovery_rate_limited')) return '확인 요청이 많아요. 15분 뒤 다시 시도해 주세요.';
     if (text.includes('recovery_expired')) return '확인 시간이 지났거나 이미 사용했어요. 회원정보를 다시 확인해 주세요.';
@@ -429,8 +432,9 @@
           phone: window.OjjudaIdentity.normalizePhone($('recovery-phone').value) };
       } catch (error) { feedback.textContent = error.message; return; }
     }
-    if (!isPasswordReset && authMode !== 'nickname' && !validEmail(address)) {
-      feedback.textContent = '이메일 주소를 확인해 주세요.';
+    if (!isPasswordReset && authMode !== 'nickname' && (authMode === 'signup'
+      ? !window.OjjudaIdentity.validSignupEmail(address) : !validEmail(address))) {
+      feedback.textContent = authMode === 'signup' ? '올바른 이메일을 입력해 주세요. 일회용 이메일은 가입할 수 없어요.' : '이메일 주소를 확인해 주세요.';
       email.focus();
       return;
     }
