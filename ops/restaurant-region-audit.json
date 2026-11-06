@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 27,
-    "scheduledAt": "2026-11-06T21:00:00+09:00",
+    "slot": 28,
+    "scheduledAt": "2026-11-06T22:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled 21:00 Asia/Seoul"
+    "source": "scheduled 22:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -6687,6 +6687,622 @@
         "전남광주통합특별시 남구",
         "전남광주통합특별시 북구",
         "전남광주통합특별시 광산구"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 28,
+      "scheduledAtKST": "2026-11-06T22:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_seven_official_gwangju_tourism_listings",
+      "assignedRegions": [
+        "전남광주통합특별시 동구",
+        "전남광주통합특별시 서구",
+        "전남광주통합특별시 남구",
+        "전남광주통합특별시 북구",
+        "전남광주통합특별시 광산구"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시 동구",
+          "baseListedCount": 12,
+          "previousLocationMissing": 1,
+          "scope": "광주관광 추천식당 일부 상세와 기존 블루리본 공동선정·기등록 사실 대조. 기존 좌표 미등록 항목은 후속 지점 좌표 검증 필요. 전체 업소·현재 영업 상태 전수 확인 아님.",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 서구",
+          "baseListedCount": 22,
+          "previousLocationMissing": 5,
+          "scope": "광주관광 추천식당 일부 상세와 기존 블루리본 공동선정·기등록 사실 대조. 기존 좌표 미등록 항목은 후속 지점 좌표 검증 필요. 전체 업소·현재 영업 상태 전수 확인 아님.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 남구",
+          "baseListedCount": 8,
+          "previousLocationMissing": 3,
+          "scope": "광주관광 추천식당 일부 상세와 기존 블루리본 공동선정·기등록 사실 대조. 기존 좌표 미등록 항목은 후속 지점 좌표 검증 필요. 전체 업소·현재 영업 상태 전수 확인 아님.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 북구",
+          "baseListedCount": 13,
+          "previousLocationMissing": 2,
+          "scope": "광주관광 추천식당 일부 상세와 기존 블루리본 공동선정·기등록 사실 대조. 기존 좌표 미등록 항목은 후속 지점 좌표 검증 필요. 전체 업소·현재 영업 상태 전수 확인 아님.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 광산구",
+          "baseListedCount": 14,
+          "previousLocationMissing": 4,
+          "scope": "광주관광 추천식당 일부 상세와 기존 블루리본 공동선정·기등록 사실 대조. 기존 좌표 미등록 항목은 후속 지점 좌표 검증 필요. 전체 업소·현재 영업 상태 전수 확인 아님.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "광주관광 구 광주광역시 공식 추천식당 상세 원문 7곳의 상호·주소·대표음식 및 2024년 맛집 태그 1건",
+        "기존 광주 69곳 및 2026 광주미식주간 블루리본 공동선정 이력의 동명이점·주소 대조(전수 아님)",
+        "전남광주 통합 공식 관광 페이지 연결 확인, 기존 광주 지역명 검색 별칭 유지"
+      ],
+      "additions": 7,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 22,
+      "locationPendingScope": "기등록 광주 69곳 중 좌표 미확인 15곳과 신규 수록 7곳. 좌표 확인 불가로 폐업/선정취소/목록 제외하지 않음.",
+      "addedRestaurantIds": [
+        "local-gwangju-slot28-1183",
+        "local-gwangju-slot28-1304",
+        "local-gwangju-slot28-1205",
+        "local-gwangju-slot28-1291",
+        "local-gwangju-slot28-1301",
+        "local-gwangju-slot28-1184",
+        "local-gwangju-slot28-1111"
+      ],
+      "evidenceUrls": [
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1183",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1304",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1205",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1291",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1301",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1184",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1111"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "blue-gwangju-hwajeong-tteokgalbi",
+          "name": "화정떡갈비",
+          "currentStoredAddress": "전남광주통합특별시 광산구 광산로29번길 6 (송정동)",
+          "region": "전남광주통합특별시 광산구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 광산구",
+            "화정떡갈비"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-a6d8e4665b",
+          "name": "라그로쏘",
+          "currentStoredAddress": "광주광역시 동구 중앙로252번길 11 1, 2층",
+          "region": "전남광주통합특별시 동구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 동구",
+            "라그로쏘"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://news.jeonnam-gwangju.go.kr/gallery.es?act=view&bid=0009&cg_code=C03&list_no=4873&mid=a50101000000",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-d1ff2db802",
+          "name": "나정상회",
+          "currentStoredAddress": "광주광역시 서구 상무자유로 24",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "나정상회"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.gwangju.go.kr/welfare/contentsView.do?pageId=welfare33",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-2e0ac5320f",
+          "name": "삼희불낙",
+          "currentStoredAddress": "광주광역시 서구 상무누리로 143 1층",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "삼희불낙"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.gwangjufc.com/sponsored_house/status_view.php?h_seq=178&page=2",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-f47e9cf064",
+          "name": "육전명가",
+          "currentStoredAddress": "광주광역시 서구 상무자유로 174 2층",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "육전명가"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1196&pageIndex=17",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-b4e20349ba",
+          "name": "화이트셔츠커피",
+          "currentStoredAddress": "광주광역시 서구 월드컵4강로182번길 21 지하1층",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "화이트셔츠커피"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://eng.cafeshow.com/eng/partners/enjoycafe_view.asp?idx=2285",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-2026-51a42d7562",
+          "name": "카페304",
+          "currentStoredAddress": "광주광역시 서구 상무누리로 15",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "카페304"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.304coffee.co.kr/shopinfo/company.html",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "casa-del-spain",
+          "name": "까사델스페인",
+          "currentStoredAddress": "광주 남구 제중로 40-1, 1층",
+          "region": "전남광주통합특별시 남구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 남구",
+            "까사델스페인"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://news.jeonnam-gwangju.go.kr/gallery.es?act=view&bid=0009&cg_code=C03&list_no=4873&mid=a50101000000",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "casa-del-coffee-sadong",
+          "name": "까사델커피",
+          "currentStoredAddress": "광주 남구 중앙로110번길 31",
+          "region": "전남광주통합특별시 남구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 남구",
+            "까사델커피"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.casadelcoffee.kr/untitled-9",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "mario-chef-gwangju",
+          "name": "마리오셰프",
+          "currentStoredAddress": "광주 남구 제중로 42",
+          "region": "전남광주통합특별시 남구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 남구",
+            "마리오셰프"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=c59f5b5f-1b66-4a1a-b877-a05407b2dd13",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "migonggan-gwangju",
+          "name": "미공간",
+          "currentStoredAddress": "광주 북구 동문대로100번길 21",
+          "region": "전남광주통합특별시 북구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 북구",
+            "미공간"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.daangn.com/kr/local-profile/%EB%AF%B8%EA%B3%B5%EA%B0%84-cecuost9kvy5/",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "trattoria-di-moro-gwangju",
+          "name": "트라토리아디모로",
+          "currentStoredAddress": "광주 북구 일곡마을로 158-1, 1층",
+          "region": "전남광주통합특별시 북구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 북구",
+            "트라토리아디모로"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://www.albamon.com/jobs/detail-company/ifvxbNLuZ4-rO7qOQpwpOw==",
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-dongseong-tteokgalbi",
+          "name": "동성떡갈비",
+          "currentStoredAddress": "전남광주통합특별시 광산구 광산로29번길 16",
+          "region": "전남광주통합특별시 광산구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 광산구",
+            "동성떡갈비"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-maeunnal-cheomdan",
+          "name": "매운날 첨단본점",
+          "currentStoredAddress": "전남광주통합특별시 광산구 첨단중앙로106번길 30 (월계동)",
+          "region": "전남광주통합특별시 광산구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 광산구",
+            "매운날 첨단본점"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "blue-gwangju-kirikiri-bakery-house",
+          "name": "키리키리베이커리하우스",
+          "currentStoredAddress": "광주 광산구 수완로50번길 42-2 1층",
+          "region": "전남광주통합특별시 광산구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 광산구",
+            "키리키리베이커리하우스"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=6989&mid=a50101000000&obid=0009&tab_type=data"
+          ],
+          "result": "기등록 원자료의 상호·주소 및 위치 누락 확인. 이번 회차에 독립 공개 좌표 대조를 완료하지 못함.",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1183",
+          "name": "100족발본점",
+          "currentStoredAddress": "전남광주통합특별시 광산구 왕버들로252번길 33 (신창동)",
+          "region": "전남광주통합특별시 광산구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 광산구",
+            "100족발본점"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1183"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1304",
+          "name": "1960백선청원모밀",
+          "currentStoredAddress": "전남광주통합특별시 동구 중앙로 174-1",
+          "region": "전남광주통합특별시 동구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 동구",
+            "1960백선청원모밀"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1304"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1205",
+          "name": "강의리추어탕",
+          "currentStoredAddress": "전남광주통합특별시 동구 중흥로209번길 4-1",
+          "region": "전남광주통합특별시 동구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 동구",
+            "강의리추어탕"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1205"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1291",
+          "name": "개마고원",
+          "currentStoredAddress": "전남광주통합특별시 서구 상무대로 1094",
+          "region": "전남광주통합특별시 서구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 서구",
+            "개마고원"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1291"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1301",
+          "name": "거목한정식",
+          "currentStoredAddress": "전남광주통합특별시 남구 천변좌로364번길 3-6",
+          "region": "전남광주통합특별시 남구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 남구",
+            "거목한정식"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1301"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1184",
+          "name": "국현옥궁중팥죽",
+          "currentStoredAddress": "전남광주통합특별시 북구 서강로74번길 32 (운암동)",
+          "region": "전남광주통합특별시 북구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 북구",
+            "국현옥궁중팥죽"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1184"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        },
+        {
+          "restaurantId": "local-gwangju-slot28-1111",
+          "name": "계절따라",
+          "currentStoredAddress": "전남광주통합특별시 동구 서남로33번길 6-1",
+          "region": "전남광주통합특별시 동구",
+          "regionSearchAliases": [
+            "전남광주통합특별시 광주",
+            "광주광역시",
+            "구 광주광역시",
+            "광주 동구",
+            "계절따라"
+          ],
+          "checkedAt": "2026-11-06",
+          "recheckCycle": 2,
+          "recheckSlot": 28,
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1111"
+          ],
+          "result": "공식 관광 페이지에서 상호·주소 확인, 개별 위경도는 공개 증거 미확보",
+          "unconfirmedReason": "상호·지점·현주소에 일치하는 검증 가능 위도/경도 근거 미확보",
+          "action": "선정·수록 ID 및 이력 보존. 좌표 추측/폐업 판정·목록 비노출 금지; 차기 해당 회차 공식 지도 원문으로 재확인"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "광주 기존 15곳 및 신규 7곳의 정확한 위치",
+          "reason": "상호·지점·현재 주소에 일치하는 공개 지도 개별 좌표 원문 미확보. 기등록 좌표 54건이 현재 영업지점의 최신 좌표인지 전수 검증하지 못함.",
+          "action": "2순환 28회차 기존 좌표 누락·주소 충돌 우선 재확인; 임의 좌표 금지."
+        },
+        {
+          "topic": "현재 영업·과거 선정 및 블루리본 정규 등급",
+          "reason": "옛 광주관광 공식 정보는 수록/과거 지정 증거이며 실시간 영업·정규 리본 등급과 별개. 블루리본 공식 전체 지도에서 2026 광주 누락 전체 명단은 확인 불가.",
+          "action": "공식 업소/지도 및 새 공고 대조, 현재 영업 미확인 유지."
+        }
+      ],
+      "carryOver": [
+        "14·16·24 회차 미확인 이월 및 이전 회차의 주소 충돌·지도 좌표 재확인 항목 유지",
+        "북구 포함 5개 구의 공식 관광 전체 28쪽 전수조사 아닌 1~3쪽 일부 확인. 나머지 검색 및 블루리본 추가 발굴은 다음 순환으로 이월."
+      ],
+      "nextSlot": 29,
+      "nextRegions": [
+        "전북특별자치도 전주시",
+        "전북특별자치도 군산시",
+        "전북특별자치도 익산시"
       ],
       "notExhaustive": true
     }
