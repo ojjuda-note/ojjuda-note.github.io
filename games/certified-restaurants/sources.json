@@ -1502,20 +1502,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3180,
+    "uniqueRestaurants": 3188,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2449,
+      "local-guide": 2457,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2148,
+    "coordinatesMissing": 2156,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
       "충북": 217,
-      "충남": 56,
+      "충남": 64,
       "울산": 36,
       "경남": 319,
       "강원": 61,
@@ -1531,13 +1531,13 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1871,
-      "중식": 132,
+      "한식": 1877,
+      "중식": 133,
       "일식": 132,
       "기타": 580,
       "양식": 209,
       "분식": 26,
-      "디저트": 230
+      "디저트": 231
     }
   },
   "coordinateEnrichment": {
@@ -11582,51 +11582,123 @@
       ],
       "scope": "충남관광 공식 공개 명단 공주3·계룡2 수록 확인, 논산 기존 4곳/선정 이력 검토. 5개 등록 추가, 좌표·현재 영업·정규 리본은 미확인.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-chungnam-slot27-eight-province-tourism",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3180,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2449,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2148,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 56,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1871,
+          "중식": 132,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 26,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3188,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2457,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2156,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1877,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 209,
+          "분식": 26,
+          "디저트": 231
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+        "local-chungnam-slot27-dangjin-daedeulbo",
+        "local-chungnam-slot27-dangjin-cafe-raw",
+        "local-chungnam-slot27-seosan-jingukjip",
+        "local-chungnam-slot27-seosan-anheung-ilpum",
+        "local-chungnam-slot27-seosan-gabo",
+        "local-chungnam-slot27-boryeong-daechon-islands",
+        "local-chungnam-slot27-boryeong-paldo-gangsan"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "coordinatesAdded": 0,
+      "locationPending": 8,
+      "locationHidden": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot27.json",
+      "officialSourceUrls": [
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
+      ],
+      "scope": "당진 3, 서산 3, 보령 2곳 충남관광 공식 상세에서 식당명·주소·간단한 메뉴 확인. 관광 수록 이력을 현행 인증·현재 영업·정규 블루리본 등급으로 오인하지 않음. 정확 좌표 근거 없는 8곳 null. 전수 조사 아님.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-chungnam-slot26-five-tourism-listings",
+    "id": "2026-11-06-chungnam-slot27-eight-province-tourism",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3175,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2444,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2143,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 51,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1868,
-        "중식": 131,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 26,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3180,
       "providerCounts": {
         "michelin": 237,
@@ -11665,25 +11737,73 @@
         "디저트": 230
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3188,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2457,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2156,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1877,
+        "중식": 133,
+        "일식": 132,
+        "기타": 580,
+        "양식": 209,
+        "분식": 26,
+        "디저트": 231
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-chungnam-slot26-gongju-mimaji",
-      "local-chungnam-slot26-gongju-myeongseong-bulgogi",
-      "local-chungnam-slot26-gongju-donghaewon",
-      "local-chungnam-slot26-gyeryong-hwapyeong",
-      "local-chungnam-slot26-gyeryong-myeonok"
+      "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+      "local-chungnam-slot27-dangjin-daedeulbo",
+      "local-chungnam-slot27-dangjin-cafe-raw",
+      "local-chungnam-slot27-seosan-jingukjip",
+      "local-chungnam-slot27-seosan-anheung-ilpum",
+      "local-chungnam-slot27-seosan-gabo",
+      "local-chungnam-slot27-boryeong-daechon-islands",
+      "local-chungnam-slot27-boryeong-paldo-gangsan"
     ],
     "existingRestaurantsEnriched": 0,
     "coordinatesAdded": 0,
-    "locationPending": 11,
+    "locationPending": 8,
     "locationHidden": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
-    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot26.json",
+    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot27.json",
     "officialSourceUrls": [
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
     ],
-    "scope": "충남관광 공식 공개 명단 공주3·계룡2 수록 확인, 논산 기존 4곳/선정 이력 검토. 5개 등록 추가, 좌표·현재 영업·정규 리본은 미확인.",
+    "scope": "당진 3, 서산 3, 보령 2곳 충남관광 공식 상세에서 식당명·주소·간단한 메뉴 확인. 관광 수록 이력을 현행 인증·현재 영업·정규 블루리본 등급으로 오인하지 않음. 정확 좌표 근거 없는 8곳 null. 전수 조사 아님.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
