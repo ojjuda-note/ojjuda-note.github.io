@@ -12,8 +12,9 @@ const root=path.join(__dirname,'..');
   for(const row of rows){
    const images=[...row.querySelectorAll('.rank-card')];assert.equal(images.length,5);
    const cards=images.map(image=>{
-    const src=image.getAttribute('src');assert.ok(fs.existsSync(path.join(root,'games/poker',src)),src);
-    const [,suit,face]=src.match(/\/([CHDS])-(\d+|[JQKA])\.svg$/);
+    const src=image.getAttribute('src'),file=new URL(src,'https://ojjuda.kr/games/poker/').pathname;
+    assert.ok(fs.existsSync(path.join(root,file)),src);
+    const [,suit,face]=file.match(/\/([CHDS])-(\d+|[JQKA])\.svg$/);
     return 'CHDS'.indexOf(suit)*13+({J:11,Q:12,K:13,A:14}[face]||Number(face))-2;
    });
    assert.equal(new Set(cards).size,5);const hand=evaluateFive(cards);
