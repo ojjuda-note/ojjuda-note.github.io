@@ -1,10 +1,10 @@
 name: Solitaire arcade checks
 on:
   pull_request:
-    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire_time_rankings.sql', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
+    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
   push:
     branches: [main]
-    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire_time_rankings.sql', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
+    paths: ['games/solitaire/**', 'world-solitaire-game.js', 'world.html', 'world-game-assets.js', 'game-release.json', 'tests/solitaire-*.test.cjs', 'supabase/migrations/*_solitaire*.sql', 'tests/game-ranking-criteria-dom.test.cjs', 'tests/monthly-game-rankings-db.test.cjs', 'guest-game-scores.js', 'world-game-rankings.js', '.github/workflows/solitaire.yml']
 permissions:
   contents: read
 jobs:
@@ -21,4 +21,6 @@ jobs:
       - run: npm --prefix tests ci --ignore-scripts
       - run: node --test games/solitaire/test/*.test.mjs tests/solitaire-arcade.test.cjs tests/game-assets-loading.test.cjs
       - run: node tests/solitaire-ranking-db.test.cjs
+      - run: node tests/monthly-game-rankings-db.test.cjs
+      - run: node tests/game-ranking-criteria-dom.test.cjs
       - run: node tests/game-release-refresh.test.cjs
