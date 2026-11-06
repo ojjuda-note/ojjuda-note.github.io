@@ -49,7 +49,11 @@
       const active = document.activeElement;
       return dialog.contains(active) || !active?.matches('input,textarea,[contenteditable="true"],iframe');
     }
+    function expire() {
+      if (candidate && Date.now() + serverOffset >= Date.parse(candidate.expires_at)) { candidate = null; close(); }
+    }
     function show() {
+      expire();
       if (dialog.open || saving || !candidate || !allowed()) return;
       if (lastRead(identity) >= candidate.id) { candidate = null; return; }
       const [,month,day] = candidate.date.split('-');
@@ -59,6 +63,7 @@
       priorFocus = document.activeElement; dialog.showModal(); confirm.focus({preventScroll:true});
     }
     function sync() {
+      expire();
       const next = userNow();
       if (next !== identity) {
         epoch++; identity = next; candidate = null; pending = null; lastFetch = 0; saving = false;
@@ -74,7 +79,7 @@
       const now = Date.now() + serverOffset, elapsed = ((now + KST) % DAY + DAY) % DAY;
       // Check the KST boundary exactly, then more often while the daily summary is prepared.
       const delay = Math.max(1000,Math.min(DAY-elapsed,elapsed < 30*60000 ? 60000 : 5*60000));
-      timer = setTimeout(() => void refresh(true),delay);
+      timer = setTimeout(() => { expire(); void refresh(true); },delay);
     }
     async function refresh(force = false) {
       syncIdentityOnly();
@@ -92,6 +97,8 @@
           lastFetch = Date.now();
           const next = data?.notice;
           const valid = next && /^\d{4}-\d{2}-\d{2}$/.test(next.id) && next.date === next.id
+            && Number.isFinite(Date.parse(next.available_at)) && Number.isFinite(Date.parse(next.expires_at))
+            && Date.parse(next.available_at) <= Date.now() + serverOffset && Date.now() + serverOffset < Date.parse(next.expires_at)
             && Array.isArray(next.items) && next.items.length > 0 && next.items.length <= 30
             && next.items.every(text => typeof text === 'string' && text.length <= 80);
           if (!valid || lastRead(user) >= next.id) { candidate = null; close(); }

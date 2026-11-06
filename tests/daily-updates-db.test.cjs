@@ -10,6 +10,8 @@ test('daily release boundary, verified public content, account isolation and per
  GRANT USAGE ON SCHEMA auth TO anon,authenticated;
  INSERT INTO auth.users VALUES('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000002');`);
  await db.exec(migration);
+ const expiry=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(f=>f.endsWith('_daily_update_notice_24h_window.sql'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations',expiry),'utf8'));
  const value=async(sql,params=[]) => (await db.query(sql,params)).rows[0].v;
  const today=await value("select ((statement_timestamp() at time zone 'Asia/Seoul')::date)::text v");
  const yesterday=await value("select ((statement_timestamp() at time zone 'Asia/Seoul')::date-1)::text v");
@@ -20,10 +22,11 @@ test('daily release boundary, verified public content, account isolation and per
  assert.equal((await get()).notice,null);
  assert.equal(await publish(today),true);
  assert.equal((await get()).notice,null,'today cannot appear before the following KST midnight');
- assert.equal(await publish(older),true);assert.equal(await publish(yesterday),true);
+ assert.equal(await publish(older),true);assert.equal((await get()).notice,null,'an unread notice expires after its 24-hour window');assert.equal(await publish(yesterday),true);
  assert.equal(await value("select available_at = (report_date+1)::timestamp at time zone 'Asia/Seoul' v from ojjuda_updates_internal.daily_notices where report_date=$1",[yesterday]),true);
  assert.equal(await publish(yesterday,[{...item,text:'다르게 바꿈'}]),false,'duplicate runs preserve the existing notice');
  assert.equal((await get()).notice.items[0],item.text);
+ assert.equal(Date.parse((await get()).notice.expires_at)-Date.parse((await get()).notice.available_at),86400000);
  for(const items of [[],[{...item,category:'admin'}],[{...item,text:'원고실 그림 교체'}],[{...item,text:'관리자 메뉴 개선'}],[{...item,source_sha:''}],[{...item,deployment_url:'https://example.test'}],[{...item,text:null}],[{...item,text:'x'.repeat(81)}]]) await assert.rejects(publish(older,items));
  await db.exec('SET ROLE anon');
  assert.equal((await get()).notice.id,yesterday);

@@ -2,16 +2,16 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {JSDOM}=require('jsdom');
 const source=fs.readFileSync(path.join(__dirname,'../daily-updates.js'),'utf8');
 const tick=async()=>{for(let n=0;n<5;n++)await new Promise(r=>setImmediate(r));};
-const notice={id:'2026-11-06',date:'2026-11-06',items:['게임 뒤로가기 개선','축제·공연 일정 추가']};
+const notice={id:'2026-11-05',date:'2026-11-05',available_at:'2026-11-05T15:00:00Z',expires_at:'2026-11-06T15:00:00Z',items:['게임 뒤로가기 개선','축제·공연 일정 추가']};
 function setup({user='member-a',read=false,ready=true,block=false,rpc:custom,stored,now='2026-11-06T14:59:59.000Z'}={}){
  const dom=new JSDOM('<!doctype html><body><main id="app"><button id="previous">게임</button></main><div id="modal-root"></div>',{url:'https://ojjuda.test/world.html',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,state={user,read,ready,block,ackFail:false,requests:[],timers:[],notice:structuredClone(notice)};
- w.Date.now=()=>Date.parse(now);
+ const w=dom.window,state={user,read,ready,block,ackFail:false,requests:[],timers:[],notice:structuredClone(notice),now};
+ w.Date.now=()=>Date.parse(state.now);
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.setTimeout=(fn,delay)=>{state.timers.push({fn,delay});return state.timers.length;};w.clearTimeout=()=>{};
  if(stored)for(const [k,v]of Object.entries(stored))w.localStorage.setItem(k,v);
  const client={rpc:async(name,args)=>{state.requests.push({name,args});if(custom)return custom(name,args,state);
- if(name==='get_daily_update_notice')return {data:{server_now:now,viewer:state.user,notice:state.read?null:state.notice}};
+ if(name==='get_daily_update_notice')return {data:{server_now:state.now,viewer:state.user,notice:state.read?null:state.notice}};
  if(state.ackFail)return{error:Error('offline')};state.read=true;return{data:true};}};
  w.eval(source);const api=w.OjjudaDailyUpdates.install({client,getUserId:()=>state.user,isReady:()=>state.ready,canShow:()=>!state.block});
  return {dom,w,state,api,dialog:w.document.querySelector('dialog'),close:()=>dom.window.close()};
@@ -49,7 +49,12 @@ test('stale account response cannot display another account notice',async()=>{
  try{f.state.user='member-b';f.api.sync();await tick();resolve({data:{viewer:'member-a',notice}});await tick();assert.ok(!f.dialog.open);}finally{f.close();}
 });
 test('new next-day notice shows; cross-tab receipt closes it; markup is text only',async()=>{
- const f=setup();try{await tick();await f.api.acknowledge();f.state.read=false;f.state.notice={id:'2026-11-07',date:'2026-11-07',items:['<img src=x onerror=alert(1)>']};await f.api.refresh(true);assert.ok(f.dialog.open);assert.equal(f.dialog.querySelector('img'),null);
+ const f=setup();try{await tick();await f.api.acknowledge();f.state.read=false;f.state.now='2026-11-07T15:00:01Z';f.state.notice={id:'2026-11-07',date:'2026-11-07',available_at:'2026-11-07T15:00:00Z',expires_at:'2026-11-08T15:00:00Z',items:['<img src=x onerror=alert(1)>']};await f.api.refresh(true);assert.ok(f.dialog.open);assert.equal(f.dialog.querySelector('img'),null);
  f.w.localStorage.setItem('ojjuda-daily-update-read:member-a','2026-11-07');f.w.dispatchEvent(new f.w.StorageEvent('storage',{key:'ojjuda-daily-update-read:member-a'}));assert.ok(!f.dialog.open);
  }finally{f.close();}
+});
+
+test('unread popups expire at the next midnight, including deferred/offline notices',async()=>{
+ const f=setup({block:true});try{await tick();assert.ok(!f.dialog.open);f.state.now='2026-11-06T15:00:00Z';f.state.block=false;f.api.sync();await tick();assert.ok(!f.dialog.open,'an expired deferred notice never opens');}finally{f.close();}
+ const open=setup();try{await tick();assert.ok(open.dialog.open);open.state.now='2026-11-06T15:00:00Z';open.api.sync();assert.ok(!open.dialog.open,'open notice closes at expiry without needing the network');}finally{open.close();}
 });
