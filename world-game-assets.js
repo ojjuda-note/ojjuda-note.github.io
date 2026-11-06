@@ -1,12 +1,12 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-daily-menu1';
+ const revision='20261106-festival-3hour1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   byeolcheonji:'1.0.4',
-  festival:'1.4.1',
+  festival:'1.4.2',
   restaurants:'1.9.29',
   recommendations:'1.5.4',
   archery:'3.1.1',
@@ -38,7 +38,7 @@
  const restaurantLocation=['/games/certified-restaurants/vendor/leaflet.css','/games/certified-restaurants/vendor/leaflet.js','/restaurant-location-picker.css?v=20261103-restaurants-auto-address1','/restaurant-location-picker.js?v=20261103-restaurants-auto-address1'];
  const groups={
   byeolcheonji:[],
-  festival:['/world-festival-schedule.css?v=20261106-daily-menu1','/world-festival-schedule.js?v=20261106-daily-menu1'],
+  festival:['/world-festival-schedule.css?v=20261106-daily-menu1','/world-festival-schedule.js?v=20261106-festival-3hour1'],
   restaurants:[...restaurantRatings,...restaurantLocation,'/world-restaurant-guide.css?v=20261104-agit-home1','/world-restaurant-guide.js?v=20261106-daily-menu1','/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261106-arcade-return1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/recommended-restaurants.css?v=20261103-restaurants-map-pick1','/recommended-restaurants.js?v=20261106-arcade-return1'],
   archery:['/world-tour-game.css?v=20261104-game-fullscreen1','/world-archery-game.css?v=20261104-archery-admin-trial1','/world-archery-game.js?v=20261106-archery-distance1'],
