@@ -357,7 +357,7 @@
   }
   function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && window.isSecureContext; }
   function showDeviceHelp() {
-    $('device-help').textContent = needsHomeScreen() ? '아이폰은 Safari → 공유 → 홈 화면에 추가 후, 오쭈다의 테스트 메뉴에서 다시 열어 주세요.'
+    $('device-help').textContent = needsHomeScreen() ? '아이폰은 Safari → 공유 → 홈 화면에 추가 후, 오쭈다의 일상 메뉴에서 다시 열어 주세요.'
       : !pushSupported() ? '휴대폰 알림은 알림을 지원하는 Chrome·Safari 브라우저에서 켤 수 있어요.'
         : '알림을 받을 휴대폰에서 한 번만 켜 주세요. 알림 소리는 휴대폰 설정을 따라요.';
   }

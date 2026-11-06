@@ -50,7 +50,7 @@ f.api.open({owner:'member-a'});const first=f.nodes[0];
 assert.equal(first.open,true);assert.equal(f.document.body.classList.contains('gaming'),true);
 assert.equal(f.focused(),first.homeLink,'the Agit home link receives initial focus');
 assert.match(first.frame.src,/^\/games\/festival-schedule\/index\.html\?v=[^&]+&embedded=1$/,'the page stays on the arcade origin');
-assert.equal(first.attributes['aria-label'],'축제일정 · 테스트');
+assert.equal(first.attributes['aria-label'],'축제일정 · 일상');
 f.api.open({owner:'member-a'});assert.equal(f.nodes.length,1,'duplicate open reuses the active dialog');
 assert.equal(first.homeLink.href,'/world.html','the logo links to Agit home');first.backButton.click();assert.equal(first.isConnected,false);assert.equal(first.open,false);
 assert.equal(first.frame.src,'about:blank','closing unloads the map document');
@@ -115,7 +115,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.4.0');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.4.1');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);

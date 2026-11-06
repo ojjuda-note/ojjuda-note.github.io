@@ -23,8 +23,8 @@
    const previous=document.activeElement,wasGaming=document.body.classList.contains('gaming');
    const dialog=document.createElement('dialog');
    dialog.className='restaurant-guide-dialog';
-   dialog.setAttribute('aria-label','인증맛집 · 테스트');
-   dialog.innerHTML='<header class="restaurant-guide-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>인증맛집 <small>테스트</small></span><button type="button" aria-label="오락실로 돌아가기">← 오락실</button></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation; clipboard-write; web-share"></iframe>';
+   dialog.setAttribute('aria-label','인증맛집 · 일상');
+   dialog.innerHTML='<header class="restaurant-guide-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>인증맛집 <small>일상</small></span><button type="button" aria-label="오락실로 돌아가기">← 오락실</button></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation; clipboard-write; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
    const ratings=recommendations?.ratings;

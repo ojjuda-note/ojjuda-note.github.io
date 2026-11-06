@@ -34,10 +34,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
    assert.equal(w.document.querySelector('[data-v=star]'),null,'the retired reservation helper has no menu entry');
    assert.equal(w.document.querySelector('[data-arcade-games] [data-v=recommendations]'),null,'member recommendations belong inside the certified directory');
    assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'released archery appears exactly once');
-   assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'테스트');
+   assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'일상');
    assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'),null);
    assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=archery]'));
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용','테스트','테스트'],'the vacancy tool is visibly member-only and the other trials retain their badges');
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용','일상','일상'],'the vacancy tool is visibly member-only and the other trials retain their badges');
   };
   assert.equal(active(),'arcade','the initial page opens the arcade');
   for(const selector of ['.bottomnav','.sidenav']){
