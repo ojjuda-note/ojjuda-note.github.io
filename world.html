@@ -2479,7 +2479,6 @@ async function gm(t){
   handleBack:()=>g.tab==="admin"&&adminBack(),
   canLeave:()=>worldParkNotes?.canLeave()!==false,toMain:()=>{if(adminCanLeave())t()},changeTab:tab=>sr.tab({tab}),
   closeOverlay:()=>{
-   if(worldDailyUpdates?.isOpen()){void worldDailyUpdates.acknowledge();return true;}
    if(window.OjjudaPWA?.close())return true;
    if(window.OjjudaRestaurantGuide?.isOpen()){window.OjjudaRestaurantGuide.close();return true;}
    if(worldRecommendedRestaurants?.isOpen()){worldRecommendedRestaurants.close();return true;}
