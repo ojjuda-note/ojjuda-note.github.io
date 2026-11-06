@@ -31,7 +31,7 @@ const rev=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')
 a.ok(/^20261106-restaurants-slot(18|19|20)-/.test(rev));a.ok(app.includes('./official-gangwon-slot18.json?v=20261106-restaurants-slot18-1'));
 a.ok(fs.readFileSync(path.join(dir,'index.html'),'utf8').includes('app.js?v='+rev));
 a.ok(fs.readFileSync(path.join(root,'world.html'),'utf8').includes('world-game-assets.js?v='+rev));
-a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.(?:25|26)'/);
+a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'),/restaurants:'1\.9\.(?:25|26|27)'/);
 a.ok(sources.coverage.uniqueRestaurants>=3153);
 a.ok(sources.coverage.coordinatesAvailable>=1028);
 a.ok(sources.coverage.coordinatesMissing>=2125);
