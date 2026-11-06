@@ -101,9 +101,9 @@ async function fixture(browser, options = {}) {
     }
     if (url.origin !== origin) { network.escaped.push(url.href); return route.abort(); }
     if (options.noMap && url.pathname.endsWith('/vendor/leaflet.js')) return route.fulfill({ contentType: 'application/javascript', body: '' });
-    if (['/official-ulsan-tourism.json', '/official-seoul-blue-ribbon.json', '/official-seoul-visitseoul-northeast.json', '/official-seoul-visitseoul-southwest.json', '/official-seoul-visitseoul-southeast.json', '/official-incheon-itour-slot06.json', '/official-incheon-itour-slot07.json', '/official-gyeonggi-oldshops-slot08.json', '/official-seongnam-hipstores-slot09.json', '/official-goyang-paju-slot10.json', '/official-bucheon-gimpo-slot11.json', '/official-gyeonggi-slot12.json', '/official-gyeonggi-slot13.json', '/official-guri-slot15.json', '/official-gyeonggi-slot17.json', '/official-gangwon-slot18.json', '/official-gangwon-slot19.json', '/official-gangwon-slot20.json'].some(file => url.pathname.endsWith(file))) {
+    if (/\/official-[^/]+\.json$/.test(url.pathname)) {
       // Keep synthetic scenarios scoped to their supplied base catalog.
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: [], enrichments: [] }) });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: [], enrichments: [], guideEnrichments: [] }) });
     }
     if (url.pathname.endsWith('/restaurants.json')) {
       network.data++;
