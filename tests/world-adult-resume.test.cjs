@@ -63,7 +63,7 @@ async function until(test, message, timeout = 2600) {
     const assertTestGamesLast = host => {
       const testMenu = host.querySelector('[data-arcade-games=test]');
       assert.ok(testMenu, 'test features remain available');
-      assert.equal(host.querySelector('[data-arcade-test-heading] h2').textContent, '테스트');
+      assert.equal(host.querySelector('[data-arcade-test-heading] h2').textContent, '일상');
       assert.equal(host.querySelectorAll('[data-arcade-games=solo] [data-v=archery]').length, 1, 'released archery belongs to solo play');
       assert.equal(testMenu.querySelector('[data-v=archery]'), null, 'released archery no longer appears in tests');
       assert.equal(host.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'), null);
@@ -73,14 +73,14 @@ async function until(test, message, timeout = 2600) {
     };
     const noAdultMenu = (host = panel) => {
       assert.equal(host.querySelector('[data-arcade-adult]'), null, 'access loss removes the complete adult section');
-      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이', '테스트'], 'no orphan adult heading remains');
+      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이', '일상'], 'no orphan adult heading remains');
       assert.deepEqual([...host.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'test']);
       assert.equal([...host.querySelectorAll('.gbtn')].filter(button => adultIds.includes(buttonId(button))).length, 0, 'restricted games are absent from every category');
       assertTestGamesLast(host);
     };
     const completeAdultMenu = () => {
       assert.equal(panel.querySelectorAll('[data-arcade-adult]').length, 1);
-      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이', '테스트']);
+      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이', '일상']);
       assert.deepEqual([...panel.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'adult', 'test'], 'restored adult games stay between multiplayer and test games');
       assertTestGamesLast(panel);
       const section = adultSection();
