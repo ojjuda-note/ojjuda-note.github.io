@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 17,
-    "scheduledAt": "2026-11-06T11:00:00+09:00",
+    "slot": 18,
+    "scheduledAt": "2026-11-06T12:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled slot 11:00 KST; resumed at 11:30 KST"
+    "source": "2026-11-06 12:00 KST scheduled; started 12:04 KST"
   },
   "entries": [
     {
@@ -4856,6 +4856,180 @@
       "nextRegions": [
         "강원특별자치도 춘천시",
         "강원특별자치도 원주시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 18,
+      "scheduledAtKST": "2026-11-06T12:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_8_official_gangwon_tourism_listings_and_5_verified_coordinates",
+      "assignedRegions": [
+        "강원특별자치도 춘천시",
+        "강원특별자치도 원주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "강원특별자치도 춘천시",
+          "baseListedCount": 2,
+          "scope": "기존 2곳과 시 공식 관광 상세 4곳·지도 링크 확인. 기존 블루리본 본점 1곳 위치 보강",
+          "new": 4,
+          "updated": 1,
+          "coordinatesAdded": 5,
+          "unknownLocations": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "강원특별자치도 원주시",
+          "baseListedCount": 0,
+          "scope": "원주시 공식 관광 음식점 상세 4곳 식당명·주소 부분 대조. 정확한 지도 좌표 검증 미완료",
+          "new": 4,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "unknownLocations": 4,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "춘천시 춘천여행ON 식당별 공식 소개 및 지도 좌표 5건",
+        "원주시 원주관광 공식 음식점 수록 4건",
+        "기존 인증맛집/보충파일 동일 업소 중복·좌표 검토"
+      ],
+      "additions": 8,
+      "modifications": 1,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 5,
+      "locationHidden": 0,
+      "locationPending": 4,
+      "locationPendingScope": "원주시 신규 4곳의 식당명·지점·현주소와 일치하는 좌표 검증은 미완료. 임의 위치 없음.",
+      "addedRestaurantIds": [
+        "local-gangwon-slot18-chuncheon-silbi-makguksu",
+        "local-gangwon-slot18-chuncheon-yupori-makguksu",
+        "local-gangwon-slot18-chuncheon-gamja-island-bon",
+        "local-gangwon-slot18-chuncheon-myeongga-makguksu",
+        "local-gangwon-slot18-wonju-yejin-mandu",
+        "local-gangwon-slot18-wonju-namgyeong-musil",
+        "local-gangwon-slot18-wonju-deokcheon-makguksu",
+        "local-gangwon-slot18-wonju-mihyang"
+      ],
+      "updatedRestaurantIds": [
+        "blue-regional-tongnamujip-dakgalbi-chuncheon"
+      ],
+      "evidenceUrls": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=102",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=325",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=47",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
+        "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-gangwon-slot18-wonju-yejin-mandu",
+          "name": "예진네 김치만두",
+          "address": "강원특별자치도 원주시 중앙시장길 31-3",
+          "region": "강원특별자치도 원주시",
+          "aliases": [
+            "강원특별자치도 원주시",
+            "강원도 원주시",
+            "강원 원주"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y"
+          ],
+          "result": "원주시 관광자료에 업소·주소 수록은 확인, 지점별 공식 좌표는 미확인",
+          "unconfirmedReason": "상호·현 주소에 정확히 대응하는 지도/공공 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 18,
+          "action": "좌표 null 유지. 다음 순환 우선 재확인. 폐업·비노출 처리 금지"
+        },
+        {
+          "id": "local-gangwon-slot18-wonju-namgyeong-musil",
+          "name": "남경막국수 무실점",
+          "address": "강원특별자치도 원주시 봉바위길 17-1",
+          "region": "강원특별자치도 원주시",
+          "aliases": [
+            "강원특별자치도 원주시",
+            "강원도 원주시",
+            "강원 원주"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y"
+          ],
+          "result": "원주시 관광자료에 업소·주소 수록은 확인, 지점별 공식 좌표는 미확인",
+          "unconfirmedReason": "상호·현 주소에 정확히 대응하는 지도/공공 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 18,
+          "action": "좌표 null 유지. 다음 순환 우선 재확인. 폐업·비노출 처리 금지"
+        },
+        {
+          "id": "local-gangwon-slot18-wonju-deokcheon-makguksu",
+          "name": "덕천막국수",
+          "address": "강원특별자치도 원주시 만대공원길 48-12 1층",
+          "region": "강원특별자치도 원주시",
+          "aliases": [
+            "강원특별자치도 원주시",
+            "강원도 원주시",
+            "강원 원주"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y"
+          ],
+          "result": "원주시 관광자료에 업소·주소 수록은 확인, 지점별 공식 좌표는 미확인",
+          "unconfirmedReason": "상호·현 주소에 정확히 대응하는 지도/공공 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 18,
+          "action": "좌표 null 유지. 다음 순환 우선 재확인. 폐업·비노출 처리 금지"
+        },
+        {
+          "id": "local-gangwon-slot18-wonju-mihyang",
+          "name": "미향",
+          "address": "강원특별자치도 원주시 장미공원길 16 2층",
+          "region": "강원특별자치도 원주시",
+          "aliases": [
+            "강원특별자치도 원주시",
+            "강원도 원주시",
+            "강원 원주"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y"
+          ],
+          "result": "원주시 관광자료에 업소·주소 수록은 확인, 지점별 공식 좌표는 미확인",
+          "unconfirmedReason": "상호·현 주소에 정확히 대응하는 지도/공공 좌표 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 18,
+          "action": "좌표 null 유지. 다음 순환 우선 재확인. 폐업·비노출 처리 금지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "원주시 신규 4곳 실제 영업 및 위경도",
+          "reason": "원주 관광포털 수록 사실만 검증. 현 영업·위경도 독립 검증 미완료",
+          "action": "다음 18회차에 지도/업소 공지와 대조"
+        },
+        {
+          "topic": "최신 가이드 판본 및 블루리본 전체 모집단",
+          "reason": "이 회차에서 두 도시의 공식 개별 전체 명단 전수 대조 불가",
+          "action": "공식 자료 접근 가능한 범위에서 다음 회차 재검증; 등급을 추정하지 않음"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성 및 16회차 의정부·양주·동두천·포천 운영 기록은 이전 main에 없어 미확인 상태로 이월 보존",
+        "원주 4곳 위치 검증 다음 순환 18회차로 이월",
+        "두 도시의 모든 식당을 전수 점검한 것이 아님"
+      ],
+      "nextSlot": 19,
+      "nextRegions": [
+        "강원특별자치도 강릉시",
+        "강원특별자치도 동해시"
       ],
       "notExhaustive": true
     }
