@@ -8,7 +8,7 @@
   group:'1.1.1',
   byeolcheonji:'1.0.5',
   festival:'1.4.3',
-  restaurants:'1.9.33',
+  restaurants:'1.9.34',
   recommendations:'1.5.5',
   archery:'3.1.2',
   roulette:'1.8.4',

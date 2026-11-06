@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 26,
-    "scheduledAt": "2026-11-06T20:00:00+09:00",
+    "slot": 27,
+    "scheduledAt": "2026-11-06T21:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled 20:00 Asia/Seoul"
+    "source": "scheduled 21:00 Asia/Seoul"
   },
   "entries": [
     {
@@ -6419,6 +6419,274 @@
         "충청남도 당진시",
         "충청남도 서산시",
         "충청남도 보령시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 27,
+      "scheduledAtKST": "2026-11-06T21:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_eight_verified_tourism_listings",
+      "assignedRegions": [
+        "충청남도 당진시",
+        "충청남도 서산시",
+        "충청남도 보령시"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청남도 당진시",
+          "baseListedCount": 0,
+          "previousLocationMissing": 0,
+          "scope": "충남관광 공식 업소 상세에서 상호·현 주소·일부 메뉴 확인. 기등록 충남 원본과 기존 보충 파일의 중복 확인. 지역 전체 식당·영업 상태 전수 점검은 미완료.",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 서산시",
+          "baseListedCount": 0,
+          "previousLocationMissing": 0,
+          "scope": "충남관광 공식 업소 상세에서 상호·현 주소·일부 메뉴 확인. 기등록 충남 원본과 기존 보충 파일의 중복 확인. 지역 전체 식당·영업 상태 전수 점검은 미완료.",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 보령시",
+          "baseListedCount": 0,
+          "previousLocationMissing": 0,
+          "scope": "충남관광 공식 업소 상세에서 상호·현 주소·일부 메뉴 확인. 기등록 충남 원본과 기존 보충 파일의 중복 확인. 지역 전체 식당·영업 상태 전수 점검은 미완료.",
+          "new": 2,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "충청남도 공식 충남관광 음식점 상세 8곳의 상호·주소·메뉴 및 페이지 공개 상태 확인",
+        "기본 충남 46곳 및 25·26회차 보충 10곳과 상호 중복 확인",
+        "블루리본 공식 전체 지도 안내와 비교: 지역 전체 명단 추출 불가로 정규 리본 선정 신규 인정하지 않음"
+      ],
+      "additions": 8,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 8,
+      "locationPendingScope": "당진·서산·보령 기존 0곳이며 이번에 새로 수록한 8곳의 정확한 좌표 추가 검증 필요. 세 시 전수 조사 완료 아님.",
+      "addedRestaurantIds": [
+        "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+        "local-chungnam-slot27-dangjin-daedeulbo",
+        "local-chungnam-slot27-dangjin-cafe-raw",
+        "local-chungnam-slot27-seosan-jingukjip",
+        "local-chungnam-slot27-seosan-anheung-ilpum",
+        "local-chungnam-slot27-seosan-gabo",
+        "local-chungnam-slot27-boryeong-daechon-islands",
+        "local-chungnam-slot27-boryeong-paldo-gangsan"
+      ],
+      "evidenceUrls": [
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+          "name": "삼형제감자탕",
+          "address": "충청남도 당진시 송악읍 신흥동길 83",
+          "region": "충청남도 당진시",
+          "aliases": [
+            "충청남도 당진시",
+            "충남 당진시",
+            "삼형제감자탕"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-dangjin-daedeulbo",
+          "name": "대들보",
+          "address": "충청남도 당진시 미락2안길 25",
+          "region": "충청남도 당진시",
+          "aliases": [
+            "충청남도 당진시",
+            "충남 당진시",
+            "대들보"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-dangjin-cafe-raw",
+          "name": "카페로우",
+          "address": "충청남도 당진시 남부로 453-32",
+          "region": "충청남도 당진시",
+          "aliases": [
+            "충청남도 당진시",
+            "충남 당진시",
+            "카페로우"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-seosan-jingukjip",
+          "name": "진국집",
+          "address": "충청남도 서산시 관아문길 19-10 (읍내동)",
+          "region": "충청남도 서산시",
+          "aliases": [
+            "충청남도 서산시",
+            "충남 서산시",
+            "진국집"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-seosan-anheung-ilpum",
+          "name": "안흥일품꽃게장",
+          "address": "충청남도 서산시 양열로 212",
+          "region": "충청남도 서산시",
+          "aliases": [
+            "충청남도 서산시",
+            "충남 서산시",
+            "안흥일품꽃게장"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-seosan-gabo",
+          "name": "가보",
+          "address": "충청남도 서산시 호수공원9로 47, 1층",
+          "region": "충청남도 서산시",
+          "aliases": [
+            "충청남도 서산시",
+            "충남 서산시",
+            "가보"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-boryeong-daechon-islands",
+          "name": "대천 섬과섬사이조개구이",
+          "address": "충청남도 보령시 해수욕장10길 24",
+          "region": "충청남도 보령시",
+          "aliases": [
+            "충청남도 보령시",
+            "충남 보령시",
+            "대천 섬과섬사이조개구이"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        },
+        {
+          "id": "local-chungnam-slot27-boryeong-paldo-gangsan",
+          "name": "팔도강산",
+          "address": "충청남도 보령시 대해로 893",
+          "region": "충청남도 보령시",
+          "aliases": [
+            "충청남도 보령시",
+            "충남 보령시",
+            "팔도강산"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
+          ],
+          "result": "공식 관광자료에서 상호와 주소 확인. 개별 업소 지도좌표는 검증되지 않음.",
+          "unconfirmedReason": "상호·지점·현주소와 일치하는 공개 위경도 원문 근거 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 27,
+          "action": "현 ID·수록 이력 보존하고 lat/lng null 유지, 다음 해당 회차 우선 재확인"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "신규 8곳 정확 좌표",
+          "reason": "관광 페이지에는 이름과 주소가 있지만 상호·지점·주소에 일치하는 개별 공개 지도 좌표 미확인",
+          "action": "2순환 27회차에 공개 지도/관광기관 위경도 재조사. 추정 좌표 금지"
+        },
+        {
+          "topic": "현재 영업/별도 인증 이력",
+          "reason": "충남관광 소개 수록이 실시간 영업이나 미쉐린·블루리본 정규 등급을 뜻하지 않음",
+          "action": "공식 업소·행정·공개 지도 자료 별도 검증"
+        },
+        {
+          "topic": "보령 김가네사골수제비 상호 이형",
+          "reason": "충남관광 11번과 201번에서 같은 소재지에 상호가 서로 다르게 표기",
+          "action": "이번 미등록. 상호 변경 확인 후 병합/등록 판정"
+        }
+      ],
+      "carryOver": [
+        "14·16·24회차 누락/미실시 여부와 기존 미해결 자료는 삭제 없이 다음 순환으로 이월",
+        "당진·서산·보령 정규 블루리본 명단·폐휴업·이전 전수확인은 미완료"
+      ],
+      "nextSlot": 28,
+      "nextRegions": [
+        "전남광주통합특별시 동구",
+        "전남광주통합특별시 서구",
+        "전남광주통합특별시 남구",
+        "전남광주통합특별시 북구",
+        "전남광주통합특별시 광산구"
       ],
       "notExhaustive": true
     }
