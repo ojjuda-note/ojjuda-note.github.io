@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3229,
+    "uniqueRestaurants": 3239,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2498,
+      "local-guide": 2508,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2197,
+    "coordinatesMissing": 2207,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1527,11 +1527,11 @@
       "전남": 183,
       "세종": 100,
       "대전": 110,
-      "경북": 153,
+      "경북": 163,
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1910,
+      "한식": 1920,
       "중식": 133,
       "일식": 133,
       "기타": 581,
@@ -12193,51 +12193,116 @@
         "기존 포항 3곳·경주 4곳 및 신규 8곳 좌표 미확인: 15곳 재확인 후보. 외부 위치 근거 없는 좌표 미추정.",
         "리본 수/가이드 선정 연도/현 영업 상태 검증하지 않았으며 회원 추천은 변경하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-07-gyeongbuk-slot37-ten-official-tourism-listings",
+      "checkedAt": "2026-11-07",
+      "previousCoverage": {
+        "uniqueRestaurants": 3229,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2498,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2197,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 153,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1910,
+          "중식": 133,
+          "일식": 133,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 233
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3239,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2508,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2207,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 163,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1920,
+          "중식": 133,
+          "일식": 133,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 233
+        }
+      },
+      "newRestaurantCount": 10,
+      "newRestaurantIds": [
+        "local-andong-slot37-iljik",
+        "local-andong-slot37-kkachigumeong",
+        "local-andong-slot37-50year-jesabab",
+        "local-andong-slot37-yemijeong",
+        "local-andong-slot37-hwaryeon",
+        "local-andong-slot37-nongga-tteul",
+        "local-andong-slot37-memilkkot",
+        "local-andong-slot37-jebiwon",
+        "local-mungyeong-slot37-myeongseong",
+        "local-mungyeong-slot37-donghwawon"
+      ],
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "notes": [
+        "안동관광 공식 대표 먹거리 식당 8곳, 한국관광공사 대한민국 구석구석 문경 음식점 2곳의 상호·주소 교차확인.",
+        "영주시 기존 등록 식당 40곳 전수 주소·좌표 비교는 미실시, 공식 관광 식당 두 곳의 기존 수록 정보 대조.",
+        "안동·문경의 기존 8곳과 신규 10곳 위치 좌표 미확인: 18곳 후속 재조사. 추정 좌표 및 운영 상태 변경 없음.",
+        "KTO 상세 페이지의 도로명 주소는 2026년 관광정보 재게시 공개 근거를 교차 대조한 사항이며 KTO 본문 직접 확인과 구별."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gyeongbuk-slot36-eight-official-tourism-listings",
+    "id": "2026-11-07-gyeongbuk-slot37-ten-official-tourism-listings",
     "checkedAt": "2026-11-07",
     "previousCoverage": {
-      "uniqueRestaurants": 3221,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2490,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2189,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1904,
-        "중식": 133,
-        "일식": 132,
-        "기타": 581,
-        "양식": 210,
-        "분식": 28,
-        "디저트": 233
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3229,
       "providerCounts": {
         "michelin": 237,
@@ -12276,24 +12341,66 @@
         "디저트": 233
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3239,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2508,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2207,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 163,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1920,
+        "중식": 133,
+        "일식": 133,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 233
+      }
+    },
+    "newRestaurantCount": 10,
     "newRestaurantIds": [
-      "local-pohang-slot36-ugong-sushi-namgu",
-      "local-pohang-slot36-marado-hoesikdang",
-      "local-pohang-slot36-gwasuwon-saenggogi",
-      "local-pohang-slot36-jangnyong-jangeo",
-      "local-gyeongju-slot36-sambu-sikdang",
-      "local-gyeongju-slot36-gohyang-milmyeon",
-      "local-gyeongju-slot36-hwangnam-kalguksu",
-      "local-gyeongju-slot36-seasoning"
+      "local-andong-slot37-iljik",
+      "local-andong-slot37-kkachigumeong",
+      "local-andong-slot37-50year-jesabab",
+      "local-andong-slot37-yemijeong",
+      "local-andong-slot37-hwaryeon",
+      "local-andong-slot37-nongga-tteul",
+      "local-andong-slot37-memilkkot",
+      "local-andong-slot37-jebiwon",
+      "local-mungyeong-slot37-myeongseong",
+      "local-mungyeong-slot37-donghwawon"
     ],
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "notes": [
-      "포항시 공식 관광 음식점 4곳과 경주시 공식 관광 음식점 4곳의 상호·주소 수록 확인.",
-      "기존 포항 3곳·경주 4곳 및 신규 8곳 좌표 미확인: 15곳 재확인 후보. 외부 위치 근거 없는 좌표 미추정.",
-      "리본 수/가이드 선정 연도/현 영업 상태 검증하지 않았으며 회원 추천은 변경하지 않음."
+      "안동관광 공식 대표 먹거리 식당 8곳, 한국관광공사 대한민국 구석구석 문경 음식점 2곳의 상호·주소 교차확인.",
+      "영주시 기존 등록 식당 40곳 전수 주소·좌표 비교는 미실시, 공식 관광 식당 두 곳의 기존 수록 정보 대조.",
+      "안동·문경의 기존 8곳과 신규 10곳 위치 좌표 미확인: 18곳 후속 재조사. 추정 좌표 및 운영 상태 변경 없음.",
+      "KTO 상세 페이지의 도로명 주소는 2026년 관광정보 재게시 공개 근거를 교차 대조한 사항이며 KTO 본문 직접 확인과 구별."
     ]
   },
   "latestMapCoverageAudit": {
@@ -13269,6 +13376,33 @@
       "currentOperatingStatusConfirmed": 0,
       "completeReview": false,
       "notes": "공식 관광 음식점 목록에 수록된 사실과 주소만 확인. 공식 가이드 신규 선정·정규 리본 수·현재 영업 확인과 구별."
+    },
+    "municipalTourism20261107GyeongbukSlot37": {
+      "checkedAt": "2026-11-07",
+      "sourceFile": "official-gyeongbuk-slot37.json",
+      "publishers": [
+        "안동관광(안동시 관광 안내)",
+        "한국관광공사 대한민국 구석구석"
+      ],
+      "officialListUrls": [
+        "https://www.tourandong.com/public/sub3/sub1.cshtml",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053"
+      ],
+      "addedCount": 10,
+      "regionCounts": {
+        "경상북도 안동시": 8,
+        "경상북도 영주시": 0,
+        "경상북도 문경시": 2
+      },
+      "coordinateVerified": 0,
+      "coordinatePendingNew": 10,
+      "baseExistingWithoutCoordinates": 8,
+      "sourceType": "official_tourism_restaurant_listing",
+      "yearOfSelection": null,
+      "currentOperatingStatusConfirmed": 0,
+      "completeReview": false,
+      "notes": "지역 공식 관광 안내 수록 사실이며 정규 미쉐린·블루리본 등급 또는 현재 영업 증거가 아님. 문경 주소는 2026 관광 API 공개 재게시와 교차 대조."
     }
   },
   "mapCoverageAuditHistory": [
