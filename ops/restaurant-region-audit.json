@@ -3947,7 +3947,7 @@
       "slot": 15,
       "scheduledAtKST": "2026-11-06T09:00:00+09:00",
       "checkedAtKST": "2026-11-06",
-      "status": "partial_review_with_10_historical_2023_guri_selections",
+      "status": "partial_review_with_2023_2025_guri_designations_and_2026_awards",
       "assignedRegions": [
         "경기도 남양주시",
         "경기도 구리시",
@@ -3966,10 +3966,10 @@
         {
           "region": "경기도 구리시",
           "baseListedCount": 0,
-          "scope": "2023 구리시 지정 10곳 중 앞서 등록한 5곳에 더해, 구리시 2025 지정현황 4곳·2023 경연 수상업소 1곳으로 주소 교차 확인해 5곳 추가. 2026 영업·위경도 미확인.",
-          "new": 10,
+          "scope": "2023 구리시 지정 10곳 중 앞서 등록한 5곳에 더해, 구리시 2025 지정현황 4곳·2023 경연 수상업소 1곳으로 주소 교차 확인해 5곳 추가. 2026 영업·위경도 미확인. 2026년 제11회 경연 수상 식당 4곳의 상호·주소를 구리시청 공식 2026-10-28 수정 현황에서 추가 대조.",
+          "new": 14,
           "updated": 0,
-          "unknownLocations": 10,
+          "unknownLocations": 14,
           "notExhaustive": true
         },
         {
@@ -3989,15 +3989,16 @@
         "하남시 경기으뜸맛집 공식 목록",
         "기존 등록 남양주·하남 식당",
         "구리시청 2025년 와구리맛집 지정업소 공식 명단과 주소",
-        "구리시청 2023년 음식경연대회 최우수상 수상업소 소재지"
+        "구리시청 2023년 음식경연대회 최우수상 수상업소 소재지",
+        "구리시청 2026년 제11회 구리 맛자랑 경연대회 대상·최우수상·우수상 공식 현황(페이지 최종 수정일 2026-10-28)"
       ],
-      "additions": 10,
+      "additions": 14,
       "modifications": 0,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 19,
-      "locationPendingScope": "남양주 기존5·하남 기존4·구리 신규10; 2026년 영업·공개 위경도 교차 검증 미완료",
+      "locationPending": 23,
+      "locationPendingScope": "남양주 기존5·하남 기존4·구리 신규14; 확정 좌표 및 2026 현재 영업 개별 검증 미완료",
       "addedRestaurantIds": [
         "local-guri-slot15-nature",
         "local-guri-slot15-obaek",
@@ -4008,7 +4009,11 @@
         "local-guri-slot15-wonang",
         "local-guri-slot15-gohyang",
         "local-guri-slot15-okhwa",
-        "local-guri-slot15-chinatown"
+        "local-guri-slot15-chinatown",
+        "local-guri-slot15-award26-yangchon",
+        "local-guri-slot15-award26-chuan",
+        "local-guri-slot15-award26-seoulmaeuntang",
+        "local-guri-slot15-award26-sodamchon"
       ],
       "updatedRestaurantIds": [],
       "evidenceUrls": [
@@ -4232,6 +4237,82 @@
           "recheckCycle": 2,
           "recheckSlot": 15,
           "action": "근거 있는 위경도 추가 확인, 미확인만으로 삭제·폐업 단정 금지"
+        },
+        {
+          "id": "local-guri-slot15-award26-yangchon",
+          "name": "양촌리 돌판구이",
+          "address": "경기도 구리시 경춘로244번길 12",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기도 구리시",
+            "구리시 양촌리 돌판구이"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "result": "구리시 공식 2026년 경연대회 대상 및 지점 도로명주소 확인. 업소 현 영업·정확한 좌표 미확인.",
+          "reason": "상호·주소에 일치하는 공개 위경도 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "다음 해당 지역 회차에서 실좌표와 영업상태 재확인, 좌표 추측·폐업처리 금지"
+        },
+        {
+          "id": "local-guri-slot15-award26-chuan",
+          "name": "촨촨촨",
+          "address": "경기도 구리시 검배로72번길 11-21",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기도 구리시",
+            "구리시 촨촨촨"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "result": "구리시 공식 2026년 경연대회 최우수상 및 지점 도로명주소 확인. 업소 현 영업·정확한 좌표 미확인.",
+          "reason": "상호·주소에 일치하는 공개 위경도 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "다음 해당 지역 회차에서 실좌표와 영업상태 재확인, 좌표 추측·폐업처리 금지"
+        },
+        {
+          "id": "local-guri-slot15-award26-seoulmaeuntang",
+          "name": "서울매운탕",
+          "address": "경기도 구리시 이문안로113번길 6",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기도 구리시",
+            "구리시 서울매운탕"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "result": "구리시 공식 2026년 경연대회 우수상 및 지점 도로명주소 확인. 업소 현 영업·정확한 좌표 미확인.",
+          "reason": "상호·주소에 일치하는 공개 위경도 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "다음 해당 지역 회차에서 실좌표와 영업상태 재확인, 좌표 추측·폐업처리 금지"
+        },
+        {
+          "id": "local-guri-slot15-award26-sodamchon",
+          "name": "소담촌 구리수택점",
+          "address": "경기도 구리시 이문안로 147",
+          "region": "경기도 구리시",
+          "aliases": [
+            "경기도 구리시",
+            "구리시 소담촌 구리수택점"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "result": "구리시 공식 2026년 경연대회 우수상 및 지점 도로명주소 확인. 업소 현 영업·정확한 좌표 미확인.",
+          "reason": "상호·주소에 일치하는 공개 위경도 근거 부족",
+          "recheckCycle": 2,
+          "recheckSlot": 15,
+          "action": "다음 해당 지역 회차에서 실좌표와 영업상태 재확인, 좌표 추측·폐업처리 금지"
         }
       ],
       "unresolved": [
@@ -4242,12 +4323,17 @@
         {
           "topic": "구리 2023 공식 지정 10곳",
           "reason": "모두 주소 근거 확인, 2026년 현재 영업·정확한 위경도 10곳 미확인; 2025 지정 이력 4곳과 현재 영업 여부 혼동 금지"
+        },
+        {
+          "topic": "2026 구리 맛자랑 수상 4곳",
+          "reason": "수상 기록·주소 확인, 2026 현재 영업 여부와 개별 지도 위경도 확인 필요"
         }
       ],
       "carryOver": [
         "14회차(2026-11-06 08:00, 평택·오산·안성)는 main 감사 기록이 없어 수행 확인 불가. 15회차에서 완료 처리하지 않음.",
         "남양주 기존5·하남 기존4·구리 신규5 좌표 및 영업 재확인",
-        "구리 2023 공식 지정 10곳 정확한 현재 지도 좌표·2026 영업상태 재점검"
+        "구리 2023 공식 지정 10곳 정확한 현재 지도 좌표·2026 영업상태 재점검",
+        "2026 수상 4곳의 영업·상호/지점 정확 좌표를 지역 재순환에서 우선 확인"
       ],
       "nextSlot": 16,
       "nextRegions": [
@@ -4278,6 +4364,25 @@
             "https://www.guri.go.kr/www/contents.do?key=6537"
           ],
           "notes": "동일 1순환 15회차 이어하기(중복 회차 신설 없음)."
+        },
+        {
+          "checkedAtKST": "2026-11-06",
+          "type": "same_slot_continuation",
+          "regions": [
+            "경기도 남양주시",
+            "경기도 구리시",
+            "경기도 하남시"
+          ],
+          "scope": "구리시청 2026 제11회 맛자랑 경연대회 수상업소 현황(최종수정 2026-10-28)의 상호·주소·수상 등급 확인. 타 시 좌표/영업 재점검은 이월, 전수조사 아님.",
+          "added": 4,
+          "modified": 0,
+          "locationCoordinatesAdded": 0,
+          "locationHidden": 0,
+          "locationPending": 23,
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6537"
+          ],
+          "notes": "15회차에 이어서 확인한 2026년 수상 이력만 추가, 새로운 회차 생성 없음."
         }
       ]
     }

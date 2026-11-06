@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3134,
+    "uniqueRestaurants": 3138,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2403,
+      "local-guide": 2407,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2111,
+    "coordinatesMissing": 2115,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 371,
+      "경기": 375,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,8 +1531,8 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1839,
-      "중식": 129,
+      "한식": 1842,
+      "중식": 130,
       "일식": 131,
       "기타": 575,
       "양식": 208,
@@ -11464,16 +11464,15 @@
     },
     "municipalSelection20261106GuriSlot15": {
       "checkedAt": "2026-11-06",
-      "sourceName": "구리시청 2023 지정 발표 · 2025 지정현황 · 2023 음식경연대회",
+      "sourceName": "구리시청 2023 지정 발표 · 2025 지정현황 · 2023 음식경연대회 · 2026 구리 음식경연대회",
       "sourcePublicationDate": "2023-10-26",
       "officialSourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
       "regions": [
         "구리시"
       ],
-      "recordCount": 10,
+      "recordCount": 14,
       "provider": "local-guide",
       "guideStatus": "historical_designation",
-      "selectionYear": 2023,
       "operatingStatusEstablished": false,
       "coordinateVerifiedCount": 0,
       "sourceFile": "games/certified-restaurants/official-guri-slot15.json",
@@ -11487,7 +11486,17 @@
         "https://www.guri.go.kr/www/contents.do?key=6537"
       ],
       "notExhaustive": true,
-      "followUp": "2026년 현재 영업과 정확한 지점 위경도는 별도로 확인. 이번 5곳은 근사 좌표를 넣지 않음."
+      "followUp": "2023·2025 지정과 2026 경연대회 수상 이력을 구분. 현재 영업 및 정확한 지점 위경도는 검증되지 않았으며 임의 좌표 없음.",
+      "selectionYears": [
+        2023,
+        2025,
+        2026
+      ],
+      "additionalOfficialSourceUrls": [
+        "https://www.guri.go.kr/www/contents.do?key=6537"
+      ],
+      "additionalOfficialSourceUpdatedAt": "2026-10-28",
+      "notes": "2023년 지정 발표의 공표일(2023-10-26), 2025년 지정 명단, 2026년 경연대회 수상 기록(공식 페이지 최종수정 2026-10-28)과 이번 확인일(2026-11-06)은 서로 다른 값."
     }
   },
   "mapCoverageAuditHistory": [
