@@ -4,6 +4,10 @@
   const COPY = Object.freeze({ group_invite: '그룹 초대가 도착했어요.', daily_update: '오쭈다에 변경된 내용이 있어요.', broadcast_update: '오쭈다에 새 소식이 있어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
+  const updateLines = (kind, summary) => (kind === 'daily_update' ? summary.split(' · ') : summary
+    .replace(/\s+(?=새 게임:)/g, '\n')
+    .replace(/([!?])\s+(?=\S)/g, '$1\n')
+    .replace(/\.\s+(?=[^\d\s])/g, '.\n').split('\n')).filter(Boolean);
   let instance;
 
   function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
@@ -111,6 +115,13 @@
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
         : ['daily_update','broadcast_update'].includes(item.kind) && typeof item.summary === 'string' && item.summary.length <= 200
           ? item.summary : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
+      if (['daily_update','broadcast_update'].includes(item.kind) && typeof item.summary === 'string' && item.summary.length <= 200) {
+        text.replaceChildren();
+        updateLines(item.kind, item.summary).forEach((line, index) => {
+          if (index) text.append(el('br'));
+          text.append(document.createTextNode(line));
+        });
+      }
       const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
