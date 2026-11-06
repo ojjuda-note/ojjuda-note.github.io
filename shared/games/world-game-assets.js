@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261106-source-folders2';
+ const revision='20261106-source-folders3';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -31,7 +31,7 @@
   janggi:'1.4.4',
   chess:'1.4.4',
   billiards:'1.4.4',
-  matgo:'1.4.5'
+  matgo:'1.4.6'
  });
  const controls=['/shared/games/game-controls.css?v=20261106-source-folders1','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261106-source-folders1';

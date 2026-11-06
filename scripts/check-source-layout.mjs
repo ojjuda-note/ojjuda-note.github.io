@@ -26,7 +26,11 @@ for(const file of files){
  if(!/\.(?:js|mjs|css|html)$/.test(file)||/^(?:tests|ops|scripts|supabase|vendor)\//.test(file)||file.includes('/vendor/')||!fs.existsSync(path.join(root,file)))continue;
  const text=fs.readFileSync(path.join(root,file),'utf8');
  if(file.endsWith('.html'))for(const m of text.matchAll(/(?:src|href)\s*=\s*['"]([^'"\n]+)['"]/g))check(file,m[1],true);
- for(const m of text.matchAll(/(?:\bfrom\s+|\bimport\s*\(\s*|\bnew Worker\s*\(\s*)['"]([^'"\n]+)['"]/g))if(m[1].startsWith('/')||m[1].startsWith('.'))check(file,m[1],true);
+ for(const m of text.matchAll(/(?:\bfrom\s+|\bimport\s*\(\s*|\bimport\s+|\bnew Worker\s*\(\s*)['"]([^'"\n]+)['"]/g))if(m[1].startsWith('/')||m[1].startsWith('.'))check(file,m[1],true);
+ for(const m of text.matchAll(/new URL\(\s*`([^`$]+)\$\{[^`]*`\s*,\s*import\.meta\.url\s*\)/g)){
+  const target=m[1].startsWith('/')?m[1].slice(1):path.posix.normalize(path.posix.join(path.posix.dirname(file),m[1]));
+  checked++;if(![...files].some(name=>name.startsWith(target)))errors.push(`${file}: missing template asset prefix ${m[1]} -> ${target}`);
+ }
  for(const m of text.matchAll(/['"](\/(?!\/)[^'"\s]+\.(?:js|mjs|css|html|json)(?:\?[^'"\s]*)?)['"]/g)){if(/\.(?:endsWith|startsWith)\(\s*$/.test(text.slice(Math.max(0,m.index-30),m.index)))continue;check(file,m[1],false);}
 }
 const unique=[...new Set(errors)];

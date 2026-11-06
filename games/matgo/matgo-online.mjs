@@ -1,13 +1,13 @@
-import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261106-source-folders1';
-import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261106-source-folders1';
-import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261106-source-folders1';
-import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261106-source-folders1';
-import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261106-source-folders1';
-import {openMatgoSolo} from './matgo-start.mjs?v=20261106-source-folders1';
-import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261106-source-folders1';
-import {createOnlineSound} from './matgo-online-sound.mjs?v=20261106-source-folders1';
-import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261106-source-folders1';
-import {createVentControls} from './matgo-deck-tools.mjs?v=20261106-source-folders1';
+import {shuffledFloorSlots,floorStackIds} from './matgo-table-flip.mjs?v=20261106-source-folders3';
+import {CARDS,isPi,piVal,score} from './matgo-engine.mjs?v=20261106-source-folders3';
+import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from './matgo-view.mjs?v=20261106-source-folders3';
+import {cardSVG as baseCardSVG,backSVG} from './matgo-art.mjs?v=20261106-source-folders3';
+import {createWallet,invokeMatgo} from './matgo-wallet.mjs?v=20261106-source-folders3';
+import {openMatgoSolo} from './matgo-start.mjs?v=20261106-source-folders3';
+import {createOnlineMotion} from './matgo-online-motion.mjs?v=20261106-source-folders3';
+import {createOnlineSound} from './matgo-online-sound.mjs?v=20261106-source-folders3';
+import {cpuPortraitHTML} from './matgo-opponent.mjs?v=20261106-source-folders3';
+import {createVentControls} from './matgo-deck-tools.mjs?v=20261106-source-folders3';
 const cardSVG=c=>baseCardSVG(c).replace('<svg',`<svg data-face="${Number(c.id)}"`);
 const $=s=>document.querySelector(s),access=window.OjjudaMatgoAccess;
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -120,7 +120,7 @@ function showNextEvent(){
 }
 async function accept(next){
   if(closed)return;
-  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261103-game-results2&open='+Date.now());return;}
+  if(next.status==='cancelled'&&next.reason==='solo'){closed=true;cancelPresentation();location.replace('./matgo.html?v=20261106-source-folders3&open='+Date.now());return;}
   if(room&&room.id===next.id&&next.version<room.version)return;
   const previous=room,changed=room?.id!==next.id||room?.round!==next.round;
   if(!changed&&next.version===room.version&&JSON.stringify(next.gold)===JSON.stringify(room.gold)){clockOffset=(next.serverTime||Date.now())-Date.now();tick();return;}

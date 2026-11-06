@@ -4,8 +4,8 @@ let firstStart=null;
 const handoffKey='ojjuda-matgo-entry-handoff';
 export function openMatgoSolo(event){
   if(!event?.isTrusted)return false;
-  const url=new URL('../matgo.html',location.href);
-  url.searchParams.set('v','20261101-matgo-pi-order1');url.searchParams.set('open',String(Date.now()));
+  const url=new URL('/games/matgo.html',location.href);
+  url.searchParams.set('v','20261106-source-folders3');url.searchParams.set('open',String(Date.now()));
   const id=crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(16).padStart(8,'0')).join('');
   const handoff=JSON.stringify({id,at:Date.now()});
   // The same-origin iframe survives navigation even when a mobile webview
