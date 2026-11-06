@@ -201,6 +201,17 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
   await photoConfirmed.flush(); photoConfirmed.fill(); await photoConfirmed.submit();
   assert.deepEqual(photoConfirmed.navigations, ['/photo-ttang.html']);
 
+  const groupCode='10000000-0000-4000-8000-000000000001';
+  const groupPath='/groups/#invite='+groupCode;
+  const groupMember=setup('?auth=login&next=groups&invite='+groupCode,{user:reader});await groupMember.flush();assert.deepEqual(groupMember.navigations,[groupPath]);
+  const groupGuest=setup('?auth=login&next=groups&invite='+groupCode);await groupGuest.flush();
+  groupGuest.element('email').value='member@example.invalid';groupGuest.element('password').value='test-password';await groupGuest.submit();assert.deepEqual(groupGuest.navigations,[groupPath]);
+  const groupSignup=setup('?auth=signup&next=groups&invite='+groupCode);await groupSignup.flush();groupSignup.fill();await groupSignup.submit();
+  assert.equal(groupSignup.signups[0].options.emailRedirectTo,'https://ojjuda.kr/?next=groups&invite='+groupCode);
+  const groupConfirmed=setup('?code=confirmation');await groupConfirmed.flush();groupConfirmed.storage.set('ojjuda_post_confirm_destination',JSON.stringify({destination:'groups',invite:groupCode,email:reader.email,expiresAt:Date.now()+60000}));
+  await groupConfirmed.emit('SIGNED_IN',{user:reader});assert.deepEqual(groupConfirmed.navigations,[groupPath]);
+  for(const bad of ['https://evil.invalid/','invalid&invite='+groupCode]){const app=setup('?auth=login&next=groups&invite='+bad,{user:reader});await app.flush();assert.deepEqual(app.navigations,['/groups/']);}
+
   const bookingQuery = 'date=2026-12-24&room=7618700&guests=4';
   const bookingMember = setup('?auth=login&next=byeolcheonji&' + bookingQuery, { user: reader });
   await bookingMember.flush();

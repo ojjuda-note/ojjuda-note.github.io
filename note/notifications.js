@@ -1,12 +1,12 @@
 (() => {
   'use strict';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const COPY = Object.freeze({ world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
+  const COPY = Object.freeze({ group_invite: '그룹 초대가 도착했어요.', world_message: '친구에게 새 쪽지가 도착했어요.', reply: '내 카드에 새 답글이 달렸어요.', like: '내 카드에 좋아요가 도착했어요.', inquiry_reply: '내 문의에 답변이 도착했어요.', world_guestbook: '새 방명록이 도착했어요.', world_friend_request: '새 친구 신청이 도착했어요.', world_friend_accepted: '친구 신청이 수락됐어요.', world_comment: '내 사진·영상에 새 댓글이 달렸어요.' });
   const el = (tag, text, cls) => { const item = document.createElement(tag); if (text !== undefined) item.textContent = text; if (cls) item.className = cls; return item; };
   const button = (text, action, cls = 'button') => { const item = el('button', text, cls); item.type = 'button'; item.addEventListener('click', action); return item; };
   let instance;
 
-  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld } = {}) {
+  function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
     if (instance || !client?.schema || !client?.auth) return instance;
     let identity = getUserId() || null, identityRun = 0, viewRun = 0, listRun = 0, countRun = 0;
     let items = [], retentionItems = [], cursor = null, snapshotAt = null, hasMore = false;
@@ -109,8 +109,8 @@
       const retention = item.kind === 'retention';
       const text = el('p', retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
-        : COPY[item.kind], 'nn-copy');
-      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
+        : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
+      const meta = el('div', undefined, 'nn-meta'), source = el('span',item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
       meta.append(source, state, time);
@@ -120,6 +120,12 @@
         row.append(text, el('p', (item.body || '내용 없는 카드').slice(0, 100), 'nn-retention-preview'));
       } else row.append(text);
       const actions = el('div', undefined, 'nn-actions');
+      if (item.kind === 'group_invite' && UUID.test(item.target_id || '')) {
+        for (const [action, label] of [['accept','수락'],['decline','거절']]) {
+          const control = button(label, () => void respondGroupInvite(item, action));
+          control.dataset.groupInviteAction = action; actions.append(control);
+        }
+      }
       const world=item.source==='world';
       const target = world ? item.target_id : item.kind === 'inquiry_reply' ? item.inquiry_id : item.card_id;
       const action = world ? onOpenWorld : item.kind === 'inquiry_reply' ? onOpenInquiry : onOpenCard;
@@ -272,6 +278,26 @@
       if(!currentView(run,user,view))return;
       saving=false;close();
       if(world)action(item.target_type,target);else action(target);
+    }
+    async function respondGroupInvite(item, action) {
+      if (saving || loading || !identity || identity !== userNow() || !items.some(value => value.id === item.id && value.kind === 'group_invite')) return;
+      const run=identityRun,user=identity,view=viewRun;
+      saving=true;status.textContent='초대를 처리하고 있어요.';updateControls();keepFocus();
+      try {
+        const {data,error}=await client.rpc('group_invitation',{p_action:action,p_payload:{id:item.target_id}});
+        if(error)throw error;
+        if(!current(run,user))return;
+        announceRead(run,user);
+        if(!currentView(run,user,view))return;
+        saving=false;
+        if(action==='accept' && UUID.test(data?.room_id||'')) {close();onOpenGroup(data.room_id);return;}
+        await loadPage();
+        if(currentView(run,user,view))status.textContent=action==='decline'?'초대를 거절했어요.':'가입했어요.';
+      } catch(error) {
+        if(!currentView(run,user,view))return;
+        saving=false;await loadPage();
+        if(currentView(run,user,view))status.textContent=error?.message||'초대를 처리하지 못했어요. 다시 시도해 주세요.';
+      } finally {if(currentView(run,user,view)){saving=false;updateControls();}}
     }
     async function keepCard(item) {
       if (saving || loading || item.kind !== 'retention' || !retentionItems.some(value => value.id === item.id)
