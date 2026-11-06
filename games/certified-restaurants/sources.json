@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3124,
+    "uniqueRestaurants": 3129,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2393,
+      "local-guide": 2398,
       "post-office": 240
     },
     "coordinatesAvailable": 1023,
-    "coordinatesMissing": 2101,
+    "coordinatesMissing": 2106,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1520,7 +1520,7 @@
       "경남": 319,
       "강원": 44,
       "전북": 208,
-      "경기": 361,
+      "경기": 366,
       "인천": 341,
       "제주": 113,
       "대구": 117,
@@ -1531,12 +1531,12 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1832,
+      "한식": 1836,
       "중식": 128,
       "일식": 131,
       "기타": 574,
       "양식": 208,
-      "분식": 23,
+      "분식": 24,
       "디저트": 228
     }
   },
@@ -10643,51 +10643,117 @@
       "scope": "안산·시흥·광명 경기도 공식 음식점 소개 기사 3건 중 미등록 7곳. 배정 지역 전수확인·현 영업 확인 아님.",
       "coordinatePolicy": "정확히 일치하는 공개 좌표 자료를 확보하지 못해 7곳 null. 기존 좌표 및 선정 이력 변경 없음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gyeonggi-slot15-namyangju-guri-hanam",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3124,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2393,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2101,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 361,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1832,
+          "중식": 128,
+          "일식": 131,
+          "기타": 574,
+          "양식": 208,
+          "분식": 23,
+          "디저트": 228
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3129,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2398,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1023,
+        "coordinatesMissing": 2106,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 44,
+          "전북": 208,
+          "경기": 366,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1836,
+          "중식": 128,
+          "일식": 131,
+          "기타": 574,
+          "양식": 208,
+          "분식": 24,
+          "디저트": 228
+        }
+      },
+      "newRestaurantCount": 5,
+      "newRestaurantIds": [
+        "local-guri-slot15-nature",
+        "local-guri-slot15-obaek",
+        "local-guri-slot15-memillang",
+        "local-guri-slot15-haeseong",
+        "local-guri-slot15-halmae"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "existingRestaurantIds": [],
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
+        "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
+        "https://market.koreacharts.com/store/content/20333041.html",
+        "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
+        "https://www.hanam.go.kr/www/contents.do?key=6225"
+      ],
+      "scope": "남양주·구리·하남 부분조사. 구리 2023 공식 지정 10곳 중 개별 상호·주소 별도 대조된 5곳만 이력 추가, 남은 5곳과 기존 위치·영업 재확인 이월.",
+      "coordinatePolicy": "신규 공개 위경도 미확보로 모두 null 유지, 기존 위치·ID 변경 없음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gyeonggi-slot13-ansan-siheung-gwangmyeong",
+    "id": "2026-11-06-gyeonggi-slot15-namyangju-guri-hanam",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3117,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2386,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2094,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 354,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1828,
-        "중식": 128,
-        "일식": 131,
-        "기타": 572,
-        "양식": 208,
-        "분식": 23,
-        "디저트": 227
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3124,
       "providerCounts": {
         "michelin": 237,
@@ -10726,26 +10792,67 @@
         "디저트": 228
       }
     },
-    "newRestaurantCount": 7,
+    "currentCoverage": {
+      "uniqueRestaurants": 3129,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2398,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1023,
+      "coordinatesMissing": 2106,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 44,
+        "전북": 208,
+        "경기": 366,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1836,
+        "중식": 128,
+        "일식": 131,
+        "기타": 574,
+        "양식": 208,
+        "분식": 24,
+        "디저트": 228
+      }
+    },
+    "newRestaurantCount": 5,
     "newRestaurantIds": [
-      "local-gg-tour-slot13-gm-eobune",
-      "local-gg-tour-slot13-gm-regularly",
-      "local-gg-tour-slot13-sh-mulwang",
-      "local-gg-tour-slot13-sh-cheongchun",
-      "local-gg-tour-slot13-sh-nurungdak",
-      "local-gg-tour-slot13-an-kantipur",
-      "local-gg-tour-slot13-an-vietnam"
+      "local-guri-slot15-nature",
+      "local-guri-slot15-obaek",
+      "local-guri-slot15-memillang",
+      "local-guri-slot15-haeseong",
+      "local-guri-slot15-halmae"
     ],
     "existingRestaurantsEnriched": 0,
     "existingRestaurantIds": [],
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://gnews.gg.go.kr/news/news_detail.do?number=202601120910572271C049&s_code=C049",
-      "https://gnews.gg.go.kr/news/news_detail.do?number=202509261515056800C049&s_code=C401",
-      "https://gnews.gg.go.kr/news/news_detail.do?number=202512100908327266C049&s_code=C049"
+      "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+      "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
+      "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
+      "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
+      "https://market.koreacharts.com/store/content/20333041.html",
+      "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436",
+      "https://www.hanam.go.kr/www/contents.do?key=6225"
     ],
-    "scope": "안산·시흥·광명 경기도 공식 음식점 소개 기사 3건 중 미등록 7곳. 배정 지역 전수확인·현 영업 확인 아님.",
-    "coordinatePolicy": "정확히 일치하는 공개 좌표 자료를 확보하지 못해 7곳 null. 기존 좌표 및 선정 이력 변경 없음.",
+    "scope": "남양주·구리·하남 부분조사. 구리 2023 공식 지정 10곳 중 개별 상호·주소 별도 대조된 5곳만 이력 추가, 남은 5곳과 기존 위치·영업 재확인 이월.",
+    "coordinatePolicy": "신규 공개 위경도 미확보로 모두 null 유지, 기존 위치·ID 변경 없음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -11353,6 +11460,30 @@
       "operatingStatusEstablished": false,
       "coordinateVerifiedCount": 0,
       "sourceFile": "games/certified-restaurants/official-gyeonggi-slot13.json",
+      "notExhaustive": true
+    },
+    "municipalSelection20261106GuriSlot15": {
+      "checkedAt": "2026-11-06",
+      "sourceName": "구리시청 2023년 구리 100대 맛집",
+      "sourcePublicationDate": "2023-10-26",
+      "officialSourceUrl": "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&key=393&nttNo=100907",
+      "regions": [
+        "구리시"
+      ],
+      "recordCount": 5,
+      "provider": "local-guide",
+      "guideStatus": "historical_designation",
+      "selectionYear": 2023,
+      "operatingStatusEstablished": false,
+      "coordinateVerifiedCount": 0,
+      "sourceFile": "games/certified-restaurants/official-guri-slot15.json",
+      "addressEvidenceUrls": [
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=2&key=1190&pageIndex=2&pageUnit=1000&searchCnd=all&tourNo=362",
+        "https://www.guri.go.kr/culture/selectTourCntntsWebView.do?ctgry=4&key=1193&pageIndex=1&pageUnit=1000&searchCnd=all&tourNo=353",
+        "https://dining.ayo.pe.kr/restaurant/03ec97381d3f78f4d6b4726a937f2c90",
+        "https://market.koreacharts.com/store/content/20333041.html",
+        "https://www.welfarehello.com/community/hometownNews/%EC%9D%B8%EC%B0%BD%EB%8F%99-%EB%85%B8%ED%8F%AC%EC%8B%9D%EB%8B%B9-%ED%95%A0%EB%A7%A4%EB%B3%B4%EC%8C%88--1e230ebd-c166-4506-80fd-8959e87ae436"
+      ],
       "notExhaustive": true
     }
   },
