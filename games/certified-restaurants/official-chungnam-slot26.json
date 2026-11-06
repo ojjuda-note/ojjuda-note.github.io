@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "충청남도 문화관광 공식 음식점 안내 및 한국관광공사",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=c0c684be-cb81-4a8a-ad30-0178f892bf38",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=62",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=24",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=23",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=25",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1056",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1085"
+  ],
+  "sourceScope": "공주·논산·계룡 공식 관광 상세의 정확한 상호·주소 확인 후 신규만 수록. 콩쥐팥쥐의 미더유 언급은 현재 인증 또는 선정연도 확정이 아님. 세 지역 전체 명단·영업 여부·리본 등급 전수 확인 아님.",
+  "coordinatePolicy": "상호·현주소와 일치하는 공개 좌표 미검증으로 전부 null. 기존 위치·사용자 위치 추정 금지.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot26-gongju-taehwa",
+      "name": "태화식당",
+      "category": "한식",
+      "region": "충남",
+      "district": "공주시",
+      "address": "충청남도 공주시 사곡면 마곡상가길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산채정식",
+        "더덕정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=c0c684be-cb81-4a8a-ad30-0178f892bf38",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/%EB%A7%88%EA%B3%A1%EC%B2%9C-%EC%82%B0%EC%B1%85-%ED%9B%84-%EC%82%B0%EC%B1%84%EB%B9%84%EB%B0%A5%EC%9C%BC%EB%A1%9C-%EC%B1%84%EC%9A%B4-%ED%96%89%EB%B3%B5--46d1764d-8e13-4006-87be-80892278f2c4",
+      "addressSourceCheckedAt": "2026-11-06",
+      "addressCrosscheckUrls": [
+        "https://www.tabling.co.kr/place/677cc92f66de5f0698788021"
+      ]
+    },
+    {
+      "id": "local-chungnam-slot26-gongju-gungjung-kalguksu",
+      "name": "전통궁중칼국수",
+      "category": "분식",
+      "region": "충남",
+      "district": "공주시",
+      "address": "충청남도 공주시 금벽로 679 (월송동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=62",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=62",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-nonsan-setjipmae",
+      "name": "셋집매농가맛집",
+      "category": "한식",
+      "region": "충남",
+      "district": "논산시",
+      "address": "충청남도 논산시 원앙로1382번길 18-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=24",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=24",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-nonsan-sanarae",
+      "name": "산아래",
+      "category": "한식",
+      "region": "충남",
+      "district": "논산시",
+      "address": "충청남도 논산시 관촉로31번길 22-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "시래기무밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=23",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=23",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-nonsan-bok-issneunjip",
+      "name": "복있는집",
+      "category": "한식",
+      "region": "충남",
+      "district": "논산시",
+      "address": "충청남도 논산시 부창로 100",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "복어요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=25",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=25",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gyeryong-kongjwi-patjwi",
+      "name": "콩쥐팥쥐",
+      "category": "분식",
+      "region": "충남",
+      "district": "계룡시",
+      "address": "충청남도 계룡시 두마면 팥거리2길 12-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "팥죽",
+        "팥칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충청남도 미더유 선정 이력(관광자료)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1056",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공개 소개에서 미더유 지정식당임을 언급. 선정 시점과 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1056",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungnam-slot26-gyeryong-gangneung-jjamppong",
+      "name": "강릉 짬뽕식탁",
+      "category": "중식",
+      "region": "충남",
+      "district": "계룡시",
+      "address": "충청남도 계룡시 엄사면 번영로 110",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짬뽕",
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1085",
+          "sourceName": "충청남도 문화관광 공식 음식점 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 안내에 식당명·상세 주소가 확인됨. 미쉐린/블루리본 정규 인증 또는 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1085",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}

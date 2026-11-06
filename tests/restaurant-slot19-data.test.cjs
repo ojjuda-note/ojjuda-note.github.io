@@ -44,5 +44,6 @@ a.equal(log.locationPending, 3); a.equal(log.locationRechecks.length, 3);
 const rev = JSON.parse(fs.readFileSync(path.join(root, 'game-release.json'), 'utf8')).revision;
 a.match(fs.readFileSync(path.join(directory, 'index.html'), 'utf8'), /app\.js\?v=\d{8}-restaurants-/);
 a.ok(fs.readFileSync(path.join(root, 'world.html'), 'utf8').includes('world-game-assets.js?v=' + rev));
-a.match(fs.readFileSync(path.join(root, 'world-game-assets.js'), 'utf8'), /restaurants:'1\.9\.2[67]'/);
+const gameVersion=fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8').match(/restaurants:'(\d+)\.(\d+)\.(\d+)'/);
+a.ok(gameVersion && (Number(gameVersion[1])*1000000+Number(gameVersion[2])*1000+Number(gameVersion[3]))>=1009026);
 console.log('restaurant slot19 verified');

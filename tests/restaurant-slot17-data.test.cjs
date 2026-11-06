@@ -28,5 +28,6 @@ a.ok(app.includes("fetch('./official-gyeonggi-slot17.json?v=20261106-restaurants
 a.ok(app.includes('...slot17.restaurants'));
 // Other games advance the shared release without changing restaurant assets.
 a.match(fs.readFileSync(path.join(d,'index.html'),'utf8'),/app\.js\?v=\d{8}-restaurants-/);
-a.match(fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8'), /restaurants:'1\.9\.(?:24|25|26|27)'/);
+const gameVersion=fs.readFileSync(path.join(root,'world-game-assets.js'),'utf8').match(/restaurants:'(\d+)\.(\d+)\.(\d+)'/);
+a.ok(gameVersion && (Number(gameVersion[1])*1000000+Number(gameVersion[2])*1000+Number(gameVersion[3]))>=1009024);
 console.log('restaurant slot17 verified');

@@ -11480,51 +11480,121 @@
       ],
       "scope": "천안 KTO에서 시 지정 향토음식점 1곳; 아산시 문화관광 공개 목록에서 4곳의 상호·주소를 확인하여 중복 없이 추가. 원문 아산시 접속은 방화벽 제한으로 공식 검색 색인 대조. 두 시 전체 전수 대조 아님. 영업상태/정규 블루리본 등급/좌표는 임의로 추정하지 않음.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-chungnam-slot26-provincial-tourism-7",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3175,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2444,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2143,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 51,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1868,
+          "중식": 131,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 26,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3182,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2451,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2150,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 58,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1872,
+          "중식": 132,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 28,
+          "디저트": 230
+        }
+      },
+      "newRestaurantCount": 7,
+      "newRestaurantIds": [
+        "local-chungnam-slot26-gongju-taehwa",
+        "local-chungnam-slot26-gongju-gungjung-kalguksu",
+        "local-chungnam-slot26-nonsan-setjipmae",
+        "local-chungnam-slot26-nonsan-sanarae",
+        "local-chungnam-slot26-nonsan-bok-issneunjip",
+        "local-chungnam-slot26-gyeryong-kongjwi-patjwi",
+        "local-chungnam-slot26-gyeryong-gangneung-jjamppong"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "coordinatesAdded": 0,
+      "locationPending": 13,
+      "locationHidden": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot26.json",
+      "officialSourceUrls": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=c0c684be-cb81-4a8a-ad30-0178f892bf38",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=62",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=24",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=23",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=25",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1056",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1085"
+      ],
+      "scope": "충청남도 공식 관광 상세 6곳·KTO 태화식당 1곳의 상호/지점/주소 확인 후 공주2·논산3·계룡2 추가. 위생 안심식당·모범음식점 자료는 선정 증거로 이용하지 않음. 피탕김탕 상충 현주소는 보류. 3도시 전수조사 아님.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-chungnam-slot25-kto-asan-tourism-5",
+    "id": "2026-11-06-chungnam-slot26-provincial-tourism-7",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3170,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2439,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2138,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1865,
-        "중식": 130,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 25,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3175,
       "providerCounts": {
         "michelin": 237,
@@ -11563,25 +11633,71 @@
         "디저트": 230
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3182,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2451,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2150,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 58,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1872,
+        "중식": 132,
+        "일식": 132,
+        "기타": 579,
+        "양식": 209,
+        "분식": 28,
+        "디저트": 230
+      }
+    },
+    "newRestaurantCount": 7,
     "newRestaurantIds": [
-      "local-chungnam-slot25-cheonan-meokgeori-sundae",
-      "local-chungnam-slot25-asan-gamasot-dubu",
-      "local-chungnam-slot25-asan-gogane-kalguksu",
-      "local-chungnam-slot25-asan-bujason-jjajang",
-      "local-chungnam-slot25-asan-oeam-pajeon-sangjeon"
+      "local-chungnam-slot26-gongju-taehwa",
+      "local-chungnam-slot26-gongju-gungjung-kalguksu",
+      "local-chungnam-slot26-nonsan-setjipmae",
+      "local-chungnam-slot26-nonsan-sanarae",
+      "local-chungnam-slot26-nonsan-bok-issneunjip",
+      "local-chungnam-slot26-gyeryong-kongjwi-patjwi",
+      "local-chungnam-slot26-gyeryong-gangneung-jjamppong"
     ],
     "existingRestaurantsEnriched": 0,
     "coordinatesAdded": 0,
-    "locationPending": 6,
+    "locationPending": 13,
     "locationHidden": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
-    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot25.json",
+    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot26.json",
     "officialSourceUrls": [
-      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
-      "https://tour.asan.go.kr/tour/develop/m_food/"
+      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=c0c684be-cb81-4a8a-ad30-0178f892bf38",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=62",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=24",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=23",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=25",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1056",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1085"
     ],
-    "scope": "천안 KTO에서 시 지정 향토음식점 1곳; 아산시 문화관광 공개 목록에서 4곳의 상호·주소를 확인하여 중복 없이 추가. 원문 아산시 접속은 방화벽 제한으로 공식 검색 색인 대조. 두 시 전체 전수 대조 아님. 영업상태/정규 블루리본 등급/좌표는 임의로 추정하지 않음.",
+    "scope": "충청남도 공식 관광 상세 6곳·KTO 태화식당 1곳의 상호/지점/주소 확인 후 공주2·논산3·계룡2 추가. 위생 안심식당·모범음식점 자료는 선정 증거로 이용하지 않음. 피탕김탕 상충 현주소는 보류. 3도시 전수조사 아님.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
