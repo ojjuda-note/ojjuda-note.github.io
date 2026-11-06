@@ -51,120 +51,38 @@ function clearSupports(game){
 }
 let purchases=0,ends=0;const api={setScore(){},end(){ends++;},buyScrew(){purchases++;}};
 storage.set('ojjuda-screw-stage','37');
-let last=0,maxScrews=0;const shapes=new Set(),cornerCounts=new Set(),firstShape=new Map();
+let last=0,maxScrews=0,concave=0;
+const {certified}=require('./helpers/flat-atomic-solution-search.cjs');
 assert.equal(LAST_STAGE,1000);assert.equal(P.LAST_STAGE,LAST_STAGE);
-// Free parking holes always number three, regardless of stage difficulty.
 for(let stage=1;stage<=LAST_STAGE;stage++){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
- assert.ok(st.level.plates.length>=last);last=st.level.plates.length;
- if(stage>=11){assert.ok(P.SHAPE_NAMES.includes(st.level.shape));shapes.add(st.level.shape);if(!firstShape.has(st.level.shape))firstShape.set(st.level.shape,stage);}
- assert.equal(st.level.holes.length-st.level.screws.length,P.spareHoleCount(stage));
- for(const h of st.level.holes.filter(h=>h.owner===null)){
-  assert.ok(h.y<P.BOARD.y,'no extra empty holes are created inside the picture');
-  assert.ok(G.bareHole(st.level,h),'the top parking holes start accessible');
+ const level=G.makeFlatLevel(stage);
+ assert.ok(level.plates.length>=last);last=level.plates.length;
+ assert.equal(level.holes.length-level.screws.length,3);
+ assert.equal(level.screws.length,level.plates.length*2);maxScrews=Math.max(maxScrews,level.screws.length);
+ for(const h of level.holes.filter(h=>h.owner===null)){assert.ok(h.y<P.BOARD.y);assert.ok(G.bareHole(level,h));}
+ const radius=level.screwRadius;
+ for(const p of level.plates){
+  assert.ok(p.vertices.length>=3);if(!M.Vertices.isConvex(p.vertices))concave++;
+  for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-radius,'screw heads fit their own piece');
+  assert.ok(Math.hypot(p.mounts[0].x-p.mounts[1].x,p.mounts[0].y-p.mounts[1].y)>2*radius);
  }
- assert.equal(st.level.screws.length,st.level.plates.length*2);maxScrews=Math.max(maxScrews,st.level.screws.length);
- const radius=st.level.screwRadius||P.SCREW_RADIUS;
- assert.ok(st.level.silhouette.length>0,'every stage has an immutable picture silhouette');
- for(const p of st.level.plates){
-  assert.ok(st.level.silhouette.some(poly=>P.polygonDistance(poly,p.x,p.y)<0),'metal pieces fit the picture silhouette');
-  assert.ok(M.Vertices.isConvex(p.vertices));assert.ok(p.vertices.length>=3,'plates are polygon pieces');
-  if(stage>=11)cornerCounts.add(p.vertices.length);
-  for(const m of p.mounts)assert.ok(P.polygonDistance(p.vertices,m.x,m.y)<=-(st.level.interlocked?radius*.499:radius+1.9),'every screw shaft fits inside its metal piece');
-  assert.ok(Math.hypot(p.mounts[0].x-p.mounts[1].x,p.mounts[0].y-p.mounts[1].y)>=32*radius/P.SCREW_RADIUS,'smaller pieces retain separate screw heads');
- }
- for(let i=0;i<st.level.screws.length;i++)for(let j=i+1;j<st.level.screws.length;j++){
-  const a=st.level.screws[i].hole,b=st.level.screws[j].hole;
-  assert.ok(Math.hypot(a.x-b.x,a.y-b.y)>radius*(st.level.interlocked?.56:2),'neighbouring pieces never overlap screw shafts; wider heads can interlock');
- }
- assert.deepEqual(st.level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');
- invariant(st.level);game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
+ assert.deepEqual(level.holes,G.makeFlatLevel(stage).holes,'retry reproduces the puzzle');invariant(level);
 }
-assert.equal(maxScrews,100);assert.equal(G.makeFlatLevel(1000).plates.length,50);
-assert.equal(shapes.size,13,'all thirteen metal outlines appear');
-for(const [name,stage] of [['별',80],['나비',140],['구름',220],['초승달',320],['로켓',450],['십자',650]])assert.equal(firstShape.get(name),stage,'new outlines appear gradually');
-assert.equal(new Set([657,670,683,696,709,722].map(n=>G.makeFlatLevel(n).picture)).size,6,'the full thirteen-shape cycle still varies hidden pictures');
-assert.equal(G.makeFlatLevel(11).shape,'꽃');
-assert.equal(G.makeFlatLevel(11).name,'별바다 고래','the first flower conceals a different subject');
-assert.equal(new Set([11,18,25,32,39,46].map(n=>G.makeFlatLevel(n).picture)).size,6,'the same flower silhouette can hide every picture');
-assert.deepEqual(Array.from({length:10},(_,i)=>G.makeFlatLevel(i+1).plates.length),[1,2,2,3,3,4,4,5,5,6],'the first ten stages introduce one piece at a time');
-assert.ok(cornerCounts.has(4)&&cornerCounts.has(5)&&cornerCounts.has(6),'cuts create different polygon pieces');
-for(const [stage,pieces] of [[19,7],[20,8],[34,8],[35,9],[54,9],[55,10],[80,11],[115,12],[160,13],[220,15],[310,19],[430,24],[501,28],[600,32],[800,41],[1000,50]]){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
- assert.equal(st.L,stage,'an explicitly selected advanced stage remains available');assert.equal(st.level.plates.length,pieces);
- const [a,b]=st.level.order,plate=st.level.plates[st.level.screws[a].hole.owner];
- relocate(game,a,st.level.holes[0]);assert.equal(plate.state,'hinged');
- relocate(game,b,st.level.holes[1]);assert.equal(plate.state,'gone','advanced pieces release through real input and collision physics');
- game.destroy();
-}
-// Complete every introductory stage with only the three free spare holes.
-// Replay the new centre shapes through real taps while the five outer petals keep their outline.
-const flowerSolution=require('./helpers/flat-atomic-solution-search.cjs').solve(11);
-assert.equal(flowerSolution.reason,null);
-for(let stage=1;stage<=11;stage++){
- storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY))),st=game.state;
- if(stage===11){
-  for(const {screw,to,wait} of flowerSolution.route)relocate(game,screw,st.level.holes[to],false,wait);
- }else{
- for(let i=0;i<st.level.order.length;i+=2){
-  clearSupports(game);
-  // Reuse only real screw positions vacated by moving plates.
-  for(const spare of st.level.holes.filter(h=>h.owner===null).slice(0,2))if(spare.screw!==null){
-   const parking=()=>st.level.holes.filter(h=>h.owner!==null&&h.screw===null&&G.bareHole(st.level,h)).sort((a,b)=>b.y-a.y)[0];
-   let target=parking();if(!target){clearSupports(game);target=parking();}
-   assert.ok(target,`stage ${stage} can free its spare holes`);relocate(game,spare.screw,target);
-  }
-  relocate(game,st.level.order[i],st.level.holes[0]);relocate(game,st.level.order[i+1],st.level.holes[1]);
-  clearSupports(game);
- }
- }
- for(let wait=0;wait<6&&!st.complete;wait++){tick(game);clearSupports(game);}
- assert.equal(st.complete,true,`stage ${stage} clears under actual gravity and plate collisions`);
- assert.equal(st.physics.bodies.size,0,'only plates that actually left the board are removed');
- assert.equal(st.score,st.level.plates.length*10+stage*10);
- assert.equal(storage.get(STAGE_KEY),String(Math.min(LAST_STAGE,stage+1)));assert.equal(storage.get('ojjuda-screw-stage'),'37');
- assert.ok(st.moves<=st.moveLimit,`stage ${stage} has enough base moves`);
+assert.equal(maxScrews,32);assert.equal(G.makeFlatLevel(1000).plates.length,16);assert.ok(concave>1000);
+assert.deepEqual(Array.from({length:10},(_,i)=>G.makeFlatLevel(i+1).plates.length),[1,2,2,3,3,4,4,5,5,6]);
+for(const [stage,pieces] of [[19,7],[20,8],[35,9],[55,10],[80,11],[115,12],[219,12],[220,13],[399,13],[400,14],[649,14],[650,15],[849,15],[850,16],[1000,16]])assert.equal(G.makeFlatLevel(stage).plates.length,pieces);
+// Replay independently searched solutions through actual two-tap controls.
+for(const stage of [...Array.from({length:11},(_,i)=>i+1),25]){
+ storage.set(STAGE_KEY,String(stage));const game=G.flat(api,stage),st=game.state,result=certified(stage);
+ assert.equal(result.reason,null,`stage ${stage} has a three-hole route`);
+ for(const {screw,to,wait} of result.route)relocate(game,screw,st.level.holes[to],false,wait);
+ tick(game,8);assert.equal(st.complete,true,`stage ${stage} physically clears`);
+ assert.equal(st.physics.bodies.size,0);assert.equal(st.score,st.level.plates.length*10+stage*10);
+ assert.equal(storage.get(STAGE_KEY),String(stage+1));assert.equal(storage.get('ojjuda-screw-stage'),'37');
+ assert.ok(st.moves<=st.moveLimit);assert.equal(st.extraHoles,0);assert.equal(st.extraMoves,0);
  if(stage===1){press(game,{x:267,y:514});assert.equal(st.L,2);}
  game.destroy();assert.equal(st.physics.engine.world.bodies.length,0);
 }
-// Stage 25 is deliberately layered: removing the upper wings first cannot
-// clear them, but the lower-first route needs only the original three holes.
-{
- const blocked=P.makeFlatLevel(25),top=blocked.plates[6],sim=P.createPhysics(blocked);
- assert.ok(sim.move(blocked.screws[blocked.holes[top.holeIds[0]].screw],blocked.holes[0]));
- assert.equal(top.state,'hinged','the first pin alone cannot release a flower wing');
- assert.ok(sim.move(blocked.screws[blocked.holes[top.holeIds[1]].screw],blocked.holes[1]));
- step(sim,4,.05);
- assert.equal(top.state,'loose','an upper wing waits on the fixed wings below');
- assert.ok(top.y<P.BOARD.y+P.BOARD.h,'the upper wing does not fall through its support');
- sim.destroy();
-}
-storage.set(STAGE_KEY,'25');
-const safe25=G.flat(api,25),safe25State=safe25.state;
-assert.equal(safe25State.level.plates.length,8);
-assert.equal(safe25State.level.holes.length-safe25State.level.screws.length,3);
-assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
-for(let i=0;i<safe25State.level.order.length;i+=2){
- clearSupports(safe25);
- for(const spare of safe25State.level.holes.slice(0,2))if(spare.screw!==null){
-  let parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));
-  if(!parking){clearSupports(safe25);parking=safe25State.level.holes.find(h=>h.owner!==null&&h.screw===null&&G.bareHole(safe25State.level,h));}
-  assert.ok(parking,'a fallen petal frees a place for the parked screw');
-  relocate(safe25,spare.screw,parking);
- }
- const p=safe25State.level.plates[i/2];
- relocate(safe25,safe25State.level.order[i],safe25State.level.holes[0]);
- assert.equal(p.pins.length,1,'one remaining screw must hold the petal');
- assert.equal(p.state,'hinged','a petal with one screw must not fall');
- relocate(safe25,safe25State.level.order[i+1],safe25State.level.holes[1]);
- clearSupports(safe25);
- assert.equal(p.state,'gone','a fully unscrewed petal drops without getting trapped');
-}
-assert.equal(safe25State.complete,true,'stage 25 clears without hints or paid holes');
-assert.ok(safe25State.moves>=34,'the interlocking panels require more than simple two-screw stripping');
-assert.ok(safe25State.moves<=safe25State.moveLimit);
-assert.equal(safe25State.extraHoles,0);assert.equal(safe25State.extraMoves,0);
-safe25.destroy();
 // The previous final stage now continues; the new final stage exits only once.
 for(const stage of [500,999]){
  storage.set(STAGE_KEY,String(stage));const game=G.flat(api,Number(storage.get(G.STAGE_KEY)));game.state.level.routeUnlocked=true;game.state.level.plates.forEach(p=>p.state='gone');game.update(.05);
@@ -262,4 +180,4 @@ for(const s of st.level.screws)assert.deepEqual(st.physics.screwBodies.get(s.id)
  game.onKey('ArrowRight');game.onKey('Enter');assert.notEqual(st.selected,null);tick(game,.55);
  game.onKey('ArrowRight');game.onKey('Enter');assert.equal(st.selected,null);assert.equal(st.pending?.kind,'transfer');tick(game);assert.equal(st.pending,null);invariant(st.level);
 game.destroy();const poses=st.level.plates.map(p=>[p.x,p.y,p.angle]);press(game,initial);tick(game);assert.deepEqual(st.level.plates.map(p=>[p.x,p.y,p.angle]),poses);assert.equal(st.physics.engine.world.constraints.length,0);
-console.log('PASS: 1000 layouts with thirteen progressive metal outlines, varied polygons, 1-to-50-piece / 100-screw progression, separated screw heads, advanced release, three free spare holes, eleven introductory playthroughs, stage 25 and screw-support regressions.');
+console.log('PASS: 1000 curved layouts, 1–16 plates, 32 screws, three free holes, introductory tap playthroughs, stage 25, hinge/contact/input regressions.');

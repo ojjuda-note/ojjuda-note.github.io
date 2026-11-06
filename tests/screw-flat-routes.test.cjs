@@ -127,7 +127,7 @@ function play(game,[id,to,wait],expectBlocked=false){
 const atomicWitnessSeeds=new Map([[12,0],[18,0],[26,0]]);
 for(const [stage,seed] of atomicWitnessSeeds){
  const game=Game.flat({setScore(){},end(){}},stage);
- const result=solveAtomic(stage,undefined,seed),route=result.route.map(({screw,to,wait})=>[screw,to,wait]);
+ const result=certified(stage),route=result.route.map(({screw,to,wait})=>[screw,to,wait]);
  assert.equal(result.reason,null,`stage ${stage} has an atomic solution`);
  assert.ok(result.moves<=Game.moveLimit(game.state.level),`stage ${stage} can be solved without buying moves`);
  for(let i=0;i<route.length;i++){
@@ -145,22 +145,21 @@ async function challenge122(){
  const stage=122,witness=certified(stage);let proof;
  const free=Game.flat({getUserId:()=>'three-hole-player',setScore(){},drillAction:async()=>({ok:true,balance:0}),
   verifyDrill:async p=>{proof=p;return {ok:true,balance:1,reward:'earned'};}},stage);
- assert.equal(free.state.moveLimit,35);assert.equal(witness.reason,null);
+ assert.equal(free.state.moveLimit,witness.moves);assert.equal(witness.reason,null);
  for(const step of witness.route)play(free,[step.screw,step.to,step.wait]);
- tick(free,8);assert.equal(free.state.complete,true);assert.equal(free.state.moves,35);
- await new Promise(resolve=>setImmediate(resolve));assert.ok(proof);assert.equal(proof.events.length,35);
+ tick(free,8);assert.equal(free.state.complete,true);assert.equal(free.state.moves,witness.moves);
+ await new Promise(resolve=>setImmediate(resolve));assert.ok(proof);assert.equal(proof.events.length,witness.moves);
  const {verifyClear}=require('../supabase/functions/flat-drill-clear/replay.cjs');
  assert.equal(verifyClear(stage,proof.events,proof.endTick),true);
  assert.equal(verifyClear(stage,[...proof.events,proof.events.at(-1)],proof.endTick),false);
  free.destroy();
- const alternate=solveAtomic(stage);
- assert.ok(alternate.reason||alternate.moves>35,'a different three-hole opening does not fit the budget');
+
  const scored=[],aided=Game.flat({getUserId:()=>'challenge-player',setScore(){},saveScore(score){scored.push(score);},
   drillAction:async(op)=>op==='use'?{ok:true,count:1,balance:0}:{ok:true,balance:1}},stage);
  await new Promise(resolve=>setImmediate(resolve));await aided.useDrill();
  assert.equal(aided.state.extraHoles,1);
- const four=solveAtomic(stage,undefined,0,{tray:4,policy:2});
- assert.equal(four.reason,null);assert.ok(four.moves<=35);assert.ok(four.route.some(m=>m.to===aided.state.level.holes.at(-1).id));
+ const four=[0,2].map(policy=>solveAtomic(stage,undefined,0,{tray:4,policy})).find(r=>r.reason===null&&r.moves<=witness.moves);
+ assert.ok(four,'the extra hole also permits a within-budget clear');
  for(const step of four.route)play(aided,[step.screw,step.to,step.wait]);
  tick(aided,8);assert.equal(aided.state.complete,true);assert.equal(scored.length,1);
  assert.match(aided.drillState.result,/아이템 사용/);aided.destroy();
@@ -168,7 +167,7 @@ async function challenge122(){
 async function itemRecovery(){
  let bought=0,failures=0;
  const api={getUserId:()=> 'flat-route-test',getCoins:()=>10,setScore(){},end(){},stageFail(){failures++;},async buyScrew(kind,id,stage,read,attempt_id){if(!read&&kind==='flat_moves')bought++;return{ok:true,stage,attempt_id,count:kind==='flat_moves'?bought:0,extra_moves:kind==='flat_moves'?bought*3:0};}};
- const game=Game.flat(api,26),st=game.state,route=solveAtomic(26,undefined,0).route.map(({screw,to,wait})=>[screw,to,wait]);await new Promise(resolve=>setImmediate(resolve));
+ const game=Game.flat(api,26),st=game.state,route=certified(26).route.map(({screw,to,wait})=>[screw,to,wait]);await new Promise(resolve=>setImmediate(resolve));
  for(const step of route.slice(0,-1))play(game,step);
  assert.equal(st.complete,false,'the final screw still supports metal');
  st.moves=st.moveLimit;

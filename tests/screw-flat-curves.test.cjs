@@ -1,21 +1,52 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const M=require('../vendor/matter-0.20.0.min.js'),P=require('../screw-flat-physics.js');
-const profiles=new Set(),sides=new Set();let count=0;
+const Partitions=require('../screw-flat-partitions.js');
+let count=0,concave=0;
 for(let stage=1;stage<=1000;stage++){
  const level=P.makeFlatLevel(stage),sim=P.createPhysics(level);
-  assert.ok(level.plates.some(p=>p.profile),`stage ${stage} includes a whole-shaped plate`);
  for(const p of level.plates){
-  const body=sim.bodies.get(p.id);
-  assert.equal(body.vertices.length,p.vertices.length,`stage ${stage}: no hidden rectangle or extra rim`);
-  const drawn=p.vertices.map(v=>P.worldPoint(p,v));
-  for(const v of drawn)assert.ok(body.vertices.some(b=>Math.hypot(b.x-v.x,b.y-v.y)<1e-5),'the body uses the exact sheet boundary');
-  for(const v of p.mounts)assert.ok(P.polygonDistance(p.vertices,v.x,v.y)<0,'screws stay on their own sheet');
-  if(p.profile)profiles.add(p.profile);sides.add(p.vertices.length);count++;
+  const body=sim.bodies.get(p.id),parts=body.parts.length>1?body.parts.slice(1):[body];
+  assert.ok(Math.abs(parts.reduce((sum,part)=>sum+part.area,0)-M.Vertices.area(p.vertices))<.001,'the physical union has the exact sheet area');
+  for(const v of p.vertices.map(v=>P.worldPoint(p,v)))assert.ok(parts.some(part=>part.vertices.some(b=>Math.hypot(b.x-v.x,b.y-v.y)<1e-5)),'every drawn boundary vertex belongs to a physical part');
+  for(const v of p.mounts)assert.ok(P.polygonDistance(p.vertices,v.x,v.y)<0);
+  if(body.parts.length>1)concave++;count++;
  }
  sim.destroy();
 }
-assert.deepEqual([...profiles].sort(),['circle','diamond','oval','pentagon','rectangle','semicircle','trapezoid','triangle']);
-assert.ok(sides.has(3)&&sides.has(4)&&sides.has(5));
+assert.ok(concave>1000,'curved partitions include real concave bodies');
+for(const count of [2,7,12,25,50])for(const seed of [111,333,7934]){
+ const panels=Partitions.build(count,seed);
+ assert.equal(panels.length,count);
+ assert.ok(Math.abs(panels.reduce((sum,p)=>sum+M.Vertices.area(p),0)-296*330)<.001,'shared edges partition the full rectangle without gaps or overlaps');
+}
+// A concave opening must remain empty in both the rotated drawing and contact engine.
+for(const angle of [0,.7,-1.2]){
+ const plate={id:0,x:180,y:280,angle,z:0,state:'loose',pins:[],mounts:[],vertices:[{x:-40,y:-40},{x:40,y:-40},{x:40,y:40},{x:15,y:40},{x:15,y:0},{x:-15,y:0},{x:-15,y:40},{x:-40,y:40}]};
+ const sim=P.createPhysics({plates:[plate],holes:[],screws:[]}),body=sim.bodies.get(0);
+ for(const [point,hit] of [[{x:0,y:20},false],[{x:30,y:20},true]]){
+  const at=P.worldPoint(plate,point),head=M.Bodies.circle(at.x,at.y,3),metal=M.Bodies.rectangle(at.x,at.y,4,4);
+  assert.equal(M.Query.collides(head,[body]).length>0,hit,'screws collide with concave metal, not its hull');
+  assert.equal(M.Query.collides(metal,[body]).length>0,hit,'other sheets use that same concave boundary');
+  assert.equal(P.plateCovers(plate,at.x,at.y),hit);
+ }
+ sim.destroy();
+}
+// Dense concave contacts must never pull a hinged sheet off its remaining pin.
+{
+ const level=P.makeFlatLevel(25),sim=P.createPhysics(level),proof=require('./helpers/flat-atomic-solution-search.cjs').certified(25);
+ assert.equal(proof.reason,null);
+ for(const move of proof.route){
+  assert.ok(sim.move(level.screws[move.screw],level.holes[move.to]));
+  for(let tick=0;tick<move.wait*120;tick++){
+   sim.step(1/120);
+   for(const plate of level.plates)for(const pin of plate.pins){
+    const at=P.worldPoint(plate,plate.mounts[pin.mount]),hole=level.holes[pin.hole];
+    assert.ok(Math.hypot(at.x-hole.x,at.y-hole.y)<2,'the remaining visible screw is a solid pivot at every physics tick');
+   }
+  }
+ }
+ sim.destroy();
+}
 const renderer=fs.readFileSync(require.resolve('../screw-flat.js'),'utf8');
 assert.match(renderer,/function metalPath\(c,p\)\{c\.beginPath\(\);p\.vertices\.forEach/);
 
@@ -57,4 +88,4 @@ function fallingContact(x){
 }
 assert.equal(fallingContact(219),true,'gravity brings the outer tip into contact with a parked head');
 assert.equal(fallingContact(228),false,'a head past the tip lets the loose sheet fall');
-console.log('PASS:',count,'whole plates across 1000 levels, eight silhouettes, matching render/physics, screw and sheet contacts.');
+console.log('PASS:',count,'curved plates across 1000 levels, exact concave boundaries, complementary cuts, screw and sheet contacts.');
