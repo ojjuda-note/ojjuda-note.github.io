@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3213,
+    "uniqueRestaurants": 3221,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2482,
+      "local-guide": 2490,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2181,
+    "coordinatesMissing": 2189,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1523,7 +1523,7 @@
       "경기": 382,
       "인천": 341,
       "제주": 113,
-      "대구": 122,
+      "대구": 130,
       "전남": 183,
       "세종": 100,
       "대전": 110,
@@ -1531,13 +1531,13 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1898,
+      "한식": 1904,
       "중식": 133,
       "일식": 132,
-      "기타": 580,
+      "기타": 581,
       "양식": 210,
       "분식": 28,
-      "디저트": 232
+      "디저트": 233
     }
   },
   "coordinateEnrichment": {
@@ -11992,51 +11992,112 @@
         "지자체 소개로 확인된 이력과 2026 신규 선정, 미쉐린/블루리본 정규 리본, 현재 영업 여부를 혼동하지 않음.",
         "기존 지역 52곳 및 신규 5곳 좌표 확인 근거 미확보; 모두 추정 좌표 사용 금지, 후속 순환 재확인."
       ]
+    },
+    {
+      "id": "2026-11-07-daegu-slot34-eight-official-directory-restaurants",
+      "checkedAt": "2026-11-07",
+      "previousCoverage": {
+        "uniqueRestaurants": 3213,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2482,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2181,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 122,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1898,
+          "중식": 133,
+          "일식": 132,
+          "기타": 580,
+          "양식": 210,
+          "분식": 28,
+          "디저트": 232
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3221,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2490,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2189,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1904,
+          "중식": 133,
+          "일식": 132,
+          "기타": 581,
+          "양식": 210,
+          "분식": 28,
+          "디저트": 233
+        }
+      },
+      "newRestaurantCount": 8,
+      "newRestaurantIds": [
+        "local-daegu-slot34-jjingoya",
+        "local-daegu-slot34-sebok-haemuljjim",
+        "local-daegu-slot34-pungjin-gomtang",
+        "local-daegu-slot34-badawa-daerim",
+        "local-daegu-slot34-indobangranggi",
+        "local-daegu-slot34-achimeul-gidarineunppang",
+        "local-daegu-slot34-yeonhwajeong-samgyetang-bon",
+        "local-daegu-slot34-hobak-chueotang"
+      ],
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "notes": [
+        "서·남·북·달서구 각각 공식 주소를 확인한 소개식당 2곳씩 추가. 정규 리본·현 영업상태·좌표 미검증.",
+        "기존 46곳+신규 8곳 위경도 null; 위치 재확인 이월. 회원 추천 정보는 변경하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-daegu-slot33-five-municipal-restaurants",
+    "id": "2026-11-07-daegu-slot34-eight-official-directory-restaurants",
     "checkedAt": "2026-11-07",
     "previousCoverage": {
-      "uniqueRestaurants": 3208,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2477,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2176,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1893,
-        "중식": 133,
-        "일식": 132,
-        "기타": 580,
-        "양식": 210,
-        "분식": 28,
-        "디저트": 232
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3213,
       "providerCounts": {
         "michelin": 237,
@@ -12075,21 +12136,62 @@
         "디저트": 232
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3221,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2490,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2189,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1904,
+        "중식": 133,
+        "일식": 132,
+        "기타": 581,
+        "양식": 210,
+        "분식": 28,
+        "디저트": 233
+      }
+    },
+    "newRestaurantCount": 8,
     "newRestaurantIds": [
-      "local-daegu-slot33-dongasikdang",
-      "local-daegu-slot33-halmae-gomtang",
-      "local-daegu-slot33-subok-jjimgalbi",
-      "local-daegu-slot33-gongsan-hanwoo",
-      "local-daegu-slot33-samsu-jangeo"
+      "local-daegu-slot34-jjingoya",
+      "local-daegu-slot34-sebok-haemuljjim",
+      "local-daegu-slot34-pungjin-gomtang",
+      "local-daegu-slot34-badawa-daerim",
+      "local-daegu-slot34-indobangranggi",
+      "local-daegu-slot34-achimeul-gidarineunppang",
+      "local-daegu-slot34-yeonhwajeong-samgyetang-bon",
+      "local-daegu-slot34-hobak-chueotang"
     ],
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "notes": [
-      "중구 3곳, 동구 1곳, 수성구 1곳 대구푸드 공식 소개 이름과 도로명주소 확인; 지역 전체 전수 조사 아님.",
-      "지자체 소개로 확인된 이력과 2026 신규 선정, 미쉐린/블루리본 정규 리본, 현재 영업 여부를 혼동하지 않음.",
-      "기존 지역 52곳 및 신규 5곳 좌표 확인 근거 미확보; 모두 추정 좌표 사용 금지, 후속 순환 재확인."
+      "서·남·북·달서구 각각 공식 주소를 확인한 소개식당 2곳씩 추가. 정규 리본·현 영업상태·좌표 미검증.",
+      "기존 46곳+신규 8곳 위경도 null; 위치 재확인 이월. 회원 추천 정보는 변경하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -12202,7 +12304,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2413,
+    "recordCount": 2421,
     "designationEvidenceCount": 2431,
     "coordinatesAvailable": 754,
     "regionCount": 17,
@@ -12221,7 +12323,7 @@
       },
       {
         "region": "대구",
-        "uniqueRestaurants": 110,
+        "uniqueRestaurants": 118,
         "coordinatesAvailable": 1,
         "completeRegionalCollection": false
       },
@@ -13018,6 +13120,27 @@
       "currentOperatingStatusConfirmed": 0,
       "completeReview": false,
       "notes": "대구푸드 공식 업소별 소개의 상호와 주소가 일치하는 5곳을 공식 소개 이력으로만 추가. 정규 블루리본 등급·현재 영업·좌표는 검증되지 않음."
+    },
+    "municipalTourism20261107DaeguSlot34": {
+      "checkedAt": "2026-11-07",
+      "sourceFile": "official-daegu-slot34.json",
+      "publisher": "대구광역시 대구푸드",
+      "officialListUrl": "https://www.daegufood.go.kr/kor/food/food.asp?snm=9",
+      "addedCount": 8,
+      "regionCounts": {
+        "대구광역시 서구": 2,
+        "대구광역시 남구": 2,
+        "대구광역시 북구": 2,
+        "대구광역시 달서구": 2
+      },
+      "coordinateVerified": 0,
+      "coordinatePendingNew": 8,
+      "baseExistingWithoutCoordinates": 46,
+      "sourceType": "municipal_official_restaurant_directory",
+      "yearOfSelection": null,
+      "currentOperatingStatusConfirmed": 0,
+      "completeReview": false,
+      "notes": "각 구 공개 음식점 목록에서 2곳씩 이름·현주소를 확인. 소개 이력과 현재 영업/선정연도/정규 블루리본 등급은 별개."
     }
   },
   "mapCoverageAuditHistory": [

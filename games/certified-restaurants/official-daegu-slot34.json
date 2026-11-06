@@ -1,0 +1,240 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+  "sourceUrls": [
+    "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=3&tc=&tc2=&ti=&tm=&tmi=",
+    "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=4&tc=&tc2=&ti=&tm=&tmi=",
+    "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=2&tc=&tc2=&ti=&tm=&tmi=",
+    "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=7&tc=&tc2=&ti=&tm=&tmi="
+  ],
+  "sourceScope": "1순환 34회차 대구 서·남·북·달서구 공식 맛집 소개 목록 각 2곳 대조; 기존 기본 목록 및 대구 33회차 보충과 중복 확인.",
+  "verificationLimit": "공식 소개 페이지의 이름·도로명주소 확인. 개별 상세 URL은 일부 접속 지연되어 현 영업상태 확인 불가. 전체 905곳 전수조사, 블루리본 정규 등급 확인 아님.",
+  "coordinatePolicy": "상호·현주소가 일치하는 공개 위경도 근거를 얻지 못해 8곳 모두 lat/lng null. 근사·추정 좌표 미사용.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-daegu-slot34-jjingoya",
+      "name": "찡오야",
+      "category": "한식",
+      "region": "대구",
+      "district": "서구",
+      "address": "대구광역시 서구 달구벌대로375길 12-1 (내당동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산오징어 요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=3&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=3&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-sebok-haemuljjim",
+      "name": "세복해물찜",
+      "category": "한식",
+      "region": "대구",
+      "district": "서구",
+      "address": "대구광역시 서구 국채보상로48길 37 (평리동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=3&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=3&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-pungjin-gomtang",
+      "name": "풍진곰탕",
+      "category": "한식",
+      "region": "대구",
+      "district": "남구",
+      "address": "대구광역시 남구 봉덕로1길 11 (봉덕동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곰탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=4&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=4&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-badawa-daerim",
+      "name": "바다와대림",
+      "category": "한식",
+      "region": "대구",
+      "district": "남구",
+      "address": "대구광역시 남구 대명복개로4길 75-2 (대명동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=4&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=4&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-indobangranggi",
+      "name": "인도방랑기",
+      "category": "기타",
+      "region": "대구",
+      "district": "북구",
+      "address": "대구광역시 북구 대학로 81 (산격동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "인도 요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=2&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=2&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-achimeul-gidarineunppang",
+      "name": "아침을기다리는빵",
+      "category": "디저트",
+      "region": "대구",
+      "district": "북구",
+      "address": "대구광역시 북구 동천로24길 17 (동천동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "빵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=2&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=2&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-yeonhwajeong-samgyetang-bon",
+      "name": "연화정삼계탕(본점)",
+      "category": "한식",
+      "region": "대구",
+      "district": "달서구",
+      "address": "대구광역시 달서구 구마로 116 (본동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=7&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=7&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-daegu-slot34-hobak-chueotang",
+      "name": "호박추어탕(추어탕제대로하는집호박)",
+      "category": "한식",
+      "region": "대구",
+      "district": "달서구",
+      "address": "대구광역시 달서구 이곡서로7길 25 (이곡동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 공식 업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=7&tc=&tc2=&ti=&tm=&tmi=",
+          "sourceName": "대구광역시 대구푸드 · 구군별인증업소",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 사이트 목록에 상호·지점·주소가 수록됨. 정규 블루리본 등급·신규 선정 연도·현 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?list=&snm=9&sw=%23&ta=7&tc=&tc2=&ti=&tm=&tmi=",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
