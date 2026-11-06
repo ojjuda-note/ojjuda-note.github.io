@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3162,
+    "uniqueRestaurants": 3167,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2431,
+      "local-guide": 2436,
       "post-office": 240
     },
-    "coordinatesAvailable": 1029,
-    "coordinatesMissing": 2133,
+    "coordinatesAvailable": 1031,
+    "coordinatesMissing": 2136,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1526,12 +1526,12 @@
       "대구": 117,
       "전남": 177,
       "세종": 100,
-      "대전": 105,
+      "대전": 110,
       "경북": 145,
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1857,
+      "한식": 1862,
       "중식": 130,
       "일식": 132,
       "기타": 579,
@@ -11171,51 +11171,116 @@
       "locationPending": 5,
       "locationHidden": 0,
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-daejeon-slot21-traditional-certifications",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3162,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2431,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1029,
+        "coordinatesMissing": 2133,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1857,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3167,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2436,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1031,
+        "coordinatesMissing": 2136,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1862,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "newRestaurantCount": 5,
+      "newRestaurantIds": [
+        "local-daejeon-traditional-jinrojip",
+        "local-daejeon-traditional-jeokdeok",
+        "local-daejeon-traditional-sonamu",
+        "local-daejeon-traditional-gwangcheon",
+        "local-daejeon-traditional-sutgolwonjo"
+      ],
+      "existingRestaurantsEnriched": 1,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+      ],
+      "coordinateEvidenceUrls": [
+        "https://daejeon.ferrorium.com/p/food/11724775",
+        "https://daejeon.ferrorium.com/p/food/11843043"
+      ],
+      "scope": "대전 5개 구 기등록 명단·위치 누락과 대전시 공식 3대30년 인증업소 명단 부분 대조. 명단 중 진로집 1건 중복 제거, 기존 성심당 선정 정보 병합. 전수조사 및 현재 영업 판단 아님.",
+      "coordinatesAdded": 2,
+      "locationPending": 96,
+      "locationHidden": 0,
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gangwon-slot20-sokcho-samcheok-taebaek",
+    "id": "2026-11-06-daejeon-slot21-traditional-certifications",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3157,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2426,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1029,
-      "coordinatesMissing": 2128,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 56,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1854,
-        "중식": 130,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 25,
-        "디저트": 228
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3162,
       "providerCounts": {
         "michelin": 237,
@@ -11254,27 +11319,65 @@
         "디저트": 230
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3167,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2436,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1031,
+      "coordinatesMissing": 2136,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1862,
+        "중식": 130,
+        "일식": 132,
+        "기타": 579,
+        "양식": 209,
+        "분식": 25,
+        "디저트": 230
+      }
+    },
     "newRestaurantCount": 5,
     "newRestaurantIds": [
-      "local-gangwon-slot20-samcheok-nolbu-jokbal",
-      "local-gangwon-slot20-taebaek-eomma-dakgalbi",
-      "local-gangwon-slot20-taebaek-seoul-dakgalbi",
-      "local-gangwon-slot20-taebaek-greenhorn",
-      "local-gangwon-slot20-taebaek-cafe-bomnune"
+      "local-daejeon-traditional-jinrojip",
+      "local-daejeon-traditional-jeokdeok",
+      "local-daejeon-traditional-sonamu",
+      "local-daejeon-traditional-gwangcheon",
+      "local-daejeon-traditional-sutgolwonjo"
     ],
-    "existingRestaurantsEnriched": 0,
+    "existingRestaurantsEnriched": 1,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002"
+      "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
     ],
-    "coordinateEvidenceUrls": [],
-    "scope": "속초·삼척·태백 20회차 부분조사. 한국관광공사 관광주민증 식음료 제휴업소 5곳. 정규 가이드 미쉐린/블루리본과 별도. 속초 포털 접근 실패.",
-    "coordinatesAdded": 0,
-    "locationPending": 5,
+    "coordinateEvidenceUrls": [
+      "https://daejeon.ferrorium.com/p/food/11724775",
+      "https://daejeon.ferrorium.com/p/food/11843043"
+    ],
+    "scope": "대전 5개 구 기등록 명단·위치 누락과 대전시 공식 3대30년 인증업소 명단 부분 대조. 명단 중 진로집 1건 중복 제거, 기존 성심당 선정 정보 병합. 전수조사 및 현재 영업 판단 아님.",
+    "coordinatesAdded": 2,
+    "locationPending": 96,
     "locationHidden": 0,
     "notExhaustive": true
   },
@@ -12046,6 +12149,20 @@
       "sourceFile": "games/certified-restaurants/official-gangwon-slot20.json",
       "notExhaustive": true,
       "followUp": "속초 접근 실패, 신규 5곳 좌표·현재 영업 상태 미확인. 다음 같은 회차 재점검."
+    },
+    "municipalCertification20261106DaejeonSlot21": {
+      "publisher": "대전광역시",
+      "officialListingUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+      "checkedAt": "2026-11-06",
+      "officialDistinctBusinesses": 6,
+      "duplicateDirectoryRows": 1,
+      "newRestaurants": 5,
+      "existingMerged": 1,
+      "verifiedCoordinatesNew": 2,
+      "coordinatesStillUnverifiedNew": 3,
+      "selectionYear": null,
+      "currentOperatingStatusVerified": 0,
+      "notes": "정규 미쉐린/블루리본 등급 아님. 숯골원조냉면식당 신성로 122와 기존 숯골원냉면 본점 신성로84번길18은 서로 다른 지점. 기존 성심당은 ID와 저장 기능을 유지."
     }
   },
   "mapCoverageAuditHistory": [
