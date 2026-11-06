@@ -1,0 +1,243 @@
+{
+  "updatedAt": "2026-11-06",
+  "sourceName": "제천시 문화관광 및 충청북도 충북나드리 공식 음식점",
+  "sourceUrls": [
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
+    "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "공식 관광 안내만 확인, 리본 등급·인증·현재 영업·개별 좌표 미확인",
+  "restaurants": [
+    {
+      "id": "local-chungbuk-slot24-jecheon-gangwon-dakgalbi",
+      "name": "강원닭갈비수제막국수",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 죽하로11길 32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "닭갈비",
+        "막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천 약채락 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-baubonga",
+      "name": "바우본가",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 숭문로 88-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "약채락수라정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천 약채락 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=10&rcpp=10&sc1=B010200&siteId=base&trc=0",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-hyangchon",
+      "name": "향촌",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 성봉로 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막국수",
+        "백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천 약채락 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=16",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-tteuran-e",
+      "name": "뜰안에",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 청전대로9길 16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곤드레밥",
+        "보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천 약채락 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-sanmaru",
+      "name": "산마루",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 금성면 청풍호로 909",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곤드레정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천 약채락 공식 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&sc1=B010200&siteId=base&so1=X.ORDER_NUMBER&trc=21",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-neutinamu",
+      "name": "느티나무횟집",
+      "category": "한식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 배시론로 4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쏘가리매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천시 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?ad1=ASC&clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&sc1=B010100&siteId=base&so1=X.ORDER_NUMBER&trc=77",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-jecheon-cowboygrill",
+      "name": "카우보이그릴",
+      "category": "양식",
+      "region": "충북",
+      "district": "제천시",
+      "address": "충청북도 제천시 청풍면 학현소야로 415-22",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바비큐 플래터"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제천시 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
+          "sourceName": "제천시 문화관광 공식 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=10&rcpp=10&siteId=base&trc=0",
+      "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-chungbuk-slot24-chungju-naemilseojae",
+      "name": "내밀서재",
+      "category": "디저트",
+      "region": "충북",
+      "district": "충주시",
+      "address": "충청북도 충주시 연원5길 28",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743",
+          "sourceName": "충청북도 충북나드리 공식 관광 안내",
+          "verifiedAt": "2026-11-06",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "관광 안내에 소개된 식당입니다. 정규 인증·선정연도 및 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743",
+      "addressSourceCheckedAt": "2026-11-06"
+    }
+  ]
+}
