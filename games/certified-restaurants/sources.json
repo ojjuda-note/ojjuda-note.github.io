@@ -11378,51 +11378,114 @@
       "locationPending": 18,
       "locationHidden": 0,
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-chungnam-slot25-kto-asan-tourism-5",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3170,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2439,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2138,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1865,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 230
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3175,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2444,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2143,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 217,
+          "충남": 51,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 110,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1868,
+          "중식": 131,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 26,
+          "디저트": 230
+        }
+      },
+      "newRestaurantCount": 5,
+      "newRestaurantIds": [
+        "local-chungnam-slot25-cheonan-meokgeori-sundae",
+        "local-chungnam-slot25-asan-gamasot-dubu",
+        "local-chungnam-slot25-asan-gogane-kalguksu",
+        "local-chungnam-slot25-asan-bujason-jjajang",
+        "local-chungnam-slot25-asan-oeam-pajeon-sangjeon"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "coordinatesAdded": 0,
+      "locationPending": 6,
+      "locationHidden": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot25.json",
+      "officialSourceUrls": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+        "https://tour.asan.go.kr/tour/develop/m_food/"
+      ],
+      "scope": "천안 KTO에서 시 지정 향토음식점 1곳; 아산시 문화관광 공개 목록에서 4곳의 상호·주소를 확인하여 중복 없이 추가. 원문 아산시 접속은 방화벽 제한으로 공식 검색 색인 대조. 두 시 전체 전수 대조 아님. 영업상태/정규 블루리본 등급/좌표는 임의로 추정하지 않음.",
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-chungbuk-slot23-three-provincial-promotions",
+    "id": "2026-11-06-chungnam-slot25-kto-asan-tourism-5",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3167,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2436,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1031,
-      "coordinatesMissing": 2136,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 110,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1862,
-        "중식": 130,
-        "일식": 132,
-        "기타": 579,
-        "양식": 209,
-        "분식": 25,
-        "디저트": 230
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3170,
       "providerCounts": {
         "michelin": 237,
@@ -11461,26 +11524,64 @@
         "디저트": 230
       }
     },
-    "newRestaurantCount": 3,
+    "currentCoverage": {
+      "uniqueRestaurants": 3175,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2444,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2143,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 217,
+        "충남": 51,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 110,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1868,
+        "중식": 131,
+        "일식": 132,
+        "기타": 579,
+        "양식": 209,
+        "분식": 26,
+        "디저트": 230
+      }
+    },
+    "newRestaurantCount": 5,
     "newRestaurantIds": [
-      "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
-      "local-chungbuk-slot23-cheongju-kongganae",
-      "local-chungbuk-slot23-cheongju-25si-garden"
+      "local-chungnam-slot25-cheonan-meokgeori-sundae",
+      "local-chungnam-slot25-asan-gamasot-dubu",
+      "local-chungnam-slot25-asan-gogane-kalguksu",
+      "local-chungnam-slot25-asan-bujason-jjajang",
+      "local-chungnam-slot25-asan-oeam-pajeon-sangjeon"
     ],
     "existingRestaurantsEnriched": 0,
-    "sourceAuditFile": "ops/restaurant-region-audit.json",
-    "officialSourceUrls": [
-      "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
-      "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d",
-      "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
-    ],
-    "coordinateEvidenceUrls": [
-      "https://fmr.purpleo.co.kr/view/29170"
-    ],
-    "scope": "청주 본체 59곳·좌표 누락 16곳을 기준으로 충청북도 공식 맛집 소개 세 곳을 비교해 신규 3곳 확인. 다른 외식업소 전수조사는 아님.",
-    "coordinatesAdded": 1,
-    "locationPending": 18,
+    "coordinatesAdded": 0,
+    "locationPending": 6,
     "locationHidden": 0,
+    "sourceAuditFile": "ops/restaurant-region-audit.json",
+    "supplementSourceFile": "games/certified-restaurants/official-chungnam-slot25.json",
+    "officialSourceUrls": [
+      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+      "https://tour.asan.go.kr/tour/develop/m_food/"
+    ],
+    "scope": "천안 KTO에서 시 지정 향토음식점 1곳; 아산시 문화관광 공개 목록에서 4곳의 상호·주소를 확인하여 중복 없이 추가. 원문 아산시 접속은 방화벽 제한으로 공식 검색 색인 대조. 두 시 전체 전수 대조 아님. 영업상태/정규 블루리본 등급/좌표는 임의로 추정하지 않음.",
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
