@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
+const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed,baseSpeed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')||s.includes('/shared/games/game-results.js'))?s:'')
@@ -198,7 +198,8 @@ g.tab='friends';H();
    await choices.filter({hasText:'다음 단계'}).click();await page.evaluate(()=>breakoutTest.freeze());
    const continuedSecond=await snapshot();
    assert.deepEqual([continuedSecond.stage,continuedSecond.bricks,continuedSecond.score,continuedSecond.lives,continuedSecond.balls,continuedSecond.waiting,continuedSecond.cleared,continuedSecond.running,continuedSecond.drops,continuedSecond.piercing],[2,24,clearedFirst.score,2,1,true,false,true,0,false]);
-   assert.ok(Math.abs(continuedSecond.speed-Math.min(460,clearedFirst.speed+20))<.001,'next stage preserves the run speed and its normal stage acceleration');
+   assert.equal(continuedSecond.paddleWidth,80,'next stage clears the paddle-size pickups');
+   assert.equal(continuedSecond.speed,await page.evaluate(()=>breakoutTest.current.game.inspect().baseSpeed),'next stage clears speed pickups while preserving normal progression');
    assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.firstBreakoutRun),true,'next uses the same run');
    assert.equal(await savedStage(),'2');assert.equal(await choices.count(),0);checks++;
    await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(2);const clearedSecond=await snapshot();
