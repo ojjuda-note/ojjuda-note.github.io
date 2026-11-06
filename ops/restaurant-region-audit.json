@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 20,
-    "scheduledAt": "2026-11-06T14:00:00+09:00",
+    "slot": 21,
+    "scheduledAt": "2026-11-06T15:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "2026-11-06 14:00 KST scheduled execution"
+    "source": "2026-11-06 15:00 KST scheduled execution"
   },
   "entries": [
     {
@@ -5422,6 +5422,187 @@
           "note": "기존 1순환 20회차에 증거를 추가하는 보완 기록. 별도 신규 회차가 아니고 미확인 주소·좌표를 삭제·추정 처리하지 않음."
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 21,
+      "scheduledAtKST": "2026-11-06T15:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_5_daejeon_traditional_certifications_and_2_coordinates",
+      "assignedRegions": [
+        "대전광역시 동구",
+        "대전광역시 중구",
+        "대전광역시 서구",
+        "대전광역시 유성구",
+        "대전광역시 대덕구"
+      ],
+      "regionAudit": [
+        {
+          "region": "대전광역시 동구",
+          "baseListedCount": 16,
+          "scope": "대전시 공식 3대30년 업소와 기존 명단 대조. 적덕식당 1곳 신규 등록 및 상호·주소·전화가 일치하는 공개 지도 좌표 1건 확보. 기존 식당 현 영업 일부 미확인.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 1,
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 중구",
+          "baseListedCount": 15,
+          "scope": "진로집·소나무집·광천식당 3곳 신규, 기존 성심당 가이드 이력 1건 통합. 진로집 공개 지도 좌표 1건 교차 확인; 다른 2곳 좌표 보류.",
+          "new": 3,
+          "updated": 1,
+          "coordinatesAdded": 1,
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 서구",
+          "baseListedCount": 32,
+          "scope": "기등록 32곳 분포와 좌표 미등록 상태, 시 공식 3대30년 명단 교차 확인. 이 공식 명단에서 신규 업소 미발견, 다른 공식명단 전수 미확인.",
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 유성구",
+          "baseListedCount": 38,
+          "scope": "숯골원조냉면식당(신성로122) 1곳 신규. 기존 숯골원냉면 본점(신성로84번길18)과 주소·명칭 구별. 좌표 보류.",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 대덕구",
+          "baseListedCount": 4,
+          "scope": "기등록 4곳과 시 3대30년 명단 비교. 신규 없음. 공식 관광·블루리본 누락 발굴은 다음 순환에서도 우선 검토.",
+          "new": 0,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "대전시 3대30년 인증업소 공식 공개 명단: 6개 식당, 7개 표시행 중 진로집 1행 중복",
+        "대전한콕 공개 네이버 지도 정보 정리: 진로집·적덕식당 이름·현 주소·전화 교차 확인",
+        "기존 대전 다시찾는100선 2022-2023 등록 식당·지점명 중복 검토",
+        "블루리본 전국 정규 리본 등급 및 모든 식당 명단 확보 불가, 접근 제한 우회 안 함"
+      ],
+      "additions": 5,
+      "modifications": 1,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 2,
+      "locationHidden": 0,
+      "locationPending": 96,
+      "locationPendingScope": "기존 대전 기본 카탈로그 좌표 null 93곳과 이번 신규 3곳. 기존 93곳의 개별 재확인까지 끝난 것은 아님.",
+      "addedRestaurantIds": [
+        "local-daejeon-traditional-jinrojip",
+        "local-daejeon-traditional-jeokdeok",
+        "local-daejeon-traditional-sonamu",
+        "local-daejeon-traditional-gwangcheon",
+        "local-daejeon-traditional-sutgolwonjo"
+      ],
+      "updatedRestaurantIds": [
+        "blue-daejeon-sungsimdang-main"
+      ],
+      "evidenceUrls": [
+        "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
+        "https://daejeon.ferrorium.com/p/food/11724775",
+        "https://daejeon.ferrorium.com/p/food/11843043",
+        "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-daejeon-traditional-sonamu",
+          "name": "소나무집",
+          "address": "대전광역시 중구 대종로460번길 59 (대흥동)",
+          "region": "대전광역시 중구",
+          "aliases": [
+            "대전광역시 중구",
+            "대전 중구",
+            "소나무집"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "result": "공식 인증 명단의 현 안내 상호·주소 확인. 일치 좌표를 공개 근거로 확인하지 못함",
+          "unconfirmedReason": "상호·지점·도로명·건물번호가 모두 일치하는 공개 지도 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 21,
+          "action": "lat/lng null, 다음 같은 지역 순환에서 재확인"
+        },
+        {
+          "id": "local-daejeon-traditional-gwangcheon",
+          "name": "광천식당",
+          "address": "대전광역시 중구 대종로505번길 29 (선화동)",
+          "region": "대전광역시 중구",
+          "aliases": [
+            "대전광역시 중구",
+            "대전 중구",
+            "광천식당"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "result": "공식 인증 명단의 현 안내 상호·주소 확인. 일치 좌표를 공개 근거로 확인하지 못함",
+          "unconfirmedReason": "상호·지점·도로명·건물번호가 모두 일치하는 공개 지도 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 21,
+          "action": "lat/lng null, 다음 같은 지역 순환에서 재확인"
+        },
+        {
+          "id": "local-daejeon-traditional-sutgolwonjo",
+          "name": "숯골원조냉면식당",
+          "address": "대전광역시 유성구 신성로 122 (신성동)",
+          "region": "대전광역시 유성구",
+          "aliases": [
+            "대전광역시 유성구",
+            "대전 유성구",
+            "숯골원조냉면"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "result": "공식 인증 명단의 현 안내 상호·주소 확인. 일치 좌표를 공개 근거로 확인하지 못함",
+          "unconfirmedReason": "상호·지점·도로명·건물번호가 모두 일치하는 공개 지도 좌표 미확보",
+          "recheckCycle": 2,
+          "recheckSlot": 21,
+          "action": "lat/lng null, 다음 같은 지역 순환에서 재확인"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "대전 기존 93곳 좌표 없음",
+          "reason": "이 회차에서 현주소·위경도 모두 교차검증한 것은 신규 2곳뿐. 기존의 93곳은 각 식당별 지도근거 재조사 필요",
+          "action": "다음 대전 회차에서 이전 순환 미확인과 대덕구부터 우선 처리"
+        },
+        {
+          "topic": "신규 소나무집·광천식당·숯골원조냉면식당 좌표",
+          "reason": "공식 명단에 정확 주소 존재하지만 공개 지도 좌표 미검증",
+          "action": "추정하지 않고 null 및 기존 선정 이력 보존"
+        },
+        {
+          "topic": "정규 블루리본 등급·폐업",
+          "reason": "개별 공식 영업정보/블루리본 완전 명단 확보 불가",
+          "action": "이력과 영업 상태 별도 판단, 검색 실패·미선정=폐업 아님"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성, 16회차 의정부·양주·동두천·포천의 감사 기록 미확인 이월 유지",
+        "대전 기존 좌표 93건과 신규 3곳 후속 재확인",
+        "대덕구 부족 등록 업소의 공식 목록 신규 조사",
+        "5개 자치구 전수 조사 완료가 아님"
+      ],
+      "nextSlot": 22,
+      "nextRegions": [
+        "세종특별자치시 전역"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
