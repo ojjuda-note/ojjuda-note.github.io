@@ -1,20 +1,23 @@
-import {SUITS,red,copy,createGame,getPile,canMove,move,draw,isWon,canFinish,legalMoves,suggest,validateState,visibleWasteCount,restoreWastePackets} from './engine.js?v=20261106-solitaire1';
-import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire1';
-import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261106-solitaire1';
-import {playWinAnimation} from './celebration.js?v=20261106-solitaire1';
-import {overlappingTarget} from './drop-targets.js?v=20261106-solitaire1';
-import {createViewport} from './viewport.js?v=20261106-solitaire1';
+import './rules.js?v=20261106-solitaire-ranking1';
+import {SUITS,red,copy,createGame,getPile,canMove,move,draw,isWon,canFinish,legalMoves,suggest,validateState,visibleWasteCount,restoreWastePackets} from './engine.js?v=20261106-solitaire-ranking1';
+import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire-ranking1';
+import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261106-solitaire-ranking1';
+import {playWinAnimation} from './celebration.js?v=20261106-solitaire-ranking1';
+import {overlappingTarget} from './drop-targets.js?v=20261106-solitaire-ranking1';
+import {createViewport} from './viewport.js?v=20261106-solitaire-ranking1';
 const $=s=>document.querySelector(s);
 const SYMBOLS={spades:'♠',hearts:'♥',clubs:'♣',diamonds:'♦'};
 const SUIT_NAMES={spades:'스페이드',hearts:'하트',clubs:'클로버',diamonds:'다이아몬드'};
 const cardElements=new Map();
 const KEY='ojjuda-solitaire-v1:'+ (new URLSearchParams(location.search).get('owner')||'guest');
-let externalPaused=false;
+let externalPaused=false, runId=crypto.randomUUID(), completion=null;
 let state=createGame(), history=[], elapsed=0, started=false, selected=null, locked=false, winPlaying=false, lastTick=Date.now(), ignoreClickUntil=0, lastTap=null, pointer=null, toastTimer, saveWorking=true;
 try {
   const saved=JSON.parse(localStorage.getItem(KEY));
   if(saved?.version===1 && validateState(saved.state)) {
     state=saved.state;
+    if(typeof saved.runId==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(saved.runId))runId=saved.runId;
+    if(isWon(state)&&saved.completion?.runId===runId&&saved.completion.drawCount===state.drawCount&&saved.completion.score!=null&&window.OjjudaSolitaireRules.score(state.drawCount,saved.completion.seconds)===saved.completion.score)completion=saved.completion;
     elapsed=Number.isFinite(saved.elapsed)?Math.max(0,saved.elapsed):0;
     started=!!saved.started;
     history=Array.isArray(saved.history)?saved.history.filter(validateState).slice(-100):[];
@@ -23,7 +26,7 @@ try {
 restoreWastePackets([...history,state]);
 
 function save(){
-  try {localStorage.setItem(KEY,JSON.stringify({version:1,state,history,elapsed,started}));saveWorking=true;}
+  try {localStorage.setItem(KEY,JSON.stringify({version:1,state,history,elapsed,started,runId,completion}));saveWorking=true;}
   catch {saveWorking=false;}
   if(!saveWorking)$('#new-game').title='이 브라우저에서는 저장할 수 없어요';
 }
@@ -235,7 +238,7 @@ function newGameDialog(){
   if(locked)return;let chosen=state.drawCount;
   openDialog(`<div class="dialog-icon">♠</div><div class="dialog-kicker">A FRESH START</div><h2 class="dialog-title">새로운 한 판</h2><p class="dialog-text">${state.moves&&!isWon(state)?'진행 중인 게임은 새 게임으로 바뀌어요.':'카드를 섞고, 천천히 시작해 볼까요?'}<br>난이도를 골라 주세요.</p><div class="draw-options"><button class="draw-option ${chosen===1?'active':''}" data-draw="1" aria-pressed="${chosen===1}"><strong>초보</strong><small>한 번에 1장씩 공개</small></button><button class="draw-option ${chosen===3?'active':''}" data-draw="3" aria-pressed="${chosen===3}"><strong>보통</strong><small>한 번에 3장씩 공개</small></button></div><div class="dialog-buttons"><button data-close>돌아가기</button><button class="primary" id="start-new">게임 시작</button></div>`);
   dialog.querySelectorAll('[data-draw]').forEach(b=>b.onclick=()=>{chosen=Number(b.dataset.draw);dialog.querySelectorAll('[data-draw]').forEach(x=>{x.classList.toggle('active',Number(x.dataset.draw)===chosen);x.setAttribute('aria-pressed',String(Number(x.dataset.draw)===chosen));});});
-  $('#start-new').onclick=()=>{state=createGame(chosen);history=[];elapsed=0;started=false;selected=null;lastTap=null;render();save();dialog.close();toast('새 카드를 나눴어요. 편안하게 즐겨 주세요.');};
+  $('#start-new').onclick=()=>{state=createGame(chosen);runId=crypto.randomUUID();completion=null;history=[];elapsed=0;started=false;selected=null;lastTap=null;render();save();dialog.close();toast('새 카드를 나눴어요. 편안하게 즐겨 주세요.');};
 }
 function help(){
   if(locked)return;
@@ -243,13 +246,22 @@ function help(){
 }
 function pause(){if(locked||isWon(state))return;openDialog('<div class="dialog-icon">Ⅱ</div><div class="dialog-kicker">TAKE YOUR TIME</div><h2 class="dialog-title">잠깐 쉬어 가요</h2><p class="dialog-text">카드도 시간도 잠시 멈췄어요.<br>준비되면 이어서 즐겨 주세요.</p><div class="dialog-buttons"><button class="primary" data-close>게임 계속하기</button></div>');save();}
 function win(){
-  save();
+  const now=Date.now();
+  if(started&&!document.hidden&&!dialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
+  lastTick=now;
+  if(!completion){
+    const seconds=Math.max(1,Math.ceil(elapsed/1000));
+    completion={runId,drawCount:state.drawCount,seconds,score:window.OjjudaSolitaireRules.score(state.drawCount,seconds),saved:false};
+  }
+  save();submitCompletion();
   winPlaying=true;locked=true;updateStats();
   playWinAnimation(()=>{winPlaying=false;locked=false;updateStats();showWinResult();});
 }
 function showWinResult(){
   notifyArcade('ojjuda-game-finished');
-  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime(elapsed)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>점수</small><strong>${state.score}</strong></div></div><div class="dialog-buttons"><button data-close>카드 보기</button><button class="primary" id="play-again">한 판 더</button></div>`);
+  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime((completion?.seconds||Math.ceil(elapsed/1000))*1000)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>난이도</small><strong>${state.drawCount===3?'보통':'초보'}</strong></div></div><p id="ranking-status" class="dialog-text"></p><button id="retry-ranking" hidden>순위 저장 다시 시도</button><div class="dialog-buttons"><button data-close>카드 보기</button><button class="primary" id="play-again">한 판 더</button></div>`);
+  updateRankingStatus();
+  $('#retry-ranking').onclick=submitCompletion;
   $('#play-again').onclick=()=>{locked=false;newGameDialog();};
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<45;i++){const p=document.createElement('span');p.className='confetti-piece';p.style.left=`${Math.random()*100}%`;p.style.animationDelay=`${Math.random()*.6}s`;p.style.animationDuration=`${2+Math.random()*2}s`;$('#confetti').append(p);}setTimeout(()=>$('#confetti').replaceChildren(),5000);}
 }
@@ -266,7 +278,7 @@ const view=createViewport({
 });
 render();save();
 
-function notifyArcade(type){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-solitaire',type},location.origin);}
+function notifyArcade(type,data={}){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-solitaire',type,...data},location.origin);}
 function requestExit(){
   save();
   if(window.parent!==window){notifyArcade('ojjuda-game-exit-request');return;}
@@ -282,3 +294,20 @@ window.OjjudaSolitaireControls={save,pause(){
   save();
   return ()=>{externalPaused=false;lastTick=Date.now();};
 }};
+
+function submitCompletion(){
+  if(!completion||completion.saved||window.parent===window||completion.score==null)return;
+  completion.failed=false;updateRankingStatus();
+  notifyArcade('ojjuda-game-result',{...completion,completed:true});
+}
+function updateRankingStatus(){
+  const line=$('#ranking-status'),retry=$('#retry-ranking');
+  if(!line||!completion||window.parent===window)return;
+  line.textContent=completion.saved?'순위에 기록했어요.':completion.failed?'연결을 확인하고 다시 저장해 주세요.':'순위 기록을 저장하고 있어요…';
+  if(retry)retry.hidden=!completion.failed;
+}
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==window.parent||event.data?.source!=='ojjuda-world'||event.data.type!=='ojjuda-solitaire-record'||event.data.runId!==completion?.runId)return;
+  completion.saved=event.data.ok===true;completion.failed=!completion.saved;save();updateRankingStatus();
+});
+submitCompletion();
