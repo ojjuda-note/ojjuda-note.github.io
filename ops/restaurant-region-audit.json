@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 23,
-    "scheduledAt": "2026-11-06T17:00:00+09:00",
+    "slot": 24,
+    "scheduledAt": "2026-11-06T18:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "scheduled 17:00 KST; original scheduled slot used"
+    "source": "scheduled 18:00 KST"
   },
   "entries": [
     {
@@ -5843,6 +5843,557 @@
       "nextRegions": [
         "충청북도 충주시",
         "충청북도 제천시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 24,
+      "scheduledAtKST": "2026-11-06T18:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_8_official_tourism_listings",
+      "assignedRegions": [
+        "충청북도 충주시 전역",
+        "충청북도 제천시 전역"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청북도 충주시",
+          "baseListedCount": 30,
+          "scope": "기존 미확인 위치와 일부 공식 관광 목록 대조. 전수조사 아님",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 제천시",
+          "baseListedCount": 24,
+          "scope": "기존 미확인 위치와 일부 공식 관광 목록 대조. 전수조사 아님",
+          "new": 7,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "제천시 문화관광 공식 관광 안내 제천 7개 식당 식별·주소 대조",
+        "충북나드리 공개 맛집 내밀서재 식별·주소 대조",
+        "기존 충주·제천 데이터 54건 중 좌표 null 16건 추출, 현 좌표 완전 검증은 이월",
+        "정규 블루리본 전체 명단과 현재 실제 영업상태는 확인하지 못함"
+      ],
+      "additions": 8,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 24,
+      "locationPendingScope": "기존 16 + 새 관광 업소 8, 전수 개별 재확인 완료를 뜻하지 않음",
+      "addedRestaurantIds": [
+        "local-chungbuk-slot24-jecheon-gangwon-dakgalbi",
+        "local-chungbuk-slot24-jecheon-baubonga",
+        "local-chungbuk-slot24-jecheon-hyangchon",
+        "local-chungbuk-slot24-jecheon-tteuran-e",
+        "local-chungbuk-slot24-jecheon-sanmaru",
+        "local-chungbuk-slot24-jecheon-neutinamu",
+        "local-chungbuk-slot24-jecheon-cowboygrill",
+        "local-chungbuk-slot24-chungju-naemilseojae"
+      ],
+      "updatedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base",
+        "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
+      ],
+      "locationRechecks": [
+        {
+          "id": "blue-regional-cafe1929-jecheon",
+          "name": "카페1929",
+          "address": "충청북도 제천시 단양로10길 104",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "카페1929",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3052"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-d0c0030e866adf46",
+          "name": "대장군식당",
+          "address": "충청북도 충주시 수안보면 미륵송계로 105",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "대장군식당",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=24"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-a58a255d48828beb",
+          "name": "민속가든",
+          "address": "충청북도 충주시 행정3길 42(목행동)",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "민속가든",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=24"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-6bc611a1e113d7b6",
+          "name": "송림",
+          "address": "충청북도 충주시 수안보면 미륵송계로 839-9",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "송림",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=25"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-95b02231107d2620",
+          "name": "은혜별채",
+          "address": "충청북도 충주시 사직산 22길 14(지현동)",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "은혜별채",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=25"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-f4dc3daa0ec22bf4",
+          "name": "금가능이옥",
+          "address": "충청북도 충주시 금가면 김생로 1184",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "금가능이옥",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=26"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-3c3a505e1d72c9d3",
+          "name": "수안보파크호텔 탄금대",
+          "address": "충청북도 충주시 수안보면 탑골1길 36",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "수안보파크호텔 탄금대",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=28"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-e52614ba5eafb372",
+          "name": "퓨전한정식뜰안채",
+          "address": "충청북도 충주시 남산14길 35",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "퓨전한정식뜰안채",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=31"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-e9a2a0ed4ddaf5c8",
+          "name": "황포돛대 교현점",
+          "address": "충청북도 충주시 만리산9길 6-1(교현동)",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "황포돛대 교현점",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=31"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-2c9ff700dfcf229b",
+          "name": "강박사냉면숯불갈비",
+          "address": "충청북도 제천시 청전대로91",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "강박사냉면숯불갈비",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=34"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-5fe1822ce6513b22",
+          "name": "광성추어탕",
+          "address": "충청북도 제천시 독순로8길 4",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "광성추어탕",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=34"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-2be53e15a3897e67",
+          "name": "명동왕족",
+          "address": "충청북도 제천시 명륜로6길 9",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "명동왕족",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=35"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-6b6f3ae91a6aff29",
+          "name": "가람",
+          "address": "충청북도 제천시 수산면 월악로 2970",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "가람",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=35"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-78251709c4a252ff",
+          "name": "대보명가",
+          "address": "충청북도 제천시 용두대로 287",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "대보명가",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=36"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-b160e179683eeb17",
+          "name": "우림정",
+          "address": "충청북도 제천시 의림대로 446",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "우림정",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=37"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-north-cd6f993e65b02a35",
+          "name": "황금연못",
+          "address": "충청북도 제천시 내토로 281",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "황금연못",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=39"
+          ],
+          "result": "기존 소개·선정 근거 보존, 위치 교차 확인 이월",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-gangwon-dakgalbi",
+          "name": "강원닭갈비수제막국수",
+          "address": "충청북도 제천시 죽하로11길 32",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "강원닭갈비수제막국수",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94285&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-baubonga",
+          "name": "바우본가",
+          "address": "충청북도 제천시 숭문로 88-9",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "바우본가",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3744&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-hyangchon",
+          "name": "향촌",
+          "address": "충청북도 제천시 성봉로 8",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "향촌",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94255&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-tteuran-e",
+          "name": "뜰안에",
+          "address": "충청북도 제천시 청전대로9길 16",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "뜰안에",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94221&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-sanmaru",
+          "name": "산마루",
+          "address": "충청북도 제천시 금성면 청풍호로 909",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "산마루",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=3738&cpn=1&menuLevel=3&menuNo=121&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-neutinamu",
+          "name": "느티나무횟집",
+          "address": "충청북도 제천시 배시론로 4",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "느티나무횟집",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=93737&cpn=1&menuLevel=3&menuNo=13&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-jecheon-cowboygrill",
+          "name": "카우보이그릴",
+          "address": "충청북도 제천시 청풍면 학현소야로 415-22",
+          "region": "충청북도 제천시",
+          "aliases": [
+            "카우보이그릴",
+            "제천시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.jecheon.go.kr/tour/base/tour/contents/view?clturCntntsNo=94249&cpn=1&menuLevel=3&menuNo=48&psz=12&rcpp=12&siteId=base"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        },
+        {
+          "id": "local-chungbuk-slot24-chungju-naemilseojae",
+          "name": "내밀서재",
+          "address": "충청북도 충주시 연원5길 28",
+          "region": "충청북도 충주시",
+          "aliases": [
+            "내밀서재",
+            "충주시"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2743"
+          ],
+          "result": "공식 상호·주소 확인, 개별 업소 지도 좌표 미확인",
+          "unconfirmedReason": "동일 업소·지점·현주소와 일치하는 공개 지도 핀 좌표 미검증; 기존 16곳 개별 전수 재조사까지 완료된 것은 아님",
+          "recheckCycle": 2,
+          "recheckSlot": 24,
+          "action": "좌표 미추정, 보존·다음 순환 재확인"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "기등록 16곳 위치",
+          "reason": "업소별 지도 핀·현재 주소 교차검증 미완료",
+          "action": "다음 충주·제천 순환에서 오래된 것부터 확인, 미확인만으로 폐업·삭제 금지"
+        },
+        {
+          "topic": "신규 8곳 좌표와 현재 영업",
+          "reason": "공식 이름·주소 확인, 개별 공개 지도 좌표와 현영업 독립 검증은 하지 못함",
+          "action": "lat/lng null, 다음 지역 순환 재확인"
+        },
+        {
+          "topic": "블루리본 현재 전국 정규 등급",
+          "reason": "전체 공식 목록 확인 불가",
+          "action": "추정 리본 수를 기입하지 않음"
+        }
+      ],
+      "carryOver": [
+        "14·16회차 기존 기록 부재 이월 유지",
+        "충주·제천 24곳 위치 재확인 다음 동일 배정 회차 우선",
+        "일부 관광 소개만 확인, 전수 아님"
+      ],
+      "nextSlot": 25,
+      "nextRegions": [
+        "충청남도 천안시",
+        "충청남도 아산시"
       ],
       "notExhaustive": true
     }
