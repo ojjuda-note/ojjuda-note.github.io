@@ -1,0 +1,275 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "안동관광 공식 대표 먹거리·한국관광공사 대한민국 구석구석",
+  "sourceUrls": [
+    "https://www.tourandong.com/public/sub3/sub1.cshtml",
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053"
+  ],
+  "sourceScope": "1순환 37회차 안동시(8곳), 문경시(2곳) 공식 관광 음식점 공개 목록 일부를 기존 등록 3011곳 및 지역별 보충자료 대상과 이름·주소 대조. 영주시 공식 관광 기존 등록 40곳 유지.",
+  "verificationLimit": "신규 선정/리본 등급이 아니라 공식 관광 안내에 실린 식당 이력. 현재 영업/별도 지정/발행년도 미검증. 문경시 도로명 주소는 2026 TourAPI 공용 재게시 주소와 공식 관광공사 업소 상세 내용을 대조했으며, 공식 상세에서 도로명 주소의 직접 표시는 확인하지 못함.",
+  "coordinatePolicy": "상호·지점·현주소와 일치하는 공개 좌표를 확인하지 못하여 신규 10곳 lat/lng null. 사용자 위치 또는 임의 좌표를 사용하지 않음.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-andong-slot37-iljik",
+      "name": "일직식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 경동로 676",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-kkachigumeong",
+      "name": "헛제사밥까치구멍집",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 석주로 203",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-50year-jesabab",
+      "name": "맛50년헛제사밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 석주로 201",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-yemijeong",
+      "name": "예미정",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 옹정골길 111",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-hwaryeon",
+      "name": "안동화련",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 일직면 하나들길 150-23",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-nongga-tteul",
+      "name": "농가맛집뜰",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 와룡면 왼마길 21-10",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-memilkkot",
+      "name": "메밀꽃피면",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 도산면 선성4길 22",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-slot37-jebiwon",
+      "name": "제비원식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 번영4길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동시 관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 안동관광 사이트의 지역 먹거리 업소 안내. 별도 공인 등급이나 현재 영업 여부를 확인했다는 뜻은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-mungyeong-slot37-myeongseong",
+      "name": "명성송어장",
+      "category": "한식",
+      "region": "경북",
+      "district": "문경시",
+      "address": "경상북도 문경시 마성면 동성길 59",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광공사 음식점 이름·소재지와 2026 관광정보 재게시 주소를 교차 확인. 블루리본 등급·현 영업 상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2832267",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-mungyeong-slot37-donghwawon",
+      "name": "동화원산장식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "문경시",
+      "address": "경상북도 문경시 문경읍 새재1길 48",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광공사 음식점 이름·소재지와 2026 관광정보 재게시 주소를 교차 확인. 블루리본 등급·현 영업 상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2841330",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
