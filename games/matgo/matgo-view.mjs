@@ -1,4 +1,4 @@
-import './matgo-captured-zoom.mjs?v=20261106-source-folders1';
+import './matgo-captured-zoom.mjs?v=20261106-source-folders3';
 
 // Keep required go/stop choices over the felt, clear of both players' cards.
 export function positionGoStopPrompt(element) {

@@ -1,5 +1,5 @@
-import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261106-source-folders1';
-import {createVentSound} from './matgo-vent-sound.mjs?v=20261106-source-folders1';
+import {createTableFlipScene} from './matgo-table-flip.mjs?v=20261106-source-folders3';
+import {createVentSound} from './matgo-vent-sound.mjs?v=20261106-source-folders3';
 export const VENT_EFFECTS = [
   {id:'gun',name:'총 쏘기',word:'탕! 탕!',hits:[330,690],duration:2050},
   {id:'hammer',name:'망치',word:'꽝!',hits:[650],duration:2150},
@@ -14,7 +14,7 @@ export const VENT_EFFECTS = [
 ];
 export const pickVentEffect=(random=Math.random)=>VENT_EFFECTS[Math.floor(random()*VENT_EFFECTS.length)];
 // Keep the existing receipt ID while replacing the kitchen knife with sporting equipment.
-const assetURL=id=>new URL(`./assets/matgo-vent/${id==='slash'?'fencing-v1':id}.png`,import.meta.url).href;
+const assetURL=id=>new URL(`../assets/matgo-vent/${id==='slash'?'fencing-v1':id}.png`,import.meta.url).href;
 const assetCache=new Map();
 function prepareAsset(id){
   if(id==='lightning'||id==='table')return Promise.resolve();

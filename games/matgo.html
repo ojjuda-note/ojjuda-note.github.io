@@ -23,10 +23,10 @@
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/games/matgo/matgo-shared.css?v=20261106-source-folders3">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-<script src="/games/matgo/matgo-access.js?v=20261106-source-folders1"></script>
+<script src="/games/matgo/matgo-access.js?v=20261106-source-folders3"></script>
 <style>
 body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!important}
 #matgo-gate{min-height:100%;display:grid;place-content:center;text-align:center;padding:24px;gap:12px}
@@ -35,19 +35,19 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 .round-rules-note{flex-shrink:0;margin:0 12px 3px;padding:4px 8px;border-radius:8px;background:#f2c14e18;color:#f4dc9c;font-size:11px;line-height:1.4;text-align:center}
 .round-rules-note[hidden]{display:none}
 </style>
-<link rel="stylesheet" href="/games/matgo/matgo-viewport.css?v=20261106-source-folders1">
-<script src="/games/matgo/matgo-viewport.js?v=20261106-source-folders1"></script>
-<link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
-<script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/shared/games/game-entry.css?v=20261106-source-folders1">
-<script src="/shared/games/game-entry.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/games/matgo/matgo-deck-tools.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/games/matgo/matgo-opponent.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261106-source-folders1">
-<script src="/shared/games/multiplayer-entry.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261106-source-folders1">
-<script src="/shared/games/game-results.js?v=20261106-source-folders1"></script>
+<link rel="stylesheet" href="/games/matgo/matgo-viewport.css?v=20261106-source-folders3">
+<script src="/games/matgo/matgo-viewport.js?v=20261106-source-folders3"></script>
+<link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders3">
+<script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders3" defer></script>
+<link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders3">
+<link rel="stylesheet" href="/shared/games/game-entry.css?v=20261106-source-folders3">
+<script src="/shared/games/game-entry.js?v=20261106-source-folders3" defer></script>
+<link rel="stylesheet" href="/games/matgo/matgo-deck-tools.css?v=20261106-source-folders3">
+<link rel="stylesheet" href="/games/matgo/matgo-opponent.css?v=20261106-source-folders3">
+<link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261106-source-folders3">
+<script src="/shared/games/multiplayer-entry.js?v=20261106-source-folders3" defer></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261106-source-folders3">
+<script src="/shared/games/game-results.js?v=20261106-source-folders3"></script>
 <style>.modal>.card:has(> .game-result-card){padding:0;background:transparent;border:0;box-shadow:none;width:min(430px,100%);max-width:430px}</style>
 </head>
 <body class="matgo-locked" data-mp-entry="true" data-mp-entry-pending>
@@ -61,14 +61,14 @@ body.matgo-locked>:not(#matgo-gate):not(#matgo-entry-loading){display:none!impor
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 <script type="module">
-import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo/matgo-tazza.mjs?v=20261106-source-folders1";
-import {shuffledFloorSlots} from "./matgo/matgo-table-flip.mjs?v=20261106-source-folders1";
-import {cpuPortraitHTML} from "./matgo/matgo-opponent.mjs?v=20261106-source-folders1";
-import {createVentControls} from "./matgo/matgo-deck-tools.mjs?v=20261106-source-folders1";
-import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo/matgo-engine.mjs?v=20261106-source-folders1";
-import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo/matgo-view.mjs?v=20261106-source-folders1";
-import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261106-source-folders1";
-import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-folders1";
+import {dealSoloRound,createTazzaQueue,TAZZA_MODES,TAZZA_DETAILS} from "./matgo/matgo-tazza.mjs?v=20261106-source-folders3";
+import {shuffledFloorSlots} from "./matgo/matgo-table-flip.mjs?v=20261106-source-folders3";
+import {cpuPortraitHTML} from "./matgo/matgo-opponent.mjs?v=20261106-source-folders3";
+import {createVentControls} from "./matgo/matgo-deck-tools.mjs?v=20261106-source-folders3";
+import {CARDS,isPi,piVal,score,Game,aiChooseCard,aiGoStop,aiChoose,aiChooseGukjin,seededRandom} from "./matgo/matgo-engine.mjs?v=20261106-source-folders3";
+import {floorLayout,heldPairMonths,piClaimMessage,positionGoStopPrompt} from "./matgo/matgo-view.mjs?v=20261106-source-folders3";
+import {createWallet} from "./matgo/matgo-wallet.mjs?v=20261106-source-folders3";
+import {createFlightArt} from "./matgo/matgo-flight-art.mjs?v=20261106-source-folders3";
 (async () => {
 'use strict';
 let access = window.OjjudaMatgoAccess, stopAccess = () => {}, roundCheck = false, sessionClosed=false, disposeRound=()=>{};
@@ -487,7 +487,7 @@ function mount(){
   logEl=$('#log');
   $('#tazza-mode').onclick=()=>{if(tazza.starting||ui.dealing||!access.allowed())return;tazza.toggle();syncTazza();toast(tazza.queued?'다음 판 예약 완료 · 지금 패는 그대로, 다음 판 시작 때 5쭈를 사용해요.':'타짜모드 예약을 취소했어요.',1800);};
   vent.mount();syncTazza();
-  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261106-source-folders1&open='+Date.now());};
+  $('#online').onclick=()=>{if(ui.busy||settling)return;game.over=true;Sound.cancel();location.replace('./matgo-online.html?v=20261106-source-folders3&open='+Date.now());};
   $('#exit').onclick=()=>{if(window.parent!==window)window.parent.postMessage({type:'ojjuda:matgo:close'},location.origin);else location.href='../world.html';};
   document.querySelectorAll('.menu-options button').forEach(b=>b.addEventListener('click',()=>document.querySelector('.game-menu').open=false));
   $('#money').onclick=()=>showRefill();
