@@ -32,7 +32,7 @@ create function ojjuda_note_internal.visible_notifications() returns table(id uu
 create function ojjuda_note_internal.mark_notifications_read(uuid[],timestamptz,timestamptz) returns integer language sql as $$select 0$$;
 create function ojjuda_note.list_retention_alerts() returns table(id uuid,card_id uuid,created_at timestamptz,archive_due_at timestamptz,read_at timestamptz) language sql as $$select null::uuid,null::uuid,null::timestamptz,null::timestamptz,null::timestamptz where false$$;
 grant usage on schema ojjuda_note to authenticated;`);
-for(const suffix of ['_shared_app_notifications.sql','_friend_messages.sql','_notification_summary_and_retired_reads.sql','_private_group_board.sql','_group_member_invitations.sql'])await db.exec(migration(suffix));
+for(const suffix of ['_shared_app_notifications.sql','_friend_messages.sql','_notification_summary_and_retired_reads.sql','_private_group_board.sql','_group_member_invitations.sql','_group_reliability_performance.sql'])await db.exec(migration(suffix));
 for(let n=1;n<=6;n++){await db.query('insert into auth.users(id) values($1)',[uid(n)]);await db.query('insert into public.profiles values($1,$2)',[uid(n),'회원'+n]);}
 const as=async n=>db.exec(`reset role;set role ${n?'authenticated':'anon'};select set_config('request.jwt.claim.sub','${n?uid(n):''}',false);`);
 const val=async(q,p=[])=>(await db.query(q,p)).rows[0]?.value;
@@ -87,6 +87,20 @@ await board('transfer',{room_id:room,user_id:uid(4)});
 await as(6);assert.deepEqual(await api('received'),[]);await assert.rejects(api('accept',{id:sixth}));await assert.rejects(api('accept_link',{code:oldLink}));
 await as(4);const fresh=await api('send',{room_id:room,user_id:uid(6)});assert.notEqual(fresh.id,sixth);await board('delete_room',{room_id:room});
 await as(6);assert.equal((await inbox()).items.length,0);await assert.rejects(api('accept',{id:fresh.id}));
+// Reads work in a read-only transaction; room creation is idempotent after a lost response.
+await as(1);const stableId=uid(1000),safeRoom=(await board('create_room',{id:stableId,name:'다시 시도'})).id;
+assert.equal(safeRoom,stableId);assert.equal((await board('create_room',{id:stableId,name:'다시 시도'})).id,stableId);
+assert.equal((await board('rooms')).filter(r=>r.id===stableId).length,1);
+await as(2);await assert.rejects(board('create_room',{id:stableId,name:'다른 계정'}));await as(1);
+await board('save',{room_id:safeRoom,id:uid(1001),kind:'post',body:'확인',media:[]});
+const safeLink=(await api('link',{room_id:safeRoom})).code;
+await db.exec('begin read only');
+try{
+ assert.equal((await board('members',{room_id:safeRoom})).length,1);assert.deepEqual(await board('requests',{room_id:safeRoom}),[]);
+ assert.deepEqual(await board('comments',{id:uid(1001)}),[]);assert.ok(Array.isArray(await api('search',{room_id:safeRoom,query:'회원'})));
+ assert.equal((await api('preview_link',{code:safeLink})).room_id,safeRoom);assert.equal((await api('link',{room_id:safeRoom})).code,safeLink);
+ const home=await val("select public.group_home('다시') value");assert.equal(home.directory.length,1);assert.ok(Array.isArray(home.rooms));assert.ok(Array.isArray(home.invitations));
+}finally{await db.exec('rollback');}
 await db.exec('reset role');await db.query('update auth.users set is_anonymous=true where id=$1',[uid(6)]);await as(6);await assert.rejects(api('received'));
 assert.equal(await val("select has_function_privilege('anon','public.group_invitation(text,jsonb)','execute') value"),false);
 assert.equal(await val("select has_function_privilege('authenticated','ojjuda_groups_internal.invitable_peer(uuid)','execute') value"),false);
