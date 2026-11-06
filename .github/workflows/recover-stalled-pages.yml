@@ -16,6 +16,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh api "repos/$GH_REPO/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d/status" --jq '.status'
+          gh api "repos/$GH_REPO/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d" --jq '.status'
           gh api --method POST "repos/$GH_REPO/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d/cancel"
-          gh api "repos/$GH_REPO/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d/status" --jq '.status'
+          gh api "repos/$GH_REPO/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d" --jq '.status'
