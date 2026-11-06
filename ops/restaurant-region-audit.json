@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 18,
-    "scheduledAt": "2026-11-06T12:00:00+09:00",
+    "slot": 19,
+    "scheduledAt": "2026-11-06T13:00:00+09:00",
     "checkedAtKST": "2026-11-06",
-    "source": "2026-11-06 12:00 KST scheduled; started 12:04 KST"
+    "source": "2026-11-06 13:00 KST scheduled; started approximately 13:56 KST"
   },
   "entries": [
     {
@@ -5030,6 +5030,150 @@
       "nextRegions": [
         "강원특별자치도 강릉시",
         "강원특별자치도 동해시"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 19,
+      "scheduledAtKST": "2026-11-06T13:00:00+09:00",
+      "checkedAtKST": "2026-11-06",
+      "status": "partial_review_with_3_donghae_municipal_top_restaurants_and_1_gangneung_tourism_listing",
+      "assignedRegions": [
+        "강원특별자치도 강릉시",
+        "강원특별자치도 동해시"
+      ],
+      "regionAudit": [
+        {
+          "region": "강원특별자치도 강릉시",
+          "baseListedCount": 1,
+          "scope": "기존 강릉유환식당 블루리본 수록 관광공사 근거 재확인(현 영업 별개); 강릉풍년갈비 한국관광공사 관광 음식점 소개·현 도로명주소와 공개 상가 좌표(상호·주소 일치) 교차 검토",
+          "new": 1,
+          "updated": 0,
+          "coordinatesAdded": 1,
+          "unknownLocations": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "강원특별자치도 동해시",
+          "baseListedCount": 0,
+          "scope": "동해시 공식 동해관광 2026-04-30 으뜸음식점 3곳과 별도 모범음식점 분류 대조; 정확히 일치하는 주소와 메뉴 확인. 단순 모범음식점·위생등급 업체는 추가하지 않음",
+          "new": 3,
+          "updated": 0,
+          "coordinatesAdded": 0,
+          "unknownLocations": 3,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "한국관광공사 대한민국 구석구석 개별 관광 식당 페이지 2건(강릉유환식당 기존, 강릉풍년갈비 신규)",
+        "동해관광 2026-04-30 으뜸음식점 공식 명단 3건",
+        "공개 상가/위치 데이터에 기재된 강릉풍년갈비 동일 상호·도로명주소·위경도",
+        "미쉐린 기존 서울·부산 공식 공개 선정 범위(본 회차 강릉·동해 신규 해당 없음), 블루리본 공식 개별 전체 명단 조회 불완전"
+      ],
+      "additions": 4,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 1,
+      "locationHidden": 0,
+      "locationPending": 3,
+      "locationPendingScope": "동해시 신규 으뜸음식점 3곳의 상호·지점·현주소에 정확히 대응하는 공개 좌표 근거 미확보, 강릉시 신규 1곳은 상가 공개 주소-위치 근거로 대조.",
+      "addedRestaurantIds": [
+        "local-gangwon-slot19-gangneung-pungnyeon-galbi",
+        "local-gangwon-slot19-donghae-piano",
+        "local-gangwon-slot19-donghae-tteurae",
+        "local-gangwon-slot19-donghae-yeongbingwan"
+      ],
+      "evidenceUrls": [
+        "https://www.dh.go.kr/tour/contents.do?key=1161",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=7923fcb5-7e27-446e-bf4a-57da7fdf56ab",
+        "https://smi.purpleo.kr/article/3582",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=460e2897-e784-4e9f-9fdd-a8f70c5a4628"
+      ],
+      "locationRechecks": [
+        {
+          "id": "local-gangwon-slot19-donghae-piano",
+          "name": "피아노",
+          "address": "강원특별자치도 동해시 동해대로 6270-18, 201,202호 (망상동)",
+          "region": "강원특별자치도 동해시",
+          "aliases": [
+            "강원특별자치도 동해시",
+            "강원도 동해시",
+            "강원 동해"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "result": "동해시 2026-04-30 으뜸음식점 상호·주소 명단 수록 확인. 개별 정확한 공개 지도 좌표 근거 미발견",
+          "unconfirmedReason": "동일 상호·지점·현 주소 공개 위경도 교차확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 19,
+          "action": "위경도 null 유지; 다음 배정 우선 재조사. 위치만으로 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-gangwon-slot19-donghae-tteurae",
+          "name": "뜰애",
+          "address": "강원특별자치도 동해시 평원6길 12 (평릉동)",
+          "region": "강원특별자치도 동해시",
+          "aliases": [
+            "강원특별자치도 동해시",
+            "강원도 동해시",
+            "강원 동해"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "result": "동해시 2026-04-30 으뜸음식점 상호·주소 명단 수록 확인. 개별 정확한 공개 지도 좌표 근거 미발견",
+          "unconfirmedReason": "동일 상호·지점·현 주소 공개 위경도 교차확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 19,
+          "action": "위경도 null 유지; 다음 배정 우선 재조사. 위치만으로 폐업·비노출 단정 금지"
+        },
+        {
+          "id": "local-gangwon-slot19-donghae-yeongbingwan",
+          "name": "영빈관",
+          "address": "강원특별자치도 동해시 한섬로 135-3 (천곡동)",
+          "region": "강원특별자치도 동해시",
+          "aliases": [
+            "강원특별자치도 동해시",
+            "강원도 동해시",
+            "강원 동해"
+          ],
+          "checkedAtKST": "2026-11-06",
+          "sourceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "result": "동해시 2026-04-30 으뜸음식점 상호·주소 명단 수록 확인. 개별 정확한 공개 지도 좌표 근거 미발견",
+          "unconfirmedReason": "동일 상호·지점·현 주소 공개 위경도 교차확인 미완료",
+          "recheckCycle": 2,
+          "recheckSlot": 19,
+          "action": "위경도 null 유지; 다음 배정 우선 재조사. 위치만으로 폐업·비노출 단정 금지"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "동해시 으뜸음식점 3곳 개별 지도좌표",
+          "reason": "동해시 명단에 정확한 업소 주소만 공개. 이름·지점·주소와 일치하는 신뢰할 수 있는 좌표는 이 회차에 별도로 확인하지 못함",
+          "action": "2순환 19회차 우선 재조사. 임의 좌표·사용자 위치 사용 금지."
+        },
+        {
+          "topic": "강릉시 공식 가이드 완전 명단·정규 리본 수·변경 및 각 업소 현 영업 여부",
+          "reason": "관광 식당 소개는 가이드 정규선정이나 현재 정상 영업을 보증하지 않음. 블루리본 전체 개별 명단 대조 및 폐업 전수조사 미완료",
+          "action": "다음 19회차에서 공식 미쉐린/블루리본/관광자료 개별 출처 추가 검증"
+        }
+      ],
+      "carryOver": [
+        "14회차 평택·오산·안성 및 16회차 의정부·양주·동두천·포천 감사 기록은 main에 미등록으로 미확인 이월 유지",
+        "동해시 신규 3곳 좌표 미확인 및 주소·영업상태 다음 19회차 재검증",
+        "강릉·동해 전수 점검 아님. 비선정·폐업으로 추정해서 식당 삭제하지 않음."
+      ],
+      "nextSlot": 20,
+      "nextRegions": [
+        "강원특별자치도 속초시",
+        "강원특별자치도 삼척시",
+        "강원특별자치도 태백시"
       ],
       "notExhaustive": true
     }

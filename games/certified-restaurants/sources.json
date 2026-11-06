@@ -1502,15 +1502,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3153,
+    "uniqueRestaurants": 3157,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2422,
+      "local-guide": 2426,
       "post-office": 240
     },
-    "coordinatesAvailable": 1028,
-    "coordinatesMissing": 2125,
+    "coordinatesAvailable": 1029,
+    "coordinatesMissing": 2128,
     "regionalCounts": {
       "서울": 351,
       "부산": 378,
@@ -1518,7 +1518,7 @@
       "충남": 46,
       "울산": 36,
       "경남": 319,
-      "강원": 52,
+      "강원": 56,
       "전북": 208,
       "경기": 382,
       "인천": 341,
@@ -1531,11 +1531,11 @@
       "광주": 69
     },
     "categoryCounts": {
-      "한식": 1852,
+      "한식": 1854,
       "중식": 130,
-      "일식": 131,
+      "일식": 132,
       "기타": 579,
-      "양식": 208,
+      "양식": 209,
       "분식": 25,
       "디저트": 228
     }
@@ -10963,51 +10963,115 @@
       "scope": "강원 춘천·원주 18회차. 공식 관광 8곳 소개 이력 부분조사, 기존 춘천 블루리본 1곳 좌표 보강. 리본 등급·판본 임의 추가 없음.",
       "coordinatePolicy": "춘천시 관광 상세에 같은 지점·현주소 및 지도 링크 위경도가 확인되는 경우만 5곳 설정. 원주 4곳은 null 유지.",
       "notExhaustive": true
+    },
+    {
+      "id": "2026-11-06-gangwon-slot19-gangneung-donghae",
+      "checkedAt": "2026-11-06",
+      "previousCoverage": {
+        "uniqueRestaurants": 3153,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2422,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1028,
+        "coordinatesMissing": 2125,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 52,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1852,
+          "중식": 130,
+          "일식": 131,
+          "기타": 579,
+          "양식": 208,
+          "분식": 25,
+          "디저트": 228
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3157,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2426,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1029,
+        "coordinatesMissing": 2128,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 378,
+          "충북": 214,
+          "충남": 46,
+          "울산": 36,
+          "경남": 319,
+          "강원": 56,
+          "전북": 208,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 117,
+          "전남": 177,
+          "세종": 100,
+          "대전": 105,
+          "경북": 145,
+          "광주": 69
+        },
+        "categoryCounts": {
+          "한식": 1854,
+          "중식": 130,
+          "일식": 132,
+          "기타": 579,
+          "양식": 209,
+          "분식": 25,
+          "디저트": 228
+        }
+      },
+      "newRestaurantCount": 4,
+      "newRestaurantIds": [
+        "local-gangwon-slot19-gangneung-pungnyeon-galbi",
+        "local-gangwon-slot19-donghae-piano",
+        "local-gangwon-slot19-donghae-tteurae",
+        "local-gangwon-slot19-donghae-yeongbingwan"
+      ],
+      "existingRestaurantsEnriched": 0,
+      "sourceAuditFile": "ops/restaurant-region-audit.json",
+      "officialSourceUrls": [
+        "https://www.dh.go.kr/tour/contents.do?key=1161",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=7923fcb5-7e27-446e-bf4a-57da7fdf56ab"
+      ],
+      "coordinateEvidenceUrls": [
+        "https://smi.purpleo.kr/article/3582"
+      ],
+      "scope": "강원 강릉·동해 19회차 부분 조사. 동해시 으뜸음식점 3곳은 2026-04-30 기준 명단, 강릉 1곳은 한국관광공사 공식 관광 음식점 소개만 확인. 블루리본 등급·현재 영업 미확인.",
+      "coordinatesAdded": 1,
+      "locationPending": 3,
+      "locationHidden": 0,
+      "notExhaustive": true
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-06-gangwon-slot18-chuncheon-wonju",
+    "id": "2026-11-06-gangwon-slot19-gangneung-donghae",
     "checkedAt": "2026-11-06",
     "previousCoverage": {
-      "uniqueRestaurants": 3145,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2414,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 2122,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
-        "울산": 36,
-        "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 117,
-        "전남": 177,
-        "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
-      },
-      "categoryCounts": {
-        "한식": 1846,
-        "중식": 130,
-        "일식": 131,
-        "기타": 578,
-        "양식": 208,
-        "분식": 24,
-        "디저트": 228
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3153,
       "providerCounts": {
         "michelin": 237,
@@ -11046,35 +11110,65 @@
         "디저트": 228
       }
     },
-    "newRestaurantCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3157,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2426,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1029,
+      "coordinatesMissing": 2128,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 378,
+        "충북": 214,
+        "충남": 46,
+        "울산": 36,
+        "경남": 319,
+        "강원": 56,
+        "전북": 208,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 117,
+        "전남": 177,
+        "세종": 100,
+        "대전": 105,
+        "경북": 145,
+        "광주": 69
+      },
+      "categoryCounts": {
+        "한식": 1854,
+        "중식": 130,
+        "일식": 132,
+        "기타": 579,
+        "양식": 209,
+        "분식": 25,
+        "디저트": 228
+      }
+    },
+    "newRestaurantCount": 4,
     "newRestaurantIds": [
-      "local-gangwon-slot18-chuncheon-silbi-makguksu",
-      "local-gangwon-slot18-chuncheon-yupori-makguksu",
-      "local-gangwon-slot18-chuncheon-gamja-island-bon",
-      "local-gangwon-slot18-chuncheon-myeongga-makguksu",
-      "local-gangwon-slot18-wonju-yejin-mandu",
-      "local-gangwon-slot18-wonju-namgyeong-musil",
-      "local-gangwon-slot18-wonju-deokcheon-makguksu",
-      "local-gangwon-slot18-wonju-mihyang"
+      "local-gangwon-slot19-gangneung-pungnyeon-galbi",
+      "local-gangwon-slot19-donghae-piano",
+      "local-gangwon-slot19-donghae-tteurae",
+      "local-gangwon-slot19-donghae-yeongbingwan"
     ],
-    "existingRestaurantsEnriched": 1,
-    "existingRestaurantIds": [
-      "blue-regional-tongnamujip-dakgalbi-chuncheon"
-    ],
+    "existingRestaurantsEnriched": 0,
     "sourceAuditFile": "ops/restaurant-region-audit.json",
     "officialSourceUrls": [
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=102",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=325",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=47",
-      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y",
-      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
-      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
-      "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
+      "https://www.dh.go.kr/tour/contents.do?key=1161",
+      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=7923fcb5-7e27-446e-bf4a-57da7fdf56ab"
     ],
-    "scope": "강원 춘천·원주 18회차. 공식 관광 8곳 소개 이력 부분조사, 기존 춘천 블루리본 1곳 좌표 보강. 리본 등급·판본 임의 추가 없음.",
-    "coordinatePolicy": "춘천시 관광 상세에 같은 지점·현주소 및 지도 링크 위경도가 확인되는 경우만 5곳 설정. 원주 4곳은 null 유지.",
+    "coordinateEvidenceUrls": [
+      "https://smi.purpleo.kr/article/3582"
+    ],
+    "scope": "강원 강릉·동해 19회차 부분 조사. 동해시 으뜸음식점 3곳은 2026-04-30 기준 명단, 강릉 1곳은 한국관광공사 공식 관광 음식점 소개만 확인. 블루리본 등급·현재 영업 미확인.",
+    "coordinatesAdded": 1,
+    "locationPending": 3,
+    "locationHidden": 0,
     "notExhaustive": true
   },
   "latestMapCoverageAudit": {
@@ -11187,9 +11281,9 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2394,
-    "designationEvidenceCount": 2425,
-    "coordinatesAvailable": 752,
+    "recordCount": 2398,
+    "designationEvidenceCount": 2428,
+    "coordinatesAvailable": 753,
     "regionCount": 17,
     "regionalCoverage": [
       {
@@ -11248,8 +11342,8 @@
       },
       {
         "region": "강원",
-        "uniqueRestaurants": 45,
-        "coordinatesAvailable": 4,
+        "uniqueRestaurants": 49,
+        "coordinatesAvailable": 5,
         "completeRegionalCollection": false
       },
       {
@@ -11780,6 +11874,36 @@
       "sourceFile": "games/certified-restaurants/official-gangwon-slot18.json",
       "notExhaustive": true,
       "followUp": "원주시 4곳 정확한 좌표 미확인. 2순환 18회차 우선 재조사하고 현재 영업·가이드 선정 여부는 별도 확인."
+    },
+    "municipalSelection20261106GangwonSlot19": {
+      "checkedAt": "2026-11-06",
+      "provider": "local-guide",
+      "sourceName": "동해시 동해관광 · 한국관광공사 대한민국 구석구석",
+      "officialSourceUrls": [
+        "https://www.dh.go.kr/tour/contents.do?key=1161",
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=7923fcb5-7e27-446e-bf4a-57da7fdf56ab"
+      ],
+      "coordinateEvidenceUrls": [
+        "https://smi.purpleo.kr/article/3582"
+      ],
+      "regions": [
+        "강릉시",
+        "동해시"
+      ],
+      "recordsAddedByRegion": {
+        "강릉시": 1,
+        "동해시": 3
+      },
+      "recordCount": 4,
+      "municipalExcellenceDesignation": 3,
+      "officialTourismListing": 1,
+      "designationReferenceDate": "2026-04-30",
+      "selectionYearVerified": false,
+      "currentOperatingStatusEstablished": false,
+      "coordinateVerifiedCount": 1,
+      "sourceFile": "games/certified-restaurants/official-gangwon-slot19.json",
+      "notExhaustive": true,
+      "followUp": "동해시 3곳 정확한 지도좌표·영업 상태 미확인; 2순환 19회차 우선 재조사. 동해시 '모범음식점'만 선정된 업체는 인증식당으로 추가하지 않음."
     }
   },
   "mapCoverageAuditHistory": [
