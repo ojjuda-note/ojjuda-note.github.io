@@ -11473,7 +11473,6 @@
       "recordCount": 14,
       "provider": "local-guide",
       "guideStatus": "historical_designation",
-      "selectionYear": 2023,
       "operatingStatusEstablished": false,
       "coordinateVerifiedCount": 0,
       "sourceFile": "games/certified-restaurants/official-guri-slot15.json",
@@ -11496,7 +11495,8 @@
       "additionalOfficialSourceUrls": [
         "https://www.guri.go.kr/www/contents.do?key=6537"
       ],
-      "additionalOfficialSourceUpdatedAt": "2026-10-28"
+      "additionalOfficialSourceUpdatedAt": "2026-10-28",
+      "notes": "2023년 지정 발표의 공표일(2023-10-26), 2025년 지정 명단, 2026년 경연대회 수상 기록(공식 페이지 최종수정 2026-10-28)과 이번 확인일(2026-11-06)은 서로 다른 값."
     }
   },
   "mapCoverageAuditHistory": [
