@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'screw*.js'
+      - 'vendor/poly-decomp*'
+      - 'supabase/functions/flat-drill-clear*/**'
       - 'screw-games.css'
       - 'world.html'
       - 'world-game-assets.js'
@@ -20,6 +22,8 @@ on:
   pull_request:
     paths:
       - 'screw*.js'
+      - 'vendor/poly-decomp*'
+      - 'supabase/functions/flat-drill-clear*/**'
       - 'screw-games.css'
       - 'world.html'
       - 'world-game-assets.js'

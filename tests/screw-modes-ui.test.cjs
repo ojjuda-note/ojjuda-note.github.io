@@ -154,7 +154,7 @@ async function assertFullscreen(page,size){
   assert.equal(await page.locator('[data-g=screw-stage][data-stage="1000"]').count(),1,'the last page opens automatically for the remembered stage');
   await page.locator('[data-g=screw-stage][data-stage="1000"]').click();
   await page.waitForFunction(()=>screwWorld.current()?.game?.state?.L===1000);
-  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws.length),100);
+  assert.equal(await page.evaluate(()=>screwWorld.current().game.state.level.screws.length),32);
   await assertFullscreen(page,{width:390,height:844});
   if(qa)await page.locator('#gov').screenshot({path:path.join(qa,'screw-flat-1000.png')});
 
@@ -166,8 +166,29 @@ async function assertFullscreen(page,size){
   assert.equal(await page.locator('#gov').count(),1,'a direct box link is still available');
   assert.equal(engineRequests.some(p=>p.includes('screw3d')),true,'box mode loads its own engine when selected');
   await page.evaluate(()=>screwWorld.close());
+  // A browser-generated physical clear must replay identically on the reward server.
+  const {certified}=require('./helpers/flat-atomic-solution-search.cjs');
+  const {verifyClear}=require('../supabase/functions/flat-drill-clear/replay.cjs');
+  for(const stage of [25,122,1000]){
+   const witness=certified(stage);assert.equal(witness.reason,null);
+   const result=await page.evaluate(async({stage,route})=>{
+    let proof;const game=OjjudaScrewGames.flat({getUserId:()=>`browser-replay-${stage}`,setScore(){},
+     drillAction:async()=>({ok:true,balance:0}),verifyDrill:async value=>{proof=value;return{ok:true,balance:1,reward:'earned'};}},stage);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    const tap=p=>{game.onDown(p.x,p.y,1);game.onUp(p.x,p.y,1);};
+    for(const step of route){
+     tap(game.state.level.screws[step.screw].hole);tap(game.state.level.holes[step.to]);
+     for(let i=0;i<step.wait*20;i++)game.update(.05);
+    }
+    for(let i=0;i<160&&!game.state.complete;i++)game.update(.05);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    const result={complete:game.state.complete,moves:game.state.moves,proof};game.destroy();return result;
+   },{stage,route:witness.route});
+   assert.equal(result.complete,true,`stage ${stage} clears in Chromium`);assert.equal(result.moves,witness.moves);
+   assert.ok(result.proof);assert.equal(verifyClear(stage,result.proof.events,result.proof.endTick),true,'the server accepts the browser physics replay');
+  }
   assert.deepEqual(errors,[]);
   await context.close();
-  console.log('PASS: both screw modes open, six responsive viewports up to 1920px, real pinch, wheel, pan and animated two-tap transfer, stage-26 zoom, stage-1000 render, lazy engines and clean exit.');
+  console.log('PASS: both screw modes open, six responsive viewports up to 1920px, real pinch, wheel, pan and animated two-tap transfer, stage-26 zoom, stage-1000 render, lazy engines, clean exit and three browser/server physical replays.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

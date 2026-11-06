@@ -1,7 +1,7 @@
 # Flat-game physical witnesses
 
-Every stage starts with three parking holes. The rigid-body tests solve the eleven introductory stages, the special flower at stage 25, and the 988 generated stages. Each transfer has a screw ID, a different destination hole and a settling time. The game accepts every legal transfer regardless of the solution used in testing.
+All 1,000 stages start with three parking holes. Shared, sampled curves divide a rectangular sheet into complementary plates. Concave Matter.js compounds use exactly the rendered boundary. Stage 1 starts with one plate; later stages increase to 16 readable plates rather than shrinking 50 pieces and their fasteners on a phone.
 
-Stages 122–1000 each record a tested plate variant, a move ceiling, and the fraction of a screw head that must clear the edge of adjacent metal when parking. The ceiling is the length of a verified three-hole route. A shorter route may exist. The test helper reconstructs the route from a search strategy and simulates the real collisions. The game never loads these strategies.
+Each published layout has a deterministic seed variant and a physically replayed three-hole move count. Stages 122–1000 use that count as their move ceiling. This is a verified route, not a claim of the mathematical minimum. Each stage can still be cleared without items. Test-only parking preferences reconstruct the routes; the client does not load answers or gate screw access by a sequence.
 
-Run `node tests/screw-flat-all-routes.test.cjs` to verify all generated stages. `node tests/screw-flat-routes.test.cjs` also plays stage 122 through the tap handlers, checks that its three-hole clear earns a valid replay, and uses a drill for a four-hole ranked clear.
+Run `node tests/screw-flat-all-routes.test.cjs` to replay all 1,000 stages. `screw-flat-routes.test.cjs` checks real two-tap clears, a server-verifiable unassisted reward, and an assisted ranked clear without a reward. `screw-flat-curves.test.cjs` checks area coverage, concave openings, rotated contacts and shape agreement.

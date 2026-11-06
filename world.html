@@ -28,7 +28,7 @@
 <script src="/world-admin-loader.js?v=20261105-admin-polish1" defer></script>
 <link rel="stylesheet" href="/friend-messages.css?v=20261020-messages1">
 <script src="/friend-messages.js?v=20261020-messages1" defer></script>
-<script src="/world-game-assets.js?v=20261106-restaurants-slot19-1" defer></script>
+<script src="/world-game-assets.js?v=20261106-flat-curved-panels1" defer></script>
 <link rel="stylesheet" href="/game-challenges.css?v=20261101-game-challenges1">
 <script src="/game-challenges.js?v=20261103-game-results1" defer></script>
 <link rel="stylesheet" href="/game-results.css?v=20261103-game-results1">
@@ -1643,7 +1643,8 @@ if(t==="screw"){const mode=R.screwMode||"box",session=R,request={};session.loadi
  },
  verifyDrill:async proof=>{
    if(!D.online||!D.user||!S)return {ok:false};
-   const endpoint=proof.physics==='three-hole-challenge-v1'?'flat-drill-clear-challenge':
+   const endpoint=proof.physics==='curved-partitions-v1'?'flat-drill-clear-curves':
+     proof.physics==='three-hole-challenge-v1'?'flat-drill-clear-challenge':
      proof.physics==='whole-plates-v2'?'flat-drill-clear-shapes-v2':
      proof.physics==='whole-plates-v1'?'flat-drill-clear-shapes':'flat-drill-clear';
    const {data,error}=await S.functions.invoke(endpoint,{body:proof});

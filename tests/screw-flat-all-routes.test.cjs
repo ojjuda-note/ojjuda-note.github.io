@@ -5,7 +5,7 @@ const {Worker,isMainThread,parentPort,workerData}=require('node:worker_threads')
 // UI-tap playthroughs in other tests. Every advanced board is independently
 // solved in the same rigid-body engine without publishing the answer paths.
 if(isMainThread){
- const stages=Array.from({length:989},(_,i)=>i+12).filter(stage=>stage!==25);
+ const stages=Array.from({length:1000},(_,i)=>i+1);
  const batches=Array.from({length:4},(_,offset)=>stages.filter((_,i)=>i%4===offset));
  Promise.all(batches.map(stages=>new Promise((resolve,reject)=>{
   const worker=new Worker(__filename,{workerData:stages});
@@ -13,8 +13,8 @@ if(isMainThread){
   worker.once('exit',code=>{if(code)reject(Error('Flat route worker exited '+code));});
  }))).then(results=>{
   assert.deepEqual(results.flatMap(r=>r.failures),[],'every stage must have a free solution with visible screw collisions');
-  assert.equal(results.reduce((n,r)=>n+r.count,0),988);
-  console.log('PASS: all 988 advanced stages physically clear with only three free spare holes, no items, and the certified move budgets.');
+  assert.equal(results.reduce((n,r)=>n+r.count,0),1000);
+  console.log('PASS: all 1000 stages physically clear with only three free spare holes, no items, and the certified move budgets.');
  }).catch(error=>{console.error(error);process.exitCode=1;});
 }else{
  const P=require('../screw-flat-physics.js'),G=require('../screw-flat.js');
