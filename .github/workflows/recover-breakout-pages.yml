@@ -20,7 +20,7 @@ jobs:
           base = 'https://api.github.com/repos/ojjuda-note/ojjuda-note.github.io/pages/deployments/4a0d8eb266aec6999b80ba971fadbd74cf66bd3d'
           headers = {'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'}
           def status():
-              with urllib.request.urlopen(urllib.request.Request(base + '/status', headers=headers), timeout=20) as r:
+              with urllib.request.urlopen(urllib.request.Request(base, headers=headers), timeout=20) as r:
                   value = json.load(r).get('status')
               print('Deployment status:', value, flush=True)
               return value
