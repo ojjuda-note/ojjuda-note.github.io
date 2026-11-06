@@ -1,0 +1,50 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const {JSDOM} = require('jsdom');
+const root = path.resolve(__dirname, '..');
+const read = name => fs.readFileSync(path.join(root, name), 'utf8');
+
+test('solitaire validates iframe messages, confirms exit, saves and removes its overlay', () => {
+  const dom = new JSDOM('<button id="entry">솔리테어</button>', {url:'https://ojjuda.kr/world.html?tab=arcade', runScripts:'outside-only'});
+  const w = dom.window;
+  w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
+  w.HTMLDialogElement.prototype.close = function() { this.open = false; };
+  w.eval(read('world-solitaire-game.js'));
+  let exits = 0, saves = 0, pauses = 0, resumes = 0, finished = 0;
+  w.OjjudaGuestAccess = {finished:() => finished++};
+  const entry = w.document.getElementById('entry'); entry.focus();
+  w.OjjudaSolitaireGame.open({onExitRequest:() => {exits++; return true;}});
+  const dialog = w.document.querySelector('.solitaire-game-dialog'), frame = dialog.querySelector('iframe');
+  frame.contentWindow.OjjudaSolitaireControls = {save:() => saves++, pause:() => {pauses++; return () => resumes++;}};
+  const send = (type, origin = w.location.origin, source = frame.contentWindow) => w.dispatchEvent(new w.MessageEvent('message', {origin, source, data:{source:'ojjuda-solitaire',type}}));
+  send('ojjuda-game-exit-request', 'https://unrelated.example');
+  send('ojjuda-game-exit-request', w.location.origin, w);
+  assert.equal(exits, 0);
+  send('ojjuda-game-exit-request');
+  assert.equal(exits, 1); assert.ok(dialog.isConnected, 'request keeps game open for the shared confirmation');
+  const resume = w.OjjudaSolitaireGame.pause(); assert.equal(pauses, 1); resume(); assert.equal(resumes, 1);
+  send('ojjuda-game-finished'); send('ojjuda-game-finished'); assert.equal(finished, 1);
+  dialog.dispatchEvent(new w.Event('cancel', {cancelable:true}));
+  assert.equal(saves, 1); assert.equal(dialog.isConnected, false);
+  assert.equal(w.document.body.classList.contains('gaming'), false); assert.equal(w.document.activeElement, entry);
+  send('ojjuda-game-exit-request'); assert.equal(exits, 1, 'closed game no longer receives messages');
+  w.OjjudaSolitaireGame.close(); assert.equal(saves, 1);
+  dom.window.close();
+});
+
+test('member sessions do not use the guest completion gate or share guest saves', () => {
+  const dom = new JSDOM('', {url:'https://ojjuda.kr/', runScripts:'outside-only'}), w = dom.window;
+  w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
+  w.HTMLDialogElement.prototype.close = function() { this.open = false; };
+  w.eval(read('world-solitaire-game.js'));
+  let valid = true, requests = 0;
+  w.OjjudaSolitaireGame.open({owner:'member-a', authorized:() => valid, onExitRequest:() => { requests++; return true; }});
+  const frame = w.document.querySelector('iframe');
+  assert.equal(new URL(frame.src).searchParams.get('owner'), 'member-a');
+  valid = false;
+  w.dispatchEvent(new w.MessageEvent('message', {origin:w.location.origin, source:frame.contentWindow, data:{source:'ojjuda-solitaire',type:'ojjuda-game-exit-request'}}));
+  assert.equal(requests, 0);
+  w.OjjudaSolitaireGame.close(); dom.window.close();
+});
