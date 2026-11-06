@@ -72,7 +72,9 @@ main.explore { padding-top: 18px; padding-bottom: 18px; }
 .custom-dates label { display: inline-flex; align-items: center; gap: 8px; }
 .custom-dates input { border: 1px solid #d7e0d9; border-radius: 5px; padding: 6px 8px; background: white; font-size: 13px; min-height: 33px; }
 #date-error { color: #a64739; font-size: 12px; }
-.filter-row { display: flex; align-items: center; padding: 12px 0; }
+.filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 12px 0; }
+.scale-filter { display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; border: 1px solid #dfe7dd; border-radius: 8px; background: white; color: #56715e; font-size: 12px; }
+.scale-filter select { max-width: 136px; padding: 3px 2px; border: 0; background: white; color: #325b40; cursor: pointer; font-size: 13px; }
 .categories { display: flex; align-items: center; gap: 7px; }
 .category-chip { --chip-ink: #56715e; --chip-bg: #fff; --chip-line: #dfe7dd; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 7px 14px; border: 1px solid var(--chip-line); border-radius: 999px; background: var(--chip-bg); color: var(--chip-ink); font-size: 13px; font-weight: 550; line-height: 1.3; white-space: nowrap; transition: background .15s, box-shadow .15s, border-color .15s; }
 .category-chip:hover { border-color: var(--chip-ink); box-shadow: 0 2px 7px #29442c0b; }
@@ -145,7 +147,7 @@ main.explore { padding-top: 18px; padding-bottom: 18px; }
 .results-panel { display: flex; flex-direction: column; }
 .list-toolbar { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 10px 16px; border-bottom: 1px solid #e9eeea; background: linear-gradient(110deg, #f4f8ef, #fbfcf8); }
 .list-toolbar > strong { color: #6b7a70; font-size: 13px; font-weight: 500; }
-.list-toolbar select { max-width: 100px; border: 0; background: transparent; padding: 3px 0 3px 5px; color: #607265; font-size: 12px; cursor: pointer; }
+.list-toolbar select { max-width: 125px; border: 0; background: transparent; padding: 3px 0 3px 5px; color: #607265; font-size: 12px; cursor: pointer; }
 .event-list { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: #d1dbd3 transparent; }
 .event-card { position: relative; display: block; padding: 15px 16px; border-bottom: 1px solid #e9eee6; transition: background .15s; }
 .event-card:last-child { border-bottom: 0; }
@@ -163,6 +165,8 @@ main.explore { padding-top: 18px; padding-bottom: 18px; }
 .card-meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 11px; font-size: 14px; color: #6b7b70; line-height: 1.5; }
 .card-date { flex-shrink: 0; color: #526e5c; font-weight: 550; font-variant-numeric: tabular-nums; }
 .card-location { color: #79867d; }
+.card-attendance { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: #3e7454; }
+.card-attendance.is-unknown { color: #909a91; }
 .card-save { position: absolute; top: 12px; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #91a095; background: #f5f8f1; }
 .card-save .icon { width: 18px; height: 18px; }
 .card-save:hover { background: #eaf1ec; }
