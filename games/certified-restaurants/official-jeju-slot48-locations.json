@@ -1,0 +1,74 @@
+{
+  "updatedAt": "2026-11-07",
+  "cycle": 1,
+  "slot": 48,
+  "sourceNote": "VisitJeju 개별 음식점 상세에 공개된 동일 상호·현주소·숫자좌표만 반영. 과거 블루리본 수록은 현행 정규 등급과 구별.",
+  "restaurants": [],
+  "locationEnrichments": [
+    {
+      "id": "blue-jeju-2022-26",
+      "expectedName": "밀리우",
+      "expectedAddress": "제주특별자치도 서귀포시 표선면 민속해안로 537",
+      "lat": 33.32345,
+      "lng": 126.84478,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-25",
+      "expectedName": "옥돔식당",
+      "expectedAddress": "제주특별자치도 서귀포시 대정읍 신영로 36번길 62",
+      "lat": 33.2199418,
+      "lng": 126.2490877,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-51",
+      "expectedName": "해왓",
+      "expectedAddress": "제주특별자치도 서귀포시 성산읍 신고로 30-1",
+      "lat": 33.4385267,
+      "lng": 126.9172566,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-52",
+      "expectedName": "삼보식당",
+      "expectedAddress": "제주특별자치도 서귀포시 중정로 25",
+      "lat": 33.2476846,
+      "lng": 126.559189,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-53",
+      "expectedName": "공천포식당",
+      "expectedAddress": "제주특별자치도 서귀포시 남원읍 공천포로 89",
+      "lat": 33.2664055,
+      "lng": 126.6426731,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    }
+  ]
+}
