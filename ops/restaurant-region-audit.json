@@ -17,7 +17,7 @@
     "slot": 49,
     "scheduledAt": "2026-11-07T19:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "사용자 예약 19:00 KST. 기준2026-11-05 23:00부터 h=44, n=48, slot49 cycle1."
+    "source": "사용자 예약 19:00 KST. 기준2026-11-05 23:00부터 h=44, n=48, slot49 cycle1. 이어하기 구리시 공식 2026 선정 검증, 원배정 19:00 유지."
   },
   "entries": [
     {
@@ -18371,7 +18371,7 @@
       "slot": 49,
       "scheduledAtKST": "2026-11-07T19:00:00+09:00",
       "checkedAtKST": "2026-11-07",
-      "status": "partial_review_provincial_gyeonggi_official_13_restaurant_introductions",
+      "status": "partial_review_provincial_gyeonggi_13_news_plus_guri_2026_9_designations",
       "assignedRegions": [
         "경기도 공식 명단 대조"
       ],
@@ -18379,30 +18379,32 @@
         {
           "region": "경기도",
           "baseListedCount": 382,
-          "afterListedCount": 395,
-          "scope": "경기도 기본 322곳과 기존 8개 공식 보조명단 60곳을 대조, 경기도뉴스포털 2026-01-27 구리 6곳·2025-08-21 평택 7곳(주소·지점 정확히 기재)을 일부 추가. 도 전체 31개 시군 전수조사 아님.",
+          "afterListedCount": 402,
+          "scope": "경기도 기본 322곳과 기존 8개 공식 보조명단 60곳을 대조, 경기도뉴스포털 2026-01-27 구리 6곳·2025-08-21 평택 7곳(주소·지점 정확히 기재)을 일부 추가. 도 전체 31개 시군 전수조사 아님. 이어하기에서 2026 구리시 공식 선정 9곳(신규7·기존2) 보강. 경기도 나머지 시군 미전수.",
           "actuallyChecked": [
             "경기도 구리시",
-            "경기도 평택시"
+            "경기도 평택시",
+            "경기도 구리시(2026년 와구리맛집 공식 지정 9곳)"
           ],
           "remainingAreas": "다른 시군 추가 명단·위치 개별확인은 다음 순환에 이월",
-          "new": 13,
-          "updated": 0,
-          "remainingUnknownLocations": 342,
+          "new": 20,
+          "updated": 2,
+          "remainingUnknownLocations": 349,
           "notExhaustive": true
         }
       ],
       "sourcesChecked": [
         "경기도뉴스포털 '달달한 경기도 먹거리' 구리(2026-01-27)·평택(2025-08-21) 공식 기사 2건",
-        "기존 경기도 경기으뜸맛집 지정현황·경기관광공사 경기노포 명단 이력(기등록 대조)"
+        "기존 경기도 경기으뜸맛집 지정현황·경기관광공사 경기노포 명단 이력(기등록 대조)",
+        "구리시 2026 와구리맛집 공식 선정 현황(최종 수정 2026-10-28)·2026-09-14 선정 보도자료"
       ],
-      "additions": 13,
-      "modifications": 0,
+      "additions": 20,
+      "modifications": 2,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 342,
-      "locationPendingScope": "경기도 전체 기본 322·기존 공식 보조 60·신규 13=395곳 중 342곳 좌표 미확인. 기존 329곳은 이번 개별 위치 검증 미실시. 신규 13곳도 좌표 미확인.",
+      "locationPending": 349,
+      "locationPendingScope": "경기도 전체 기본 322·기존 공식 보조 60·신규 13=395곳 중 342곳 좌표 미확인. 기존 329곳은 이번 개별 위치 검증 미실시. 신규 13곳도 좌표 미확인. 구리시 2026 공식 지정 신규 7곳도 좌표 미확인, 누적 349곳 재확인 대기.",
       "addedRestaurantIds": [
         "local-gyeonggi-slot49-guri-sangwoo",
         "local-gyeonggi-slot49-guri-denmark",
@@ -18416,14 +18418,26 @@
         "local-gyeonggi-slot49-pyeongtaek-yubaksa",
         "local-gyeonggi-slot49-pyeongtaek-semo",
         "local-gyeonggi-slot49-pyeongtaek-kimnejip",
-        "local-gyeonggi-slot49-pyeongtaek-yeongbin"
+        "local-gyeonggi-slot49-pyeongtaek-yeongbin",
+        "local-guri-waguri2026-udon-kinoya",
+        "local-guri-waguri2026-damga-topyeong",
+        "local-guri-waguri2026-ilietto",
+        "local-guri-waguri2026-gilmok-gamjatang",
+        "local-guri-waguri2026-bongdam-shabu",
+        "local-guri-waguri2026-ossine-naengmyeon",
+        "local-guri-waguri2026-jangmi-hanwoo"
       ],
-      "modifiedRestaurantIds": [],
+      "modifiedRestaurantIds": [
+        "local-guri-slot15-award26-seoulmaeuntang",
+        "local-gyeonggi-slot49-guri-yubaksa"
+      ],
       "evidenceUrls": [
         "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
         "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
         "https://www.gg.go.kr/opendata/openDataContent.do?gg_content_idx=10811&decodeIdx=5076",
-        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE"
+        "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "https://www.guri.go.kr/www/contents.do?key=6016",
+        "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
       ],
       "verifiedBusinessIntroductions": [
         {
@@ -24673,14 +24687,17 @@
             "서울매운탕 경기도 구리시 이문안로113번길 6"
           ],
           "evidenceUrls": [
-            "https://www.guri.go.kr/www/contents.do?key=6537"
+            "https://www.guri.go.kr/www/contents.do?key=6537",
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
           ],
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 49,
           "checkedIndividually": false,
           "result": "이전 가이드 자료 주소·좌표누락 대상 추출, 이번 개별 위치 대조 미실시",
-          "unresolvedReason": "현재 지점 명칭·주소가 일치하는 공개 수치좌표 추가 대조 필요. 검색 실패·좌표없음만으로 폐업·비노출 금지."
+          "unresolvedReason": "현재 지점 명칭·주소가 일치하는 공개 수치좌표 추가 대조 필요. 검색 실패·좌표없음만으로 폐업·비노출 금지.",
+          "officialDesignationVerifiedAt": "2026-11-07"
         },
         {
           "restaurantId": "local-guri-slot15-award26-sodamchon",
@@ -24920,14 +24937,17 @@
             "유박사곱창 경기도 구리시 안골로103번길 56 (수택동)"
           ],
           "evidenceUrls": [
-            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401"
+            "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
           ],
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 49,
           "checkedIndividually": true,
           "result": "경기도 공식 기사 상호·주소 확인, 정확한 위경도 미확인",
-          "unresolvedReason": "현재 지점 명칭·주소가 일치하는 공개 수치좌표 추가 대조 필요. 검색 실패·좌표없음만으로 폐업·비노출 금지."
+          "unresolvedReason": "현재 지점 명칭·주소가 일치하는 공개 수치좌표 추가 대조 필요. 검색 실패·좌표없음만으로 폐업·비노출 금지.",
+          "officialDesignationVerifiedAt": "2026-11-07"
         },
         {
           "restaurantId": "local-gyeonggi-slot49-guri-majang",
@@ -25080,12 +25100,152 @@
           "checkedIndividually": true,
           "result": "경기도 공식 기사 상호·주소 확인, 정확한 위경도 미확인",
           "unresolvedReason": "현재 지점 명칭·주소가 일치하는 공개 수치좌표 추가 대조 필요. 검색 실패·좌표없음만으로 폐업·비노출 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-udon-kinoya",
+          "name": "우동 키노야",
+          "currentAddress": "경기도 구리시 검배로 5",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "우동 키노야 구리시",
+            "우동 키노야 경기도 구리시 검배로 5"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-damga-topyeong",
+          "name": "담가 구리토평점",
+          "currentAddress": "경기도 구리시 벌말로 110",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "담가 구리토평점 구리시",
+            "담가 구리토평점 경기도 구리시 벌말로 110"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-ilietto",
+          "name": "일리에또",
+          "currentAddress": "경기도 구리시 장자대로86번길 38",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "일리에또 구리시",
+            "일리에또 경기도 구리시 장자대로86번길 38"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-gilmok-gamjatang",
+          "name": "길목감자탕",
+          "currentAddress": "경기도 구리시 아차산로 379",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "길목감자탕 구리시",
+            "길목감자탕 경기도 구리시 아차산로 379"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-bongdam-shabu",
+          "name": "봉담샤브샤브 칼국수",
+          "currentAddress": "경기도 구리시 수택천로 13",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "봉담샤브샤브 칼국수 구리시",
+            "봉담샤브샤브 칼국수 경기도 구리시 수택천로 13"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-ossine-naengmyeon",
+          "name": "오씨네 냉면만두",
+          "currentAddress": "경기도 구리시 장자대로13번길 53-30",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "오씨네 냉면만두 구리시",
+            "오씨네 냉면만두 경기도 구리시 장자대로13번길 53-30"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-jangmi-hanwoo",
+          "name": "장미한우",
+          "currentAddress": "경기도 구리시 장자대로86번길 46",
+          "region": "경기도 구리시",
+          "searchAliases": [
+            "장미한우 구리시",
+            "장미한우 경기도 구리시 장자대로86번길 46"
+          ],
+          "evidenceUrls": [
+            "https://www.guri.go.kr/www/contents.do?key=6016",
+            "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 49,
+          "checkedIndividually": true,
+          "result": "2026년 공식 선정 상호·주소 확인, 지점별 공개 수치좌표 미확인",
+          "unresolvedReason": "공식 현주소와 동일 업소의 수치지도 좌표 교차대조 필요. 임의 위치·비노출·폐업 단정 금지."
         }
       ],
       "unresolved": [
         {
-          "topic": "경기도 342곳 수치좌표 미확인",
-          "reason": "기존 329곳 개별 위치 검증 미실시 및 신규 13곳 수치좌표 없음",
+          "topic": "경기도 349곳 수치좌표 미확인",
+          "reason": "기존 미확인 342곳 및 2026 구리 선정 신규 7곳 위치 재조사 필요",
           "action": "2순환 49회차 동일 순서에서 오래 미확인·등록 부족 지역 우선 교차대조; 비노출 금지"
         },
         {
@@ -25444,7 +25604,14 @@
             "local-gyeonggi-slot49-pyeongtaek-yubaksa",
             "local-gyeonggi-slot49-pyeongtaek-semo",
             "local-gyeonggi-slot49-pyeongtaek-kimnejip",
-            "local-gyeonggi-slot49-pyeongtaek-yeongbin"
+            "local-gyeonggi-slot49-pyeongtaek-yeongbin",
+            "local-guri-waguri2026-udon-kinoya",
+            "local-guri-waguri2026-damga-topyeong",
+            "local-guri-waguri2026-ilietto",
+            "local-guri-waguri2026-gilmok-gamjatang",
+            "local-guri-waguri2026-bongdam-shabu",
+            "local-guri-waguri2026-ossine-naengmyeon",
+            "local-guri-waguri2026-jangmi-hanwoo"
           ],
           "priority": "2순환 49회차 위치 대기 342곳과 미확인 시군 우선 조사",
           "notExhaustive": true
@@ -25455,7 +25622,108 @@
       "nextRegions": [
         "강원특별자치도 공식 명단 대조"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "verifiedMunicipalDesignations": [
+        {
+          "restaurantId": "local-guri-waguri2026-udon-kinoya",
+          "name": "우동 키노야",
+          "currentAddress": "경기도 구리시 검배로 5",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-damga-topyeong",
+          "name": "담가 구리토평점",
+          "currentAddress": "경기도 구리시 벌말로 110",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-ilietto",
+          "name": "일리에또",
+          "currentAddress": "경기도 구리시 장자대로86번길 38",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-gilmok-gamjatang",
+          "name": "길목감자탕",
+          "currentAddress": "경기도 구리시 아차산로 379",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-bongdam-shabu",
+          "name": "봉담샤브샤브 칼국수",
+          "currentAddress": "경기도 구리시 수택천로 13",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-ossine-naengmyeon",
+          "name": "오씨네 냉면만두",
+          "currentAddress": "경기도 구리시 장자대로13번길 53-30",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-waguri2026-jangmi-hanwoo",
+          "name": "장미한우",
+          "currentAddress": "경기도 구리시 장자대로86번길 46",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": false,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-guri-slot15-award26-seoulmaeuntang",
+          "name": "서울매운탕",
+          "currentAddress": "경기도 구리시 이문안로113번길 6",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": true,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot49-guri-yubaksa",
+          "name": "유박사곱창",
+          "currentAddress": "경기도 구리시 안골로103번길 56 (수택동)",
+          "selectionYear": 2026,
+          "evidenceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "verifiedAt": "2026-11-07",
+          "existing": true,
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false
+        }
+      ]
     }
   ],
   "notes": [
@@ -25470,6 +25738,7 @@
     "2026-11-07 15시 45회차: 통영·거제 기본 56곳(통영7·거제49) 중 좌표 누락 8곳 우선 점검. 무전리샤브칼국수 수치좌표 1건 교차검증 보강, 남은 7건 이월. 신규/비노출 0. 추천맛집 회원 자료 불변.",
     "2026-11-07 17시 47회차 제주시 86곳 중 위치 누락 75곳 추출, VisitJeju 공식 동일 상호·주소·좌표 4곳 확인, 위치 대기 71·신규0·비노출0. 46회차 미기록 이월. 추천맛집 회원 자료 변경 없음.",
     "2026-11-07 47회차 배포 후 시각 확인: 제주 4곳 카드·지도 표시, 월드 진입 정상, 등록 3250곳. 실제 좌표 1046곳이 sources의 1045보다 1 많았으나 이전 45회차 통영 좌표 1건 집계 누락으로 밝혀 1046/2204로 운영·출처 집계 정정. 데이터/게임 리비전 변경 없음.",
-    "2026-11-07 19시 49회차 경기도 공식 먹거리 소개 구리6·평택7 추가(공식 선정 아님). 경기도 전체395곳 중 위치 대기342곳을 ID·주소·기존 출처로 이월. 좌표추정·폐업판정·비노출·회원추천변경 0."
+    "2026-11-07 19시 49회차 경기도 공식 먹거리 소개 구리6·평택7 추가(공식 선정 아님). 경기도 전체395곳 중 위치 대기342곳을 ID·주소·기존 출처로 이월. 좌표추정·폐업판정·비노출·회원추천변경 0.",
+    "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349."
   ]
 }
