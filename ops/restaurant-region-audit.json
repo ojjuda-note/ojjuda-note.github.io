@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 50,
-    "scheduledAt": "2026-11-07T20:00:00+09:00",
+    "slot": 51,
+    "scheduledAt": "2026-11-07T21:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "회차의 예약 시각을 별도 전달받지 못해 자동 실행의 현재 한국시각 2026-11-07 20:22:52+09:00을 정각 내림, 20:00 KST 배정(2026-11-05 23:00 기준 경과 45시간, n=49, slot=50, cycle=1)."
+    "source": "이번 자동 실행은 예약 시각을 별도로 전달받지 못해 현재 한국시각 2026-11-07 21:03:17+09:00을 21:00으로 내림해 배정(기준시각 2026-11-05 23:00에서 경과 46시간, n=50, slot=51, cycle=1)."
   },
   "entries": [
     {
@@ -26936,6 +26936,1720 @@
       "nextSlot": 51,
       "nextRegions": [
         "충청북도 공식 명단 대조"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 51,
+      "scheduledAtKST": "2026-11-07T21:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_six_verified_chungbuk_official_tourism_restaurants",
+      "assignedRegions": [
+        "충청북도 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청북도",
+          "baseListedCount": 217,
+          "afterListedCount": 223,
+          "scope": "충북나드리 공식 개별 관광음식점 안내의 청주시 4곳, 충주시 1곳, 음성군 1곳을 기존 base 214곳·slot23 3곳과 중복 대조. 전체 시군 공식 명단·정규 블루리본 명단 전수 조사 아님.",
+          "actuallyChecked": [
+            "충청북도 청주시",
+            "충청북도 충주시",
+            "충청북도 음성군"
+          ],
+          "remainingAreas": "충북의 나머지 8개 시군(제천시·보은군·옥천군·영동군·증평군·진천군·괴산군·단양군) 상세 명단과 기존 전체 76곳 정확 위치·영업 상태 재확인 이월",
+          "new": 6,
+          "updated": 0,
+          "remainingUnknownLocations": 76,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "충청북도 충북나드리 공식 음식점 개별 안내 6곳 (상호·지점·도로명주소)",
+        "2026 충북의 맛 원자료에 기등록된 선정 이력과 현재 관광 소개를 구분",
+        "블루리본 공식 전체 지도 안내는 보존; 인증 등급·현재 영업 일괄 확인하지 않음"
+      ],
+      "additions": 6,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 76,
+      "locationPendingScope": "기존 충북 217곳 중 공개 좌표 없음 70곳 + 공식 관광 소개 신규 6곳 좌표 없음. 76곳 전수 재확인 완료로 간주하지 않음.",
+      "addedRestaurantIds": [
+        "local-chungbuk-slot51-cheongju-baekro-main",
+        "local-chungbuk-slot51-cheongju-sushiseoul",
+        "local-chungbuk-slot51-cheongju-dare-dare",
+        "local-chungbuk-slot51-cheongju-oseongdang",
+        "local-chungbuk-slot51-chungju-daerim",
+        "local-chungbuk-slot51-eumseong-pungmi"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009",
+        "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "verifiedBusinessIntroductions": [
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-baekro-main",
+          "name": "백로식당(본점)",
+          "currentAddress": "충청북도 청주시 상당구 성안로 47-1",
+          "region": "충청북도 청주시",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-sushiseoul",
+          "name": "스시서울 청주점",
+          "currentAddress": "충청북도 청주시 서원구 예체로1번길 20",
+          "region": "충청북도 청주시",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-dare-dare",
+          "name": "데어데어베이커리카페",
+          "currentAddress": "충청북도 청주시 상당구 무심동로 72",
+          "region": "충청북도 청주시",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-oseongdang",
+          "name": "오성당",
+          "currentAddress": "충청북도 청주시 흥덕구 풍산로 55",
+          "region": "충청북도 청주시",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-chungju-daerim",
+          "name": "대림불고기",
+          "currentAddress": "충청북도 충주시 봉방9길 14",
+          "region": "충청북도 충주시",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-eumseong-pungmi",
+          "name": "풍미식당",
+          "currentAddress": "충청북도 음성군 감곡면 장감로 186-1",
+          "region": "충청북도 음성군",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "coordinates_not_verified",
+          "operatingStatus": "not_verified",
+          "blueRibbonStatus": "not_inferred"
+        }
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "local-north-52f8ed707bd9944f",
+          "name": "속리토속음식점",
+          "currentAddress": "충청북도 보은군 속리산면 법주사로 261",
+          "region": "충청북도 보은군",
+          "searchAliases": [
+            "속리토속음식점 보은 법주사로",
+            "속리토속음식점 사내7길"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=42",
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2506"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "checkResult": "도청 발행 책자 등록 주소와 관광포털 소개에 등장하는 주소의 일치 여부 재검증 필요. 명확한 신규 주소 및 좌표 아직 교차 확인하지 않음.",
+          "reason": "상호·주소 일치 여부와 지점 구분 미확인, 정정·폐업 처리 유예"
+        },
+        {
+          "restaurantId": "blue-2026-national-whitechristmas",
+          "name": "화이트크리스마스",
+          "currentAddress": "충북 청주시 흥덕구 비하로42번길 2, 2층",
+          "region": "충청북도 청주시 흥덕구",
+          "searchAliases": [
+            "화이트크리스마스 청주 비하로42번길",
+            "화이트크리스마스 3리본"
+          ],
+          "evidenceUrls": [
+            "https://www.ypbooks.co.kr/books/202605181049540708",
+            "https://www.cheongju.go.kr/ktour/contents.do?key=23469"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "checkResult": "기록된 전국2026 판본·기존 주소의 이력 보존; 숫자 좌표와 현재 영업 여부 재검증 대기.",
+          "reason": "정확 매장 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "blue-regional-cafe1929-jecheon",
+          "name": "카페1929",
+          "currentAddress": "충청북도 제천시 단양로10길 104",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "카페1929 제천시 단양로10길",
+            "카페1929 블루리본"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3052"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "checkResult": "충북나드리의 과거 블루리본 기재 이력 보존. 정규 현재 등급 및 수치 좌표는 재확인 대기.",
+          "reason": "정확 위경도 공개 근거 미확인"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-2026-national-whitechristmas",
+          "name": "화이트크리스마스",
+          "currentAddress": "충북 청주시 흥덕구 비하로42번길 2, 2층",
+          "region": "충청북도 청주시 흥덕구",
+          "searchAliases": [
+            "화이트크리스마스 청주시 흥덕구 충북",
+            "화이트크리스마스 충북 청주시 흥덕구 비하로42번길 2, 2층",
+            "청주시 흥덕구 화이트크리스마스"
+          ],
+          "evidenceUrls": [
+            "https://www.cheongju.go.kr/ktour/contents.do?key=23469",
+            "https://www.ypbooks.co.kr/books/202605181049540708"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "blue-regional-cafe1929-jecheon",
+          "name": "카페1929",
+          "currentAddress": "충청북도 제천시 단양로10길 104",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "카페1929 제천시 충북",
+            "카페1929 충청북도 제천시 단양로10길 104",
+            "제천시 카페1929"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7837c80d-ca70-431b-a168-592bceac4562",
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3052"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6fc7fcc7385fe80c",
+          "name": "신송보리밥",
+          "currentAddress": "충청북도 청주시 상당구 남사로140번길67, 1층",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "신송보리밥 청주시 충북",
+            "신송보리밥 충청북도 청주시 상당구 남사로140번길67, 1층",
+            "청주시 신송보리밥"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=8"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a8220ec488691a5c",
+          "name": "신화당분식",
+          "currentAddress": "충청북도 청주시 상당구 석교동9-12, 1층",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "신화당분식 청주시 충북",
+            "신화당분식 충청북도 청주시 상당구 석교동9-12, 1층",
+            "청주시 신화당분식"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=8"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-309289576225fc7c",
+          "name": "가마솥추어매운탕",
+          "currentAddress": "충청북도 청주시 상당구 남일면 효촌송암길 20-16",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "가마솥추어매운탕 청주시 충북",
+            "가마솥추어매운탕 충청북도 청주시 상당구 남일면 효촌송암길 20-16",
+            "청주시 가마솥추어매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=9"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a9c3f63125a7dd08",
+          "name": "마중가는길",
+          "currentAddress": "충청북도 청주시 상당구 문의면 대청호반로 845-5",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "마중가는길 청주시 충북",
+            "마중가는길 충청북도 청주시 상당구 문의면 대청호반로 845-5",
+            "청주시 마중가는길"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=9"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-e1fc7735a2b1744f",
+          "name": "별미식당",
+          "currentAddress": "충청북도 청주시 상당구 용암북로68번길 6",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "별미식당 청주시 충북",
+            "별미식당 충청북도 청주시 상당구 용암북로68번길 6",
+            "청주시 별미식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=10"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6f3420ac800ebaa9",
+          "name": "토담골",
+          "currentAddress": "충청북도 청주시 상당구 문의면 문의시내로21-1",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "토담골 청주시 충북",
+            "토담골 충청북도 청주시 상당구 문의면 문의시내로21-1",
+            "청주시 토담골"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=11"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-82f93fc3a77bdf6a",
+          "name": "활력추어탕",
+          "currentAddress": "충청북도 청주시 상당구 월평로184번길 106",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "활력추어탕 청주시 충북",
+            "활력추어탕 충청북도 청주시 상당구 월평로184번길 106",
+            "청주시 활력추어탕"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=12"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6304d5944da29e57",
+          "name": "전통황실양고기",
+          "currentAddress": "충청북도 청주시 서원구 2순환로 1618 B동 2층",
+          "region": "충청북도 청주시 서원구",
+          "searchAliases": [
+            "전통황실양고기 청주시 충북",
+            "전통황실양고기 충청북도 청주시 서원구 2순환로 1618 B동 2층",
+            "청주시 전통황실양고기"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=13"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-db6f2f88ed843451",
+          "name": "청주본가 운천직영점",
+          "currentAddress": "충청북도 청주시 흥덕구 사운로 233(운천동)",
+          "region": "충청북도 청주시 흥덕구",
+          "searchAliases": [
+            "청주본가 운천직영점 청주시 충북",
+            "청주본가 운천직영점 충청북도 청주시 흥덕구 사운로 233(운천동)",
+            "청주시 청주본가 운천직영점"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-7b82f15a99f1eac0",
+          "name": "청주추어탕",
+          "currentAddress": "충청북도 청주시 흥덕구 강내면 탑연월곡길 48-23",
+          "region": "충청북도 청주시 흥덕구",
+          "searchAliases": [
+            "청주추어탕 청주시 충북",
+            "청주추어탕 충청북도 청주시 흥덕구 강내면 탑연월곡길 48-23",
+            "청주시 청주추어탕"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6d6023f90c10d02e",
+          "name": "순정순대원조식당",
+          "currentAddress": "충청북도 청주시 청원구 안덕벌로 19",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "순정순대원조식당 청주시 충북",
+            "순정순대원조식당 충청북도 청주시 청원구 안덕벌로 19",
+            "청주시 순정순대원조식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=17"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-029a1f7cb41df203",
+          "name": "한성족발 청주본점",
+          "currentAddress": "충청북도 청주시 청원구 사뜸로35번길 6-1",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "한성족발 청주본점 청주시 충북",
+            "한성족발 청주본점 충청북도 청주시 청원구 사뜸로35번길 6-1",
+            "청주시 한성족발 청주본점"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=17"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-c88f8a4f2501bea8",
+          "name": "띠울석갈비",
+          "currentAddress": "충청북도 청주시 청원구 오창읍 중심상업2로 38",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "띠울석갈비 청주시 충북",
+            "띠울석갈비 충청북도 청주시 청원구 오창읍 중심상업2로 38",
+            "청주시 띠울석갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=18"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-1215f90c3fb42285",
+          "name": "아우라지곤드레밥집",
+          "currentAddress": "충청북도 청주시 청원구 율봉로 209번길 15-2",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "아우라지곤드레밥집 청주시 충북",
+            "아우라지곤드레밥집 충청북도 청주시 청원구 율봉로 209번길 15-2",
+            "청주시 아우라지곤드레밥집"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=19"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-88e2b4bc421d312a",
+          "name": "황소고집",
+          "currentAddress": "충청북도 청주시 청원구 오창읍 용두길 72",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "황소고집 청주시 충북",
+            "황소고집 충청북도 청주시 청원구 오창읍 용두길 72",
+            "청주시 황소고집"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=21"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-d0c0030e866adf46",
+          "name": "대장군식당",
+          "currentAddress": "충청북도 충주시 수안보면 미륵송계로 105",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "대장군식당 충주시 충북",
+            "대장군식당 충청북도 충주시 수안보면 미륵송계로 105",
+            "충주시 대장군식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=24"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a58a255d48828beb",
+          "name": "민속가든",
+          "currentAddress": "충청북도 충주시 행정3길 42(목행동)",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "민속가든 충주시 충북",
+            "민속가든 충청북도 충주시 행정3길 42(목행동)",
+            "충주시 민속가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=24"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6bc611a1e113d7b6",
+          "name": "송림",
+          "currentAddress": "충청북도 충주시 수안보면 미륵송계로 839-9",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "송림 충주시 충북",
+            "송림 충청북도 충주시 수안보면 미륵송계로 839-9",
+            "충주시 송림"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=25"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-95b02231107d2620",
+          "name": "은혜별채",
+          "currentAddress": "충청북도 충주시 사직산 22길 14(지현동)",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "은혜별채 충주시 충북",
+            "은혜별채 충청북도 충주시 사직산 22길 14(지현동)",
+            "충주시 은혜별채"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=25"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-f4dc3daa0ec22bf4",
+          "name": "금가능이옥",
+          "currentAddress": "충청북도 충주시 금가면 김생로 1184",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "금가능이옥 충주시 충북",
+            "금가능이옥 충청북도 충주시 금가면 김생로 1184",
+            "충주시 금가능이옥"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=26"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-3c3a505e1d72c9d3",
+          "name": "수안보파크호텔 탄금대",
+          "currentAddress": "충청북도 충주시 수안보면 탑골1길 36",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "수안보파크호텔 탄금대 충주시 충북",
+            "수안보파크호텔 탄금대 충청북도 충주시 수안보면 탑골1길 36",
+            "충주시 수안보파크호텔 탄금대"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=28"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-e52614ba5eafb372",
+          "name": "퓨전한정식뜰안채",
+          "currentAddress": "충청북도 충주시 남산14길 35",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "퓨전한정식뜰안채 충주시 충북",
+            "퓨전한정식뜰안채 충청북도 충주시 남산14길 35",
+            "충주시 퓨전한정식뜰안채"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=31"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-e9a2a0ed4ddaf5c8",
+          "name": "황포돛대 교현점",
+          "currentAddress": "충청북도 충주시 만리산9길 6-1(교현동)",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "황포돛대 교현점 충주시 충북",
+            "황포돛대 교현점 충청북도 충주시 만리산9길 6-1(교현동)",
+            "충주시 황포돛대 교현점"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=31"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-2c9ff700dfcf229b",
+          "name": "강박사냉면숯불갈비",
+          "currentAddress": "충청북도 제천시 청전대로91",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "강박사냉면숯불갈비 제천시 충북",
+            "강박사냉면숯불갈비 충청북도 제천시 청전대로91",
+            "제천시 강박사냉면숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=34"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-5fe1822ce6513b22",
+          "name": "광성추어탕",
+          "currentAddress": "충청북도 제천시 독순로8길 4",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "광성추어탕 제천시 충북",
+            "광성추어탕 충청북도 제천시 독순로8길 4",
+            "제천시 광성추어탕"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=34"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-2be53e15a3897e67",
+          "name": "명동왕족",
+          "currentAddress": "충청북도 제천시 명륜로6길 9",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "명동왕족 제천시 충북",
+            "명동왕족 충청북도 제천시 명륜로6길 9",
+            "제천시 명동왕족"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=35"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6b6f3ae91a6aff29",
+          "name": "가람",
+          "currentAddress": "충청북도 제천시 수산면 월악로 2970",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "가람 제천시 충북",
+            "가람 충청북도 제천시 수산면 월악로 2970",
+            "제천시 가람"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=35"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-78251709c4a252ff",
+          "name": "대보명가",
+          "currentAddress": "충청북도 제천시 용두대로 287",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "대보명가 제천시 충북",
+            "대보명가 충청북도 제천시 용두대로 287",
+            "제천시 대보명가"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=36"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-b160e179683eeb17",
+          "name": "우림정",
+          "currentAddress": "충청북도 제천시 의림대로 446",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "우림정 제천시 충북",
+            "우림정 충청북도 제천시 의림대로 446",
+            "제천시 우림정"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=37"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-cd6f993e65b02a35",
+          "name": "황금연못",
+          "currentAddress": "충청북도 제천시 내토로 281",
+          "region": "충청북도 제천시",
+          "searchAliases": [
+            "황금연못 제천시 충북",
+            "황금연못 충청북도 제천시 내토로 281",
+            "제천시 황금연못"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=39"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-52f8ed707bd9944f",
+          "name": "속리토속음식점",
+          "currentAddress": "충청북도 보은군 속리산면 법주사로 261",
+          "region": "충청북도 보은군",
+          "searchAliases": [
+            "속리토속음식점 보은군 충북",
+            "속리토속음식점 충청북도 보은군 속리산면 법주사로 261",
+            "보은군 속리토속음식점"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=42",
+            "https://www.data.go.kr/data/15154915/fileData.do"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-4fa979fcbc2b4892",
+          "name": "보은누룽지백숙",
+          "currentAddress": "충청북도 보은군 보은읍 보은로 62-1",
+          "region": "충청북도 보은군",
+          "searchAliases": [
+            "보은누룽지백숙 보은군 충북",
+            "보은누룽지백숙 충청북도 보은군 보은읍 보은로 62-1",
+            "보은군 보은누룽지백숙"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=44"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-65a11a0f789c5200",
+          "name": "속리산(청주방향)휴게소",
+          "currentAddress": "충청북도 보은군 마로면 적암길 56-18",
+          "region": "충청북도 보은군",
+          "searchAliases": [
+            "속리산(청주방향)휴게소 보은군 충북",
+            "속리산(청주방향)휴게소 충청북도 보은군 마로면 적암길 56-18",
+            "보은군 속리산(청주방향)휴게소"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=45"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-59edd588d412610d",
+          "name": "일미해장국",
+          "currentAddress": "충청북도 옥천군 옥천읍 금장로 105",
+          "region": "충청북도 옥천군",
+          "searchAliases": [
+            "일미해장국 옥천군 충북",
+            "일미해장국 충청북도 옥천군 옥천읍 금장로 105",
+            "옥천군 일미해장국"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=48"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-893f7bcb82688546",
+          "name": "과수원가든",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1454",
+          "region": "충청북도 옥천군",
+          "searchAliases": [
+            "과수원가든 옥천군 충북",
+            "과수원가든 충청북도 옥천군 옥천읍 성왕로 1454",
+            "옥천군 과수원가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=48"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-2361792e09ca4f1f",
+          "name": "새강변가든",
+          "currentAddress": "충청북도 옥천군 군북면 성왕로 1564",
+          "region": "충청북도 옥천군",
+          "searchAliases": [
+            "새강변가든 옥천군 충북",
+            "새강변가든 충청북도 옥천군 군북면 성왕로 1564",
+            "옥천군 새강변가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=49"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6d3c8590ed5200f5",
+          "name": "옛장터숯불갈비",
+          "currentAddress": "충청북도 옥천군 이원면 이원로 809",
+          "region": "충청북도 옥천군",
+          "searchAliases": [
+            "옛장터숯불갈비 옥천군 충북",
+            "옛장터숯불갈비 충청북도 옥천군 이원면 이원로 809",
+            "옥천군 옛장터숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=49"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-f450ce86210eee0c",
+          "name": "원조엄나무백숙",
+          "currentAddress": "충청북도 영동군 영동읍 어미실길 33",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "원조엄나무백숙 영동군 충북",
+            "원조엄나무백숙 충청북도 영동군 영동읍 어미실길 33",
+            "영동군 원조엄나무백숙"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=55"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-192e55bf75dbfca6",
+          "name": "인터식당",
+          "currentAddress": "충청북도 영동군 황간면 신촌2길 4",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "인터식당 영동군 충북",
+            "인터식당 충청북도 영동군 황간면 신촌2길 4",
+            "영동군 인터식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=56"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-17c6f67069881e14",
+          "name": "일미식당",
+          "currentAddress": "충청북도 영동군 영동읍 영동시장4길 7",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "일미식당 영동군 충북",
+            "일미식당 충청북도 영동군 영동읍 영동시장4길 7",
+            "영동군 일미식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=56"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-d5db3a628b548025",
+          "name": "소풍",
+          "currentAddress": "충청북도 영동군 양산면 양산심천로 48",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "소풍 영동군 충북",
+            "소풍 충청북도 영동군 양산면 양산심천로 48",
+            "영동군 소풍"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=57"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-052398ae7f6a5929",
+          "name": "추풍령해물탕·찜",
+          "currentAddress": "충청북도 영동군 추풍령면 추풍령로7길 45-42",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "추풍령해물탕·찜 영동군 충북",
+            "추풍령해물탕·찜 충청북도 영동군 추풍령면 추풍령로7길 45-42",
+            "영동군 추풍령해물탕·찜"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-35a9caa169811447",
+          "name": "폭포가든",
+          "currentAddress": "충청북도 영동군 심천면 옥계폭포길 144",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "폭포가든 영동군 충북",
+            "폭포가든 충청북도 영동군 심천면 옥계폭포길 144",
+            "영동군 폭포가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a56748df2bc04d40",
+          "name": "한천가든",
+          "currentAddress": "충청북도 영동군 황간면 원촌동1길 52",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "한천가든 영동군 충북",
+            "한천가든 충청북도 영동군 황간면 원촌동1길 52",
+            "영동군 한천가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-d782757964190992",
+          "name": "황간휴게소(하행선)",
+          "currentAddress": "충청북도 영동군 황간면 회포길 102",
+          "region": "충청북도 영동군",
+          "searchAliases": [
+            "황간휴게소(하행선) 영동군 충북",
+            "황간휴게소(하행선) 충청북도 영동군 황간면 회포길 102",
+            "영동군 황간휴게소(하행선)"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-2b436bfa4d675824",
+          "name": "본가",
+          "currentAddress": "충청북도 증평군 증평읍 삼보로7길 32",
+          "region": "충청북도 증평군",
+          "searchAliases": [
+            "본가 증평군 충북",
+            "본가 충청북도 증평군 증평읍 삼보로7길 32",
+            "증평군 본가"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=61"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a399715d9b223a2e",
+          "name": "원갈비",
+          "currentAddress": "충청북도 증평군 증평읍 중앙로 235",
+          "region": "충청북도 증평군",
+          "searchAliases": [
+            "원갈비 증평군 충북",
+            "원갈비 충청북도 증평군 증평읍 중앙로 235",
+            "증평군 원갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=62"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-b36170270bb081bb",
+          "name": "고향왕족발보쌈식당",
+          "currentAddress": "충청북도 진천군 광혜원면 중리2길 13-2",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "고향왕족발보쌈식당 진천군 충북",
+            "고향왕족발보쌈식당 충청북도 진천군 광혜원면 중리2길 13-2",
+            "진천군 고향왕족발보쌈식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=66"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-df08f97d8662b526",
+          "name": "장터순대",
+          "currentAddress": "충청북도 진천군 진천읍 원덕로390, D동102호",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "장터순대 진천군 충북",
+            "장터순대 충청북도 진천군 진천읍 원덕로390, D동102호",
+            "진천군 장터순대"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=67"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-be98a1de6f555553",
+          "name": "곰가내",
+          "currentAddress": "충청북도 진천군 백곡면 백곡로 835-8",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "곰가내 진천군 충북",
+            "곰가내 충청북도 진천군 백곡면 백곡로 835-8",
+            "진천군 곰가내"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=67"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-23ae8de77d01cc43",
+          "name": "산마루가든",
+          "currentAddress": "충청북도 진천군 덕산읍 덕금로 889",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "산마루가든 진천군 충북",
+            "산마루가든 충청북도 진천군 덕산읍 덕금로 889",
+            "진천군 산마루가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=69"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-a29b3f85253b4eb9",
+          "name": "신궁전가든",
+          "currentAddress": "충청북도 진천군 덕산면 용몽2길 34",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "신궁전가든 진천군 충북",
+            "신궁전가든 충청북도 진천군 덕산면 용몽2길 34",
+            "진천군 신궁전가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=69"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-4cd91a25d1860ba0",
+          "name": "은행나무집",
+          "currentAddress": "충청북도 진천군 문백면 농다리로 1094",
+          "region": "충청북도 진천군",
+          "searchAliases": [
+            "은행나무집 진천군 충북",
+            "은행나무집 충청북도 진천군 문백면 농다리로 1094",
+            "진천군 은행나무집"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=70"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-664fd89eba7c1474",
+          "name": "기사식당",
+          "currentAddress": "충청북도 괴산군 괴산읍 괴강로 8",
+          "region": "충청북도 괴산군",
+          "searchAliases": [
+            "기사식당 괴산군 충북",
+            "기사식당 충청북도 괴산군 괴산읍 괴강로 8",
+            "괴산군 기사식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=73"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-b3415a25e9383256",
+          "name": "주차장집식당",
+          "currentAddress": "충청북도 괴산군 괴산읍 읍내로 282",
+          "region": "충청북도 괴산군",
+          "searchAliases": [
+            "주차장집식당 괴산군 충북",
+            "주차장집식당 충청북도 괴산군 괴산읍 읍내로 282",
+            "괴산군 주차장집식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=73"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-c28f0a5e28b3fcb8",
+          "name": "갱치",
+          "currentAddress": "충청북도 괴산군 괴산읍 문무로역고개길 73-1",
+          "region": "충청북도 괴산군",
+          "searchAliases": [
+            "갱치 괴산군 충북",
+            "갱치 충청북도 괴산군 괴산읍 문무로역고개길 73-1",
+            "괴산군 갱치"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=74"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-7a5589fbd9a54802",
+          "name": "이조갈비",
+          "currentAddress": "충청북도 음성군 삼성면 삼문길 45-1",
+          "region": "충청북도 음성군",
+          "searchAliases": [
+            "이조갈비 음성군 충북",
+            "이조갈비 충청북도 음성군 삼성면 삼문길 45-1",
+            "음성군 이조갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=77"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-d282947cc0094926",
+          "name": "금강식당",
+          "currentAddress": "충청북도 단양군 영춘면 백자1길 11",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "금강식당 단양군 충북",
+            "금강식당 충청북도 단양군 영춘면 백자1길 11",
+            "단양군 금강식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-8cff18c656666905",
+          "name": "돌집식당",
+          "currentAddress": "충청북도 단양군 단양읍 중앙2로 11",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "돌집식당 단양군 충북",
+            "돌집식당 충청북도 단양군 단양읍 중앙2로 11",
+            "단양군 돌집식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-3c66fff8c3f77a49",
+          "name": "보신각",
+          "currentAddress": "충청북도 단양군 단양읍 별곡12길 10-14",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "보신각 단양군 충북",
+            "보신각 충청북도 단양군 단양읍 별곡12길 10-14",
+            "단양군 보신각"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-01af4eaff4bdfc9a",
+          "name": "왕릉숯불갈비",
+          "currentAddress": "충청북도 단양군 단양읍 중앙2로 13",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "왕릉숯불갈비 단양군 충북",
+            "왕릉숯불갈비 충청북도 단양군 단양읍 중앙2로 13",
+            "단양군 왕릉숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-6cfdaa56920f4ebf",
+          "name": "자연식당",
+          "currentAddress": "충청북도 단양군 단양읍 별곡10길 5-1",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "자연식당 단양군 충북",
+            "자연식당 충청북도 단양군 단양읍 별곡10길 5-1",
+            "단양군 자연식당"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-461f5f96a38552ed",
+          "name": "한우일번가",
+          "currentAddress": "충청북도 단양군 매포읍 평동3로 3",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "한우일번가 단양군 충북",
+            "한우일번가 충청북도 단양군 매포읍 평동3로 3",
+            "단양군 한우일번가"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-630a7af6188425ff",
+          "name": "대교약선요리",
+          "currentAddress": "충청북도 단양군 단양읍 별곡9길 15",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "대교약선요리 단양군 충북",
+            "대교약선요리 충청북도 단양군 단양읍 별곡9길 15",
+            "단양군 대교약선요리"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=83"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-4ddedea44dc1e6d5",
+          "name": "영상강가든",
+          "currentAddress": "충청북도 단양군 영춘면 남천 계곡로 41",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "영상강가든 단양군 충북",
+            "영상강가든 충청북도 단양군 영춘면 남천 계곡로 41",
+            "단양군 영상강가든"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=84"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-north-7fa470f5fa946bd7",
+          "name": "장다리마늘약선",
+          "currentAddress": "충청북도 단양군 단양읍 삼봉로 370",
+          "region": "충청북도 단양군",
+          "searchAliases": [
+            "장다리마늘약선 단양군 충북",
+            "장다리마늘약선 충청북도 단양군 단양읍 삼봉로 370",
+            "단양군 장다리마늘약선"
+          ],
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=84"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+          "name": "효자촌묵집",
+          "currentAddress": "충청북도 청주시 상당구 남일면 단재로 469",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "효자촌묵집 청주시 충북",
+            "효자촌묵집 충청북도 청주시 상당구 남일면 단재로 469",
+            "청주시 효자촌묵집"
+          ],
+          "evidenceUrls": [
+            "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot23-cheongju-kongganae",
+          "name": "콩가내",
+          "currentAddress": "충청북도 청주시 청원구 주성로 61",
+          "region": "충청북도 청주시 청원구",
+          "searchAliases": [
+            "콩가내 청주시 충북",
+            "콩가내 충청북도 청주시 청원구 주성로 61",
+            "청주시 콩가내"
+          ],
+          "evidenceUrls": [
+            "https://www.welfarehello.com/community/hometownNews/be136b91-1bdb-4404-9d49-73294253675d"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-baekro-main",
+          "name": "백로식당(본점)",
+          "currentAddress": "충청북도 청주시 상당구 성안로 47-1",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "백로식당(본점) 청주시 충북",
+            "백로식당(본점) 충청북도 청주시 상당구 성안로 47-1",
+            "청주시 백로식당(본점)"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-sushiseoul",
+          "name": "스시서울 청주점",
+          "currentAddress": "충청북도 청주시 서원구 예체로1번길 20",
+          "region": "충청북도 청주시 서원구",
+          "searchAliases": [
+            "스시서울 청주점 청주시 충북",
+            "스시서울 청주점 충청북도 청주시 서원구 예체로1번길 20",
+            "청주시 스시서울 청주점"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-dare-dare",
+          "name": "데어데어베이커리카페",
+          "currentAddress": "충청북도 청주시 상당구 무심동로 72",
+          "region": "충청북도 청주시 상당구",
+          "searchAliases": [
+            "데어데어베이커리카페 청주시 충북",
+            "데어데어베이커리카페 충청북도 청주시 상당구 무심동로 72",
+            "청주시 데어데어베이커리카페"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-cheongju-oseongdang",
+          "name": "오성당",
+          "currentAddress": "충청북도 청주시 흥덕구 풍산로 55",
+          "region": "충청북도 청주시 흥덕구",
+          "searchAliases": [
+            "오성당 청주시 충북",
+            "오성당 충청북도 청주시 흥덕구 풍산로 55",
+            "청주시 오성당"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-chungju-daerim",
+          "name": "대림불고기",
+          "currentAddress": "충청북도 충주시 봉방9길 14",
+          "region": "충청북도 충주시",
+          "searchAliases": [
+            "대림불고기 충주시 충북",
+            "대림불고기 충청북도 충주시 봉방9길 14",
+            "충주시 대림불고기"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-eumseong-pungmi",
+          "name": "풍미식당",
+          "currentAddress": "충청북도 음성군 감곡면 장감로 186-1",
+          "region": "충청북도 음성군",
+          "searchAliases": [
+            "풍미식당 음성군 충북",
+            "풍미식당 충청북도 음성군 감곡면 장감로 186-1",
+            "음성군 풍미식당"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 51,
+          "reason": "상호·지점·현주소 일치 공개 숫자 좌표의 직접 검증 대기. 관광 수록은 영업 상태·가이드 선정 연도와 별도이며, 좌표 없음만으로 노출 제외 금지.",
+          "checkResult": "이번 도 단위 회차에서 개별 좌표를 검증하지 못함; 순차 재확인 대기"
+        }
+      ],
+      "unresolved": [
+        "속리토속음식점 현재 주소/지점 상충 자료 재검증",
+        "데어데어 소개 내 블루리본 문구는 공식 리본 판본/정규 등급 미확정",
+        "다른 충북 시군 명단과 76곳 수치 좌표·영업 상태 재확인"
+      ],
+      "carryOver": [
+        "충북나드리 도 단위 자료 중 일부 업소만 추가, 다른 도내 시군 누락발굴 이월",
+        "84회차에서 누락되거나 지역 미확인 항목은 다음 순환 동일 회차에서 우선 조사"
+      ],
+      "nextSlot": 52,
+      "nextRegions": [
+        "충청남도 공식 명단 대조"
       ],
       "notExhaustive": true
     }
