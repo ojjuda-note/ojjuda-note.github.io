@@ -1511,15 +1511,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3263,
+    "uniqueRestaurants": 3270,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2532,
+      "local-guide": 2539,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2211,
+    "coordinatesMissing": 2218,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1529,7 +1529,7 @@
       "경남": 320,
       "강원": 61,
       "전북": 215,
-      "경기": 395,
+      "경기": 402,
       "인천": 341,
       "제주": 113,
       "대구": 130,
@@ -1540,11 +1540,11 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1936,
+      "한식": 1941,
       "중식": 136,
-      "일식": 135,
+      "일식": 136,
       "기타": 582,
-      "양식": 211,
+      "양식": 212,
       "분식": 29,
       "디저트": 234
     }
@@ -12879,53 +12879,128 @@
         "지점 주소는 기사 명시 값. 수치좌표 확인하지 못해 전부 null, 위치 미확인 이월.",
         "도 전체를 전수 검증하지 않았음. 나머지 29개 시군 및 블루리본 최신 공식 개별 정보 차기 재확인."
       ]
+    },
+    {
+      "id": "2026-11-07-gyeonggi-slot49-guri-2026-designations-continuation",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 49,
+      "continuationOf": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
+      "previousCoverage": {
+        "uniqueRestaurants": 3263,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2532,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2211,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 395,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1936,
+          "중식": 136,
+          "일식": 135,
+          "기타": 582,
+          "양식": 211,
+          "분식": 29,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3270,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2539,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2218,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1941,
+          "중식": 136,
+          "일식": 136,
+          "기타": 582,
+          "양식": 212,
+          "분식": 29,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 7,
+      "modificationCount": 2,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-guri-waguri2026-udon-kinoya",
+        "local-guri-waguri2026-damga-topyeong",
+        "local-guri-waguri2026-ilietto",
+        "local-guri-waguri2026-gilmok-gamjatang",
+        "local-guri-waguri2026-bongdam-shabu",
+        "local-guri-waguri2026-ossine-naengmyeon",
+        "local-guri-waguri2026-jangmi-hanwoo"
+      ],
+      "modifiedRestaurantIds": [
+        "local-guri-slot15-award26-seoulmaeuntang",
+        "local-gyeonggi-slot49-guri-yubaksa"
+      ],
+      "sourceUrls": [
+        "https://www.guri.go.kr/www/contents.do?key=6016",
+        "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-guri-slot15.json",
+      "secondarySupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
+      "scope": "1순환 49회차 이어하기: 경기도 구리시 2026 와구리맛집 9곳 공식 지정 명단",
+      "notes": [
+        "기존 구리·평택 13곳 추가 기록 보존, 신규 7·기존 2 가이드 병합.",
+        "별도 수치좌표 검증 실패 시 null 유지. 현재 영업과 인증 선정 별도."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
+    "id": "2026-11-07-gyeonggi-slot49-guri-2026-designations-continuation",
     "checkedAt": "2026-11-07",
     "cycle": 1,
     "slot": 49,
+    "continuationOf": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
     "previousCoverage": {
-      "uniqueRestaurants": 3250,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2519,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2198,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1927,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3263,
       "providerCounts": {
         "michelin": 237,
@@ -12964,36 +13039,72 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 13,
-    "modificationCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3270,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2539,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2218,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1941,
+        "중식": 136,
+        "일식": 136,
+        "기타": 582,
+        "양식": 212,
+        "분식": 29,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 7,
+    "modificationCount": 2,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gyeonggi-slot49-guri-sangwoo",
-      "local-gyeonggi-slot49-guri-denmark",
-      "local-gyeonggi-slot49-guri-doldari",
-      "local-gyeonggi-slot49-guri-seoong",
-      "local-gyeonggi-slot49-guri-yubaksa",
-      "local-gyeonggi-slot49-guri-majang",
-      "local-gyeonggi-slot49-pyeongtaek-pungseong",
-      "local-gyeonggi-slot49-pyeongtaek-ondal",
-      "local-gyeonggi-slot49-pyeongtaek-ttalbuja",
-      "local-gyeonggi-slot49-pyeongtaek-yubaksa",
-      "local-gyeonggi-slot49-pyeongtaek-semo",
-      "local-gyeonggi-slot49-pyeongtaek-kimnejip",
-      "local-gyeonggi-slot49-pyeongtaek-yeongbin"
+      "local-guri-waguri2026-udon-kinoya",
+      "local-guri-waguri2026-damga-topyeong",
+      "local-guri-waguri2026-ilietto",
+      "local-guri-waguri2026-gilmok-gamjatang",
+      "local-guri-waguri2026-bongdam-shabu",
+      "local-guri-waguri2026-ossine-naengmyeon",
+      "local-guri-waguri2026-jangmi-hanwoo"
+    ],
+    "modifiedRestaurantIds": [
+      "local-guri-slot15-award26-seoulmaeuntang",
+      "local-gyeonggi-slot49-guri-yubaksa"
     ],
     "sourceUrls": [
-      "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
-      "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
+      "https://www.guri.go.kr/www/contents.do?key=6016",
+      "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
-    "scope": "경기도 광역 공식 명단 대조 중 구리 6곳·평택 7곳 지역 음식점 공식 소개",
+    "sourceSupplement": "games/certified-restaurants/official-guri-slot15.json",
+    "secondarySupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
+    "scope": "1순환 49회차 이어하기: 경기도 구리시 2026 와구리맛집 9곳 공식 지정 명단",
     "notes": [
-      "기사 날짜는 선정연도 아님. 공식 소개·선정·폐업·현영업 상태를 구분.",
-      "공식 선정이 아닌 지역 음식점 소개. 회원 추천/사진 데이터 불변.",
-      "지점 주소는 기사 명시 값. 수치좌표 확인하지 못해 전부 null, 위치 미확인 이월.",
-      "도 전체를 전수 검증하지 않았음. 나머지 29개 시군 및 블루리본 최신 공식 개별 정보 차기 재확인."
+      "기존 구리·평택 13곳 추가 기록 보존, 신규 7·기존 2 가이드 병합.",
+      "별도 수치좌표 검증 실패 시 null 유지. 현재 영업과 인증 선정 별도."
     ]
   },
   "latestMapCoverageAudit": {
@@ -13104,8 +13215,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2434,
-    "designationEvidenceCount": 2431,
+    "recordCount": 2441,
+    "designationEvidenceCount": 2438,
     "coordinatesAvailable": 757,
     "regionCount": 17,
     "regionalCoverage": [
@@ -13159,7 +13270,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 330,
+        "uniqueRestaurants": 337,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -14045,6 +14156,39 @@
       "operatingStatusVerified": 0,
       "notExhaustive": true,
       "note": "경기도 전체 명단 대조 중 2개 시의 주소·업소명을 공식 뉴스로 확인한 일부 소개. 현재 영업/블루리본 정규선정/숫자좌표 미검증. 84회차 고정 조사 순서 보존."
+    },
+    "municipalSelection20261107GuriSlot49Continuation": {
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 49,
+      "region": "경기도 구리시",
+      "selectionYear": 2026,
+      "officialPageUpdatedAt": "2026-10-28",
+      "sourceUrls": [
+        "https://www.guri.go.kr/www/contents.do?key=6016",
+        "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+      ],
+      "selectedBusinessCount": 9,
+      "newRestaurantCount": 7,
+      "modifiedExistingCount": 2,
+      "addedRestaurantIds": [
+        "local-guri-waguri2026-udon-kinoya",
+        "local-guri-waguri2026-damga-topyeong",
+        "local-guri-waguri2026-ilietto",
+        "local-guri-waguri2026-gilmok-gamjatang",
+        "local-guri-waguri2026-bongdam-shabu",
+        "local-guri-waguri2026-ossine-naengmyeon",
+        "local-guri-waguri2026-jangmi-hanwoo"
+      ],
+      "modifiedRestaurantIds": [
+        "local-guri-slot15-award26-seoulmaeuntang",
+        "local-gyeonggi-slot49-guri-yubaksa"
+      ],
+      "coordinateAddedCount": 0,
+      "excludedCount": 0,
+      "operatingStatusVerifiedCount": 0,
+      "notExhaustive": true,
+      "notes": "구리시 공식 2026 우수음식점 선정 명단의 업체명/주소. 기등록 2곳에 가이드만 합산, 영업상태 미확정. 서울매운탕 노포 동시 지정."
     }
   },
   "mapCoverageAuditHistory": [
