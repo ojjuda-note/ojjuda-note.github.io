@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 60,
-    "scheduledAt": "2026-11-08T06:00:00+09:00",
+    "slot": 61,
+    "scheduledAt": "2026-11-08T07:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약 실행 시각을 전달받지 못해 자동화 실행 관측 KST 06:55를 정각 06:00으로 내림; h=55,n=59,slot=60."
+    "source": "자동화 실행 관측 2026-11-08 07:56 KST; 예약 기준 07시 정각으로 내림. 기준시각 2026-11-05 23시부터 56시간 경과로 h=56,n=60,slot61,cycle1"
   },
   "entries": [
     {
@@ -58240,6 +58240,739 @@
         "인천광역시 옹진군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 61,
+      "scheduledAtKST": "2026-11-08T07:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_incheon_islands_four_additions_no_coordinates",
+      "assignedRegions": [
+        "인천광역시 강화군",
+        "인천광역시 옹진군"
+      ],
+      "regionAudit": [
+        {
+          "region": "인천광역시 강화군",
+          "baseListedCount": 28,
+          "listedCountAfter": 30,
+          "actuallyChecked": [
+            "기존 데이터 28개 상호·주소·좌표 누락 분석",
+            "강화군 문화관광 강화맛집·모범음식점 명단에서 외포리꽃게집·별미정숯불장어 상호·도로명주소 확인",
+            "별미정숯불장어 인천투어 교차주소 확인",
+            "강화군 모범음식점 공식 목록에서 편가네된장 이름·도로명 '가능포로89번길 11' 직접 확인, 기존 오기 '가능포리 89번길11' 주소 정정(좌표 무변경)."
+          ],
+          "remainingAreas": [
+            "기존 28곳·신규 2곳의 수치 좌표 근거 재검증",
+            "강화서산갯마을 주소 미등록; 안다미로 등 주소 형식·지점 불일치 의심 확인",
+            "전체 모범음식점·블루리본 등록 및 현재 영업상태 전수 미완료"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "인천광역시 옹진군",
+          "baseListedCount": 0,
+          "listedCountAfter": 2,
+          "actuallyChecked": [
+            "기존 데이터 옹진군 등록 0곳 확인",
+            "인천투어 백령면 삼삼구이·잔디가든 개별 관광 상세 페이지에서 상호·도로명주소 대조"
+          ],
+          "remainingAreas": [
+            "백령면 외 대청면·덕적면 등 도서 전체 공식 명단 대조",
+            "신규 2곳의 좌표·현재 영업 여부 확인",
+            "공식 선정 연도·정규 블루리본 등급은 확인되지 않음"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "강화군 문화관광 강화맛집·모범음식점 목록",
+        "인천관광공사 인천투어 관광 음식점 개별 페이지"
+      ],
+      "additions": 4,
+      "modifications": 1,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 32,
+      "locationPendingScope": "강화 기존 28·신규2, 옹진 신규2. 28개 기존 업소는 데이터상 좌표 누락을 확인한 것으로 개별 공개 지도 재검증 완료를 의미하지 않음.",
+      "addedRestaurantIds": [
+        "local-incheon-slot61-ganghwa-oepori-flowercrab",
+        "local-incheon-slot61-ganghwa-byeolmijeong",
+        "local-incheon-slot61-ongjin-samsamgui",
+        "local-incheon-slot61-ongjin-jandigarden"
+      ],
+      "modifiedRestaurantIds": [
+        "local-north-1dec29df6f254886"
+      ],
+      "evidenceUrls": [
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-gap-nongga-table",
+          "name": "농가의 식탁",
+          "currentAddress": "인천 강화군 선원면 해안동로 1037-8 2층",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 농가의 식탁",
+            "농가의 식탁 인천 강화군 선원면 해안동로 1037-8 2층",
+            "인천 강화군 농가의 식탁"
+          ],
+          "evidenceUrls": [
+            "https://itour.incheon.go.kr/thmtour/rcmdtour/detail.do?cotId=ITA26051311042107180"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "blue-regional-jukrim-dawon-jeondeungsa",
+          "name": "전등사 죽림다원",
+          "currentAddress": "인천광역시 강화군 길상면 전등사로 37-41",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 전등사 죽림다원",
+            "전등사 죽림다원 인천광역시 강화군 길상면 전등사로 37-41",
+            "인천 강화군 전등사 죽림다원"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/goodmorning/GM010200/view?nttNo=2042629&srchPblicteIssnoCode=200210"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-c85a108e5f202d60",
+          "name": "국화호수",
+          "currentAddress": "인천광역시 강화군 강화읍 강화대로440번길 5(1층)",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 국화호수",
+            "국화호수 인천광역시 강화군 강화읍 강화대로440번길 5(1층)",
+            "인천 강화군 국화호수"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-a6c69587026fbbf7",
+          "name": "산촌",
+          "currentAddress": "인천광역시 강화군 강화읍 국화길 12",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 산촌",
+            "산촌 인천광역시 강화군 강화읍 국화길 12",
+            "인천 강화군 산촌"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-58311a8b34d793cf",
+          "name": "안다미로",
+          "currentAddress": "인천광역시 강화군 선원면 시리미로 56",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 안다미로",
+            "안다미로 인천광역시 강화군 선원면 시리미로 56",
+            "인천 강화군 안다미로"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "기존 주소 시리미로 56의 번지/지점 재검증 필요. 다른 주소 표현과의 동일성 검증 전 좌표 입력 금지."
+        },
+        {
+          "restaurantId": "local-north-5a2bb16fb49c7e3b",
+          "name": "충남서산집(양도)",
+          "currentAddress": "인천광역시 강화군 양도면 중앙로 911",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 충남서산집(양도)",
+            "충남서산집(양도) 인천광역시 강화군 양도면 중앙로 911",
+            "인천 강화군 충남서산집(양도)"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-1dec29df6f254886",
+          "name": "편가네된장",
+          "currentAddress": "인천광역시 강화군 화도면 가능포로89번길 11",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 편가네된장",
+            "편가네 된장 인천광역시 강화군 화도면 가능포로89번길 11",
+            "편가네된장 인천광역시 강화군 화도면 가능포로89번길 11"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887",
+            "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "강화군 공식 모범음식점에서 동일 상호 '편가네 된장' 도로명주소를 확인해 오기 정정. 숫자 좌표와 운영상태는 확인되지 않아 null 유지.",
+          "reason": "공식 현주소 확인 완료. 좌표에 대해서는 정확한 식당 지점 일치 숫자 근거 미확보.",
+          "previousAddress": "인천광역시 강화군 화도면 가능포리 89번길11"
+        },
+        {
+          "restaurantId": "local-north-f01dedac0ad17f8a",
+          "name": "마니산산채",
+          "currentAddress": "인천광역시 강화군 화도면 해안남로 1182",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 마니산산채",
+            "마니산산채 인천광역시 강화군 화도면 해안남로 1182",
+            "인천 강화군 마니산산채"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-69bfe37fa99cfbb2",
+          "name": "범호고향밥상",
+          "currentAddress": "인천광역시 강화군 화도면 마니산로 675번길 17",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 범호고향밥상",
+            "범호고향밥상 인천광역시 강화군 화도면 마니산로 675번길 17",
+            "인천 강화군 범호고향밥상"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-deb1b10034b8ab13",
+          "name": "해안도시",
+          "currentAddress": "인천광역시 강화군 길상면 해안남로 152",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 해안도시",
+            "해안도시 인천광역시 강화군 길상면 해안남로 152",
+            "인천 강화군 해안도시"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-fffbd2dfb819264e",
+          "name": "성안정",
+          "currentAddress": "인천광역시 강화군 내가면 외포리 1294",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 성안정",
+            "성안정 인천광역시 강화군 내가면 외포리 1294",
+            "인천 강화군 성안정"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-24c9f98b39a4a73b",
+          "name": "충남서산집(내가)",
+          "currentAddress": "인천광역시 강화군 내가면 중앙로 1198",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 충남서산집(내가)",
+            "충남서산집(내가) 인천광역시 강화군 내가면 중앙로 1198",
+            "인천 강화군 충남서산집(내가)"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "동일 이름의 다른 지점 및 중앙로 1198/1200 주소 대조 필요. 검증 전 좌표 입력 금지."
+        },
+        {
+          "restaurantId": "local-north-0db096ca14b14b40",
+          "name": "옛날짜장",
+          "currentAddress": "인천광역시 강화군 길상면 덕진로 329",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 옛날짜장",
+            "옛날짜장 인천광역시 강화군 길상면 덕진로 329",
+            "인천 강화군 옛날짜장"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-f3dc084a693286af",
+          "name": "뜰안에정원",
+          "currentAddress": "인천광역시 강화군 삼산면 삼산남로 828번길 26",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 뜰안에정원",
+            "뜰안에정원 인천광역시 강화군 삼산면 삼산남로 828번길 26",
+            "인천 강화군 뜰안에정원"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-45f28e0ec32a1682",
+          "name": "천수면",
+          "currentAddress": "인천광역시 강화군 강화읍 동문안길20번길 6",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 천수면",
+            "천수면 인천광역시 강화군 강화읍 동문안길20번길 6",
+            "인천 강화군 천수면"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-5e670c8269cb7148",
+          "name": "장미회집",
+          "currentAddress": "인천광역시 강화군 하점면 창후로 308",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 장미회집",
+            "장미회집 인천광역시 강화군 하점면 창후로 308",
+            "인천 강화군 장미회집"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-962350d326723a4a",
+          "name": "강화도맛집 숯불생선구이",
+          "currentAddress": "인천광역시 강화군 길상면 해안동로 14-6",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 강화도맛집 숯불생선구이",
+            "강화도맛집 숯불생선구이 인천광역시 강화군 길상면 해안동로 14-6",
+            "인천 강화군 강화도맛집 숯불생선구이"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-57bb8e7d491e3b63",
+          "name": "은성횟집",
+          "currentAddress": "인천광역시 강화군 내가면 해안서로 963",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 은성횟집",
+            "은성횟집 인천광역시 강화군 내가면 해안서로 963",
+            "인천 강화군 은성횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-bbe444cd1d1cc3bd",
+          "name": "고을식당",
+          "currentAddress": "인천광역시 강화군 강화읍 강화대로 400",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 고을식당",
+            "고을식당 인천광역시 강화군 강화읍 강화대로 400",
+            "인천 강화군 고을식당"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-cceb0e392463e1c4",
+          "name": "꽃게와낙지",
+          "currentAddress": "인천광역시 강화군 화도면 해안남로2029번길 7",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 꽃게와낙지",
+            "꽃게와낙지 인천광역시 강화군 화도면 해안남로2029번길 7",
+            "인천 강화군 꽃게와낙지"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-ebbe860339f9fbfa",
+          "name": "강화섬보리밥",
+          "currentAddress": "인천광역시 강화군 선원면 시리미로 146",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 강화섬보리밥",
+            "강화섬보리밥 인천광역시 강화군 선원면 시리미로 146",
+            "인천 강화군 강화섬보리밥"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-407c6a739bcd8a8b",
+          "name": "목향",
+          "currentAddress": "인천광역시 강화군 길상면 해안남로 601",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 목향",
+            "목향 인천광역시 강화군 길상면 해안남로 601",
+            "인천 강화군 목향"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-ea57d154edd6f3d5",
+          "name": "강나루풍천장어",
+          "currentAddress": "인천광역시 강화군 길상면 해안남로 92-6",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 강나루풍천장어",
+            "강나루풍천장어 인천광역시 강화군 길상면 해안남로 92-6",
+            "인천 강화군 강나루풍천장어"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-6e40230a00e22eb1",
+          "name": "왕창잘되는 집",
+          "currentAddress": "인천광역시 강화군 강화읍 중앙로 17-9",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 왕창잘되는 집",
+            "왕창잘되는 집 인천광역시 강화군 강화읍 중앙로 17-9",
+            "인천 강화군 왕창잘되는 집"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-f0571babf59b3538",
+          "name": "강화서산갯마을",
+          "currentAddress": null,
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 강화서산갯마을",
+            "강화서산갯마을 강화군 주소 미등록",
+            "인천 강화군 강화서산갯마을"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 레코드의 주소 없음 확인. 개별 주소·좌표 재조사 필요",
+          "reason": "현주소 미등록으로 가게·지점 위치를 식별할 공식 주소 추가 확인 필요"
+        },
+        {
+          "restaurantId": "local-north-0046cb3a5b08a15b",
+          "name": "단골식당",
+          "currentAddress": "인천광역시 강화군 화도면 마니산로 678",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 단골식당",
+            "단골식당 인천광역시 강화군 화도면 마니산로 678",
+            "인천 강화군 단골식당"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-61c6210b33201543",
+          "name": "솔향기",
+          "currentAddress": "인천광역시 강화군 하점면 장정양오길 147",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 솔향기",
+            "솔향기 인천광역시 강화군 하점면 장정양오길 147",
+            "인천 강화군 솔향기"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-north-6b266ffbfab776bc",
+          "name": "강화해신탕",
+          "currentAddress": "인천광역시 강화군 선원면 중앙로 385",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 강화해신탕",
+            "강화해신탕 인천광역시 강화군 선원면 중앙로 385",
+            "인천 강화군 강화해신탕"
+          ],
+          "evidenceUrls": [
+            "https://www.incheon.go.kr/health/HE030501/3078887"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "기존 기록의 null 좌표 식별. 해당 식당 개별 외부 지도 검증은 이번 회차에 미실시.",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-incheon-slot61-ganghwa-oepori-flowercrab",
+          "name": "외포리꽃게집",
+          "currentAddress": "인천광역시 강화군 내가면 중앙로 1206",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 외포리꽃게집",
+            "외포리꽃게집 인천광역시 강화군 내가면 중앙로 1206",
+            "인천 강화군 외포리꽃게집"
+          ],
+          "evidenceUrls": [
+            "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "공식 관광 페이지에서 상호·현주소 확인, 수치좌표·현 영업상태 확인 불가",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-incheon-slot61-ganghwa-byeolmijeong",
+          "name": "별미정숯불장어",
+          "currentAddress": "인천광역시 강화군 선원면 더리미길 10",
+          "region": "인천광역시 강화군",
+          "searchAliases": [
+            "인천광역시 강화군 별미정숯불장어",
+            "별미정숯불장어 인천광역시 강화군 선원면 더리미길 10",
+            "인천 강화군 별미정숯불장어"
+          ],
+          "evidenceUrls": [
+            "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "공식 관광 페이지에서 상호·현주소 확인, 수치좌표·현 영업상태 확인 불가",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-incheon-slot61-ongjin-samsamgui",
+          "name": "삼삼구이",
+          "currentAddress": "인천광역시 옹진군 백령면 백령로 322",
+          "region": "인천광역시 옹진군",
+          "searchAliases": [
+            "인천광역시 옹진군 삼삼구이",
+            "삼삼구이 인천광역시 옹진군 백령면 백령로 322",
+            "인천 옹진군 삼삼구이"
+          ],
+          "evidenceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "공식 관광 페이지에서 상호·현주소 확인, 수치좌표·현 영업상태 확인 불가",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        },
+        {
+          "restaurantId": "local-incheon-slot61-ongjin-jandigarden",
+          "name": "잔디가든",
+          "currentAddress": "인천광역시 옹진군 백령면 사곶로 89",
+          "region": "인천광역시 옹진군",
+          "searchAliases": [
+            "인천광역시 옹진군 잔디가든",
+            "잔디가든 인천광역시 옹진군 백령면 사곶로 89",
+            "인천 옹진군 잔디가든"
+          ],
+          "evidenceUrls": [
+            "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 61,
+          "checkResult": "공식 관광 페이지에서 상호·현주소 확인, 수치좌표·현 영업상태 확인 불가",
+          "reason": "상호·지점·현주소와 함께 검증되는 수치 위경도 근거 미확보"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "강화서산갯마을 주소",
+          "restaurantId": "local-north-f0571babf59b3538",
+          "reason": "원자료에는 이름만 있고 현 주소가 null. 3종 근거와 다른 순환 2차례 조사 전에는 목록 제외 금지",
+          "action": "2순환61회차 주소·업소 공식 소재지 확인; 현재 기록 보존"
+        },
+        {
+          "topic": "강화군 기존 좌표 누락 28곳",
+          "reason": "공식 등록 사실과 영업·좌표 근거는 별개. 상당수 업체의 수치 좌표를 미확인",
+          "action": "오래된 미확인·주소 불일치 우선 재조사, 추정 좌표 및 임의 폐업 처리 금지"
+        },
+        {
+          "topic": "옹진군 전역 식당",
+          "reason": "이번에는 백령면 2곳만 공식 개별 근거 확인",
+          "action": "옹진군 도서 지역 공식 관광 식당 목록과 영업 상태 계속 조사"
+        },
+        {
+          "topic": "1순환 53회차 전북 기록 부재",
+          "reason": "최신 main 이월 기록에 미실행으로 남음",
+          "action": "2순환53회차 재조사"
+        },
+        {
+          "topic": "1순환 57회차 제주 잔여",
+          "reason": "기존 이월 미완료",
+          "action": "2순환57회차 순서대로 재확인"
+        },
+        {
+          "topic": "편가네된장 현주소 정정 후 좌표",
+          "restaurantId": "local-north-1dec29df6f254886",
+          "reason": "시군구 공식 주소 정정은 완료했으나 식당 지점 수치 좌표 미확인",
+          "action": "차기 같은 지역 회차에서 공식 지도 식당 좌표 교차확인"
+        }
+      ],
+      "carryOver": [
+        "기존 28곳 및 신규 4곳 위치 미확인 32곳; 이름·지점·주소 일치하는 수치 좌표만 갱신",
+        "강화서산갯마을 누락 주소 및 안다미로·충남서산집(내가) 주소 불일치 가능성 재조사",
+        "1순환53 전북 기록 부재 및 57 제주 미완료 이월 기록 보존",
+        "현 영업 여부 및 블루리본 정규 등급 출처 추가 대조"
+      ],
+      "nextSlot": 62,
+      "nextRegions": [
+        "대구광역시 달성군",
+        "대구광역시 군위군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -58264,6 +58997,7 @@
     "2026-11-08 03시 1/57 제주: 제주관광공사 비짓제주 음식점 7곳 신규·기존 황금어장 위치 1곳 보강. 위치 보강 총8·현재 목록 제외0·재확인 대기86. 서귀포 신규명단/1순환 53회차 전북 이월. 회원 추천 자료 불변.",
     "2026-11-08 04시 1/58 서울·인천: 공식 관광기관 블루리본 이력 2곳 신규, 인천 기존2 확인, 좌표추가0·노출제외0·위치재확인 대기643, 1/53·1/57 이월. 회원 추천 불변.",
     "2026-11-08 05시 1/59 부산·대구·울산 공식 3곳 추가; 위치0·제외0·재확인 대기426, 전북53 등 이월, 회원 추천 불변.",
-    "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변."
+    "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변.",
+    "2026-11-08 07시 1/61 강화군·옹진군: 공식 관광 음식점 4곳 추가, 기존 좌표 누락 28곳과 신규 4곳 재확인 대기32; 위치보강0·비노출0. 옹진 백령면만 일부 확인, 전북53·제주57 이월, 회원 추천 불변. 편가네된장 공식 주소 1건 교정."
   ]
 }

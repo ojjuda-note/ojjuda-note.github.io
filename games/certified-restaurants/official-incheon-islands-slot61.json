@@ -1,0 +1,149 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 61,
+  "sourceName": "강화군 문화관광 · 인천광역시 인천투어",
+  "sourceUrls": [
+    "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+    "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+    "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+    "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+    "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+    "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "restaurants": [
+    {
+      "id": "local-incheon-slot61-ganghwa-oepori-flowercrab",
+      "name": "외포리꽃게집",
+      "category": "한식",
+      "region": "인천",
+      "district": "강화군",
+      "address": "인천광역시 강화군 내가면 중앙로 1206",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "강화군 모범음식점·특색거리 맛집",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+          "sourceName": "강화군 문화관광 · 강화맛집",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "강화군 문화관광의 모범음식점·특색거리 꽃게 업소 등록 이력. 현재 운영 상태와 선정 연도는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+      "addressSourceCheckedAt": "2026-11-08",
+      "phoneText": "032-933-9395"
+    },
+    {
+      "id": "local-incheon-slot61-ganghwa-byeolmijeong",
+      "name": "별미정숯불장어",
+      "category": "한식",
+      "region": "인천",
+      "district": "강화군",
+      "address": "인천광역시 강화군 선원면 더리미길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물장어",
+        "갯벌장어"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "강화군 모범음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+          "sourceName": "강화군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "강화군 문화관광 모범음식점 목록 및 인천투어 개별 관광 페이지에서 상호와 주소 일치. 선정 연도와 현재 운영은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+      "addressSourceCheckedAt": "2026-11-08",
+      "addressCrosscheckUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+      "phoneText": "032-932-1371"
+    },
+    {
+      "id": "local-incheon-slot61-ongjin-samsamgui",
+      "name": "삼삼구이",
+      "category": "한식",
+      "region": "인천",
+      "district": "옹진군",
+      "address": "인천광역시 옹진군 백령면 백령로 322",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "염소불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천투어 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+          "sourceName": "인천광역시·인천관광공사 인천투어",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "백령도 관광 음식점 개별 소개 이력. 블루리본·미쉐린 선정과 현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+      "addressSourceCheckedAt": "2026-11-08",
+      "phoneText": "032-836-3392"
+    },
+    {
+      "id": "local-incheon-slot61-ongjin-jandigarden",
+      "name": "잔디가든",
+      "category": "한식",
+      "region": "인천",
+      "district": "옹진군",
+      "address": "인천광역시 옹진군 백령면 사곶로 89",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면",
+        "칼국수",
+        "만두"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "인천투어 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+          "sourceName": "인천광역시·인천관광공사 인천투어",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "백령도 관광 음식점 개별 소개 이력. 블루리본·미쉐린 선정과 현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+      "addressSourceCheckedAt": "2026-11-08",
+      "phoneText": "032-836-6091"
+    }
+  ],
+  "addressEnrichments": [
+    {
+      "id": "local-north-1dec29df6f254886",
+      "expectedName": "편가네된장",
+      "expectedAddress": "인천광역시 강화군 화도면 가능포리 89번길11",
+      "newAddress": "인천광역시 강화군 화도면 가능포로89번길 11",
+      "officialSourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do",
+      "sourceName": "강화군 문화관광 · 모범음식점",
+      "checkedAt": "2026-11-08",
+      "note": "공식 강화군 명단에서 편가네 된장과 도로명 주소를 직접 확인. 기존 동일 ID와 선정이력·저장 정보 보존. 수치좌표와 현재 영업 여부 미확인."
+    }
+  ]
+}
