@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 55,
-    "scheduledAt": "2026-11-08T01:00:00+09:00",
+    "slot": 56,
+    "scheduledAt": "2026-11-08T02:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예정된 한국시각 01:00 정각 기준 h=50, n=54, slot55, cycle1"
+    "source": "예약된 KST 02:00 기준 h=51, n=55, slot56, cycle1"
   },
   "entries": [
     {
@@ -31577,6 +31577,1301 @@
         "경상남도 공식 명단 대조"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 56,
+      "scheduledAtKST": "2026-11-08T02:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_review_five_kto_gyeongnam_listings",
+      "assignedRegions": [
+        "경상남도 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상남도",
+          "baseListedCount": 320,
+          "actuallyChecked": [
+            "한국관광공사 열린관광 경남 업소 4곳·주소·최근 수정일",
+            "한국관광공사 디지털 관광주민증 경남 제휴 음식점 1곳·현재 게시 주소",
+            "경남 우체국 2026 발행 수록과 기존 경남 데이터의 중복·좌표 누락 51곳 분포",
+            "기존 진주성소문·김해 커피나무·창원 스시쇼우진의 공공/공개 주소 결과"
+          ],
+          "remainingAreas": [
+            "경남 공식 전체 미식 선정/블루리본 최신 리스트 대조·시군 전수 조사 미완료",
+            "등록 4~8곳인 의령·함양·고성·하동·산청 등 공식 관광 식당 누락 탐색",
+            "기존 51 + 신규 5개 좌표 미확인업소의 정확한 공개 수치좌표 검증 및 영업상태"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "한국관광공사 열린관광 식당 상세 4건 (2025~2026 수정 기록을 선정 연도로 취급하지 않음)",
+        "한국관광공사 대한민국 구석구석 관광주민증 제휴 음식점 1건",
+        "부산지방우정청 2026년 우체국 맛집가이드의 기존 경남 주소·추천 정보",
+        "김해 커피나무 공개 지도 주소, 진주성소문 업소 공개 주소, 창원 스시쇼우진 지방행정 인허가 재게시",
+        "블루리본 공식 경남 개별 신규 등급·선정은 이번 회차에 충분한 증거 확보 실패"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 56,
+      "locationPendingScope": "경남 기존 320곳 중 좌표 미등록 51곳 + 새 관광 소개 5곳. 이 56곳을 모두 개별 최신 지도 검증했다는 뜻 아님.",
+      "addedRestaurantIds": [
+        "local-gyeongnam-slot56-haman-27c-bakery",
+        "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+        "local-gyeongnam-slot56-geoje-papyeongok-main",
+        "local-gyeongnam-slot56-changwon-goryeodang",
+        "local-gyeongnam-slot56-hapcheon-daesik-hanwoo"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002",
+        "https://www.daangn.com/kr/local-profile/%EC%A7%84%EC%A3%BC%EC%84%B1%EC%86%8C%EB%AC%B8-%EC%A7%84%EC%A3%BC%EC%A0%90-k22mrpve1e2x/",
+        "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg",
+        "https://dining.ayo.pe.kr/restaurant/region/%EA%B2%BD%EB%82%A8/%EC%B0%BD%EC%9B%90%EC%8B%9C%20%EB%A7%88%EC%82%B0%ED%9A%8C%EC%9B%90%EA%B5%AC/%EC%96%91%EB%8D%95%EB%8F%99",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do",
+        "https://tour.gyeongnam.go.kr/index.gyeong"
+      ],
+      "verifiedOfficialListings": [
+        {
+          "restaurantId": "local-gyeongnam-slot56-haman-27c-bakery",
+          "name": "27도씨제빵소",
+          "currentAddress": "경상남도 함안군 산인면 모곡5길 19-59",
+          "officialSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+          "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": "2026-08-31",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+          "name": "금오암소한마당",
+          "currentAddress": "경상남도 의령군 대의로 53-7",
+          "officialSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+          "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": "2025-11-06",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-geoje-papyeongok-main",
+          "name": "파평옥 본점",
+          "currentAddress": "경상남도 거제시 아주1로 31 1층",
+          "officialSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+          "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": "2026-07-20",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-changwon-goryeodang",
+          "name": "고려당",
+          "currentAddress": "경상남도 창원시 마산합포구 동서북10길 68",
+          "officialSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+          "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": "2026-10-08",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-hapcheon-daesik-hanwoo",
+          "name": "대식한우명가",
+          "currentAddress": "경상남도 합천군 용주면 합천호수로 873",
+          "officialSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002",
+          "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": null,
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        }
+      ],
+      "locationRechecks": [
+        {
+          "id": "post-2026-44-1-0",
+          "url": "https://www.daangn.com/kr/local-profile/%EC%A7%84%EC%A3%BC%EC%84%B1%EC%86%8C%EB%AC%B8-%EC%A7%84%EC%A3%BC%EC%A0%90-k22mrpve1e2x/",
+          "checkedAt": "2026-11-08",
+          "result": "업소명과 주소 대응 확인, 수치좌표 미확정"
+        },
+        {
+          "id": "post-2026-52-1-1",
+          "url": "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg",
+          "checkedAt": "2026-11-08",
+          "result": "업소명과 주소 대응 확인, 수치좌표 미확정"
+        },
+        {
+          "id": "post-2026-42-1-0",
+          "url": "https://dining.ayo.pe.kr/restaurant/region/%EA%B2%BD%EB%82%A8/%EC%B0%BD%EC%9B%90%EC%8B%9C%20%EB%A7%88%EC%82%B0%ED%9A%8C%EC%9B%90%EA%B5%AC/%EC%96%91%EB%8D%95%EB%8F%99",
+          "checkedAt": "2026-11-08",
+          "result": "업소명과 주소 대응 확인, 수치좌표 미확정"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "post-2026-42-1-0",
+          "name": "스시쇼우진",
+          "currentAddress": "경상남도 창원시 마산회원구 양덕동2길 59",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "스시쇼우진 창원시",
+            "스시쇼우진 경상남도 창원시 마산회원구 양덕동2길 59",
+            "스시쇼우진 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=42",
+            "https://dining.ayo.pe.kr/restaurant/region/%EA%B2%BD%EB%82%A8/%EC%B0%BD%EC%9B%90%EC%8B%9C%20%EB%A7%88%EC%82%B0%ED%9A%8C%EC%9B%90%EA%B5%AC/%EC%96%91%EB%8D%95%EB%8F%99"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "기존 우체국 발행 추천자료와 공개 업소/인허가 주소를 대조했으나 상호·현주소에 직접 연결된 검증 가능한 수치좌표는 얻지 못함. 폐업 판정 불가.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-43-1-0",
+          "name": "대흥관",
+          "currentAddress": "경상남도 창원시 마산회원구 내서읍 삼계로31-3",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "대흥관 창원시",
+            "대흥관 경상남도 창원시 마산회원구 내서읍 삼계로31-3",
+            "대흥관 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-44-1-0",
+          "name": "진주성소문",
+          "currentAddress": "경상남도 진주시 남강로 639",
+          "region": "경상남도 진주시",
+          "searchAliases": [
+            "진주성소문 진주시",
+            "진주성소문 경상남도 진주시 남강로 639",
+            "진주성소문 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=44",
+            "https://www.daangn.com/kr/local-profile/%EC%A7%84%EC%A3%BC%EC%84%B1%EC%86%8C%EB%AC%B8-%EC%A7%84%EC%A3%BC%EC%A0%90-k22mrpve1e2x/"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "기존 우체국 발행 추천자료와 공개 업소/인허가 주소를 대조했으나 상호·현주소에 직접 연결된 검증 가능한 수치좌표는 얻지 못함. 폐업 판정 불가.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-44-1-1",
+          "name": "진주운석빵",
+          "currentAddress": "경상남도 진주시 남강로 627",
+          "region": "경상남도 진주시",
+          "searchAliases": [
+            "진주운석빵 진주시",
+            "진주운석빵 경상남도 진주시 남강로 627",
+            "진주운석빵 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=44"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-45-0-0",
+          "name": "효성갈비",
+          "currentAddress": "경상남도 진주시 진주대로 1236",
+          "region": "경상남도 진주시",
+          "searchAliases": [
+            "효성갈비 진주시",
+            "효성갈비 경상남도 진주시 진주대로 1236",
+            "효성갈비 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-47-0-1",
+          "name": "카페 이저",
+          "currentAddress": "경상남도 창원시 진해구 편백로 28",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "카페 이저 창원시",
+            "카페 이저 경상남도 창원시 진해구 편백로 28",
+            "카페 이저 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-47-1-0",
+          "name": "음식이보약",
+          "currentAddress": "경상남도 창원시 진해구 백구로13, 102호~103호(근화동 보문빌딩)",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "음식이보약 창원시",
+            "음식이보약 경상남도 창원시 진해구 백구로13, 102호~103호(근화동 보문빌딩)",
+            "음식이보약 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-48-0-0",
+          "name": "갈비랑아구랑",
+          "currentAddress": "경상남도 창원시 진해구 충장로491번길 17",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "갈비랑아구랑 창원시",
+            "갈비랑아구랑 경상남도 창원시 진해구 충장로491번길 17",
+            "갈비랑아구랑 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=48"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-50-0-1",
+          "name": "정가",
+          "currentAddress": "경상남도 창원시 성산구 비음로 230",
+          "region": "경상남도 창원시",
+          "searchAliases": [
+            "정가 창원시",
+            "정가 경상남도 창원시 성산구 비음로 230",
+            "정가 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=50"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-52-1-1",
+          "name": "커피나무",
+          "currentAddress": "경상남도 김해시 전하로176번길 93",
+          "region": "경상남도 김해시",
+          "searchAliases": [
+            "커피나무 김해시",
+            "커피나무 경상남도 김해시 전하로176번길 93",
+            "커피나무 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+            "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "기존 우체국 발행 추천자료와 공개 업소/인허가 주소를 대조했으나 상호·현주소에 직접 연결된 검증 가능한 수치좌표는 얻지 못함. 폐업 판정 불가.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-53-1-0",
+          "name": "양산장어만찬",
+          "currentAddress": "경상남도 양산시 중앙로 296",
+          "region": "경상남도 양산시",
+          "searchAliases": [
+            "양산장어만찬 양산시",
+            "양산장어만찬 경상남도 양산시 중앙로 296",
+            "양산장어만찬 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=53"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-54-1-1",
+          "name": "내몸에좋은오리",
+          "currentAddress": "경상남도 양산시 물금읍 동중5길20",
+          "region": "경상남도 양산시",
+          "searchAliases": [
+            "내몸에좋은오리 양산시",
+            "내몸에좋은오리 경상남도 양산시 물금읍 동중5길20",
+            "내몸에좋은오리 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=54"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-55-1-0",
+          "name": "구선장네 1박2식",
+          "currentAddress": "경상남도 거제시 사등면 성포로 77",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "구선장네 1박2식 거제시",
+            "구선장네 1박2식 경상남도 거제시 사등면 성포로 77",
+            "구선장네 1박2식 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-55-1-1",
+          "name": "슬로우소랑",
+          "currentAddress": "경상남도 거제시 거제남서로 3955-2",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "슬로우소랑 거제시",
+            "슬로우소랑 경상남도 거제시 거제남서로 3955-2",
+            "슬로우소랑 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-56-0-0",
+          "name": "몽순이네식당",
+          "currentAddress": "경상남도 거제시 고현로6길 17",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "몽순이네식당 거제시",
+            "몽순이네식당 경상남도 거제시 고현로6길 17",
+            "몽순이네식당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-56-0-1",
+          "name": "옛날그집",
+          "currentAddress": "경상남도 거제시 고현로9길 4",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "옛날그집 거제시",
+            "옛날그집 경상남도 거제시 고현로9길 4",
+            "옛날그집 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-56-1-0",
+          "name": "박가네식당",
+          "currentAddress": "경상남도 거제시 고현로6길 26",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "박가네식당 거제시",
+            "박가네식당 경상남도 거제시 고현로6길 26",
+            "박가네식당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-58-1-0",
+          "name": "봉자가든",
+          "currentAddress": "경상남도 통영시 남해안대로736-14",
+          "region": "경상남도 통영시",
+          "searchAliases": [
+            "봉자가든 통영시",
+            "봉자가든 경상남도 통영시 남해안대로736-14",
+            "봉자가든 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=58"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-59-0-1",
+          "name": "마리나송원횟집",
+          "currentAddress": "경상남도 통영시 도남로269-38, 상가 302호",
+          "region": "경상남도 통영시",
+          "searchAliases": [
+            "마리나송원횟집 통영시",
+            "마리나송원횟집 경상남도 통영시 도남로269-38, 상가 302호",
+            "마리나송원횟집 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-59-1-1",
+          "name": "무전리샤브칼국수",
+          "currentAddress": "경상남도 통영시 무전8길 13-32",
+          "region": "경상남도 통영시",
+          "searchAliases": [
+            "무전리샤브칼국수 통영시",
+            "무전리샤브칼국수 경상남도 통영시 무전8길 13-32",
+            "무전리샤브칼국수 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-61-0-0",
+          "name": "외양간구시",
+          "currentAddress": "경상남도 거창군 거창읍 상동2길 70",
+          "region": "경상남도 거창군",
+          "searchAliases": [
+            "외양간구시 거창군",
+            "외양간구시 경상남도 거창군 거창읍 상동2길 70",
+            "외양간구시 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-61-0-1",
+          "name": "명당",
+          "currentAddress": "경상남도 거창군 거창읍 동동4길 67-15",
+          "region": "경상남도 거창군",
+          "searchAliases": [
+            "명당 거창군",
+            "명당 경상남도 거창군 거창읍 동동4길 67-15",
+            "명당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=61"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-62-1-0",
+          "name": "그때그집고기",
+          "currentAddress": "경상남도 거창군 거창읍 공수들2길 42",
+          "region": "경상남도 거창군",
+          "searchAliases": [
+            "그때그집고기 거창군",
+            "그때그집고기 경상남도 거창군 거창읍 공수들2길 42",
+            "그때그집고기 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-62-1-1",
+          "name": "명품토종흑돼지",
+          "currentAddress": "경상남도 거창군 거창읍 거열로1길 36",
+          "region": "경상남도 거창군",
+          "searchAliases": [
+            "명품토종흑돼지 거창군",
+            "명품토종흑돼지 경상남도 거창군 거창읍 거열로1길 36",
+            "명품토종흑돼지 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=62"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-64-0-0",
+          "name": "빵연구소",
+          "currentAddress": "경상남도 고성군 고성읍 중앙로25번길 9",
+          "region": "경상남도 고성군",
+          "searchAliases": [
+            "빵연구소 고성군",
+            "빵연구소 경상남도 고성군 고성읍 중앙로25번길 9",
+            "빵연구소 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=64"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-64-0-1",
+          "name": "자연촌",
+          "currentAddress": "경상남도 고성군 고성읍 동외로156번길 10",
+          "region": "경상남도 고성군",
+          "searchAliases": [
+            "자연촌 고성군",
+            "자연촌 경상남도 고성군 고성읍 동외로156번길 10",
+            "자연촌 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=64"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-65-0-1",
+          "name": "효준횟집",
+          "currentAddress": "경상남도 남해군 남해읍 화전로 110 나동-22호",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "효준횟집 남해군",
+            "효준횟집 경상남도 남해군 남해읍 화전로 110 나동-22호",
+            "효준횟집 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-65-1-1",
+          "name": "앵강마켓",
+          "currentAddress": "경상남도 남해군 남면 남서대로 772",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "앵강마켓 남해군",
+            "앵강마켓 경상남도 남해군 남면 남서대로 772",
+            "앵강마켓 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-66-0-0",
+          "name": "봉정식당",
+          "currentAddress": "경상남도 남해군 남해읍 화전로110",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "봉정식당 남해군",
+            "봉정식당 경상남도 남해군 남해읍 화전로110",
+            "봉정식당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=66"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-67-1-0",
+          "name": "진미추어탕",
+          "currentAddress": "경상남도 밀양시 중앙로 66-5",
+          "region": "경상남도 밀양시",
+          "searchAliases": [
+            "진미추어탕 밀양시",
+            "진미추어탕 경상남도 밀양시 중앙로 66-5",
+            "진미추어탕 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=67"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-68-0-0",
+          "name": "밀양시문화도시센터 열두달",
+          "currentAddress": "경상남도 밀양시 밀양대로 1908, 5호관 1층",
+          "region": "경상남도 밀양시",
+          "searchAliases": [
+            "밀양시문화도시센터 열두달 밀양시",
+            "밀양시문화도시센터 열두달 경상남도 밀양시 밀양대로 1908, 5호관 1층",
+            "밀양시문화도시센터 열두달 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=68"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-68-0-1",
+          "name": "복합문화공간 볕뉘",
+          "currentAddress": "경상남도 밀양시 밀양향교3길 9",
+          "region": "경상남도 밀양시",
+          "searchAliases": [
+            "복합문화공간 볕뉘 밀양시",
+            "복합문화공간 볕뉘 경상남도 밀양시 밀양향교3길 9",
+            "복합문화공간 볕뉘 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=68"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-69-0-1",
+          "name": "만기",
+          "currentAddress": "경상남도 사천시 사천읍 샘골2길 4",
+          "region": "경상남도 사천시",
+          "searchAliases": [
+            "만기 사천시",
+            "만기 경상남도 사천시 사천읍 샘골2길 4",
+            "만기 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=69"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-71-1-0",
+          "name": "산청엔 흑돼지",
+          "currentAddress": "경상남도 산청군 산청읍 꽃봉산로 115",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "산청엔 흑돼지 산청군",
+            "산청엔 흑돼지 경상남도 산청군 산청읍 꽃봉산로 115",
+            "산청엔 흑돼지 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-72-0-0",
+          "name": "원지한우 상차림식당",
+          "currentAddress": "경상남도 산청군 신안면 원지로 70",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "원지한우 상차림식당 산청군",
+            "원지한우 상차림식당 경상남도 산청군 신안면 원지로 70",
+            "원지한우 상차림식당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-72-1-1",
+          "name": "대장금약선관 산청",
+          "currentAddress": "경상남도 산청군 금서면 친환경로 2605번길 6-6",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "대장금약선관 산청 산청군",
+            "대장금약선관 산청 경상남도 산청군 금서면 친환경로 2605번길 6-6",
+            "대장금약선관 산청 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-74-0-1",
+          "name": "솔밭돼지국밥",
+          "currentAddress": "경상남도 의령군 의령읍 의병로20길 26",
+          "region": "경상남도 의령군",
+          "searchAliases": [
+            "솔밭돼지국밥 의령군",
+            "솔밭돼지국밥 경상남도 의령군 의령읍 의병로20길 26",
+            "솔밭돼지국밥 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=74"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-75-0-1",
+          "name": "원아구찜",
+          "currentAddress": "경상남도 창녕군 창녕읍 종로5",
+          "region": "경상남도 창녕군",
+          "searchAliases": [
+            "원아구찜 창녕군",
+            "원아구찜 경상남도 창녕군 창녕읍 종로5",
+            "원아구찜 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-75-1-0",
+          "name": "영우네우렁쌈밥",
+          "currentAddress": "경상남도 창녕군 대합면 십이리3길 37",
+          "region": "경상남도 창녕군",
+          "searchAliases": [
+            "영우네우렁쌈밥 창녕군",
+            "영우네우렁쌈밥 경상남도 창녕군 대합면 십이리3길 37",
+            "영우네우렁쌈밥 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=75"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-76-1-0",
+          "name": "커피지오",
+          "currentAddress": "경상남도 창녕군 남지읍 낙동로 466-1",
+          "region": "경상남도 창녕군",
+          "searchAliases": [
+            "커피지오 창녕군",
+            "커피지오 경상남도 창녕군 남지읍 낙동로 466-1",
+            "커피지오 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-76-1-1",
+          "name": "자율돼지국밥",
+          "currentAddress": "경상남도 창녕군 창녕읍 경남대로 4514",
+          "region": "경상남도 창녕군",
+          "searchAliases": [
+            "자율돼지국밥 창녕군",
+            "자율돼지국밥 경상남도 창녕군 창녕읍 경남대로 4514",
+            "자율돼지국밥 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=76"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-78-0-0",
+          "name": "카페 스톤브릿지",
+          "currentAddress": "경상남도 하동군 적량면 공설운동장로 215",
+          "region": "경상남도 하동군",
+          "searchAliases": [
+            "카페 스톤브릿지 하동군",
+            "카페 스톤브릿지 경상남도 하동군 적량면 공설운동장로 215",
+            "카페 스톤브릿지 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=78"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-79-0-0",
+          "name": "가야반점짬뽕집",
+          "currentAddress": "경상남도 함안군 가야읍 함안대로 510",
+          "region": "경상남도 함안군",
+          "searchAliases": [
+            "가야반점짬뽕집 함안군",
+            "가야반점짬뽕집 경상남도 함안군 가야읍 함안대로 510",
+            "가야반점짬뽕집 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=79"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-80-0-0",
+          "name": "대구식당",
+          "currentAddress": "경상남도 함안군 함안면 북촌2길 50-27",
+          "region": "경상남도 함안군",
+          "searchAliases": [
+            "대구식당 함안군",
+            "대구식당 경상남도 함안군 함안면 북촌2길 50-27",
+            "대구식당 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=80"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-80-0-1",
+          "name": "모티쿠키",
+          "currentAddress": "경상남도 함안군 가야읍 본동길 61",
+          "region": "경상남도 함안군",
+          "searchAliases": [
+            "모티쿠키 함안군",
+            "모티쿠키 경상남도 함안군 가야읍 본동길 61",
+            "모티쿠키 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=80"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-81-0-1",
+          "name": "돌대가리",
+          "currentAddress": "경상남도 함양군 함양읍 고운로 66",
+          "region": "경상남도 함양군",
+          "searchAliases": [
+            "돌대가리 함양군",
+            "돌대가리 경상남도 함양군 함양읍 고운로 66",
+            "돌대가리 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-81-1-1",
+          "name": "불막열삼 함양점",
+          "currentAddress": "경상남도 함양군 함양읍 함양로 1148",
+          "region": "경상남도 함양군",
+          "searchAliases": [
+            "불막열삼 함양점 함양군",
+            "불막열삼 함양점 경상남도 함양군 함양읍 함양로 1148",
+            "불막열삼 함양점 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=81"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-83-0-1",
+          "name": "민수네",
+          "currentAddress": "경상남도 합천군 합천읍 동서로60",
+          "region": "경상남도 합천군",
+          "searchAliases": [
+            "민수네 합천군",
+            "민수네 경상남도 합천군 합천읍 동서로60",
+            "민수네 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-83-1-0",
+          "name": "누이",
+          "currentAddress": "경상남도 합천군 합천읍 중앙로 50-39",
+          "region": "경상남도 합천군",
+          "searchAliases": [
+            "누이 합천군",
+            "누이 경상남도 합천군 합천읍 중앙로 50-39",
+            "누이 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=83"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-84-0-1",
+          "name": "에스리떼",
+          "currentAddress": "경상남도 합천군 합천읍 충효로 77-20",
+          "region": "경상남도 합천군",
+          "searchAliases": [
+            "에스리떼 합천군",
+            "에스리떼 경상남도 합천군 합천읍 충효로 77-20",
+            "에스리떼 경남"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=84"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sacheon-slot44-samcheonpo-jeongseobang",
+          "name": "삼천포맛집정서방",
+          "currentAddress": "경상남도 사천시 진삼로 269",
+          "region": "경상남도 사천시",
+          "searchAliases": [
+            "삼천포맛집정서방 사천시",
+            "삼천포맛집정서방 경상남도 사천시 진삼로 269",
+            "삼천포맛집정서방 경남"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "우체국/지자체/가이드의 기존 공개 수록 정보 보존. 개별 장소 수치좌표는 이번 광역 회차에서 미확정.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-haman-27c-bakery",
+          "name": "27도씨제빵소",
+          "currentAddress": "경상남도 함안군 산인면 모곡5길 19-59",
+          "region": "경상남도 함안군",
+          "searchAliases": [
+            "27도씨제빵소 함안군",
+            "27도씨제빵소 경상남도 함안군 산인면 모곡5길 19-59",
+            "27도씨제빵소 경남"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "관광기관 공식 식당/제휴 상세의 이름·지점·주소 확인; 해당 업소 직접 공개 수치좌표 없음. 영업/선정 여부 별도.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+          "name": "금오암소한마당",
+          "currentAddress": "경상남도 의령군 대의로 53-7",
+          "region": "경상남도 의령군",
+          "searchAliases": [
+            "금오암소한마당 의령군",
+            "금오암소한마당 경상남도 의령군 대의로 53-7",
+            "금오암소한마당 경남"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "관광기관 공식 식당/제휴 상세의 이름·지점·주소 확인; 해당 업소 직접 공개 수치좌표 없음. 영업/선정 여부 별도.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-geoje-papyeongok-main",
+          "name": "파평옥 본점",
+          "currentAddress": "경상남도 거제시 아주1로 31 1층",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "파평옥 본점 거제시",
+            "파평옥 본점 경상남도 거제시 아주1로 31 1층",
+            "파평옥 본점 경남"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "관광기관 공식 식당/제휴 상세의 이름·지점·주소 확인; 해당 업소 직접 공개 수치좌표 없음. 영업/선정 여부 별도.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-changwon-goryeodang",
+          "name": "고려당",
+          "currentAddress": "경상남도 창원시 마산합포구 동서북10길 68",
+          "region": "경상남도 창원시 마산합포구",
+          "searchAliases": [
+            "고려당 창원시 마산합포구",
+            "고려당 경상남도 창원시 마산합포구 동서북10길 68",
+            "고려당 경남"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "관광기관 공식 식당/제휴 상세의 이름·지점·주소 확인; 해당 업소 직접 공개 수치좌표 없음. 영업/선정 여부 별도.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-slot56-hapcheon-daesik-hanwoo",
+          "name": "대식한우명가",
+          "currentAddress": "경상남도 합천군 용주면 합천호수로 873",
+          "region": "경상남도 합천군",
+          "searchAliases": [
+            "대식한우명가 합천군",
+            "대식한우명가 경상남도 합천군 용주면 합천호수로 873",
+            "대식한우명가 경남"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 56,
+          "checkResult": "관광기관 공식 식당/제휴 상세의 이름·지점·주소 확인; 해당 업소 직접 공개 수치좌표 없음. 영업/선정 여부 별도.",
+          "reason": "식당명·지점·현주소에 직접 대응하는 검증된 공개 수치 위경도 미확인. 추정 좌표/인근 건물 중심 좌표 사용 금지."
+        }
+      ],
+      "unresolved": [
+        "경남 도 공식 전체 명단·블루리본 선정 확증 및 현재 영업상태 미완료",
+        "좌표 미등록 56곳 모두 정확한 공개 수치좌표 추가 확인 필요",
+        "행정 구역별 누락을 전수 확인했다는 뜻 아님",
+        "전북 1/53 회차 저장기록 없음 — 다음 순환 해당 회차 이월"
+      ],
+      "carryOver": [
+        {
+          "cycle": 1,
+          "slot": 53,
+          "region": "전북특별자치도",
+          "status": "no_audit_record_on_main",
+          "recheckCycle": 2,
+          "recheckSlot": 53
+        },
+        {
+          "cycle": 1,
+          "slot": 56,
+          "region": "경상남도",
+          "status": "partial_review_location_followup",
+          "restaurantIds": [
+            "post-2026-42-1-0",
+            "post-2026-43-1-0",
+            "post-2026-44-1-0",
+            "post-2026-44-1-1",
+            "post-2026-45-0-0",
+            "post-2026-47-0-1",
+            "post-2026-47-1-0",
+            "post-2026-48-0-0",
+            "post-2026-50-0-1",
+            "post-2026-52-1-1",
+            "post-2026-53-1-0",
+            "post-2026-54-1-1",
+            "post-2026-55-1-0",
+            "post-2026-55-1-1",
+            "post-2026-56-0-0",
+            "post-2026-56-0-1",
+            "post-2026-56-1-0",
+            "post-2026-58-1-0",
+            "post-2026-59-0-1",
+            "post-2026-59-1-1",
+            "post-2026-61-0-0",
+            "post-2026-61-0-1",
+            "post-2026-62-1-0",
+            "post-2026-62-1-1",
+            "post-2026-64-0-0",
+            "post-2026-64-0-1",
+            "post-2026-65-0-1",
+            "post-2026-65-1-1",
+            "post-2026-66-0-0",
+            "post-2026-67-1-0",
+            "post-2026-68-0-0",
+            "post-2026-68-0-1",
+            "post-2026-69-0-1",
+            "post-2026-71-1-0",
+            "post-2026-72-0-0",
+            "post-2026-72-1-1",
+            "post-2026-74-0-1",
+            "post-2026-75-0-1",
+            "post-2026-75-1-0",
+            "post-2026-76-1-0",
+            "post-2026-76-1-1",
+            "post-2026-78-0-0",
+            "post-2026-79-0-0",
+            "post-2026-80-0-0",
+            "post-2026-80-0-1",
+            "post-2026-81-0-1",
+            "post-2026-81-1-1",
+            "post-2026-83-0-1",
+            "post-2026-83-1-0",
+            "post-2026-84-0-1",
+            "local-sacheon-slot44-samcheonpo-jeongseobang",
+            "local-gyeongnam-slot56-haman-27c-bakery",
+            "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+            "local-gyeongnam-slot56-geoje-papyeongok-main",
+            "local-gyeongnam-slot56-changwon-goryeodang",
+            "local-gyeongnam-slot56-hapcheon-daesik-hanwoo"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 56
+        }
+      ],
+      "nextSlot": 57,
+      "nextRegions": [
+        "제주특별자치도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -31596,6 +32891,7 @@
     "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존.",
     "2026-11-07 1/52 같은 회차 이어하기: 충남관광 백년가게 공식 상세·주소 4곳(원조옥수사·듀팡과자점·비봉횟집·동흥대반점) 추가. 회차 누적10곳, 위치 보강0·제외0·좌표 대기58. 회원 추천 및 기존 회차 유지.",
     "2026-11-08 00시 1/54: 광주관광 추천식당 3곳 추가, 0곳 위치보강·0곳 제외. 미확인/이월 6곳을 이름·현재주소·검색별칭·근거URL과 함께 남김. 53회차 기록 없음 보충 필요. 회원 추천 정보 불변.",
-    "2026-11-08 01시 1/55 경북: 안동 진성식당 공식 KTO 2025-01 소개·2026-08-24 행정 인허가 주소/전화 대조로 1곳 추가. 경북 169→170, 위치누락65→66, 제외0. 지오코딩 좌표 제외·다음 순환 이월. 1/53 전북 미기록 보존."
+    "2026-11-08 01시 1/55 경북: 안동 진성식당 공식 KTO 2025-01 소개·2026-08-24 행정 인허가 주소/전화 대조로 1곳 추가. 경북 169→170, 위치누락65→66, 제외0. 지오코딩 좌표 제외·다음 순환 이월. 1/53 전북 미기록 보존.",
+    "2026-11-08 02시 1/56 경남: 관광공사 공식 식당 소개4·관광주민증 제휴1 신규. 경남 기존 320→325, 좌표 미등록 기존51+신규5=56, 위경도0·제외0, 미확인 영업상태 별도 보존. 1/53 전북 이월 유지."
   ]
 }
