@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 52,
-    "scheduledAt": "2026-11-07T22:00:00+09:00",
-    "checkedAtKST": "2026-11-07",
-    "source": "예약 시각 2026-11-07 22:00 KST를 기준으로 계산(2026-11-05 23:00 기준 경과 47시간, n=51, slot=52, cycle=1)."
+    "slot": 54,
+    "scheduledAt": "2026-11-08T00:00:00+09:00",
+    "checkedAtKST": "2026-11-08",
+    "source": "별도 예약시각 미제공; 자동실행 컨텍스트 2026-11-08 00:02:57 KST를 00:00 정각으로 내림(h=49,n=53,slot=54,cycle=1)."
   },
   "entries": [
     {
@@ -29995,6 +29995,236 @@
           "coordinateStatus": "unverified"
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 54,
+      "scheduledAtKST": "2026-11-08T00:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_review_three_gwangju_official_listings",
+      "assignedRegions": [
+        "전남광주통합특별시 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시",
+          "actuallyChecked": [
+            "광주 동구",
+            "광주 서구"
+          ],
+          "scope": "과거 광주광역시 공식 관광정보 내 추천식당 상세 3곳 직접 대조",
+          "remainingAreas": [
+            "광주 남구·북구·광산구",
+            "전남 권역 목포·나주·여수·순천·광양 등 광역 공식 명단과 군 지역"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "광주관광 2025년 맛집(가매일식) 및 공식 추천식당(계림동잔치집·관가) 상호·주소·대표메뉴 개별 상세",
+        "기등록 1순환 28회차 광주 공식 추천식당, 원본 전국 맛집과 동일명·동주소 중복 점검",
+        "통합 관광 사이트 안내 확인, 옛 전남 지역 공식 명단 상세 대조는 이월"
+      ],
+      "additions": 3,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 6,
+      "locationPendingScope": "현 회차 추적 목록 6곳(새 공식 추천식당3·기존 전남 좌표누락3). 광역전체 미좌표를 전수 집계한 수가 아님.",
+      "addedRestaurantIds": [
+        "local-gwangju-slot54-1365",
+        "local-gwangju-slot54-1313",
+        "local-gwangju-slot54-1069"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069",
+        "https://tour.jeonnam-gwangju.go.kr/",
+        "https://www.mokpo.go.kr/tour/food_100/food_100_list"
+      ],
+      "verifiedOfficialListings": [
+        {
+          "restaurantId": "local-gwangju-slot54-1365",
+          "name": "가매일식",
+          "currentAddress": "전남광주통합특별시 서구 상무대로 1104-26",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
+          "checkedAt": "2026-11-08",
+          "yearSemantics": "2025년 맛집 관광포털 수록표기",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gwangju-slot54-1313",
+          "name": "계림동잔치집",
+          "currentAddress": "전남광주통합특별시 동구 무등로306번길 6-1 (계림동)",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
+          "checkedAt": "2026-11-08",
+          "yearSemantics": "연도 미표기 추천식당",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-gwangju-slot54-1069",
+          "name": "관가",
+          "currentAddress": "전남광주통합특별시 동구 의재로96번길 18 (소태동)",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069",
+          "checkedAt": "2026-11-08",
+          "yearSemantics": "연도 미표기 추천식당",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-gwangju-slot54-1365",
+          "name": "가매일식",
+          "currentAddress": "전남광주통합특별시 서구 상무대로 1104-26",
+          "region": "전남광주통합특별시 서구",
+          "searchAliases": [
+            "가매일식 광주 서구",
+            "가매일식 광주광역시 서구 상무대로 1104-26"
+          ],
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "공식 추천식당 상호·현주소 일치 확인. 정확한 수치 좌표 미확인; 영업 상태 미검증.",
+          "reason": "공개 근거에 있는 상호·지점·현주소와 정확히 일치하는 위경도 불명확. 추정 금지."
+        },
+        {
+          "restaurantId": "local-gwangju-slot54-1313",
+          "name": "계림동잔치집",
+          "currentAddress": "전남광주통합특별시 동구 무등로306번길 6-1 (계림동)",
+          "region": "전남광주통합특별시 동구",
+          "searchAliases": [
+            "계림동잔치집 광주 동구",
+            "계림동잔치집 광주광역시 동구 무등로306번길 6-1 (계림동)"
+          ],
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "공식 추천식당 상호·현주소 일치 확인. 정확한 수치 좌표 미확인; 영업 상태 미검증.",
+          "reason": "공개 근거에 있는 상호·지점·현주소와 정확히 일치하는 위경도 불명확. 추정 금지."
+        },
+        {
+          "restaurantId": "local-gwangju-slot54-1069",
+          "name": "관가",
+          "currentAddress": "전남광주통합특별시 동구 의재로96번길 18 (소태동)",
+          "region": "전남광주통합특별시 동구",
+          "searchAliases": [
+            "관가 광주 동구",
+            "관가 광주광역시 동구 의재로96번길 18 (소태동)"
+          ],
+          "evidenceUrls": [
+            "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "공식 추천식당 상호·현주소 일치 확인. 정확한 수치 좌표 미확인; 영업 상태 미검증.",
+          "reason": "공개 근거에 있는 상호·지점·현주소와 정확히 일치하는 위경도 불명확. 추정 금지."
+        },
+        {
+          "restaurantId": "local-namdo-598600",
+          "name": "나주곰탕 하얀집",
+          "currentAddress": "전라남도 나주시 금성관길 6-1",
+          "region": "전남광주통합특별시 나주시",
+          "searchAliases": [
+            "나주곰탕 하얀집 나주시",
+            "나주곰탕 하얀집 전라남도 나주시 금성관길 6-1"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "이전 공식 선정·수록 상호·주소 기록만 확인. 이번 회차 개별 공개 수치 좌표 및 현주소 재확인은 이월.",
+          "reason": "기등록 지자체 이력만으로 현재 좌표·영업 상태를 추정할 수 없음."
+        },
+        {
+          "restaurantId": "local-namdo-599276",
+          "name": "남도예담",
+          "currentAddress": "전라남도 담양군 월산면 담장로 143",
+          "region": "전남광주통합특별시 담양군",
+          "searchAliases": [
+            "남도예담 담양군",
+            "남도예담 전라남도 담양군 월산면 담장로 143"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "이전 공식 선정·수록 상호·주소 기록만 확인. 이번 회차 개별 공개 수치 좌표 및 현주소 재확인은 이월.",
+          "reason": "기등록 지자체 이력만으로 현재 좌표·영업 상태를 추정할 수 없음."
+        },
+        {
+          "restaurantId": "local-namdo-598605",
+          "name": "독천식당",
+          "currentAddress": "전남 목포시 호남로 64번길 3-1",
+          "region": "전남광주통합특별시 목포시",
+          "searchAliases": [
+            "독천식당 목포시",
+            "독천식당 전남 목포시 호남로 64번길 3-1"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "checkResult": "이전 공식 선정·수록 상호·주소 기록만 확인. 이번 회차 개별 공개 수치 좌표 및 현주소 재확인은 이월.",
+          "reason": "기등록 지자체 이력만으로 현재 좌표·영업 상태를 추정할 수 없음."
+        }
+      ],
+      "unresolved": [
+        "전남광주 통합 공식 전체 선정·블루리본 신명단 전수 확인 미완료.",
+        "이번 신규 3곳 정확한 공개 수치좌표·현재 영업상태는 검증되지 않아 추정하지 않음.",
+        "1순환 53회차(2026-11-07 23시) 전북특별자치도 감사 기록 없음: 다음 순환 53회차에서 보충."
+      ],
+      "carryOver": [
+        {
+          "cycle": 1,
+          "slot": 53,
+          "scheduledAtKST": "2026-11-07T23:00:00+09:00",
+          "region": "전북특별자치도 공식 명단 대조",
+          "status": "no_audit_record_on_main",
+          "recheckCycle": 2,
+          "recheckSlot": 53
+        },
+        {
+          "cycle": 1,
+          "slot": 54,
+          "region": "전남광주통합특별시",
+          "status": "partial_provincial_list_audit",
+          "recheckCycle": 2,
+          "recheckSlot": 54,
+          "restaurantIds": [
+            "local-gwangju-slot54-1365",
+            "local-gwangju-slot54-1313",
+            "local-gwangju-slot54-1069",
+            "local-namdo-598600",
+            "local-namdo-599276",
+            "local-namdo-598605"
+          ]
+        }
+      ],
+      "nextSlot": 55,
+      "nextRegions": [
+        "경상북도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -30012,6 +30242,7 @@
     "2026-11-07 19시 49회차 경기도 공식 먹거리 소개 구리6·평택7 추가(공식 선정 아님). 경기도 전체395곳 중 위치 대기342곳을 ID·주소·기존 출처로 이월. 좌표추정·폐업판정·비노출·회원추천변경 0.",
     "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349.",
     "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존.",
-    "2026-11-07 1/52 같은 회차 이어하기: 충남관광 백년가게 공식 상세·주소 4곳(원조옥수사·듀팡과자점·비봉횟집·동흥대반점) 추가. 회차 누적10곳, 위치 보강0·제외0·좌표 대기58. 회원 추천 및 기존 회차 유지."
+    "2026-11-07 1/52 같은 회차 이어하기: 충남관광 백년가게 공식 상세·주소 4곳(원조옥수사·듀팡과자점·비봉횟집·동흥대반점) 추가. 회차 누적10곳, 위치 보강0·제외0·좌표 대기58. 회원 추천 및 기존 회차 유지.",
+    "2026-11-08 00시 1/54: 광주관광 추천식당 3곳 추가, 0곳 위치보강·0곳 제외. 미확인/이월 6곳을 이름·현재주소·검색별칭·근거URL과 함께 남김. 53회차 기록 없음 보충 필요. 회원 추천 정보 불변."
   ]
 }
