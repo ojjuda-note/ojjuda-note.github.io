@@ -55,13 +55,14 @@ assert.ok(index.includes('./app.js?v=' + release.revision));
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('/shared/games/world-game-assets.js?v=' + release.revision));
 
-const auditRow = sources.latestCoverageAudit;
+const auditRow = sources.coverageAuditHistory.find(row => row.cycle === 1 && row.slot === 57);
+assert.ok(auditRow, 'slot57 audit history must persist across future releases');
 assert.equal(auditRow.cycle, 1); assert.equal(auditRow.slot, 57);
 assert.equal(auditRow.newRestaurantCount, sidecar.restaurants.length);
 assert.equal(auditRow.modificationCount, 1);
 assert.equal(auditRow.coordinateAddedCount, sidecar.restaurants.length + sidecar.locationEnrichments.length);
 assert.equal(auditRow.locationExcludedCount, 0);
-assert.deepEqual(sources.coverage, auditRow.currentCoverage);
+assert.deepEqual(sources.coverage, sources.latestCoverageAudit.currentCoverage);
 assert.equal(auditRow.currentCoverage.uniqueRestaurants - auditRow.previousCoverage.uniqueRestaurants, 7);
 assert.equal(auditRow.currentCoverage.coordinatesAvailable - auditRow.previousCoverage.coordinatesAvailable, 8);
 assert.equal(auditRow.currentCoverage.coordinatesMissing - auditRow.previousCoverage.coordinatesMissing, -1);

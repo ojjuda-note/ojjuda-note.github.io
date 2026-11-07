@@ -118,7 +118,7 @@
   },
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
-    "recordCount": 528,
+    "recordCount": 530,
     "coordinatesCount": 246,
     "buildCounts": {
       "existingRecords": 6,
@@ -199,7 +199,7 @@
     "coordinatesPolicy": "상호와 시도·구군·도로명·건물번호 일치. 건물번호 하이픈 보존. 같은 주소의 좌표가 150m 초과 충돌하면 보강하지 않음. 기존 공식 출처 좌표는 유지.",
     "operatingStatus": "모든 식당 현재 영업 상태 별도 확인하지 않음",
     "contentPolicy": "식당 식별 사실과 단순 메뉴명만 활용. 원본 소개글·사진은 재배포하지 않음.",
-    "recordCountIncludingCollaborations": 526,
+    "recordCountIncludingCollaborations": 528,
     "displayLabels": {
       "3리본": 46,
       "공동선정": 270,
@@ -1447,8 +1447,8 @@
       "policy": "업소 공개 안내 근거로 구분. 명시된 연도만 수록하며 리본 개수는 추정하지 않음."
     },
     "seoulVisitSeoulHistory": {
-      "checkedAt": "2026-11-05",
-      "recordCount": 3,
+      "checkedAt": "2026-11-08",
+      "recordCount": 5,
       "coordinatesVerified": 0,
       "selectionYearConfirmed": 0,
       "ribbonGradeConfirmed": 1,
@@ -1482,9 +1482,27 @@
           "sourcePageModifiedAt": "2026-06-03",
           "sourceUrl": "https://korean.visitseoul.net/area/%EB%91%90%EB%A3%A8-%EC%B2%AD%EB%8B%B4/KOP026072",
           "historyEvidence": "2018년 서울관광재단 기사에서 과거 3리본 수상 언급(선정연도 및 현재 등급 미확인)"
+        },
+        {
+          "id": "local-seoul-visitseoul-the-makan-bangi",
+          "name": "더마칸",
+          "region": "서울",
+          "district": "송파구",
+          "sourcePageCreatedAt": "2026-04-14",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo",
+          "historyEvidence": "서울관광재단 2026 관광 소개에 블루리본 서베이 등재 언급; 리본 수·판본/수록 연도 미확인"
+        },
+        {
+          "id": "local-seoul-visitseoul-cheongdonok-seogyo",
+          "name": "청돈옥",
+          "region": "서울",
+          "district": "마포구",
+          "sourcePageModifiedAt": "2026-07-03",
+          "sourceUrl": "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k",
+          "historyEvidence": "2026년 관광 소개에 블루리본 서베이 4년 연속 선정 언급; 판본·정규 리본 수 미확인"
         }
       ],
-      "caveat": "원대구탕·제이드앤워터는 과거 선정만, 두루는 2018년 소개에서 과거 3리본 수상 언급. 선정 연도와 현행 등급·현재 영업 여부 미확인. 좌표 증거 없으므로 null."
+      "caveat": "원대구탕·제이드앤워터는 과거 선정만, 두루는 2018년 소개에서 과거 3리본 수상 언급. 선정 연도와 현행 등급·현재 영업 여부 미확인. 좌표 증거 없으므로 null. 추가 2곳은 공식 관광기관의 선정·수록 이력 문구만 확인, 2026/2027 판본 정규 등급·현재 영업 상태 미검증."
     },
     "bucheonMunicipalMention20261106": {
       "checkedAt": "2026-11-06",
@@ -1511,17 +1529,17 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3307,
+    "uniqueRestaurants": 3309,
     "providerCounts": {
       "michelin": 237,
-      "blue-ribbon": 528,
+      "blue-ribbon": 530,
       "local-guide": 2576,
       "post-office": 240
     },
     "coordinatesAvailable": 1060,
-    "coordinatesMissing": 2247,
+    "coordinatesMissing": 2249,
     "regionalCounts": {
-      "서울": 351,
+      "서울": 353,
       "부산": 382,
       "충북": 223,
       "충남": 74,
@@ -1540,10 +1558,10 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1964,
+      "한식": 1965,
       "중식": 137,
       "일식": 139,
-      "기타": 582,
+      "기타": 583,
       "양식": 214,
       "분식": 32,
       "디저트": 239
@@ -13865,53 +13883,120 @@
         "관광포털 수록은 블루리본·미쉐린 정규 선정·등급과 별개이며 현재 영업 상태 또한 확인하지 않음.",
         "제주 전체 113→120곳, 제주 위치 미확인 87→86곳, 전국 지도등록 1052→1060곳."
       ]
+    },
+    {
+      "id": "2026-11-08-seoul-incheon-slot58-two-blue-ribbon-tourism-histories",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 58,
+      "previousCoverage": {
+        "uniqueRestaurants": 3307,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2576,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1060,
+        "coordinatesMissing": 2247,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1964,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 214,
+          "분식": 32,
+          "디저트": 239
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3309,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2576,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1060,
+        "coordinatesMissing": 2249,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1965,
+          "중식": 137,
+          "일식": 139,
+          "기타": 583,
+          "양식": 214,
+          "분식": 32,
+          "디저트": 239
+        }
+      },
+      "newRestaurantCount": 2,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-seoul-visitseoul-the-makan-bangi",
+        "local-seoul-visitseoul-cheongdonok-seogyo"
+      ],
+      "sourceUrls": [
+        "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo",
+        "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k",
+        "https://itour.incheon.go.kr/thmtour/thmtour/detail.do?cotId=ITA26030419510421890",
+        "https://itour.incheon.go.kr/thmtour/rcmdtour/detail.do?cotId=ITA26051311042107180",
+        "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-seoul-blue-ribbon.json",
+      "scope": "서울·인천 공식 명단 부분 대조: 블루리본 선정 이력을 명시한 서울관광재단 음식점 2곳만 신규. 인천투어에서 도프뮤지엄·농가의 식탁 기등록 확인. 전체 전수 아님.",
+      "notes": [
+        "정규 리본 수, 판본, 실제 선정 연도를 추정하지 않음. 공식 관광기관 소개와 발행처 현행 선정은 구분.",
+        "서울·인천 위치 미확인 장소는 이름·주소와 정확히 대응하는 공식 수치좌표 미확보로 null 유지.",
+        "2곳 모두 현재 영업 여부는 별도 미확인. 회원 등록 추천맛집 건드리지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-jeju-slot57-visitjeju-seven-plus-one",
+    "id": "2026-11-08-seoul-incheon-slot58-two-blue-ribbon-tourism-histories",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 57,
+    "slot": 58,
     "previousCoverage": {
-      "uniqueRestaurants": 3300,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2569,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2248,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 223,
-        "충남": 74,
-        "울산": 36,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1959,
-        "중식": 137,
-        "일식": 139,
-        "기타": 582,
-        "양식": 213,
-        "분식": 31,
-        "디저트": 239
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3307,
       "providerCounts": {
         "michelin": 237,
@@ -13950,37 +14035,66 @@
         "디저트": 239
       }
     },
-    "newRestaurantCount": 7,
-    "modificationCount": 1,
-    "coordinateAddedCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3309,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2576,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1060,
+      "coordinatesMissing": 2249,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 382,
+        "충북": 223,
+        "충남": 74,
+        "울산": 36,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 120,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1965,
+        "중식": 137,
+        "일식": 139,
+        "기타": 583,
+        "양식": 214,
+        "분식": 32,
+        "디저트": 239
+      }
+    },
+    "newRestaurantCount": 2,
+    "modificationCount": 0,
+    "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-jeju-slot57-ijaemo-pizza",
-      "local-jeju-slot57-sunok-myeongga",
-      "local-jeju-slot57-jegalyang-hyeopjae",
-      "local-jeju-slot57-kimhuiseon-momguk",
-      "local-jeju-slot57-baeronggae",
-      "local-jeju-slot57-eomeong-galchi-airport",
-      "local-jeju-slot57-manseonbada"
-    ],
-    "modifiedRestaurantIds": [
-      "local-jeju-38"
+      "local-seoul-visitseoul-the-makan-bangi",
+      "local-seoul-visitseoul-cheongdonok-seogyo"
     ],
     "sourceUrls": [
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507"
+      "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo",
+      "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k",
+      "https://itour.incheon.go.kr/thmtour/thmtour/detail.do?cotId=ITA26030419510421890",
+      "https://itour.incheon.go.kr/thmtour/rcmdtour/detail.do?cotId=ITA26051311042107180",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-jeju-slot57.json",
-    "scope": "제주관광공사 비짓제주 제주시 음식점 7곳과 기존 향토음식점 황금어장의 공식 수치좌표 1곳만 확인. 제주도 전체 명단 전수 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-seoul-blue-ribbon.json",
+    "scope": "서울·인천 공식 명단 부분 대조: 블루리본 선정 이력을 명시한 서울관광재단 음식점 2곳만 신규. 인천투어에서 도프뮤지엄·농가의 식탁 기등록 확인. 전체 전수 아님.",
     "notes": [
-      "관광포털 수록은 블루리본·미쉐린 정규 선정·등급과 별개이며 현재 영업 상태 또한 확인하지 않음.",
-      "제주 전체 113→120곳, 제주 위치 미확인 87→86곳, 전국 지도등록 1052→1060곳."
+      "정규 리본 수, 판본, 실제 선정 연도를 추정하지 않음. 공식 관광기관 소개와 발행처 현행 선정은 구분.",
+      "서울·인천 위치 미확인 장소는 이름·주소와 정확히 대응하는 공식 수치좌표 미확보로 null 유지.",
+      "2곳 모두 현재 영업 여부는 별도 미확인. 회원 등록 추천맛집 건드리지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -22456,5 +22570,29 @@
     "officialBlueRibbonSelectionVerified": false,
     "currentOperatingStatusVerified": false,
     "notes": "이름·지점·현주소·공식 공개 숫자 좌표만 추가. 관광포털 수록과 선정, 영업 상태는 분리."
+  },
+  "seoulIncheonSlot58": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 58,
+    "sourceFile": "games/certified-restaurants/official-seoul-blue-ribbon.json",
+    "addedCount": 2,
+    "modifiedCount": 0,
+    "coordinateAddedCount": 0,
+    "locationHiddenCount": 0,
+    "regionCounts": {
+      "서울": 353,
+      "인천": 341
+    },
+    "locationPendingCount": 643,
+    "officialCitationSource": "서울관광재단 Visit Seoul",
+    "unverified": "인천·서울 공식 전체 명단/신규 등급, 신규·기존 좌표, 현재 영업 상태 전체 확인 안됨",
+    "sourceUrls": [
+      "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo",
+      "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k",
+      "https://itour.incheon.go.kr/thmtour/thmtour/detail.do?cotId=ITA26030419510421890",
+      "https://itour.incheon.go.kr/thmtour/rcmdtour/detail.do?cotId=ITA26051311042107180",
+      "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants"
+    ]
   }
 }
