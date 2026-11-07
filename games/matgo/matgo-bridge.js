@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   let overlay = null, frame = null, opening = null, unsubscribe = null, previousFocus = null;
+  let launchLoading = null;
   let generation = 0, onlineReady=false;
   let releaseViewport=null;
   let session=null,cleanup=null;const retired=[];
@@ -65,6 +66,7 @@
     } else window.alert(message);
   }
   function closeMatgo(preserveRoom=false) {
+    launchLoading?.cancel({silent:true});launchLoading=null;
     generation++;
     opening = null;
     const previous=session;session=null;
@@ -92,6 +94,7 @@
     const request = {};
     opening = request;
     const attempt = generation;
+    launchLoading=window.OjjudaGameLaunch?.show('matgo',{onCancel:()=>{if(attempt===generation)closeMatgo();}}) || null;
     const cancel = () => { if (opening === request || attempt === generation) closeMatgo(); };
     options.signal?.addEventListener('abort', cancel, {once:true});
     try {
@@ -175,7 +178,10 @@
       closeMatgo(true);window.OjjudaArcadeRoomCreated(room);return;
     }
     if (event.data?.type === 'ojjuda:matgo:ready') onlineReady=false;
-    if (['ojjuda:matgo:online-ready','ojjuda:matgo:ready'].includes(event.data?.type))document.getElementById('matgo-loading-bar')?.remove();
+    if (['ojjuda:matgo:online-ready','ojjuda:matgo:ready'].includes(event.data?.type)){
+      document.getElementById('matgo-loading-bar')?.remove();
+      launchLoading?.finish();launchLoading=null;
+    }
     if (event.data?.type === 'ojjuda:matgo:wallet') window.OjjudaMatgoWalletChanged?.();
     // Only the server refill endpoint can charge ZU.
   });
