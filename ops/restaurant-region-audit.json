@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 39,
-    "scheduledAt": "2026-11-07T09:00:00+09:00",
+    "slot": 41,
+    "scheduledAt": "2026-11-07T11:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "예약시각 확인 불가; 실행 시각 2026-11-07T09:56:07+09:00를 09:00 정각으로 내림"
+    "source": "예약 예정시각 별도 확인 불가: 자동실행 문맥의 한국시각 2026-11-07T11:02:35+09:00을 정각 11:00으로 내림하여 배정."
   },
   "entries": [
     {
@@ -14026,6 +14026,1527 @@
         "부산광역시 금정구"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 41,
+      "scheduledAtKST": "2026-11-07T11:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_no_verified_catalog_change",
+      "assignedRegions": [
+        "부산광역시 사하구",
+        "부산광역시 강서구",
+        "부산광역시 연제구",
+        "부산광역시 수영구",
+        "부산광역시 사상구"
+      ],
+      "regionAudit": [
+        {
+          "region": "부산광역시 사하구",
+          "baseListedCount": 8,
+          "baseNullCoordinates": 5,
+          "known2026BusanEditionCount": 2,
+          "scope": "공식 2026 부산의 맛 지역 필터 및 2개 식당 상세 주소 대조. 기존 2곳 모두 등록됨. 좌표 미등록 검사.",
+          "additions": 0,
+          "modifications": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "부산광역시 강서구",
+          "baseListedCount": 14,
+          "baseNullCoordinates": 7,
+          "known2026BusanEditionCount": 4,
+          "scope": "기본 목록 및 공식 2026 부산의 맛 수록 정보 분포 대조. 개별 식당 새 원문/좌표/운영상태 확인은 이월.",
+          "additions": 0,
+          "modifications": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "부산광역시 연제구",
+          "baseListedCount": 10,
+          "baseNullCoordinates": 6,
+          "known2026BusanEditionCount": 5,
+          "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
+          "additions": 0,
+          "modifications": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "부산광역시 수영구",
+          "baseListedCount": 52,
+          "baseNullCoordinates": 43,
+          "known2026BusanEditionCount": 23,
+          "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
+          "additions": 0,
+          "modifications": 0,
+          "notExhaustive": true
+        },
+        {
+          "region": "부산광역시 사상구",
+          "baseListedCount": 11,
+          "baseNullCoordinates": 8,
+          "known2026BusanEditionCount": 4,
+          "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
+          "additions": 0,
+          "modifications": 0,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "부산광역시 2026 부산의 맛 시청 공식 발행 안내/146개 수록 기준과 main 기본 데이터 146건 대조",
+        "부산관광공사·블루리본 공동선정 노포 공개 목록 일부(정규 리본 등급 아님)",
+        "비짓부산 2026 사하구 필터의 2곳 상세 주소, 연제구 서가원 국수, 수영구 안목 주소 대조",
+        "행정안전부 지방자치단체 공식 누리집 화면 개방 확인(행정구역 전체 변동 전수 검토 아님)"
+      ],
+      "additions": 0,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 69,
+      "locationPendingScope": "최신 main 기본 restaurants.json의 배정 5개 구 위경도 null 기록만 집계. 별도 보충 데이터와 좌표 의심 사례까지 전수 미검증.",
+      "addedRestaurantIds": [],
+      "existingItemsRechecked": [
+        "영진돼지국밥 본점 (사하구)",
+        "대티물꽁 (사하구)",
+        "서가원 국수 (연제구)",
+        "안목 (수영구)",
+        "할매재첩국 (사상구)"
+      ],
+      "evidenceUrls": [
+        "https://www.busan.go.kr/promoboard/1726945",
+        "https://www.busan.go.kr/nbtnewsBU/1726364",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002004000",
+        "https://www.mois.go.kr/frt/sub/a04/localGovernment/screen.do",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=177&lang_cd=ko",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1118&lang_cd=ko"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "post-2026-08-1-0",
+          "name": "황령산 보쌈",
+          "currentAddress": "부산광역시 수영구 황령산로8",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "황령산 보쌈 수영구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=8"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-09-0-1",
+          "name": "소바재우재",
+          "currentAddress": "부산광역시 수영구 광남로 4-1, 1층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "소바재우재 수영구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-09-1-1",
+          "name": "구자윤 과자점",
+          "currentAddress": "부산광역시 수영구 수영로705번길 15",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "구자윤 과자점 수영구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=9"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-10-0-0",
+          "name": "부산돼지국밥",
+          "currentAddress": "부산광역시 수영구 남천동로 107",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "부산돼지국밥 수영구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=10"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-10-0-1",
+          "name": "금강 복아구전문점",
+          "currentAddress": "부산광역시 수영구 남천동로9번길 62",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "금강 복아구전문점 수영구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=10"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-11-1-1",
+          "name": "순풍삼계탕",
+          "currentAddress": "부산광역시 사상구 사상로181번길 33",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "순풍삼계탕 사상구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=11"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-12-0-0",
+          "name": "첨단돌솥감자탕 엄궁점",
+          "currentAddress": "부산광역시 사상구 낙동대로 784-13 휴그린아파트 상가 201호",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "첨단돌솥감자탕 엄궁점 사상구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=12"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-12-0-1",
+          "name": "밥짓는부엌 한식뷔페",
+          "currentAddress": "부산광역시 사상구 학감대로 222번길 67",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "밥짓는부엌 한식뷔페 사상구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=12"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-15-1-1",
+          "name": "화반",
+          "currentAddress": "부산광역시 사하구 낙동대로 516번길 55",
+          "region": "부산광역시 사하구",
+          "searchAliases": [
+            "부산광역시 사하구",
+            "부산 사하구",
+            "화반 사하구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=15"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-24-0-1",
+          "name": "차애전 할매 칼국수",
+          "currentAddress": "부산 연제구 과정로191번가길 70",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "차애전 할매 칼국수 연제구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-24-1-1",
+          "name": "큰바위횟집",
+          "currentAddress": "부산광역시 연제구 법원로32번길19 다성빌딩 1층",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "큰바위횟집 연제구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-25-0-1",
+          "name": "콤파운드",
+          "currentAddress": "부산광역시 연제구 교대로24번길 20, 102호",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "콤파운드 연제구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=25"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-30-0-1",
+          "name": "공항족발",
+          "currentAddress": "부산광역시 강서구 공항앞길 12, 1층",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "공항족발 강서구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=30"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-31-0-0",
+          "name": "주화횟집",
+          "currentAddress": "부산광역시 강서구 화전산단4로30번길 6",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "주화횟집 강서구"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=31"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "jeongjitgan",
+          "name": "정짓간",
+          "currentAddress": "부산 사하구 비봉로 6",
+          "region": "부산광역시 사하구",
+          "searchAliases": [
+            "부산광역시 사하구",
+            "부산 사하구",
+            "정짓간 사하구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "hanwolgwan",
+          "name": "한월관",
+          "currentAddress": "부산 수영구 광안로62번길 10",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "한월관 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "jin-dweji-gomtang",
+          "name": "진돼지곰탕",
+          "currentAddress": "부산 수영구 광안해변로284번길 4, 2층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "진돼지곰탕 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "eonyang-bulgogi-busanjip",
+          "name": "언양불고기 부산집",
+          "currentAddress": "부산 수영구 남천바다로 32",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "언양불고기 부산집 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=9&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&page_no=8&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "meerok-super",
+          "name": "미락슈퍼",
+          "currentAddress": "부산 수영구 민락로 24-8",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "미락슈퍼 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "matsuzaki",
+          "name": "마츠자키",
+          "currentAddress": "부산 수영구 수영로582번길 10",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "마츠자키 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/matsuzaki"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "ultra-bite",
+          "name": "울트라 바이트",
+          "currentAddress": "부산 수영구 민락로14번길 28",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "울트라 바이트 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/ultra-bite"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "l-essence",
+          "name": "레썽스",
+          "currentAddress": "부산 수영구 광남로22번길 17, 3층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "레썽스 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "songheonjip",
+          "name": "송헌집",
+          "currentAddress": "부산 수영구 민락로19번길 18",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "송헌집 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/songheonjip"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "bibijae",
+          "name": "비비재",
+          "currentAddress": "부산 수영구 남천바다로10번길 45",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "비비재 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/bibijae"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "anmok",
+          "name": "안목",
+          "currentAddress": "부산 수영구 광남로22번길 3",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "안목 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "비짓부산 공개 개별 안내의 상호 및 수영구 광남로22번길 3을 기등록 주소와 대조해 일치함. 공개 위경도 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "pili-pili",
+          "name": "피리피리",
+          "currentAddress": "부산 수영구 무학로33번길 54",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "피리피리 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/pili-pili"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "niurou-mian-guan-zi",
+          "name": "뉴러우멘관즈",
+          "currentAddress": "부산 수영구 수영로388번길 25-4",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "뉴러우멘관즈 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/niurou-mian-guan-zi"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "yangkyungoak",
+          "name": "양경옥",
+          "currentAddress": "부산 수영구 민락본동로31번길 16",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "양경옥 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/yangkyungoak"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "yongkangzzie",
+          "name": "융캉찌에",
+          "currentAddress": "부산 수영구 광안해변로277번길 10",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "융캉찌에 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/yongkangzzie"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "delibong",
+          "name": "델리봉",
+          "currentAddress": "부산 수영구 민락로27번길 4, 3층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "델리봉 수영구"
+          ],
+          "evidenceUrls": [
+            "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/delibong",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan-2025-06",
+          "name": "밀양국밥",
+          "currentAddress": "부산 사상구 사상로212번길 6 (괘법동)",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "밀양국밥 사상구"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=7"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan-2025-13",
+          "name": "영주동삼대복국집",
+          "currentAddress": "부산 강서구 명지국제8로 284 (명지동)",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "영주동삼대복국집 강서구"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=9"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan-2025-14",
+          "name": "할매복집",
+          "currentAddress": "부산 사하구 다대로 12 (당리동)",
+          "region": "부산광역시 사하구",
+          "searchAliases": [
+            "부산광역시 사하구",
+            "부산 사하구",
+            "할매복집 사하구"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=9"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan-2025-44",
+          "name": "제일장횟집",
+          "currentAddress": "부산 수영구 민락수변로7번길 60 (민락동)",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "제일장횟집 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=17"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan-2025-68",
+          "name": "할매재첩국",
+          "currentAddress": "부산 사상구 낙동대로1530번길 20-15 (삼락동)",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "할매재첩국 사상구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002004000",
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=23",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "부산관광공사·블루리본 공동선정 노포 공개 명단의 사상구 낙동대로1530번길 20-15와 기존 주소 일치 확인. 정규 리본 등급·공개 좌표는 확인하지 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-dcaa684545",
+          "name": "톤쇼우",
+          "currentAddress": "부산 수영구 광안해변로279번길 13",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "톤쇼우 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-a6000ca4af",
+          "name": "옵스",
+          "currentAddress": "부산 수영구 황령대로489번길 37",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "옵스 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-7290d64afd",
+          "name": "칠성횟집",
+          "currentAddress": "부산 수영구 광안해변로 263",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "칠성횟집 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=5&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-bd31053869",
+          "name": "알로이타이레스토랑",
+          "currentAddress": "부산 수영구 민락수변로239번길 26",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "알로이타이레스토랑 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=7&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-1f673d9cb9",
+          "name": "뉼리",
+          "currentAddress": "부산 수영구 민락수변로 7",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "뉼리 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=5&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-2023-91281f3e19",
+          "name": "마이클어반팜테이블",
+          "currentAddress": "부산 수영구 구락로123번길 20",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "마이클어반팜테이블 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=2&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-84b7222e41",
+          "name": "삼오불고기",
+          "currentAddress": "부산 수영구 수영로610번길 24-2",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "삼오불고기 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=VIEW&page_no=8&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-0aef95bb60",
+          "name": "리오네",
+          "currentAddress": "부산 수영구 구락로 36",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "리오네 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&page_no=6&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-0fc90a50a3",
+          "name": "금랑횟집",
+          "currentAddress": "부산 수영구 광안해변로344번길 17-5",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "금랑횟집 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&page_no=5&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-a09beb48b7",
+          "name": "은해갈치",
+          "currentAddress": "부산 수영구 광안해변로295번길 4-7",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "은해갈치 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=9&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&page_no=8&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-152ac9655269db8d",
+          "name": "만호갈미샤브샤브",
+          "currentAddress": "부산광역시 강서구 르노삼성대로 602",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "만호갈미샤브샤브 강서구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-3b27411208bf0c38",
+          "name": "방코",
+          "currentAddress": "부산광역시 강서구 새진목길 51",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "방코 강서구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-5ed473c671af4071",
+          "name": "샤브니지",
+          "currentAddress": "부산광역시 강서구 공항로 1347번길 36",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "샤브니지 강서구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-ae3bb374402ef971",
+          "name": "토북베이커리",
+          "currentAddress": "부산광역시 강서구 낙동남로 526-1 토북베이커리카페",
+          "region": "부산광역시 강서구",
+          "searchAliases": [
+            "부산광역시 강서구",
+            "부산 강서구",
+            "토북베이커리 강서구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-ee6cb670ecdd44db",
+          "name": "곰보식당",
+          "currentAddress": "부산광역시 사상구 낙동대로 1564",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "곰보식당 사상구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-ffcb5c7de15e9d73",
+          "name": "하동재첩국",
+          "currentAddress": "부산광역시 사상구 낙동대로1518번길 33",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "하동재첩국 사상구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-9f64e13540508bea",
+          "name": "해물왕창칼국수",
+          "currentAddress": "부산광역시 사상구 사상로 316",
+          "region": "부산광역시 사상구",
+          "searchAliases": [
+            "부산광역시 사상구",
+            "부산 사상구",
+            "해물왕창칼국수 사상구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-36e515cfcb5d921e",
+          "name": "대티물꽁",
+          "currentAddress": "부산광역시 사하구 낙동대로 135번안길 15",
+          "region": "부산광역시 사하구",
+          "searchAliases": [
+            "부산광역시 사하구",
+            "부산 사하구",
+            "대티물꽁 사하구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=177&lang_cd=ko",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "비짓부산 2026 사하구 필터와 상세에서 상호·도로명주소가 기존 값과 일치함. 주소에 맞는 공개 위경도는 확인하지 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-822d85243ae734f3",
+          "name": "영진돼지국밥 본점",
+          "currentAddress": "부산광역시 사하구 하신번영로157번길 39",
+          "region": "부산광역시 사하구",
+          "searchAliases": [
+            "부산광역시 사하구",
+            "부산 사하구",
+            "영진돼지국밥 본점 사하구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1118&lang_cd=ko",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "비짓부산 2026 사하구 필터와 식당 상세에서 상호·도로명주소가 기존 값과 일치함. 주소에 맞는 공개 위경도는 확인하지 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-751992a34baed2b3",
+          "name": "611WoodFire",
+          "currentAddress": "부산광역시 수영구 황령산로14-1 2층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "611WoodFire 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-588b23b2b2e81210",
+          "name": "고기형",
+          "currentAddress": "부산광역시 수영구 수영로679번길 22",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "고기형 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-d6f37e2f4621f971",
+          "name": "고옥",
+          "currentAddress": "부산광역시 수영구 광남로 6",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "고옥 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-08fee64dacffc845",
+          "name": "나룻터국수",
+          "currentAddress": "부산광역시 수영구 수영로741번길 25",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "나룻터국수 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-1b5bf35a3431d23b",
+          "name": "남천면가",
+          "currentAddress": "부산광역시 수영구 황령대로473번길 14-2",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "남천면가 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-8d91f60aa66ac0e9",
+          "name": "데일리럭키",
+          "currentAddress": "부산광역시 수영구 수영로 540번길 7",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "데일리럭키 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-9285552aa6c2357a",
+          "name": "브런치식당 소보",
+          "currentAddress": "부산광역시 수영구 민락로6번길 46-4",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "브런치식당 소보 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-cfc7ba462ba8a1b4",
+          "name": "아펙트",
+          "currentAddress": "부산광역시 수영구 무학로 64번길 31, 1층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "아펙트 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-b3c595e809704aef",
+          "name": "야키토리 백탄 광안리",
+          "currentAddress": "부산광역시 수영구 민락로13번길 21, 2층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "야키토리 백탄 광안리 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-ee034d6a43815dc6",
+          "name": "우리포차 본점",
+          "currentAddress": "부산광역시 수영구 광일로29번길 9, 1층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "우리포차 본점 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-a63e01f4ddfe74d1",
+          "name": "으뜸이로리바타",
+          "currentAddress": "부산광역시 수영구 수영로408번길 20, 1층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "으뜸이로리바타 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-dd1917652c8264ee",
+          "name": "조이풀조이풀",
+          "currentAddress": "부산광역시 수영구 민락본동로11번길 21, 1층",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구",
+            "부산 수영구",
+            "조이풀조이풀 수영구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-46404b69d37ba5b5",
+          "name": "고등어다찌 연산본점",
+          "currentAddress": "부산광역시 연제구 고분로31번길 42",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "고등어다찌 연산본점 연제구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-8c03836e1ec15356",
+          "name": "국제밀면 본점",
+          "currentAddress": "부산광역시 연제구 중앙대로1235번길 23-6",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "국제밀면 본점 연제구"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        },
+        {
+          "restaurantId": "local-busan-taste-9e9df8e12e493e8c",
+          "name": "서가원 국수",
+          "currentAddress": "부산광역시 연제구 반송로 68",
+          "region": "부산광역시 연제구",
+          "searchAliases": [
+            "부산광역시 연제구",
+            "부산 연제구",
+            "서가원 국수 연제구"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "evidenceResult": "비짓부산 공개 개별 안내의 상호 및 연제구 반송로 68을 기등록 주소와 대조해 일치함. 공개 위경도 미확인.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 41,
+          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "5개 구 기존 위치 누락",
+          "reason": "기본 데이터 69곳에 위경도가 없으며 해당 이름/현재 주소와 일치하는 공개 좌표 근거를 아직 확보하지 못함.",
+          "action": "2순환 41회차에서 69곳 우선 재검증. 서로 독립된 3종 근거 및 서로 다른 2순환 확인 없이는 비노출하지 않음."
+        },
+        {
+          "topic": "강서구 등 4개 구 2026 공식 사이트 상세 필터 검색",
+          "reason": "사하구 2곳 필터 상세 확인 이후 브라우저 조사 시간이 종료돼 4개 구의 최신 상세 목록 검색·개별 영업 확인 미완료.",
+          "action": "다음 같은 지역 배정에서 구별 필터의 명단·현재 주소를 기존 146건과 먼저 대조."
+        },
+        {
+          "topic": "현재 영업 상태와 추가 블루리본 정규 선정",
+          "reason": "2026판 수록·공동선정/개별 영업을 구분해야 하며 현재 영업/정규 리본 등급의 독립 근거는 미확보.",
+          "action": "폐업·선정 취소를 단정하지 않고 공식 출처 확인 계속."
+        }
+      ],
+      "carryOver": [
+        "10:00 예약 40회차(부산 동래구·남구·북구·해운대구·금정구)의 최신 main 운영 기록이 없어 별도 수행 여부 확인 필요. 이번 41회차로 대체하지 않음.",
+        "본 5개 구의 공식 2026 부산의 맛 총 146곳은 원본 기본 데이터에 이미 수록되어 있으나 기존 위치미확인 및 신규 블루리본 별도 근거는 재조사 필요.",
+        "강서구/연제구/수영구/사상구 최신 공식 지역 필터와 영업 상태는 다음 동일지역 회차에 우선 재확인."
+      ],
+      "nextSlot": 42,
+      "nextRegions": [
+        "울산광역시 중구",
+        "울산광역시 남구",
+        "울산광역시 동구",
+        "울산광역시 북구"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -14033,6 +15554,7 @@
     "회원 추천 데이터 및 사진은 자동 조사 대상에서 제외한다.",
     "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다.",
     "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인.",
-    "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음"
+    "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음",
+    "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음."
   ]
 }
