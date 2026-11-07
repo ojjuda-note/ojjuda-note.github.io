@@ -473,7 +473,7 @@ function bindInteractions() {
     const sort = $('sort').value;
     if (sort === 'distance') {
       if (state.position) updateState({ sort }, { fit: true });
-      else { syncControls(); locateUser(); }
+      else { syncControls(); locateUser({ sortByDistance: true }); }
       return;
     }
     updateState({ sort, ...(sort.startsWith('scale_') ? { category: 'festival' } : {}) }, { fit: sort.startsWith('scale_') });
@@ -502,10 +502,12 @@ function bindInteractions() {
   $('map-expand').addEventListener('click', toggleMapExpansion);
   $('nearby-search').addEventListener('click', () => {
     if (state.sort === 'distance' && state.position) updateState({ sort: 'date' });
-    else locateUser();
+    else if (state.position) updateState({ sort: 'distance' }, { fit: true });
+    else locateUser({ sortByDistance: true });
   });
   $('map-style').addEventListener('click', toggleMapStyle);
-  $('map-locate').addEventListener('click', locateUser);
+  $('map-locate').addEventListener('click', () => locateUser());
+  $('map-locate-direct').addEventListener('click', () => locateUser());
   document.addEventListener('click', event => {
     const button = event.target.closest('button');
     if (!button) return;
@@ -775,27 +777,30 @@ function updateMapStyleButton() {
   $('map-style').innerHTML = `${icon('layers')}<span>${detailMap ? '기본 지도' : '상세 지도'}</span>`;
   $('map-style').setAttribute('aria-pressed', String(detailMap));
 }
-function locateUser() {
+function locateUser({ sortByDistance = false } = {}) {
   if (!navigator.geolocation) { toast('이 브라우저에서는 현재 위치를 사용할 수 없어요.'); return; }
   $('map-locate').disabled = true;
+  $('map-locate-direct').disabled = true;
   $('nearby-search').disabled = true;
   toast('현재 위치를 확인하고 있어요.');
   navigator.geolocation.getCurrentPosition(position => {
     $('map-locate').disabled = false;
+    $('map-locate-direct').disabled = false;
     $('nearby-search').disabled = false;
     const { latitude: lat, longitude: lng } = position.coords;
     if (lat < 30.5 || lat > 41 || lng < 121 || lng > 135.5) { toast('현재 위치가 대한민국 지도 표시 범위를 벗어나 있어요.'); return; }
     state.position = { lat, lng };
-    state.sort = 'distance';
+    if (sortByDistance) state.sort = 'distance';
     syncControls(); render(); writeRoute();
     if (map) {
       if (locationMarker) map.removeLayer(locationMarker);
       locationMarker = window.L.circleMarker([lat, lng], { radius: 7, color: '#fff', weight: 3, fillColor: '#4f7ec4', fillOpacity: 1 }).addTo(map).bindTooltip('내 위치');
       if (state.view === 'map') { map.closePopup(); map.setView([lat, lng], 10, { animate: false }); }
     }
-    toast('가까운 축제·경기부터 보여드려요. 거리는 직선거리예요.');
+    toast(sortByDistance ? '가까운 축제·경기부터 보여드려요. 거리는 직선거리예요.' : '지도에 내 위치를 표시했어요.');
   }, error => {
     $('map-locate').disabled = false;
+    $('map-locate-direct').disabled = false;
     $('nearby-search').disabled = false;
     toast(error.code === 1 ? '위치 사용이 허용되지 않았어요. 지역을 직접 선택해 주세요.' : '현재 위치를 확인하지 못했어요. 지역을 직접 선택해 주세요.');
   }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });

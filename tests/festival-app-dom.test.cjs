@@ -95,6 +95,19 @@ test('nearby search finds sports and festivals by distance and can be turned off
   assert.equal(f.$('#nearby-search').getAttribute('aria-pressed'), 'false');
 });
 
+test('visible map location button keeps date sorting while nearby search remains optional', async t => {
+  const f = await fixture(t, { geolocation: { latitude: 36.35, longitude: 127.38 } });
+  assert.match(f.$('#map-locate-direct').textContent, /내 위치/);
+  assert.match(f.$('#map-locate').textContent, /내 위치/);
+  f.click('#map-locate-direct');
+  assert.equal(f.$('#sort').value, 'date', 'moving the map to my location does not change search order');
+  assert.equal(f.$('#nearby-search').getAttribute('aria-pressed'), 'false');
+  f.click('#nearby-search');
+  assert.equal(f.$('#sort').value, 'distance', 'nearby search can reuse the acquired location');
+  f.click('#map-locate');
+  assert.equal(f.$('#sort').value, 'distance', 'location control in map settings remains available');
+});
+
 test('festival map expansion fills its container and can close using Escape', async t => {
   const f = await fixture(t);
   f.click('#map-expand');

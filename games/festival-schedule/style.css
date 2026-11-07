@@ -114,9 +114,10 @@ main.explore { padding-top: 18px; padding-bottom: 18px; }
 body.map-is-expanded { overflow: hidden; }
 .map-panel.is-expanded { position: fixed; inset: 0; width: 100%; height: 100dvh !important; z-index: 9999; border: 0; border-radius: 0 !important; }
 .map-panel.is-expanded .leaflet-popup-content { max-height: min(370px, calc(100dvh - 145px)); }
-.map-buttons { position: absolute; right: 12px; top: 91px; z-index: 450; border: 1px solid #d6dfd8; border-radius: 6px; background: white; box-shadow: var(--shadow); overflow: hidden; }
-.map-buttons button { width: 34px; height: 34px; display: grid; place-items: center; color: #59725f; }
+.map-buttons { position: absolute; right: 12px; top: 91px; z-index: 450; display: flex; flex-direction: column; gap: 6px; }
+.map-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 76px; height: 34px; border: 1px solid #d6dfd8; border-radius: 8px; background: white; box-shadow: var(--shadow); color: #59725f; font-size: 12px; font-weight: 600; }
 .map-buttons button:hover { background: #f0f5f1; }
+.map-buttons button:disabled { opacity: .6; cursor: wait; }
 .map-buttons .icon { width: 17px; height: 17px; }
 .map-options { position: absolute; z-index: 450; left: 12px; bottom: 27px; }
 .map-options > summary { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid #d7dfd9; border-radius: 6px; background: #fff; box-shadow: var(--shadow); cursor: pointer; list-style: none; font-size: 12px; color: #5c7163; line-height: 1.3; }
@@ -368,7 +369,7 @@ dialog::backdrop { background: #19342866; }
   .map-option { min-height: 42px; font-size: 13px; }
   .map-options-menu { width: 163px; }
   .map-buttons { right: 10px; top: 85px; }
-  .map-buttons button { width: 32px; height: 32px; }
+  .map-buttons button { width: 72px; height: 32px; gap: 5px; font-size: 11px; }
   .leaflet-control-zoom { margin-top: 10px !important; margin-right: 10px !important; }
   .leaflet-control-zoom a { width: 32px !important; height: 32px !important; line-height: 32px !important; }
   .leaflet-control-attribution { font-size: 8px !important; }
