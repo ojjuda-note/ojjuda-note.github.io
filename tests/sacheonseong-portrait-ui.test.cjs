@@ -73,7 +73,12 @@ async function screenshot(page,name){
      const {page,errors}=await openPage(context,stage);
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
-      assertFits(value,label);
+      assert(value.tile.width>=43.99,`${label}: default tiles are at least 44px wide for touch`);
+      if(value.fit==='false'){
+       assert(value.canvas.width>value.viewport.width||value.canvas.height>value.viewport.height,`${label}: readable board can be panned`);
+       await page.locator('#zoom-fit').click();
+      }
+      assertFits(await layout(page),label);
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
       assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
       assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);

@@ -57,6 +57,8 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   assert.deepEqual(remaining(),[total,total],label+': counter includes lower floors');
   assert.equal(Number(canvas.style.getPropertyValue('--n')),cols,label+': grid CSS columns');
   assert.equal(d.getElementById('stage-label').textContent,stage+'단계'+(info.layerCount>1?' · '+info.layerCount+'층 남음':''));
+  assert(parseFloat(canvas.style.getPropertyValue('--tile'))>=44-.01,label+': default tiles are readable without pinching');
+  if(d.getElementById('zoom-fit').getAttribute('aria-pressed')==='false')d.getElementById('zoom-fit').click();
   if(stage<=2)assert.equal(active,rows*cols,label+': tutorial is rectangular');
   else assert(active<rows*cols,label+': complex silhouette has spaces');
   const assertFit=()=>{
