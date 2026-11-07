@@ -140,17 +140,20 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     const mounted = name => page.waitForFunction(name => !!fixture.controllers[name], name);
 
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
-    await page.getByText('정지 중', { exact: true }).waitFor();
+    await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
     assert.deepEqual(await page.locator('.adm-areas button').allTextContents(),
       ['계정', '콘텐츠', '휴지통', '신고·문의', 'ZU', '운영']);
     assert.equal(await page.locator('.adm-areas').evaluate(node => node.scrollWidth <= node.clientWidth), true,
       'all six navigation groups fit the mobile width');
-    await page.locator('.adm-stat').filter({ hasText: '정지 중' }).click();
+    await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).click();
     await mounted('accounts');
+    assert.deepEqual(await current(), { area: 'account', tab: 'suspended' });
+    assert.equal(await page.evaluate(() => fixture.options.accounts.view), 'suspended');
+    assert.equal(await page.evaluate(() => fixture.options.accounts.renderActions({id:'blocked'})), '',
+      'the separate suspended directory does not expose regular account power actions');
+    await tab('users');
     assert.deepEqual(await current(), { area: 'account', tab: 'users' });
     assert.equal(await page.evaluate(() => fixture.options.accounts.view), 'members');
-    assert.equal(await page.evaluate(() => fixture.options.accounts.initialFilter), 'banned',
-      'the suspended-member statistic opens the suspended members filter');
     // Currency adjustments are available directly in the member directory, with audit reason and confirmation.
     await page.evaluate(() => {
       fixture.coinChanges = [];

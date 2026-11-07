@@ -3,7 +3,7 @@
   'use strict';
   const PAGE_SIZE = 20;
   const activityKinds = {room:'프로필',chat:'대화',game:'게임'};
-  const filters = [['all', '전체'], ['today', '오늘 가입'], ['banned', '정지 중'], ['admin', '관리자']];
+  const filters = [['all', '전체'], ['today', '오늘 가입'], ['admin', '관리자']];
   const sorts = [['last_seen', '최근 방문순'], ['created_at', '가입일순'], ['visit_count', '방문횟수순']];
   const el = (tag, text, className = '') => {
     const node = document.createElement(tag);
@@ -19,24 +19,25 @@
   };
 
   function mount({ container, client, getAdminId, isCurrent = () => container.isConnected, view = 'members', initialFilter = 'all', initialState, renderActions }) {
-    const withdrawn = view === 'withdrawn', referrals = view === 'referrals', owner = getAdminId?.();
+    const withdrawn = view === 'withdrawn', referrals = view === 'referrals', suspended = view === 'suspended', owner = getAdminId?.();
     let destroyed = false, run = 0, query = String(initialState?.query || '').trim().slice(0, 100), total = 0, busy = false;
     let offset = Number.isSafeInteger(initialState?.offset) && initialState.offset >= 0 ? Math.floor(initialState.offset / PAGE_SIZE) * PAGE_SIZE : 0;
     const requestedFilter = initialState?.filter || initialFilter;
-    let filter = filters.some(([id]) => id === requestedFilter) ? requestedFilter : 'all';
+    let filter = suspended ? 'banned' : filters.some(([id]) => id === requestedFilter) ? requestedFilter : 'all';
     let sort = sorts.some(([id]) => id === initialState?.sort) ? initialState.sort : 'last_seen';
     let subscription;
     const current = () => !destroyed && isCurrent() && !!owner && getAdminId?.() === owner;
     const section = el('section', undefined, 'acct-directory');
-    section.setAttribute('aria-label', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : '회원 관리');
-    const heading = el('h3', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : '회원 관리');
+    section.setAttribute('aria-label', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : suspended ? '정지 계정' : '가입자 관리');
+    const heading = el('h3', referrals ? '추천인 집계' : withdrawn ? '탈퇴 기록' : suspended ? '정지 계정' : '가입자 관리');
     const intro = el('p', referrals ? '이메일 인증이 끝난 가입을 추천인별로 한 번씩 누적 집계해요.' : withdrawn
       ? '현재 보관기간이 남은 탈퇴 기록만 표시해요. 계정정보는 탈퇴 후 1개월이 지나면 자동 삭제돼요.'
-      : '가입 현황과 보유 쭈를 확인하고 관리해요. 날짜는 한국 시간을 기준으로 표시해요.', 'acct-intro');
+      : suspended ? '정지가 끝나거나 해제되면 가입자 목록으로 돌아가요.'
+      : '정지 중인 계정은 제외돼요. 날짜는 한국 시간을 기준으로 표시해요.', 'acct-intro');
     const filterBar = el('div', undefined, 'acct-filters');
     filterBar.setAttribute('role', 'group'); filterBar.setAttribute('aria-label', '회원 상태');
     const filterButtons = [];
-    if (!withdrawn && !referrals) for (const [id, label] of filters) {
+    if (!withdrawn && !referrals && !suspended) for (const [id, label] of filters) {
       const control = button(label, 'btn sm');
       control.dataset.accountFilter = id; control.setAttribute('aria-pressed', String(id === filter));
       control.addEventListener('click', () => {
@@ -48,7 +49,7 @@
       filterButtons.push(control); filterBar.append(control);
     }
     const form = el('form', undefined, 'acct-search');
-    const label = el('label', referrals ? '추천인 검색' : withdrawn ? '탈퇴 기록 검색' : '회원 검색');
+    const label = el('label', referrals ? '추천인 검색' : withdrawn ? '탈퇴 기록 검색' : suspended ? '정지 계정 검색' : '회원 검색');
     const input = el('input'); input.className = 'inp'; input.type = 'search'; input.maxLength = 100;
     input.placeholder = referrals ? '추천인 닉네임' : '닉네임 또는 이메일'; input.autocomplete = 'off'; input.value = query;
     label.append(input);
@@ -84,7 +85,7 @@
     previous.addEventListener('click', () => { if (!busy && offset > 0) { offset = Math.max(0, offset - PAGE_SIZE); void refresh(); } });
     next.addEventListener('click', () => { if (!busy && offset + PAGE_SIZE < total) { offset += PAGE_SIZE; void refresh(); } });
     pagination.append(previous, pageLabel, next); pagination.hidden = true;
-    section.append(heading, intro); if (!withdrawn && !referrals) section.append(filterBar);
+    section.append(heading, intro); if (!withdrawn && !referrals && !suspended) section.append(filterBar);
     section.append(form); if (!withdrawn && !referrals) section.append(sortBar);
     section.append(count, status, retry, list, pagination); container.replaceChildren(section);
 
@@ -173,9 +174,9 @@
         }
         count.textContent = referrals
           ? `${query ? '검색 결과 · ' : ''}추천 가입 ${Number(data.total_referrals || 0).toLocaleString('ko-KR')}명 · 인증 대기 ${Number(data.pending_referrals || 0).toLocaleString('ko-KR')}명`
-          : `${query ? '검색 결과 ' : ''}총 ${total.toLocaleString('ko-KR')}${withdrawn ? '건' : '명'}`;
+          : `${query ? '검색 결과 ' : ''}${suspended ? '정지 계정 ' : '총 '}${total.toLocaleString('ko-KR')}${withdrawn ? '건' : '명'}`;
         if (data.items.length) for (const record of data.items) list.append(item(record));
-        else list.append(el('p', referrals ? '조건에 맞는 추천인이 없어요.' : withdrawn ? '조건에 맞는 보관 중 탈퇴 기록이 없어요.' : '조건에 맞는 회원이 없어요.', 'acct-empty'));
+        else list.append(el('p', referrals ? '조건에 맞는 추천인이 없어요.' : withdrawn ? '조건에 맞는 보관 중 탈퇴 기록이 없어요.' : suspended ? '정지 중인 계정이 없어요.' : '조건에 맞는 회원이 없어요.', 'acct-empty'));
         pageLabel.textContent = `${Math.floor(offset / PAGE_SIZE) + 1} / ${Math.max(1, Math.ceil(total / PAGE_SIZE))}페이지`;
         pagination.hidden = total <= PAGE_SIZE;
         status.textContent = '';

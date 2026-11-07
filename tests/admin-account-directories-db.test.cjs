@@ -291,6 +291,43 @@ const uid = number => `00000000-0000-4000-8000-${String(number).padStart(12, '0'
     assert.equal((await sortedMembers('visit_count','','all',100)).items.length, 0);
     await assert.rejects(() => sortedMembers('visit_count;drop table auth.users'), /invalid_account_sort/);
 
+    // Suspended accounts have their own directory and do not count as members.
+    await db.exec(`reset role;
+      create table public.reports(status text);
+      create table public.feedback(status text);
+      create table public.client_errors(created_at timestamptz);
+      create table public.coin_charges(created_at timestamptz);
+      update public.user_private set banned_until='infinity' where user_id='00000000-0000-4000-8000-000000000004';
+    `);
+    await db.exec(migration('20261107011924_account_suspension_separate_directory_counts.sql'));
+    await db.exec('set role authenticated'); await claim(uid(1));
+    const activePage = await sortedMembers('created_at');
+    assert.equal(activePage.total, 62, 'active count excludes temporary and permanent bans');
+    assert.equal((await sortedMembers('created_at','','today')).total, 2);
+    assert.equal((await sortedMembers('created_at','','admin')).total, 2);
+    const suspendedPage = await sortedMembers('created_at','','banned');
+    assert.deepEqual(suspendedPage.items.map(row=>row.id), [uid(3),uid(4)]);
+    assert.equal(suspendedPage.items.find(row=>row.id===uid(4)).banned_until,'infinity');
+    assert.equal((await sortedMembers('created_at','mixed','all')).total, 0,'search cannot reveal a suspended member');
+    assert.equal((await sortedMembers('created_at','mixed','banned')).total, 1,'suspension search can find the same member');
+    const overview = await value('select public.admin_overview() as value');
+    assert.equal(overview.users, 62);
+    assert.equal(overview.users_today, 2);
+    assert.equal(overview.banned, 2);
+    assert.deepEqual(await value("select public.admin_find_users('mixed') as value"), [], 'legacy search also hides banned members');
+    assert.equal((await value("select public.admin_find_users('member5@') as value")).length,1,'expired restrictions remain visible');
+    await claim(uid(3));
+    await assert.rejects(() => sortedMembers('created_at','','banned'), /not_admin/);
+    await assert.rejects(() => value('select public.admin_overview() as value'), /not_admin/);
+    await db.exec('reset role');
+    await db.query('update public.user_private set banned_until=null where user_id=$1',[uid(3)]);
+    await db.query("update public.user_private set banned_until=now()-interval '1 second' where user_id=$1",[uid(4)]);
+    await db.exec('set role authenticated'); await claim(uid(1));
+    assert.equal((await sortedMembers('created_at','','banned')).total, 0,'lifting/expiring bans empties the separate list');
+    assert.equal((await sortedMembers('created_at')).total,64,'lifting/expiring bans restores member counts');
+    assert.equal((await value('select public.admin_overview() as value')).users,64);
+    assert.equal((await value('select public.admin_overview() as value')).banned,0);
+
     // Archive expiration and current administrator membership are checked on every call.
     await db.exec('reset role');
     await db.query('update ojjuda_account_internal.withdrawn_member_accounts set expires_at=now() where user_id=$1', [uid(101)]);
