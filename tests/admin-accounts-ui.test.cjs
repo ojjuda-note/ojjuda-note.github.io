@@ -62,6 +62,8 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
   assert.equal(await page.evaluate(()=>calls.at(-1).args.p_offset),0);await page.getByRole('button',{name:'정지 해제',exact:true}).first().click();
   assert.equal(await page.evaluate(()=>actions.at(-1).act),'adm-ban');assert.equal(await page.evaluate(()=>actions.at(-1).days),'0');
   await page.evaluate(()=>openDirectory('members'));await idle();
+  assert.equal(await sortMenu.inputValue(),'last_seen','switching back from a different directory starts with the member default');
+  await sortMenu.selectOption('visit_count');await idle();
   await page.getByRole('button',{name:'회원정보 수정',exact:true}).first().click();assert.equal(await page.evaluate(()=>actions.at(-1).act),'adm-identity-open');
   await page.getByRole('button',{name:'관리자',exact:true}).click();await idle();assert.equal(await page.locator('[data-act="adm-ban"]').count(),0,'administrators never show restriction buttons');
   await page.getByRole('button',{name:'오늘 가입',exact:true}).click();await idle();assert.equal(await page.locator('.acct-card').count(),2);

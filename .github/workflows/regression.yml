@@ -239,7 +239,9 @@ jobs:
         working-directory: tests
         run: npx playwright install --with-deps chromium
       - name: Verify read reduction, visibility and account isolation
-        run: npm --prefix tests run test:performance
+        run: |
+          npm --prefix tests run test:performance
+          node --test tests/park-loading.test.cjs
 
   automatic_repair:
     name: Automatic repair deployment boundaries

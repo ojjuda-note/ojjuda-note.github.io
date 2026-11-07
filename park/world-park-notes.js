@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   const actions = new Set(['feed','saved','mine','events','event-new','blocked','settings','compose','glasses']);
+  const loadingCards=Array.from({length:3},()=>'<div class="park-skeleton-card"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>').join('');
   function menuMarkup() {
     return `<details class="my-menu-group" data-my-group="park"><summary class="my-menu-summary"><span class="my-menu-icon" aria-hidden="true">▤</span><span class="my-menu-copy"><span class="my-menu-title">공원 활동</span></span></summary><div class="my-menu-body park-menu-actions">${[['feed','공원 카드'],['saved','메모함'],['mine','내 카드'],['events','내 이벤트'],['event-new','이벤트 만들기'],['settings','회원정보'],['blocked','공원 차단 목록'],['glasses','스마트 글래스 미리보기']].map(([action,label])=>`<button type="button" class="btn" data-park-action="${action}">${label}</button>`).join('')}</div></details>`;
   }
@@ -15,10 +16,11 @@
     const requested=new URL(location.href).searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
     function markup() {
-      return '<section class="park-app" data-park-app aria-label="공원 카드"><div class="park-app-slot" data-park-app-slot><p role="status">공원을 불러오는 중이에요…</p></div><button type="button" class="park-compose-fab" data-park-action="compose" aria-label="새 카드 쓰기"><span aria-hidden="true">＋</span> 카드 쓰기</button></section>';
+      return `<section class="park-app" data-park-app aria-label="공원 카드"><div class="park-app-slot" data-park-app-slot></div><div class="park-load-cover" data-park-loading role="status"><p>🌷 쭈가 오늘의 카드를 모으는 중…</p><div class="park-skeleton-grid" aria-hidden="true">${loadingCards}</div></div><button type="button" class="park-compose-fab" data-park-action="compose" aria-label="새 카드 쓰기"><span aria-hidden="true">＋</span> 카드 쓰기</button></section>`;
     }
     function route(){if(requested&&!routed){routed=true;app.enter();}}
-    function syncFab(){const button=panel?.querySelector('.park-compose-fab');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses';}
+    function syncFab(){const button=panel?.querySelector('.park-compose-fab'),cover=panel?.querySelector('[data-park-loading]');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses'||cover?.hidden===false;}
+    function loading(visible){const cover=panel?.querySelector('[data-park-loading]');if(cover)cover.hidden=!visible;syncFab();}
     function flush(){
       if(!active()||!pending||!api()?.navigate)return;
       const action=pending;pending=null;api().navigate(action);
@@ -61,15 +63,18 @@
       forget();
       panel=next;owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261103-member-restaurants1');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261107-park-card-loading1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
-      panel.querySelector('[data-park-app-slot]').replaceChildren(frame);syncFab();
+      panel.querySelector('[data-park-app-slot]').replaceChildren(frame);loading(true);
       const currentFrame=frame;
       frame.addEventListener('load',()=>{
         if(frame!==currentFrame||!frame?.isConnected)return;
-        try{frame.dataset.view=frame.contentWindow.location.pathname.endsWith('/glasses.html')?'glasses':'cards';}catch{}
+        let path='';try{path=frame.contentWindow.location.pathname;}catch{}
+        if(path!=='/park/'&&path!=='/park/glasses.html')return;
+        frame.dataset.view=path.endsWith('/glasses.html')?'glasses':'cards';
+        loading(false);
         if(!active()||panel.hidden){notifyVisibility(false);return;}
         stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
         notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
@@ -81,7 +86,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){frame.src='/park/?embedded=1&v=20261103-member-restaurants1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261107-park-card-loading1';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
@@ -112,7 +117,7 @@
     },true);
     addEventListener('message',event=>{
       if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
-      if(event.data?.type==='ojjuda:park-ready'){syncFab();flush();}
+      if(event.data?.type==='ojjuda:park-ready'){loading(false);flush();}
       if(event.data?.type==='ojjuda:park-state'){overlayOpen=event.data.overlayOpen===true;cardOpen=event.data.cardOpen===true;syncFab();}
       if(event.data?.type==='ojjuda:park-navigate'&&canLeave()){
         if(event.data.action==='world')app.toWorld?.();

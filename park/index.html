@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/park/design.css?v=20261022-2">
+<link rel="stylesheet" href="/park/design.css?v=20261107-park-card-loading1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261106-source-folders1">
 <script src="/app/world/world-themes.js?v=20261106-source-folders1"></script>
 <meta property="og:type" content="website">
@@ -146,7 +146,11 @@
           <div class="feed-layout">
             <div class="feed-column">
               <div class="feed-sort-tabs tabs" role="group" aria-label="카드 정렬"></div>
-              <div class="feed-list" id="feed-list" aria-live="polite"><p class="reply-empty">카드를 불러오는 중이에요.</p></div>
+              <div class="feed-list" id="feed-list" aria-live="polite"><p class="park-feed-loading-status" role="status">🌷 쭈가 오늘의 카드를 모으는 중…</p>
+                <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
+                <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
+                <div class="park-skeleton-card" aria-hidden="true"><div class="park-skeleton-photo"><span class="park-skeleton-quote"></span><span class="park-skeleton-quote short"></span></div><div class="park-skeleton-meta"><span></span><span></span></div></div>
+              </div>
             </div>
           </div>
         </section>
@@ -246,7 +250,7 @@
   <script src="/features/account/account-deletion.js?v=20261106-source-folders1" defer></script>
   <script src="/note/share-image.js?v=20261031-card-image-share1" defer></script>
   <script src="/note/share-kakao.js?v=20261031-kakao-card-share1" defer></script>
-  <script src="/note/preview.js?v=20261031-kakao-card-share1" defer></script>
+  <script src="/note/preview.js?v=20261107-park-card-loading1" defer></script>
   <script src="/note/pull-refresh.js?v=20261004-refresh1" defer></script>
   <script src="/note/navigation.js?v=20260929-my1" defer></script>
   <script src="/park/integration.js?v=20261107-park-cache1" defer></script>
