@@ -192,6 +192,20 @@ for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [[
   }
 }
 {
+  // A ball overlapping a brick must rebound instead of jumping to a far edge.
+  for(const setting of ['slow','normal','fast']){
+    const f=fixture({speed:setting});f.launch();
+    const s=f.state(),ball=s.balls[0],brick=s.bricks.find(b=>b.on&&!b.solid);
+    const vx=s.speed*.4;
+    Object.assign(ball,{x:brick.x+brick.w/2,y:brick.y+brick.h/2,vx,vy:-Math.sqrt(s.speed**2-vx**2)});
+    const before={x:ball.x,y:ball.y};
+    f.game.update(STEP);
+    const moved=Math.hypot(ball.x-before.x,ball.y-before.y);
+    assert.ok(moved<=2*s.speed*STEP+.5,`${setting}: brick rebound must not teleport the ball (${moved}px)`);
+    assert.ok(ball.vy>0,`${setting}: the deeply overlapping ball still rebounds`);
+  }
+}
+{
   const f=fixture();f.launch();const initial=f.state().speed;
   assert.ok(initial>=260&&initial<=300,'the initial speed leaves more time to follow the ball');
   for(let level=0;level<12;level++){

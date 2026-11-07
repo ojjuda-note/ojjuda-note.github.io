@@ -190,8 +190,17 @@
           const crossedY=beforeY+ball.r<=brick.y||beforeY-ball.r>=brick.y+brick.h;
           const overlapX=Math.min(ball.x+ball.r-brick.x,brick.x+brick.w-ball.x+ball.r);
           const overlapY=Math.min(ball.y+ball.r-brick.y,brick.y+brick.h-ball.y+ball.r);
-          if(crossedX||(!crossedY&&overlapX<overlapY)){ball.x=ball.vx>0?brick.x-ball.r-.1:brick.x+brick.w+ball.r+.1;ball.vx=-ball.vx;}
-          else{ball.y=ball.vy>0?brick.y-ball.r-.1:brick.y+brick.h+ball.r+.1;ball.vy=-ball.vy;}
+          // Deep overlaps (especially around multiball) must not snap a ball across a brick.
+          const maxSnap=speed*dt+.25;
+          if(crossedX||(!crossedY&&overlapX<overlapY)){
+            const edge=ball.vx>0?brick.x-ball.r-.1:brick.x+brick.w+ball.r+.1;
+            if(Math.abs(edge-ball.x)<=maxSnap)ball.x=edge;
+            ball.vx=-ball.vx;
+          }else{
+            const edge=ball.vy>0?brick.y-ball.r-.1:brick.y+brick.h+ball.r+.1;
+            if(Math.abs(edge-ball.y)<=maxSnap)ball.y=edge;
+            ball.vy=-ball.vy;
+          }
           avoidVerticalTrap(ball);bounced=true;
         }
         ball.contacts=touching;
