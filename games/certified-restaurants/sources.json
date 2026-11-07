@@ -1502,18 +1502,18 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3245,
+    "uniqueRestaurants": 3249,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2514,
+      "local-guide": 2518,
       "post-office": 240
     },
     "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2213,
+    "coordinatesMissing": 2217,
     "regionalCounts": {
       "서울": 351,
-      "부산": 378,
+      "부산": 382,
       "충북": 217,
       "충남": 64,
       "울산": 36,
@@ -1532,12 +1532,12 @@
     },
     "categoryCounts": {
       "한식": 1926,
-      "중식": 133,
-      "일식": 133,
+      "중식": 134,
+      "일식": 135,
       "기타": 581,
       "양식": 211,
       "분식": 28,
-      "디저트": 233
+      "디저트": 234
     }
   },
   "coordinateEnrichment": {
@@ -19955,5 +19955,30 @@
       "newCoordinateCount": 20,
       "existingCoordinateEnrichedCount": 13
     }
-  ]
+  ],
+  "busanSlot39": {
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 39,
+    "publisher": "부산광역시 보건위생과",
+    "sourcePageYear": 2026,
+    "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+    "officialDetailRecordIds": [
+      2349,
+      2371,
+      2346,
+      2348
+    ],
+    "addedCount": 4,
+    "addedRestaurantIds": [
+      "local-busan-slot39-yasumaru-ninniku",
+      "local-busan-slot39-yeonhwa-confectionery",
+      "local-busan-slot39-mackerel-lab",
+      "local-busan-slot39-yuwon"
+    ],
+    "locationCoordinatesAdded": 0,
+    "unknownLocations": 4,
+    "notExhaustive": true,
+    "notes": "개별 선정/영업 여부, 미쉐린·블루리본 정규 등급 미확인. 식당 이름과 도로명주소만 공식 안내에 근거."
+  }
 }

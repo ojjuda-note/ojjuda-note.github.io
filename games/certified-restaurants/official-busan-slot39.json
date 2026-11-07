@@ -1,0 +1,140 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "부산광역시 2026 부산의 맛",
+  "sourceUrls": [
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002002000",
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002004000"
+  ],
+  "sourceScope": "1순환 39회차 부산 중구·서구·동구·영도구·부산진구 공식 공개 목록 일부 확인. 기존 목록과 이름·주소 중복 대조 후 신규 4곳.",
+  "verificationLimit": "2026년 안내 페이지의 명단 수록 및 현주소만 확인. 개별 신규 선정/현재 영업/정규 블루리본 등급은 미확인. 전체 371건 전수 대조 아님.",
+  "coordinatePolicy": "공식 지도 위경도가 개별 주소와 일치하는 근거 확보 전까지 lat/lng null.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-busan-slot39-yasumaru-ninniku",
+      "name": "야스마루 닌니쿠",
+      "category": "일식",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 서전로38번길 35-14",
+      "officialDetailRecordId": 2349,
+      "menu": [
+        "파랑국수",
+        "고등어김말이"
+      ],
+      "region": "부산",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산의 맛 공식 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+          "sourceName": "부산광역시 보건위생과 · 비짓부산 부산의 맛",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2026",
+          "status": "official_publication_listing",
+          "selectionCriteria": "부산시 공식 2026 부산의 맛 공개 목록과 개별 안내에서 이름·주소를 확인했습니다. 식당별 개별 선정연도·현재 영업 상태·정규 리본 등급은 별도 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-busan-slot39-yeonhwa-confectionery",
+      "name": "연화제과",
+      "category": "디저트",
+      "district": "부산진구",
+      "address": "부산광역시 부산진구 새싹로265번길 12",
+      "officialDetailRecordId": 2371,
+      "menu": [
+        "케이크",
+        "구움과자"
+      ],
+      "region": "부산",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산의 맛 공식 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+          "sourceName": "부산광역시 보건위생과 · 비짓부산 부산의 맛",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2026",
+          "status": "official_publication_listing",
+          "selectionCriteria": "부산시 공식 2026 부산의 맛 공개 목록과 개별 안내에서 이름·주소를 확인했습니다. 식당별 개별 선정연도·현재 영업 상태·정규 리본 등급은 별도 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-busan-slot39-mackerel-lab",
+      "name": "고등어연구소 본점",
+      "category": "일식",
+      "district": "중구",
+      "address": "부산광역시 중구 중앙대로 79-1",
+      "officialDetailRecordId": 2346,
+      "menu": [
+        "고태솥밥",
+        "고등어온소바"
+      ],
+      "region": "부산",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산의 맛 공식 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+          "sourceName": "부산광역시 보건위생과 · 비짓부산 부산의 맛",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2026",
+          "status": "official_publication_listing",
+          "selectionCriteria": "부산시 공식 2026 부산의 맛 공개 목록과 개별 안내에서 이름·주소를 확인했습니다. 식당별 개별 선정연도·현재 영업 상태·정규 리본 등급은 별도 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-busan-slot39-yuwon",
+      "name": "유원",
+      "category": "중식",
+      "district": "중구",
+      "address": "부산광역시 중구 충장대로9번길 29, 보전빌딩 지하1층",
+      "officialDetailRecordId": 2348,
+      "menu": [
+        "오향장육",
+        "깐소새우",
+        "광동면"
+      ],
+      "region": "부산",
+      "lat": null,
+      "lng": null,
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산의 맛 공식 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+          "sourceName": "부산광역시 보건위생과 · 비짓부산 부산의 맛",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2026",
+          "status": "official_publication_listing",
+          "selectionCriteria": "부산시 공식 2026 부산의 맛 공개 목록과 개별 안내에서 이름·주소를 확인했습니다. 식당별 개별 선정연도·현재 영업 상태·정규 리본 등급은 별도 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002000000",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
