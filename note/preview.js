@@ -191,6 +191,19 @@ function icon(name) {
   return svg;
 }
 function state(place, value) { place.replaceChildren(node('p', 'reply-empty', value)); }
+function showFeedLoading() {
+  if (!parkEmbedded) { state(list, '카드를 불러오는 중이에요.'); return; }
+  const status = node('p', 'park-feed-loading-status', '🌷 쭈가 오늘의 카드를 모으는 중…');
+  status.setAttribute('role', 'status');
+  const cards = Array.from({ length: 3 }, () => {
+    const card = node('div', 'park-skeleton-card'); card.setAttribute('aria-hidden', 'true');
+    const photo = node('div', 'park-skeleton-photo');
+    photo.append(node('span', 'park-skeleton-quote'), node('span', 'park-skeleton-quote short'));
+    const meta = node('div', 'park-skeleton-meta'); meta.append(node('span'), node('span'));
+    card.append(photo, meta); return card;
+  });
+  list.replaceChildren(status, ...cards);
+}
 function banner(value) {
   $('#connection-message').textContent = value;
   $('#connection-status').hidden = !value;
@@ -979,7 +992,7 @@ async function loadFeed(more = false, quiet = false) {
     nearbyOffset = 0; nearbySnapshot = null;
     if (detail.hidden) cache.clear();
     feedPages = 0;
-    if (!quiet) { state(list, '카드를 불러오는 중이에요.'); banner('카드를 불러오는 중'); }
+    if (!quiet) { showFeedLoading(); banner('카드를 불러오는 중'); }
   } else list.querySelector('[data-more-feed]')?.remove();
   if (feedMode !== 'all' && !session?.user) {
     ready = true; feedLoading = false; banner('');

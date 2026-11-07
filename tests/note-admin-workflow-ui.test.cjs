@@ -190,6 +190,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
           if (name === 'is_note_moderator') return { data: true, error: null };
           if (name === 'admin_cards') return { data: [{ ...card, hidden: args.p_state === 'hidden' }], error: null };
           if (name === 'admin_risk_cards') return { data: [{ ...card, body: '합성 위험 신호 카드' }], error: null };
+          if (name === 'admin_risk_passed_ids') return { data: [], error: null };
           if (name === 'admin_card_locations') return { data: [{ ...card, lat: 37.57, lon: 126.98 }], error: null };
           if (name === 'admin_archived_cards') return { data: [{ ...archived }], error: null };
           if (name === 'admin_expired_archive_queue') return { data: [], error: null };

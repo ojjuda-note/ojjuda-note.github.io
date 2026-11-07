@@ -115,7 +115,14 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>{detail.hidden=true;feed.hidden=false;});
  await page.locator('.park-compose-fab').waitFor({state:'visible'});
  // The World header/navigation remain fixed while the Park feed is the only page scroller.
+ for(const width of [320,390,832,1280]){
+  await page.setViewportSize({width,height:850});
+  await frame.evaluate(()=>showFeedLoading());
+  assert.equal(await frame.locator('.park-skeleton-card').count(),3,width+': three preview cards remain lightweight');
+  assert.equal(await frame.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,width+': loading cards fit the viewport');
+ }
  await frame.evaluate(()=>populateParkFixture());
+ assert.equal(await frame.locator('.park-skeleton-card').count(),0,'real cards replace loading previews immediately');
  for(const width of [320,390,832,1280]){
   await page.setViewportSize({width,height:850});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),width+': World fits');

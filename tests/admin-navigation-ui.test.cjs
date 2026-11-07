@@ -247,7 +247,7 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.locator('[data-act="adm-limit"]').click();
     assert.equal(await page.locator('#adm-limit').inputValue(), '0', 'zero daily charges stays zero after saving');
     await area('content');
-    assert.deepEqual(await page.locator('.adm-tabs button,.adm-tabs a').allTextContents(), ['카드','쪽지 관리','포토땅따먹기','위험 신호','위치 지도','상품권 등록']);
+    assert.deepEqual(await page.locator('.adm-tabs button,.adm-tabs a').allTextContents(), ['카드','쪽지 관리','그룹 관리','포토땅따먹기','위험 신호','위치 지도','상품권 등록']);
     assert.equal(await page.getByRole('link',{name:'상품권 등록'}).getAttribute('href'),'/admin/rewards.html');
     await tab('messages'); await assertRefreshPreservesHost('messages');
     for (const id of ['cards','risk','map']) { await tab(id); assert.equal(await page.evaluate(() => fixture.options.note.initialTab), id); }

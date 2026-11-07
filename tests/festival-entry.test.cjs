@@ -23,7 +23,9 @@ assert.equal(grids.at(-1)[1],'test','the test section remains after regular game
 assert.equal((markup.match(/data-v="festival"/g)||[]).length,1,'festival has exactly one entry');
 assert.match(grids.at(-1)[2],/data-v="festival"/);
 assert.ok(grids.slice(0,-1).every(grid=>!grid[2].includes('data-v="festival"')));
-assert.match(grids.at(-1)[2],/game-test-badge/);assert.doesNotMatch(grids.at(-1)[2],/v?1\.0\.0/);
+const festivalButton=markup.match(/<button\b[^>]*data-v="festival"[^>]*>([\s\S]*?)<\/button>/);
+assert.ok(festivalButton,'the daily section renders a festival button');
+assert.doesNotMatch(festivalButton[1],/game-test-badge|v?1\.0\.0/,'the festival card has no redundant category badge or version');
 assert.equal(catalog.worldRankGames().festival,undefined,'festival information does not enter score rankings');
 assert.ok(fs.existsSync(path.join(root,'assets/design/games/festival.svg')));
 
