@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 59,
-    "scheduledAt": "2026-11-08T05:00:00+09:00",
+    "slot": 60,
+    "scheduledAt": "2026-11-08T06:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약시각 세부정보 없음. 실행 관측 2026-11-08 05:02:48 KST 정각 내림, h=54,n=58,slot=59."
+    "source": "예약 실행 시각을 전달받지 못해 자동화 실행 관측 KST 06:55를 정각 06:00으로 내림; h=55,n=59,slot=60."
   },
   "entries": [
     {
@@ -56134,6 +56134,2112 @@
           ]
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 60,
+      "scheduledAtKST": "2026-11-08T06:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_daejeon_sejong_seven_additions_one_verified_coordinate",
+      "assignedRegions": [
+        "대전광역시 동구",
+        "대전광역시 중구",
+        "대전광역시 서구",
+        "대전광역시 유성구",
+        "대전광역시 대덕구",
+        "세종특별자치시 전역"
+      ],
+      "regionAudit": [
+        {
+          "region": "대전광역시 동구",
+          "listedCountAfter": 17,
+          "actuallyChecked": [
+            "기존 등록 목록·동일 지역의 선행 점검 기록 대조 및 좌표 누락 추출"
+          ],
+          "remainingAreas": [
+            "이 구의 이번 회차 신규 공식 업소 전수조사 미실시; 원래 인증 명단과 2026 현재 영업상태 추가 대조 필요"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 중구",
+          "listedCountAfter": 25,
+          "actuallyChecked": [
+            "대전시 3대·30년 공식 중구 목록 10행 중 기존 진로집·광천식당·소나무집 3행과 신규 7행 대조",
+            "연아식당 상권정보 가게명·정확 주소·공개 위경도 및 주소좌표 독립 교차 검증"
+          ],
+          "remainingAreas": [
+            "시 인증 다른 판·지역 사업 및 블루리본 전체 개별목록 미확인",
+            "좌표 미등록 식당 6개 신규 및 기존 누락 항목 재검증"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 서구",
+          "listedCountAfter": 32,
+          "actuallyChecked": [
+            "기존 등록 목록·동일 지역의 선행 점검 기록 대조 및 좌표 누락 추출"
+          ],
+          "remainingAreas": [
+            "이 구의 이번 회차 신규 공식 업소 전수조사 미실시; 원래 인증 명단과 2026 현재 영업상태 추가 대조 필요"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 유성구",
+          "listedCountAfter": 39,
+          "actuallyChecked": [
+            "기존 등록 목록·동일 지역의 선행 점검 기록 대조 및 좌표 누락 추출"
+          ],
+          "remainingAreas": [
+            "이 구의 이번 회차 신규 공식 업소 전수조사 미실시; 원래 인증 명단과 2026 현재 영업상태 추가 대조 필요"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "대전광역시 대덕구",
+          "listedCountAfter": 4,
+          "actuallyChecked": [
+            "기존 등록 목록·동일 지역의 선행 점검 기록 대조 및 좌표 누락 추출"
+          ],
+          "remainingAreas": [
+            "이 구의 이번 회차 신규 공식 업소 전수조사 미실시; 원래 인증 명단과 2026 현재 영업상태 추가 대조 필요"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "세종특별자치시 전역",
+          "listedCountAfter": 100,
+          "actuallyChecked": [
+            "세종문화관광재단 2025·2026 블루리본 공동선정 공개 전체 집계 100과 기등록 100곳 대조",
+            "기존 공식 지도 배열에 근거한 등록 100곳 좌표 보존"
+          ],
+          "remainingAreas": [
+            "선정 업소별 현재 영업·이전 상태 100곳 재검증 미완료",
+            "새로 변경된 공식 명단 및 정규 블루리본 등급 추가 대조 미완료"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "대전광역시 중구 3대·30년 인증 업소 공개 목록 10행",
+        "연아식당 공개 상권업종 개별 사업체 좌표 및 공개 도로명주소 위치",
+        "세종문화관광재단 블루리본 공동선정 2025·2026 명단, 기등록 100곳",
+        "미쉐린/블루리본 개별 2026/2027 등급 전수 확인 불가"
+      ],
+      "additions": 7,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 1,
+      "locationHidden": 0,
+      "locationPending": 102,
+      "locationPendingScope": "대전 기존 96곳 좌표 미등록과 이번 신규 6곳 총 102곳. 세종 100곳은 등록 좌표가 있음. 개별 재검증이 끝났다는 의미는 아님.",
+      "addedRestaurantIds": [
+        "local-daejeon-slot60-geukdong-bakery",
+        "local-daejeon-slot60-happy-home",
+        "local-daejeon-slot60-choryang",
+        "local-daejeon-slot60-yeona",
+        "local-daejeon-slot60-yeongdong",
+        "local-daejeon-slot60-jeongsik",
+        "local-daejeon-slot60-geumgwang"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+        "https://xgs.purpleo.kr/article/10816",
+        "https://findby.co.kr/details/34973-301403165035-st-652b3a518c641f9e389bf1b0",
+        "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001",
+        "https://www.sjcf.or.kr/foodtrip/bluer/near.do?key=2608120002"
+      ],
+      "verifiedLocations": [
+        {
+          "restaurantId": "local-daejeon-slot60-yeona",
+          "name": "연아식당",
+          "address": "대전광역시 중구 유천로 57-9",
+          "lat": 36.317587,
+          "lng": 127.397278,
+          "sourceUrls": [
+            "https://xgs.purpleo.kr/article/10816",
+            "https://findby.co.kr/details/34973-301403165035-st-652b3a518c641f9e389bf1b0"
+          ],
+          "checkedAt": "2026-11-08",
+          "result": "공식 인증 상호·주소와 가게 공개좌표 정확 일치, 독립 주소 좌표 3m 이내"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-daejeon-9086df701354",
+          "name": "가미",
+          "currentAddress": "대전 동구 옥천로 169 르네블루 102동 129호",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 가미",
+            "가미 대전 동구 옥천로 169 르네블루 102동 129호",
+            "대전 가미"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-fab28645d3cc",
+          "name": "경동 오징어 국수",
+          "currentAddress": "대전 동구 계족로 369",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 경동 오징어 국수",
+            "경동 오징어 국수 대전 동구 계족로 369",
+            "대전 경동 오징어 국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-bed9e35cca1f",
+          "name": "더리스",
+          "currentAddress": "대전 동구 냉천로 30",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 더리스",
+            "더리스 대전 동구 냉천로 30",
+            "대전 더리스"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-307389e50e66",
+          "name": "메밀고개 시골막국수",
+          "currentAddress": "대전 동구 판교3길 3",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 메밀고개 시골막국수",
+            "메밀고개 시골막국수 대전 동구 판교3길 3",
+            "대전 메밀고개 시골막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-2b8e2159073f",
+          "name": "명랑식당",
+          "currentAddress": "대전 동구 태전로 56-20",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 명랑식당",
+            "명랑식당 대전 동구 태전로 56-20",
+            "대전 명랑식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-2cd2e70665d2",
+          "name": "묵은지갈비김치찌개",
+          "currentAddress": "대전 동구 산내로 1335",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 묵은지갈비김치찌개",
+            "묵은지갈비김치찌개 대전 동구 산내로 1335",
+            "대전 묵은지갈비김치찌개"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-68f0879dfe23",
+          "name": "신도칼국수 본점",
+          "currentAddress": "대전 동구 대전로825번길 11",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 신도칼국수 본점",
+            "신도칼국수 본점 대전 동구 대전로825번길 11",
+            "대전 신도칼국수 본점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-81d759ad0eb8",
+          "name": "신미식당",
+          "currentAddress": "대전 동구 우암로85번길 35",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 신미식당",
+            "신미식당 대전 동구 우암로85번길 35",
+            "대전 신미식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-328e2f4a7f5c",
+          "name": "오씨칼국수",
+          "currentAddress": "대전 동구 옛신탄진로 13",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 오씨칼국수",
+            "오씨칼국수 대전 동구 옛신탄진로 13",
+            "대전 오씨칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-9eb20690ee19",
+          "name": "인흥해장국",
+          "currentAddress": "대전 동구 인동 52-2",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 인흥해장국",
+            "인흥해장국 대전 동구 인동 52-2",
+            "대전 인흥해장국"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-67f759fe7b20",
+          "name": "태화장",
+          "currentAddress": "대전 동구 중앙로203번길 78",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 태화장",
+            "태화장 대전 동구 중앙로203번길 78",
+            "대전 태화장"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-dc1be5e06d4f",
+          "name": "팡시온",
+          "currentAddress": "대전 동구 회남로275번길 227",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 팡시온",
+            "팡시온 대전 동구 회남로275번길 227",
+            "대전 팡시온"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-4d4637329d5c",
+          "name": "평양 숨두부집",
+          "currentAddress": "대전 동구 대전로 381",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 평양 숨두부집",
+            "평양 숨두부집 대전 동구 대전로 381",
+            "대전 평양 숨두부집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-5e2f6a519d69",
+          "name": "푸통푸통",
+          "currentAddress": "대전 동구 용운로151번길 82 은광빌딩 3층",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 푸통푸통",
+            "푸통푸통 대전 동구 용운로151번길 82 은광빌딩 3층",
+            "대전 푸통푸통"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-0ac9f9c4003a",
+          "name": "현암뚝방구이",
+          "currentAddress": "대전 동구 대전천북로 114 화성카센타",
+          "region": "대전광역시 동구",
+          "searchAliases": [
+            "대전광역시 동구 현암뚝방구이",
+            "현암뚝방구이 대전 동구 대전천북로 114 화성카센타",
+            "대전 현암뚝방구이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-0e651974582e",
+          "name": "감자바위골",
+          "currentAddress": "대전 중구 보문로20번길 14-4 문창시장내 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 감자바위골",
+            "감자바위골 대전 중구 보문로20번길 14-4 문창시장내 1층",
+            "대전 감자바위골"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-edc4e194707f",
+          "name": "권영분 영동뜨끈이",
+          "currentAddress": "대전 중구 문창동 10번지 6호 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 권영분 영동뜨끈이",
+            "권영분 영동뜨끈이 대전 중구 문창동 10번지 6호 1층",
+            "대전 권영분 영동뜨끈이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-6004902ea7b5",
+          "name": "내집식당 올갱이",
+          "currentAddress": "대전 중구 대흥로121번길 42",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 내집식당 올갱이",
+            "내집식당 올갱이 대전 중구 대흥로121번길 42",
+            "대전 내집식당 올갱이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-73a70b8dd12c",
+          "name": "도프차일드키친",
+          "currentAddress": "대전 중구 대흥로121번길 30-3 유안 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 도프차일드키친",
+            "도프차일드키친 대전 중구 대흥로121번길 30-3 유안 1층",
+            "대전 도프차일드키친"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-0ff6cf4da261",
+          "name": "라이언하트",
+          "currentAddress": "대전 중구 중앙로 125 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 라이언하트",
+            "라이언하트 대전 중구 중앙로 125 1층",
+            "대전 라이언하트"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-a9140ffd5da9",
+          "name": "서울북어",
+          "currentAddress": "대전 중구 목중로20번길 54",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 서울북어",
+            "서울북어 대전 중구 목중로20번길 54",
+            "대전 서울북어"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8f5d3fbf45b4",
+          "name": "세웅이네 가족식당",
+          "currentAddress": "대전 중구 목중로16번길 14",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 세웅이네 가족식당",
+            "세웅이네 가족식당 대전 중구 목중로16번길 14",
+            "대전 세웅이네 가족식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-d1d041b698d3",
+          "name": "옹심이메밀칼국수",
+          "currentAddress": "대전 중구 보문산공원로 543 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 옹심이메밀칼국수",
+            "옹심이메밀칼국수 대전 중구 보문산공원로 543 1층",
+            "대전 옹심이메밀칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-9dc13a440953",
+          "name": "쪽살",
+          "currentAddress": "대전 중구 대종로 712-1 1층",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 쪽살",
+            "쪽살 대전 중구 대종로 712-1 1층",
+            "대전 쪽살"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-d5c9f9a88e2f",
+          "name": "통소매",
+          "currentAddress": "대전 중구 대흥로24번길 23",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 통소매",
+            "통소매 대전 중구 대흥로24번길 23",
+            "대전 통소매"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8547c191d708",
+          "name": "한밭칼국수",
+          "currentAddress": "대전 중구 목척4길 6",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 한밭칼국수",
+            "한밭칼국수 대전 중구 목척4길 6",
+            "대전 한밭칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-3f6a59eb7863",
+          "name": "희락반점",
+          "currentAddress": "대전 중구 중앙로129번길 21",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 희락반점",
+            "희락반점 대전 중구 중앙로129번길 21",
+            "대전 희락반점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-3582f603a7fb",
+          "name": "가마솥 보은순대",
+          "currentAddress": "대전 서구 신갈마로 58-17",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 가마솥 보은순대",
+            "가마솥 보은순대 대전 서구 신갈마로 58-17",
+            "대전 가마솥 보은순대"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-669a46151743",
+          "name": "강변식당",
+          "currentAddress": "대전 서구 계백로 1286번길 121",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 강변식당",
+            "강변식당 대전 서구 계백로 1286번길 121",
+            "대전 강변식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-7881f9004297",
+          "name": "까치네식당",
+          "currentAddress": "대전 서구 갈마로 191-2",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 까치네식당",
+            "까치네식당 대전 서구 갈마로 191-2",
+            "대전 까치네식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8b8c3a14b956",
+          "name": "대나무통밥 맛정식",
+          "currentAddress": "대전 서구 대덕대로 370 2층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 대나무통밥 맛정식",
+            "대나무통밥 맛정식 대전 서구 대덕대로 370 2층",
+            "대전 대나무통밥 맛정식"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-c1491db519a4",
+          "name": "대선칼국수",
+          "currentAddress": "대전 서구 둔산중로40번길 28 오성빌딩 2층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 대선칼국수",
+            "대선칼국수 대전 서구 둔산중로40번길 28 오성빌딩 2층",
+            "대전 대선칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-7dbe2402733f",
+          "name": "도군함박",
+          "currentAddress": "대전 서구 둔산남로9번길 51",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 도군함박",
+            "도군함박 대전 서구 둔산남로9번길 51",
+            "대전 도군함박"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8e3e28f0dd16",
+          "name": "두울샤브칼국수",
+          "currentAddress": "대전 서구 문정로90번길 15",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 두울샤브칼국수",
+            "두울샤브칼국수 대전 서구 문정로90번길 15",
+            "대전 두울샤브칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-570d84bf9ae6",
+          "name": "떡반집",
+          "currentAddress": "대전 서구 둔산로 8 밀레니엄프라자 1층 109호",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 떡반집",
+            "떡반집 대전 서구 둔산로 8 밀레니엄프라자 1층 109호",
+            "대전 떡반집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f8d9d94feb19",
+          "name": "로얄라멘",
+          "currentAddress": "대전 서구 계룡로367번길 13",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 로얄라멘",
+            "로얄라멘 대전 서구 계룡로367번길 13",
+            "대전 로얄라멘"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f34d19a18791",
+          "name": "먹쇠",
+          "currentAddress": "대전 서구 청사로123번길 35",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 먹쇠",
+            "먹쇠 대전 서구 청사로123번길 35",
+            "대전 먹쇠"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-7c2c5e1e44af",
+          "name": "목련관",
+          "currentAddress": "대전 서구 갈마로169번길 11",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 목련관",
+            "목련관 대전 서구 갈마로169번길 11",
+            "대전 목련관"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-d29f5971dde7",
+          "name": "미세노센세",
+          "currentAddress": "대전 서구 계룡로553번안길 65 웨스턴빌딩 1층 102호",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 미세노센세",
+            "미세노센세 대전 서구 계룡로553번안길 65 웨스턴빌딩 1층 102호",
+            "대전 미세노센세"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-fc85ee74ecfb",
+          "name": "박선희 황태어글탕",
+          "currentAddress": "대전 서구 한밭대로707번길 30 통계센터 뒤",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 박선희 황태어글탕",
+            "박선희 황태어글탕 대전 서구 한밭대로707번길 30 통계센터 뒤",
+            "대전 박선희 황태어글탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-7ac050df01ab",
+          "name": "복래옥",
+          "currentAddress": "대전 서구 만년남로3번길 8-13",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 복래옥",
+            "복래옥 대전 서구 만년남로3번길 8-13",
+            "대전 복래옥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-0f9b0bd3aeee",
+          "name": "사생활 돌샘점",
+          "currentAddress": "대전 서구 청사로 281 제1유치원동 2층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 사생활 돌샘점",
+            "사생활 돌샘점 대전 서구 청사로 281 제1유치원동 2층",
+            "대전 사생활 돌샘점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-2854d4e468ef",
+          "name": "설짬뽕",
+          "currentAddress": "대전 서구 도안대로 37(관저동) 한솔상가 1층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 설짬뽕",
+            "설짬뽕 대전 서구 도안대로 37(관저동) 한솔상가 1층",
+            "대전 설짬뽕"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-d01212bd34ab",
+          "name": "설천순대국밥",
+          "currentAddress": "대전 서구 둔산로51번길 66",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 설천순대국밥",
+            "설천순대국밥 대전 서구 둔산로51번길 66",
+            "대전 설천순대국밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-2722ee6bd3a7",
+          "name": "송가네 닭발",
+          "currentAddress": "대전 서구 계백로1300번길 54",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 송가네 닭발",
+            "송가네 닭발 대전 서구 계백로1300번길 54",
+            "대전 송가네 닭발"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-4780dc9d873e",
+          "name": "암소고집",
+          "currentAddress": "대전 서구 만년로 18",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 암소고집",
+            "암소고집 대전 서구 만년로 18",
+            "대전 암소고집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-c43c22f028f0",
+          "name": "에스에스에이더블유SSAW",
+          "currentAddress": "대전 서구 둔산중로32번길 29",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 에스에스에이더블유SSAW",
+            "에스에스에이더블유SSAW 대전 서구 둔산중로32번길 29",
+            "대전 에스에스에이더블유SSAW"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-c925471e3c48",
+          "name": "온유네닭매운탕",
+          "currentAddress": "대전 서구 문정로170번길 50",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 온유네닭매운탕",
+            "온유네닭매운탕 대전 서구 문정로170번길 50",
+            "대전 온유네닭매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-79b27a43bf1a",
+          "name": "와타요업(갈마본점)",
+          "currentAddress": "대전 서구 갈마역로25번길 9-8",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 와타요업(갈마본점)",
+            "와타요업(갈마본점) 대전 서구 갈마역로25번길 9-8",
+            "대전 와타요업(갈마본점)"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-663263d87d8b",
+          "name": "자유대반점",
+          "currentAddress": "대전 서구 둔산로137번길 28 창성빌딩(3층)",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 자유대반점",
+            "자유대반점 대전 서구 둔산로137번길 28 창성빌딩(3층)",
+            "대전 자유대반점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-96dba3c07894",
+          "name": "재주초밥",
+          "currentAddress": "대전 서구 둔산남로9번길 45",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 재주초밥",
+            "재주초밥 대전 서구 둔산남로9번길 45",
+            "대전 재주초밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-b5f17482be89",
+          "name": "제주돼지 고맛",
+          "currentAddress": null,
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 제주돼지 고맛",
+            "제주돼지 고맛 주소미확인",
+            "대전 제주돼지 고맛"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 자료의 식당 상세주소도 별도 재확인 필요"
+        },
+        {
+          "restaurantId": "local-daejeon-19c81c6d95e3",
+          "name": "짬뽕예술관 본점",
+          "currentAddress": "대전 서구 계백로1286번길 125-1",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 짬뽕예술관 본점",
+            "짬뽕예술관 본점 대전 서구 계백로1286번길 125-1",
+            "대전 짬뽕예술관 본점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-af319958d0ce",
+          "name": "초가집",
+          "currentAddress": "대전 서구 갈마로85번길 30",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 초가집",
+            "초가집 대전 서구 갈마로85번길 30",
+            "대전 초가집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-845aaf63f7b2",
+          "name": "칼국수 만드는 사람들",
+          "currentAddress": "대전 서구 둔산중로78번길 20 명진빌딩 2층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 칼국수 만드는 사람들",
+            "칼국수 만드는 사람들 대전 서구 둔산중로78번길 20 명진빌딩 2층",
+            "대전 칼국수 만드는 사람들"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-637afe8cb0ce",
+          "name": "홀리크로스",
+          "currentAddress": "대전 서구 둔산로 25 허니콤빌딩 6층",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 홀리크로스",
+            "홀리크로스 대전 서구 둔산로 25 허니콤빌딩 6층",
+            "대전 홀리크로스"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-a1bfb12a2f3e",
+          "name": "가양막창",
+          "currentAddress": "대전 유성구 죽동로279번길 63-14",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 가양막창",
+            "가양막창 대전 유성구 죽동로279번길 63-14",
+            "대전 가양막창"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-178afba8ddf9",
+          "name": "원조 강경옥",
+          "currentAddress": "대전 유성구 유성대로 580-5",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 원조 강경옥",
+            "원조 강경옥 대전 유성구 유성대로 580-5",
+            "대전 원조 강경옥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-08948d5dc7ed",
+          "name": "거저울곤드레돌솥밥",
+          "currentAddress": "대전 유성구 은구비서로23번길 8-12",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 거저울곤드레돌솥밥",
+            "거저울곤드레돌솥밥 대전 유성구 은구비서로23번길 8-12",
+            "대전 거저울곤드레돌솥밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-66f10ee9ea94",
+          "name": "광세족발 본점",
+          "currentAddress": "대전 유성구 전민로22번길 51",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 광세족발 본점",
+            "광세족발 본점 대전 유성구 전민로22번길 51",
+            "대전 광세족발 본점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-102f2a4e5c5b",
+          "name": "권영철 콩짬뽕",
+          "currentAddress": "대전 유성구 월드컵대로275번길 49",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 권영철 콩짬뽕",
+            "권영철 콩짬뽕 대전 유성구 월드컵대로275번길 49",
+            "대전 권영철 콩짬뽕"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-91b921426932",
+          "name": "남해생아구",
+          "currentAddress": "대전 유성구 은구비로155번길 44-12",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 남해생아구",
+            "남해생아구 대전 유성구 은구비로155번길 44-12",
+            "대전 남해생아구"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-5ce0cf947af1",
+          "name": "랑골로",
+          "currentAddress": "대전 유성구 엑스포로151번길 19 D102, D103호",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 랑골로",
+            "랑골로 대전 유성구 엑스포로151번길 19 D102, D103호",
+            "대전 랑골로"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-3bb61d0d6aed",
+          "name": "르뺑99-1",
+          "currentAddress": "대전 유성구 온천북로33번길 22-3 101호",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 르뺑99-1",
+            "르뺑99-1 대전 유성구 온천북로33번길 22-3 101호",
+            "대전 르뺑99-1"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f7e95eaca36d",
+          "name": "리코타코",
+          "currentAddress": "대전 유성구 대학로155번길 29 101호",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 리코타코",
+            "리코타코 대전 유성구 대학로155번길 29 101호",
+            "대전 리코타코"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-9fe1de5338a9",
+          "name": "메이웨이차이나",
+          "currentAddress": "대전 유성구 지족북로 74",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 메이웨이차이나",
+            "메이웨이차이나 대전 유성구 지족북로 74",
+            "대전 메이웨이차이나"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-fc4a13cbdf6b",
+          "name": "백조한우마을 관평점",
+          "currentAddress": "대전 유성구 관들2길 8-31",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 백조한우마을 관평점",
+            "백조한우마을 관평점 대전 유성구 관들2길 8-31",
+            "대전 백조한우마을 관평점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f452472e9bb1",
+          "name": "숯골원냉면 본점",
+          "currentAddress": "대전 유성구 신성로84번길 18",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 숯골원냉면 본점",
+            "숯골원냉면 본점 대전 유성구 신성로84번길 18",
+            "대전 숯골원냉면 본점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8269a835f0a9",
+          "name": "스시 유이",
+          "currentAddress": "대전 유성구 봉명서로 17-4",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 스시 유이",
+            "스시 유이 대전 유성구 봉명서로 17-4",
+            "대전 스시 유이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-544f9979945f",
+          "name": "심스스모크하우스",
+          "currentAddress": "대전 유성구 전민로6번길 99",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 심스스모크하우스",
+            "심스스모크하우스 대전 유성구 전민로6번길 99",
+            "대전 심스스모크하우스"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-10315ba5c1d8",
+          "name": "아카바의 식탁 두번째",
+          "currentAddress": "대전 유성구 어은로48번길 10-6 2층",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 아카바의 식탁 두번째",
+            "아카바의 식탁 두번째 대전 유성구 어은로48번길 10-6 2층",
+            "대전 아카바의 식탁 두번째"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-52d412fef454",
+          "name": "아토(Ato)",
+          "currentAddress": "대전 유성구 농대로17번길 19 1층",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 아토(Ato)",
+            "아토(Ato) 대전 유성구 농대로17번길 19 1층",
+            "대전 아토(Ato)"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-38e74a2e8692",
+          "name": "안도스시",
+          "currentAddress": "대전 유성구 죽동로279번길 5-28 1층",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 안도스시",
+            "안도스시 대전 유성구 죽동로279번길 5-28 1층",
+            "대전 안도스시"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-3cfe250db761",
+          "name": "어화",
+          "currentAddress": "대전 유성구 온천서로 55",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 어화",
+            "어화 대전 유성구 온천서로 55",
+            "대전 어화"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-31d7a58a2563",
+          "name": "예이제448",
+          "currentAddress": "대전 유성구 북유성대로487번길 37",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 예이제448",
+            "예이제448 대전 유성구 북유성대로487번길 37",
+            "대전 예이제448"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-84b342d53d97",
+          "name": "온천칼국수",
+          "currentAddress": "대전 유성구 온천북로 61",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 온천칼국수",
+            "온천칼국수 대전 유성구 온천북로 61",
+            "대전 온천칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-45ae8861e1f3",
+          "name": "올리브가든",
+          "currentAddress": "대전 유성구 은구비로155번안길 59",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 올리브가든",
+            "올리브가든 대전 유성구 은구비로155번안길 59",
+            "대전 올리브가든"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-4c8a63898c94",
+          "name": "태평소국밥",
+          "currentAddress": "대전 유성구 온천동로65번길 50(봉명동)",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 태평소국밥",
+            "태평소국밥 대전 유성구 온천동로65번길 50(봉명동)",
+            "대전 태평소국밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-afa0f9aed2d8",
+          "name": "은구비커피 로스터즈",
+          "currentAddress": "대전 유성구 지족동로142번길 45",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 은구비커피 로스터즈",
+            "은구비커피 로스터즈 대전 유성구 지족동로142번길 45",
+            "대전 은구비커피 로스터즈"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-63e7126b0e86",
+          "name": "이비가짬뽕 유성본점",
+          "currentAddress": "대전 유성구 문화원로 39",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 이비가짬뽕 유성본점",
+            "이비가짬뽕 유성본점 대전 유성구 문화원로 39",
+            "대전 이비가짬뽕 유성본점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f37af12acebf",
+          "name": "임진강 장어구이",
+          "currentAddress": "대전 유성구 문화원로 143",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 임진강 장어구이",
+            "임진강 장어구이 대전 유성구 문화원로 143",
+            "대전 임진강 장어구이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-dd0f703d8a1e",
+          "name": "잇마이타이",
+          "currentAddress": "대전 유성구 문화원로 77 그랑펠리체 상가1층 103호",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 잇마이타이",
+            "잇마이타이 대전 유성구 문화원로 77 그랑펠리체 상가1층 103호",
+            "대전 잇마이타이"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-79b1860b3431",
+          "name": "장동묵집",
+          "currentAddress": "대전 유성구 신성로 51",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 장동묵집",
+            "장동묵집 대전 유성구 신성로 51",
+            "대전 장동묵집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-906c7686156b",
+          "name": "준코테이블",
+          "currentAddress": "대전 유성구 문화원로46번길 28",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 준코테이블",
+            "준코테이블 대전 유성구 문화원로46번길 28",
+            "대전 준코테이블"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-f21b3bcb056d",
+          "name": "철수네매운갈비찜",
+          "currentAddress": "대전 유성구 대학로 31 한진 오피스텔 1층 뒷편 주차장 입구",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 철수네매운갈비찜",
+            "철수네매운갈비찜 대전 유성구 대학로 31 한진 오피스텔 1층 뒷편 주차장 입구",
+            "대전 철수네매운갈비찜"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-dcedbe8a0906",
+          "name": "최진엽의 샤브샤브",
+          "currentAddress": "대전 유성구 궁동로18번길 40",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 최진엽의 샤브샤브",
+            "최진엽의 샤브샤브 대전 유성구 궁동로18번길 40",
+            "대전 최진엽의 샤브샤브"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-21c68cdaad30",
+          "name": "커피인터뷰",
+          "currentAddress": "대전 유성구 한밭대로371번길 25-3",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 커피인터뷰",
+            "커피인터뷰 대전 유성구 한밭대로371번길 25-3",
+            "대전 커피인터뷰"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-8629d44d66ec",
+          "name": "테판마루",
+          "currentAddress": "대전 유성구 봉명서로 11-12",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 테판마루",
+            "테판마루 대전 유성구 봉명서로 11-12",
+            "대전 테판마루"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-73f8f1af17a4",
+          "name": "훈불",
+          "currentAddress": "대전 유성구 한밭대로 407-18",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 훈불",
+            "훈불 대전 유성구 한밭대로 407-18",
+            "대전 훈불"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-ada2c9f55dde",
+          "name": "옥천순대매운족발",
+          "currentAddress": "대전 대덕구 송촌로 9",
+          "region": "대전광역시 대덕구",
+          "searchAliases": [
+            "대전광역시 대덕구 옥천순대매운족발",
+            "옥천순대매운족발 대전 대덕구 송촌로 9",
+            "대전 옥천순대매운족발"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-2216b9184b32",
+          "name": "우시장정육식당 중리점",
+          "currentAddress": "대전 대덕구 송촌북로19번길 22 우시장",
+          "region": "대전광역시 대덕구",
+          "searchAliases": [
+            "대전광역시 대덕구 우시장정육식당 중리점",
+            "우시장정육식당 중리점 대전 대덕구 송촌북로19번길 22 우시장",
+            "대전 우시장정육식당 중리점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/ContentsHtmlView.do?menuSeq=7799"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-halmeoni-mukjip",
+          "name": "할머니묵집",
+          "currentAddress": "대전 유성구 금남구즉로 1378",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 할머니묵집",
+            "할머니묵집 대전 유성구 금남구즉로 1378",
+            "대전 할머니묵집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodModelList.do?menuSeq=157&sctcd=A06"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-barogzip-goejeong",
+          "name": "바로그집 괴정점",
+          "currentAddress": "대전광역시 서구 도산로369번길 94",
+          "region": "대전광역시 서구",
+          "searchAliases": [
+            "대전광역시 서구 바로그집 괴정점",
+            "바로그집 괴정점 대전광역시 서구 도산로369번길 94",
+            "대전 바로그집 괴정점"
+          ],
+          "evidenceUrls": [
+            "https://blog.naver.com/first_seogu/223250576100"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-traditional-sonamu",
+          "name": "소나무집",
+          "currentAddress": "대전광역시 중구 대종로460번길 59 (대흥동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 소나무집",
+            "소나무집 대전광역시 중구 대종로460번길 59 (대흥동)",
+            "대전 소나무집"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-traditional-gwangcheon",
+          "name": "광천식당",
+          "currentAddress": "대전광역시 중구 대종로505번길 29 (선화동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 광천식당",
+            "광천식당 대전광역시 중구 대종로505번길 29 (선화동)",
+            "대전 광천식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-traditional-sutgolwonjo",
+          "name": "숯골원조냉면식당",
+          "currentAddress": "대전광역시 유성구 신성로 122 (신성동)",
+          "region": "대전광역시 유성구",
+          "searchAliases": [
+            "대전광역시 유성구 숯골원조냉면식당",
+            "숯골원조냉면식당 대전광역시 유성구 신성로 122 (신성동)",
+            "대전 숯골원조냉면식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "등록 데이터에서 좌표 누락 식별. 이번 회차 개별 외부 지도·영업 재검증 미실시.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-geukdong-bakery",
+          "name": "극동제과점",
+          "currentAddress": "대전광역시 중구 충무로 73 (대사동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 극동제과점",
+            "극동제과점 대전광역시 중구 충무로 73 (대사동)",
+            "대전 극동제과점"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-happy-home",
+          "name": "행복한 집 식당",
+          "currentAddress": "대전광역시 중구 천근로69번길 114 (문화동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 행복한 집 식당",
+            "행복한 집 식당 대전광역시 중구 천근로69번길 114 (문화동)",
+            "대전 행복한 집 식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-choryang",
+          "name": "초량식당",
+          "currentAddress": "대전광역시 중구 중앙로121번길 58 (선화동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 초량식당",
+            "초량식당 대전광역시 중구 중앙로121번길 58 (선화동)",
+            "대전 초량식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-yeongdong",
+          "name": "영동식당",
+          "currentAddress": "대전광역시 중구 계룡로874번길 27-9 (오류동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 영동식당",
+            "영동식당 대전광역시 중구 계룡로874번길 27-9 (오류동)",
+            "대전 영동식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-jeongsik",
+          "name": "정식당",
+          "currentAddress": "대전광역시 중구 중앙로130번길 37-13 (대흥동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 정식당",
+            "정식당 대전광역시 중구 중앙로130번길 37-13 (대흥동)",
+            "대전 정식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        },
+        {
+          "restaurantId": "local-daejeon-slot60-geumgwang",
+          "name": "금광식당",
+          "currentAddress": "대전광역시 중구 충무로 127 (대사동)",
+          "region": "대전광역시 중구",
+          "searchAliases": [
+            "대전광역시 중구 금광식당",
+            "금광식당 대전광역시 중구 충무로 127 (대사동)",
+            "대전 금광식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
+            "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 60,
+          "checkResult": "대전시 공식 인증 명단 상호·주소 확인; 개별 위치 숫자좌표 근거 미확인. 영업 여부 별도 미확인.",
+          "reason": "공식 선정 기록 및 현주소에 부합하는 식당·지점 식별 숫자 좌표를 교차 확인하지 못함"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "대전 좌표 102곳",
+          "reason": "직접 검증된 숫자 좌표가 없는 곳이 많으며 공식 선정 사실과 위치 검증을 구분해야 함",
+          "action": "다음 대전 배정에서 오래 미확인·누락 비율 높은 구부터 재확인"
+        },
+        {
+          "topic": "중구 신규 6곳",
+          "reason": "이름과 공식 주소는 확인되나 지점 일치 공개 수치 좌표를 교차검증할 수 없음",
+          "action": "추정 좌표 금지, 보존 후 다음 순환 재확인"
+        },
+        {
+          "topic": "블루리본 정규 등급 및 전 구 현 영업 확인",
+          "reason": "해당 명단을 이번에 완전 검증하지 못함",
+          "action": "공식 자료 확인 전 등급·휴폐업으로 판단하지 않음"
+        }
+      ],
+      "carryOver": [
+        "1순환 53회차 전북 광역 누락·1순환 57회차 제주 미완료는 기존 이월 그대로 보존",
+        "대전 중구 외 4구의 신규 발굴 및 도시 전체 102곳 좌표 재확인",
+        "세종 공동선정 목록의 현재 사업·영업상태 재조사"
+      ],
+      "nextSlot": 61,
+      "nextRegions": [
+        "인천광역시 강화군",
+        "인천광역시 옹진군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -56157,6 +58263,7 @@
     "2026-11-08 02시 1/56 경남: 관광공사 공식 식당 소개4·관광주민증 제휴1 신규. 경남 기존 320→325, 좌표 미등록 기존51+신규5=56, 위경도0·제외0, 미확인 영업상태 별도 보존. 1/53 전북 이월 유지.",
     "2026-11-08 03시 1/57 제주: 제주관광공사 비짓제주 음식점 7곳 신규·기존 황금어장 위치 1곳 보강. 위치 보강 총8·현재 목록 제외0·재확인 대기86. 서귀포 신규명단/1순환 53회차 전북 이월. 회원 추천 자료 불변.",
     "2026-11-08 04시 1/58 서울·인천: 공식 관광기관 블루리본 이력 2곳 신규, 인천 기존2 확인, 좌표추가0·노출제외0·위치재확인 대기643, 1/53·1/57 이월. 회원 추천 불변.",
-    "2026-11-08 05시 1/59 부산·대구·울산 공식 3곳 추가; 위치0·제외0·재확인 대기426, 전북53 등 이월, 회원 추천 불변."
+    "2026-11-08 05시 1/59 부산·대구·울산 공식 3곳 추가; 위치0·제외0·재확인 대기426, 전북53 등 이월, 회원 추천 불변.",
+    "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변."
   ]
 }
