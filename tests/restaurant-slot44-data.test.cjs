@@ -65,4 +65,31 @@ const release = file('game-release.json');
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
 assert.ok(index.includes('app.js?v=' + release.revision), 'the current entry-point cache matches the game release');
+// Later slots must preserve historical source records while adding exact official locations.
+const seogwipo = file('games/certified-restaurants/official-jeju-slot48-locations.json');
+assert.equal(seogwipo.cycle, 1);
+assert.equal(seogwipo.slot, 48);
+assert.deepEqual(seogwipo.restaurants, [], 'all five locations reuse existing certified IDs');
+assert.equal(seogwipo.locationEnrichments.length, 5);
+assert.equal(new Set(seogwipo.locationEnrichments.map(item => item.id)).size, 5);
+for (const candidate of seogwipo.locationEnrichments) {
+  const original = db.restaurants.find(item => item.id === candidate.id);
+  assert.ok(original, 'only known saved IDs get new coordinates');
+  assert.equal(original.name, candidate.expectedName);
+  assert.equal(original.address, candidate.expectedAddress);
+  assert.equal(original.region, '제주');
+  assert.equal(original.district, '서귀포시');
+  assert.equal(original.lat, null); assert.equal(original.lng, null);
+  assert.ok(original.guides.some(guide => guide.provider === 'blue-ribbon' || guide.provider === 'local-guide'));
+  assert.ok(Number.isFinite(candidate.lat) && candidate.lat > 33 && candidate.lat < 34);
+  assert.ok(Number.isFinite(candidate.lng) && candidate.lng > 126 && candidate.lng < 127);
+  assert.match(candidate.coordinateSource.url, /^https:\/\/www\.visitjeju\.net\/kr\/detail\/view\?contentsid=(?:CNTS_|CONT_)/);
+  assert.equal(candidate.coordinateSource.checkedAt, '2026-11-07');
+}
+assert.equal(sources.coverage.coordinatesAvailable, 1051);
+assert.equal(sources.coverage.coordinatesMissing, 2199);
+assert.equal(audit.active.cycle, 1); assert.equal(audit.active.slot, 48);
+assert.equal(audit.entries.at(-1).locationPending, 17);
+assert.ok(app.includes('slot48Seogwipo.locationEnrichments'), 'the live app uses verified overlay');
+assert.ok(assets.includes("restaurants:'1.11.6'"), 'the game version updates without changing agit release');
 console.log('restaurant slot44 Jinju/Sacheon official listing and location checks passed');
