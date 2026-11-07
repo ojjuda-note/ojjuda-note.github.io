@@ -132,4 +132,41 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
 }
 assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
 assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(12),3);assert.equal(E.layerCount(18),4);assert.equal(E.layerCount(200),8);
+assert.equal(E.LAYER_OFFSET,.5,'Each higher tile is centered between four tiles on the floor below');
+const stackedTop=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
+stackedTop[1][1]=9;stackedTop[3][3]=9;
+const stackedBottom=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
+for(let r=0;r<2;r++)for(let c=0;c<2;c++)stackedBottom[r][c]=7;
+const stack=[stackedTop,stackedBottom];
+for(let r=0;r<2;r++)for(let c=0;c<2;c++)assert.equal(E.isExposed(stack,{layer:1,r,c}),false,'One upper tile covers four lower tiles');
+assert(E.isExposed(stack,{layer:0,r:1,c:1}),'Upper faces remain selectable');
+assert.equal(E.exposedMoves(stack)?.a.layer,0,'A covered lower pair cannot become a hint');
+stackedTop[1][1]=E.EMPTY;
+for(let r=0;r<2;r++)for(let c=0;c<2;c++)assert(E.isExposed(stack,{layer:1,r,c}),'Removing one upper tile exposes all four lower tiles');
+assert.equal(E.exposedMoves(stack)?.a.layer,1,'An exposed lower floor can be played without clearing the upper floor');
+stackedTop[1][1]=9;
+const third=Array.from({length:4},()=>Array(4).fill(E.EMPTY));third[0][0]=third[0][1]=11;
+assert.equal(E.isExposed([stackedTop,stackedBottom,third],{layer:2,r:0,c:0}),false,'Any overlapping upper floor blocks a face');
+const floorVariants=Array.from({length:60},(_,i)=>E.stackInfo(i+6).floors.map(f=>f.total));
+assert(floorVariants.some(sizes=>sizes[0]>sizes[1]),'Some stages have more tiles on top');
+assert(floorVariants.some(sizes=>sizes[0]<sizes[1]),'Some stages have more tiles below');
+for(const stage of [6,12,18,40,200]){
+ const grids=E.generateStack(stage,random).grids;
+ let left=grids.flat(2).filter(v=>v!==E.EMPTY).length,automaticShuffles=0;
+ while(left){
+  let move=E.exposedMoves(grids);
+  if(!move){
+   const top=grids.findIndex(grid=>grid.flat().some(v=>v!==E.EMPTY));
+   assert(top>=0);grids[top]=E.reshuffle(grids[top],random).grid;
+   move=E.exposedMoves(grids);automaticShuffles++;
+  }
+  assert(move,`Stage ${stage} always recovers an uncovered pair`);
+  assert(E.isExposed(grids,move.a)&&E.isExposed(grids,move.b));
+  const grid=grids[move.a.layer];assert(E.path(grid,move.a,move.b));
+  grid[move.a.r][move.a.c]=grid[move.b.r][move.b.c]=E.EMPTY;
+  left-=2;
+ }
+ assert(grids.flat(2).every(v=>v===E.EMPTY),`Stage ${stage} is completable with real overlap rules`);
+ assert(automaticShuffles<600,`Stage ${stage} avoids excessive deadlocks`);
+}
 console.log(`PASS: ${E.MAX_STAGE} stages, ${silhouettes.size} varied silhouettes, ${paths} independent path checks, ${boards} full legacy boards (${filledBoards} with added pairs), all stacked stage openings and selected complete games, ${recoveries} deadlock recoveries, copy limits and RNG fallback.`);

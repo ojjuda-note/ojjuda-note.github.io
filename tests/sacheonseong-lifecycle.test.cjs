@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{test}=require('node:test'),{JSDOM}=require('jsdom');
 const E=require('../games/sacheonseong/engine.js'),read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const KEY='ojjuda-sacheonseong-v1',RECORDS='ojjuda-sacheonseong-records-v1';
-function fixture({stage=2,grid=null,saved=null,records={},seed=null,embedded=false}={}){
+function fixture({stage=2,grid=null,stack=null,saved=null,records={},seed=null,embedded=false}={}){
  const dom=new JSDOM(read('games/sacheonseong/index.html'),{url:'https://example.test/games/sacheonseong/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
  const timers=new Map(),intervals=[],sent=[],finished=[];let id=0,now=Date.now();w.Date.now=()=>now;
  if(embedded){
@@ -18,12 +18,13 @@ function fixture({stage=2,grid=null,saved=null,records={},seed=null,embedded=fal
  w.localStorage.setItem(RECORDS,JSON.stringify(records));
  for(const name of ['engine','faces'])w.eval(read('games/sacheonseong/'+name+'.js'));
  // Arrange a late round directly; a later visit starts a fresh board at the saved level.
- if(!saved){const generate=w.TileGarden.generateStack;let arranged=false;w.TileGarden.generateStack=(n,...args)=>{
+ if(!saved||stack){const generate=w.TileGarden.generateStack;let arranged=false;w.TileGarden.generateStack=(n,...args)=>{
   const result=generate(n,...args);if(!arranged&&n===stage){
    arranged=true;
-   const late=grid?grid.map(row=>row.slice()):result.grids[0].map(row=>row.map(()=>E.EMPTY));
-   if(!grid)late[0][0]=late[0][1]=0;
-   result.grids=[late];result.info={...result.info,layerCount:1,total:late.flat().filter(v=>v!==E.EMPTY).length};
+   if(stack){result.grids=stack.map(floor=>floor.map(row=>row.slice()));result.info={...result.info,layerCount:stack.length,total:result.grids.flat(2).filter(v=>v!==E.EMPTY).length};}
+   else{const late=grid?grid.map(row=>row.slice()):result.grids[0].map(row=>row.map(()=>E.EMPTY));
+    if(!grid)late[0][0]=late[0][1]=0;
+    result.grids=[late];result.info={...result.info,layerCount:1,total:late.flat().filter(v=>v!==E.EMPTY).length};}
   }return result;
  };}
  w.eval(read('games/sacheonseong/app.js'));
@@ -102,30 +103,54 @@ test('final-stage completion never advances beyond stage 200',()=>{
  }finally{f.close();}
 });
 
-test('a layered round finishes only after both irregular floors are cleared',()=>{
+test('a layered round allows exposed pairs on any floor and finishes only when all tiles are gone',()=>{
  const previous={id:'old-record',duration:5000,at:1700000000000,rulesVersion:3};
  const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:7,unlocked:7},records:{7:[previous]},seed:37});
  const remaining=()=>[f.state().grid,...f.state().upcoming].flat(2).filter(value=>value!==E.EMPTY).length;
  const matchNext=()=>{
-  const move=E.moves(f.state().grid);assert.ok(move,'the live board has a legal pair after the automatic dead-end check');
-  f.d.querySelector(`[data-r="${move.a.r}"][data-c="${move.a.c}"]`).click();f.advance(25);
-  f.d.querySelector(`[data-r="${move.b.r}"][data-c="${move.b.c}"]`).click();f.run(120);
+  const move=E.exposedMoves([f.state().grid,...f.state().upcoming]);assert.ok(move,'the live board has an uncovered pair after automatic dead-end recovery');
+  const at=p=>f.d.querySelector(`[data-layer="${p.layer}"][data-r="${p.r}"][data-c="${p.c}"]`);
+  assert.equal(at(move.a).disabled,false);assert.equal(at(move.b).disabled,false);
+  at(move.a).click();f.advance(25);at(move.b).click();f.run(120);
  };
  try{
-  const total=E.stageInfo(7).total,first=f.state().grid.flat().filter(v=>v!==E.EMPTY).length;
+  const total=E.stageInfo(7).total;
   assert.equal(remaining(),total);assert.equal(f.state().layerCount,2);assert.equal(f.state().upcoming.length,1);
   assert.ok(f.state().grid.flat().some(value=>value===E.EMPTY),'irregular floors leave visible gaps');
   assert.equal(f.d.getElementById('remaining').textContent,`${total} / ${total}`);
-  for(let pair=1;pair<=first/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0,'clearing the upper floor does not finish the stage');}
-  assert.equal(f.state().floor,1,'the next floor opens after the top floor is cleared');
-  assert.equal(f.state().upcoming.length,0);
-  for(let pair=first/2+1;pair<total/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0);}
+  assert.equal(f.d.querySelectorAll('.tile:not(.empty)').length,total,'All layers reveal their actual tile faces');
+  for(let pair=1;pair<total/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0);}
+  assert.equal(f.state().upcoming.length,1,'Lower floors stay in their original offset throughout the round');
   assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('remaining').textContent,`2 / ${total}`);
   matchNext();assert.equal(remaining(),0);assert.equal(f.d.getElementById('remaining').textContent,`0 / ${total}`);assert.equal(f.d.getElementById('completion').hidden,false);
   assert.equal(f.sent.length,1);assert.equal(f.sent[0].stage,7);assert.equal(f.sent[0].rulesVersion,E.RULES_VERSION);assert.equal(f.records()[7].length,2);assert.deepEqual(f.records()[7].find(record=>record.id===previous.id),previous);assert.equal(f.state().unlocked,8);
   f.d.getElementById('next').click();const next=f.state(),nextTotal=E.stageInfo(8).total;
   assert.equal(next.stage,8);assert.equal(remaining(),nextTotal);assert.ok(E.withinCopyLimit(next.grid));
   assert.equal(f.d.getElementById('remaining').textContent,`${nextTotal} / ${nextTotal}`);assert.equal(next.startedAt,null);assert.equal(next.finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.sent.length,1);assert.equal(f.records()[7].length,2);
+ }finally{f.close();}
+});
+
+test('one upper tile covers four lower faces, which unlock while other upper tiles remain',()=>{
+ const upper=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
+ upper[1][1]=upper[3][3]=9;upper[3][0]=upper[3][1]=10;
+ const lower=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
+ lower[0][0]=lower[0][1]=7;lower[1][0]=lower[1][1]=8;
+ const f=fixture({stage:6,stack:[upper,lower]});
+ const at=(layer,r,c)=>f.d.querySelector(`[data-layer="${layer}"][data-r="${r}"][data-c="${c}"]`);
+ try{
+  assert.equal(f.d.querySelectorAll('.tile-layer').length,2);
+  assert.equal(f.d.querySelectorAll('.tile:not(.empty)').length,8,'Both floors show actual pictures');
+  for(let r=0;r<2;r++)for(let c=0;c<2;c++){
+   assert(at(1,r,c).disabled,'An upper tile blocks this lower face');
+   assert.match(at(1,r,c).getAttribute('aria-label'),/가려짐/);
+  }
+  const untouched=f.state();at(1,0,0).click();assert.deepEqual(f.state(),untouched,'Covered tiles cannot be clicked');
+  at(0,1,1).click();at(0,3,3).click();f.run(120);
+  assert.equal(f.state().grid[3][0],10,'The upper floor has not been cleared');
+  for(let r=0;r<2;r++)for(let c=0;c<2;c++)assert.equal(at(1,r,c).disabled,false,'All four lower faces unlock once the covering tile disappears');
+  at(1,0,0).click();at(1,0,1).click();f.run(120);
+  assert.equal(f.state().upcoming[0][0][0],E.EMPTY,'An exposed lower pair is removed even while the upper layer remains');
+  assert.equal(f.sent.length,0,'The stage does not finish early');
  }finally{f.close();}
 });
 

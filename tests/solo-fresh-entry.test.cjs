@@ -37,7 +37,11 @@ for(const [stage,columns]of [[5,10],[7,14],[7,11]])test(`Sacheonseong stage ${st
  if(columns===11)assert.deepEqual(saved.grid.at(-1).slice(-2),[E.EMPTY,E.EMPTY],'the old portrait save contains the two former padding cells');
  const child=await f.enter(),first=f.state();
  assertGarden(first,stage);assert.notEqual(first.runId,saved.runId);
- assert.ok(child.document.querySelectorAll('.tile.empty').length>0);assert.equal(child.document.querySelectorAll('.tile:not(:disabled)').length,first.grid.flat().filter(v=>v!==E.EMPTY).length);
+ const fullStack=[first.grid,...first.upcoming];
+ const exposedCount=fullStack.reduce((sum,grid,layer)=>sum+grid.reduce((rowTotal,row,r)=>rowTotal+row.filter((value,c)=>value!==E.EMPTY&&E.isExposed(fullStack,{layer,r,c})).length,0),0);
+ assert.ok(child.document.querySelectorAll('.tile.empty').length>0);
+ assert.equal(child.document.querySelectorAll('.tile:not(.empty)').length,E.stageInfo(stage).total,'all floor faces appear at once');
+ assert.equal(child.document.querySelectorAll('.tile:not(:disabled)').length,exposedCount,'only tiles uncovered by every upper floor are selectable');
  assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.penaltyMs,0);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);assert.equal(first.shuffles,0);
  assert.deepEqual(f.records(),records,'records from both square and portrait stages survive the new visit');
  child.document.querySelector('.tile:not(.empty)').click();let active=f.state();assert.ok(active.startedAt);
