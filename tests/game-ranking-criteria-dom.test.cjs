@@ -12,6 +12,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  const games=w.worldRankGames();assert.equal(Object.keys(games).filter(x=>/^(billiards|janggi|chess)$/.test(x)).length,3);
  assert.equal(Object.keys(games).filter(x=>/_(easy|normal|hard|online)$/.test(x)).length,0);
  assert.equal(games.archery.rankingBasis,'stage_score');assert.equal(games.archery.unit,'점');
+ assert.equal(games.mole.rankingBasis,'mole_grid_score');
  assert.equal(games.tour.unit,'연승');assert.equal(games.tank.unit,'연승');
  assert.equal(games.matgo.rankingBasis,'best_round_gain');assert.equal(games.poker.rankingBasis,'best_round_gain');
  const rows={solitaire:{nick:'카드친구',score:299999880},archery:{nick:'궁수친구',score:45,stage:17},sacheonseong:{nick:'사천성친구',score:1999994000,stage:3},mines:{nick:'먼저 달성',score:69940},billiards:{nick:'당구친구',score:3,difficulty:'hard',variant:'pool8'},
@@ -149,5 +150,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
  w.OjjudaSacheonseongRanking=timeRules;await w.OjjudaGameRankings.refresh();
  assert.equal(value('sacheonseong'),'01:00.00','a later successful load restores the time on refresh');
  assert.equal(row('sacheonseong').querySelector('.board-game-difficulty').textContent,'3단계');
+ rows.mole={nick:'두더지친구',score:3042};await w.OjjudaGameRankings.refresh();
+ assert.equal(value('mole'),'42점');assert.match(row('mole').textContent,/6×6/);assert.match(row('mole').querySelector('th').title,/6×6 → 5×5/);
  console.log('PASS: one shared ordered pager, reverse category boundaries, global page counts, unique games in every current/archive paging round, bounded last pages, real catalog, one initial RPC, per-group empty records, Mines and Sacheonseong time, variants, opponents, peak gold and safe text rendering');
 }finally{dom.window.OjjudaGameRankings?.mount(null);dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1});

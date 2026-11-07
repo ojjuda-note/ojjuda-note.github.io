@@ -28,7 +28,6 @@
     c.fillStyle='#86B36644';round(c,20,173,320,294,22);c.fill();
     // Deterministic decorations must never consume gameplay randomness.
     for(let i=0;i<78;i++){const x=22+(i*73%316),y=168+(i*97%296);c.strokeStyle=i%3?'#8DB86888':'#D6E9A38A';c.lineWidth=1.7;c.beginPath();c.moveTo(x-2,y+4);c.lineTo(x,y);c.lineTo(x+2,y+3);c.stroke();}
-    for(let row=0;row<3;row++)for(let col=0;col<3;col++){const x=60+col*120,y=190+row*115;oval(c,x,y+35,49,17,'#7C9E5759');oval(c,x,y+30,53,21,'#B5CB82');}
     flower(c,20,177,7,'#FFF9DB');flower(c,343,201,7,'#F8C9BA');flower(c,22,462,6,'#F7D3CB');flower(c,334,469,7,'#FFF8DA');flower(c,17,308,5,'#FFF3BA');flower(c,347,354,5,'#FAD3CE');
     oval(c,32,499,10,5,'#688F5C');oval(c,30,496,10,5,'#D5D8B1');oval(c,28,494,5,2,'#F2EDC9');
     leaf(c,315,502,11,'#648F52',-.65);leaf(c,315,502,11,'#81AD60',.5);
@@ -97,7 +96,7 @@
   }
   function drawHammer(c,h,reduced){
     if(!h||h.t>.28)return;
-    const p=h.t/.28;c.save();c.globalAlpha=Math.min(1,(1-p)*3);c.translate(h.x+14,h.y-16);c.rotate(reduced?-.35:-1.3+Math.sin(Math.min(1,p*2)*Math.PI/2)*1.1);
+    const p=h.t/.28;c.save();c.globalAlpha=Math.min(1,(1-p)*3);c.translate(h.x+14,h.y-16);c.scale(h.scale||1,h.scale||1);c.rotate(reduced?-.35:-1.3+Math.sin(Math.min(1,p*2)*Math.PI/2)*1.1);
     c.fillStyle=gradient(c,0,5,52,'#E9C699','#B58151');round(c,-5,4,10,48,4);c.fill();c.fillStyle='#F6DAAF';round(c,-3,11,2,33,1);c.fill();
     c.fillStyle='#A9504140';round(c,-24,-11,50,30,10);c.fill();c.fillStyle=gradient(c,0,-17,30,'#F2B5A0','#D98470');round(c,-25,-17,50,28,9);c.fill();c.fillStyle='#FFCEB3';round(c,-23,-15,46,6,4);c.fill();
     c.fillStyle='#FFF0D4';round(c,-12,-17,5,28,2);c.fill();round(c,7,-17,5,28,2);c.fill();c.restore();
@@ -106,9 +105,10 @@
     garden= garden||paintGarden();c.save();c.drawImage(garden,0,0,W,H);
     if(hammer?.kind==='bomb'&&hammer.t<.22&&!reduced)c.translate(Math.sin(hammer.t*90)*3*(1-hammer.t/.22),0);
     for(const h of holes){
-      holeBack(c,h);
-      if(h.on){const rise=h.hit?1:Math.max(0,Math.min(1,h.t/.15,(h.dur-h.t)/.15)),ease=1-Math.pow(1-rise,2);c.save();c.beginPath();c.rect(h.x-46,h.y-54,92,81);c.clip();mole(c,h.x,h.y+32-42*ease,h.kind,h.hit>0,clock);c.restore();}
-      holeFront(c,h);
+      c.save();c.translate(h.x,h.y);c.scale(h.scale,h.scale);
+      holeBack(c,{x:0,y:0});
+      if(h.on){const rise=h.hit?1:Math.max(0,Math.min(1,h.t/.15,(h.dur-h.t)/.15)),ease=1-Math.pow(1-rise,2);c.save();c.beginPath();c.rect(-46,-54,92,81);c.clip();mole(c,0,32-42*ease,h.kind,h.hit>0,clock);c.restore();}
+      holeFront(c,{x:0,y:0});c.restore();
     }
     c.fillStyle='#3F694E';c.font=`12px ${FONT}`;c.textAlign='center';c.fillText('금색 +3점  ·  폭탄 −2점',W/2,519);
     for(const e of effects){const p=e.t/.7;c.save();c.globalAlpha=1-p;
@@ -118,11 +118,35 @@
     }
     drawHammer(c,hammer,reduced);c.restore();hud(c,remaining,score,preview);
   }
-  function holes(){return Array.from({length:9},(_,i)=>({x:60+(i%3)*120,y:190+Math.floor(i/3)*115,on:false,t:0,dur:1,kind:'m',hit:0}));}
-  function create(api){
-    const board=holes(),reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
+  const layouts={
+    3:{left:60,top:190,dx:120,dy:115},
+    4:{left:51,top:184,dx:86,dy:89},
+    5:{left:42,top:183,dx:69,dy:67},
+    6:{left:40,top:182,dx:56,dy:54}
+  };
+  function normalizeSize(size){return [3,4,5,6].includes(Number(size))?Number(size):3;}
+  function holes(size=3){
+    size=normalizeSize(size);const layout=layouts[size];
+    return Array.from({length:size*size},(_,i)=>({
+      x:layout.left+(i%size)*layout.dx,y:layout.top+Math.floor(i/size)*layout.dy,
+      scale:3/size,on:false,t:0,dur:1,kind:'m',hit:0
+    }));
+  }
+  // Legacy 3×3 scores stay unchanged; encoded tiers make larger boards rank first.
+  function rankingScore(size,points){
+    const grid=normalizeSize(size),earned=Math.max(0,Math.min(999,Math.trunc(Number(points)||0)));
+    return earned?(grid-3)*1000+earned:0;
+  }
+  function rankingRecord(value){
+    const total=Math.max(0,Math.trunc(Number(value)||0));
+    const grid=Math.min(6,3+Math.floor(total/1000));
+    return {grid,points:total-(grid-3)*1000};
+  }
+  function create(api,gridSize=3){
+    const size=normalizeSize(gridSize),board=holes(size),reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
     let remaining=30,score=0,spawnIn=.6,effects=[],hammer=null,clock=0,finished=false;
     return {
+      get gridSize(){return size;},get holeCount(){return board.length;},
       update(dt){
         if(finished)return;clock+=dt;remaining-=dt;
         if(remaining<=0){remaining=0;finished=true;api.end(score);return;}
@@ -133,8 +157,8 @@
       },
       draw(c){draw(c,board,remaining,score,effects,hammer,clock,false,reduced);},
       onDown(x,y){
-        if(finished)return;hammer={x,y,t:0,kind:'miss'};
-        for(const h of board)if(h.on&&!h.hit&&Math.abs(x-h.x)<46&&y>h.y-50&&y<h.y+40){
+        if(finished)return;hammer={x,y,t:0,kind:'miss',scale:3/size};
+        for(const h of board)if(h.on&&!h.hit&&Math.abs(x-h.x)<46*h.scale&&y>h.y-50*h.scale&&y<h.y+40*h.scale){
           const value=h.kind==='gold'?3:h.kind==='bomb'?-2:1;
           score=Math.max(0,score+value);h.hit=.2;hammer.kind=h.kind;effects.push({x:h.x,y:h.y-36,v:value,t:0});api.setScore(score);
           const sound=api.sound;
@@ -144,8 +168,8 @@
       destroy(){finished=true;effects=[];hammer=null;}
     };
   }
-  function drawPreview(c){const board=holes();for(let i=0;i<3;i++)Object.assign(board[i],{on:true,t:.5,dur:9,kind:['m','gold','bomb'][i]});draw(c,board,30,0,[],null,0,true,true);}
+  function drawPreview(c,size=3){const board=holes(size);for(let i=0;i<3;i++)Object.assign(board[i],{on:true,t:.5,dur:9,kind:['m','gold','bomb'][i]});draw(c,board,30,0,[],null,0,true,true);}
   function soundIcon(value){const muted=value==='🔇';return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>${muted?'<path d="m17 9 5 6m0-6-5 6"/>':'<path d="M17 8c3 2 3 6 0 8m2-11c5 4 5 10 0 14"/>'}</svg>`;}
   function hammerIcon(){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m11 10 7 9" stroke="#AE8250" stroke-width="4" stroke-linecap="round"/><rect x="4" y="3" width="14" height="8" rx="3" transform="rotate(-30 11 7)" fill="#D78B75"/><path d="m9 3 4 7" stroke="#F9DBC0" stroke-width="2"/></svg>';}
-  window.OjjudaMoleGame={create,drawPreview,soundIcon,hammerIcon};
+  window.OjjudaMoleGame={create,drawPreview,soundIcon,hammerIcon,rankingScore,rankingRecord};
 })();
