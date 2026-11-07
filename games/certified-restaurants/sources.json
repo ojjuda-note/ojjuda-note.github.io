@@ -1511,15 +1511,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3270,
+    "uniqueRestaurants": 3275,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2539,
+      "local-guide": 2544,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2218,
+    "coordinatesMissing": 2223,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1527,7 +1527,7 @@
       "충남": 64,
       "울산": 36,
       "경남": 320,
-      "강원": 61,
+      "강원": 66,
       "전북": 215,
       "경기": 402,
       "인천": 341,
@@ -1540,13 +1540,13 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1941,
+      "한식": 1945,
       "중식": 136,
       "일식": 136,
       "기타": 582,
       "양식": 212,
       "분식": 29,
-      "디저트": 234
+      "디저트": 235
     }
   },
   "coordinateEnrichment": {
@@ -12992,54 +12992,123 @@
         "기존 구리·평택 13곳 추가 기록 보존, 신규 7·기존 2 가이드 병합.",
         "별도 수치좌표 검증 실패 시 null 유지. 현재 영업과 인증 선정 별도."
       ]
+    },
+    {
+      "id": "2026-11-07-gangwon-slot50-five-official-tourism-introductions",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 50,
+      "previousCoverage": {
+        "uniqueRestaurants": 3270,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2539,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2218,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1941,
+          "중식": 136,
+          "일식": 136,
+          "기타": 582,
+          "양식": 212,
+          "분식": 29,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3275,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2544,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2223,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1945,
+          "중식": 136,
+          "일식": 136,
+          "기타": 582,
+          "양식": 212,
+          "분식": 29,
+          "디저트": 235
+        }
+      },
+      "newRestaurantCount": 5,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gangwon-slot50-chuncheon-sarang",
+        "local-gangwon-slot50-chuncheon-sigol",
+        "local-gangwon-slot50-chuncheon-nambu",
+        "local-gangwon-slot50-goseong-haegeumgang",
+        "local-gangwon-slot50-goseong-cheonghwang"
+      ],
+      "sourceUrls": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gangwon-slot50.json",
+      "scope": "강원특별자치도 공식 명단 대조 일부: 춘천시 관광포털 소개 3곳과 한국관광공사 2026년 8월 강원 고성군 미식 여행 소개 2곳. 블루리본·미쉐린 인증 및 현재 영업 상태를 확정하지 않음.",
+      "notes": [
+        "춘천시 개별 상세와 KTO 기사에 업소 상호·주소 명시. 발행·자료 확인일을 선정 연도로 오인하지 않음.",
+        "현재 주소·상호에 맞는 공개 숫자 좌표의 독립 검증이 없어 신규 5곳의 lat/lng=null 유지.",
+        "강원 전체 66곳 중 공개 좌표 10곳, 미등록 56곳. 5곳 신규 수록 외 남은 51곳은 위치 개별 재확인 이월.",
+        "공식 블루리본 전체 지도 링크 유지. 전체 명단을 전수 확인했다고 주장하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gyeonggi-slot49-guri-2026-designations-continuation",
+    "id": "2026-11-07-gangwon-slot50-five-official-tourism-introductions",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 49,
-    "continuationOf": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
+    "slot": 50,
     "previousCoverage": {
-      "uniqueRestaurants": 3263,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2532,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2211,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
-        "전북": 215,
-        "경기": 395,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1936,
-        "중식": 136,
-        "일식": 135,
-        "기타": 582,
-        "양식": 211,
-        "분식": 29,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3270,
       "providerCounts": {
         "michelin": 237,
@@ -13078,33 +13147,69 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 7,
-    "modificationCount": 2,
+    "currentCoverage": {
+      "uniqueRestaurants": 3275,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2544,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2223,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1945,
+        "중식": 136,
+        "일식": 136,
+        "기타": 582,
+        "양식": 212,
+        "분식": 29,
+        "디저트": 235
+      }
+    },
+    "newRestaurantCount": 5,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-guri-waguri2026-udon-kinoya",
-      "local-guri-waguri2026-damga-topyeong",
-      "local-guri-waguri2026-ilietto",
-      "local-guri-waguri2026-gilmok-gamjatang",
-      "local-guri-waguri2026-bongdam-shabu",
-      "local-guri-waguri2026-ossine-naengmyeon",
-      "local-guri-waguri2026-jangmi-hanwoo"
-    ],
-    "modifiedRestaurantIds": [
-      "local-guri-slot15-award26-seoulmaeuntang",
-      "local-gyeonggi-slot49-guri-yubaksa"
+      "local-gangwon-slot50-chuncheon-sarang",
+      "local-gangwon-slot50-chuncheon-sigol",
+      "local-gangwon-slot50-chuncheon-nambu",
+      "local-gangwon-slot50-goseong-haegeumgang",
+      "local-gangwon-slot50-goseong-cheonghwang"
     ],
     "sourceUrls": [
-      "https://www.guri.go.kr/www/contents.do?key=6016",
-      "https://www.guri.go.kr/www/selectBbsNttView.do?bbsNo=42&integrDeptCode=&key=393&nttNo=147993&pageIndex=12&searchCnd=all&searchCtgry=&searchKrwd="
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
+      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
+      "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-guri-slot15.json",
-    "secondarySupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
-    "scope": "1순환 49회차 이어하기: 경기도 구리시 2026 와구리맛집 9곳 공식 지정 명단",
+    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot50.json",
+    "scope": "강원특별자치도 공식 명단 대조 일부: 춘천시 관광포털 소개 3곳과 한국관광공사 2026년 8월 강원 고성군 미식 여행 소개 2곳. 블루리본·미쉐린 인증 및 현재 영업 상태를 확정하지 않음.",
     "notes": [
-      "기존 구리·평택 13곳 추가 기록 보존, 신규 7·기존 2 가이드 병합.",
-      "별도 수치좌표 검증 실패 시 null 유지. 현재 영업과 인증 선정 별도."
+      "춘천시 개별 상세와 KTO 기사에 업소 상호·주소 명시. 발행·자료 확인일을 선정 연도로 오인하지 않음.",
+      "현재 주소·상호에 맞는 공개 숫자 좌표의 독립 검증이 없어 신규 5곳의 lat/lng=null 유지.",
+      "강원 전체 66곳 중 공개 좌표 10곳, 미등록 56곳. 5곳 신규 수록 외 남은 51곳은 위치 개별 재확인 이월.",
+      "공식 블루리본 전체 지도 링크 유지. 전체 명단을 전수 확인했다고 주장하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -14189,6 +14294,24 @@
       "operatingStatusVerifiedCount": 0,
       "notExhaustive": true,
       "notes": "구리시 공식 2026 우수음식점 선정 명단의 업체명/주소. 기등록 2곳에 가이드만 합산, 영업상태 미확정. 서울매운탕 노포 동시 지정."
+    },
+    "municipalTourism20261107GangwonSlot50": {
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 50,
+      "region": "강원특별자치도",
+      "sources": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
+      ],
+      "sourceFile": "official-gangwon-slot50.json",
+      "newRestaurantCount": 5,
+      "changedRestaurantCount": 0,
+      "coordinateAddedCount": 0,
+      "completeRegionalCollection": false,
+      "selectionScope": "강원특별자치도 공식 관광음식점 일부 대조: 춘천시 3곳, 고성군 2곳. 선정 연도·현재 영업·수치 좌표 미검증. 강원 전체 목록이 아님."
     }
   },
   "mapCoverageAuditHistory": [
