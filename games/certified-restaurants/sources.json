@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-07",
+  "checkedAt": "2026-11-08",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -1511,15 +1511,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3291,
+    "uniqueRestaurants": 3294,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2560,
+      "local-guide": 2563,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2239,
+    "coordinatesMissing": 2242,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1537,15 +1537,15 @@
       "세종": 100,
       "대전": 110,
       "경북": 169,
-      "광주": 76
+      "광주": 79
     },
     "categoryCounts": {
-      "한식": 1955,
+      "한식": 1956,
       "중식": 137,
-      "일식": 138,
+      "일식": 139,
       "기타": 582,
       "양식": 212,
-      "분식": 30,
+      "분식": 31,
       "디저트": 237
     }
   },
@@ -13432,53 +13432,119 @@
         "공식 상세주소는 확인했으나 상호·지점 일치 공개 수치좌표 미검증으로 lat/lng null 유지.",
         "충남 이번 회차 누적 신규 10곳, 위치 확인 대기 58곳. 이미 기록한 6곳·84회차 순서 보존."
       ]
+    },
+    {
+      "id": "2026-11-08-jeonnamgwangju-slot54-three-gwangju-official-listed",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 54,
+      "previousCoverage": {
+        "uniqueRestaurants": 3291,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2560,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2239,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1955,
+          "중식": 137,
+          "일식": 138,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 237
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3294,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2563,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2242,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1956,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 212,
+          "분식": 31,
+          "디저트": 237
+        }
+      },
+      "newRestaurantCount": 3,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gwangju-slot54-1365",
+        "local-gwangju-slot54-1313",
+        "local-gwangju-slot54-1069"
+      ],
+      "sourceUrls": [
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gwangju-slot28.json",
+      "scope": "전남광주통합특별시 도·광역 대조: 구 광주관광 공식 상세 3곳(동구2·서구1)을 개별 확인. 통합 광역 공식 관광 신사이트와 기존 목포·나주 자료는 검색 후보로 확인했지만 전체 목록은 미완료.",
+      "notes": [
+        "기존 광주 공식 추천식당 7곳의 기록 보존. 가매일식 2025년 맛집 표기는 수록연도 표시로 구분, 다른 2곳 연도 미추정.",
+        "3곳의 주소는 공식 관광 상세와 일치하지만 상호·지점 대응 숫자좌표 미확보로 null 유지. 영업·폐업 추정 안 함.",
+        "2026-11-07 23시 전북 53회차 감사 기록은 main에서 발견되지 않아 다음 순환 재확인 이월. 회원 추천 불변."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-chungnam-slot52-continuation-four-tourism-baeknyeon",
-    "checkedAt": "2026-11-07",
+    "id": "2026-11-08-jeonnamgwangju-slot54-three-gwangju-official-listed",
+    "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 52,
+    "slot": 54,
     "previousCoverage": {
-      "uniqueRestaurants": 3287,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2556,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2235,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 223,
-        "충남": 70,
-        "울산": 36,
-        "경남": 320,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1953,
-        "중식": 136,
-        "일식": 138,
-        "기타": 582,
-        "양식": 212,
-        "분식": 30,
-        "디저트": 236
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3291,
       "providerCounts": {
         "michelin": 237,
@@ -13517,28 +13583,65 @@
         "디저트": 237
       }
     },
-    "newRestaurantCount": 4,
+    "currentCoverage": {
+      "uniqueRestaurants": 3294,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2563,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2242,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 74,
+        "울산": 36,
+        "경남": 320,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1956,
+        "중식": 137,
+        "일식": 139,
+        "기타": 582,
+        "양식": 212,
+        "분식": 31,
+        "디저트": 237
+      }
+    },
+    "newRestaurantCount": 3,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungnam-slot52-cheonan-oksusa",
-      "local-chungnam-slot52-cheonan-dupain",
-      "local-chungnam-slot52-cheongyang-bibong-sashimi",
-      "local-chungnam-slot52-yesan-dongheung"
+      "local-gwangju-slot54-1365",
+      "local-gwangju-slot54-1313",
+      "local-gwangju-slot54-1069"
     ],
     "sourceUrls": [
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot52.json",
-    "scope": "충남관광 공식 음식점 상세의 [백년가게] 표기·상호·주소를 천안 2·청양 1·예산 1 대조, 기존 선정6곳과 중복 없이 추가. 충남 전수 대조 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-gwangju-slot28.json",
+    "scope": "전남광주통합특별시 도·광역 대조: 구 광주관광 공식 상세 3곳(동구2·서구1)을 개별 확인. 통합 광역 공식 관광 신사이트와 기존 목포·나주 자료는 검색 후보로 확인했지만 전체 목록은 미완료.",
     "notes": [
-      "백년가게 공개 관광포털 수록 사실만 기록. 개별 지정 연도/현재 영업/블루리본 리본 등급 미확인.",
-      "공식 상세주소는 확인했으나 상호·지점 일치 공개 수치좌표 미검증으로 lat/lng null 유지.",
-      "충남 이번 회차 누적 신규 10곳, 위치 확인 대기 58곳. 이미 기록한 6곳·84회차 순서 보존."
+      "기존 광주 공식 추천식당 7곳의 기록 보존. 가매일식 2025년 맛집 표기는 수록연도 표시로 구분, 다른 2곳 연도 미추정.",
+      "3곳의 주소는 공식 관광 상세와 일치하지만 상호·지점 대응 숫자좌표 미확보로 null 유지. 영업·폐업 추정 안 함.",
+      "2026-11-07 23시 전북 53회차 감사 기록은 main에서 발견되지 않아 다음 순환 재확인 이월. 회원 추천 불변."
     ]
   },
   "latestMapCoverageAudit": {
@@ -14641,6 +14744,29 @@
       "coordinateAddedCount": 0,
       "completeRegionalCollection": false,
       "selectionScope": "강원특별자치도 공식 관광음식점 일부 대조: 춘천시 3곳, 고성군 2곳. 선정 연도·현재 영업·수치 좌표 미검증. 강원 전체 목록이 아님."
+    },
+    "municipalTourism20261108JeonnamGwangjuSlot54": {
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 54,
+      "sourceFile": "official-gwangju-slot28.json",
+      "regionalScope": "전남광주통합특별시 광주 동구2·서구1. 광주 5개 구·옛 전남 전수 대조는 미완료.",
+      "addedCount": 3,
+      "restaurantIds": [
+        "local-gwangju-slot54-1365",
+        "local-gwangju-slot54-1313",
+        "local-gwangju-slot54-1069"
+      ],
+      "sourceUrls": [
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
+        "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069"
+      ],
+      "sourceYearPolicy": "가매일식의 2025년 맛집은 관광포털 수록표기 연도. 정부 선정 연도/블루리본 리본판본과 구분.",
+      "locationPending": 3,
+      "coordinateVerified": 0,
+      "currentOperatingStatusVerified": 0,
+      "missedSlot53": "2026-11-07T23:00+09:00 1/53 기록 부재; 다음 순환 동일 회차 재확인 대상"
     }
   },
   "mapCoverageAuditHistory": [
