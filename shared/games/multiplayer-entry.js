@@ -3,7 +3,7 @@
   'use strict';
   const paths = new Set(['/games/roulette/index.html','/games/bang/index.html','/games/poker/index.html','/games/tank/index.html','/games/ojjuda-tour/index.html','/games/ttang.html','/games/matgo-online.html','/games/matgo.html']);
   const game = paths.has(location.pathname), embedded = parent !== window, frames = new Map();
-  let queued = false, previous;
+  let queued = false, previous, observer = null, scheduledFrame = 0, disposed = false;
   const visible = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
   function toolbar(close) {
     const bar = document.createElement('header'); bar.className = 'mp-entry-bar';
@@ -24,7 +24,11 @@
     if (host.dataset.mpActive !== String(active)) host.dataset.mpActive = String(active);
   }
   function mount() {
-    for (const [frame, item] of frames) if (!frame.isConnected) { item.bar.remove(); frames.delete(frame); }
+    if (!document.body) return;
+    for (const [frame, item] of frames) if (!frame.isConnected) {
+      frame.removeEventListener('load',item.query);
+      item.bar.remove(); frames.delete(frame);
+    }
     document.querySelectorAll('.mp-board-host').forEach(host => {
       if (host.querySelector('.ge-board-entry')) return;
       host.querySelector(':scope > .mp-entry-bar')?.remove();
@@ -43,6 +47,7 @@
       host.classList.add('mp-entry-host'); host.prepend(bar); frames.set(frame,{host,bar}); setView(host,true);
       if (document.activeElement === original) bar.querySelector('button').focus({preventScroll:true});
       const query = () => frame.contentWindow?.postMessage({type:'ojjuda:entry:query'},location.origin);
+      frames.get(frame).query=query;
       frame.addEventListener('load',query); query();
     });
     document.querySelectorAll('.ge-board-entry').forEach(card => {
@@ -57,6 +62,7 @@
     });
   }
   function report(force = false) {
+    if (!document.body) return;
     const cards = [...document.querySelectorAll('.game-entry')]; cards.forEach(decorate);
     const active = document.body.hasAttribute('data-mp-entry-pending') || cards.some(visible); if (!force && previous === active) return;
     const wasEntry = previous; previous = active; document.body.dataset.mpEntry = String(active);
@@ -66,10 +72,19 @@
     if (embedded) parent.postMessage({type:'ojjuda:entry:view',active},location.origin);
     else if (!document.querySelector('body > .mp-entry-bar')) document.body.prepend(toolbar(() => location.assign('/world.html')));
   }
-  function update() { queued = false; if (game) report(); else mount(); }
+  function update() {
+    queued = false; scheduledFrame = 0;
+    if (disposed || !document.body) return;
+    if (game) report(); else mount();
+  }
   // Matgo screens must adopt entrance styles before the browser paints the
   // newly rendered card. A later animation frame briefly exposes the board.
-  function schedule() { if (!queued) { queued = true; if (game && location.pathname.startsWith('/games/matgo')) queueMicrotask(update); else requestAnimationFrame(update); } }
+  function schedule() {
+    if (disposed || !document.body || queued) return;
+    queued = true;
+    if (game && location.pathname.startsWith('/games/matgo')) queueMicrotask(update);
+    else scheduledFrame = requestAnimationFrame(update);
+  }
   const hostSelector = '.ge-board-entry,.mp-board-host,.tour-game-dialog,.roulette-game-dialog,#ttang-overlay,#matgo-overlay';
   function entranceChanged(records) {
     if (game) return true;
@@ -81,13 +96,25 @@
     });
   }
   addEventListener('message',event => {
-    if (event.origin !== location.origin) return;
+    if (disposed || !document.body || event.origin !== location.origin) return;
     if (game) { if (event.source === parent && event.data?.type === 'ojjuda:entry:query') report(true); return; }
     if (event.data?.type !== 'ojjuda:entry:view' || typeof event.data.active !== 'boolean') return;
     for (const [frame,{host}] of frames) if (event.source === frame.contentWindow) { setView(host,event.data.active); break; }
   });
   function start() {
-    new MutationObserver(records => { if (entranceChanged(records)) schedule(); }).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','data-mp-entry-pending']}); update();
+    if (disposed || observer || !document.body) return;
+    observer = new MutationObserver(records => { if (entranceChanged(records)) schedule(); });
+    observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','data-mp-entry-pending']});
+    update();
   }
+  addEventListener('pagehide',() => {
+    disposed = true;
+    observer?.disconnect(); observer = null;
+    if (scheduledFrame) cancelAnimationFrame(scheduledFrame);
+    scheduledFrame = 0; queued = false;
+    for (const [frame,item] of frames) {frame.removeEventListener('load',item.query);item.bar.remove();}
+    frames.clear();
+  });
+  addEventListener('pageshow',() => {if (disposed) {disposed = false;start();}});
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
