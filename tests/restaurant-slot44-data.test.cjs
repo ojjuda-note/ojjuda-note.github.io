@@ -86,10 +86,13 @@ for (const candidate of seogwipo.locationEnrichments) {
   assert.match(candidate.coordinateSource.url, /^https:\/\/www\.visitjeju\.net\/kr\/detail\/view\?contentsid=(?:CNTS_|CONT_)/);
   assert.equal(candidate.coordinateSource.checkedAt, '2026-11-07');
 }
-assert.equal(sources.coverage.coordinatesAvailable, 1051);
-assert.equal(sources.coverage.coordinatesMissing, 2199);
-assert.equal(audit.active.cycle, 1); assert.equal(audit.active.slot, 48);
-assert.equal(audit.entries.at(-1).locationPending, 17);
+const seogwipoCoverage = sources.mapCoverageAuditHistory.find(item => item.cycle === 1 && item.slot === 48);
+assert.ok(seogwipoCoverage, 'the original slot48 official coordinate reconciliation remains preserved');
+assert.equal(seogwipoCoverage.currentCoverage.coordinatesAvailable, 1051);
+assert.equal(seogwipoCoverage.currentCoverage.coordinatesMissing, 2199);
+const slot48 = audit.entries.find(item => item.cycle === 1 && item.slot === 48);
+assert.ok(slot48, 'later slots must retain prior slot48 audit');
+assert.equal(slot48.locationPending, 17);
 assert.ok(app.includes('slot48Seogwipo.locationEnrichments'), 'the live app uses verified overlay');
-assert.ok(assets.includes("restaurants:'1.11.6'"), 'the game version updates without changing agit release');
+assert.match(assets, /restaurants:'\d+\.\d+\.\d+'/, 'the restaurant game has an independent release version');
 console.log('restaurant slot44 Jinju/Sacheon official listing and location checks passed');
