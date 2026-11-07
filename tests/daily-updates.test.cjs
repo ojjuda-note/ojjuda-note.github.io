@@ -58,3 +58,19 @@ test('unread popups expire at the next midnight, including deferred/offline noti
  const f=setup({block:true});try{await tick();assert.ok(!f.dialog.open);f.state.now='2026-11-06T15:00:00Z';f.state.block=false;f.api.sync();await tick();assert.ok(!f.dialog.open,'an expired deferred notice never opens');}finally{f.close();}
  const open=setup();try{await tick();assert.ok(open.dialog.open);open.state.now='2026-11-06T15:00:00Z';open.api.sync();assert.ok(!open.dialog.open,'open notice closes at expiry without needing the network');}finally{open.close();}
 });
+
+test('failed notice queries are not retried for every DOM update',async()=>{
+ const f=setup({rpc:async name=>name==='get_daily_update_notice'?{error:Error('offline')}:{data:true}});
+ try{
+  await tick();
+  const reads=()=>f.state.requests.filter(r=>r.name==='get_daily_update_notice').length;
+  assert.equal(reads(),1);
+  for(let i=0;i<25;i++)f.w.document.getElementById('app').append(f.w.document.createElement('span'));
+  await tick();assert.equal(reads(),1,'page updates do not hammer a failed RPC');
+  f.state.now=new Date(Date.parse(f.state.now)+60001).toISOString();
+  f.w.document.getElementById('app').append(f.w.document.createElement('span'));
+  await tick();assert.equal(reads(),2,'a retry is allowed after one minute');
+  f.state.user='member-b';f.api.sync();await tick();
+  assert.equal(reads(),3,'account changes check the new member immediately');
+ }finally{f.close();}
+});

@@ -70,6 +70,16 @@
   // Matgo screens must adopt entrance styles before the browser paints the
   // newly rendered card. A later animation frame briefly exposes the board.
   function schedule() { if (!queued) { queued = true; if (game && location.pathname.startsWith('/games/matgo')) queueMicrotask(update); else requestAnimationFrame(update); } }
+  const hostSelector = '.ge-board-entry,.mp-board-host,.tour-game-dialog,.roulette-game-dialog,#ttang-overlay,#matgo-overlay';
+  function entranceChanged(records) {
+    if (game) return true;
+    return records.some(record => {
+      if (record.type === 'attributes') return record.target.matches?.(hostSelector);
+      if (record.target.closest?.(hostSelector)) return true;
+      return [...record.addedNodes,...record.removedNodes].some(node => node.nodeType === 1 &&
+        (node.matches?.(hostSelector) || node.querySelector?.(hostSelector)));
+    });
+  }
   addEventListener('message',event => {
     if (event.origin !== location.origin) return;
     if (game) { if (event.source === parent && event.data?.type === 'ojjuda:entry:query') report(true); return; }
@@ -77,7 +87,7 @@
     for (const [frame,{host}] of frames) if (event.source === frame.contentWindow) { setView(host,event.data.active); break; }
   });
   function start() {
-    new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','data-mp-entry-pending']}); update();
+    new MutationObserver(records => { if (entranceChanged(records)) schedule(); }).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','data-mp-entry-pending']}); update();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
