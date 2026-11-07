@@ -111,7 +111,7 @@ function fixture(options = {}) {
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
     if (/\/official-[^/]+\.json$/.test(url.pathname)) {
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
-      return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [], guideEnrichments: [] }) };
+      return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [] }) };
     }
     assert.ok(url.pathname.endsWith('/restaurants.json'), 'the app fetches only the catalog and approved supplements'); calls.data++;
     return { ok: !(options.failOnce && calls.data === 1), status: options.failOnce && calls.data === 1 ? 503 : 200, json: async () => structuredClone(options.dataset || dataset) };
