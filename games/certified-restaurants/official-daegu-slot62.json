@@ -1,0 +1,160 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 62,
+  "sourceName": "대구광역시 대구푸드 · 구군별 인증업소",
+  "sourceUrls": [
+    "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
+    "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+    "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+    "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+    "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+    "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "restaurantBranchNote": "연화정삼계탕은 대구 달서구 본점과 별개인 달성군 논공읍 직영점. 동일 업소로 합치지 않음.",
+  "restaurants": [
+    {
+      "id": "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+      "name": "연화정삼계탕",
+      "category": "한식",
+      "region": "대구",
+      "district": "달성군",
+      "address": "대구광역시 달성군 논공읍 비슬로 1596",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 구군별 인증업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+          "sourceName": "대구광역시 · 대구푸드 공식 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "대구시 공식 대구푸드의 구군별 인증업소 목록에 상호·도로명주소 수록. 개별 인증 유형·지정 연도, 현재 영업 및 정규 블루리본 등급은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-daegu-slot62-dalseong-toseokjeong",
+      "name": "토석정한식전문점",
+      "category": "한식",
+      "region": "대구",
+      "district": "달성군",
+      "address": "대구광역시 달성군 구지면 구지동로12길 36",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 구군별 인증업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+          "sourceName": "대구광역시 · 대구푸드 공식 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "대구시 공식 대구푸드의 구군별 인증업소 목록에 상호·도로명주소 수록. 개별 인증 유형·지정 연도, 현재 영업 및 정규 블루리본 등급은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-daegu-slot62-dalseong-daeseong-eel",
+      "name": "대성장어",
+      "category": "한식",
+      "region": "대구",
+      "district": "달성군",
+      "address": "대구광역시 달성군 하빈면 하목정길 53",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 구군별 인증업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+          "sourceName": "대구광역시 · 대구푸드 공식 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "대구시 공식 대구푸드의 구군별 인증업소 목록에 상호·도로명주소 수록. 개별 인증 유형·지정 연도, 현재 영업 및 정규 블루리본 등급은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+      "name": "달성횟집(달성횟집식당)",
+      "category": "한식",
+      "region": "대구",
+      "district": "달성군",
+      "address": "대구광역시 달성군 유가읍 달창로26길 162",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 구군별 인증업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+          "sourceName": "대구광역시 · 대구푸드 공식 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "대구시 공식 대구푸드의 구군별 인증업소 목록에 상호·도로명주소 수록. 개별 인증 유형·지정 연도, 현재 영업 및 정규 블루리본 등급은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-daegu-slot62-dalseong-palsu",
+      "name": "팔수식당",
+      "category": "한식",
+      "region": "대구",
+      "district": "달성군",
+      "address": "대구광역시 달성군 가창면 가창로176길 21",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구푸드 구군별 인증업소 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8",
+          "sourceName": "대구광역시 · 대구푸드 공식 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "대구시 공식 대구푸드의 구군별 인증업소 목록에 상호·도로명주소 수록. 개별 인증 유형·지정 연도, 현재 영업 및 정규 블루리본 등급은 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}

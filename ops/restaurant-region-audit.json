@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 61,
-    "scheduledAt": "2026-11-08T07:00:00+09:00",
+    "slot": 62,
+    "scheduledAt": "2026-11-08T08:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "자동화 실행 관측 2026-11-08 07:56 KST; 예약 기준 07시 정각으로 내림. 기준시각 2026-11-05 23시부터 56시간 경과로 h=56,n=60,slot61,cycle1"
+    "source": "예정된 매시 정각 08:00 KST 사용. 관측 08:23 KST; 기준점 2026-11-05T23:00+09:00에서 h=57,n=61,slot62."
   },
   "entries": [
     {
@@ -58973,6 +58973,545 @@
         "대구광역시 군위군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 62,
+      "scheduledAtKST": "2026-11-08T08:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_daegu_dalseong_five_additions_no_verified_coordinates",
+      "assignedRegions": [
+        "대구광역시 달성군",
+        "대구광역시 군위군"
+      ],
+      "regionAudit": [
+        {
+          "region": "대구광역시 달성군",
+          "baseListedCount": 13,
+          "listedCountAfter": 18,
+          "actuallyChecked": [
+            "기존 데이터상 달성군 13곳 좌표 미등록 확인",
+            "대구광역시 대구푸드 구군별 인증업소 안내에서 상호·도로명주소 일치 5곳 선별·중복 대조",
+            "연화정삼계탕 논공읍 직영점과 달서구 별도 본점의 주소·지점 구분",
+            "대구푸드 공식 개별 상세 페이지의 상호·도로명주소·대표메뉴 확인"
+          ],
+          "remainingAreas": [
+            "기존 13곳+신규 5곳의 정확한 업소 직접 지도 수치좌표 재검증",
+            "구군별 인증업소 전체 및 블루리본 별도 공식 명단 전수 대조 미완료",
+            "과거 소개에 대한 영업상태·이전·폐업 개별 확인 미완료"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "대구광역시 군위군",
+          "baseListedCount": 5,
+          "listedCountAfter": 5,
+          "actuallyChecked": [
+            "기존 데이터 군위군 5곳 모두 위경도 null 확인",
+            "대구푸드 구군별 인증업소 군위군 공개 필터 0건을 해당 자료에 한해 확인"
+          ],
+          "remainingAreas": [
+            "군위군 5곳의 업소 직접 좌표, 현주소, 영업 상태 재검증",
+            "군위군청·대구관광·우체국·블루리본 별도 명단 발굴; 0건 필터는 지역 식당 0곳을 뜻하지 않음"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "대구광역시 대구푸드 구군별 인증업소 목록·식당 상세페이지",
+        "대구광역시 2026 대구음식점 E-Book의 기존 식당 데이터(2025년8월 수록 기준)"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 23,
+      "locationPendingScope": "기존 18곳(달성군13·군위군5)+신규 달성군5; 단순 null 탐지는 좌표 교차 검증 완료가 아님.",
+      "addedRestaurantIds": [
+        "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+        "local-daegu-slot62-dalseong-toseokjeong",
+        "local-daegu-slot62-dalseong-daeseong-eel",
+        "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+        "local-daegu-slot62-dalseong-palsu"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-daegu-guide-f0509c061890fb09",
+          "name": "산정논메기매운탕",
+          "currentAddress": "대구광역시 달성군 다사읍 달구벌대로109길 142-13",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 산정논메기매운탕",
+            "산정논메기매운탕 대구광역시 달성군 다사읍 달구벌대로109길 142-13",
+            "대구 달성군 산정논메기매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-880afc388a3775fa",
+          "name": "손중헌원조논메기매운탕",
+          "currentAddress": "대구광역시 달성군 다사읍 부곡2길 7-5",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 손중헌원조논메기매운탕",
+            "손중헌원조논메기매운탕 대구광역시 달성군 다사읍 부곡2길 7-5",
+            "대구 달성군 손중헌원조논메기매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-ad1e167ec3e6799f",
+          "name": "낙동식당",
+          "currentAddress": "대구광역시 달성군 다사읍 달구벌대로92길 88",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 낙동식당",
+            "낙동식당 대구광역시 달성군 다사읍 달구벌대로92길 88",
+            "대구 달성군 낙동식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-1c2923db660b51f9",
+          "name": "커리킹덤",
+          "currentAddress": "대구광역시 달성군 유가읍 테크노공원로 65, 3층",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 커리킹덤",
+            "커리킹덤 대구광역시 달성군 유가읍 테크노공원로 65, 3층",
+            "대구 달성군 커리킹덤"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-59264f1117d47ffb",
+          "name": "한닢",
+          "currentAddress": "대구광역시 달성군 다사읍 세천로 111",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 한닢",
+            "한닢 대구광역시 달성군 다사읍 세천로 111",
+            "대구 달성군 한닢"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-b489a8f60d0ea744",
+          "name": "기프(giv)",
+          "currentAddress": "대구광역시 달성군 옥포읍 옥포로57길 21-18",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 기프(giv)",
+            "기프(giv) 대구광역시 달성군 옥포읍 옥포로57길 21-18",
+            "대구 달성군 기프(giv)"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-276aeaedbf84a0f3",
+          "name": "원조현풍박소선할매집곰탕",
+          "currentAddress": "대구광역시 달성군 현풍읍 현풍중앙로 56-1",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 원조현풍박소선할매집곰탕",
+            "원조현풍박소선할매집곰탕 대구광역시 달성군 현풍읍 현풍중앙로 56-1",
+            "대구 달성군 원조현풍박소선할매집곰탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-fabf5dc150dbdb75",
+          "name": "예가수제순대",
+          "currentAddress": "대구광역시 달성군 현풍읍 현풍동로 95",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 예가수제순대",
+            "예가수제순대 대구광역시 달성군 현풍읍 현풍동로 95",
+            "대구 달성군 예가수제순대"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-53b5ebf231b3559f",
+          "name": "냄비집소머리국밥",
+          "currentAddress": "대구광역시 달성군 논공읍 비슬로 1556",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 냄비집소머리국밥",
+            "냄비집소머리국밥 대구광역시 달성군 논공읍 비슬로 1556",
+            "대구 달성군 냄비집소머리국밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-720084d582a8966e",
+          "name": "밀양돼지국밥",
+          "currentAddress": "대구광역시 군위군 군위읍 중앙4길 16-8",
+          "region": "대구광역시 군위군",
+          "searchAliases": [
+            "대구광역시 군위군 밀양돼지국밥",
+            "밀양돼지국밥 대구광역시 군위군 군위읍 중앙4길 16-8",
+            "대구 군위군 밀양돼지국밥"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-19b8572fc081f64e",
+          "name": "진빼이수구레",
+          "currentAddress": "대구광역시 달성군 화원읍 비슬로516길 48",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 진빼이수구레",
+            "진빼이수구레 대구광역시 달성군 화원읍 비슬로516길 48",
+            "대구 달성군 진빼이수구레"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-71d68cce9c0f70a3",
+          "name": "시장닭발",
+          "currentAddress": "대구광역시 군위군 군위읍 중앙5길 12-8",
+          "region": "대구광역시 군위군",
+          "searchAliases": [
+            "대구광역시 군위군 시장닭발",
+            "시장닭발 대구광역시 군위군 군위읍 중앙5길 12-8",
+            "대구 군위군 시장닭발"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-63fdfbe6e7594ac4",
+          "name": "장군이족발",
+          "currentAddress": "대구광역시 군위군 군위읍 중앙5길 12-8",
+          "region": "대구광역시 군위군",
+          "searchAliases": [
+            "대구광역시 군위군 장군이족발",
+            "장군이족발 대구광역시 군위군 군위읍 중앙5길 12-8",
+            "대구 군위군 장군이족발"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-e8c7bfd6b2faecb5",
+          "name": "웜브리즈",
+          "currentAddress": "대구광역시 달성군 옥포읍 명곡로 579",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 웜브리즈",
+            "웜브리즈 대구광역시 달성군 옥포읍 명곡로 579",
+            "대구 달성군 웜브리즈"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-1c827b3d3469d274",
+          "name": "묘운",
+          "currentAddress": "대구광역시 달성군 하빈면 육신사길 34",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 묘운",
+            "묘운 대구광역시 달성군 하빈면 육신사길 34",
+            "대구 달성군 묘운"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-aa498b6b618c3342",
+          "name": "오퐁드부아",
+          "currentAddress": "대구광역시 달성군 가창면 주리2길 104",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 오퐁드부아",
+            "오퐁드부아 대구광역시 달성군 가창면 주리2길 104",
+            "대구 달성군 오퐁드부아"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-2a314ba819925406",
+          "name": "카페우즈",
+          "currentAddress": "대구광역시 군위군 부계면 한티로 2034",
+          "region": "대구광역시 군위군",
+          "searchAliases": [
+            "대구광역시 군위군 카페우즈",
+            "카페우즈 대구광역시 군위군 부계면 한티로 2034",
+            "대구 군위군 카페우즈"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-guide-392efeb962616ec8",
+          "name": "카페댐댐",
+          "currentAddress": "대구광역시 군위군 삼국유사면 삼국유사로 438-16",
+          "region": "대구광역시 군위군",
+          "searchAliases": [
+            "대구광역시 군위군 카페댐댐",
+            "카페댐댐 대구광역시 군위군 삼국유사면 삼국유사로 438-16",
+            "대구 군위군 카페댐댐"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/data/2026_daegufood_ebook_kor.pdf"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "기존 2025년판 대구 음식점 가이드북 업소 자료의 lat/lng null 확인. 이번 회차 개별 공개 지도 수치좌표 및 현재 영업 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+          "name": "연화정삼계탕",
+          "currentAddress": "대구광역시 달성군 논공읍 비슬로 1596",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 연화정삼계탕",
+            "연화정삼계탕 대구광역시 달성군 논공읍 비슬로 1596",
+            "대구 달성군 연화정삼계탕"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "대구시 공식 음식점 명단에서 상호·도로명주소 대조. 지도 직접 수치좌표 미확보, 현재 영업 미확정.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-slot62-dalseong-toseokjeong",
+          "name": "토석정한식전문점",
+          "currentAddress": "대구광역시 달성군 구지면 구지동로12길 36",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 토석정한식전문점",
+            "토석정한식전문점 대구광역시 달성군 구지면 구지동로12길 36",
+            "대구 달성군 토석정한식전문점"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "대구시 공식 음식점 명단에서 상호·도로명주소 대조. 지도 직접 수치좌표 미확보, 현재 영업 미확정.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-slot62-dalseong-daeseong-eel",
+          "name": "대성장어",
+          "currentAddress": "대구광역시 달성군 하빈면 하목정길 53",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 대성장어",
+            "대성장어 대구광역시 달성군 하빈면 하목정길 53",
+            "대구 달성군 대성장어"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "대구시 공식 음식점 명단에서 상호·도로명주소 대조. 지도 직접 수치좌표 미확보, 현재 영업 미확정.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+          "name": "달성횟집(달성횟집식당)",
+          "currentAddress": "대구광역시 달성군 유가읍 달창로26길 162",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 달성횟집(달성횟집식당)",
+            "달성횟집(달성횟집식당) 대구광역시 달성군 유가읍 달창로26길 162",
+            "대구 달성군 달성횟집(달성횟집식당)"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "대구시 공식 음식점 명단에서 상호·도로명주소 대조. 지도 직접 수치좌표 미확보, 현재 영업 미확정.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        },
+        {
+          "restaurantId": "local-daegu-slot62-dalseong-palsu",
+          "name": "팔수식당",
+          "currentAddress": "대구광역시 달성군 가창면 가창로176길 21",
+          "region": "대구광역시 달성군",
+          "searchAliases": [
+            "대구광역시 달성군 팔수식당",
+            "팔수식당 대구광역시 달성군 가창면 가창로176길 21",
+            "대구 달성군 팔수식당"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 62,
+          "checkResult": "대구시 공식 음식점 명단에서 상호·도로명주소 대조. 지도 직접 수치좌표 미확보, 현재 영업 미확정.",
+          "reason": "상호·지점·현 주소에 일치하고 출처가 명시된 수치 위·경도 교차 확인 미완료"
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "달성·군위 위치 미확인 23곳",
+          "reason": "이름·현주소 일치 공개 숫자 좌표를 모두 확보하지 못함",
+          "action": "2순환 62회차에서 오래된 미확인부터 업소·지도 출처 대조"
+        },
+        {
+          "topic": "군위군 공식 신규 누락",
+          "reason": "현재 대구푸드 공개 구군별 인증업소 필터 군위 0건이지만 다른 공식 기관 명단은 별도 조사 필요",
+          "action": "군위군청/관광/우체국 선정과 주소 추가 대조"
+        },
+        {
+          "topic": "정규 블루리본/영업상태",
+          "reason": "이번 확인 자료에 개별 정규 리본 등급·현재 영업 공고 없음",
+          "action": "미확인 유지; 선정 취소·폐업으로 판단 금지"
+        }
+      ],
+      "carryOver": [
+        "전북특별자치도 1순환 53회차 정규 조사 기록 누락은 기존 이월 유지",
+        "제주 57회차 미완료와 대전·세종 60회차 위치 102곳, 인천 61회차 32곳 기존 이월 유지",
+        "달성·군위 신규 발굴 및 기존 위치 누락 23건 다음 2순환 62회차 우선 재확인"
+      ],
+      "nextSlot": 63,
+      "nextRegions": [
+        "부산광역시 기장군",
+        "울산광역시 울주군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -58998,6 +59537,7 @@
     "2026-11-08 04시 1/58 서울·인천: 공식 관광기관 블루리본 이력 2곳 신규, 인천 기존2 확인, 좌표추가0·노출제외0·위치재확인 대기643, 1/53·1/57 이월. 회원 추천 불변.",
     "2026-11-08 05시 1/59 부산·대구·울산 공식 3곳 추가; 위치0·제외0·재확인 대기426, 전북53 등 이월, 회원 추천 불변.",
     "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변.",
-    "2026-11-08 07시 1/61 강화군·옹진군: 공식 관광 음식점 4곳 추가, 기존 좌표 누락 28곳과 신규 4곳 재확인 대기32; 위치보강0·비노출0. 옹진 백령면만 일부 확인, 전북53·제주57 이월, 회원 추천 불변. 편가네된장 공식 주소 1건 교정."
+    "2026-11-08 07시 1/61 강화군·옹진군: 공식 관광 음식점 4곳 추가, 기존 좌표 누락 28곳과 신규 4곳 재확인 대기32; 위치보강0·비노출0. 옹진 백령면만 일부 확인, 전북53·제주57 이월, 회원 추천 불변. 편가네된장 공식 주소 1건 교정.",
+    "2026-11-08 08시 1/62 대구 달성·군위: 대구푸드 공식 달성군 5곳 추가·수정0·위치0·비노출0, 기존18 및 신규5 좌표 미확인 총23 이월. 군위군 별도 명단 미완료, 전북53·제주57 등 기존 이월 보존, 회원 추천 불변."
   ]
 }
