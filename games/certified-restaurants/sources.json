@@ -1502,14 +1502,14 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3249,
+    "uniqueRestaurants": 3250,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2518,
+      "local-guide": 2519,
       "post-office": 240
     },
-    "coordinatesAvailable": 1040,
+    "coordinatesAvailable": 1041,
     "coordinatesMissing": 2209,
     "regionalCounts": {
       "서울": 351,
@@ -1517,7 +1517,7 @@
       "충북": 217,
       "충남": 64,
       "울산": 36,
-      "경남": 319,
+      "경남": 320,
       "강원": 61,
       "전북": 215,
       "경기": 382,
@@ -1531,7 +1531,7 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1926,
+      "한식": 1927,
       "중식": 134,
       "일식": 135,
       "기타": 581,
@@ -12430,53 +12430,120 @@
         "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
         "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
       ]
+    },
+    {
+      "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 44,
+      "previousCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1040,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1041,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 1,
+      "modificationCount": 1,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "newRestaurantIds": [
+        "local-sacheon-slot44-samcheonpo-jeongseobang"
+      ],
+      "modifiedRestaurantIds": [
+        "post-2026-45-0-0"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
+      "sourceUrls": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+        "https://trip.happynowinfo.com/place/2546530/",
+        "https://smi.purpleo.kr/article/19209",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+      ],
+      "notes": [
+        "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
+        "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
+        "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-busan-slot41-michelin-map-eight",
+    "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 41,
+    "slot": 44,
     "previousCoverage": {
-      "uniqueRestaurants": 3249,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2518,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2217,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1926,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3249,
       "providerCounts": {
         "michelin": 237,
@@ -12515,82 +12582,74 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 0,
-    "modificationCount": 8,
-    "coordinateAddedCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3250,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2519,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1041,
+      "coordinatesMissing": 2209,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1927,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 1,
+    "modificationCount": 1,
+    "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
-    "modifiedRestaurantIds": [
-      "anmok",
-      "jeongjitgan",
-      "l-essence",
-      "hanwolgwan",
-      "meerok-super",
-      "eonyang-bulgogi-busanjip",
-      "post-2026-24-0-1",
-      "jin-dweji-gomtang"
+    "newRestaurantIds": [
+      "local-sacheon-slot44-samcheonpo-jeongseobang"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+    "modifiedRestaurantIds": [
+      "post-2026-45-0-0"
+    ],
+    "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
     "sourceUrls": [
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+      "https://trip.happynowinfo.com/place/2546530/",
+      "https://smi.purpleo.kr/article/19209",
+      "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
     ],
     "notes": [
-      "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
-      "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
-      "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
+      "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
+      "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
+      "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
     ]
   },
   "latestMapCoverageAudit": {
-    "id": "2026-11-07-busan-slot41-michelin-map-eight",
+    "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 41,
+    "slot": 44,
     "previousCoverage": {
-      "uniqueRestaurants": 3249,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2518,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2217,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1926,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3249,
       "providerCounts": {
         "michelin": 237,
@@ -12629,37 +12688,68 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 0,
-    "modificationCount": 8,
-    "coordinateAddedCount": 8,
+    "currentCoverage": {
+      "uniqueRestaurants": 3250,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2519,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1041,
+      "coordinatesMissing": 2209,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1927,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 1,
+    "modificationCount": 1,
+    "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
-    "modifiedRestaurantIds": [
-      "anmok",
-      "jeongjitgan",
-      "l-essence",
-      "hanwolgwan",
-      "meerok-super",
-      "eonyang-bulgogi-busanjip",
-      "post-2026-24-0-1",
-      "jin-dweji-gomtang"
+    "newRestaurantIds": [
+      "local-sacheon-slot44-samcheonpo-jeongseobang"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+    "modifiedRestaurantIds": [
+      "post-2026-45-0-0"
+    ],
+    "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
     "sourceUrls": [
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
-      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+      "https://trip.happynowinfo.com/place/2546530/",
+      "https://smi.purpleo.kr/article/19209",
+      "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
     ],
     "notes": [
-      "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
-      "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
-      "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
+      "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
+      "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
+      "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
     ],
-    "scope": "부산 사하구 1곳, 연제구 1곳, 수영구 6곳의 미쉐린 공식 지도 위치 보강",
+    "scope": "사천 신규 관광수록 1곳과 진주 우체국추천 좌표 1곳",
     "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "localGovernment": {
@@ -20229,6 +20319,114 @@
         "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
       ],
       "scope": "부산 사하구 1곳, 연제구 1곳, 수영구 6곳의 미쉐린 공식 지도 위치 보강",
+      "sourceAuditFile": "games/certified-restaurants/sources.json"
+    },
+    {
+      "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 44,
+      "previousCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1040,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1041,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 1,
+      "modificationCount": 1,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "newRestaurantIds": [
+        "local-sacheon-slot44-samcheonpo-jeongseobang"
+      ],
+      "modifiedRestaurantIds": [
+        "post-2026-45-0-0"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
+      "sourceUrls": [
+        "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+        "https://trip.happynowinfo.com/place/2546530/",
+        "https://smi.purpleo.kr/article/19209",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+      ],
+      "notes": [
+        "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
+        "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
+        "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
+      ],
+      "scope": "사천 신규 관광수록 1곳과 진주 우체국추천 좌표 1곳",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
     }
   ],
