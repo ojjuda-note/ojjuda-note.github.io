@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 47,
-    "scheduledAt": "2026-11-07T17:00:00+09:00",
+    "slot": 48,
+    "scheduledAt": "2026-11-07T18:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "원 예약시각 별도 제공 없음. 자동 실행 한국시각 2026-11-07 17:02:21+09:00 정각 내림, 기준 h=42 n=46 slot47."
+    "source": "사용자 예약 정각 18:00 KST. 기준 2026-11-05 23:00부터 h=43, n=47, slot48 cycle1."
   },
   "entries": [
     {
@@ -17874,6 +17874,487 @@
           "sourceCorrection": "45회차 통영 좌표 1건의 sources.coverage 누락이 있었음을 발견하고 위치 데이터는 건드리지 않은 채 수치만 1045→1046 정정."
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 48,
+      "scheduledAtKST": "2026-11-07T18:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_five_verified_jeju_official_tourism_positions",
+      "assignedRegions": [
+        "제주특별자치도 서귀포시"
+      ],
+      "regionAudit": [
+        {
+          "region": "제주특별자치도 서귀포시",
+          "baseListedCount": 27,
+          "baseNullCoordinates": 22,
+          "scope": "기본 등록 27곳 중 좌표 미등록 22곳을 우선 추출, VisitJeju 상세와 과거 선정/수록 자료를 대조해 5곳의 정확한 위치 확인. 지역 전수조사 아님.",
+          "additions": 0,
+          "modifications": 5,
+          "coordinatesAdded": 5,
+          "remainingNullCoordinates": 17,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "제주관광공사 VisitJeju 음식점 상세 5건 상호·현주소·숫자 좌표",
+        "제주관광공사·블루리본 2022년 10월 과거 공동수록 목록",
+        "제주특별자치도 지정 향토음식점 2024년 12월 31일 기준 공식 목록"
+      ],
+      "additions": 0,
+      "modifications": 5,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 5,
+      "locationHidden": 0,
+      "locationPending": 17,
+      "locationPendingScope": "기본 27곳 중 위치 누락 22곳 중 5곳만 정확한 위경도 확인, 17곳 재확인 대기",
+      "addedRestaurantIds": [],
+      "modifiedRestaurantIds": [
+        "blue-jeju-2022-26",
+        "local-jeju-25",
+        "local-jeju-51",
+        "local-jeju-52",
+        "local-jeju-53"
+      ],
+      "evidenceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013",
+        "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229",
+        "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+      ],
+      "verifiedLocations": [
+        {
+          "restaurantId": "blue-jeju-2022-26",
+          "name": "밀리우",
+          "currentAddress": "제주특별자치도 서귀포시 표선면 민속해안로 537",
+          "latitude": 33.32345,
+          "longitude": 126.84478,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-25",
+          "name": "옥돔식당",
+          "currentAddress": "제주특별자치도 서귀포시 대정읍 신영로 36번길 62",
+          "latitude": 33.2199418,
+          "longitude": 126.2490877,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-51",
+          "name": "해왓",
+          "currentAddress": "제주특별자치도 서귀포시 성산읍 신고로 30-1",
+          "latitude": 33.4385267,
+          "longitude": 126.9172566,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-52",
+          "name": "삼보식당",
+          "currentAddress": "제주특별자치도 서귀포시 중정로 25",
+          "latitude": 33.2476846,
+          "longitude": 126.559189,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-53",
+          "name": "공천포식당",
+          "currentAddress": "제주특별자치도 서귀포시 남원읍 공천포로 89",
+          "latitude": 33.2664055,
+          "longitude": 126.6426731,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013",
+          "checkedAt": "2026-11-07"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-jeju-2022-10",
+          "name": "히노데",
+          "currentAddress": "제주특별자치도 서귀포시 중문관광로 72번길 75",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "히노데 서귀포",
+            "히노데 제주특별자치도 서귀포시 중문관광로 72번길 75",
+            "서귀포시 히노데"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-11",
+          "name": "더웨이팅",
+          "currentAddress": "제주특별자치도 서귀포시 표선면 표선동서로 147",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "더웨이팅 서귀포",
+            "더웨이팅 제주특별자치도 서귀포시 표선면 표선동서로 147",
+            "서귀포시 더웨이팅"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-13",
+          "name": "샤오츠",
+          "currentAddress": "제주특별자치도 서귀포시 성산읍 성산등용로 17번길 55",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "샤오츠 서귀포",
+            "샤오츠 제주특별자치도 서귀포시 성산읍 성산등용로 17번길 55",
+            "서귀포시 샤오츠"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-16",
+          "name": "덕성원 중문점",
+          "currentAddress": "제주특별자치도 서귀포시 중문관광로 323",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "덕성원 중문점 서귀포",
+            "덕성원 중문점 제주특별자치도 서귀포시 중문관광로 323",
+            "서귀포시 덕성원 중문점"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-17",
+          "name": "덕성원",
+          "currentAddress": "제주특별자치도 서귀포시 태평로 401번길 4",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "덕성원 서귀포",
+            "덕성원 제주특별자치도 서귀포시 태평로 401번길 4",
+            "서귀포시 덕성원"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-32",
+          "name": "비오토피아레스토랑",
+          "currentAddress": "제주특별자치도 서귀포시 안덕면 산록남로 762번길 79",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "비오토피아레스토랑 서귀포",
+            "비오토피아레스토랑 제주특별자치도 서귀포시 안덕면 산록남로 762번길 79",
+            "서귀포시 비오토피아레스토랑"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-34",
+          "name": "민트레스토랑",
+          "currentAddress": "제주특별자치도 서귀포시 성산읍 섭지코지로 93-66",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "민트레스토랑 서귀포",
+            "민트레스토랑 제주특별자치도 서귀포시 성산읍 섭지코지로 93-66",
+            "서귀포시 민트레스토랑"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "blue-jeju-2022-37",
+          "name": "라테라스",
+          "currentAddress": "제주특별자치도 서귀포시 중문관광로 72번길 67",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "라테라스 서귀포",
+            "라테라스 제주특별자치도 서귀포시 중문관광로 72번길 67",
+            "서귀포시 라테라스"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-21",
+          "name": "덤장중문점",
+          "currentAddress": "제주특별자치도 서귀포시 천제연로 17",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "덤장중문점 서귀포",
+            "덤장중문점 제주특별자치도 서귀포시 천제연로 17",
+            "서귀포시 덤장중문점"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-22",
+          "name": "돌하르방뚝배기",
+          "currentAddress": "제주특별자치도 서귀포시 성산읍 일출로 264",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "돌하르방뚝배기 서귀포",
+            "돌하르방뚝배기 제주특별자치도 서귀포시 성산읍 일출로 264",
+            "서귀포시 돌하르방뚝배기"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-23",
+          "name": "명원가든",
+          "currentAddress": "제주특별자치도 서귀포시 성산읍 성산등용로 8",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "명원가든 서귀포",
+            "명원가든 제주특별자치도 서귀포시 성산읍 성산등용로 8",
+            "서귀포시 명원가든"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-24",
+          "name": "성읍탐라식당",
+          "currentAddress": null,
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "성읍탐라식당 서귀포",
+            "성읍탐라식당 null",
+            "서귀포시 성읍탐라식당"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-35",
+          "name": "(주)MG신라중문신라원",
+          "currentAddress": "제주특별자치도 서귀포시 법환하로28번길 6",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "(주)MG신라중문신라원 서귀포",
+            "(주)MG신라중문신라원 제주특별자치도 서귀포시 법환하로28번길 6",
+            "서귀포시 (주)MG신라중문신라원"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-54",
+          "name": "혼차롱식개집",
+          "currentAddress": "제주특별자치도 서귀포시 동문로 50",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "혼차롱식개집 서귀포",
+            "혼차롱식개집 제주특별자치도 서귀포시 동문로 50",
+            "서귀포시 혼차롱식개집"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-55",
+          "name": "테왁",
+          "currentAddress": "제주특별자치도 서귀포시 서호남로 32번길 10-4",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "테왁 서귀포",
+            "테왁 제주특별자치도 서귀포시 서호남로 32번길 10-4",
+            "서귀포시 테왁"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-56",
+          "name": "대정고을식당",
+          "currentAddress": "제주특별자치도 서귀포시 대정읍 일주서로 2258",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "대정고을식당 서귀포",
+            "대정고을식당 제주특별자치도 서귀포시 대정읍 일주서로 2258",
+            "서귀포시 대정고을식당"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        },
+        {
+          "restaurantId": "local-jeju-57",
+          "name": "진주식당",
+          "currentAddress": "제주특별자치도 서귀포시 태평로 353",
+          "region": "제주특별자치도 서귀포시",
+          "searchAliases": [
+            "진주식당 서귀포",
+            "진주식당 제주특별자치도 서귀포시 태평로 353",
+            "서귀포시 진주식당"
+          ],
+          "evidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "evidenceResult": "기존 가이드/지자체 수록 출처 보존. 이번에는 개별 업소 현재 주소·지도 공개 숫자 좌표 검증 미완료.",
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 48,
+          "checkedIndividually": false,
+          "unresolvedReason": "검증 가능한 현 지점 좌표 근거가 없으므로 추정 좌표·폐업·선정취소·비노출 적용 금지. 다음 지역 배정 우선."
+        }
+      ],
+      "unresolved": [
+        "기존 목록의 다른 서귀포시 17곳은 상호·현재 주소·공개 지도 숫자좌표 추가 확인 필요.",
+        "정규 블루리본 최신 판본 전체 명단 및 신규 선정은 확인되지 않아 추가·선정취소 미판정.",
+        "영업 여부는 위치 정보와 별도 확인 대상. 단순 검색 실패/과거 목록 수록만으로 폐업으로 처리하지 않음.",
+        "이전 46회차 밀양·양산 기록 누락은 다음 순환에서 보충."
+      ],
+      "carryOver": [
+        {
+          "region": "제주특별자치도 서귀포시",
+          "restaurantIds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "priority": "다음 순환 2/48 좌표 미확인·오래 미확인 우선"
+        },
+        {
+          "region": "경상남도 밀양시·양산시",
+          "reason": "1/46 기록 누락, 차기 순환 2/46에서 보충"
+        }
+      ],
+      "nextSlot": 49,
+      "nextRegions": [
+        "경기도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
