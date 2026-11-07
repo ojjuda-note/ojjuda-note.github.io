@@ -1518,8 +1518,8 @@
       "local-guide": 2519,
       "post-office": 240
     },
-    "coordinatesAvailable": 1051,
-    "coordinatesMissing": 2199,
+    "coordinatesAvailable": 1052,
+    "coordinatesMissing": 2198,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -12877,50 +12877,11 @@
     "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "latestMapCoverageAudit": {
-    "id": "2026-11-07-jeju-slot48-five-exact-visitjeju-locations",
+    "id": "2026-11-07-jeju-slot48-continuation-jinju-exact-visitjeju",
     "checkedAt": "2026-11-07",
     "cycle": 1,
     "slot": 48,
     "previousCoverage": {
-      "uniqueRestaurants": 3250,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2519,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1046,
-      "coordinatesMissing": 2204,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1927,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3250,
       "providerCounts": {
         "michelin": 237,
@@ -12959,31 +12920,62 @@
         "디저트": 234
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3250,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2519,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2198,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1927,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
     "newRestaurantCount": 0,
-    "modificationCount": 5,
-    "coordinateAddedCount": 5,
+    "modificationCount": 1,
+    "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
     "modifiedRestaurantIds": [
-      "blue-jeju-2022-26",
-      "local-jeju-25",
-      "local-jeju-51",
-      "local-jeju-52",
-      "local-jeju-53"
+      "local-jeju-57"
     ],
     "coordinateSupplement": "games/certified-restaurants/official-jeju-slot48-locations.json",
     "sourceUrls": [
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013"
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724"
     ],
     "notes": [
-      "공식 VisitJeju 개별 상세의 상호·주소·숫자좌표와 기존 가이드 수록/지정 정보를 교차 확인.",
-      "기존 ID, 분류, 저장 기능, 회원 추천 및 가이드 과거 이력 보존. 영업 상태나 현행 블루리본 등급 별도 미판정.",
-      "서귀포시 기본 데이터 27곳 중 좌표 미등록 22곳에서 5곳만 검증, 17곳 이월."
+      "서귀포시 진주식당 현재 공식 관광 상세의 상호·도로명주소·공개 위경도가 원등록 정보와 정확히 일치함.",
+      "기존 1/48 점검에서 확인한 5곳을 보존하고 같은 회차 이어하기로 1곳을 추가 확인함. 영업 상태와 선정 연도는 별개.",
+      "서귀포 기본 27곳 중 위치 미확인 22곳에서 이번 회차 누적 6곳 보강하여 16곳 이월."
     ],
-    "scope": "서귀포 블루리본 과거 수록 1곳·제주 향토음식점 4곳 위치 보강",
+    "scope": "서귀포시 1/48 회차 이어하기: 제주 향토음식점 진주식당 위치 1건",
     "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "localGovernment": {
@@ -20881,6 +20873,108 @@
       ],
       "scope": "서귀포 블루리본 과거 수록 1곳·제주 향토음식점 4곳 위치 보강",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
+    },
+    {
+      "id": "2026-11-07-jeju-slot48-continuation-jinju-exact-visitjeju",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 48,
+      "previousCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1051,
+        "coordinatesMissing": 2199,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2198,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 0,
+      "modificationCount": 1,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [
+        "local-jeju-57"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-jeju-slot48-locations.json",
+      "sourceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724"
+      ],
+      "notes": [
+        "서귀포시 진주식당 현재 공식 관광 상세의 상호·도로명주소·공개 위경도가 원등록 정보와 정확히 일치함.",
+        "기존 1/48 점검에서 확인한 5곳을 보존하고 같은 회차 이어하기로 1곳을 추가 확인함. 영업 상태와 선정 연도는 별개.",
+        "서귀포 기본 27곳 중 위치 미확인 22곳에서 이번 회차 누적 6곳 보강하여 16곳 이월."
+      ],
+      "scope": "서귀포시 1/48 회차 이어하기: 제주 향토음식점 진주식당 위치 1건",
+      "sourceAuditFile": "games/certified-restaurants/sources.json"
     }
   ],
   "busanSlot39": {
@@ -20946,19 +21040,29 @@
     "checkedAt": "2026-11-07",
     "cycle": 1,
     "slot": 48,
-    "verifiedLocationCount": 5,
+    "verifiedLocationCount": 6,
     "baseCityEntries": 27,
     "missingCoordinatesBefore": 22,
-    "missingCoordinatesAfter": 17,
+    "missingCoordinatesAfter": 16,
     "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
     "sourceUrls": [
       "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
       "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
       "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
       "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013"
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724"
     ],
-    "liveExpectedCoordinates": 1051,
-    "note": "2022년 블루리본 수록과 지정 향토음식점의 과거 기준일은 현재 영업 상태·정규 리본 등급과 구분함."
+    "liveExpectedCoordinates": 1052,
+    "note": "2022년 블루리본 수록과 지정 향토음식점의 과거 기준일은 현재 영업 상태·정규 리본 등급과 구분함.",
+    "continuationChecks": [
+      {
+        "checkedAt": "2026-11-07",
+        "restaurantId": "local-jeju-57",
+        "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724",
+        "coordinateAdded": 1,
+        "note": "같은 회차 기존 5곳 확인 후 추가 검증"
+      }
+    ]
   }
 }
