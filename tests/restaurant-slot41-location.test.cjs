@@ -32,9 +32,13 @@ assert.ok(app.includes('slot41Map.locationEnrichments'), 'map enrichment is load
 assert.ok(app.includes('row.id === patch.id && row.name === patch.expectedName && row.address === patch.expectedAddress'), 'ID and address must match to apply map positions');
 assert.ok(app.includes('restaurant.lat != null || restaurant.lng != null'), 'never overwrite known coordinates');
 assert.ok(app.includes("guide.provider === 'michelin' && guide.sourceUrl === verifiedUrl"), 'only matching official source is trusted');
-assert.equal(sources.coverage.uniqueRestaurants, 3249);
-assert.equal(sources.coverage.coordinatesAvailable, 1040);
-assert.equal(sources.coverage.coordinatesMissing, 2209);
+const slot41Coverage = sources.mapCoverageAuditHistory.find(row => row.cycle === 1 && row.slot === 41)?.currentCoverage;
+assert.ok(slot41Coverage, 'historical slot41 coverage is retained');
+assert.equal(slot41Coverage.uniqueRestaurants, 3249);
+assert.equal(slot41Coverage.coordinatesAvailable, 1040);
+assert.equal(slot41Coverage.coordinatesMissing, 2209);
+assert.ok(sources.coverage.uniqueRestaurants >= slot41Coverage.uniqueRestaurants, 'later regional additions remain possible');
+assert.ok(sources.coverage.coordinatesAvailable >= slot41Coverage.coordinatesAvailable, 'later location repairs remain possible');
 const entry = audit.entries.find(row => row.cycle === 1 && row.slot === 41);
 assert.ok(entry);
 assert.equal(entry.locationCoordinatesAdded, 8);
