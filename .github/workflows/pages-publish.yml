@@ -3,6 +3,16 @@ name: Publish lightweight Pages site
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'tests/**'
+      - 'scripts/**'
+      - 'supabase/**'
+      - 'ops/**'
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - '.gitignore'
+      - '_config.yml'
   pull_request:
     paths:
       - '.github/workflows/pages-publish.yml'
