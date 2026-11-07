@@ -49,11 +49,18 @@ async function verifyCard(page, id, name) {
       'namwon-chunhyang-2026', 'yesan-apple-festival-2026', 'chungnam-drone-festa-2026',
       'jeongeup-gujeolcho-2026', 'muju-firefly-2026'
     ];
-    assert.equal(payload.events.length, 265, 'Live deployed count does not match merged main');
+    assert.equal(payload.events.length, 276, 'Live deployed count does not match merged main');
     added.forEach(id => assert(ids.has(id), 'Missing new event in deployed JSON: ' + id));
     assert(ids.has('international-robot-contest-2026'));
     assert(!ids.has('international-robot-contest-2026-daegu'));
-    console.log('PASS production JSON: 265 entries, eight newly added events, duplicate eliminated');
+    const newer = ['sejong-egg-run-2026', 'sejong-mind-health-reboot-walk-2026',
+      'daejeon-energy-walk-2026', 'daejeon-mind-chess-kids-olympiad-2026',
+      'daejeon-public-research-results-expo-2026', 'daejeon-world-photovoltaic-exhibition-2026',
+      'daejeon-future-education-expo-2026', 'daejeon-pet-fair-2026',
+      'daejeon-fruit-industry-expo-2026', 'daejeon-creature-carelog-reptile-2026',
+      'daejeon-forest-career-fair-2026'];
+    newer.forEach(id => assert(ids.has(id), 'Missing November 7 addition in live JSON: ' + id));
+    console.log('PASS production JSON: 276 entries, previous eight and new eleven events, no duplicate robot');
 
     await page.goto(origin + '/games/festival-schedule/index.html?period=all&category=festival&view=list&q=익산',
       { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -80,16 +87,26 @@ async function verifyCard(page, id, name) {
     assert((await page.locator('.event-card').count()) > 0, 'No performance cards rendered');
     console.log('PASS sports and performance categories render event cards');
 
+    await page.locator('#search').fill('마음건강 걷기대회');
+    await page.locator('[data-category="sports"]').click();
+    await verifyCard(page, 'sejong-mind-health-reboot-walk-2026', '마음건강 걷기대회');
+    await page.locator('#search').fill('대전펫페어');
+    await page.locator('[data-category="performance"]').click();
+    await verifyCard(page, 'daejeon-pet-fair-2026', '대전펫페어');
+    await page.locator('#search').fill('');
+    console.log('PASS new 2026 sports and exhibition cards and official-source details');
+
     const arcade = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: 'ko-KR' });
     arcade.on('pageerror', error => jsErrors.push('world: ' + error.message));
     await arcade.goto(origin + '/world.html?game=festival', { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await arcade.waitForFunction(() => Array.from(document.querySelectorAll('iframe'))
-      .some(frame => frame.src.includes('festival-schedule')), { timeout: 60000 });
-    const festivalFrame = arcade.frames().find(frame => frame.url().includes('/games/festival-schedule/index.html'));
-    assert(festivalFrame, 'Arcade festival iframe not attached');
-    await festivalFrame.waitForFunction(() => /^[0-9]+$/.test(
-      document.getElementById('result-count')?.textContent?.trim() || ''
-    ), { timeout: 60000 });
+    // The modal inserts an iframe before navigation finishes; waiting for frames()
+    // immediately after the element appears races with the iframe load.
+    await arcade.waitForFunction(() => {
+      const frame = document.querySelector('.festival-schedule-dialog[open] iframe');
+      const text = frame?.contentDocument?.getElementById('result-count')?.textContent?.trim() || '';
+      return /^[0-9]+$/.test(text);
+    }, { timeout: 60000 });
+    const festivalFrame = arcade.frameLocator('.festival-schedule-dialog[open] iframe');
     const arcadeCount = await festivalFrame.locator('[data-event-card]').count();
     assert(arcadeCount > 0, 'Arcade iframe did not render event cards');
     await arcade.screenshot({ path: path.join(snapshotDir, 'world-game-festival.png'), fullPage: true });
