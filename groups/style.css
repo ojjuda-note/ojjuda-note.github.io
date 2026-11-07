@@ -67,3 +67,11 @@
  .hero .actions .page-share{flex:0 0 auto;margin-left:auto;min-height:36px;padding:7px 12px;font-size:13px}
  .hero .actions button[data-action="create"]{min-width:0}
 }
+
+/* Private photo previews are loaded ahead of the viewport, without holding the page. */
+@keyframes group-media-glow{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.media-slot[data-loaded="loading"]{background:linear-gradient(105deg,#edf0e8 20%,#dcebdc 42%,#edf0e8 64%);background-size:220% 100%;animation:group-media-glow 1.3s linear infinite;font-size:12px;color:#567063}
+.gallery-stage[aria-busy="true"]{position:relative}
+.gallery-stage[aria-busy="true"]::after{content:"고화질 사진을 준비하는 중…";position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:30px;background:#20392ce0;color:#fff;font-size:12px;white-space:nowrap}
+.gallery-stage .gallery-preview{filter:blur(.7px)}
+@media(prefers-reduced-motion:reduce){.media-slot[data-loaded="loading"]{animation:none}}

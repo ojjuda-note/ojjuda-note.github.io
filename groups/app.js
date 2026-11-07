@@ -7,8 +7,11 @@ const sharedCode=()=>{const code=new URLSearchParams(location.hash.slice(1)).get
 const bucket='group-media', types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov','video/x-m4v':'m4v'};
 const dayOf=v=>new Date(v).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}), today=()=>dayOf(Date.now());
 const dateText=(v,all=false)=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'short',...(all?{}:{hour:'2-digit',minute:'2-digit'})}).format(new Date(v));
-let client,user,rooms=[],posts=[],directory=[],directoryQuery='',onlyMine=false,directoryHasMore=false,roomId=null,view='list',filter='all',query='',date='',month=today().slice(0,7),more=false,epoch=0,loading=false,urls=new Set(),observer,toastTimer,authEpoch=0,refreshTimer,navigationRun=0,directoryLoading=false,refreshRequest=null,mutationRun=0,mutating=0,invitationRun=0;
+let client,user,rooms=[],posts=[],directory=[],directoryQuery='',onlyMine=false,directoryHasMore=false,roomId=null,view='list',filter='all',query='',date='',month=today().slice(0,7),more=false,epoch=0,loading=false,observer,toastTimer,authEpoch=0,refreshTimer,navigationRun=0,directoryLoading=false,refreshRequest=null,mutationRun=0,mutating=0,invitationRun=0;
 const reads=new Map(),signatures=new WeakMap();let renderedRoomId=null;
+const mediaCache=new Map(),mediaPending=new Map(),mediaQueue=[];
+let mediaBytes=0,mediaActive=0,mediaGeneration=0;
+const MEDIA_CACHE_LIMIT=48*1024*1024,MEDIA_PARALLEL=3;
 const currentRoom=()=>rooms.find(r=>r.id===roomId), activeRooms=()=>rooms.filter(r=>!r.deleting);
 function notify(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3200);}
 function failure(e){if(e?.code==='P0001'&&e?.message==='banned_word')return '금칙어가 포함되어 있어 등록할 수 없어요.';if(e?.code==='42501')return e.message||'권한이 없어요. 다시 로그인하거나 그룹 가입 상태를 확인해 주세요.';if(e?.code==='22P02')return '초대코드나 입력한 내용을 확인해 주세요.';if(e?.code==='23514'||e?.code==='23502')return '필수 항목과 글자 수를 확인해 주세요.';return e?.message||'연결하지 못했어요. 다시 시도해 주세요.';}
@@ -21,9 +24,78 @@ async function rpc(name,args,read=false){
 }
 const api=(action,payload={})=>rpc('group_board',{p_action:action,p_payload:payload},['rooms','directory','feed','calendar','members','requests','comments','deletion_files'].includes(action));
 const invitationApi=(action,payload={})=>rpc('group_invitation',{p_action:action,p_payload:payload},['received','search','preview_link'].includes(action)||action==='link'&&!payload.rotate);
-function clearMedia(){observer?.disconnect();for(const url of urls)URL.revokeObjectURL(url);urls.clear();}
-function blobUrl(blob){const url=URL.createObjectURL(blob);urls.add(url);return url;}
-function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.':'로그인하고 우리만의 그룹을 만들어 보세요.') {epoch++;clearMedia();for(const d of document.querySelectorAll('dialog'))d.close();$('#app').innerHTML=`<section class="hero"><div><h1>그룹</h1></div></section><div class="empty"><strong>${esc(message)}</strong><a href="/?auth=login&amp;next=groups${sharedCode()?'&amp;invite='+encodeURIComponent(sharedCode()):''}" class="back">로그인 · 가입 →</a></div>`;}
+function cachedMedia(path){const entry=mediaCache.get(path);if(!entry)return null;mediaCache.delete(path);mediaCache.set(path,entry);return entry.url;}
+function trimMediaCache(protectedPath){
+ if(mediaBytes<=MEDIA_CACHE_LIMIT)return;
+ const used=new Set([...document.querySelectorAll('img[src^="blob:"],video[src^="blob:"]')].map(el=>el.src));
+ for(const [path,entry] of mediaCache){
+  if(mediaBytes<=MEDIA_CACHE_LIMIT||mediaCache.size<=1)break;
+  if(path===protectedPath||used.has(entry.url))continue;
+  URL.revokeObjectURL(entry.url);mediaCache.delete(path);mediaBytes-=entry.bytes;
+ }
+}
+function clearMedia(purge=false){
+ observer?.disconnect();
+ if(!purge){trimMediaCache();return;}
+ mediaGeneration++;
+ for(const entry of mediaCache.values())URL.revokeObjectURL(entry.url);
+ mediaCache.clear();mediaBytes=0;
+ for(const job of mediaQueue.splice(0))job.reject(Error('사진 화면이 바뀌었어요.'));
+ mediaPending.clear();
+}
+function pumpMedia(){
+ while(mediaActive<MEDIA_PARALLEL&&mediaQueue.length){
+  const job=mediaQueue.shift();mediaActive++;
+  Promise.resolve().then(()=>client.storage.from(bucket).download(job.path)).then(({data,error})=>{
+   if(error)throw error;
+   if(job.generation!==mediaGeneration||job.owner!==user?.id)throw Error('사진 요청이 만료됐어요.');
+   const url=URL.createObjectURL(data),bytes=Number(data?.size)||0;
+   mediaCache.set(job.path,{url,bytes});mediaBytes+=bytes;trimMediaCache(job.path);job.resolve(url);
+  }).catch(job.reject).finally(()=>{
+   mediaActive--;
+   if(mediaPending.get(job.path)===job)mediaPending.delete(job.path);
+   pumpMedia();
+  });
+ }
+}
+function requestMedia(path,priority=1){
+ const hit=cachedMedia(path);if(hit)return Promise.resolve(hit);
+ const existing=mediaPending.get(path);
+ if(existing){if(priority<existing.priority){existing.priority=priority;mediaQueue.sort((a,b)=>a.priority-b.priority);}return existing.promise;}
+ const job={path,priority,owner:user?.id,generation:mediaGeneration};
+ job.promise=new Promise((resolve,reject)=>{job.resolve=resolve;job.reject=reject;});
+ mediaPending.set(path,job);mediaQueue.push(job);mediaQueue.sort((a,b)=>a.priority-b.priority);pumpMedia();
+ return job.promise;
+}
+async function makePreview(file){
+ if(!file?.type?.startsWith('image/'))return null;
+ let source,sourceUrl;
+ try{
+  if(typeof createImageBitmap==='function')source=await createImageBitmap(file);
+  else{
+   sourceUrl=URL.createObjectURL(file);
+   source=await new Promise((resolve,reject)=>{
+    const img=new Image(),timeout=setTimeout(()=>reject(Error('사진 준비 시간 초과')),10000);
+    img.onload=()=>{clearTimeout(timeout);resolve(img);};
+    img.onerror=()=>{clearTimeout(timeout);reject(Error('사진 형식을 읽지 못했어요.'));};
+    img.src=sourceUrl;
+   });
+  }
+  const width=source.width||source.naturalWidth,height=source.height||source.naturalHeight;
+  if(!width||!height)return null;
+  const scale=Math.min(1,960/Math.max(width,height));
+  if(scale===1&&file.size<160*1024)return null;
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+  const context=canvas.getContext('2d');if(!context)return null;
+  context.drawImage(source,0,0,canvas.width,canvas.height);
+  const preview=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.76));
+  canvas.width=canvas.height=0;
+  return preview?.type==='image/webp'&&preview.size>0&&preview.size<file.size&&preview.size<=1048576?preview:null;
+ }catch{return null;}
+ finally{source?.close?.();if(sourceUrl)URL.revokeObjectURL(sourceUrl);}
+}
+function gate(message=sharedCode()?'로그인 후 초대를 수락해 주세요.':'로그인하고 우리만의 그룹을 만들어 보세요.') {epoch++;clearMedia(true);for(const d of document.querySelectorAll('dialog'))d.close();$('#app').innerHTML=`<section class="hero"><div><h1>그룹</h1></div></section><div class="empty"><strong>${esc(message)}</strong><a href="/?auth=login&amp;next=groups${sharedCode()?'&amp;invite='+encodeURIComponent(sharedCode()):''}" class="back">로그인 · 가입 →</a></div>`;}
 function dialog(title,body){const d=document.createElement('dialog');d.className='dialog';d.setAttribute('aria-label',title);d.innerHTML=`<header class="dialog-head"><h2>${esc(title)}</h2><button type="button" data-close aria-label="닫기">✕</button></header><div class="dialog-body">${body}</div>`;document.body.append(d);const prev=document.activeElement;d.showModal();d.querySelector('[data-close]').onclick=()=>d.close();d.addEventListener('close',()=>{d.remove();prev?.isConnected&&prev.focus({preventScroll:true});});return d;}
 function route(id=null){navigationRun++;if(id!==roomId){query='';filter='all';}roomId=id;date='';posts=[];history.pushState(null,'',id?'#room='+id:location.pathname);render();void loadFeed();}
 function render(){epoch++;clearTimeout(refreshTimer);loading=false;directoryLoading=false;clearMedia();const r=currentRoom();renderedRoomId=r?.id||null;
@@ -38,7 +110,7 @@ $('#search')?.addEventListener('input',e=>{query=e.target.value;epoch++;loading=
 $('#directory-query')?.addEventListener('input',e=>{directoryQuery=e.target.value;epoch++;directoryLoading=false;clearTimeout(refreshTimer);if(onlyMine)drawDirectory();else refreshTimer=setTimeout(()=>loadDirectory(),250);});
 $('#load-more')?.addEventListener('click',()=>loadFeed(true));$('#directory-more')?.addEventListener('click',()=>loadDirectory(true));
 if(!r)void loadHome();}
-async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){roomId=null;history.replaceState(null,'',location.pathname);}}
+async function reloadRooms(){const run=mutationRun,data=await api('rooms');if(run!==mutationRun)return;rooms=data;if(roomId&&!rooms.some(r=>r.id===roomId)){clearMedia(true);roomId=null;history.replaceState(null,'',location.pathname);}}
 async function refresh({quiet=false}={}){
  if(refreshRequest?.run===navigationRun&&refreshRequest.mutation===mutationRun)return refreshRequest.promise;
  const run=navigationRun,mutation=mutationRun,prior=JSON.stringify(currentRoom());
@@ -98,18 +170,18 @@ async function loadFeed(append=false,{quiet=false}={}){
   else if(signatures.get(box)!==JSON.stringify(next)+(next.length?'':date?'dated':'all')){clearMedia();box.innerHTML=next.map(postCard).join('')||`<div class="empty"><strong>${date?'이 날짜의 기록이 없어요.':'아직 올라온 기록이 없어요.'}</strong></div>`;}
   posts=next;signatures.set(box,JSON.stringify(posts)+(posts.length?'':date?'dated':'all'));if(days)renderCalendar(days);$('#load-more').hidden=!more;
   $('#result-caption').textContent=date?`${date.replaceAll('-','.')}의 기록 · 최근 올린 순서`:'최근 올린 순서';$('[data-action=clear-date]').hidden=!date;observeMedia();
- }catch(e){if(ticket===epoch&&box.isConnected){if(e?.code==='42501'){clearMedia();posts=[];if($('#calendar'))$('#calendar').replaceChildren();signatures.delete(box);box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else if(!quiet&&!signatures.has(box)){box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else notify(failure(e));}}
+ }catch(e){if(ticket===epoch&&box.isConnected){if(e?.code==='42501'){clearMedia(true);posts=[];if($('#calendar'))$('#calendar').replaceChildren();signatures.delete(box);box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else if(!quiet&&!signatures.has(box)){box.innerHTML=`<div class="empty"><p class="error">${esc(failure(e))}</p><button data-action="refresh">다시 불러오기</button></div>`;}else notify(failure(e));}}
  finally{if(ticket===epoch){loading=false;if($('#load-more'))$('#load-more').disabled=false;}}
 }
 function renderCalendar(days){const [y,m]=month.split('-').map(Number),first=new Date(Date.UTC(y,m-1,1)).getUTCDay(),box=$('#calendar');box.innerHTML=`<section class="calendar"><header class="calendar-head"><button data-month="-1" aria-label="이전 달">‹</button><h2>${y}년 ${m}월</h2><button data-month="1" aria-label="다음 달">›</button></header><div class="calendar-grid">${['일','월','화','수','목','금','토'].map(x=>`<span class="weekday">${x}</span>`).join('')}${'<span></span>'.repeat(first)}${days.map(d=>`<button class="day ${d.day===today()?'today':''} ${d.day===date?'selected':''} ${d.events?'has-event':''}" data-date="${d.day}" aria-label="${d.day}, 기록 ${d.count}개, 일정 ${d.events}개" aria-pressed="${date===d.day}">${Number(d.day.slice(-2))}${d.count?`<span>${d.events?'일정 '+d.events+'개':'기록 '+d.count+'개'}</span>`:''}</button>`).join('')}</div></section>`;}
 function postCard(p){return `<article class="post" data-post="${p.id}"><header class="post-head"><div><div class="author">${esc(p.author_name)} <span class="metadata">· ${esc(p.room_name)}</span></div><div class="metadata">${dateText(p.created_at)}${p.updated_at!==p.created_at?' · 수정됨':''}</div></div><span class="tag ${p.kind==='post'?'':'event'}">${{post:'이야기',event:'약속',trip:'여행'}[p.kind]}</span></header>${p.title?`<h3>${esc(p.title)}</h3>`:''}${p.kind!=='post'?`<div class="schedule"><strong>▦ ${dateText(p.starts_at,p.all_day)} ~ ${dateText(p.ends_at,p.all_day)}${p.all_day?' · 종일':''}</strong>${p.location?`⌖ ${esc(p.location)}`:''}</div>`:''}${p.body?`<p class="body">${esc(p.body)}</p>`:''}${p.media.length?`<div class="media-grid">${p.media.map((f,i)=>`<div class="media-slot" data-media-post="${p.id}" data-media-index="${i}"><button data-load-media="${p.id}" data-index="${i}">${f.mime.startsWith('video/')?'▶ 동영상 보기':'사진 불러오기'}</button></div>`).join('')}</div>`:''}<footer class="post-foot"><button data-comments="${p.id}">댓글 ${p.comment_count||0}</button><button data-report="${p.id}">신고</button>${p.author_id===user.id?`<div><button data-edit="${p.id}">수정</button><button class="danger" data-delete="${p.id}">삭제</button></div>`:''}</footer></article>`;}
-function observeMedia(){observer?.disconnect();observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const p=posts.find(p=>p.id===e.target.dataset.mediaPost),f=p?.media[+e.target.dataset.mediaIndex];if(f?.mime.startsWith('image/'))void loadMedia(e.target,p,f);observer.unobserve(e.target);}},{rootMargin:'180px'});document.querySelectorAll('.media-slot:not([data-loaded])').forEach(n=>observer.observe(n));}
+function observeMedia(){observer?.disconnect();observer=new IntersectionObserver(entries=>{for(const e of entries)if(e.isIntersecting){const p=posts.find(p=>p.id===e.target.dataset.mediaPost),f=p?.media[+e.target.dataset.mediaIndex];if(f?.mime.startsWith('image/'))void loadMedia(e.target,p,f,e.boundingClientRect?.top<=innerHeight?0:1);observer.unobserve(e.target);}},{rootMargin:navigator.connection?.saveData?'120px':'600px'});document.querySelectorAll('.media-slot:not([data-loaded])').forEach(n=>observer.observe(n));}
 
 function openGallery(p,start=0){
  const media=p?.media||[];if(!media.length)return;
  const d=dialog('첨부 보기','<div class="gallery-stage" role="group" aria-label="첨부 미리보기">불러오는 중…</div>'+(media.length>1?'<div class="gallery-nav"><button type="button" data-gallery-prev aria-label="이전 사진">‹</button><span data-gallery-count aria-live="polite"></span><button type="button" data-gallery-next aria-label="다음 사진">›</button></div>':''));
  d.classList.add('lightbox');
- const stage=d.querySelector('.gallery-stage'),cache=new Map(),owner=user?.id;
+ const stage=d.querySelector('.gallery-stage'),owner=user?.id;
  let active=-1,run=0,startTouch=null;
  const paint=async index=>{
   if(index<0||index>=media.length)return;
@@ -118,21 +190,21 @@ function openGallery(p,start=0){
   if(prev)prev.disabled=index===0;
   if(next)next.disabled=index===media.length-1;
   const label=d.querySelector('[data-gallery-count]');if(label)label.textContent=(index+1)+' / '+media.length;
-  stage.textContent='불러오는 중…';
+  stage.textContent=f.mime.startsWith('video/')?'동영상을 불러오는 중…':'고화질 사진을 불러오는 중…';
+  if(f.preview_path&&!f.mime.startsWith('video/')){
+   const preview=cachedMedia(f.preview_path);
+   if(preview){const image=document.createElement('img');image.src=preview;image.alt=f.name||'그룹 사진';image.className='gallery-preview';stage.replaceChildren(image);stage.setAttribute('aria-busy','true');}
+  }
   try{
-   let url=cache.get(f.path);
-   if(!url){
-    const {data,error}=await client.storage.from(bucket).download(f.path);
-    if(error)throw error;
-    if(!d.isConnected||!d.open||owner!==user?.id)return;
-    url=URL.createObjectURL(data);cache.set(f.path,url);
-   }
+   const url=await requestMedia(f.path,0);
    if(seq!==run||!d.isConnected||!d.open)return;
+   if(owner!==user?.id)return;
    const video=f.mime.startsWith('video/'),el=document.createElement(video?'video':'img');
    el.src=url;
-   if(video){el.controls=true;el.playsInline=true;el.preload='metadata';}else el.alt=f.name||'그룹 사진';
+   if(video){el.controls=true;el.playsInline=true;el.preload='metadata';}else{el.alt=f.name||'그룹 사진';el.decoding='async';}
+   stage.removeAttribute('aria-busy');
    stage.replaceChildren(el);
-  }catch(e){if(seq===run&&d.open)stage.textContent='첨부를 불러오지 못했어요.';}
+  }catch(e){if(seq===run&&d.open){stage.removeAttribute('aria-busy');stage.textContent='첨부를 불러오지 못했어요.';}}
  };
  const move=delta=>{if(active+delta>=0&&active+delta<media.length)void paint(active+delta);};
  d.querySelector('[data-gallery-prev]')?.addEventListener('click',()=>move(-1));
@@ -150,11 +222,26 @@ function openGallery(p,start=0){
   if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.2)move(dx<0?1:-1);
  },{passive:true});
  stage.addEventListener('touchcancel',()=>{startTouch=null;},{passive:true});
- d.addEventListener('close',()=>{run++;for(const url of cache.values())URL.revokeObjectURL(url);cache.clear();},{once:true});
+ d.addEventListener('close',()=>{run++;},{once:true});
  void paint(start);
 }
 
-async function loadMedia(slot,p,f){if(!slot||slot.dataset.loaded||!f)return;slot.dataset.loaded='loading';const owner=user?.id;slot.textContent='불러오는 중…';try{const {data,error}=await client.storage.from(bucket).download(f.path);if(error)throw error;if(!slot.isConnected||owner!==user?.id)return;const url=blobUrl(data);slot.innerHTML='';if(f.mime.startsWith('video/')){const el=document.createElement('video');el.src=url;el.controls=true;el.playsInline=true;el.preload='metadata';slot.append(el);}else{const el=document.createElement('img');el.src=url;el.alt=f.name||'그룹 사진';el.loading='lazy';el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label','사진 크게 보기');const show=()=>openGallery(p,+slot.dataset.mediaIndex);el.onclick=show;el.onkeydown=e=>{if(e.key==='Enter')show();};slot.append(el);}slot.dataset.loaded='yes';}catch(e){if(!slot.isConnected)return;delete slot.dataset.loaded;slot.innerHTML=`<button data-load-media="${p.id}" data-index="${p.media.indexOf(f)}">첨부를 불러오지 못했어요. 다시 시도</button>`;}}
+async function loadMedia(slot,p,f,priority=0){
+ if(!slot||slot.dataset.loaded||!f)return;
+ slot.dataset.loaded='loading';const owner=user?.id;
+ slot.textContent='🌿 사진을 준비하고 있어요…';
+ try{
+  let url;
+  if(f.preview_path){try{url=await requestMedia(f.preview_path,priority);}catch{url=await requestMedia(f.path,priority);}}
+  else url=await requestMedia(f.path,priority);
+  if(!slot.isConnected||owner!==user?.id)return;
+  const video=f.mime.startsWith('video/'),el=document.createElement(video?'video':'img');
+  el.src=url;
+  if(video){el.controls=true;el.playsInline=true;el.preload='metadata';}
+  else{el.alt=f.name||'그룹 사진';el.decoding='async';el.tabIndex=0;el.setAttribute('role','button');el.setAttribute('aria-label','사진 크게 보기');const show=()=>openGallery(p,+slot.dataset.mediaIndex);el.onclick=show;el.onkeydown=e=>{if(e.key==='Enter')show();};}
+  slot.replaceChildren(el);slot.dataset.loaded='yes';
+ }catch(e){if(!slot.isConnected||owner!==user?.id)return;delete slot.dataset.loaded;slot.innerHTML=`<button data-load-media="${p.id}" data-index="${p.media.indexOf(f)}">첨부를 불러오지 못했어요. 다시 시도</button>`;}
+}
 async function handleClick(e){const b=e.target.closest('button');if(!b||b.disabled)return;try{
 if(b.dataset.acceptInvite||b.dataset.declineInvite){const row=b.closest('article');if(row.dataset.busy)return;row.dataset.busy='yes';row.querySelectorAll('button').forEach(x=>x.disabled=true);try{const accepted=!!b.dataset.acceptInvite,data=await invitationApi(accepted?'accept':'decline',{id:b.dataset.acceptInvite||b.dataset.declineInvite});if(accepted){await reloadRooms();route(data.room_id);notify('그룹에 가입했어요.');}else{await loadInvitations();notify('초대를 거절했어요.');}}finally{delete row.dataset.busy;row.querySelectorAll('button').forEach(x=>x.disabled=false);}return;}
 if(b.dataset.action==='mine'){onlyMine=!onlyMine;epoch++;directoryLoading=false;clearTimeout(refreshTimer);b.textContent=onlyMine?'전체 그룹':'내 그룹';b.setAttribute('aria-pressed',String(onlyMine));b.setAttribute('aria-label',onlyMine?'전체 그룹 보기':'내 그룹만 보기');if(onlyMine)drawDirectory();else{directory=[];directoryHasMore=false;const box=$('#directory');signatures.delete(box);box.innerHTML='<p class="empty">불러오는 중…</p>';await loadDirectory();}return;}
@@ -166,7 +253,7 @@ if(b.dataset.date){date=b.dataset.date;await loadFeed();return;}
 if(b.dataset.month){const [y,m]=month.split('-').map(Number);month=new Date(Date.UTC(y,m-1+Number(b.dataset.month),1)).toISOString().slice(0,7);date='';await loadFeed();return;}
 if(b.dataset.loadMedia){const p=posts.find(p=>p.id===b.dataset.loadMedia);await loadMedia(b.parentElement,p,p.media[+b.dataset.index]);return;}
 if(b.dataset.edit){compose(posts.find(p=>p.id===b.dataset.edit));return;}
-if(b.dataset.delete){const p=posts.find(p=>p.id===b.dataset.delete);confirmAction('이 기록을 삭제할까요?','첨부와 댓글도 함께 삭제돼요.',async()=>{const result=await api('remove',{id:p.id});await removeFiles(result.media.map(f=>f.path));await loadFeed();notify('삭제했어요.');});return;}
+if(b.dataset.delete){const p=posts.find(p=>p.id===b.dataset.delete);confirmAction('이 기록을 삭제할까요?','첨부와 댓글도 함께 삭제돼요.',async()=>{const result=await api('remove',{id:p.id});await removeFiles(result.media.flatMap(f=>[f.path,f.preview_path]));await loadFeed();notify('삭제했어요.');});return;}
 if(b.dataset.comments){b.disabled=true;await comments(posts.find(p=>p.id===b.dataset.comments));return;}
  if(b.dataset.report){const p=posts.find(p=>p.id===b.dataset.report);if(p)reportPost(p);return;}
 switch(b.dataset.action){case 'home':route();break;case 'create':createRoom();break;case 'compose':compose();break;case 'manage':b.disabled=true;await manage();break;case 'share':{const r=currentRoom();if(r&&!r.deleting){b.disabled=true;await shareInvitation(r);}break;}case 'share-page':b.disabled=true;await sharePage(currentRoom());break;case 'refresh':await refresh();break;case 'clear-date':date='';await loadFeed();break;case 'resume-delete':await deleteRoom(currentRoom());break;}
@@ -215,7 +302,7 @@ else if(act==='kick')confirmAction('이 그룹원을 추방할까요?','그룹�
 else if(act==='leave')confirmAction('그룹을 나갈까요?','다시 들어오려면 가입 승인이 필요해요.',perform);
 else{await perform();}}catch(err){report(err);}finally{controls.forEach(x=>{if(x.isConnected)x.disabled=false;});}});}
 async function deleteRoom(r){const d=dialog('그룹 삭제 중',`<p role="status">첨부 파일을 정리하고 있어요…</p><p class="error"></p>`);try{await api('delete_room',{room_id:r.id});for(;;){const paths=await api('deletion_files',{room_id:r.id});if(!paths.length)break;const {error}=await client.storage.from(bucket).remove(paths);if(error)throw error;}await api('finish_delete',{room_id:r.id});d.close();roomId=null;history.replaceState(null,'',location.pathname);await refresh();notify('그룹을 삭제했어요.');}catch(e){d.querySelector('.error').textContent='삭제가 중단됐어요. 그룹의 ‘삭제 계속하기’로 다시 진행해 주세요. '+failure(e);await refresh();throw e;}}
-async function removeFiles(paths){if(!paths.length)return;const {error}=await client.storage.from(bucket).remove(paths);if(error)notify('기록은 저장됐지만 일부 이전 첨부 정리가 지연됐어요.');}
+async function removeFiles(paths){const files=[...new Set(paths.filter(Boolean))];if(!files.length)return;const {error}=await client.storage.from(bucket).remove(files);clearMedia(true);if(error)notify('기록은 저장됐지만 일부 이전 첨부 정리가 지연됐어요.');}
 function compose(existing){const available=activeRooms();if(!available.length){createRoom();return;}let saved=existing?.media?.map(x=>({...x}))||[],files=[],previewUrls=[],busy=false,entryId=existing?.id||uuid(),uploaded=[],published=false;
 const dt=v=>v?new Date(new Date(v).getTime()+9*3600000).toISOString().slice(0,16):today()+'T12:00';
 const d=dialog(existing?'기록 수정':'우리 그룹에 올리기',`<form id="composer"><label class="field">그룹<select name="room_id" ${existing?'disabled':''}>${available.map(r=>`<option value="${r.id}" ${r.id===(existing?.room_id||roomId)?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label><br><div class="two"><label class="field">종류<select name="kind">${[['post','글 · 사진 · 동영상'],['event','약속'],['trip','여행계획']].map(([v,t])=>`<option value="${v}" ${existing?.kind===v?'selected':''}>${t}</option>`).join('')}</select></label><label class="field">제목<input name="title" maxlength="120" value="${esc(existing?.title)}" placeholder="제목"></label></div><section id="schedule-fields" hidden><br><label class="check"><input type="checkbox" name="all_day" ${existing?.all_day?'checked':''}> 종일 일정</label><br><div class="two"><label class="field">시작<input name="starts_at" type="datetime-local" value="${dt(existing?.starts_at)}"></label><label class="field">종료<input name="ends_at" type="datetime-local" value="${dt(existing?.ends_at)}"></label></div><br><label class="field">장소<input name="location" maxlength="200" value="${esc(existing?.location)}" placeholder="장소"></label><p class="hint">한국 시간 기준</p></section><br><label class="field">내용<textarea name="body" maxlength="10000" placeholder="내용을 입력하세요.">${esc(existing?.body)}</textarea></label><br><label class="file-picker">＋ 사진 · 동영상 함께 선택<input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm,video/quicktime,video/x-m4v" multiple></label><p class="hint">첨부 10개 · 50MB/개 · 총 200MB</p><div class="attachment-list" id="attachments"></div><p class="error" role="alert"></p><p id="upload-status" class="muted" role="status"></p><div class="dialog-foot"><button type="submit" class="primary">${existing?'저장하기':'올리기'}</button></div></form>`),form=d.querySelector('form');
@@ -232,7 +319,28 @@ window.addEventListener('beforeunload',protectUnload);
 d.addEventListener('cancel',e=>{e.preventDefault();d.requestDismiss();});d.querySelector('[data-close]').onclick=d.requestDismiss;d.addEventListener('close',()=>{window.removeEventListener('beforeunload',protectUnload);for(const url of previewUrls)URL.revokeObjectURL(url);});
 form.onsubmit=async e=>{e.preventDefault();if(busy)return;const fields=Object.fromEntries(new FormData(form));fields.room_id=existing?.room_id||fields.room_id;fields.all_day=form.elements.all_day.checked;fields.id=entryId;fields.updated_at=existing?.updated_at;fields.media=[...saved];if(fields.kind!=='post'){fields.starts_at=fields.starts_at+(fields.all_day?'T00:00:00+09:00':':00+09:00');fields.ends_at=fields.ends_at+(fields.all_day?'T23:59:59+09:00':':00+09:00');if(Date.parse(fields.ends_at)<Date.parse(fields.starts_at)){form.querySelector('.error').textContent='종료 날짜는 시작 날짜 이후로 정해 주세요.';return;}}else{fields.starts_at=null;fields.ends_at=null;fields.location='';}
 if(!fields.title.trim()&&!fields.body.trim()&&!saved.length&&!files.length){form.querySelector('.error').textContent='글을 쓰거나 사진·동영상을 선택해 주세요.';return;}busy=true;form.querySelector('.error').textContent='';form.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=true);uploaded=[];
-try{for(let i=0;i<files.length;i++){const file=files[i],path=`${user.id}/${fields.room_id}/${entryId}/${uuid()}.${types[file.type]}`;d.querySelector('#upload-status').textContent=`첨부 ${i+1}/${files.length} 올리는 중…`;const {error}=await client.storage.from(bucket).upload(path,file,{contentType:file.type,upsert:false,cacheControl:'0'});if(error)throw error;uploaded.push(path);fields.media.push({path,name:file.name});}d.querySelector('#upload-status').textContent='기록을 저장하고 있어요…';const result=await api('save',fields);published=true;await removeFiles(uploaded.filter(path=>!result.media.some(f=>f.path===path)));if(existing)await removeFiles(existing.media.filter(x=>!saved.some(f=>f.path===x.path)).map(x=>x.path));d.close();roomId=fields.room_id;date='';query='';filter='all';history.replaceState(null,'','#room='+roomId);await refresh();notify(existing?'수정했어요.':'그룹에 올렸어요.');}
+try{
+ for(let i=0;i<files.length;i++){
+  const file=files[i],base=`${user.id}/${fields.room_id}/${entryId}/${uuid()}`,path=`${base}.${types[file.type]}`;
+  d.querySelector('#upload-status').textContent=`첨부 ${i+1}/${files.length} 미리보기 준비 중…`;
+  const preview=await makePreview(file);
+  if(preview){
+   const thumbPath=`${base}.thumb.webp`;
+   const {error:thumbError}=await client.storage.from(bucket).upload(thumbPath,preview,{contentType:'image/webp',upsert:false,cacheControl:'0'});
+   if(!thumbError)uploaded.push(thumbPath);
+  }
+  d.querySelector('#upload-status').textContent=`첨부 ${i+1}/${files.length} 원본 올리는 중…`;
+  const {error}=await client.storage.from(bucket).upload(path,file,{contentType:file.type,upsert:false,cacheControl:'0'});
+  if(error)throw error;
+  uploaded.push(path);fields.media.push({path,name:file.name});
+ }
+ d.querySelector('#upload-status').textContent='기록을 저장하고 있어요…';
+ const result=await api('save',fields);published=true;
+ const retained=new Set(result.media.flatMap(f=>[f.path,f.preview_path].filter(Boolean)));
+ await removeFiles(uploaded.filter(path=>!retained.has(path)));
+ if(existing)await removeFiles(existing.media.filter(x=>!saved.some(f=>f.path===x.path)).flatMap(f=>[f.path,f.preview_path]));
+ d.close();roomId=fields.room_id;date='';query='';filter='all';history.replaceState(null,'','#room='+roomId);await refresh();notify(existing?'수정했어요.':'그룹에 올렸어요.');
+}
 catch(err){if(!published)await removeFiles(uploaded);form.querySelector('.error').textContent=failure(err);d.querySelector('#upload-status').textContent='';}
 finally{busy=false;form.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=false);if(existing)form.elements.room_id.disabled=true;}};
 }
@@ -243,7 +351,7 @@ d.querySelector('form').onsubmit=async e=>{e.preventDefault();const f=e.target,b
 async function initialize(){if(!window.supabase||!window.OJJUDA_CONFIG){gate('연결하지 못했어요. 새로고침해 주세요.');return;}client=window.supabase.createClient(window.OJJUDA_CONFIG.supabaseUrl,window.OJJUDA_CONFIG.supabaseKey);client.auth.onAuthStateChange((_event,session)=>{if(user&&session?.user?.id!==user.id){user=null;rooms=[];posts=[];gate('로그인 상태가 바뀌었어요. 다시 로그인해 주세요.');}});const ticket=++authEpoch;try{const {data,error}=await client.auth.getUser();if(error||!data.user||data.user.is_anonymous){gate();return;}if(ticket!==authEpoch)return;user=data.user;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=match?.[1]||null;if(roomId)await reloadRooms();render();if(roomId)await loadFeed();await showSharedInvitation();}catch(e){gate(failure(e));}}
 window.addEventListener('popstate',()=>{if(!user)return;const top=[...document.querySelectorAll('dialog[open]')].at(-1);if(top){history.pushState(null,'',roomId?'#room='+roomId:location.pathname);if(top.requestDismiss)top.requestDismiss();else top.close();return;}navigationRun++;const match=location.hash.match(/^#room=([a-f0-9-]{36})$/);roomId=rooms.some(r=>r.id===match?.[1])?match[1]:null;date='';render();void loadFeed();void showSharedInvitation();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&!mutating&&!document.querySelector('dialog[open]'))void refresh({quiet:true});});
-window.addEventListener('pagehide',clearMedia);
+window.addEventListener('pagehide',()=>clearMedia(true));
 setInterval(()=>{if(user&&!document.hidden&&!mutating&&!loading&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('input,textarea,select'))void refresh({quiet:true});},60000);
 void initialize();
 })();
