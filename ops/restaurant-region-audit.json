@@ -17859,7 +17859,21 @@
       "nextRegions": [
         "제주특별자치도 서귀포시"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "checkedAtKST": "2026-11-07",
+          "type": "post_deploy_visual_smoke",
+          "mergedPullRequest": "https://github.com/ojjuda-note/ojjuda-note.github.io/pull/697",
+          "deployedRevision": "20261107-restaurants-slot47-jeju-loc4",
+          "pagesRun": "https://github.com/ojjuda-note/ojjuda-note.github.io/actions/runs/42354705262",
+          "browserTestUrl": "https://agent.tinyfish.ai/runs/708bc9ee-5834-4a7a-906e-20f332ecc6ec",
+          "observed": "두 진입 URL에서 등록 3250곳. 제주 스시호시카이·국수마당 본점·탑동산호전복·고사리식당 4곳 카드와 지도 핀 확인, 고사리식당은 공식 VisitJeju 위치출처 링크 확인. 지도 타일 회색 아님.",
+          "observedCoordinatesAvailable": 1046,
+          "observedCoordinatesMissing": 2204,
+          "sourceCorrection": "45회차 통영 좌표 1건의 sources.coverage 누락이 있었음을 발견하고 위치 데이터는 건드리지 않은 채 수치만 1045→1046 정정."
+        }
+      ]
     }
   ],
   "notes": [
@@ -17872,6 +17886,7 @@
     "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존.",
     "2026-11-07 13시 43회차: 창원·김해 기본 목록 175건(각 83·92) 중 위치 누락 7건(6·1) 이월. 김해시 공식 2026 김해맛집 3건은 전부 기등록. 데이터 변경 없으므로 게임 캐시·revision 및 아지트 버전 미수정.",
     "2026-11-07 15시 45회차: 통영·거제 기본 56곳(통영7·거제49) 중 좌표 누락 8곳 우선 점검. 무전리샤브칼국수 수치좌표 1건 교차검증 보강, 남은 7건 이월. 신규/비노출 0. 추천맛집 회원 자료 불변.",
-    "2026-11-07 17시 47회차 제주시 86곳 중 위치 누락 75곳 추출, VisitJeju 공식 동일 상호·주소·좌표 4곳 확인, 위치 대기 71·신규0·비노출0. 46회차 미기록 이월. 추천맛집 회원 자료 변경 없음."
+    "2026-11-07 17시 47회차 제주시 86곳 중 위치 누락 75곳 추출, VisitJeju 공식 동일 상호·주소·좌표 4곳 확인, 위치 대기 71·신규0·비노출0. 46회차 미기록 이월. 추천맛집 회원 자료 변경 없음.",
+    "2026-11-07 47회차 배포 후 시각 확인: 제주 4곳 카드·지도 표시, 월드 진입 정상, 등록 3250곳. 실제 좌표 1046곳이 sources의 1045보다 1 많았으나 이전 45회차 통영 좌표 1건 집계 누락으로 밝혀 1046/2204로 운영·출처 집계 정정. 데이터/게임 리비전 변경 없음."
   ]
 }
