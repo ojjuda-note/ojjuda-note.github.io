@@ -20,7 +20,7 @@ assert.equal(supplement.restaurants.length, 13);
 assert.equal(new Set(supplement.restaurants.map(item => item.id)).size, 13);
 assert.equal(supplement.restaurants.filter(item => item.district === '구리시').length, 6);
 assert.equal(supplement.restaurants.filter(item => item.district === '평택시').length, 7);
-const normalize = value => String(value || '').replace(/[\\s,·‧]/g, '').toLowerCase();
+const normalize = value => String(value || '').replace(/\s/g, '').replace(/[·‧]/g, '').toLowerCase();
 const allPrior = [...original.restaurants];
 for (const name of ['official-gyeonggi-oldshops-slot08.json', 'official-seongnam-hipstores-slot09.json', 'official-goyang-paju-slot10.json', 'official-bucheon-gimpo-slot11.json', 'official-gyeonggi-slot12.json', 'official-gyeonggi-slot13.json', 'official-guri-slot15.json', 'official-gyeonggi-slot17.json']) {
   allPrior.push(...file('games/certified-restaurants/' + name).restaurants);
@@ -39,7 +39,7 @@ for (const restaurant of supplement.restaurants) {
   assert.equal(guide.yearType, 'source');
   assert.match(guide.sourceUrl, /^https:\/\/gnews\.gg\.go\.kr\//);
   assert.ok(guide.sourceAsOf === '2026-01-27' || guide.sourceAsOf === '2025-08-21');
-  assert.ok(!allPrior.some(other => other.id === restaurant.id || (normalize(other.name) === normalize(restaurant.name) && normalize(other.address).replace(/\\([^)]*\\)/g, '') === normalize(restaurant.address).replace(/\\([^)]*\\)/g, ''))), restaurant.name + ' should not duplicate a previous listing');
+  assert.ok(!allPrior.some(other => other.id === restaurant.id || (normalize(other.name) === normalize(restaurant.name) && normalize(other.address) === normalize(restaurant.address))), restaurant.name + ' should not duplicate a previous listing');
 }
 assert.ok(app.includes('official-gyeonggi-slot49.json?v=' + release.revision), 'new file has a separate cache revision');
 assert.ok(app.includes('...slot49Gyeonggi.restaurants'), 'new local official entries are merged in the live catalog');
