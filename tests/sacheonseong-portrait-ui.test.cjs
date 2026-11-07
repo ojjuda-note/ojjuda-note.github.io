@@ -105,6 +105,10 @@ async function screenshot(page,name){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
+   const zoomedTile=page.locator('.tile:not(:disabled)').first();
+   await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'true','a readable enlarged tile responds to touch');
+   await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'false','an enlarged tile can be deselected');
+   await page.locator('#zoom-fit').click();
    // Transparent areas of an upper floor must not swallow taps on uncovered
    // tiles below. A layer is a full rectangular grid despite its empty cells.
    const lower=await page.evaluate(()=>{
