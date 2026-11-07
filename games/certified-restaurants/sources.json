@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3322,
+    "uniqueRestaurants": 3326,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2589,
+      "local-guide": 2593,
       "post-office": 240
     },
     "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2261,
+    "coordinatesMissing": 2265,
     "regionalCounts": {
       "서울": 353,
       "부산": 385,
@@ -1548,7 +1548,7 @@
       "강원": 66,
       "전북": 215,
       "경기": 402,
-      "인천": 341,
+      "인천": 345,
       "제주": 120,
       "대구": 132,
       "전남": 183,
@@ -1558,7 +1558,7 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1973,
+      "한식": 1977,
       "중식": 138,
       "일식": 139,
       "기타": 584,
@@ -14309,53 +14309,128 @@
         "연아식당 상권정보의 정확 주소·상호 연결 좌표 및 독립 도로명 건물 좌표 3m 교차 확인. 나머지 6곳은 좌표 미등록.",
         "해당 시 전수 검증 아님; 다른 구 신규·영업상태 조사는 후속 회차로 이월. 회원 추천 불변."
       ]
+    },
+    {
+      "id": "2026-11-08-incheon-islands-slot61-four-official-tourism",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 61,
+      "previousCoverage": {
+        "uniqueRestaurants": 3322,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2589,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2261,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 132,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1973,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3326,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2593,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2265,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 132,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1977,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 4,
+      "modificationCount": 1,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-incheon-slot61-ganghwa-oepori-flowercrab",
+        "local-incheon-slot61-ganghwa-byeolmijeong",
+        "local-incheon-slot61-ongjin-samsamgui",
+        "local-incheon-slot61-ongjin-jandigarden"
+      ],
+      "sourceUrls": [
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+        "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+        "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-incheon-islands-slot61.json",
+      "scope": "1순환 61회차 인천광역시 강화군·옹진군: 강화군 문화관광 모범음식점 및 인천투어 개별 식당 정보에서 기존 목록에 없는 4곳의 상호·지점·도로명주소를 대조. 전국 전수 아님.",
+      "notes": [
+        "강화군 2곳, 옹진군 백령면 2곳. 좌표를 확인할 수 없어 lat/lng는 null 유지.",
+        "공식 관광 소개·모범음식점 수록은 블루리본 정규 리본 등급·2026 신규 선정으로 표시하지 않음.",
+        "대상 지역 기존 좌표 미확인 28곳과 신규 4곳의 실제 위치 공개 수치좌표/영업 상태는 미확인. 회원 추천 게시물은 미변경.",
+        "인천관광 소개의 오래된 게시·수정일은 현재 영업을 뜻하지 않음.",
+        "기존 ID local-north-1dec29df6f254886 편가네된장 주소 '가능포리 89번길11'을 강화군 공식 모범음식점 목록의 '가능포로89번길 11'로 교정. 좌표는 null 유지."
+      ],
+      "modifiedRestaurantIds": [
+        "local-north-1dec29df6f254886"
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-daejeon-sejong-slot60-seven-municipal-traditional-one-coordinate",
+    "id": "2026-11-08-incheon-islands-slot61-four-official-tourism",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 60,
+    "slot": 61,
     "previousCoverage": {
-      "uniqueRestaurants": 3315,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2582,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1060,
-      "coordinatesMissing": 2255,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 385,
-        "충북": 223,
-        "충남": 74,
-        "울산": 37,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 120,
-        "대구": 132,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1968,
-        "중식": 138,
-        "일식": 139,
-        "기타": 584,
-        "양식": 214,
-        "분식": 33,
-        "디저트": 239
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3322,
       "providerCounts": {
         "michelin": 237,
@@ -14394,31 +14469,74 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 7,
-    "modificationCount": 0,
-    "coordinateAddedCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3326,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2593,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1061,
+      "coordinatesMissing": 2265,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 385,
+        "충북": 223,
+        "충남": 74,
+        "울산": 37,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 132,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1977,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 4,
+    "modificationCount": 1,
+    "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-daejeon-slot60-geukdong-bakery",
-      "local-daejeon-slot60-happy-home",
-      "local-daejeon-slot60-choryang",
-      "local-daejeon-slot60-yeona",
-      "local-daejeon-slot60-yeongdong",
-      "local-daejeon-slot60-jeongsik",
-      "local-daejeon-slot60-geumgwang"
+      "local-incheon-slot61-ganghwa-oepori-flowercrab",
+      "local-incheon-slot61-ganghwa-byeolmijeong",
+      "local-incheon-slot61-ongjin-samsamgui",
+      "local-incheon-slot61-ongjin-jandigarden"
     ],
     "sourceUrls": [
-      "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
-      "https://xgs.purpleo.kr/article/10816",
-      "https://findby.co.kr/details/34973-301403165035-st-652b3a518c641f9e389bf1b0",
-      "https://www.sjcf.or.kr/foodtrip/bluer/list.do?key=2508200001"
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-daejeon-slot21.json",
-    "scope": "1/60 대전·세종 광역 공식 명단 대조: 대전 중구 3대·30년 전통업소 공식 등록 10행 중 기존 3행 제외 신규 7곳 등록, 세종 기존 공동선정 100곳 중복 확인",
+    "sourceSupplement": "games/certified-restaurants/official-incheon-islands-slot61.json",
+    "scope": "1순환 61회차 인천광역시 강화군·옹진군: 강화군 문화관광 모범음식점 및 인천투어 개별 식당 정보에서 기존 목록에 없는 4곳의 상호·지점·도로명주소를 대조. 전국 전수 아님.",
     "notes": [
-      "전통업소 대전시 공식 인증과 블루리본 정규 리본 등급은 구분; 선정연도·현재 영업 여부 미확정.",
-      "연아식당 상권정보의 정확 주소·상호 연결 좌표 및 독립 도로명 건물 좌표 3m 교차 확인. 나머지 6곳은 좌표 미등록.",
-      "해당 시 전수 검증 아님; 다른 구 신규·영업상태 조사는 후속 회차로 이월. 회원 추천 불변."
+      "강화군 2곳, 옹진군 백령면 2곳. 좌표를 확인할 수 없어 lat/lng는 null 유지.",
+      "공식 관광 소개·모범음식점 수록은 블루리본 정규 리본 등급·2026 신규 선정으로 표시하지 않음.",
+      "대상 지역 기존 좌표 미확인 28곳과 신규 4곳의 실제 위치 공개 수치좌표/영업 상태는 미확인. 회원 추천 게시물은 미변경.",
+      "인천관광 소개의 오래된 게시·수정일은 현재 영업을 뜻하지 않음.",
+      "기존 ID local-north-1dec29df6f254886 편가네된장 주소 '가능포리 89번길11'을 강화군 공식 모범음식점 목록의 '가능포로89번길 11'로 교정. 좌표는 null 유지."
+    ],
+    "modifiedRestaurantIds": [
+      "local-north-1dec29df6f254886"
     ]
   },
   "latestMapCoverageAudit": {
@@ -23001,5 +23119,52 @@
     "currentOperatingStatusNotVerified": true,
     "coordinatePolicy": "연아식당 동일 상호/주소의 공개 가게 좌표와 주소 좌표 독립 확인. 나머지 좌표 추정 금지.",
     "blueRibbonOfficialFullMapRetained": true
+  },
+  "incheonIslandsSlot61": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 61,
+    "sourceFile": "games/certified-restaurants/official-incheon-islands-slot61.json",
+    "officialSources": [
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
+      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
+      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+    ],
+    "addedCount": 4,
+    "modifiedCount": 1,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "pendingLocations": 32,
+    "pendingLocationScope": "기존 강화군 28개 전부 좌표 null, 기존 옹진군 0개; 신규 강화군 2·옹진군 2 추가 후 총 32개. 실제 위치 좌표 검증이 끝난 식당 수가 아님.",
+    "locationsByRegionAfter": {
+      "강화군": 30,
+      "옹진군": 2
+    },
+    "restaurantIds": [
+      "local-incheon-slot61-ganghwa-oepori-flowercrab",
+      "local-incheon-slot61-ganghwa-byeolmijeong",
+      "local-incheon-slot61-ongjin-samsamgui",
+      "local-incheon-slot61-ongjin-jandigarden"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "blueRibbonGradeVerified": 0,
+    "scope": "1순환 61회차 인천광역시 강화군·옹진군: 강화군 문화관광 모범음식점 및 인천투어 개별 식당 정보에서 기존 목록에 없는 4곳의 상호·지점·도로명주소를 대조. 전국 전수 아님.",
+    "addressCorrectedCount": 1,
+    "addressCorrections": [
+      {
+        "restaurantId": "local-north-1dec29df6f254886",
+        "name": "편가네된장",
+        "oldAddress": "인천광역시 강화군 화도면 가능포리 89번길11",
+        "newAddress": "인천광역시 강화군 화도면 가능포로89번길 11",
+        "sourceUrl": "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do",
+        "checkedAt": "2026-11-08",
+        "lat": null,
+        "lng": null
+      }
+    ]
   }
 }
