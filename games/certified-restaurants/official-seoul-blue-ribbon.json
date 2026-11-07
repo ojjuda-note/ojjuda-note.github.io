@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05",
+  "updatedAt": "2026-11-08",
   "sourceName": "서울관광재단 Visit Seoul 공식 음식점 페이지",
   "sourceUrl": "https://korean.visitseoul.net/",
   "completeRegionalCollection": false,
@@ -65,11 +65,71 @@
         }
       ],
       "addressSourceUrl": "https://korean.visitseoul.net/area/JadeandWaterOksu/KOPituzq5"
+    },
+    {
+      "id": "local-seoul-visitseoul-the-makan-bangi",
+      "name": "더마칸",
+      "category": "기타",
+      "region": "서울",
+      "district": "송파구",
+      "address": "서울 송파구 올림픽로32길 37-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "나시르막",
+        "차퀘테오"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정·수록 이력(등급 미확인)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo",
+          "sourceName": "서울관광재단 Visit Seoul · 블루리본 등재 언급",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_listing",
+          "selectionCriteria": "2026년 서울관광재단 공식 소개가 블루리본 서베이 등재 이력을 명시. 수록 연도·정규 리본 수·현재 선정·영업 상태는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/TheMakan/KOP3nhveo"
+    },
+    {
+      "id": "local-seoul-visitseoul-cheongdonok-seogyo",
+      "name": "청돈옥",
+      "category": "한식",
+      "region": "서울",
+      "district": "마포구",
+      "address": "서울 마포구 잔다리로6길 10, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "숙성 삼겹살",
+        "목살",
+        "돈마호크"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "선정 이력(정규 등급 미확인)",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k",
+          "sourceName": "서울관광재단 Visit Seoul · 4년 연속 선정 언급",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-07-03",
+          "sourceDateType": "official-page-last-modified",
+          "status": "historical_selection",
+          "selectionCriteria": "2026-07-03 서울관광재단 공식 식당 소개에 블루리본 4년 연속 선정 명시. 정확한 선정 연도·정규 등급·현재 선정·영업 상태는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitseoul.net/area/Cheongdonok/KOPpr9v1k"
     }
   ],
   "notes": [
     "원본 소개문·이미지 미수록. 좌표는 검증 가능한 공개 근거를 확보하지 않아 null.",
     "동일 식당 중복 여부는 2026-11-05 최신 main 기본 목록 3011개 및 울산 추가 목록과 대조했고, 해당 상호·주소가 없음을 확인.",
-    "선정 이력은 현재 선정 또는 영업 중을 의미하지 않습니다."
+    "선정 이력은 현재 선정 또는 영업 중을 의미하지 않습니다.",
+    "2026-11-08 1순환 58회차 추가 2곳(송파 더마칸·마포 청돈옥). 서울관광재단 공식 문구로 블루리본 수록·선정 이력과 주소 확인. 판본·등급·현영업·위경도 미확정. 서울·인천 전수 목록이 아님."
   ]
 }
