@@ -1,0 +1,47 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 55,
+  "sourceName": "한국관광공사 대한민국 구석구석",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
+    "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9",
+    "https://www.gb.go.kr/Main/finace/page.do?mnu_uid=15699"
+  ],
+  "sourceScope": "경북 안동 공식 관광 식당 소개·이름·전화와 지방행정 인허가 현주소 일치 확인, 나머지 경북 전수 조사 아님.",
+  "completeRegionalCollection": false,
+  "currentOperatingStatusChecked": false,
+  "coordinatePolicy": "업소 입구·지점과 독립 검증되지 않은 인허가 주소 지오코딩 좌표는 사용하지 않음.",
+  "restaurants": [
+    {
+      "id": "local-gyeongbuk-slot55-andong-jinseong",
+      "name": "진성식당",
+      "category": "양식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 태사길 25, 1층 (북문동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물매운돈가스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 여행기사 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
+          "sourceName": "한국관광공사 대한민국 구석구석 · 안동 여행 식당 정보",
+          "sourceAsOf": "2025-01",
+          "verifiedAt": "2026-11-08",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 여행기사의 식당 소개·메뉴·전화. 현 영업 여부와 미쉐린/블루리본 정규 선정 증거는 아님."
+        }
+      ],
+      "addressSourceUrl": "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9",
+      "addressSourceCheckedAt": "2026-11-08",
+      "locationEvidenceNote": "관광공사 2025-01 정보 태사길·전화 054-852-6880과 2026-08-24 기준 공개 지방행정 인허가 재게시 태사길 25·전화번호 일치. 주소 기반 추정 좌표 제외."
+    }
+  ]
+}
