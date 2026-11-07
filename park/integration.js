@@ -5,7 +5,7 @@
   try { hosted = parent !== window && parent.location.origin === location.origin && parent.location.pathname === '/world.html'; } catch {}
   const send = data => { if (hosted) parent.postMessage(data, location.origin); };
   const originalCanLeave = window.canCloseParkNote;
-  let pendingAction = null, previousOverlay = null, previousDetail = null, previousBalance = null, reporting = false;
+  let pendingAction = null, previousOverlay = null, previousDetail = null, previousBalance = null, reporting = false, hostVisible = true;
   const visible = selector => !!document.querySelector(selector);
   const overlayOpen = () => visible('.dialog-backdrop:not([hidden]), .nn-backdrop:not([hidden]), .note-photo-lightbox:not([hidden]), dialog[open]');
 
@@ -67,6 +67,7 @@
 
   function reportState() {
     reporting = false;
+    if (!hostVisible) return;
     const open = overlayOpen();
     const cardOpen = !detail.hidden;
     const compose = document.querySelector('.write-fab');if(compose&&compose.hidden!==cardOpen)compose.hidden=cardOpen;
@@ -78,7 +79,7 @@
     } else previousBalance = null;
     if (pendingAction && authKnown) { const action = pendingAction; pendingAction = null; navigate(action); }
   }
-  function scheduleReport() { if (!reporting) { reporting = true; queueMicrotask(reportState); } }
+  function scheduleReport() { if (hostVisible && !reporting) { reporting = true; queueMicrotask(reportState); } }
   new MutationObserver(scheduleReport).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'open'] });
 
   document.addEventListener('click', event => {
@@ -98,6 +99,11 @@
   }, true);
   addEventListener('message', event => {
     if (!hosted || event.origin !== location.origin || event.source !== parent) return;
+    if (event.data?.type === 'ojjuda:park-visibility') {
+      hostVisible = event.data.visible === true;
+      if (hostVisible) { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
+      return;
+    }
     if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
   });
 
