@@ -60,3 +60,10 @@
  .room-context~.filter-row{gap:6px;margin:11px 0 16px}
  .room-context~.filter-row .filter{min-height:34px;padding:6px 11px;font-size:12px}
 }
+
+/* Separate page sharing from member invitations without crowding mobile actions. */
+.hero .actions .page-share{white-space:nowrap}
+@media(max-width:600px){
+ .hero .actions .page-share{flex:0 0 auto;margin-left:auto;min-height:36px;padding:7px 12px;font-size:13px}
+ .hero .actions button[data-action="create"]{min-width:0}
+}
