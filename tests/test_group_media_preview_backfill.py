@@ -98,6 +98,14 @@ class GroupPreviewTests(unittest.TestCase):
         with Image.open(BytesIO(jpg)) as original:
             self.assertEqual(original.format, 'JPEG')
 
+    def test_mislabeled_jpeg_containing_png_pixels_can_still_make_preview(self):
+        buffer = BytesIO()
+        Image.effect_noise((1500, 1000), 60).convert('RGB').save(buffer, 'PNG')
+        preview = backfill.make_preview(buffer.getvalue())
+        with Image.open(BytesIO(preview)) as image:
+            self.assertEqual(image.format, 'WEBP')
+            self.assertLessEqual(max(image.size), 960)
+
     def test_rejects_paths_outside_author_exact_uuid_or_extension(self):
         self.assertTrue(backfill.preview_path(PHOTO, AUTHOR).endswith('.thumb.webp'))
         for path, author in ((PHOTO, UUID('00000000-0000-4000-8000-000000000002')),
@@ -163,7 +171,7 @@ class GroupPreviewTests(unittest.TestCase):
         result = backfill.backfill(database, storage, apply=True)
         self.assertEqual(result['skipped'], 1)
         self.assertEqual(result['linked'], 1)
-        self.assertEqual(result['reasons']['image_unsupported'], 1)
+        self.assertEqual(result['reasons']['unidentified'], 1)
 
     def test_failed_database_link_removes_only_the_new_sidecar(self):
         jpg = sample_jpeg()
