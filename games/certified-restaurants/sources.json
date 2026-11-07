@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3326,
+    "uniqueRestaurants": 3331,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2593,
+      "local-guide": 2598,
       "post-office": 240
     },
     "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2265,
+    "coordinatesMissing": 2270,
     "regionalCounts": {
       "서울": 353,
       "부산": 385,
@@ -1550,7 +1550,7 @@
       "경기": 402,
       "인천": 345,
       "제주": 120,
-      "대구": 132,
+      "대구": 137,
       "전남": 183,
       "세종": 100,
       "대전": 117,
@@ -1558,7 +1558,7 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1977,
+      "한식": 1982,
       "중식": 138,
       "일식": 139,
       "기타": 584,
@@ -14423,53 +14423,128 @@
       "modifiedRestaurantIds": [
         "local-north-1dec29df6f254886"
       ]
+    },
+    {
+      "id": "2026-11-08-daegu-slot62-five-official-food-listings",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 62,
+      "previousCoverage": {
+        "uniqueRestaurants": 3326,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2593,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2265,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 132,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1977,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3331,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2598,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2270,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1982,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 5,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+        "local-daegu-slot62-dalseong-toseokjeong",
+        "local-daegu-slot62-dalseong-daeseong-eel",
+        "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+        "local-daegu-slot62-dalseong-palsu"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+        "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-daegu-slot62.json",
+      "scope": "달성군·군위군 부분 조사. 대구푸드 공식 상호·도로명주소를 확인해 달성군 5곳만 추가, 군위군 신규 공식 검증 없음. 2025년 대구음식점 가이드북 기존 18개와 비교. 지역 전수조사가 아님.",
+      "notes": [
+        "본점과 직영점이 주소가 다른 연화정삼계탕의 두 지점을 별도로 유지.",
+        "대구푸드 목록의 개별 인증 종류·지정 연도와 현재 영업 여부는 확인하지 않음.",
+        "좌표 미등록 기존 18곳과 신규 5곳은 상호·현주소에 정확히 맞는 공개 수치좌표가 없으므로 null 유지.",
+        "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
+        "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
+        "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-incheon-islands-slot61-four-official-tourism",
+    "id": "2026-11-08-daegu-slot62-five-official-food-listings",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 61,
+    "slot": 62,
     "previousCoverage": {
-      "uniqueRestaurants": 3322,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2589,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2261,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 385,
-        "충북": 223,
-        "충남": 74,
-        "울산": 37,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 120,
-        "대구": 132,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1973,
-        "중식": 138,
-        "일식": 139,
-        "기타": 584,
-        "양식": 214,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3326,
       "providerCounts": {
         "michelin": 237,
@@ -14508,35 +14583,74 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 4,
-    "modificationCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3331,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2598,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1061,
+      "coordinatesMissing": 2270,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 385,
+        "충북": 223,
+        "충남": 74,
+        "울산": 37,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1982,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 5,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-incheon-slot61-ganghwa-oepori-flowercrab",
-      "local-incheon-slot61-ganghwa-byeolmijeong",
-      "local-incheon-slot61-ongjin-samsamgui",
-      "local-incheon-slot61-ongjin-jandigarden"
+      "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+      "local-daegu-slot62-dalseong-toseokjeong",
+      "local-daegu-slot62-dalseong-daeseong-eel",
+      "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+      "local-daegu-slot62-dalseong-palsu"
     ],
+    "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://www.ganghwa.go.kr/open_content/tour/locinfo/gourmet.do?pgno=1",
-      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do?pgno=2",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120616011013942",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21120709580068950",
-      "https://itour.incheon.go.kr/ssst/ssst/detail.do?cotId=ITD21122416504042662",
-      "https://www.ganghwa.go.kr/open_content/tour/locinfo/modelRestaurant.do"
+      "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-incheon-islands-slot61.json",
-    "scope": "1순환 61회차 인천광역시 강화군·옹진군: 강화군 문화관광 모범음식점 및 인천투어 개별 식당 정보에서 기존 목록에 없는 4곳의 상호·지점·도로명주소를 대조. 전국 전수 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-daegu-slot62.json",
+    "scope": "달성군·군위군 부분 조사. 대구푸드 공식 상호·도로명주소를 확인해 달성군 5곳만 추가, 군위군 신규 공식 검증 없음. 2025년 대구음식점 가이드북 기존 18개와 비교. 지역 전수조사가 아님.",
     "notes": [
-      "강화군 2곳, 옹진군 백령면 2곳. 좌표를 확인할 수 없어 lat/lng는 null 유지.",
-      "공식 관광 소개·모범음식점 수록은 블루리본 정규 리본 등급·2026 신규 선정으로 표시하지 않음.",
-      "대상 지역 기존 좌표 미확인 28곳과 신규 4곳의 실제 위치 공개 수치좌표/영업 상태는 미확인. 회원 추천 게시물은 미변경.",
-      "인천관광 소개의 오래된 게시·수정일은 현재 영업을 뜻하지 않음.",
-      "기존 ID local-north-1dec29df6f254886 편가네된장 주소 '가능포리 89번길11'을 강화군 공식 모범음식점 목록의 '가능포로89번길 11'로 교정. 좌표는 null 유지."
-    ],
-    "modifiedRestaurantIds": [
-      "local-north-1dec29df6f254886"
+      "본점과 직영점이 주소가 다른 연화정삼계탕의 두 지점을 별도로 유지.",
+      "대구푸드 목록의 개별 인증 종류·지정 연도와 현재 영업 여부는 확인하지 않음.",
+      "좌표 미등록 기존 18곳과 신규 5곳은 상호·현주소에 정확히 맞는 공개 수치좌표가 없으므로 null 유지.",
+      "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
+      "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
+      "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -14647,7 +14761,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2452,
+    "recordCount": 2457,
     "designationEvidenceCount": 2442,
     "coordinatesAvailable": 758,
     "regionCount": 17,
@@ -14666,7 +14780,7 @@
       },
       {
         "region": "대구",
-        "uniqueRestaurants": 118,
+        "uniqueRestaurants": 123,
         "coordinatesAvailable": 1,
         "completeRegionalCollection": false
       },
@@ -23165,6 +23279,48 @@
         "lat": null,
         "lng": null
       }
+    ]
+  },
+  "daeguSlot62": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 62,
+    "sourceFile": "games/certified-restaurants/official-daegu-slot62.json",
+    "officialSources": [
+      "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
+      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+    ],
+    "addedCount": 5,
+    "modifiedCount": 0,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "pendingLocations": 23,
+    "locationsByRegionAfter": {
+      "달성군": 18,
+      "군위군": 5
+    },
+    "restaurantIds": [
+      "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
+      "local-daegu-slot62-dalseong-toseokjeong",
+      "local-daegu-slot62-dalseong-daeseong-eel",
+      "local-daegu-slot62-dalseong-dalseong-hoesikdang",
+      "local-daegu-slot62-dalseong-palsu"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "blueRibbonGradeVerified": 0,
+    "scope": "달성군·군위군 부분 조사. 대구푸드 공식 상호·도로명주소를 확인해 달성군 5곳만 추가, 군위군 신규 공식 검증 없음. 2025년 대구음식점 가이드북 기존 18개와 비교. 지역 전수조사가 아님.",
+    "notes": [
+      "본점과 직영점이 주소가 다른 연화정삼계탕의 두 지점을 별도로 유지.",
+      "대구푸드 목록의 개별 인증 종류·지정 연도와 현재 영업 여부는 확인하지 않음.",
+      "좌표 미등록 기존 18곳과 신규 5곳은 상호·현주소에 정확히 맞는 공개 수치좌표가 없으므로 null 유지.",
+      "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
+      "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
+      "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
     ]
   }
 }
