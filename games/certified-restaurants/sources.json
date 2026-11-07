@@ -45,7 +45,16 @@
         "위치는 상호·도로명·건물번호가 일치하는 공개 주소좌표 자료로 보강. 주소 변경 뒤 이전 좌표가 승계된 기록 및 근사 좌표는 제외. 원본 지도 API의 응답주소가 재확인되었다는 뜻은 아님."
       ],
       "coordinatesInPublicationCount": 0,
-      "mappedCoordinateCount": 150
+      "mappedCoordinateCount": 151,
+      "locationCrosscheck20261107": {
+        "restaurantId": "post-2026-59-1-1",
+        "name": "무전리샤브칼국수",
+        "currentAddress": "경상남도 통영시 무전8길 13-32",
+        "coordinateSource": "https://82rg.com/nearby/restaurant/509957",
+        "crosscheckSource": "https://xju.purpleo.kr/article/7712",
+        "checkedAt": "2026-11-07",
+        "note": "2개 공개 자료에 업소명·도로명 주소가 같고 공표 좌표가 약 8m 이내로 일치. 기존 지도 좌표 없는 항목만 보강하며 영업 상태를 새로 확정하지 않음."
+      }
     },
     "notes": [
       "Only restaurant identification facts and basic menu names are reproduced; no guide photography or editorial descriptions.",

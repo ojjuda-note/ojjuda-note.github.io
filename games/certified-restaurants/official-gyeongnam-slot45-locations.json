@@ -1,0 +1,21 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceNote": "기존 인증맛집 ID의 현재 주소·업소명 일치 공개 좌표를 2개 독립 공개 자료와 대조. 우체국 추천 이력과 영업상태는 별개.",
+  "restaurants": [],
+  "locationEnrichments": [
+    {
+      "id": "post-2026-59-1-1",
+      "expectedName": "무전리샤브칼국수",
+      "expectedAddress": "경상남도 통영시 무전8길 13-32",
+      "lat": 34.8585381,
+      "lng": 128.4278206,
+      "coordinateSource": {
+        "name": "행정안전부 인허가 기반 공개 업소 위치",
+        "url": "https://82rg.com/nearby/restaurant/509957",
+        "crosscheckUrl": "https://xju.purpleo.kr/article/7712",
+        "method": "exact-name-and-road-address; independent-published-coordinates-within-8m",
+        "checkedAt": "2026-11-07"
+      }
+    }
+  ]
+}
