@@ -46,11 +46,11 @@ assert.ok(app.includes('slot44.restaurants'), 'the live directory loads the new 
 assert.ok(app.includes('slot44.locationEnrichments'), 'the live directory applies the verified coordinates');
 assert.ok(app.includes('row.id === patch.id && row.name === patch.expectedName && row.address === patch.expectedAddress'), 'the map location is tied to an exact place');
 assert.ok(app.includes('restaurant.lat != null || restaurant.lng != null'), 'previous coordinates are never overwritten');
-assert.equal(sources.coverage.uniqueRestaurants, 3263);
+assert.equal(sources.coverage.uniqueRestaurants, 3270);
 assert.equal(sources.coverage.coordinatesAvailable, sources.latestMapCoverageAudit.currentCoverage.coordinatesAvailable);
-assert.equal(sources.coverage.coordinatesMissing, sources.latestMapCoverageAudit.currentCoverage.coordinatesMissing + 13, 'new official listings have no guessed coordinates');
+assert.equal(sources.coverage.coordinatesMissing, sources.latestMapCoverageAudit.currentCoverage.coordinatesMissing + 20, 'new official listings have no guessed coordinates');
 assert.equal(sources.coverage.coordinatesAvailable + sources.coverage.coordinatesMissing, sources.coverage.uniqueRestaurants);
-assert.equal(sources.coverage.providerCounts['local-guide'], 2532);
+assert.equal(sources.coverage.providerCounts['local-guide'], 2539);
 const slot44 = audit.entries.find(item => item.cycle === 1 && item.slot === 44);
 assert.ok(slot44);
 assert.equal(slot44.additions, 1);
