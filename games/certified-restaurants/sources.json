@@ -1518,8 +1518,8 @@
       "local-guide": 2519,
       "post-office": 240
     },
-    "coordinatesAvailable": 1045,
-    "coordinatesMissing": 2205,
+    "coordinatesAvailable": 1046,
+    "coordinatesMissing": 2204,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -12559,8 +12559,8 @@
           "local-guide": 2519,
           "post-office": 240
         },
-        "coordinatesAvailable": 1041,
-        "coordinatesMissing": 2209,
+        "coordinatesAvailable": 1042,
+        "coordinatesMissing": 2208,
         "regionalCounts": {
           "서울": 351,
           "부산": 382,
@@ -12598,8 +12598,8 @@
           "local-guide": 2519,
           "post-office": 240
         },
-        "coordinatesAvailable": 1045,
-        "coordinatesMissing": 2205,
+        "coordinatesAvailable": 1046,
+        "coordinatesMissing": 2204,
         "regionalCounts": {
           "서울": 351,
           "부산": 382,
@@ -12649,7 +12649,8 @@
       "notes": [
         "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
         "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
-        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음.",
+        "집계 보정: 45회차 통영 무전리샤브칼국수 좌표 1건은 배포 화면에 이미 반영되었으나 당시 sources.coverage 합계에서 누락됨. 화면 확인 1046곳에 맞게 이전 기준 1042, 이번 4곳 반영 1046으로 일치시킴. 새 좌표 추가·식당 변경은 아님."
       ],
       "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
@@ -12668,8 +12669,8 @@
         "local-guide": 2519,
         "post-office": 240
       },
-      "coordinatesAvailable": 1041,
-      "coordinatesMissing": 2209,
+      "coordinatesAvailable": 1042,
+      "coordinatesMissing": 2208,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12707,8 +12708,8 @@
         "local-guide": 2519,
         "post-office": 240
       },
-      "coordinatesAvailable": 1045,
-      "coordinatesMissing": 2205,
+      "coordinatesAvailable": 1046,
+      "coordinatesMissing": 2204,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12758,7 +12759,8 @@
     "notes": [
       "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
       "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
-      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음.",
+      "집계 보정: 45회차 통영 무전리샤브칼국수 좌표 1건은 배포 화면에 이미 반영되었으나 당시 sources.coverage 합계에서 누락됨. 화면 확인 1046곳에 맞게 이전 기준 1042, 이번 4곳 반영 1046으로 일치시킴. 새 좌표 추가·식당 변경은 아님."
     ],
     "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
     "sourceAuditFile": "games/certified-restaurants/sources.json"
@@ -12776,8 +12778,8 @@
         "local-guide": 2519,
         "post-office": 240
       },
-      "coordinatesAvailable": 1041,
-      "coordinatesMissing": 2209,
+      "coordinatesAvailable": 1042,
+      "coordinatesMissing": 2208,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12815,8 +12817,8 @@
         "local-guide": 2519,
         "post-office": 240
       },
-      "coordinatesAvailable": 1045,
-      "coordinatesMissing": 2205,
+      "coordinatesAvailable": 1046,
+      "coordinatesMissing": 2204,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12866,7 +12868,8 @@
     "notes": [
       "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
       "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
-      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음.",
+      "집계 보정: 45회차 통영 무전리샤브칼국수 좌표 1건은 배포 화면에 이미 반영되었으나 당시 sources.coverage 합계에서 누락됨. 화면 확인 1046곳에 맞게 이전 기준 1042, 이번 4곳 반영 1046으로 일치시킴. 새 좌표 추가·식당 변경은 아님."
     ],
     "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
     "sourceAuditFile": "games/certified-restaurants/sources.json"
@@ -20561,8 +20564,8 @@
           "local-guide": 2519,
           "post-office": 240
         },
-        "coordinatesAvailable": 1041,
-        "coordinatesMissing": 2209,
+        "coordinatesAvailable": 1042,
+        "coordinatesMissing": 2208,
         "regionalCounts": {
           "서울": 351,
           "부산": 382,
@@ -20600,8 +20603,8 @@
           "local-guide": 2519,
           "post-office": 240
         },
-        "coordinatesAvailable": 1045,
-        "coordinatesMissing": 2205,
+        "coordinatesAvailable": 1046,
+        "coordinatesMissing": 2204,
         "regionalCounts": {
           "서울": 351,
           "부산": 382,
@@ -20651,7 +20654,8 @@
       "notes": [
         "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
         "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
-        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음.",
+        "집계 보정: 45회차 통영 무전리샤브칼국수 좌표 1건은 배포 화면에 이미 반영되었으나 당시 sources.coverage 합계에서 누락됨. 화면 확인 1046곳에 맞게 이전 기준 1042, 이번 4곳 반영 1046으로 일치시킴. 새 좌표 추가·식당 변경은 아님."
       ],
       "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
@@ -20697,6 +20701,23 @@
       "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
     ],
     "sourceName": "제주관광공사 VisitJeju 식당 개별 상세·정확한 주소·수치좌표",
-    "note": "기존 선정 이력과 공식 관광 위치정보만 확인. 현 영업·폐업 여부는 별도 검증 필요. 회원 추천·개인 위치 미사용."
+    "note": "기존 선정 이력과 공식 관광 위치정보만 확인. 현 영업·폐업 여부는 별도 검증 필요. 회원 추천·개인 위치 미사용.",
+    "liveObservedCoordinates": 1046,
+    "countBasis": "실제 페이지 전체 3250곳 중 좌표표시 1046; 슬롯45 통영 1곳의 앞선 집계 누락을 더해 슬롯47 적용 전 1042, 신규 제주 4곳을 더해 1046."
+  },
+  "slot45CoverageReconciliation20261107": {
+    "checkedAt": "2026-11-07",
+    "reason": "2026-11-07 15:00 45회차 통영 무전리샤브칼국수 위치 보강이 실제 카드/지도 로더에는 반영되었으나 sources.coverage 집계에는 누락",
+    "alreadyDeployedCoordinateCount": 1,
+    "beforeSlot47ActualCoordinates": 1042,
+    "slot47VerifiedAddedCoordinates": 4,
+    "afterSlot47ActualCoordinates": 1046,
+    "afterSlot47MissingCoordinates": 2204,
+    "evidenceFile": "games/certified-restaurants/official-gyeongnam-slot45-locations.json",
+    "verifiedLivePages": [
+      "https://ojjuda.kr/games/certified-restaurants/index.html",
+      "https://ojjuda.kr/world.html?game=restaurants"
+    ],
+    "note": "기존 슬롯45/47 매핑 5건의 카운트 정정만 수행. 새로운 좌표·선정 이력·사용자 정보 변경 없음."
   }
 }
