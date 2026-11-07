@@ -14,18 +14,23 @@ function fixture({stage=2,grid=null,saved=null,records={},seed=null,embedded=fal
  w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
  w.OjjudaSacheonseongOnline={newId:()=>w.crypto.randomUUID(),stage:()=>{},record:(stage,record)=>sent.push({stage,...record})};
- w.localStorage.setItem(KEY,JSON.stringify(saved||{unlocked:Math.min(15,stage+1),sound:false}));
+ w.localStorage.setItem(KEY,JSON.stringify(saved||{unlocked:Math.min(E.MAX_STAGE,stage+1),sound:false}));
  w.localStorage.setItem(RECORDS,JSON.stringify(records));
  for(const name of ['engine','faces'])w.eval(read('games/sacheonseong/'+name+'.js'));
  // Arrange a late round directly; a later visit starts a fresh board at the saved level.
- if(!saved){const generate=w.TileGarden.generate;let arranged=false;w.TileGarden.generate=(n,...args)=>{
-  const result=generate(n,...args);if(!arranged&&n===stage){arranged=true;result.grid=grid?grid.map(row=>row.slice()):result.grid.map(row=>row.map(()=>E.EMPTY));if(!grid)result.grid[0][0]=result.grid[0][1]=0;}return result;
+ if(!saved){const generate=w.TileGarden.generateStack;let arranged=false;w.TileGarden.generateStack=(n,...args)=>{
+  const result=generate(n,...args);if(!arranged&&n===stage){
+   arranged=true;
+   const late=grid?grid.map(row=>row.slice()):result.grids[0].map(row=>row.map(()=>E.EMPTY));
+   if(!grid)late[0][0]=late[0][1]=0;
+   result.grids=[late];result.info={...result.info,layerCount:1,total:late.flat().filter(v=>v!==E.EMPTY).length};
+  }return result;
  };}
  w.eval(read('games/sacheonseong/app.js'));
  if(!saved&&stage>1){d.getElementById('all-stages').click();d.querySelector(`[data-stage="${stage}"]`).click();}
  return {w,d,sent,finished,state:()=>JSON.parse(w.localStorage.getItem(KEY)),records:()=>JSON.parse(w.localStorage.getItem(RECORDS)),advance:ms=>{now+=ms;intervals.forEach(fn=>fn());},match:()=>{d.querySelector('[data-r="0"][data-c="0"]').click();now+=12000;d.querySelector('[data-r="0"][data-c="1"]').click();},pending:delay=>[...timers.values()].filter(timer=>timer.delay===delay).map(timer=>timer.fn),run:delay=>{for(const [key,timer]of [...timers])if(timer.delay===delay){timers.delete(key);timer.fn();}},close:()=>w.close()};
 }
-for(const stage of [1,7,15])test(`guest stage ${stage} completion ends the trial once and blocks an immediate next round`,()=>{
+for(const stage of [1,7,200])test(`guest stage ${stage} completion ends the trial once and blocks an immediate next round`,()=>{
  const f=fixture({stage,embedded:true});try{
   const runId=f.state().runId;f.match();
   assert.equal(f.finished.length,1,'a single completed stage ends the guest round');
@@ -38,7 +43,7 @@ for(const stage of [1,7,15])test(`guest stage ${stage} completion ends the trial
 for(const stage of [2,7])test(`stage ${stage} saves and queues its last pair completion before the screen can close`,()=>{
  const f=fixture({stage});try{
   const before=f.state();if(stage===7)assert.ok(before.grid.length>before.grid[0].length,'the late-round fixture retains the generated portrait shape');
-  f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.sent[0].stage,stage);assert.equal(f.sent[0].rulesVersion,3);assert.equal(f.records()[stage].length,1);assert(f.state().finishedMs>=12000);
+  f.match();assert.equal(f.sent.length,1,'closing during the removal animation must not lose the leaderboard delivery');assert.equal(f.sent[0].stage,stage);assert.equal(f.sent[0].rulesVersion,E.RULES_VERSION);assert.equal(f.records()[stage].length,1);assert(f.state().finishedMs>=12000);
   assert.equal(f.state().grid.length,before.grid.length);assert.ok(f.state().grid.every(row=>row.length===before.grid[0].length));assert.ok(f.state().grid.flat().every(value=>value===E.EMPTY));
   f.run(120);assert.equal(f.sent.length,1,'the animation cannot send a duplicate record');assert.equal(f.d.getElementById('completion').hidden,false);
  }finally{f.close();}
@@ -78,42 +83,49 @@ test('a detached stage-change confirmation cannot affect a later attempt',()=>{
 for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its best time without recording twice`,()=>{
  let f=fixture({stage}),saved,records;try{f.match();saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,stage);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,stage===7?198:16);assert.notEqual(f.state().runId,saved.runId);assert.equal(f.state().rulesVersion,3);
-  assert.ok(f.state().grid.flat().every(v=>v!==E.EMPTY),'reopening fills every cell, including the bottom row');
-  assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
+  assert.equal(f.state().stage,stage);assert.equal(f.state().totalTiles,E.stageInfo(stage).total);assert.equal(f.state().layerCount,E.layerCount(stage));assert.notEqual(f.state().runId,saved.runId);assert.equal(f.state().rulesVersion,E.RULES_VERSION);
+  assert.ok(f.state().grid.flat().some(v=>v!==E.EMPTY),'reopening creates a new playable layer');
+  assert.equal(f.state().grid.flat().filter(v=>v!==E.EMPTY).length+f.state().upcoming.flat(2).filter(v=>v!==E.EMPTY).length,E.stageInfo(stage).total);
+  assert.ok(f.state().grid.every(row=>row.length===f.state().grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.state().penaltyMs,0);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);assert.equal(f.d.getElementById('completion').hidden,true);
  }finally{f.close();}
 });
-test('final-stage completion never advances beyond stage 15',()=>{
- let f=fixture({stage:15}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,15);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,15);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
+test('final-stage completion never advances beyond stage 200',()=>{
+ let f=fixture({stage:200}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,200);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,200);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,15);assert.equal(f.state().grid.flat().filter(v=>v!==-1).length,912);assert.ok(f.state().grid.flat().every(v=>v!==E.EMPTY));
-  assert.ok(f.state().grid.length>f.state().grid[0].length);assert.equal(f.state().grid.length,saved.grid.length);assert.ok(f.state().grid.every(row=>row.length===saved.grid[0].length));
+  assert.equal(f.state().stage,200);assert.equal(f.state().totalTiles,1200);assert.equal(f.state().layerCount,8);assert.equal(f.state().upcoming.length,7);
+  assert.equal(f.state().grid.flat().filter(v=>v!==E.EMPTY).length+f.state().upcoming.flat(2).filter(v=>v!==E.EMPTY).length,1200);
+  assert.ok(f.state().grid.every(row=>row.length===f.state().grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);
   assert.deepEqual(f.records(),records);assert.equal(f.sent.length,0);
  }finally{f.close();}
 });
 
-test('a full 198-tile portrait round finishes only after its 99th pair and advances to another full board',()=>{
- const previous={id:'old-196-tile-record',duration:5000,at:1700000000000,rulesVersion:3};
- const f=fixture({saved:{rulesVersion:3,stage:7,unlocked:7,grid:E.generate(7).grid},records:{7:[previous]},seed:37});
- const remaining=()=>f.state().grid.flat().filter(value=>value!==E.EMPTY).length;
+test('a layered round finishes only after both irregular floors are cleared',()=>{
+ const previous={id:'old-record',duration:5000,at:1700000000000,rulesVersion:3};
+ const f=fixture({saved:{rulesVersion:E.RULES_VERSION,stage:7,unlocked:7},records:{7:[previous]},seed:37});
+ const remaining=()=>[f.state().grid,...f.state().upcoming].flat(2).filter(value=>value!==E.EMPTY).length;
  const matchNext=()=>{
   const move=E.moves(f.state().grid);assert.ok(move,'the live board has a legal pair after the automatic dead-end check');
   f.d.querySelector(`[data-r="${move.a.r}"][data-c="${move.a.c}"]`).click();f.advance(25);
   f.d.querySelector(`[data-r="${move.b.r}"][data-c="${move.b.c}"]`).click();f.run(120);
  };
  try{
-  assert.equal(remaining(),198);assert.equal(f.state().grid.length,18);assert.ok(f.state().grid.every(row=>row.length===11&&row.every(value=>value!==E.EMPTY)));
-  assert.equal(f.d.getElementById('remaining').textContent,'198 / 198');
-  for(let pair=1;pair<=98;pair++){matchNext();assert.equal(remaining(),198-2*pair);assert.equal(f.sent.length,0,'clearing the old 196-tile count cannot finish the expanded board');}
-  assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('remaining').textContent,'2 / 198');
-  matchNext();assert.equal(remaining(),0);assert.equal(f.d.getElementById('remaining').textContent,'0 / 198');assert.equal(f.d.getElementById('completion').hidden,false);
-  assert.equal(f.sent.length,1);assert.equal(f.sent[0].stage,7);assert.equal(f.sent[0].rulesVersion,3);assert.equal(f.records()[7].length,2);assert.deepEqual(f.records()[7].find(record=>record.id===previous.id),previous);assert.equal(f.state().unlocked,8);
-  f.d.getElementById('next').click();const next=f.state(),total=next.grid.length*next.grid[0].length;
-  assert.equal(next.stage,8);assert.ok(total>=256);assert.equal(remaining(),total);assert.ok(next.grid.flat().every(value=>value!==E.EMPTY));assert.ok(E.withinCopyLimit(next.grid));
-  assert.equal(f.d.getElementById('remaining').textContent,`${total} / ${total}`);assert.equal(next.startedAt,null);assert.equal(next.finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.sent.length,1);assert.equal(f.records()[7].length,2);
+  const total=E.stageInfo(7).total,first=f.state().grid.flat().filter(v=>v!==E.EMPTY).length;
+  assert.equal(remaining(),total);assert.equal(f.state().layerCount,2);assert.equal(f.state().upcoming.length,1);
+  assert.ok(f.state().grid.flat().some(value=>value===E.EMPTY),'irregular floors leave visible gaps');
+  assert.equal(f.d.getElementById('remaining').textContent,`${total} / ${total}`);
+  for(let pair=1;pair<=first/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0,'clearing the upper floor does not finish the stage');}
+  assert.equal(f.state().floor,1,'the next floor opens after the top floor is cleared');
+  assert.equal(f.state().upcoming.length,0);
+  for(let pair=first/2+1;pair<total/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0);}
+  assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('remaining').textContent,`2 / ${total}`);
+  matchNext();assert.equal(remaining(),0);assert.equal(f.d.getElementById('remaining').textContent,`0 / ${total}`);assert.equal(f.d.getElementById('completion').hidden,false);
+  assert.equal(f.sent.length,1);assert.equal(f.sent[0].stage,7);assert.equal(f.sent[0].rulesVersion,E.RULES_VERSION);assert.equal(f.records()[7].length,2);assert.deepEqual(f.records()[7].find(record=>record.id===previous.id),previous);assert.equal(f.state().unlocked,8);
+  f.d.getElementById('next').click();const next=f.state(),nextTotal=E.stageInfo(8).total;
+  assert.equal(next.stage,8);assert.equal(remaining(),nextTotal);assert.ok(E.withinCopyLimit(next.grid));
+  assert.equal(f.d.getElementById('remaining').textContent,`${nextTotal} / ${nextTotal}`);assert.equal(next.startedAt,null);assert.equal(next.finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.sent.length,1);assert.equal(f.records()[7].length,2);
  }finally{f.close();}
 });
 

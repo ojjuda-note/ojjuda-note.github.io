@@ -11,7 +11,9 @@
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
   function save(){return write(KEY,state);}
-  function count(){return state.grid.flat().filter(v=>v!==E.EMPTY).length;}
+  const occupied=grid=>grid.flat().filter(v=>v!==E.EMPTY).length;
+  function activeCount(){return occupied(state.grid);}
+  function count(){return activeCount()+(state.upcoming||[]).reduce((sum,grid)=>sum+occupied(grid),0);}
   function completedRound(){return state.finishedMs!=null&&count()===0;}
   function ms(){return state.startedAt?Math.max(0,Date.now()-state.startedAt)+(state.penaltyMs||0):0;}
   function time(value){const n=Math.floor(value/10),m=Math.floor(n/6000),s=Math.floor(n/100)%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(n%100).padStart(2,'0')}`;}
@@ -63,24 +65,24 @@
     return Math.min((width-2*pad-(cols-1)*gap)/cols,(height-2*pad-4-(rows-1)*gap)/(rows*1.19));
   }
   function boardColumns(stage){
-    const {size,total}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
-    if(size<12||width<=20||height<=24)return size;
+    const {size}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
+    if(stage<=2)return size;
+    const typical=E.stackInfo(stage),target=typical.floors[0].total,span=Math.sqrt(target/.66);
+    if(width<=20||height<=24)return typical.cols;
     const choices=[];
-    for(let cols=Math.ceil(size/2);cols<=size;cols++){
-      const info=E.boardInfo(stage,cols);
-      choices.push({cols,extra:info.total-total,tile:fittingTile(info.rows,cols,width,height,2)});
+    for(let cols=Math.max(3,Math.floor(span*.66));cols<=Math.ceil(span*1.43);cols++){
+      const info=E.stackInfo(stage,cols);
+      choices.push({cols,extra:info.rows*cols-target,tile:fittingTile(info.rows,cols,width,height,2,8+3*(info.layerCount-1))});
     }
     const largest=Math.max(...choices.map(choice=>choice.tile));
-    if(!(largest>0))return size;
-    // Fill every row with paired tiles; prefer fewer extra tiles at equal sizes.
-    // A wide or short screen can retain the square board instead of shrinking it.
+    if(!(largest>0))return typical.cols;
     return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.extra-b.extra||b.tile-a.tile||b.cols-a.cols)[0].cols;
   }
   function sizeBoard(){
     if(!state)return;
-    const n=state.stage*2,rows=state.grid.length,cols=state.grid[0].length,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
+    const n=E.stageInfo(state.stage).size,rows=state.grid.length,cols=state.grid[0].length,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
     if(!available||!height)return;
-    const gap=n<=4?6:n<=10?3:2,pad=8;
+    const gap=n<=4?6:n<=10?3:2,pad=8+3*(state.layerCount-1);
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad)*100)/100);
     fitSize=Math.min(n<=2?120:n<=4?100:Infinity,fit);
@@ -93,6 +95,16 @@
   function cancelRemovals(){for(const timer of removalTimers)clearTimeout(timer);removalTimers.clear();clearTimeout(moveTimer);}
   function renderBoard(){
     cancelRemovals();
+    const under=$('board-stack'),stack=document.createDocumentFragment();
+    (state.upcoming||[]).slice().reverse().forEach((grid,i)=>{
+      const layer=document.createElement('div');layer.className='board-underlay';
+      layer.style.setProperty('--stack-offset',`${(state.upcoming.length-i)*3}px`);
+      const shells=document.createDocumentFragment();
+      grid.forEach(row=>row.forEach(value=>{const tile=document.createElement('span');tile.className=value===E.EMPTY?'under-tile empty':'under-tile';shells.appendChild(tile);}));
+      layer.appendChild(shells);stack.appendChild(layer);
+    });
+    under.replaceChildren(stack);
+    $('board-canvas').classList.toggle('layered',state.layerCount>1);
     const frag=document.createDocumentFragment();
     state.grid.forEach((row,r)=>row.forEach((value,c)=>{
       const b=document.createElement('button');b.type='button';b.className='tile'+(value===E.EMPTY?' empty':'');b.dataset.r=r;b.dataset.c=c;b.disabled=value===E.EMPTY;b.setAttribute('aria-pressed','false');
@@ -109,22 +121,24 @@
     const points=coords.map(p=>`${p.x},${p.y}`).join(' '),ends=[coords[0],coords[coords.length-1]];
     $('connection').innerHTML=`<polyline points="${points}" ${soft?'opacity=".6" stroke-dasharray="5 6"':''}/>${ends.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4"/>`).join('')}`;
   }
-  function updateStats(){const total=state.grid.length*state.grid[0].length,left=count();$('remaining').innerHTML=`${left} <small>/ ${total}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
+  function updateStats(){const left=count();$('remaining').innerHTML=`${left} <small>/ ${state.totalTiles}</small>`;$('timer').textContent=time(state.finishedMs??ms());}
   function wrongPair(message){
     state.penaltyMs=(state.penaltyMs||0)+WRONG_PAIR_MS;save();updateStats();
     const notice=message+' (+10초)';$('status').textContent=notice;toast(notice);
   }
   function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
-    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.boardInfo(s,s===state.stage?state.grid[0].length:boardColumns(s));return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
-    showModal(`<div class="eyebrow">같은 그림은 최대 4개</div><h2 id="modal-title">15개의 정원을 만나보세요.</h2><p>화면에 맞춰 마지막 줄까지 패를 채워요.<br>하나를 완성하면 다음 단계가 열려요.</p><div class="all-stage-grid">${cards}</div>`);
+    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stackInfo(s,s===state.stage?state.grid[0].length:boardColumns(s));return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.layerCount}층, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계 · ${info.layerCount}층</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
+    showModal(`<div class="eyebrow">층마다 새로운 모양</div><h2 id="modal-title">200개의 정원을 만나보세요.</h2><p>십자·계단·고리처럼 모양이 달라져요.<br>윗층을 비우면 다음 층이 열려요.</p><div class="all-stage-grid">${cards}</div>`);
     $('modal-content').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>chooseStage(Number(b.dataset.stage))));
+    $('modal-content').querySelector('.stage-card.current')?.scrollIntoView?.({block:'nearest'});
   }
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
   function render(){
     window.OjjudaSacheonseongOnline?.stage(state.stage);
-    $('stage-label').textContent=`${state.stage}단계`;
-    $('status').textContent='가로·세로로 연결하고, 두 번까지만 꺾어요.';
+    $('stage-label').textContent=`${state.stage}단계${state.layerCount>1?` · ${state.layerCount-state.floor}층`:''}`;
+    $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층 중 위에서 ${state.floor+1}번째 층. 같은 그림을 연결하세요.`);
+    $('status').textContent=state.layerCount>1?'윗층을 모두 비우면 아랫층이 열려요. 두 번까지만 꺾어 연결하세요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
     renderBoard();updateStats();restoreHint();syncTools();
   }
@@ -132,7 +146,8 @@
     globalResult=null;
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;
     // Fix the shape for this attempt; rotation only changes the drawing size.
-    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:E.generate(stage,Math.random,boardColumns(stage)).grid,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
+    const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
+    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
   }
   function ensureMove(){if(count()&&!E.moves(state.grid)){clearSelection();state.grid=E.reshuffle(state.grid).grid;save();renderBoard();$('status').textContent='연결할 패가 없어 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;}return false;}
   function select(p){
@@ -145,12 +160,14 @@
     if(state.grid[a.r][a.c]!==state.grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');wrongPair('같은 그림의 패를 찾아주세요.');return;}
     const route=E.path(state.grid,a,p);
     if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');wrongPair('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
-    const willFinish=count()===2,finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');
+    const floorCleared=activeCount()===2,willFinish=floorCleared&&!state.upcoming.length;
+    const finishDuration=willFinish?ms():null;clearSelection();draw(route);sound('match');
     const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
     buttons.forEach(button=>{button.classList.add('removing');button.disabled=true;});
     // Save and queue completion before animation: leaving now must not lose a record.
     state.grid[a.r][a.c]=E.EMPTY;state.grid[p.r][p.c]=E.EMPTY;
-    if(willFinish)finish(finishDuration,false);else{save();updateStats();$('status').textContent='잘 연결했어요! 다음 짝을 찾아보세요.';}
+    if(willFinish)finish(finishDuration,false);
+    else{if(floorCleared)locked=true;save();updateStats();$('status').textContent=floorCleared?'윗층을 모두 비웠어요. 아랫층을 열고 있어요.':'잘 연결했어요! 다음 짝을 찾아보세요.';}
     clearTimeout(moveTimer);
     const runId=state.runId,timer=setTimeout(()=>{
       removalTimers.delete(timer);
@@ -159,11 +176,12 @@
       for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
       if($('connection').firstElementChild===line)$('connection').replaceChildren();
       if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}
+      if(floorCleared){state.grid=state.upcoming.shift();state.floor++;state.hintPair=null;locked=false;save();render();toast(`${state.layerCount-state.floor}층이 열렸어요!`);return;}
       const next=$('board').querySelector('.tile:not(:disabled)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});
     },REMOVE_MS);
     removalTimers.add(timer);
     // Visual effects never block the next pair. Check for a dead end after them.
-    if(!willFinish)moveTimer=setTimeout(()=>{if(state.runId===runId&&!state.pendingPurchase)ensureMove();},REMOVE_MS);
+    if(!floorCleared)moveTimer=setTimeout(()=>{if(state.runId===runId&&!state.pendingPurchase)ensureMove();},REMOVE_MS);
   }
   function finish(duration,present=true){
     if(state.finishedMs!=null||count()!==0)return;
@@ -180,7 +198,7 @@
   function showCompletion(rank){
     if(!completedRound())return;
     locked=true;const final=state.stage===E.MAX_STAGE;
-    const title=$('win-title');if(title)title.textContent=final?'15개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
+    const title=$('win-title');if(title)title.textContent=final?'200개의 정원을 모두 완성했어요!':`${state.stage}단계 정원 완성!`;
     $('win-desc').innerHTML=`${state.stage}단계 · <strong class="win-time">${time(state.finishedMs)}</strong>`;
     $('previous-level').disabled=state.stage===1;
     $('previous-level-detail').textContent=state.stage===1?'첫 레벨':`${state.stage-1}단계`;
@@ -277,7 +295,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 바깥 여백은 이용할 수 있어요.</small></li><li>4개의 패로 시작해, 총 15단계예요.<small>6단계부터 화면에 맞춰 가로·세로 칸 수를 정하고 마지막 줄까지 채워요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>200단계마다 모양과 층수가 달라져요.<small>6단계는 2층, 12단계는 3층, 18단계는 4층이에요. 윗층을 모두 비우면 아래층이 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();

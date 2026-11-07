@@ -1,17 +1,59 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 15, MAX_COPIES = 4, RULES_VERSION = 3, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 4, FACE_COUNT = 350;
+  // Reserve roughly one seventh of all tiles for picture pairs; the rest
+  // appear four times. At the inventory ceiling, fall back to four copies.
+  function mixPlan(total) {
+    const pairs=total/2,maxSingles=Math.max(0,2*FACE_COUNT-pairs);
+    let pairOnly=Math.min(Math.floor(total*.07),maxSingles);
+    if(pairOnly%2!==pairs%2)pairOnly--;
+    pairOnly=Math.max(pairs%2,pairOnly);
+    if(total===4)pairOnly=2;
+    else if(total>=8&&pairOnly<2&&maxSingles>=2)pairOnly=pairs%2?1:2;
+    if(pairOnly===pairs&&pairs>2)pairOnly-=2;
+    const quadruple=(pairs-pairOnly)/2;
+    return {pairOnly,quadruple,typeCount:pairOnly+quadruple};
+  }
+  function mixedValues(palette,plan) {
+    const values=[];
+    for(let i=0;i<plan.quadruple;i++)values.push(palette[i],palette[i],palette[i],palette[i]);
+    for(let i=plan.quadruple;i<plan.typeCount;i++)values.push(palette[i],palette[i]);
+    return values;
+  }
   const stageInfo = stage => {
-    if(!Number.isInteger(stage)||stage<1||stage>MAX_STAGE)throw new RangeError('Stage must be 1–15');
-    return {stage,size:stage*2,total:4*stage*stage,typeCount:stage===1?2:stage*stage};
+    if(!Number.isInteger(stage)||stage<1||stage>MAX_STAGE)throw new RangeError('Stage must be 1–200');
+    // The original first fifteen stages keep their tile counts. Later stages
+    // vary their layers and silhouette without growing into enormous boards.
+    const total=stage<=15?4*stage*stage:Math.min(1200,900+24*(stage-15));
+    return {stage,size:stage<=15?stage*2:Math.ceil(Math.sqrt(total)),total,typeCount:mixPlan(total).typeCount};
   };
+  const layerCount = stage => {
+    stageInfo(stage);
+    return stage<6?1:stage<11?2:stage<16?3:stage<26?4:stage<41?5:stage<71?6:stage<111?7:8;
+  };
+  // Each layer is a real board with a different outline. Lower layers remain
+  // blocked until the exposed layer is cleared, so matching never crosses floors.
+  function stackInfo(stage, columns) {
+    const base=stageInfo(stage),count=layerCount(stage);
+    if(stage<=2){const info=boardInfo(stage,columns??base.size);return {...info,layerCount:1,floors:[{total:info.total,...mixPlan(info.total)}]};}
+    const floorPairs=Math.floor(base.total/2/count),extras=base.total/2%count;
+    const targets=Array.from({length:count},(_,i)=>(floorPairs+(i<extras?1:0))*2);
+    const biggest=Math.max(...targets),cols=columns??Math.ceil(Math.sqrt(biggest/.66));
+    if(!Number.isInteger(cols)||cols<2||cols>base.total)throw new RangeError('Invalid stack columns');
+    const rows=Math.max(3,Math.ceil(biggest/(cols*.66)));
+    if(rows*cols<biggest)throw new RangeError('Stack is too small');
+    const floors=targets.map(total=>({total,...mixPlan(total)}));
+    const typeCount=floors.reduce((sum,f)=>sum+f.typeCount,0);
+    if(typeCount>FACE_COUNT)throw new RangeError('Stack requires more pictures than are available');
+    return {...base,rows,cols,layerCount:count,total:targets.reduce((a,b)=>a+b,0),typeCount,floors};
+  }
   function boardInfo(stage, columns = stageInfo(stage).size) {
     const base=stageInfo(stage);
     if(!Number.isInteger(columns)||columns<1||columns>base.total)throw new RangeError('Columns must be an integer between 1 and the stage tile count');
     let rows=Math.ceil(base.total/columns);
     if(rows*columns%2)rows++;
-    const total=rows*columns,typeCount=Math.max(base.typeCount,Math.ceil(total/MAX_COPIES));
+    const total=rows*columns,typeCount=mixPlan(total).typeCount;
     if(typeCount>FACE_COUNT)throw new RangeError('Board requires more pictures than are available');
     return {...base,rows,cols:columns,total,typeCount};
   }
@@ -120,8 +162,7 @@
   function generate(stage, random = Math.random, columns = stageInfo(stage).size) {
     const {rows,cols,total,typeCount}=boardInfo(stage,columns);
     const palette=stage<=3?Array.from({length:typeCount},(_,i)=>i):shuffle(Array.from({length:FACE_COUNT},(_,i)=>i),random).slice(0,typeCount);
-    // Allocate whole pairs before shuffling individual tiles into every cell.
-    const types=Array.from({length:total},(_,i)=>palette[Math.floor(i/2)%typeCount]);
+    const types=mixedValues(palette,mixPlan(total));
     const grid=Array.from({length:rows},()=>Array(cols).fill(0));
     return arrange(grid,types,random);
   }
@@ -131,12 +172,51 @@
     for(const [type,count] of counts) {if(count%2) throw new Error('Unpaired tile');for(let i=0;i<count;i++) types.push(type);}
     return arrange(grid,types,random);
   }
+  const SHAPES=['hourglass','cross','ring','steps','islands','diamond','zigzag','castle'];
+  function shapedGrid(rows,cols,needed,variant,random) {
+    const cells=[];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      let x=(c+.5-cols/2)/(cols/2),y=(r+.5-rows/2)/(rows/2);
+      if(variant%2===1)x=-x;
+      if(variant%3===2)y=-y;
+      let score;
+      switch(variant%SHAPES.length){
+       case 0: score=1-Math.abs(x)/(.3+.95*Math.abs(y))-.12*Math.abs(y);break; // hourglass
+       case 1: score=Math.max(1-2.3*Math.abs(x),1-2.3*Math.abs(y))-.18*(Math.abs(x)+Math.abs(y));break; // cross
+       case 2: score=1-1.6*Math.abs(Math.hypot(x,y)-.73);break; // ring and central opening
+       case 3: score=1-Math.abs(x-(Math.floor((y+1)*2.5)%4-1.5)*.26)-.25*Math.abs(y);break; // steps
+       case 4: score=Math.max(...[[-.6,-.55],[.6,-.5],[-.55,.6],[.55,.55]].map(([a,b])=>1-Math.hypot((x-a)*1.15,(y-b)*1.1)));break; // islands
+       case 5: score=1-(Math.abs(x)+Math.abs(y))*.68;break; // diamond
+       case 6: score=1-Math.abs(x-Math.sin(y*3.2)*.47)*.9-.12*Math.abs(y);break; // winding path
+       default:score=1-Math.max(0,Math.abs(x)-(.4+.3*(Math.floor((y+1)*3)%2)))-.2*Math.abs(y); // castle
+      }
+      cells.push({r,c,score:score+(random()-.5)*.045});
+    }
+    cells.sort((a,b)=>b.score-a.score);
+    const grid=Array.from({length:rows},()=>Array(cols).fill(EMPTY));
+    cells.slice(0,needed).forEach(({r,c})=>{grid[r][c]=0;});
+    return grid;
+  }
+  function generateStack(stage,random=Math.random,columns) {
+    const info=stackInfo(stage,columns);
+    if(stage<=2)return {grids:[generate(stage,random,info.cols).grid],info};
+    const palette=shuffle(Array.from({length:FACE_COUNT},(_,i)=>i),random).slice(0,info.typeCount);
+    let offset=0;
+    const grids=info.floors.map((floor,i)=>{
+      const variant=(stage*3+i*5+Math.floor(random()*SHAPES.length))%SHAPES.length;
+      const input=shapedGrid(info.rows,info.cols,floor.total,variant,random);
+      const types=mixedValues(palette.slice(offset,offset+floor.typeCount),floor);
+      offset+=floor.typeCount;
+      return arrange(input,types,random).grid;
+    });
+    return {grids,info};
+  }
   function withinCopyLimit(grid) {
     const counts=new Map();
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,stageInfo,boardInfo,withinCopyLimit,path,moves,generate,reshuffle,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,moves,generate,generateStack,reshuffle,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

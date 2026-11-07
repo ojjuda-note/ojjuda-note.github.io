@@ -10,8 +10,9 @@ assert.throws(()=>E.boardInfo(E.MAX_STAGE+1),RangeError);
 for(const columns of [0,-1,1.5,17,'4',null,NaN,Infinity]){
   assert.throws(()=>E.boardInfo(2,columns),RangeError);assert.throws(()=>E.generate(2,Math.random,columns),RangeError);
 }
-for(let stage=1;stage<=E.MAX_STAGE;stage++)assert.deepEqual(E.boardInfo(stage),{...E.stageInfo(stage),rows:stage*2,cols:stage*2},'Default square metadata stays compatible');
-for(const [stage,cols,rows,total,typeCount]of [[1,3,2,6,2],[6,11,14,154,39],[7,11,18,198,50],[2,7,4,28,7],[15,21,44,924,231],[15,700,2,1400,350]]){
+for(let stage=1;stage<=15;stage++)assert.deepEqual(E.boardInfo(stage),{...E.stageInfo(stage),rows:stage*2,cols:stage*2},'Original fifteen square boards stay compatible');
+for(const stage of [16,18,40,100,200]){const info=E.boardInfo(stage);assert(info.total<=1400);assert.equal(info.cols,E.stageInfo(stage).size);}
+for(const [stage,cols,rows,total,typeCount]of [[1,3,2,6,2],[6,11,14,154,43],[7,11,18,198,56],[2,7,4,28,8],[15,21,44,924,263],[15,700,2,1400,350]]){
   assert.deepEqual(E.boardInfo(stage,cols),{stage,size:stage*2,rows,cols,total,typeCount},'Fill spare cells and add a whole row when odd-by-odd dimensions would leave an unpaired tile');
 }
 for(const columns of [351,701,899]){
@@ -65,23 +66,24 @@ for(const point of [null,undefined,{},{r:-1,c:0},{r:2,c:0},{r:0,c:-1},{r:0,c:3},
 assert.equal(E.path(boundsGrid,origin,origin),null);
 assert.equal(E.path([[0,-1]],origin,{r:0,c:1}),null);
 assert.equal(E.path([],origin,{r:0,c:1}),null);
-for(let stage=1;stage<=E.MAX_STAGE;stage++){
+for(const stage of [...Array.from({length:15},(_,i)=>i+1),16,18,41,111,200]){
  const baseTotal=4*stage*stage,layouts=[...Array(5).fill(undefined),Math.max(1,Math.floor(stage*1.6)),Math.min(baseTotal,Math.ceil(stage*2.6))];
+ if(stage>15){layouts.length=1;}
  if(stage===2)layouts.push(1,baseTotal,7);
  if(stage===6)layouts.push(11);
  for(const columns of layouts){
-  const width=columns??stage*2,info=E.boardInfo(stage,columns),made=E.generate(stage,random,columns),occupied=made.grid.flat().filter(v=>v!==-1);
+  const width=columns??E.stageInfo(stage).size,info=E.boardInfo(stage,columns),made=E.generate(stage,random,columns),occupied=made.grid.flat().filter(v=>v!==-1);
   assert.equal(made.grid.length,info.rows);assert(made.grid.every(row=>row.length===width));
   assert.equal(made.grid.flat().length,info.total);assert.equal(occupied.length,info.total,'Every cell of every row contains a real tile');
-  assert.equal(info.total%2,0,'Full rectangles contain complete pairs');assert(info.total>=baseTotal);
-  assert(info.rows<=Math.ceil(baseTotal/width)+1,'At most one extra row is needed to keep the tile count even');
-  if(columns===undefined){assert.equal(info.total,baseTotal);assert.equal(info.typeCount,E.stageInfo(stage).typeCount);}
-  if(info.total>baseTotal)filledBoards++;
+  assert.equal(info.total%2,0,'Full rectangles contain complete pairs');assert(info.total>=E.stageInfo(stage).total);
+  assert(info.rows<=Math.ceil(E.stageInfo(stage).total/width)+1,'At most one extra row is needed to keep the tile count even');
+  if(columns===undefined&&stage<=15){assert.equal(info.total,baseTotal);assert.equal(info.typeCount,E.stageInfo(stage).typeCount);}
+  if(info.total>E.stageInfo(stage).total)filledBoards++;
   assert(E.withinCopyLimit(made.grid),`Stage ${stage}: more than four copies`);
   const counts=new Map();occupied.forEach(v=>{assert(faces[v]);counts.set(v,(counts.get(v)||0)+1);});
   assert.equal(counts.size,info.typeCount);assert(info.typeCount<=E.FACE_COUNT);
   assert([...counts.values()].every(n=>n===2||n===4),'Additional tiles are whole pairs with no more than four copies per picture');
-  if(columns===undefined)assert([...counts.values()].every(n=>n===(stage===1?2:4)),'Default squares retain their original picture counts');
+  if(columns===undefined&&stage>=2&&info.total<1400){assert([...counts.values()].some(n=>n===2)&&[...counts.values()].some(n=>n===4),'Standard games mix pairs and quadruples');}
   assert(E.moves(made.grid),'Every fresh random board must have an opening move');
   playToEnd(made.grid);
   // Remove some legal pairs and verify a mid-game shuffle preserves holes and faces.
@@ -108,4 +110,26 @@ const blocked=[[0,1],[1,0]];assert.equal(E.moves(blocked),null);
 const repaired=E.reshuffle(blocked,stuckRng).grid;assert(E.moves(repaired));assert.deepEqual(histogram(blocked),histogram(repaired));assert(calls>=96,'Exercise bounded fallback after repeated unplayable rolls');
 assert.deepEqual(E.reshuffle([[-1,-1],[-1,-1]],random).grid,[[-1,-1],[-1,-1]]);
 assert.throws(()=>E.reshuffle([[0,-1],[-1,-1]],random),/Unpaired/);
-console.log(`PASS: ${E.MAX_STAGE} stages, ${paths} independent path checks, ${boards} full/even square/rectangular complete games (${filledBoards} with added pairs) plus mid-game reshuffles, ${recoveries} deadlock recoveries, copy limits, picture inventory, holes, bounds, and RNG fallback. Mean touching pairs on 256-tile boards: new ${(generatedAdjacency/samples).toFixed(2)}, shuffle ${(shuffledAdjacency/samples).toFixed(2)} (${samples} samples each).`);
+const silhouettes=new Set();
+for(let stage=1;stage<=E.MAX_STAGE;stage++){
+ const {grids,info}=E.generateStack(stage,random),all=grids.flat(2).filter(x=>x!==E.EMPTY),types=new Map();
+ assert.equal(grids.length,E.layerCount(stage),`Stage ${stage}: floor count`);
+ assert.equal(all.length,info.total,`Stage ${stage}: total playable tiles`);
+ assert.equal(info.total%2,0);
+ assert(info.total<=1200,`Stage ${stage}: capped tile count for performance`);
+ assert(info.typeCount<=E.FACE_COUNT,`Stage ${stage}: available pictures`);
+ for(const value of all)types.set(value,(types.get(value)||0)+1);
+ assert.equal(types.size,info.typeCount);
+ assert([...types.values()].every(count=>count===2||count===4),`Stage ${stage}: no duplicated faces across floors`);
+ for(const grid of grids){
+  assert.equal(grid.length,info.rows);
+  assert(grid.every(row=>row.length===info.cols));
+  assert(E.moves(grid),`Stage ${stage}: an opening pair exists on each floor`);
+  if(stage>=3)assert(grid.flat().includes(E.EMPTY),`Stage ${stage}: irregular outlines have actual voids`);
+ }
+ silhouettes.add(grids[0].map(row=>row.map(v=>v===E.EMPTY?'_':'#').join('')).join('|'));
+ if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);
+}
+assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
+assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(12),3);assert.equal(E.layerCount(18),4);assert.equal(E.layerCount(200),8);
+console.log(`PASS: ${E.MAX_STAGE} stages, ${silhouettes.size} varied silhouettes, ${paths} independent path checks, ${boards} full legacy boards (${filledBoards} with added pairs), all stacked stage openings and selected complete games, ${recoveries} deadlock recoveries, copy limits and RNG fallback.`);
