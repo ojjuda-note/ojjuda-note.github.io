@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-sacheonseong-200-stacks2';
+ const revision='20261108-mole-grids1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -22,7 +22,7 @@
   tour:'1.5.1',
   ttang:'1.5.1',
   photo_ttang:'1.4.1',
-  mole:'1.5.1',
+  mole:'1.6.0',
   runner:'1.4.1',
   stacker:'1.5.1',
   breakout:'1.6.4',
@@ -58,7 +58,7 @@
   spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261107-spot-touch-area1'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261106-source-folders1'],
   photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261106-source-folders1'],
-  mole:[...controls,'/games/mole/mole-game.css?v=20261106-source-folders1','/games/mole/mole-game.js?v=20261106-source-folders1'],
+  mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-grids1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261106-source-folders1','/games/runner/runner-game.js?v=20261106-source-folders1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261107-breakout-speed-reset1'],
   screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261107-screw-box-touch1'],

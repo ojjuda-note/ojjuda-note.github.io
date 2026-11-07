@@ -23,3 +23,11 @@
 #gov[data-game="mole"] .grank h4{font-size:11px;color:#829173}
 #gov[data-game="mole"] .grank ol{font-size:11px}
 #gov[data-game="mole"] .grank li.me,#gov[data-game="mole"] .gcard .gbigscore{color:#638A52}
+
+/* Keep the four board choices tappable on small phones. */
+#gov[data-game="mole"] .mole-grid-picker{margin:9px 0 13px;text-align:left}
+#gov[data-game="mole"] .mole-grid-label{display:block;margin-bottom:6px;font-size:12px;color:#6D795E;font-weight:700}
+#gov[data-game="mole"] .mole-grid-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#gov[data-game="mole"] .mole-grid-choice{min-width:0;min-height:42px;padding:6px 1px;background:#F8F5E7;border:1px solid #D9DDC6;border-radius:12px;color:#526B4C;font:700 16px "Jua","Gowun Dodum",sans-serif;cursor:pointer;touch-action:manipulation}
+#gov[data-game="mole"] .mole-grid-choice[aria-pressed="true"]{background:#648B58;border-color:#52794A;color:#FFFDF0;box-shadow:0 2px 0 #42663E}
+#gov[data-game="mole"] .mole-grid-choice:focus-visible{outline:3px solid #DCA347;outline-offset:2px}

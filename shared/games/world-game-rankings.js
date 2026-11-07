@@ -30,7 +30,7 @@ const rankingConditions={
  screw_box:'박스형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
  screw_flat:'평면형에서 해당 월에 기록한 가장 높은 점수로 정해요.',
  spot:'해당 월에 완료한 서로 다른 그림의 장수로 정해요. 같은 그림은 한 번만 세요.',
- ttang:streakCondition,mole:scoreCondition,runner:scoreCondition,
+ ttang:streakCondition,mole:'구멍 수가 많은 6×6 → 5×5 → 4×4 → 3×3 순으로 우선하고, 같은 크기는 해당 월 최고 점수순으로 정해요.',runner:scoreCondition,
  stacker:'해당 월에 가장 높이 쌓은 층수로 정해요.',breakout:scoreCondition,
  matgo:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
  poker:'해당 월 한 판에서 실제로 늘어난 골드의 최댓값으로 정해요.',
@@ -177,7 +177,10 @@ function paintRecord(target,id,game,top,period='이번 달'){
  nick.textContent=top.nick||'익명';
  nick.title=period+(['picture_clears','photo_clears'].includes(game.rankingBasis)?' 완료 장수 1등 · ':game.rankingBasis==='best_round_gain'?' 한 판 최대 획득 골드 1등 · ':['current_streak','difficulty_streak','opponents_streak'].includes(game.rankingBasis)?' 최고 연승 1등 · ':' 1등 · ')+(top.nick||'익명');
  let value=Number(top.score).toLocaleString('ko-KR')+game.unit,detail='';
- if(game.rankingBasis==='stage_score'){
+ if(game.rankingBasis==='mole_grid_score'){
+  const stored=Number(top.score),grid=Math.min(6,3+Math.floor(stored/1000));
+  value=(stored-(grid-3)*1000).toLocaleString('ko-KR')+'점';detail=grid+'×'+grid;
+ }else if(game.rankingBasis==='stage_score'){
   const stage=Number(top.stage);if(Number.isInteger(stage)&&stage>=1&&stage<=220)detail=stage+'단계';
  }else if(game.rankingBasis==='stage_time'){
   const rules=window.OjjudaSacheonseongRanking;
