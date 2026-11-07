@@ -82,7 +82,7 @@ function readRoute() {
     view: p.get('period') === 'undecided' && p.get('view') !== 'map' ? 'list' : VIEW_MODES.includes(p.get('view')) ? p.get('view') : 'map',
     month: selectedDate ? selectedDate.slice(0, 7) : validMonth(p.get('month')) ? p.get('month') : today.slice(0, 7),
     savedOnly: p.get('saved') === '1',
-    sort, scale
+    sort, scale, position: null
   };
 }
 
@@ -119,7 +119,7 @@ function writeRoute({ push = false } = {}) {
     from: state.period === 'custom' ? state.from : '', to: state.period === 'custom' ? state.to : '',
     date: state.selectedDate, view: state.view === 'map' && state.period !== 'undecided' ? '' : state.view,
     month: state.month === today.slice(0, 7) ? '' : state.month,
-    saved: state.savedOnly ? '1' : '', sort: state.sort === 'date' ? '' : state.sort,
+    saved: state.savedOnly ? '1' : '', sort: ['date', 'distance'].includes(state.sort) ? '' : state.sort,
     scale: state.scale === 'all' ? '' : state.scale,
     event: currentEventId
   };
@@ -186,6 +186,8 @@ function syncControls() {
     button.setAttribute('aria-pressed', String(active));
   });
   $('saved-toggle').setAttribute('aria-pressed', String(state.savedOnly));
+  $('nearby-search').setAttribute('aria-pressed', String(state.sort === 'distance' && !!state.position));
+  $('nearby-search-label').textContent = state.sort === 'distance' && state.position ? '내 주변 거리순 해제' : '내 주변 행사 찾기';
   $('workspace').dataset.view = state.view;
   $('map-panel').hidden = state.view !== 'map';
   $('calendar-panel').hidden = state.view !== 'calendar';
@@ -196,12 +198,22 @@ function syncControls() {
 function getBaseEvents() {
   return filterEvents(events, { ...state, selectedDate: '', saved }, today);
 }
+function distanceKm(event, position = state.position) {
+  if (!position || !Number.isFinite(event.lat) || !Number.isFinite(event.lng)) return Infinity;
+  const radians = degrees => degrees * Math.PI / 180;
+  const latitude = radians(event.lat - position.lat);
+  const longitude = radians(event.lng - position.lng);
+  const arc = Math.sin(latitude / 2) ** 2 + Math.cos(radians(position.lat)) * Math.cos(radians(event.lat)) * Math.sin(longitude / 2) ** 2;
+  return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(arc)));
+}
+function formatDistance(km) { return km < 10 ? `${km.toFixed(1)}km` : `${Math.round(km).toLocaleString('ko-KR')}km`; }
 function getVisibleEvents() {
   let result = filterEvents(events, { ...state, saved }, today);
   if (state.view === 'calendar') {
     const month = monthRange(state.month);
     result = result.filter(event => overlaps(event, month.start, month.end));
   }
+  if (state.sort === 'distance' && state.position) result.sort((a, b) => distanceKm(a) - distanceKm(b));
   return result;
 }
 function render() {
@@ -214,7 +226,7 @@ function render() {
   $('saved-count').textContent = savedCount;
   $('saved-count').hidden = savedCount === 0;
   const month = Number(state.month.slice(5, 7));
-  $('list-label').textContent = state.period === 'undecided' ? '개최 예정 · 날짜 발표 전' : state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : state.sort === 'scale_desc' ? '방문객 규모 큰 순 · 미확인 마지막' : state.sort === 'scale_asc' ? '방문객 규모 작은 순 · 미확인 마지막' : '가까운 일정부터';
+  $('list-label').textContent = state.sort === 'distance' && state.position ? '내 위치에서 가까운 순 · 직선거리' : state.period === 'undecided' ? '개최 예정 · 날짜 발표 전' : state.selectedDate ? `${dateLabel(state.selectedDate)}의 일정` : state.view === 'calendar' ? `${month}월의 일정` : state.sort === 'region' ? '지역별로 모아보기' : state.sort === 'name' ? '이름순으로 모아보기' : state.sort === 'scale_desc' ? '방문객 규모 큰 순 · 미확인 마지막' : state.sort === 'scale_asc' ? '방문객 규모 작은 순 · 미확인 마지막' : '가까운 일정부터';
   const undecidedCount = filterEvents(events, { ...state, period: 'undecided', selectedDate: '', from: '', to: '', saved }, today).length;
   $('planning-bar').hidden = undecidedCount === 0 && state.period !== 'undecided';
   $('planning-note').textContent = state.period === 'undecided' ? '날짜가 발표되면 캘린더에 표시해요.' : '날짜 발표를 기다리는 행사도 있어요.';
@@ -257,11 +269,12 @@ function cardMarkup(event) {
   const category = CATEGORIES[event.category];
   const status = displayStatus(event);
   const isSaved = saved.has(event.id);
+  const distance = state.sort === 'distance' ? distanceKm(event) : Infinity;
   return `<article class="event-card ${status.key === 'ended' ? 'is-ended' : ''} ${isDateUndecided(event) ? 'is-undecided' : ''}" data-event-card="${escapeHTML(event.id)}" style="--category-color:${category.ink}">
     <button class="card-main" data-open-event="${escapeHTML(event.id)}" aria-label="${escapeHTML(event.title)} 상세 정보">
       <span class="card-topline"><span class="card-category">${escapeHTML(categoryLabel(event))}</span><span class="card-status ${status.key}">${status.label}</span></span>
       <strong class="card-title">${escapeHTML(event.title)}</strong>
-      <span class="card-meta"><span class="card-date" title="${escapeHTML(formatRange(event))}">${escapeHTML(compactDateRange(event))}</span><span class="card-location">${escapeHTML([...new Set([event.region, event.city].filter(Boolean))].join(' '))}</span></span>
+      <span class="card-meta"><span class="card-date" title="${escapeHTML(formatRange(event))}">${escapeHTML(compactDateRange(event))}</span><span class="card-location">${escapeHTML([...new Set([event.region, event.city].filter(Boolean))].join(' '))}</span>${Number.isFinite(distance) ? `<span class="card-distance">내 위치에서 ${formatDistance(distance)}</span>` : ''}</span>
       ${sectionOf(event) === 'festival' ? `<span class="card-attendance ${attendanceValue(event) === null ? 'is-unknown' : ''}">${escapeHTML(attendanceText(event))}</span>` : ''}
     </button>
     <button class="card-save ${isSaved ? 'saved' : ''}" data-save-event="${escapeHTML(event.id)}" aria-pressed="${isSaved}" aria-label="${escapeHTML(event.title)} ${isSaved ? '관심 행사에서 해제' : '관심 행사로 저장'}">${icon('bookmark')}</button>
@@ -458,6 +471,11 @@ function bindInteractions() {
   $('period').addEventListener('change', () => selectPeriod($('period').value));
   $('sort').addEventListener('change', () => {
     const sort = $('sort').value;
+    if (sort === 'distance') {
+      if (state.position) updateState({ sort }, { fit: true });
+      else { syncControls(); locateUser(); }
+      return;
+    }
     updateState({ sort, ...(sort.startsWith('scale_') ? { category: 'festival' } : {}) }, { fit: sort.startsWith('scale_') });
   });
   $('scale').addEventListener('change', () => updateState({ category: 'festival', scale: $('scale').value, selectedDate: '' }, { fit: true }));
@@ -481,6 +499,11 @@ function bindInteractions() {
   $('month-next').addEventListener('click', () => shiftMonth(1));
   $('calendar-today').addEventListener('click', () => updateState({ month: today.slice(0, 7), selectedDate: '', period: 'month', from: '', to: '' }));
   $('map-fit').addEventListener('click', () => { if (map) fitNational(); });
+  $('map-expand').addEventListener('click', toggleMapExpansion);
+  $('nearby-search').addEventListener('click', () => {
+    if (state.sort === 'distance' && state.position) updateState({ sort: 'date' });
+    else locateUser();
+  });
   $('map-style').addEventListener('click', toggleMapStyle);
   $('map-locate').addEventListener('click', locateUser);
   document.addEventListener('click', event => {
@@ -509,6 +532,9 @@ function bindInteractions() {
     }
   });
   document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('map-panel').classList.contains('is-expanded')) {
+      event.preventDefault(); toggleMapExpansion(); return;
+    }
     if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) && !$('event-dialog').open && !$('about-dialog').open) {
       event.preventDefault(); $('search').focus();
     }
@@ -625,11 +651,24 @@ function fitNational() {
   if (!map) return;
   map.fitBounds(NATIONAL_BOUNDS, { padding: [18, 24], animate: false });
 }
+function toggleMapExpansion() {
+  const expanded = $('map-panel').classList.toggle('is-expanded');
+  document.body.classList.toggle('map-is-expanded', expanded);
+  $('map-expand').setAttribute('aria-pressed', String(expanded));
+  $('map-expand').setAttribute('aria-label', expanded ? '지도 작게 보기' : '지도 크게 보기');
+  $('map-expand-label').textContent = expanded ? '지도 작게 보기' : '지도 크게 보기';
+  $('map-expand').querySelector('.icon').innerHTML = svg(expanded ? 'close' : 'expand');
+  if (map) requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+}
 function requestMapFit() {
   cancelAnimationFrame(frameRequest);
   frameRequest = requestAnimationFrame(() => {
     if (!map || state.view !== 'map') return;
     map.invalidateSize({ pan: false });
+    if (state.sort === 'distance' && state.position) {
+      map.setView([state.position.lat, state.position.lng], 10, { animate: false });
+      return;
+    }
     if (state.region !== 'all' && provinceLayer) {
       let bounds;
       provinceLayer.eachLayer(layer => { if (featureRegion(layer.feature) === state.region) bounds = layer.getBounds(); });
@@ -689,7 +728,7 @@ function renderMapMarkers() {
       icon: window.L.divIcon({ className: 'festival-marker', html, iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -32] })
     });
     const popup = `<p class="popup-heading">${count > 1 ? `이 주변의 행사 ${count}개` : escapeHTML(categoryLabel(group.events[0]))}</p>${group.events.map(event => `<button class="popup-event" data-open-event="${escapeHTML(event.id)}"><strong>${escapeHTML(event.title)}</strong><span>${escapeHTML(formatRange(event))} · ${STATUS_LABELS[eventStatus(event, today)]}</span></button>`).join('')}`;
-    marker.bindPopup(popup, { maxWidth: 285, minWidth: 210, autoPanPadding: [20, 55] });
+    marker.bindPopup(popup, { maxWidth: 285, minWidth: 210, autoPanPadding: [25, 35], keepInView: true });
     marker.on('popupopen', event => {
       event.popup.getElement()?.querySelectorAll('[data-open-event]').forEach(button => {
         button.onclick = click => {
@@ -737,20 +776,27 @@ function updateMapStyleButton() {
   $('map-style').setAttribute('aria-pressed', String(detailMap));
 }
 function locateUser() {
-  if (!map) return;
   if (!navigator.geolocation) { toast('이 브라우저에서는 현재 위치를 사용할 수 없어요.'); return; }
   $('map-locate').disabled = true;
+  $('nearby-search').disabled = true;
   toast('현재 위치를 확인하고 있어요.');
   navigator.geolocation.getCurrentPosition(position => {
     $('map-locate').disabled = false;
+    $('nearby-search').disabled = false;
     const { latitude: lat, longitude: lng } = position.coords;
     if (lat < 30.5 || lat > 41 || lng < 121 || lng > 135.5) { toast('현재 위치가 대한민국 지도 표시 범위를 벗어나 있어요.'); return; }
-    if (locationMarker) map.removeLayer(locationMarker);
-    locationMarker = window.L.circleMarker([lat, lng], { radius: 7, color: '#fff', weight: 3, fillColor: '#4f7ec4', fillOpacity: 1 }).addTo(map).bindTooltip('현재 위치');
-    map.setView([lat, lng], 10, { animate: false });
-    toast('내 위치 주변을 보여드려요.');
+    state.position = { lat, lng };
+    state.sort = 'distance';
+    syncControls(); render(); writeRoute();
+    if (map) {
+      if (locationMarker) map.removeLayer(locationMarker);
+      locationMarker = window.L.circleMarker([lat, lng], { radius: 7, color: '#fff', weight: 3, fillColor: '#4f7ec4', fillOpacity: 1 }).addTo(map).bindTooltip('내 위치');
+      if (state.view === 'map') { map.closePopup(); map.setView([lat, lng], 10, { animate: false }); }
+    }
+    toast('가까운 축제·경기부터 보여드려요. 거리는 직선거리예요.');
   }, error => {
     $('map-locate').disabled = false;
+    $('nearby-search').disabled = false;
     toast(error.code === 1 ? '위치 사용이 허용되지 않았어요. 지역을 직접 선택해 주세요.' : '현재 위치를 확인하지 못했어요. 지역을 직접 선택해 주세요.');
   }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
 }

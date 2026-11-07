@@ -25,7 +25,7 @@ const records = [
   { ...common, id: 'ended', title: '지난 축제', category: 'local', start: '2026-10-01', end: '2026-10-03' }
 ];
 
-async function fixture(t, { query = '', saved = [], embedded = false } = {}) {
+async function fixture(t, { query = '', saved = [], embedded = false, eventRecords = records, geolocation = null } = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   virtualConsole.on('warn', (...messages) => errors.push(messages.join(' ')));
@@ -44,12 +44,16 @@ async function fixture(t, { query = '', saved = [], embedded = false } = {}) {
   window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
   window.HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
   window.localStorage.setItem(savedKey, JSON.stringify(saved));
+  if (geolocation) Object.defineProperty(window.navigator, 'geolocation', {
+    configurable: true,
+    value: { getCurrentPosition: success => success({ coords: geolocation }) }
+  });
   const requests = [];
   window.fetch = async requested => {
     const url = new URL(String(requested));
     requests.push(url.href);
     assert.equal(url.href, 'https://fixture.test/games/festival-schedule/events.json');
-    return { ok: true, json: async () => ({ updatedAt: '2026-11-03', events: structuredClone(records) }) };
+    return { ok: true, json: async () => ({ updatedAt: '2026-11-03', events: structuredClone(eventRecords) }) };
   };
   // Keep all core date operations in the same realm as the app's fixed Date.
   const context = dom.getInternalVMContext();
@@ -65,6 +69,40 @@ async function fixture(t, { query = '', saved = [], embedded = false } = {}) {
   const ids = () => [...window.document.querySelectorAll('#event-list [data-event-card]')].map(node => node.dataset.eventCard).sort();
   return { window, $, click, change, ids, query: () => new URLSearchParams(window.location.search) };
 }
+
+test('nearby search finds sports and festivals by distance and can be turned off', async t => {
+  const scheduled = (id, title, category, lat, lng, start) => ({
+    ...common, id, title, category, lat, lng, start, end: start,
+    region: lat > 37 ? '서울' : '대전', venue: '경기장'
+  });
+  const f = await fixture(t, {
+    eventRecords: [
+      scheduled('seoul-festival', '서울 축제', 'local', 37.57, 126.98, '2026-11-04'),
+      scheduled('daejeon-sport', '대전 경기', 'sport', 36.36, 127.38, '2026-11-08'),
+      scheduled('distant-festival', '먼 축제', 'local', 35.16, 126.85, '2026-11-06')
+    ],
+    geolocation: { latitude: 36.35, longitude: 127.38 }
+  });
+  f.click('#nearby-search');
+  const order = [...f.window.document.querySelectorAll('#event-list [data-event-card]')].map(node => node.dataset.eventCard);
+  assert.deepEqual(order, ['daejeon-sport', 'seoul-festival', 'distant-festival']);
+  assert.match(f.$('[data-event-card="daejeon-sport"] .card-distance').textContent, /내 위치에서 1\.1km/);
+  assert.equal(f.$('#nearby-search').getAttribute('aria-pressed'), 'true');
+  assert.match(f.$('#list-label').textContent, /직선거리/);
+  assert.equal(f.query().has('sort'), false, 'coordinates are not stored in shareable URLs');
+  f.click('#nearby-search');
+  assert.equal(f.$('#sort').value, 'date');
+  assert.equal(f.$('#nearby-search').getAttribute('aria-pressed'), 'false');
+});
+
+test('festival map expansion fills its container and can close using Escape', async t => {
+  const f = await fixture(t);
+  f.click('#map-expand');
+  assert.equal(f.$('#map-panel').classList.contains('is-expanded'), true);
+  assert.equal(f.$('#map-expand').getAttribute('aria-label'), '지도 작게 보기');
+  f.window.document.dispatchEvent(new f.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.equal(f.$('#map-panel').classList.contains('is-expanded'), false);
+});
 
 test('initial load retains officially planned records with null dates and no map coordinates', async t => {
   const f = await fixture(t);

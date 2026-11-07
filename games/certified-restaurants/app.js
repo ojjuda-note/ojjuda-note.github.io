@@ -548,6 +548,17 @@
     updateResultCount();
     if (view === 'map' && !state.loading && !state.loadError) syncMap(true);
   }
+  function toggleMapExpansion() {
+    const expanded = $('map-panel').classList.toggle('is-expanded');
+    document.body.classList.toggle('map-is-expanded', expanded);
+    $('map-expand').setAttribute('aria-pressed', String(expanded));
+    $('map-expand').setAttribute('aria-label', expanded ? '지도 작게 보기' : '지도 크게 보기');
+    $('map-expand-label').textContent = expanded ? '지도 작게 보기' : '지도 크게 보기';
+    $('map-expand').querySelector('svg').innerHTML = expanded
+      ? '<path d="M4 4l12 12M16 4 4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'
+      : '<path d="M7 2H2v5m11-5h5v5M2 13v5h5m11-5v5h-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    requestAnimationFrame(() => { if (map) map.invalidateSize({ animate: false }); if (mapIsVisible()) syncMap(false); });
+  }
   function resetFilters() {
     clearTimeout(searchTimer); state.category = ''; state.guide = ''; state.region = ''; state.query = ''; state.savedOnly = false; state.selected = '';
     $('search').value = ''; $('region').value = '';
@@ -772,6 +783,12 @@
   $('map-next').addEventListener('click', () => changeMapPage(1));
   $('reset').addEventListener('click', resetFilters);
   $('nearby').addEventListener('click', () => { state.sort = 'distance'; state.sortChosen = true; render(true); requestLocation(true); });
+  $('map-expand').addEventListener('click', toggleMapExpansion);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && $('map-panel').classList.contains('is-expanded') && !$('detail').open) {
+      event.preventDefault(); toggleMapExpansion();
+    }
+  });
   $('show-map').addEventListener('click', () => setView('map', true)); $('show-list').addEventListener('click', () => setView('list', true));
   $('close-detail').addEventListener('click', () => $('detail').close());
   $('detail').addEventListener('click', event => { if (event.target === $('detail')) { const rect = $('detail').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('detail').close(); } });

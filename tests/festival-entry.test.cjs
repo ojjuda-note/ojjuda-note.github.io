@@ -115,7 +115,7 @@ function routeFixture(){
  }
  const revision=JSON.parse(read('game-release.json')).revision;
  assert.equal(boot.window.OjjudaGameAssets.revision,revision);assert.ok(world.includes('/shared/games/world-game-assets.js?v='+revision));
- assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.4.3');
+ assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.5.0');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
  assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);

@@ -10,9 +10,9 @@
   <title>축제일정 · 전국 축제 지도와 캘린더</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/vendor/leaflet.css">
-  <link rel="stylesheet" href="./style.css?v=20261106-festival-scale1">
+  <link rel="stylesheet" href="./style.css?v=20261107-nearby-map1">
   <script src="./assets/vendor/leaflet.js" defer></script>
-  <script src="./app.js?v=20261106-festival-scale1" type="module"></script>
+  <script src="./app.js?v=20261107-nearby-map1" type="module"></script>
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261106-source-folders1">
   <script src="/shared/share/page-share.js?v=20261106-source-folders1" defer></script>
 </head>
@@ -51,6 +51,7 @@
         <option value="unknown">규모 미확인</option>
       </select>
     </label>
+    <button id="nearby-search" class="nearby-search" type="button" aria-pressed="false"><span class="icon" data-icon="locate"></span><span id="nearby-search-label">내 주변 행사 찾기</span></button>
   </div>
   <div class="results-toolbar">
     <h2 id="results-heading">전국 행사 <span id="result-count">…</span></h2>
@@ -65,9 +66,10 @@
   <div id="workspace" class="workspace" data-view="map">
     <section id="map-panel" class="map-panel" aria-label="전국 행사 지도">
       <div id="festival-map"></div>
-      <div class="map-buttons"><button id="map-fit" title="전국 지도 보기" aria-label="전국 지도 보기"><span class="icon" data-icon="expand"></span></button></div>
+      <button id="map-expand" class="map-expand" type="button" aria-pressed="false" aria-label="지도 크게 보기"><span class="icon" data-icon="expand"></span><span id="map-expand-label">지도 크게 보기</span></button>
+      <div class="map-buttons"><button id="map-fit" title="전국 지도 보기" aria-label="전국 지도 보기"><span class="icon" data-icon="reset"></span></button></div>
       <details class="map-options"><summary><span class="icon" data-icon="layers"></span>지도 설정</summary><div class="map-options-menu">
-        <button id="map-locate" class="map-option"><span class="icon" data-icon="locate"></span><span>내 위치</span></button>
+        <button id="map-locate" class="map-option"><span class="icon" data-icon="locate"></span><span>내 위치 · 거리순</span></button>
         <button id="map-style" class="map-option" aria-pressed="false"><span class="icon" data-icon="layers"></span><span>상세 지도</span></button>
       </div></details>
       <div id="map-message" class="map-message" role="status" hidden></div>
@@ -79,7 +81,7 @@
       <p class="calendar-help">날짜를 누르면 그날의 행사를 볼 수 있어요.</p>
     </section>
     <aside id="results-panel" class="results-panel" aria-label="검색된 행사">
-      <div class="list-toolbar"><strong id="list-label">가까운 일정부터</strong><label><select id="sort" aria-label="정렬 기준"><option value="date">일정순</option><option value="region">지역순</option><option value="name">이름순</option><option value="scale_desc">규모 큰 순</option><option value="scale_asc">규모 작은 순</option></select></label></div>
+      <div class="list-toolbar"><strong id="list-label">가까운 일정부터</strong><label><select id="sort" aria-label="정렬 기준"><option value="date">일정순</option><option value="distance">내 위치에서 가까운 순</option><option value="region">지역순</option><option value="name">이름순</option><option value="scale_desc">규모 큰 순</option><option value="scale_asc">규모 작은 순</option></select></label></div>
       <p id="location-note" class="location-note" hidden></p>
       <div id="event-list" class="event-list" aria-live="polite"><div class="loading-state"><div class="loading-ring"></div><p>행사를 불러오고 있어요.</p></div></div>
     </aside>

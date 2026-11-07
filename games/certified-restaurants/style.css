@@ -140,6 +140,12 @@ svg { display:block; flex-shrink:0; }
 .nearby-button svg { width:17px; height:17px; }
 .nearby-button:hover:not(:disabled) { background:#f4f8f3; }
 .nearby-button[aria-pressed=true] { color:var(--green); font-weight:650; border-color:#b8d1bf; }
+.map-expand { position:absolute; top:56px; left:12px; z-index:450; display:flex; align-items:center; justify-content:center; gap:6px; min-height:36px; padding:8px 10px; border:1px solid #d6dfd8; border-radius:8px; background:#fff; box-shadow:var(--shadow); color:#42634c; font-size:12px; font-weight:600; white-space:nowrap; }
+.map-expand svg { width:17px; height:17px; }
+.map-expand:hover { background:#f4f8f3; }
+body.map-is-expanded { overflow:hidden; }
+.map-panel.is-expanded { position:fixed; inset:0; width:100%; height:100dvh!important; z-index:9999; border:0; border-radius:0!important; }
+.map-panel.is-expanded #map { flex:1 1 auto; min-height:0; height:auto!important; }
 .map-pagination { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:6px; flex-shrink:0; min-height:50px; padding:4px 8px; border-top:1px solid var(--line); background:#fbfcf8; }
 .map-pagination button { min-height:40px; padding:7px 9px; border-radius:7px; color:var(--green); font-size:12px; font-weight:600; white-space:nowrap; }
 .map-pagination button:hover:not(:disabled) { background:var(--light); }
@@ -193,6 +199,7 @@ svg { display:block; flex-shrink:0; }
   .results-toolbar { gap:4px 8px; margin:8px 0; }.results-actions { gap:6px; }.result-count { font-size:15px; }.result-shown { display:block; margin:2px 0 0; font-size:10px; }.result-coverage { font-size:11px; }.view-switch button { font-size:11px; min-height:28px; padding:5px 7px; }.view-switch svg { width:13px; height:13px; }
   .collection-title { font-size:11px; }.collection-links { gap:3px 12px; margin-bottom:7px; }.status { font-size:12px; }
   .workspace { display:flex; flex-direction:column; gap:10px; height:auto; }.map-panel { flex-shrink:0; height:auto; }.map-panel #map { flex:none; height:clamp(218px,calc(30dvh - 2px),258px); }.map-panel,.results-panel { border-radius:13px; }.results-panel { overflow:visible; max-height:none; }.list-toolbar { padding:6px 10px; border-radius:13px 13px 0 0; }.list-toolbar strong { font-size:12px; }.list-toolbar>span { font-size:10px; }.cards { overflow:visible; }.workspace[data-view=list] .cards { display:block; }.workspace[data-view=list] .restaurant-card { border-right:0; }
+  .map-expand { left:9px; top:54px; min-height:34px; padding:7px 9px; font-size:11px; }
   .restaurant-card { padding:12px 13px; }.card-kicker { font-size:11px; margin-bottom:4px; gap:5px; }.card-name { font-size:15px; line-height:1.45; margin-bottom:5px; }.card-menu { font-size:14px; line-height:1.4; margin-bottom:5px; }.save-button { top:10px; right:7px; }.guide-badges { gap:3px 10px; }.list-section-title { padding-inline:13px; }.load-more { border-radius:0 0 13px 13px; }
   .map-message { left:9px; right:9px; font-size:11px; padding:9px; }.page-footer { font-size:11px; }
   .detail-dialog { border-radius:16px; max-height:93dvh; }.detail-cover { padding:21px 20px 19px; }.detail-title-row h2 { font-size:23px; }.detail-body { padding:20px; }.detail-facts { grid-template-columns:72px minmax(0,1fr); gap:14px 6px; }

@@ -197,6 +197,11 @@ function fixture(options = {}) {
   assert.equal(initialMap.$('#recommendations-link').closest('header'), null, 'the recommendation entry is not duplicated in the header');
   assert.equal(initialMap.$('#nearby').closest('#map-panel'), initialMap.$('#map-panel'), 'my location belongs to the map');
   assert.equal(initialMap.$('#nearby-label').textContent, '내 위치');
+  initialMap.click('#map-expand');
+  assert.equal(initialMap.$('#map-panel').classList.contains('is-expanded'), true, 'the restaurant map expands over the search and results');
+  assert.equal(initialMap.$('#map-expand').getAttribute('aria-label'), '지도 작게 보기');
+  initialMap.document.dispatchEvent(new initialMap.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.equal(initialMap.$('#map-panel').classList.contains('is-expanded'), false, 'Escape restores the original map size');
   assert.equal(initialMap.$('#result-coverage').classList.contains('sr-only'), true, 'coverage remains available to assistive technology without a visible summary row');
   assert.equal(initialMap.$('#list-label').classList.contains('sr-only'), true);
   assert.equal(initialMap.$('#load-more').hidden, false, 'map-and-list browsing retains progressive loading');

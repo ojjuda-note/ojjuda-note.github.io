@@ -9,10 +9,10 @@
   <title>인증맛집 · 오쭈다</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
   <link rel="stylesheet" href="/games/certified-restaurants/restaurant-ratings.css?v=20261106-source-folders1">
-  <link rel="stylesheet" href="./style.css?v=20261103-restaurants-sort1">
+  <link rel="stylesheet" href="./style.css?v=20261107-nearby-map1">
   <script src="./vendor/leaflet.js" defer></script>
   <script src="/games/certified-restaurants/restaurant-ratings.js?v=20261106-source-folders1" defer></script>
-  <script src="./app.js?v=20261107-restaurants-slot38-1" defer></script>
+  <script src="./app.js?v=20261107-nearby-map1" defer></script>
   <link rel="stylesheet" href="/shared/share/page-share.css?v=20261106-source-folders1">
   <script src="/shared/share/page-share.js?v=20261106-source-folders1" defer></script>
 </head>
@@ -67,6 +67,7 @@
       <div id="map-panel" class="map-panel">
         <div id="map" role="region" aria-label="선정 식당 지도"><div class="map-loading">지도를 준비하고 있어요.</div></div>
         <button id="nearby" class="nearby-button" aria-label="내 위치로 이동" title="내 위치로 이동" aria-pressed="false" type="button"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span id="nearby-label">내 위치</span></button>
+        <button id="map-expand" class="map-expand" type="button" aria-pressed="false" aria-label="지도 크게 보기"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 2H2v5m11-5h5v5M2 13v5h5m11-5v5h-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg><span id="map-expand-label">지도 크게 보기</span></button>
         <div id="map-message" class="map-message" hidden><span id="map-message-text"></span><button id="retry-map" type="button">다시 불러오기</button></div>
         <nav id="map-pagination" class="map-pagination" aria-label="지도 맛집 넘기기" hidden>
           <button id="map-prev" type="button" aria-controls="map" disabled>이전 50곳</button>
