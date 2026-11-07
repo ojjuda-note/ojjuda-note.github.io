@@ -2,7 +2,7 @@
   "updatedAt": "2026-11-07",
   "cycle": 1,
   "slot": 52,
-  "sourceName": "충청남도 공식 충남관광 · 2025~2026 충남 방문의 해 대표 맛집 선정",
+  "sourceName": "충청남도 충남관광 공식 대표 맛집 선정·백년가게 안내",
   "sourceUrls": [
     "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
@@ -10,9 +10,13 @@
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
     "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
-    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
   ],
-  "sourceScope": "충청남도 공식 발표 2024년 1차·2025년 2차 대표 맛집 중, 식당명과 주소가 관광포털 개별 상세에 일치하는 6곳만 추가. 발표일 2025-07-04는 개별 선정 연도 아님.",
+  "sourceScope": "2024·2025 대표 맛집 선정 6곳과 충남관광 상세에 [백년가게]로 실명·주소 수록된 4곳을 별개 이력으로 보존. 선정연도/수록시점·현재 영업·블루리본 정규 등급 미추정.",
   "completeRegionalCollection": false,
   "verifiedSelectionYears": [
     2024,
@@ -206,6 +210,120 @@
       ],
       "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
       "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-cheonan-oksusa",
+      "name": "원조옥수사",
+      "category": "한식",
+      "region": "충남",
+      "district": "천안시 동남구",
+      "address": "충청남도 천안시 동남구 영성로 25-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+          "sourceName": "충청남도 충남관광 공식 음식점 상세 · 백년가게 표기",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 상세 페이지의 [백년가게] 분류 확인. 지정/선정 연도와 현재 영업은 별도 확인하지 않음. 미쉐린·블루리본 선정으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-cheonan-dupain",
+      "name": "듀팡과자점",
+      "category": "디저트",
+      "region": "충남",
+      "district": "천안시 서북구",
+      "address": "충청남도 천안시 서북구 늘푸른5길 22 102호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "빵",
+        "꼬마호두"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+          "sourceName": "충청남도 충남관광 공식 음식점 상세 · 백년가게 표기",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 상세 페이지의 [백년가게] 분류 확인. 지정/선정 연도와 현재 영업은 별도 확인하지 않음. 미쉐린·블루리본 선정으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-cheongyang-bibong-sashimi",
+      "name": "비봉횟집",
+      "category": "한식",
+      "region": "충남",
+      "district": "청양군",
+      "address": "충청남도 청양군 청양읍 중앙로5길 28 에코빌 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "찰광어"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+          "sourceName": "충청남도 충남관광 공식 음식점 상세 · 백년가게 표기",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 상세 페이지의 [백년가게] 분류 확인. 지정/선정 연도와 현재 영업은 별도 확인하지 않음. 미쉐린·블루리본 선정으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-yesan-dongheung",
+      "name": "동흥대반점",
+      "category": "중식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 예산읍 예산로 220-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089",
+          "sourceName": "충청남도 충남관광 공식 음식점 상세 · 백년가게 표기",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 상세 페이지의 [백년가게] 분류 확인. 지정/선정 연도와 현재 영업은 별도 확인하지 않음. 미쉐린·블루리본 선정으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089",
+      "addressSourceCheckedAt": "2026-11-07"
     }
-  ]
+  ],
+  "verifiedBaeknyeonListings": 4
 }
