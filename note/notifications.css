@@ -50,6 +50,10 @@
 .nn-update-label{color:var(--accent-ink);font-size:15px;font-weight:700;line-height:1.4}
 .nn-update-detail,.nn-update-daily-item{margin:0;font-size:14px;font-weight:400;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
 .nn-update-detail{color:var(--ink-2)}
+.nn-update-daily-section{padding:0 0 12px;border-bottom:1px solid var(--line)}
+.nn-update-daily-section:last-child{padding-bottom:0;border-bottom:0}
+.nn-update-daily-section .nn-update-label{display:block;line-height:1.5}
+.nn-update-daily-section .nn-update-detail{display:block;color:var(--ink-2)}
 .nn-update-daily-item{position:relative;padding-left:13px;color:var(--ink)}
 .nn-update-daily-item:before{content:'•';position:absolute;left:0;color:var(--accent-ink)}
 .nn-source{padding:0 6px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
