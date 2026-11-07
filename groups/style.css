@@ -39,3 +39,22 @@
  .room-context .actions{display:flex;flex-wrap:nowrap;width:100%;gap:8px}
  .room-context .actions button{flex:1;min-width:0;padding:10px 12px;font-size:14px;white-space:nowrap}
 }
+
+/* A lighter room header and controls on phone screens. */
+@media(max-width:600px){
+ .top{padding:10px 16px}
+ .top .brand img{width:26px;height:26px}
+ main{padding-top:18px}
+ .hero{gap:9px;margin-bottom:16px}
+ .hero h1{font-size:28px;line-height:1.35;margin:2px 0 4px}
+ .hero .actions button[data-action="home"]{flex:0 0 auto;margin-left:auto;min-height:36px;padding:7px 14px;font-size:13px}
+ .room-context{gap:10px;margin-bottom:14px}
+ .room-context .muted{font-size:13px;line-height:1.55}
+ .room-context .actions{justify-content:flex-end;gap:7px}
+ .room-context .actions button{flex:0 0 auto;min-height:38px;padding:8px 13px;font-size:13px}
+ .room-context+.toolbar{padding:10px;gap:7px;border-radius:16px}
+ .room-context+.toolbar .view button,.room-context+.toolbar [data-action="refresh"]{min-height:36px;padding:7px 11px;font-size:13px}
+ .room-context+.toolbar input[type="search"]{min-height:40px;padding:10px 12px;font-size:16px}
+ .room-context~.filter-row{gap:6px;margin:11px 0 16px}
+ .room-context~.filter-row .filter{min-height:34px;padding:6px 11px;font-size:12px}
+}
