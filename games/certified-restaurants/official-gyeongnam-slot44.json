@@ -1,0 +1,59 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "한국관광공사 대한민국 구석구석 · 소상공인시장진흥공단 상권정보 공개 지도 자료",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+    "https://trip.happynowinfo.com/place/2546530/",
+    "https://smi.purpleo.kr/article/19209",
+    "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+  ],
+  "sourceScope": "1순환 44회차 경상남도 진주시·사천시 공개 관광 식당과 우체국 추천 위치 보강. 지역 전수조사가 아님.",
+  "verificationLimit": "과거 사천시 모범음식점 이력과 KTO 공식 여행정보 수록만 확인. 현재 영업상태·정규 블루리본 등급은 단정하지 않음.",
+  "coordinatePolicy": "현재 등록 ID·상호·정확한 도로명주소가 일치하는 공개 상권업소 좌표만 사용. 추정 주소 좌표와 개인 위치를 사용하지 않음.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-sacheon-slot44-samcheonpo-jeongseobang",
+      "name": "삼천포맛집정서방",
+      "category": "한식",
+      "region": "경남",
+      "district": "사천시",
+      "address": "경상남도 사천시 진삼로 269",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 관광 소개·사천시 모범음식점 이력",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
+          "sourceName": "한국관광공사 · 대한민국 구석구석",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "관광공사 공개 소개에 2017년 향토 요리대회 수상 경력과 사천시 모범음식점 지정 이력이 명시되어 있습니다. 현재 지정·현재 영업은 별도 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://trip.happynowinfo.com/place/2546530/",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ],
+  "locationEnrichments": [
+    {
+      "id": "post-2026-45-0-0",
+      "expectedName": "효성갈비",
+      "expectedAddress": "경상남도 진주시 진주대로 1236",
+      "lat": 35.193707,
+      "lng": 128.068249,
+      "coordinateSource": {
+        "name": "공공데이터 기반 상권업소 위치 자료(상호·도로명주소 일치)",
+        "url": "https://smi.purpleo.kr/article/19209",
+        "method": "exact-name-and-road-address; published-business-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    }
+  ]
+}
