@@ -119,7 +119,7 @@
   "blueRibbon": {
     "verifiedAt": "2026-11-03",
     "recordCount": 528,
-    "coordinatesCount": 245,
+    "coordinatesCount": 246,
     "buildCounts": {
       "existingRecords": 6,
       "highestMatchedMichelin": 32,
@@ -1518,8 +1518,8 @@
       "local-guide": 2519,
       "post-office": 240
     },
-    "coordinatesAvailable": 1041,
-    "coordinatesMissing": 2209,
+    "coordinatesAvailable": 1045,
+    "coordinatesMissing": 2205,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -12545,53 +12545,122 @@
         "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
         "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
       ]
+    },
+    {
+      "id": "2026-11-07-jeju-slot47-four-exact-visitjeju-locations",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 47,
+      "previousCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1041,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1045,
+        "coordinatesMissing": 2205,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 0,
+      "modificationCount": 4,
+      "coordinateAddedCount": 4,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [
+        "blue-jeju-2022-1",
+        "local-jeju-3",
+        "local-jeju-18",
+        "local-jeju-34"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-jeju-slot47-locations.json",
+      "sourceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
+      ],
+      "notes": [
+        "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
+        "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
+        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+      ],
+      "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
+      "sourceAuditFile": "games/certified-restaurants/sources.json"
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
+    "id": "2026-11-07-jeju-slot47-four-exact-visitjeju-locations",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 44,
+    "slot": 47,
     "previousCoverage": {
-      "uniqueRestaurants": 3249,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2518,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1040,
-      "coordinatesMissing": 2209,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1926,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3250,
       "providerCounts": {
         "michelin": 237,
@@ -12630,74 +12699,76 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 1,
-    "modificationCount": 1,
-    "coordinateAddedCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3250,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2519,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1045,
+      "coordinatesMissing": 2205,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1927,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 0,
+    "modificationCount": 4,
+    "coordinateAddedCount": 4,
     "locationExcludedCount": 0,
-    "newRestaurantIds": [
-      "local-sacheon-slot44-samcheonpo-jeongseobang"
-    ],
     "modifiedRestaurantIds": [
-      "post-2026-45-0-0"
+      "blue-jeju-2022-1",
+      "local-jeju-3",
+      "local-jeju-18",
+      "local-jeju-34"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
+    "coordinateSupplement": "games/certified-restaurants/official-jeju-slot47-locations.json",
     "sourceUrls": [
-      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
-      "https://trip.happynowinfo.com/place/2546530/",
-      "https://smi.purpleo.kr/article/19209",
-      "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
     ],
     "notes": [
-      "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
-      "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
-      "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
-    ]
+      "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
+      "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
+      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+    ],
+    "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
+    "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "latestMapCoverageAudit": {
-    "id": "2026-11-07-gyeongnam-slot44-kto-and-jinju-location",
+    "id": "2026-11-07-jeju-slot47-four-exact-visitjeju-locations",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 44,
+    "slot": 47,
     "previousCoverage": {
-      "uniqueRestaurants": 3249,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2518,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1040,
-      "coordinatesMissing": 2209,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1926,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3250,
       "providerCounts": {
         "michelin": 237,
@@ -12736,29 +12807,68 @@
         "디저트": 234
       }
     },
-    "newRestaurantCount": 1,
-    "modificationCount": 1,
-    "coordinateAddedCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3250,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2519,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1045,
+      "coordinatesMissing": 2205,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1927,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 0,
+    "modificationCount": 4,
+    "coordinateAddedCount": 4,
     "locationExcludedCount": 0,
-    "newRestaurantIds": [
-      "local-sacheon-slot44-samcheonpo-jeongseobang"
-    ],
     "modifiedRestaurantIds": [
-      "post-2026-45-0-0"
+      "blue-jeju-2022-1",
+      "local-jeju-3",
+      "local-jeju-18",
+      "local-jeju-34"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-gyeongnam-slot44.json",
+    "coordinateSupplement": "games/certified-restaurants/official-jeju-slot47-locations.json",
     "sourceUrls": [
-      "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3aa0ec5f-8c54-475a-9649-2516e583ccd1",
-      "https://trip.happynowinfo.com/place/2546530/",
-      "https://smi.purpleo.kr/article/19209",
-      "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=45"
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
     ],
     "notes": [
-      "사천 '삼천포맛집정서방'은 KTO 공식 관광 소개와 KTO TourAPI 공개 주소를 대조. 2017 수상 및 사천시 모범음식점은 과거 이력이며 현재 선정/영업으로 표시하지 않음.",
-      "진주 '효성갈비'는 기존 우체국 수록 상호와 도로명주소를 소상공인 상권정보 공개 위치자료와 정확히 맞춰 좌표 한 곳 보강.",
-      "기존 ID·여러 가이드 이력·회원 추천 별도 자료는 변경하지 않음. 나머지 세 곳의 좌표는 공개 근거가 부족해 계속 null."
+      "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
+      "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
+      "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
     ],
-    "scope": "사천 신규 관광수록 1곳과 진주 우체국추천 좌표 1곳",
+    "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
     "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "localGovernment": {
@@ -12769,7 +12879,7 @@
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
     "recordCount": 2421,
     "designationEvidenceCount": 2431,
-    "coordinatesAvailable": 754,
+    "coordinatesAvailable": 757,
     "regionCount": 17,
     "regionalCoverage": [
       {
@@ -12871,7 +12981,7 @@
       {
         "region": "제주",
         "uniqueRestaurants": 62,
-        "coordinatesAvailable": 1,
+        "coordinatesAvailable": 4,
         "completeRegionalCollection": false
       }
     ],
@@ -20437,6 +20547,114 @@
       ],
       "scope": "사천 신규 관광수록 1곳과 진주 우체국추천 좌표 1곳",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
+    },
+    {
+      "id": "2026-11-07-jeju-slot47-four-exact-visitjeju-locations",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 47,
+      "previousCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1041,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1045,
+        "coordinatesMissing": 2205,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 0,
+      "modificationCount": 4,
+      "coordinateAddedCount": 4,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [
+        "blue-jeju-2022-1",
+        "local-jeju-3",
+        "local-jeju-18",
+        "local-jeju-34"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-jeju-slot47-locations.json",
+      "sourceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
+      ],
+      "notes": [
+        "기존 기본 데이터 및 부가자료의 ID·가이드·회원 추천 정보를 유지하고 제주시 4곳 공식 상세 위경도만 보강.",
+        "같은 공식 VisitJeju 식당 상세에 상호·현재 주소·숫자 좌표가 함께 공개되어 교차 대조. 블루리본 과거 수록은 현행 등급으로 간주하지 않음.",
+        "현재 영업과 정확한 블루리본 판본·새 선정은 추가 확인 전 판정하지 않음."
+      ],
+      "scope": "제주시 블루리본 수록 1곳과 향토음식점 안내 3곳의 위치 보강",
+      "sourceAuditFile": "games/certified-restaurants/sources.json"
     }
   ],
   "busanSlot39": {
@@ -20463,5 +20681,22 @@
     "unknownLocations": 4,
     "notExhaustive": true,
     "notes": "개별 선정/영업 여부, 미쉐린·블루리본 정규 등급 미확인. 식당 이름과 도로명주소만 공식 안내에 근거."
+  },
+  "jejuSlot47": {
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 47,
+    "verifiedLocationCount": 4,
+    "baseCityEntries": 86,
+    "missingCoordinatesBefore": 75,
+    "missingCoordinatesAfter": 71,
+    "sourceUrls": [
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076"
+    ],
+    "sourceName": "제주관광공사 VisitJeju 식당 개별 상세·정확한 주소·수치좌표",
+    "note": "기존 선정 이력과 공식 관광 위치정보만 확인. 현 영업·폐업 여부는 별도 검증 필요. 회원 추천·개인 위치 미사용."
   }
 }
