@@ -18,7 +18,7 @@ for(const x of slot.restaurants){
  a.equal(x.addressSourceUrl,x.guides[0].sourceUrl);
 }
 a.ok(src.coverage.uniqueRestaurants>=3162);a.ok(src.coverage.coordinatesAvailable>=1029);
-a.ok(src.coverage.coordinatesMissing>=2133);a.equal(src.coverage.regionalCounts['강원'],61);
+a.ok(src.coverage.coordinatesMissing>=2133);a.ok(src.coverage.regionalCounts['강원']>=61, 'later Gangwon listings retain earlier records');
 a.ok(src.coverage.providerCounts['local-guide']>=2431);
 a.equal(src.localGovernment.municipalTourism20261106GangwonSlot20.recordCount,5);
 const log=audit.entries.find(x=>x.cycle===1&&x.slot===20);a.ok(log);

@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 49,
-    "scheduledAt": "2026-11-07T19:00:00+09:00",
+    "slot": 50,
+    "scheduledAt": "2026-11-07T20:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "사용자 예약 19:00 KST. 기준2026-11-05 23:00부터 h=44, n=48, slot49 cycle1. 이어하기 구리시 공식 2026 선정 검증, 원배정 19:00 유지."
+    "source": "회차의 예약 시각을 별도 전달받지 못해 자동 실행의 현재 한국시각 2026-11-07 20:22:52+09:00을 정각 내림, 20:00 KST 배정(2026-11-05 23:00 기준 경과 45시간, n=49, slot=50, cycle=1)."
   },
   "entries": [
     {
@@ -25724,6 +25724,1220 @@
           "operatingStatusVerified": false
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 50,
+      "scheduledAtKST": "2026-11-07T20:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_five_official_gangwon_tourism_restaurants",
+      "assignedRegions": [
+        "강원특별자치도 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "강원특별자치도",
+          "baseListedCount": 61,
+          "afterListedCount": 66,
+          "scope": "현재 공개된 춘천시 관광포털 개별 3개와 한국관광공사 2026년 8월 고성군 미식 기사 2개를 강원 전체 61곳 기존 목록과 대조. 강원 전역 전수조사 아님.",
+          "actuallyChecked": [
+            "춘천시",
+            "고성군"
+          ],
+          "remainingAreas": "원주시·강릉시·동해시·속초시·태백시·삼척시 및 타 강원 군 지역의 추가 명단과 위치·영업 상태 개별 확인 이월",
+          "new": 5,
+          "updated": 0,
+          "remainingUnknownLocations": 56,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "춘천시 춘천여행ON 공식 관광 음식점 상세(3곳)",
+        "한국관광공사 대한민국 구석구석 2026-08 고성 미식 여행 기사(2곳)",
+        "블루리본 공식 전체 안내 지도 접근 범위 확인; 명단 일괄 인증 불가"
+      ],
+      "additions": 5,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 56,
+      "locationPendingScope": "기존 강원 61곳·좌표 확인 10곳·미확인 51곳에 신규 5곳(좌표 미검증)을 더해 강원 66곳 중 56곳 재확인 대기",
+      "addedRestaurantIds": [
+        "local-gangwon-slot50-chuncheon-sarang",
+        "local-gangwon-slot50-chuncheon-sigol",
+        "local-gangwon-slot50-chuncheon-nambu",
+        "local-gangwon-slot50-goseong-haegeumgang",
+        "local-gangwon-slot50-goseong-cheonghwang"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
+        "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "verifiedBusinessIntroductions": [
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-sarang",
+          "name": "춘천사랑 닭갈비,막국수",
+          "currentAddress": "강원특별자치도 춘천시 낙원길 47-1",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
+          "sourceAsOf": null,
+          "verifiedAt": "2026-11-07",
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false,
+          "certificationVerified": false
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-sigol",
+          "name": "시골막국수",
+          "currentAddress": "강원특별자치도 춘천시 신북읍 율문길 100",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
+          "sourceAsOf": null,
+          "verifiedAt": "2026-11-07",
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false,
+          "certificationVerified": false
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-nambu",
+          "name": "남부막국수",
+          "currentAddress": "강원특별자치도 춘천시 춘천로81번길 16",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
+          "sourceAsOf": null,
+          "verifiedAt": "2026-11-07",
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false,
+          "certificationVerified": false
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-goseong-haegeumgang",
+          "name": "해금강",
+          "currentAddress": "강원특별자치도 고성군 현내면 통일전망대로 457 (통일관 1층)",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c",
+          "sourceAsOf": "2026-08",
+          "verifiedAt": "2026-11-07",
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false,
+          "certificationVerified": false
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-goseong-cheonghwang",
+          "name": "청황",
+          "currentAddress": "강원특별자치도 고성군 토성면 화암사길 100 (화암사 내)",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c",
+          "sourceAsOf": "2026-08",
+          "verifiedAt": "2026-11-07",
+          "coordinatesVerified": false,
+          "operatingStatusVerified": false,
+          "certificationVerified": false
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-add-싱글핀에일웍스",
+          "name": "싱글핀에일웍스",
+          "currentAddress": "강원특별자치도 양양군 현북면 하조대2길 48-42",
+          "region": "강원특별자치도 양양군",
+          "searchAliases": [
+            "싱글핀에일웍스 양양군 강원",
+            "싱글핀에일웍스 강원특별자치도 양양군 현북면 하조대2길 48-42",
+            "양양군 싱글핀에일웍스"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=445a050a-d464-418e-94e5-eea74c641fcc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "blue-add-hambat",
+          "name": "함밭식당",
+          "currentAddress": "강원 횡성군 횡성읍 섬강로 88",
+          "region": "강원특별자치도 횡성군",
+          "searchAliases": [
+            "함밭식당 횡성군 강원",
+            "함밭식당 강원 횡성군 횡성읍 섬강로 88",
+            "횡성군 함밭식당"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=6f1616fd-1b06-4d7f-b564-16440db52a93"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-851ea959a0717d7b",
+          "name": "홍천삼계탕",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 꽃뫼로 48",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "홍천삼계탕 홍천군 강원",
+            "홍천삼계탕 강원특별자치도 홍천군 홍천읍 꽃뫼로 48",
+            "홍천군 홍천삼계탕"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2654",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-4207c0789d89d58f",
+          "name": "가마솥장수두부",
+          "currentAddress": "강원특별자치도 홍천군 영귀미면 공작산로 509",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "가마솥장수두부 홍천군 강원",
+            "가마솥장수두부 강원특별자치도 홍천군 영귀미면 공작산로 509",
+            "홍천군 가마솥장수두부"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2655",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-94c6e9d026a50e08",
+          "name": "가리산막국수",
+          "currentAddress": "강원특별자치도 홍천군 두촌면 가리산길 23번길 7",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "가리산막국수 홍천군 강원",
+            "가리산막국수 강원특별자치도 홍천군 두촌면 가리산길 23번길 7",
+            "홍천군 가리산막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2656",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-a5a562e44fb99bcd",
+          "name": "솔마루송어",
+          "currentAddress": "강원특별자치도 홍천군 내촌면 삼선대길 85-32",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "솔마루송어 홍천군 강원",
+            "솔마루송어 강원특별자치도 홍천군 내촌면 삼선대길 85-32",
+            "홍천군 솔마루송어"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2657",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-f3d5cef89d3d89bc",
+          "name": "늘푸름홍천 한우프라자",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 설악로 1265",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "늘푸름홍천 한우프라자 홍천군 강원",
+            "늘푸름홍천 한우프라자 강원특별자치도 홍천군 홍천읍 설악로 1265",
+            "홍천군 늘푸름홍천 한우프라자"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2658",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-9ebe39aff7b42020",
+          "name": "굴다리막국수",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 연봉로11길 24-36",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "굴다리막국수 홍천군 강원",
+            "굴다리막국수 강원특별자치도 홍천군 홍천읍 연봉로11길 24-36",
+            "홍천군 굴다리막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2659",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-f62579243b0d146e",
+          "name": "얼큰이손칼국수",
+          "currentAddress": "강원특별자치도 홍천군 화촌면 굴운로 75번길 20-13",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "얼큰이손칼국수 홍천군 강원",
+            "얼큰이손칼국수 강원특별자치도 홍천군 화촌면 굴운로 75번길 20-13",
+            "홍천군 얼큰이손칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2661",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-bbcd34c1ccea19a2",
+          "name": "신내나루",
+          "currentAddress": "강원특별자치도 홍천군 화촌면 홍천로 1213",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "신내나루 홍천군 강원",
+            "신내나루 강원특별자치도 홍천군 화촌면 홍천로 1213",
+            "홍천군 신내나루"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2662",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-6a54b500d7d20a3e",
+          "name": "뚜레한우",
+          "currentAddress": "강원특별자치도 홍천군 두촌면 한계길 110",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "뚜레한우 홍천군 강원",
+            "뚜레한우 강원특별자치도 홍천군 두촌면 한계길 110",
+            "홍천군 뚜레한우"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2663"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-2b1837a3c21b0a5f",
+          "name": "옥선산장",
+          "currentAddress": "강원특별자치도 홍천군 서석면 고분대월길 168",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "옥선산장 홍천군 강원",
+            "옥선산장 강원특별자치도 홍천군 서석면 고분대월길 168",
+            "홍천군 옥선산장"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2664",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-fe8d539d52c30a1c",
+          "name": "두꺼비가든",
+          "currentAddress": "강원특별자치도 홍천군 서석면 행치령로 113",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "두꺼비가든 홍천군 강원",
+            "두꺼비가든 강원특별자치도 홍천군 서석면 행치령로 113",
+            "홍천군 두꺼비가든"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2665"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-4c3aa8c6d19d2001",
+          "name": "칡사랑메밀사랑",
+          "currentAddress": "강원특별자치도 홍천군 영귀미면 수타사로 372-5",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "칡사랑메밀사랑 홍천군 강원",
+            "칡사랑메밀사랑 강원특별자치도 홍천군 영귀미면 수타사로 372-5",
+            "홍천군 칡사랑메밀사랑"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2666"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-a031bd305e118c9f",
+          "name": "다능이",
+          "currentAddress": "강원특별자치도 홍천군 영귀미면 수타사로 82",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "다능이 홍천군 강원",
+            "다능이 강원특별자치도 홍천군 영귀미면 수타사로 82",
+            "홍천군 다능이"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2667",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-a5c7c4fe47a6fd9d",
+          "name": "소군이막국수",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 소옥개로 84",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "소군이막국수 홍천군 강원",
+            "소군이막국수 강원특별자치도 홍천군 홍천읍 소옥개로 84",
+            "홍천군 소군이막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2668"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-a1e26454f521c872",
+          "name": "유치쉼터",
+          "currentAddress": "강원특별자치도 홍천군 남면 시동로 1117",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "유치쉼터 홍천군 강원",
+            "유치쉼터 강원특별자치도 홍천군 남면 시동로 1117",
+            "홍천군 유치쉼터"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2669"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-dcec3279a24ec472",
+          "name": "솔잎가든",
+          "currentAddress": "강원특별자치도 홍천군 서면 한치골길 907",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "솔잎가든 홍천군 강원",
+            "솔잎가든 강원특별자치도 홍천군 서면 한치골길 907",
+            "홍천군 솔잎가든"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2670",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-aaa10f4e355f1336",
+          "name": "동막골식당",
+          "currentAddress": "강원특별자치도 홍천군 서면 한서로 473",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "동막골식당 홍천군 강원",
+            "동막골식당 강원특별자치도 홍천군 서면 한서로 473",
+            "홍천군 동막골식당"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2671"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-5e09eb295a07cb52",
+          "name": "도담골",
+          "currentAddress": "강원특별자치도 홍천군 서면 모곡로 27",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "도담골 홍천군 강원",
+            "도담골 강원특별자치도 홍천군 서면 모곡로 27",
+            "홍천군 도담골"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2672"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-64a555006bb442d4",
+          "name": "홍천사랑말 한우식당",
+          "currentAddress": "강원특별자치도 홍천군 북방면 홍천로 13-5",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "홍천사랑말 한우식당 홍천군 강원",
+            "홍천사랑말 한우식당 강원특별자치도 홍천군 북방면 홍천로 13-5",
+            "홍천군 홍천사랑말 한우식당"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2673",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-aaa1dd3d7f604745",
+          "name": "내고향손두부",
+          "currentAddress": "강원특별자치도 홍천군 북방면 홍천로 100-1",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "내고향손두부 홍천군 강원",
+            "내고향손두부 강원특별자치도 홍천군 북방면 홍천로 100-1",
+            "홍천군 내고향손두부"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2674",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-5e10c7e02872c82f",
+          "name": "원골",
+          "currentAddress": "강원특별자치도 홍천군 북방면 영서로 2996",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "원골 홍천군 강원",
+            "원골 강원특별자치도 홍천군 북방면 영서로 2996",
+            "홍천군 원골"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2675",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-24caf9cd98a45956",
+          "name": "원소리막국수",
+          "currentAddress": "강원특별자치도 홍천군 북방면 팔봉산로 1866",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "원소리막국수 홍천군 강원",
+            "원소리막국수 강원특별자치도 홍천군 북방면 팔봉산로 1866",
+            "홍천군 원소리막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2676",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-ea8e719cfa242d03",
+          "name": "오대산내고향",
+          "currentAddress": "강원특별자치도 홍천군 내면 구룡령로 6898",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "오대산내고향 홍천군 강원",
+            "오대산내고향 강원특별자치도 홍천군 내면 구룡령로 6898",
+            "홍천군 오대산내고향"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2677",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-d9786fa019f86cdf",
+          "name": "이박사남도자연밥상",
+          "currentAddress": "강원특별자치도 홍천군 내면 구룡령로 5107",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "이박사남도자연밥상 홍천군 강원",
+            "이박사남도자연밥상 강원특별자치도 홍천군 내면 구룡령로 5107",
+            "홍천군 이박사남도자연밥상"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2678"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-77bd07daed2e0073",
+          "name": "달뜨는언덕",
+          "currentAddress": "강원특별자치도 홍천군 내면 구룡령로 6707",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "달뜨는언덕 홍천군 강원",
+            "달뜨는언덕 강원특별자치도 홍천군 내면 구룡령로 6707",
+            "홍천군 달뜨는언덕"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2679",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-835733dc8d3a8e52",
+          "name": "푸른동산한우마을",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 소옥개로 110",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "푸른동산한우마을 홍천군 강원",
+            "푸른동산한우마을 강원특별자치도 홍천군 홍천읍 소옥개로 110",
+            "홍천군 푸른동산한우마을"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2682"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-ae86c851a8484f16",
+          "name": "홍천강막국수",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 와동로 36",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "홍천강막국수 홍천군 강원",
+            "홍천강막국수 강원특별자치도 홍천군 홍천읍 와동로 36",
+            "홍천군 홍천강막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2684",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-7b3455c5bb08b82d",
+          "name": "3대째막국수(황토집)",
+          "currentAddress": "강원특별자치도 홍천군 두촌면 남덕동길 4-5",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "3대째막국수(황토집) 홍천군 강원",
+            "3대째막국수(황토집) 강원특별자치도 홍천군 두촌면 남덕동길 4-5",
+            "홍천군 3대째막국수(황토집)"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2685",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-7c43ad3b422f599a",
+          "name": "정자네펜션",
+          "currentAddress": "강원특별자치도 홍천군 내촌면 가래올길 106-20",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "정자네펜션 홍천군 강원",
+            "정자네펜션 강원특별자치도 홍천군 내촌면 가래올길 106-20",
+            "홍천군 정자네펜션"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2686"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-c8c2a6e66f7f6c65",
+          "name": "원조 생곡막국수",
+          "currentAddress": "강원특별자치도 홍천군 서석면 군두리길 310",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "원조 생곡막국수 홍천군 강원",
+            "원조 생곡막국수 강원특별자치도 홍천군 서석면 군두리길 310",
+            "홍천군 원조 생곡막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2687",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-40d311b9f8e125e1",
+          "name": "별촌식당",
+          "currentAddress": "강원특별자치도 홍천군 영귀미면 속초길 63",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "별촌식당 홍천군 강원",
+            "별촌식당 강원특별자치도 홍천군 영귀미면 속초길 63",
+            "홍천군 별촌식당"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2688"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-93791af2087ec4f6",
+          "name": "일송식당",
+          "currentAddress": "강원특별자치도 홍천군 북방면 홍천로 119",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "일송식당 홍천군 강원",
+            "일송식당 강원특별자치도 홍천군 북방면 홍천로 119",
+            "홍천군 일송식당"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2689"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-d91bb46feb0b5e82",
+          "name": "샘터골한정식",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 옹기골길 18",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "샘터골한정식 홍천군 강원",
+            "샘터골한정식 강원특별자치도 홍천군 홍천읍 옹기골길 18",
+            "홍천군 샘터골한정식"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2691"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-80a3eb3df2e86d57",
+          "name": "강변민물 매운탕",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 송학강변로 27",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "강변민물 매운탕 홍천군 강원",
+            "강변민물 매운탕 강원특별자치도 홍천군 홍천읍 송학강변로 27",
+            "홍천군 강변민물 매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2692",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-cf6b3409360f80bf",
+          "name": "양지말화로구이",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 양지말길 17-4",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "양지말화로구이 홍천군 강원",
+            "양지말화로구이 강원특별자치도 홍천군 홍천읍 양지말길 17-4",
+            "홍천군 양지말화로구이"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/agri/contents.do?key=2693",
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-9c7d287b2e6fad66",
+          "name": "곳간한정식",
+          "currentAddress": "강원특별자치도 홍천군 내면 구룡령로 4085",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "곳간한정식 홍천군 강원",
+            "곳간한정식 강원특별자치도 홍천군 내면 구룡령로 4085",
+            "홍천군 곳간한정식"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-north-840aa93401ed4dcf",
+          "name": "한림정",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 송학로 20",
+          "region": "강원특별자치도 홍천군",
+          "searchAliases": [
+            "한림정 홍천군 강원",
+            "한림정 강원특별자치도 홍천군 홍천읍 송학로 20",
+            "홍천군 한림정"
+          ],
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot18-wonju-yejin-mandu",
+          "name": "예진네 김치만두",
+          "currentAddress": "강원특별자치도 원주시 중앙시장길 31-3",
+          "region": "강원특별자치도 원주시",
+          "searchAliases": [
+            "예진네 김치만두 원주시 강원",
+            "예진네 김치만두 강원특별자치도 원주시 중앙시장길 31-3",
+            "원주시 예진네 김치만두"
+          ],
+          "evidenceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4119&sc1=20&sc9=DYNLIST&si1=200&tc10=Y"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot18-wonju-namgyeong-musil",
+          "name": "남경막국수 무실점",
+          "currentAddress": "강원특별자치도 원주시 봉바위길 17-1",
+          "region": "강원특별자치도 원주시",
+          "searchAliases": [
+            "남경막국수 무실점 원주시 강원",
+            "남경막국수 무실점 강원특별자치도 원주시 봉바위길 17-1",
+            "원주시 남경막국수 무실점"
+          ],
+          "evidenceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot18-wonju-deokcheon-makguksu",
+          "name": "덕천막국수",
+          "currentAddress": "강원특별자치도 원주시 만대공원길 48-12 1층",
+          "region": "강원특별자치도 원주시",
+          "searchAliases": [
+            "덕천막국수 원주시 강원",
+            "덕천막국수 강원특별자치도 원주시 만대공원길 48-12 1층",
+            "원주시 덕천막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot18-wonju-mihyang",
+          "name": "미향",
+          "currentAddress": "강원특별자치도 원주시 장미공원길 16 2층",
+          "region": "강원특별자치도 원주시",
+          "searchAliases": [
+            "미향 원주시 강원",
+            "미향 강원특별자치도 원주시 장미공원길 16 2층",
+            "원주시 미향"
+          ],
+          "evidenceUrls": [
+            "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot19-donghae-piano",
+          "name": "피아노",
+          "currentAddress": "강원특별자치도 동해시 동해대로 6270-18, 201,202호 (망상동)",
+          "region": "강원특별자치도 동해시",
+          "searchAliases": [
+            "피아노 동해시 강원",
+            "피아노 강원특별자치도 동해시 동해대로 6270-18, 201,202호 (망상동)",
+            "동해시 피아노"
+          ],
+          "evidenceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot19-donghae-tteurae",
+          "name": "뜰애",
+          "currentAddress": "강원특별자치도 동해시 평원6길 12 (평릉동)",
+          "region": "강원특별자치도 동해시",
+          "searchAliases": [
+            "뜰애 동해시 강원",
+            "뜰애 강원특별자치도 동해시 평원6길 12 (평릉동)",
+            "동해시 뜰애"
+          ],
+          "evidenceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot19-donghae-yeongbingwan",
+          "name": "영빈관",
+          "currentAddress": "강원특별자치도 동해시 한섬로 135-3 (천곡동)",
+          "region": "강원특별자치도 동해시",
+          "searchAliases": [
+            "영빈관 동해시 강원",
+            "영빈관 강원특별자치도 동해시 한섬로 135-3 (천곡동)",
+            "동해시 영빈관"
+          ],
+          "evidenceUrls": [
+            "https://www.dh.go.kr/tour/contents.do?key=1161"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot20-samcheok-nolbu-jokbal",
+          "name": "놀부족발앤허갈닭강정",
+          "currentAddress": "강원특별자치도 삼척시 근덕면 교가1길 7",
+          "region": "강원특별자치도 삼척시",
+          "searchAliases": [
+            "놀부족발앤허갈닭강정 삼척시 강원",
+            "놀부족발앤허갈닭강정 강원특별자치도 삼척시 근덕면 교가1길 7",
+            "삼척시 놀부족발앤허갈닭강정"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot20-taebaek-eomma-dakgalbi",
+          "name": "엄마손태백물닭갈비",
+          "currentAddress": "강원특별자치도 태백시 황지연못길 9",
+          "region": "강원특별자치도 태백시",
+          "searchAliases": [
+            "엄마손태백물닭갈비 태백시 강원",
+            "엄마손태백물닭갈비 강원특별자치도 태백시 황지연못길 9",
+            "태백시 엄마손태백물닭갈비"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot20-taebaek-seoul-dakgalbi",
+          "name": "서울닭갈비",
+          "currentAddress": "강원특별자치도 태백시 장성1길 190",
+          "region": "강원특별자치도 태백시",
+          "searchAliases": [
+            "서울닭갈비 태백시 강원",
+            "서울닭갈비 강원특별자치도 태백시 장성1길 190",
+            "태백시 서울닭갈비"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot20-taebaek-greenhorn",
+          "name": "초록뿔언덕사슴목장",
+          "currentAddress": "강원특별자치도 태백시 고원로 369",
+          "region": "강원특별자치도 태백시",
+          "searchAliases": [
+            "초록뿔언덕사슴목장 태백시 강원",
+            "초록뿔언덕사슴목장 강원특별자치도 태백시 고원로 369",
+            "태백시 초록뿔언덕사슴목장"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot20-taebaek-cafe-bomnune",
+          "name": "인생상점 카페봄눈",
+          "currentAddress": "강원특별자치도 태백시 서학로 1081",
+          "region": "강원특별자치도 태백시",
+          "searchAliases": [
+            "인생상점 카페봄눈 태백시 강원",
+            "인생상점 카페봄눈 강원특별자치도 태백시 서학로 1081",
+            "태백시 인생상점 카페봄눈"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "이전 공식 선정/수록 정보 보존, 이번 회차 별도 수치 좌표 교차검증 미완료"
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-sarang",
+          "name": "춘천사랑 닭갈비,막국수",
+          "currentAddress": "강원특별자치도 춘천시 낙원길 47-1",
+          "region": "강원특별자치도 춘천시",
+          "searchAliases": [
+            "춘천사랑 닭갈비,막국수 춘천시 강원",
+            "춘천사랑 닭갈비,막국수 강원특별자치도 춘천시 낙원길 47-1",
+            "춘천시 춘천사랑 닭갈비,막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "공식 관광 자료에서 상호·주소 확인, 좌표 미확인"
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-sigol",
+          "name": "시골막국수",
+          "currentAddress": "강원특별자치도 춘천시 신북읍 율문길 100",
+          "region": "강원특별자치도 춘천시",
+          "searchAliases": [
+            "시골막국수 춘천시 강원",
+            "시골막국수 강원특별자치도 춘천시 신북읍 율문길 100",
+            "춘천시 시골막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "공식 관광 자료에서 상호·주소 확인, 좌표 미확인"
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-chuncheon-nambu",
+          "name": "남부막국수",
+          "currentAddress": "강원특별자치도 춘천시 춘천로81번길 16",
+          "region": "강원특별자치도 춘천시",
+          "searchAliases": [
+            "남부막국수 춘천시 강원",
+            "남부막국수 강원특별자치도 춘천시 춘천로81번길 16",
+            "춘천시 남부막국수"
+          ],
+          "evidenceUrls": [
+            "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "공식 관광 자료에서 상호·주소 확인, 좌표 미확인"
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-goseong-haegeumgang",
+          "name": "해금강",
+          "currentAddress": "강원특별자치도 고성군 현내면 통일전망대로 457 (통일관 1층)",
+          "region": "강원특별자치도 고성군",
+          "searchAliases": [
+            "해금강 고성군 강원",
+            "해금강 강원특별자치도 고성군 현내면 통일전망대로 457 (통일관 1층)",
+            "고성군 해금강"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "공식 관광 자료에서 상호·주소 확인, 좌표 미확인"
+        },
+        {
+          "restaurantId": "local-gangwon-slot50-goseong-cheonghwang",
+          "name": "청황",
+          "currentAddress": "강원특별자치도 고성군 토성면 화암사길 100 (화암사 내)",
+          "region": "강원특별자치도 고성군",
+          "searchAliases": [
+            "청황 고성군 강원",
+            "청황 강원특별자치도 고성군 토성면 화암사길 100 (화암사 내)",
+            "고성군 청황"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 50,
+          "reason": "정확한 상호·지점·현주소와 일치하는 숫자 위경도 미확인. 원자료의 선정/수록 이력 및 현재 영업 여부는 별도이며 임의 좌표·삭제 금지.",
+          "checkResult": "공식 관광 자료에서 상호·주소 확인, 좌표 미확인"
+        }
+      ],
+      "unresolved": [
+        "강원 다른 시군 지역 상세 명단과 개별 영업상태·좌표는 미완료",
+        "블루리본 전체 등급 명단 검증 가능한 범위 한정, 추가 선정 불확정",
+        "고성군 관광 기사에서 소개된 업소의 2026-11-07 현재 영업 여부는 별도 미확인"
+      ],
+      "carryOver": [
+        "강원 좌표 미등록 56곳의 위치 재검증(다음 순환 같은 지역 우선)",
+        "속초·원주 및 기타 강원 지자체 공식 목록 미확인 계속 조사",
+        "춘천 관광 포털의 현판과 주소 이전 가능성 후속 점검"
+      ],
+      "nextSlot": 51,
+      "nextRegions": [
+        "충청북도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
