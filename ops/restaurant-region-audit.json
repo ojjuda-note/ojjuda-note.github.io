@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 41,
-    "scheduledAt": "2026-11-07T11:00:00+09:00",
+    "slot": 43,
+    "scheduledAt": "2026-11-07T13:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "예약 예정시각 별도 확인 불가: 자동실행 문맥의 한국시각 2026-11-07T11:02:35+09:00을 정각 11:00으로 내림하여 배정."
+    "source": "현재 실행의 예약된 시각 세부 정보 없음. 한국시각 13:04:23을 13:00 정각으로 내림."
   },
   "entries": [
     {
@@ -15631,6 +15631,264 @@
         ],
         "dataFile": "games/certified-restaurants/official-busan-slot41-michelin-map.json"
       }
+    },
+    {
+      "cycle": 1,
+      "slot": 43,
+      "scheduledAtKST": "2026-11-07T13:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_no_verified_data_change",
+      "assignedRegions": [
+        "경상남도 창원시",
+        "경상남도 김해시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상남도 창원시",
+          "baseListedCount": 83,
+          "baseNullCoordinates": 6,
+          "scope": "최신 main의 우체국추천 누락좌표 6곳 우선 조사. 창원시 공식 관광 '창원맛집' 메뉴는 확인했으나 상세 동적 내용 접근에 한계. 현재 음식점별 운영상태 및 신규 전체 명단은 미전수.",
+          "additions": 0,
+          "modifications": 0,
+          "coordinatesAdded": 0,
+          "remainingNullCoordinates": 6,
+          "notExhaustive": true
+        },
+        {
+          "region": "경상남도 김해시",
+          "baseListedCount": 92,
+          "baseNullCoordinates": 1,
+          "scope": "김해시 2026년 김해맛집 공식 3곳의 이름·주소와 기존 등록 3곳을 대조하여 전부 중복 확인. 2025·2023 선정 목록 공개 첫 페이지 각 8곳도 기존 등록 확인. 우체국 추천 커피나무 좌표는 불확실해 유보.",
+          "additions": 0,
+          "modifications": 0,
+          "coordinatesAdded": 0,
+          "remainingNullCoordinates": 1,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "김해관광포털 2026 김해맛집 현재 게시 3곳/이름·주소와 main 기존 3곳 대조",
+        "김해관광포털 2025 김해맛집 13곳 중 첫 페이지 8곳과 2023 김해맛집 13곳 중 첫 페이지 8곳 기존 등록 대조",
+        "부산지방우정청 2026 우체국 추천 맛집가이드·main에 등록된 창원6/김해1 좌표 누락 우선 조사",
+        "창원시 관광 공식 창원맛집 메뉴 접근(동적 명단 본문 상세 불가)",
+        "블루리본 공식 지도의 추가 업소/리본 등급은 이번 조사에서 상호와 지점·주소를 교차 검증할 새 원문 확보하지 못함"
+      ],
+      "additions": 0,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 7,
+      "locationPendingScope": "최신 기본 restaurants.json의 창원 6곳·김해 1곳 lat/lng 미등록. 공식 추천 이력 및 주소 자체는 존중하되 좌표 원문 근거 없어서 그대로 둠.",
+      "addedRestaurantIds": [],
+      "existingItemsRechecked": [
+        "마사 브런치 카페",
+        "사계한식교 김해장유점",
+        "가야돼 김해율하본점",
+        "고향밥상",
+        "금천장어구이",
+        "니는짜장 내는짬뽕",
+        "빨간도깨비샤브샤브손칼국수",
+        "새작골염소탕전문점",
+        "서연멸치쌈밥",
+        "신라가든",
+        "어방동스시",
+        "남포통닭",
+        "더수미",
+        "산정",
+        "삼대도매횟집",
+        "삼일뒷고기",
+        "수정방(수정루)",
+        "정통밀양돼지국밥",
+        "풍전숯불갈비"
+      ],
+      "evidenceUrls": [
+        "https://www.gimhae.go.kr/07097/07111/09582.web",
+        "https://www.gimhae.go.kr/07097/07111/09411.web",
+        "https://www.gimhae.go.kr/07097/07111/08676.web",
+        "https://changwon.go.kr/tour/index.do?menuCode=001_004004002000&page.pageNo=1&search.searchCategory=CGR&search.searchKeyword=",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do",
+        "https://dining.ayo.pe.kr/restaurant/b4f9444e23aed23eb5e2c9febd7ed03f",
+        "https://place.clariosync.com/p/7196636/%EC%8A%A4%EC%8B%9C%EC%87%BC%EC%9A%B0%EC%A7%84-x-%EC%95%BC%EB%A7%A4",
+        "https://cafe.ayo.pe.kr/cafe/9490feef8226235672a58dda13c6e556",
+        "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg",
+        "https://dining.ayo.pe.kr/fastfood/fd949ac9005e0dee21a5b8f8ee64a6dc"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "post-2026-42-1-0",
+          "name": "스시쇼우진",
+          "currentAddress": "경상남도 창원시 마산회원구 양덕동2길 59",
+          "region": "경상남도 창원시 마산회원구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "마산회원구",
+            "스시쇼우진 창원시",
+            "스시쇼우진 X 야매 양덕동"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=42",
+            "https://dining.ayo.pe.kr/restaurant/b4f9444e23aed23eb5e2c9febd7ed03f",
+            "https://place.clariosync.com/p/7196636/%EC%8A%A4%EC%8B%9C%EC%87%BC%EC%9A%B0%EC%A7%84-x-%EC%95%BC%EB%A7%A4"
+          ],
+          "evidenceResult": "공개 행정인허가 기반 목록에서는 같은 주소에 '스시쇼우진 X 야매'로 표시됨. 2026 우체국 수록 이름과 현재 간판 일치 여부 미확인. 민간 지오코딩 좌표는 정확도 주의 문구가 있어 미사용.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-43-1-0",
+          "name": "대흥관",
+          "currentAddress": "경상남도 창원시 마산회원구 내서읍 삼계로31-3",
+          "region": "경상남도 창원시 마산회원구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "마산회원구",
+            "대흥관 창원시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=43"
+          ],
+          "evidenceResult": "우체국 공식 2026 수록 주소와 기존 데이터 일치. 이번 공개 검색에서 동일 식당·지점·현주소의 검증 가능한 위경도 공개 원본 및 정확한 최신 영업상태 근거를 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-47-0-1",
+          "name": "카페 이저",
+          "currentAddress": "경상남도 창원시 진해구 편백로 28",
+          "region": "경상남도 창원시 진해구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "진해구",
+            "카페 이저 창원시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47",
+            "https://cafe.ayo.pe.kr/cafe/9490feef8226235672a58dda13c6e556"
+          ],
+          "evidenceResult": "공개 행정인허가 기반 식당정보에서 '편백로 28, 1층' 주소 일치. 식당 자체 좌표를 보증하는 독립 공식·지도 원자료는 확보하지 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-47-1-0",
+          "name": "음식이보약",
+          "currentAddress": "경상남도 창원시 진해구 백구로13, 102호~103호(근화동 보문빌딩)",
+          "region": "경상남도 창원시 진해구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "진해구",
+            "음식이보약 창원시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=47"
+          ],
+          "evidenceResult": "우체국 공식 2026 수록 주소와 기존 데이터 일치. 이번 공개 검색에서 동일 식당·지점·현주소의 검증 가능한 위경도 공개 원본 및 정확한 최신 영업상태 근거를 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-48-0-0",
+          "name": "갈비랑아구랑",
+          "currentAddress": "경상남도 창원시 진해구 충장로491번길 17",
+          "region": "경상남도 창원시 진해구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "진해구",
+            "갈비랑아구랑 창원시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=48"
+          ],
+          "evidenceResult": "우체국 공식 2026 수록 주소와 기존 데이터 일치. 이번 공개 검색에서 동일 식당·지점·현주소의 검증 가능한 위경도 공개 원본 및 정확한 최신 영업상태 근거를 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-50-0-1",
+          "name": "정가",
+          "currentAddress": "경상남도 창원시 성산구 비음로 230",
+          "region": "경상남도 창원시 성산구",
+          "searchAliases": [
+            "경상남도 창원시",
+            "성산구",
+            "정가 창원시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=50"
+          ],
+          "evidenceResult": "우체국 공식 2026 수록 주소와 기존 데이터 일치. 이번 공개 검색에서 동일 식당·지점·현주소의 검증 가능한 위경도 공개 원본 및 정확한 최신 영업상태 근거를 확보하지 못함.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        },
+        {
+          "restaurantId": "post-2026-52-1-1",
+          "name": "커피나무",
+          "currentAddress": "경상남도 김해시 전하로176번길 93",
+          "region": "경상남도 김해시",
+          "searchAliases": [
+            "경상남도 김해시",
+            "김해시",
+            "커피나무 김해시"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
+            "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg",
+            "https://dining.ayo.pe.kr/fastfood/fd949ac9005e0dee21a5b8f8ee64a6dc"
+          ],
+          "evidenceResult": "공개 지도·행정인허가 기반 페이지에서 '전하로176번길 93'과 상호 일치. 지번주소도 확인됐으나 신뢰할 수 있는 현재 업소 좌표는 확보하지 못함.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 43,
+          "unresolvedReason": "동일 상호·지점·현주소와 일치하는 신뢰할 수 있는 좌표 원문 미확보. 위치 추측·폐업 단정·목록 제외 금지."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "창원·김해 기존 7곳 좌표 미확인",
+          "reason": "이름·현재 주소와 일치하는 공개 기관/지도 좌표 근거를 재확인하지 못함. 민간 인허가 주소 지오코딩을 위치로 확정할 수 없음.",
+          "action": "2순환 43회차에서 7곳 우선 대조. 공식/공개 근거 3종과 서로 다른 순환 2회 이상 충족 전에는 비노출하지 않음."
+        },
+        {
+          "topic": "창원시 공식 2026 창원맛집 상세 및 블루리본 정규 선정",
+          "reason": "접근 가능한 공식 명단에서 최신의 개별 식당 이름·주소·등급 추가 근거를 확인할 수 없음.",
+          "action": "창원시 공식 상세 명단과 블루리본 원출처 및 관광기관 별도 공개자료 재검색."
+        },
+        {
+          "topic": "김해시 2025/2023 목록 나머지 페이지와 개별 영업",
+          "reason": "2025·2023 각 13건 중 첫 페이지 8건만 확인해 두 연도에 대해 각각 5건의 추가 대조가 필요.",
+          "action": "차기 김해 배정 시 후속 페이지와 기존 등록 주소·운영 상태 대조."
+        }
+      ],
+      "carryOver": [
+        "기록된 1순환 42회차(울산 중·남·동·북구)는 이 시점 최신 main 운영 이력에 없으므로 별도 실행 여부 확인 필요. 43회차로 대체하지 않음.",
+        "창원 내 일반구·읍면동 상세와 김해 외곽지역 명단, 블루리본 정규 리본 등급 및 좌표 검증 추가 조사 필요."
+      ],
+      "nextSlot": 44,
+      "nextRegions": [
+        "경상남도 진주시",
+        "경상남도 사천시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -15640,6 +15898,7 @@
     "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인.",
     "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음",
     "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음.",
-    "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존."
+    "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존.",
+    "2026-11-07 13시 43회차: 창원·김해 기본 목록 175건(각 83·92) 중 위치 누락 7건(6·1) 이월. 김해시 공식 2026 김해맛집 3건은 전부 기등록. 데이터 변경 없으므로 게임 캐시·revision 및 아지트 버전 미수정."
   ]
 }
