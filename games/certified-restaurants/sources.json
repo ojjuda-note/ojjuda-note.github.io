@@ -1511,15 +1511,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3250,
+    "uniqueRestaurants": 3263,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2519,
+      "local-guide": 2532,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2198,
+    "coordinatesMissing": 2211,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1529,7 +1529,7 @@
       "경남": 320,
       "강원": 61,
       "전북": 215,
-      "경기": 382,
+      "경기": 395,
       "인천": 341,
       "제주": 113,
       "대구": 130,
@@ -1540,12 +1540,12 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1927,
-      "중식": 134,
+      "한식": 1936,
+      "중식": 136,
       "일식": 135,
-      "기타": 581,
+      "기타": 582,
       "양식": 211,
-      "분식": 28,
+      "분식": 29,
       "디저트": 234
     }
   },
@@ -12764,13 +12764,128 @@
       ],
       "scope": "서귀포 블루리본 과거 수록 1곳·제주 향토음식점 4곳 위치 보강",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
+    },
+    {
+      "id": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 49,
+      "previousCoverage": {
+        "uniqueRestaurants": 3250,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2519,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2198,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1927,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3263,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2532,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2211,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 61,
+          "전북": 215,
+          "경기": 395,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1936,
+          "중식": 136,
+          "일식": 135,
+          "기타": 582,
+          "양식": 211,
+          "분식": 29,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 13,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gyeonggi-slot49-guri-sangwoo",
+        "local-gyeonggi-slot49-guri-denmark",
+        "local-gyeonggi-slot49-guri-doldari",
+        "local-gyeonggi-slot49-guri-seoong",
+        "local-gyeonggi-slot49-guri-yubaksa",
+        "local-gyeonggi-slot49-guri-majang",
+        "local-gyeonggi-slot49-pyeongtaek-pungseong",
+        "local-gyeonggi-slot49-pyeongtaek-ondal",
+        "local-gyeonggi-slot49-pyeongtaek-ttalbuja",
+        "local-gyeonggi-slot49-pyeongtaek-yubaksa",
+        "local-gyeonggi-slot49-pyeongtaek-semo",
+        "local-gyeonggi-slot49-pyeongtaek-kimnejip",
+        "local-gyeonggi-slot49-pyeongtaek-yeongbin"
+      ],
+      "sourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+        "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
+      "scope": "경기도 광역 공식 명단 대조 중 구리 6곳·평택 7곳 지역 음식점 공식 소개",
+      "notes": [
+        "기사 날짜는 선정연도 아님. 공식 소개·선정·폐업·현영업 상태를 구분.",
+        "공식 선정이 아닌 지역 음식점 소개. 회원 추천/사진 데이터 불변.",
+        "지점 주소는 기사 명시 값. 수치좌표 확인하지 못해 전부 null, 위치 미확인 이월.",
+        "도 전체를 전수 검증하지 않았음. 나머지 29개 시군 및 블루리본 최신 공식 개별 정보 차기 재확인."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-jeju-slot48-five-exact-visitjeju-locations",
+    "id": "2026-11-07-gyeonggi-slot49-thirteen-official-news-introductions",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 48,
+    "slot": 49,
     "previousCoverage": {
       "uniqueRestaurants": 3250,
       "providerCounts": {
@@ -12779,8 +12894,8 @@
         "local-guide": 2519,
         "post-office": 240
       },
-      "coordinatesAvailable": 1046,
-      "coordinatesMissing": 2204,
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2198,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12811,15 +12926,15 @@
       }
     },
     "currentCoverage": {
-      "uniqueRestaurants": 3250,
+      "uniqueRestaurants": 3263,
       "providerCounts": {
         "michelin": 237,
         "blue-ribbon": 528,
-        "local-guide": 2519,
+        "local-guide": 2532,
         "post-office": 240
       },
-      "coordinatesAvailable": 1051,
-      "coordinatesMissing": 2199,
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2211,
       "regionalCounts": {
         "서울": 351,
         "부산": 382,
@@ -12829,7 +12944,7 @@
         "경남": 320,
         "강원": 61,
         "전북": 215,
-        "경기": 382,
+        "경기": 395,
         "인천": 341,
         "제주": 113,
         "대구": 130,
@@ -12840,41 +12955,46 @@
         "광주": 76
       },
       "categoryCounts": {
-        "한식": 1927,
-        "중식": 134,
+        "한식": 1936,
+        "중식": 136,
         "일식": 135,
-        "기타": 581,
+        "기타": 582,
         "양식": 211,
-        "분식": 28,
+        "분식": 29,
         "디저트": 234
       }
     },
-    "newRestaurantCount": 0,
-    "modificationCount": 5,
-    "coordinateAddedCount": 5,
+    "newRestaurantCount": 13,
+    "modificationCount": 0,
+    "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
-    "modifiedRestaurantIds": [
-      "blue-jeju-2022-26",
-      "local-jeju-25",
-      "local-jeju-51",
-      "local-jeju-52",
-      "local-jeju-53"
+    "addedRestaurantIds": [
+      "local-gyeonggi-slot49-guri-sangwoo",
+      "local-gyeonggi-slot49-guri-denmark",
+      "local-gyeonggi-slot49-guri-doldari",
+      "local-gyeonggi-slot49-guri-seoong",
+      "local-gyeonggi-slot49-guri-yubaksa",
+      "local-gyeonggi-slot49-guri-majang",
+      "local-gyeonggi-slot49-pyeongtaek-pungseong",
+      "local-gyeonggi-slot49-pyeongtaek-ondal",
+      "local-gyeonggi-slot49-pyeongtaek-ttalbuja",
+      "local-gyeonggi-slot49-pyeongtaek-yubaksa",
+      "local-gyeonggi-slot49-pyeongtaek-semo",
+      "local-gyeonggi-slot49-pyeongtaek-kimnejip",
+      "local-gyeonggi-slot49-pyeongtaek-yeongbin"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-jeju-slot48-locations.json",
     "sourceUrls": [
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020812",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001111",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012703",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012718",
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009013"
+      "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
     ],
+    "sourceSupplement": "games/certified-restaurants/official-gyeonggi-slot49.json",
+    "scope": "경기도 광역 공식 명단 대조 중 구리 6곳·평택 7곳 지역 음식점 공식 소개",
     "notes": [
-      "공식 VisitJeju 개별 상세의 상호·주소·숫자좌표와 기존 가이드 수록/지정 정보를 교차 확인.",
-      "기존 ID, 분류, 저장 기능, 회원 추천 및 가이드 과거 이력 보존. 영업 상태나 현행 블루리본 등급 별도 미판정.",
-      "서귀포시 기본 데이터 27곳 중 좌표 미등록 22곳에서 5곳만 검증, 17곳 이월."
-    ],
-    "scope": "서귀포 블루리본 과거 수록 1곳·제주 향토음식점 4곳 위치 보강",
-    "sourceAuditFile": "games/certified-restaurants/sources.json"
+      "기사 날짜는 선정연도 아님. 공식 소개·선정·폐업·현영업 상태를 구분.",
+      "공식 선정이 아닌 지역 음식점 소개. 회원 추천/사진 데이터 불변.",
+      "지점 주소는 기사 명시 값. 수치좌표 확인하지 못해 전부 null, 위치 미확인 이월.",
+      "도 전체를 전수 검증하지 않았음. 나머지 29개 시군 및 블루리본 최신 공식 개별 정보 차기 재확인."
+    ]
   },
   "latestMapCoverageAudit": {
     "id": "2026-11-07-jeju-slot48-continuation-jinju-exact-visitjeju",
@@ -12984,7 +13104,7 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2421,
+    "recordCount": 2434,
     "designationEvidenceCount": 2431,
     "coordinatesAvailable": 757,
     "regionCount": 17,
@@ -13039,7 +13159,7 @@
       },
       {
         "region": "경기",
-        "uniqueRestaurants": 317,
+        "uniqueRestaurants": 330,
         "coordinatesAvailable": 46,
         "completeRegionalCollection": false
       },
@@ -13899,6 +14019,32 @@
       "currentOperatingStatusConfirmed": 0,
       "completeReview": false,
       "notes": "관광 명단의 업소 이름·주소 수록 사실만 확인. 모범업소 연도, 블루리본 정규 등급, 현재 영업은 추정하지 않음."
+    },
+    "municipalTourism20261107GyeonggiSlot49": {
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 49,
+      "regions": [
+        "경기도 구리시",
+        "경기도 평택시"
+      ],
+      "sourceType": "official_restaurant_listing_not_guide_selection",
+      "sourcePublicationDates": [
+        "2026-01-27",
+        "2025-08-21"
+      ],
+      "sourceUrls": [
+        "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+        "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
+      ],
+      "sourceFile": "official-gyeonggi-slot49.json",
+      "newRestaurantCount": 13,
+      "updatedRestaurantCount": 0,
+      "coordinatesAdded": 0,
+      "locationsExcluded": 0,
+      "operatingStatusVerified": 0,
+      "notExhaustive": true,
+      "note": "경기도 전체 명단 대조 중 2개 시의 주소·업소명을 공식 뉴스로 확인한 일부 소개. 현재 영업/블루리본 정규선정/숫자좌표 미검증. 84회차 고정 조사 순서 보존."
     }
   },
   "mapCoverageAuditHistory": [
@@ -21063,6 +21209,47 @@
         "coordinateAdded": 1,
         "note": "같은 회차 기존 5곳 확인 후 추가 검증"
       }
+    ]
+  },
+  "gyeonggiSlot49": {
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 49,
+    "regions": [
+      "경기도 구리시",
+      "경기도 평택시"
+    ],
+    "sourceType": "official_restaurant_listing_not_guide_selection",
+    "sourcePublicationDates": [
+      "2026-01-27",
+      "2025-08-21"
+    ],
+    "sourceUrls": [
+      "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
+    ],
+    "sourceFile": "official-gyeonggi-slot49.json",
+    "newRestaurantCount": 13,
+    "updatedRestaurantCount": 0,
+    "coordinatesAdded": 0,
+    "locationsExcluded": 0,
+    "operatingStatusVerified": 0,
+    "notExhaustive": true,
+    "note": "경기도 전체 명단 대조 중 2개 시의 주소·업소명을 공식 뉴스로 확인한 일부 소개. 현재 영업/블루리본 정규선정/숫자좌표 미검증. 84회차 고정 조사 순서 보존.",
+    "addedRestaurantIds": [
+      "local-gyeonggi-slot49-guri-sangwoo",
+      "local-gyeonggi-slot49-guri-denmark",
+      "local-gyeonggi-slot49-guri-doldari",
+      "local-gyeonggi-slot49-guri-seoong",
+      "local-gyeonggi-slot49-guri-yubaksa",
+      "local-gyeonggi-slot49-guri-majang",
+      "local-gyeonggi-slot49-pyeongtaek-pungseong",
+      "local-gyeonggi-slot49-pyeongtaek-ondal",
+      "local-gyeonggi-slot49-pyeongtaek-ttalbuja",
+      "local-gyeonggi-slot49-pyeongtaek-yubaksa",
+      "local-gyeonggi-slot49-pyeongtaek-semo",
+      "local-gyeonggi-slot49-pyeongtaek-kimnejip",
+      "local-gyeonggi-slot49-pyeongtaek-yeongbin"
     ]
   }
 }

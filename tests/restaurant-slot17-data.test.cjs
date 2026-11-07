@@ -20,7 +20,7 @@ for(const x of sidecar.restaurants){
 }
 a.ok(src.coverage.uniqueRestaurants>=3145);
 a.ok(src.coverage.coordinatesMissing>=2122);
-a.equal(src.coverage.regionalCounts['경기'],382);
+a.ok(src.coverage.regionalCounts['경기']>=382, 'later Gyeonggi official entries may expand the catalog');
 a.equal(src.localGovernment.municipalTourism20261106GyeonggiSlot17.recordCount,7);
 a.equal(audit.entries.filter(x=>x.cycle===1&&x.slot===17).length,1);
 a.equal(audit.entries.find(x=>x.cycle===1&&x.slot===17).locationPending,19);

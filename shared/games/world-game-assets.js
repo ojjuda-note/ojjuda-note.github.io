@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261107-spot-touch-area1';
+ const revision='20261107-restaurants-slot49-gg13';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   group:'1.2.1',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
-  restaurants:'1.11.7',
+  restaurants:'1.11.8',
   recommendations:'1.6.1',
   archery:'3.2.1',
   roulette:'1.9.1',
@@ -43,7 +43,7 @@
   group:[],
   byeolcheonji:[],
   festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261107-festival-location2'],
-  restaurants:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261107-restaurants-slot48-seogwipo-loc6','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
+  restaurants:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261107-restaurants-slot49-gg13','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261106-source-folders1'],
   roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261106-source-folders1'],
