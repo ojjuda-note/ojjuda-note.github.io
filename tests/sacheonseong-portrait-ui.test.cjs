@@ -100,6 +100,23 @@ async function screenshot(page,name){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
+   // Transparent areas of an upper floor must not swallow taps on uncovered
+   // tiles below. A layer is a full rectangular grid despite its empty cells.
+   const lower=await page.evaluate(()=>{
+    const top=document.querySelector('.tile-layer[data-layer="0"]')?.getBoundingClientRect();
+    for(const tile of document.querySelectorAll('.tile[data-layer="1"]:not(:disabled)')){
+     const rect=tile.getBoundingClientRect(),x=rect.left+rect.width/2,y=rect.top+rect.height/2;
+     if(!top||x<top.left||x>top.right||y<top.top||y>top.bottom)continue;
+     return {layer:Number(tile.dataset.layer),r:Number(tile.dataset.r),c:Number(tile.dataset.c),
+      receivesTap:document.elementFromPoint(x,y)?.closest('.tile')===tile};
+    }
+    return null;
+   });
+   assert(lower,'stage 7 has an exposed lower tile beneath the upper grid bounds');
+   assert(lower.receivesTap,'an uncovered lower tile receives taps through the upper layer');
+   const lowerTile=page.locator(tileSelector(lower));
+   await lowerTile.tap();assert.equal(await lowerTile.getAttribute('aria-pressed'),'true','tapping a lower tile selects it');
+   await lowerTile.tap();assert.equal(await lowerTile.getAttribute('aria-pressed'),'false','tapping the lower tile again deselects it');
    const move=await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return window.TileGarden.exposedMoves([state.grid,...state.upcoming]);});
    const before=await snapshot(page);await page.locator(tileSelector(move.a)).tap();await page.locator(tileSelector(move.b)).tap();
    await page.waitForFunction(before=>JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')).grid.flat().filter(v=>v!==-1).length===before-2,before.state.grid.flat().filter(v=>v!==-1).length);

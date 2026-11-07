@@ -30,7 +30,8 @@ svg{display:block}
 .board-canvas{--tile:90px;--gap:6px;--pad:8px;position:relative;margin:auto;padding:var(--pad);padding-bottom:calc(var(--pad) + 4px);width:max-content;flex-shrink:0}
 .board-grid{position:relative;z-index:2}
 .board-stack{display:none}
-.tile-layer{position:absolute;display:grid;grid-template-columns:repeat(var(--n,2),var(--tile));gap:var(--gap)}
+.tile-layer{position:absolute;display:grid;grid-template-columns:repeat(var(--n,2),var(--tile));gap:var(--gap);pointer-events:none}
+.tile-layer .tile:not(:disabled){pointer-events:auto}
 .tile.covered{cursor:not-allowed;filter:brightness(.87);pointer-events:none}
 .tile-layer:not([data-layer="0"]) .tile:not(.empty){border-color:#b4c6af;box-shadow:0 2px 0 #78967e,0 3px 0 #52795f}
 .board-canvas.layered .board-grid .tile:not(.empty){box-shadow:0 2px 0 #c7c8a8,0 4px 0 #94a98d,0 6px 5px #294c3c30}
