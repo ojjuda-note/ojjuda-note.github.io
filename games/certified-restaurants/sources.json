@@ -1509,8 +1509,8 @@
       "local-guide": 2518,
       "post-office": 240
     },
-    "coordinatesAvailable": 1032,
-    "coordinatesMissing": 2217,
+    "coordinatesAvailable": 1040,
+    "coordinatesMissing": 2209,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1578,7 +1578,26 @@
           }
         ]
       }
-    ]
+    ],
+    "michelinMap20261107": {
+      "checkedAt": "2026-11-07",
+      "addedCount": 8,
+      "method": "published-map-coordinate",
+      "publisher": "미쉐린 가이드",
+      "scope": "부산 사하·연제·수영구 식당 8곳",
+      "sourceUrls": [
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+      ],
+      "locationDataSource": "개별 식당 공식 페이지 연결 지도",
+      "personalLocationDataUsed": false
+    }
   },
   "coverageAuditHistory": [
     {
@@ -12297,63 +12316,140 @@
         "안동·문경의 기존 8곳과 신규 10곳 위치 좌표 미확인: 18곳 후속 재조사. 추정 좌표 및 운영 상태 변경 없음.",
         "KTO 상세 페이지의 도로명 주소는 2026년 관광정보 재게시 공개 근거를 교차 대조한 사항이며 KTO 본문 직접 확인과 구별."
       ]
+    },
+    {
+      "id": "2026-11-07-busan-slot41-michelin-map-eight",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 41,
+      "previousCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2217,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1040,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 0,
+      "modificationCount": 8,
+      "coordinateAddedCount": 8,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [
+        "anmok",
+        "jeongjitgan",
+        "l-essence",
+        "hanwolgwan",
+        "meerok-super",
+        "eonyang-bulgogi-busanjip",
+        "post-2026-24-0-1",
+        "jin-dweji-gomtang"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+      "sourceUrls": [
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+      ],
+      "notes": [
+        "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
+        "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
+        "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gyeongbuk-slot38-six-official-sangju-listings",
+    "id": "2026-11-07-busan-slot41-michelin-map-eight",
     "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 41,
     "previousCoverage": {
-      "uniqueRestaurants": 3239,
+      "uniqueRestaurants": 3249,
       "providerCounts": {
         "michelin": 237,
         "blue-ribbon": 528,
-        "local-guide": 2508,
+        "local-guide": 2518,
         "post-office": 240
       },
       "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2207,
+      "coordinatesMissing": 2217,
       "regionalCounts": {
         "서울": 351,
-        "부산": 378,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 319,
-        "강원": 61,
-        "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 163,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1920,
-        "중식": 133,
-        "일식": 133,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 233
-      }
-    },
-    "currentCoverage": {
-      "uniqueRestaurants": 3245,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2514,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1032,
-      "coordinatesMissing": 2213,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 378,
+        "부산": 382,
         "충북": 217,
         "충남": 64,
         "울산": 36,
@@ -12372,135 +12468,199 @@
       },
       "categoryCounts": {
         "한식": 1926,
-        "중식": 133,
-        "일식": 133,
+        "중식": 134,
+        "일식": 135,
         "기타": 581,
         "양식": 211,
         "분식": 28,
-        "디저트": 233
+        "디저트": 234
       }
     },
-    "newRestaurantCount": 6,
-    "newRestaurantIds": [
-      "local-sangju-slot38-durak",
-      "local-sangju-slot38-sandeulga",
-      "local-sangju-slot38-jongdari-boritdan",
-      "local-sangju-slot38-gaeungung",
-      "local-sangju-slot38-godaegam",
-      "local-sangju-slot38-goryeogarden"
-    ],
-    "modificationCount": 0,
-    "coordinateAddedCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3249,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2518,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1040,
+      "coordinatesMissing": 2209,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
+        "울산": 36,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1926,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
+      }
+    },
+    "newRestaurantCount": 0,
+    "modificationCount": 8,
+    "coordinateAddedCount": 8,
     "locationExcludedCount": 0,
+    "modifiedRestaurantIds": [
+      "anmok",
+      "jeongjitgan",
+      "l-essence",
+      "hanwolgwan",
+      "meerok-super",
+      "eonyang-bulgogi-busanjip",
+      "post-2026-24-0-1",
+      "jin-dweji-gomtang"
+    ],
+    "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+    "sourceUrls": [
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+    ],
     "notes": [
-      "상주시 공식 관광 농가맛집 3곳·모범음식점 3곳의 상호와 주소 대조 후 수록. 사업장의 현재 영업 또는 정규 미쉐린·블루리본 등급 확정과 구별.",
-      "영천시·경산시의 개별 신규 식당은 공식 상호·현주소가 확인되지 않아 추가하지 않음.",
-      "기존 영천1·상주2·경산1, 신규 상주6 총10곳 좌표 미확인. 추정좌표 입력/위치 미확인만으로 제외하지 않음."
+      "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
+      "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
+      "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
     ]
   },
   "latestMapCoverageAudit": {
-    "id": "2026-11-04-yeosu-map-expansion",
-    "checkedAt": "2026-11-04",
-    "baseCommit": "938ba06385e19e246e9bf03f963f7fc25ae5e62d",
+    "id": "2026-11-07-busan-slot41-michelin-map-eight",
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 41,
     "previousCoverage": {
-      "uniqueRestaurants": 3011,
+      "uniqueRestaurants": 3249,
       "providerCounts": {
-        "blue-ribbon": 517,
-        "local-guide": 2289,
         "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2518,
         "post-office": 240
       },
-      "coordinatesAvailable": 1003,
-      "coordinatesMissing": 2008,
+      "coordinatesAvailable": 1032,
+      "coordinatesMissing": 2217,
       "regionalCounts": {
-        "서울": 310,
-        "부산": 378,
-        "충북": 214,
-        "충남": 46,
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
         "울산": 36,
         "경남": 319,
-        "강원": 44,
-        "전북": 208,
-        "경기": 322,
-        "인천": 316,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
         "제주": 113,
-        "대구": 117,
-        "전남": 169,
+        "대구": 130,
+        "전남": 183,
         "세종": 100,
-        "대전": 105,
-        "경북": 145,
-        "광주": 69
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
       },
       "categoryCounts": {
-        "한식": 1747,
-        "중식": 119,
-        "일식": 128,
-        "기타": 585,
-        "양식": 202,
-        "분식": 17,
-        "디저트": 213
+        "한식": 1926,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
       }
     },
-    "previousActualRestaurantCount": 3011,
-    "baseCatalogCount": 3011,
-    "supplementRestaurantCount": 8,
     "currentCoverage": {
-      "uniqueRestaurants": 3019,
+      "uniqueRestaurants": 3249,
       "providerCounts": {
-        "blue-ribbon": 523,
         "michelin": 237,
-        "local-guide": 2292,
+        "blue-ribbon": 528,
+        "local-guide": 2518,
         "post-office": 240
       },
-      "coordinatesAvailable": 1023,
-      "coordinatesMissing": 1996,
+      "coordinatesAvailable": 1040,
+      "coordinatesMissing": 2209,
       "regionalCounts": {
-        "강원": 44,
-        "경기": 322,
-        "경남": 319,
-        "경북": 145,
-        "광주": 69,
-        "대구": 117,
-        "대전": 105,
-        "부산": 378,
-        "서울": 310,
-        "세종": 100,
+        "서울": 351,
+        "부산": 382,
+        "충북": 217,
+        "충남": 64,
         "울산": 36,
-        "인천": 316,
-        "전남": 177,
-        "전북": 208,
+        "경남": 319,
+        "강원": 61,
+        "전북": 215,
+        "경기": 382,
+        "인천": 341,
         "제주": 113,
-        "충남": 46,
-        "충북": 214
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
       },
       "categoryCounts": {
-        "한식": 1767,
-        "중식": 119,
-        "일식": 128,
-        "기타": 572,
-        "양식": 203,
-        "분식": 17,
-        "디저트": 213
+        "한식": 1926,
+        "중식": 134,
+        "일식": 135,
+        "기타": 581,
+        "양식": 211,
+        "분식": 28,
+        "디저트": 234
       }
     },
-    "newRestaurantCount": 8,
-    "newRestaurantIds": [
-      "local-yeosu-3607",
-      "local-yeosu-3352",
-      "local-yeosu-4046",
-      "blue-yeosu-11821464",
-      "blue-yeosu-1114516192",
-      "blue-yeosu-31043930",
-      "blue-yeosu-11714408",
-      "blue-yeosu-2095288002"
+    "newRestaurantCount": 0,
+    "modificationCount": 8,
+    "coordinateAddedCount": 8,
+    "locationExcludedCount": 0,
+    "modifiedRestaurantIds": [
+      "anmok",
+      "jeongjitgan",
+      "l-essence",
+      "hanwolgwan",
+      "meerok-super",
+      "eonyang-bulgogi-busanjip",
+      "post-2026-24-0-1",
+      "jin-dweji-gomtang"
     ],
-    "existingRestaurantsEnriched": 13,
-    "sourceAuditFile": "yeosu-sources.json",
-    "scope": "여수 신규 8곳, 기존 13곳 주소·지도·메뉴 보강, 블루리본 업소 안내 6곳, 상호 오자 2건 교정.",
-    "completeRegionalBlueRibbonList": false,
-    "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음.",
-    "newCoordinateCount": 20,
-    "existingCoordinateEnrichedCount": 13
+    "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+    "sourceUrls": [
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+      "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+    ],
+    "notes": [
+      "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
+      "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
+      "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
+    ],
+    "scope": "부산 사하구 1곳, 연제구 1곳, 수영구 6곳의 미쉐린 공식 지도 위치 보강",
+    "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "localGovernment": {
     "checkedAt": "2026-11-06",
@@ -19954,6 +20114,122 @@
       "metadataRecountNote": "기본 카탈로그와 별도 공식 울산관광 보충파일 8곳을 합산하여 집계. 기존 항목 삭제 없음.",
       "newCoordinateCount": 20,
       "existingCoordinateEnrichedCount": 13
+    },
+    {
+      "id": "2026-11-07-busan-slot41-michelin-map-eight",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 41,
+      "previousCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1032,
+        "coordinatesMissing": 2217,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3249,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2518,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1040,
+        "coordinatesMissing": 2209,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 319,
+          "강원": 61,
+          "전북": 215,
+          "경기": 382,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1926,
+          "중식": 134,
+          "일식": 135,
+          "기타": 581,
+          "양식": 211,
+          "분식": 28,
+          "디저트": 234
+        }
+      },
+      "newRestaurantCount": 0,
+      "modificationCount": 8,
+      "coordinateAddedCount": 8,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [
+        "anmok",
+        "jeongjitgan",
+        "l-essence",
+        "hanwolgwan",
+        "meerok-super",
+        "eonyang-bulgogi-busanjip",
+        "post-2026-24-0-1",
+        "jin-dweji-gomtang"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-busan-slot41-michelin-map.json",
+      "sourceUrls": [
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
+      ],
+      "notes": [
+        "공식 미쉐린 식당 상세의 정확한 상호·주소와 같은 페이지의 지도 좌표 연결을 확인.",
+        "기본 대용량 restaurants.json을 덮어쓰지 않고 별도 위치 보강 파일로 적용. 기존 ID·선정 이력·회원 추천 정보를 유지.",
+        "현재 영업 여부 및 등급 변동 판정과 별개로 위치만 검증."
+      ],
+      "scope": "부산 사하구 1곳, 연제구 1곳, 수영구 6곳의 미쉐린 공식 지도 위치 보강",
+      "sourceAuditFile": "games/certified-restaurants/sources.json"
     }
   ],
   "busanSlot39": {
