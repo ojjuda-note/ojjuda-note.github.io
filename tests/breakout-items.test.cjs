@@ -422,7 +422,7 @@ for(const [setting,pace]of [['slow',.8],['normal',1],['fast',1.15]]){
   Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(STEP);
   assert.equal(f.game.continueStage(2),true);
   assert.equal(f.state().paddle.w,80,'continuing a level clears the current board’s paddle-size effect');
-  near(f.state().speed,300+10*STEP,'continuing keeps five physics steps and stage acceleration but clears the slowdown');
+  near(f.state().speed,280,'continuing restores base speed after a slowdown and clears accumulated acceleration');
 }
 {
   const f=fixture();f.catchItem(f.hit('pierce'));let s=f.state(),ball=s.balls[0];
