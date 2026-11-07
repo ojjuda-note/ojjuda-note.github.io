@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 44,
-    "scheduledAt": "2026-11-07T14:00:00+09:00",
+    "slot": 45,
+    "scheduledAt": "2026-11-07T15:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "예약 시각 별도 표시 없음. 제공된 현재 한국시각 14:56을 14:00으로 내림; 고정 기준시각에서 h=39, n=43, slot44."
+    "source": "자동 실행의 별도 원 예약시각 정보가 없어 제공된 현지 2026-11-07 15:59:29+09:00을 정각인 15:00으로 내림; 기준시각에서 h=40, n=44, slot=45."
   },
   "entries": [
     {
@@ -16134,6 +16134,250 @@
         "경상남도 거제시"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 45,
+      "scheduledAtKST": "2026-11-07T15:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_one_verified_published_restaurant_coordinate",
+      "assignedRegions": [
+        "경상남도 통영시",
+        "경상남도 거제시"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상남도 통영시",
+          "baseListedCount": 7,
+          "scope": "기본 명단 7곳과 좌표 누락 3곳 우선 확인; 무전리샤브칼국수 상호·주소·공개 수치좌표 2종 교차검증",
+          "new": 0,
+          "updated": 1,
+          "remainingUnknownLocations": 2,
+          "notExhaustive": true
+        },
+        {
+          "region": "경상남도 거제시",
+          "baseListedCount": 49,
+          "scope": "기본 명단 49곳과 좌표 누락 5곳 우선 확인; 구선장네 시청 관광상세 주소 교차대조 및 슬로우소랑 숙박 분류 차이 검토",
+          "new": 0,
+          "updated": 0,
+          "remainingUnknownLocations": 5,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "부산지방우정청 2026 우체국 추천 맛집가이드(기존 선정·수록 근거)",
+        "행정안전부 공개 인허가 기반 업소 좌표 82rg 및 소상공인 상권업소 좌표 purpleo(통영 무전리샤브칼국수 동일 상호·현주소)",
+        "거제시 공식 관광 구선장네 1박2식 정보와 거제 식당 공개 상권 자료",
+        "미쉐린·블루리본 정규 최신 추가 선정 전체 명단은 이번 회차에서 검증 불충분"
+      ],
+      "additions": 0,
+      "modifications": 1,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 1,
+      "locationHidden": 0,
+      "locationPending": 7,
+      "locationPendingScope": "기본 restaurants.json 파일의 통영·거제 56곳 중 좌표 누락 8곳에서 1곳만 공개 숫자좌표 검증. 지역 전체 공개/개인추천 맛집 전수 건수 아님.",
+      "addedRestaurantIds": [],
+      "modifiedRestaurantIds": [
+        "post-2026-59-1-1"
+      ],
+      "existingItemsRechecked": [
+        "무전리샤브칼국수 (통영시)",
+        "마리나송원횟집 (통영시, 302호; 2호점 301호와 구분)",
+        "봉자가든 (통영시)",
+        "구선장네 1박2식 (거제시)",
+        "슬로우소랑 (거제시, 카페·숙박 구분)",
+        "몽순이네식당 (거제시)",
+        "옛날그집 (거제시)",
+        "박가네식당 (거제시)"
+      ],
+      "evidenceUrls": [
+        "https://82rg.com/nearby/restaurant/509957",
+        "https://xju.purpleo.kr/article/7712",
+        "https://tour.geoje.go.kr/user/smarttour/view.geoje?basicSection2=&basicSid=2019&foodStyle2=&menuCd=DOM_000008505003001000&pageIndex=89&searchKeyword=&searchType=BASIC_TITLE",
+        "https://kmh.purpleo.kr/article/12754",
+        "https://onkorea.co.kr/tongyeong/nQgguoX6wDaT",
+        "https://place.clariosync.com/p/831237/%EB%A7%88%EB%A6%AC%EB%82%98%EC%86%A1%EC%9B%90%ED%9A%9F%EC%A7%912%ED%98%B8%EC%A0%90",
+        "https://www.koobig.com/276677",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do"
+      ],
+      "locationRechecks": [
+        {
+          "restaurantId": "post-2026-55-1-0",
+          "name": "구선장네 1박2식",
+          "currentAddress": "경상남도 거제시 사등면 성포로 77",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "구선장네횟집",
+            "구선장네 1박2식 사등면",
+            "거제 성포로 77"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55",
+            "https://tour.geoje.go.kr/user/smarttour/view.geoje?basicSection2=&basicSid=2019&foodStyle2=&menuCd=DOM_000008505003001000&pageIndex=89&searchKeyword=&searchType=BASIC_TITLE"
+          ],
+          "evidenceResult": "거제시 관광 공식 상호·현주소와 우체국 추천 자료 일치. 같은 지점의 숫자 좌표가 검증되지 않음.",
+          "sourceRevalidated": true,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-55-1-1",
+          "name": "슬로우소랑",
+          "currentAddress": "경상남도 거제시 거제남서로 3955-2",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "슬로우소랑 카페",
+            "슬로우소랑 스테이",
+            "거제면 거제남서로 3955-2"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=55",
+            "https://kmh.purpleo.kr/article/12754"
+          ],
+          "evidenceResult": "공개 업소 좌표 자료는 숙박업으로 표시됨. 카페와 동일 지점·영업공간임이 확정되지 않아 해당 숫자좌표를 적용하지 않음.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-56-0-0",
+          "name": "몽순이네식당",
+          "currentAddress": "경상남도 거제시 고현로6길 17",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "몽순이네식당 고현동",
+            "몽순이네 식당",
+            "거제 고현로6길 17"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+            "https://play.ayo.pe.kr/billiards/0e47c7b776f41d271558062b04278fcb"
+          ],
+          "evidenceResult": "동일 주소 공개 표기는 확인했지만 독립된 해당 식당 숫자 좌표는 확인되지 않음.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-56-0-1",
+          "name": "옛날그집",
+          "currentAddress": "경상남도 거제시 고현로9길 4",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "옛날그집 고현동",
+            "옛날그집 거제 고현로9길",
+            "거제 고현로9길 4"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56",
+            "https://dokdokplace.kr/stores/i2/i201/i20107/gyeongsangnam-do/geoje-si/%EA%B3%A0%ED%98%84%EB%8F%99/"
+          ],
+          "evidenceResult": "2026 공개 상권 목록의 상호·주소는 일치하나 해당 식당 좌표값은 없는 자료라 재확인 대기.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-56-1-0",
+          "name": "박가네식당",
+          "currentAddress": "경상남도 거제시 고현로6길 26",
+          "region": "경상남도 거제시",
+          "searchAliases": [
+            "박가네식당 고현동",
+            "박가네식당 고현시장",
+            "거제 고현로6길 26"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=56"
+          ],
+          "evidenceResult": "우체국 발행 추천 자료의 명칭과 주소는 있으나 독립적인 현주소 일치 업소 숫자 좌표 미검증.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-58-1-0",
+          "name": "봉자가든",
+          "currentAddress": "경상남도 통영시 남해안대로736-14",
+          "region": "경상남도 통영시",
+          "searchAliases": [
+            "봉자가든 통영 무전동",
+            "봉자가든 남해안대로 736-14",
+            "통영 봉자가든"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=58",
+            "https://www.koobig.com/276677"
+          ],
+          "evidenceResult": "과거 음식점 안내와 우체국 2026 주소는 부합하지만 현재 동일 지점의 수치 좌표를 공개한 근거가 없음.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        },
+        {
+          "restaurantId": "post-2026-59-0-1",
+          "name": "마리나송원횟집",
+          "currentAddress": "경상남도 통영시 도남로269-38, 상가 302호",
+          "region": "경상남도 통영시",
+          "searchAliases": [
+            "마리나송원횟집 302호",
+            "마리나송원횟집 도남동",
+            "통영 도남로 269-38"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=59",
+            "https://onkorea.co.kr/tongyeong/nQgguoX6wDaT"
+          ],
+          "evidenceResult": "공개 인허가 상호/302·303호는 확인됐으나 2호점 301호의 숫자 좌표 자료와 지점이 달라 해당 좌표를 사용하지 않음.",
+          "sourceRevalidated": false,
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 45,
+          "unresolvedReason": "상호·현주소·지점이 일치하는 검증 가능한 업소 숫자 좌표 미확보 또는 업종/지점 불일치. 검색 미확인만으로 폐업·선정 취소·비노출하지 않으며 두 순환/3종 근거 기준 미충족."
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "블루리본 통영·거제 신규 정규 수록 명단",
+          "reason": "공식 전체 개별 식당명과 동일 지점 주소 및 판년도/리본 수를 이번 회차에서 확인하지 못함",
+          "action": "공식 공개 지도 또는 제휴·관광기관 개별 근거 재확인; 추정 선정 추가 금지"
+        },
+        {
+          "topic": "통영 마리나송원횟집 302호",
+          "reason": "동일 건물의 2호점 301호 좌표와 지점이 달라 직접 승계하면 오표시 가능",
+          "action": "302호의 정확한 지도 좌표 독립 확인 전 null 유지"
+        },
+        {
+          "topic": "영업·폐업 전수 검증",
+          "reason": "공개 근거에서 현재 영업 상태가 바뀌었다는 확증 없음",
+          "action": "업소 공식/관할 상태를 다음 순환 재확인"
+        }
+      ],
+      "carryOver": [
+        "재확인 대기 7곳은 2순환 45회차에서 우선; 재확인 근거 3종과 서로 다른 순환 2회 미충족이므로 노출 제외 0건.",
+        "거제8미 지역 지정은 과거 선정 이력으로 유지; 최신 영업 상태와 현업소 일치 여부 추후 확인.",
+        "기존 미기록 29·31·35·40·42회차는 해당 정규 순환 회차 이월 대상으로 계속 보존. 이번 45회차로 대신하지 않음."
+      ],
+      "nextSlot": 46,
+      "nextRegions": [
+        "경상남도 밀양시",
+        "경상남도 양산시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -16144,6 +16388,7 @@
     "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음",
     "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음.",
     "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존.",
-    "2026-11-07 13시 43회차: 창원·김해 기본 목록 175건(각 83·92) 중 위치 누락 7건(6·1) 이월. 김해시 공식 2026 김해맛집 3건은 전부 기등록. 데이터 변경 없으므로 게임 캐시·revision 및 아지트 버전 미수정."
+    "2026-11-07 13시 43회차: 창원·김해 기본 목록 175건(각 83·92) 중 위치 누락 7건(6·1) 이월. 김해시 공식 2026 김해맛집 3건은 전부 기등록. 데이터 변경 없으므로 게임 캐시·revision 및 아지트 버전 미수정.",
+    "2026-11-07 15시 45회차: 통영·거제 기본 56곳(통영7·거제49) 중 좌표 누락 8곳 우선 점검. 무전리샤브칼국수 수치좌표 1건 교차검증 보강, 남은 7건 이월. 신규/비노출 0. 추천맛집 회원 자료 불변."
   ]
 }
