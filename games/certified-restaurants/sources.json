@@ -1511,20 +1511,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3287,
+    "uniqueRestaurants": 3291,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2556,
+      "local-guide": 2560,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2235,
+    "coordinatesMissing": 2239,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
       "충북": 223,
-      "충남": 70,
+      "충남": 74,
       "울산": 36,
       "경남": 320,
       "강원": 66,
@@ -1540,13 +1540,13 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1953,
-      "중식": 136,
+      "한식": 1955,
+      "중식": 137,
       "일식": 138,
       "기타": 582,
       "양식": 212,
       "분식": 30,
-      "디저트": 236
+      "디저트": 237
     }
   },
   "coordinateEnrichment": {
@@ -13325,53 +13325,121 @@
         "상호·주소 일치한 6곳에만 과거 지방선정 이력을 추가. 미쉐린/블루리본 등급은 추가하지 않음.",
         "기존 충남 64곳 중 숫자 좌표 누락 48, 추가 6곳 좌표 누락 → 54곳 재확인. 주소만으로 좌표 추정·폐업·비노출하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-07-chungnam-slot52-continuation-four-tourism-baeknyeon",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 52,
+      "previousCoverage": {
+        "uniqueRestaurants": 3287,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2556,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2235,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 70,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1953,
+          "중식": 136,
+          "일식": 138,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 236
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3291,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2560,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2239,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1955,
+          "중식": 137,
+          "일식": 138,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 237
+        }
+      },
+      "newRestaurantCount": 4,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-chungnam-slot52-cheonan-oksusa",
+        "local-chungnam-slot52-cheonan-dupain",
+        "local-chungnam-slot52-cheongyang-bibong-sashimi",
+        "local-chungnam-slot52-yesan-dongheung"
+      ],
+      "sourceUrls": [
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-chungnam-slot52.json",
+      "scope": "충남관광 공식 음식점 상세의 [백년가게] 표기·상호·주소를 천안 2·청양 1·예산 1 대조, 기존 선정6곳과 중복 없이 추가. 충남 전수 대조 아님.",
+      "notes": [
+        "백년가게 공개 관광포털 수록 사실만 기록. 개별 지정 연도/현재 영업/블루리본 리본 등급 미확인.",
+        "공식 상세주소는 확인했으나 상호·지점 일치 공개 수치좌표 미검증으로 lat/lng null 유지.",
+        "충남 이번 회차 누적 신규 10곳, 위치 확인 대기 58곳. 이미 기록한 6곳·84회차 순서 보존."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-chungnam-slot52-six-official-provincial-selections",
+    "id": "2026-11-07-chungnam-slot52-continuation-four-tourism-baeknyeon",
     "checkedAt": "2026-11-07",
     "cycle": 1,
     "slot": 52,
     "previousCoverage": {
-      "uniqueRestaurants": 3281,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2550,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2229,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 223,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1948,
-        "중식": 136,
-        "일식": 137,
-        "기타": 582,
-        "양식": 212,
-        "분식": 30,
-        "디저트": 236
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3287,
       "providerCounts": {
         "michelin": 237,
@@ -13410,33 +13478,67 @@
         "디저트": 236
       }
     },
-    "newRestaurantCount": 6,
+    "currentCoverage": {
+      "uniqueRestaurants": 3291,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2560,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2239,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 74,
+        "울산": 36,
+        "경남": 320,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1955,
+        "중식": 137,
+        "일식": 138,
+        "기타": 582,
+        "양식": 212,
+        "분식": 30,
+        "디저트": 237
+      }
+    },
+    "newRestaurantCount": 4,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungnam-slot52-cheongyang-farmer-table",
-      "local-chungnam-slot52-cheongyang-jeong-guchu",
-      "local-chungnam-slot52-seocheon-jinmi",
-      "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
-      "local-chungnam-slot52-nonsan-banwol-soba",
-      "local-chungnam-slot52-seocheon-surawon"
+      "local-chungnam-slot52-cheonan-oksusa",
+      "local-chungnam-slot52-cheonan-dupain",
+      "local-chungnam-slot52-cheongyang-bibong-sashimi",
+      "local-chungnam-slot52-yesan-dongheung"
     ],
     "sourceUrls": [
-      "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
     ],
     "sourceSupplement": "games/certified-restaurants/official-chungnam-slot52.json",
-    "scope": "충청남도 공식 2024·2025 대표 맛집 명단의 청양2·서천2·금산1·논산1의 개별 정확 주소 확인. 전역 전체 공식 명단·현재 영업상태·정규 리본 검증은 일부만.",
+    "scope": "충남관광 공식 음식점 상세의 [백년가게] 표기·상호·주소를 천안 2·청양 1·예산 1 대조, 기존 선정6곳과 중복 없이 추가. 충남 전수 대조 아님.",
     "notes": [
-      "선정 연도 2024/2025와 2025-07-04 공지 등록일·2026-11-07 확인일 구분.",
-      "상호·주소 일치한 6곳에만 과거 지방선정 이력을 추가. 미쉐린/블루리본 등급은 추가하지 않음.",
-      "기존 충남 64곳 중 숫자 좌표 누락 48, 추가 6곳 좌표 누락 → 54곳 재확인. 주소만으로 좌표 추정·폐업·비노출하지 않음."
+      "백년가게 공개 관광포털 수록 사실만 기록. 개별 지정 연도/현재 영업/블루리본 리본 등급 미확인.",
+      "공식 상세주소는 확인했으나 상호·지점 일치 공개 수치좌표 미검증으로 lat/lng null 유지.",
+      "충남 이번 회차 누적 신규 10곳, 위치 확인 대기 58곳. 이미 기록한 6곳·84회차 순서 보존."
     ]
   },
   "latestMapCoverageAudit": {
@@ -13547,8 +13649,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2441,
-    "designationEvidenceCount": 2438,
+    "recordCount": 2445,
+    "designationEvidenceCount": 2442,
     "coordinatesAvailable": 757,
     "regionCount": 17,
     "regionalCoverage": [
@@ -21793,7 +21895,11 @@
       "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
       "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
       "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
-      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
     ],
     "sidecar": "games/certified-restaurants/official-chungnam-slot52.json",
     "verifiedSelectedRestaurants": 6,
@@ -21807,11 +21913,16 @@
       "local-chungnam-slot52-seocheon-jinmi",
       "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
       "local-chungnam-slot52-nonsan-banwol-soba",
-      "local-chungnam-slot52-seocheon-surawon"
+      "local-chungnam-slot52-seocheon-surawon",
+      "local-chungnam-slot52-cheonan-oksusa",
+      "local-chungnam-slot52-cheonan-dupain",
+      "local-chungnam-slot52-cheongyang-bibong-sashimi",
+      "local-chungnam-slot52-yesan-dongheung"
     ],
     "coordinatesAdded": 0,
-    "coordinatePendingInProvince": 54,
+    "coordinatePendingInProvince": 58,
     "completeProvincialVerification": false,
-    "notes": "도와 국민이 함께 선정한 2024 1차·2025 2차 대표 맛집 일부. 선정 연도는 각 업소 별도 표기; 2025-07-04는 공지 등록일이며 현재 영업 여부는 확인하지 않음. 블루리본 정규 등급/공동선정과 무관."
+    "notes": "도와 국민이 함께 선정한 2024 1차·2025 2차 대표 맛집 일부. 선정 연도는 각 업소 별도 표기; 2025-07-04는 공지 등록일이며 현재 영업 여부는 확인하지 않음. 블루리본 정규 등급/공동선정과 무관. 같은 회차 추가 확인: 충남관광 백년가게 수록 4곳(천안2·청양1·예산1), 특정 선정연도·현 영업 확인하지 않음.",
+    "additionalBaeknyeonTourismListings": 4
   }
 }

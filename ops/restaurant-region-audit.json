@@ -28658,7 +28658,7 @@
       "slot": 52,
       "scheduledAtKST": "2026-11-07T22:00:00+09:00",
       "checkedAtKST": "2026-11-07",
-      "status": "partial_review_six_official_chungnam_2024_2025_selections",
+      "status": "partial_review_six_selections_plus_four_tourism_baeknyeon_listings",
       "assignedRegions": [
         "충청남도 공식 명단 대조"
       ],
@@ -28666,16 +28666,17 @@
         {
           "region": "충청남도",
           "baseListedCount": 64,
-          "afterListedCount": 70,
-          "scope": "충남 공식 방문의 해 2024·2025 대표 맛집 안내 중 6곳의 이름/주소를 각각 충남관광 음식점 상세와 대조. 15개 시군은 명단상 조사 범위이나 4개 시군의 6곳만 개별 확인.",
+          "afterListedCount": 74,
+          "scope": "충남 공식 방문의 해 2024·2025 대표 맛집 안내 중 6곳의 이름/주소를 각각 충남관광 음식점 상세와 대조. 15개 시군은 명단상 조사 범위이나 4개 시군의 6곳만 개별 확인. 같은 회차 이어하기로 충남관광 백년가게 분류 업소 4곳 천안2·청양1·예산1의 개별 주소 대조.",
           "actuallyChecked": [
             "충청남도 청양군",
             "충청남도 서천군",
             "충청남도 금산군",
-            "충청남도 논산시"
+            "충청남도 논산시",
+            "충청남도 천안시",
+            "충청남도 예산군"
           ],
           "remainingAreas": [
-            "천안시",
             "공주시",
             "보령시",
             "아산시",
@@ -28684,34 +28685,38 @@
             "당진시",
             "부여군",
             "태안군",
-            "홍성군",
-            "예산군"
+            "홍성군"
           ],
-          "new": 6,
+          "new": 10,
           "updated": 0,
-          "remainingUnknownLocations": 54,
+          "remainingUnknownLocations": 58,
           "notExhaustive": true
         }
       ],
       "sourcesChecked": [
         "충남관광 2025-07-04 공식 발표: 2024년 1차·2025년 2차 선정 식당 명단",
         "충남관광 개별 음식점 공식 상세 6곳: 정확한 상호·현재 공개주소 대조",
-        "지도 공개 숫자좌표·현재 영업·정규 블루리본 판본은 미확인"
+        "지도 공개 숫자좌표·현재 영업·정규 블루리본 판본은 미확인",
+        "충남관광 [백년가게] 음식점 개별 상세 4곳의 상호·지점·공개주소 확인 (현재 영업/선정 연도 미확정)"
       ],
-      "additions": 6,
+      "additions": 10,
       "modifications": 0,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 54,
-      "locationPendingScope": "기존 충남 64곳 중 위치 미등록 48곳에 신규 6곳 포함, 좌표 미확인 54곳. 이번에 6곳 주소만 확인했으며 기존 48곳 좌표 전수 재조사를 실시한 것은 아님.",
+      "locationPending": 58,
+      "locationPendingScope": "충남 기본 64곳 좌표누락 48, 선정 신규6·백년가게 수록 신규4 → 미확인 총58. 이 중 기존 48개 좌표 전체 재조사를 했다는 뜻은 아님.",
       "addedRestaurantIds": [
         "local-chungnam-slot52-cheongyang-farmer-table",
         "local-chungnam-slot52-cheongyang-jeong-guchu",
         "local-chungnam-slot52-seocheon-jinmi",
         "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
         "local-chungnam-slot52-nonsan-banwol-soba",
-        "local-chungnam-slot52-seocheon-surawon"
+        "local-chungnam-slot52-seocheon-surawon",
+        "local-chungnam-slot52-cheonan-oksusa",
+        "local-chungnam-slot52-cheonan-dupain",
+        "local-chungnam-slot52-cheongyang-bibong-sashimi",
+        "local-chungnam-slot52-yesan-dongheung"
       ],
       "modifiedRestaurantIds": [],
       "evidenceUrls": [
@@ -28721,7 +28726,11 @@
         "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
         "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
         "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
-        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
       ],
       "verifiedSelections": [
         {
@@ -29838,22 +29847,154 @@
           "recheckSlot": 52,
           "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
           "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheonan-oksusa",
+          "name": "원조옥수사",
+          "currentAddress": "충청남도 천안시 동남구 영성로 25-3",
+          "region": "충청남도 천안시 동남구",
+          "searchAliases": [
+            "원조옥수사 충청남도 천안시 동남구 백년가게",
+            "원조옥수사 충청남도 천안시 동남구 영성로 25-3",
+            "충청남도 천안시 동남구 원조옥수사"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 [백년가게] 공식 업소명·주소 확인, 해당 지점과 일치하는 공개 숫자좌표 근거 확보 못함",
+          "reason": "좌표만 미확인; 현재 영업 및 선정 취소 또는 폐업 판단 근거 없음. 기존 ID를 보존하며 다음 순환 재조사."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheonan-dupain",
+          "name": "듀팡과자점",
+          "currentAddress": "충청남도 천안시 서북구 늘푸른5길 22 102호",
+          "region": "충청남도 천안시 서북구",
+          "searchAliases": [
+            "듀팡과자점 충청남도 천안시 서북구 백년가게",
+            "듀팡과자점 충청남도 천안시 서북구 늘푸른5길 22 102호",
+            "충청남도 천안시 서북구 듀팡과자점"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 [백년가게] 공식 업소명·주소 확인, 해당 지점과 일치하는 공개 숫자좌표 근거 확보 못함",
+          "reason": "좌표만 미확인; 현재 영업 및 선정 취소 또는 폐업 판단 근거 없음. 기존 ID를 보존하며 다음 순환 재조사."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-bibong-sashimi",
+          "name": "비봉횟집",
+          "currentAddress": "충청남도 청양군 청양읍 중앙로5길 28 에코빌 1층",
+          "region": "충청남도 청양군",
+          "searchAliases": [
+            "비봉횟집 충청남도 청양군 백년가게",
+            "비봉횟집 충청남도 청양군 청양읍 중앙로5길 28 에코빌 1층",
+            "충청남도 청양군 비봉횟집"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 [백년가게] 공식 업소명·주소 확인, 해당 지점과 일치하는 공개 숫자좌표 근거 확보 못함",
+          "reason": "좌표만 미확인; 현재 영업 및 선정 취소 또는 폐업 판단 근거 없음. 기존 ID를 보존하며 다음 순환 재조사."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-yesan-dongheung",
+          "name": "동흥대반점",
+          "currentAddress": "충청남도 예산군 예산읍 예산로 220-1",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "동흥대반점 충청남도 예산군 백년가게",
+            "동흥대반점 충청남도 예산군 예산읍 예산로 220-1",
+            "충청남도 예산군 동흥대반점"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 [백년가게] 공식 업소명·주소 확인, 해당 지점과 일치하는 공개 숫자좌표 근거 확보 못함",
+          "reason": "좌표만 미확인; 현재 영업 및 선정 취소 또는 폐업 판단 근거 없음. 기존 ID를 보존하며 다음 순환 재조사."
         }
       ],
       "unresolved": [
         "기존 좌표 누락 48곳과 신규 6곳의 상호·지점·현주소 일치 공개 수치좌표 재검증",
         "2024·2025 충남 대표 맛집 전체 시군 명단과 기존 데이터 대조 일부 미실시",
-        "블루리본 독립 검증 가능한 정규 리본 등급 및 현재 영업·폐업 확인 필요"
+        "블루리본 독립 검증 가능한 정규 리본 등급 및 현재 영업·폐업 확인 필요",
+        "충남관광 [백년가게] 수록4곳의 지정 연도·실제 수치좌표·현재 영업 별도 검증"
       ],
       "carryOver": [
         "충남 15개 시군별 선정 전체 명단 추가 대조 및 위치 재조사: 2순환 52회차 우선",
-        "46회차 밀양·양산 등 타 회차 미기록 항목은 기존 이월 유지"
+        "46회차 밀양·양산 등 타 회차 미기록 항목은 기존 이월 유지",
+        "천안·예산·청양 수록 백년가게 4곳의 좌표 재확인 우선, 전국 순환 고정 84회차 유지"
       ],
       "nextSlot": 53,
       "nextRegions": [
         "전북특별자치도 공식 명단 대조"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "verifiedPublications": [
+        {
+          "restaurantId": "local-chungnam-slot52-cheonan-oksusa",
+          "name": "원조옥수사",
+          "currentAddress": "충청남도 천안시 동남구 영성로 25-3",
+          "region": "충청남도 천안시 동남구",
+          "officialListing": "백년가게",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1098",
+          "checkedAt": "2026-11-07",
+          "publicationYear": null,
+          "selectionYear": null,
+          "operatingStatus": "unknown",
+          "coordinateStatus": "unverified"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheonan-dupain",
+          "name": "듀팡과자점",
+          "currentAddress": "충청남도 천안시 서북구 늘푸른5길 22 102호",
+          "region": "충청남도 천안시 서북구",
+          "officialListing": "백년가게",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1094",
+          "checkedAt": "2026-11-07",
+          "publicationYear": null,
+          "selectionYear": null,
+          "operatingStatus": "unknown",
+          "coordinateStatus": "unverified"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-bibong-sashimi",
+          "name": "비봉횟집",
+          "currentAddress": "충청남도 청양군 청양읍 중앙로5길 28 에코빌 1층",
+          "region": "충청남도 청양군",
+          "officialListing": "백년가게",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1095",
+          "checkedAt": "2026-11-07",
+          "publicationYear": null,
+          "selectionYear": null,
+          "operatingStatus": "unknown",
+          "coordinateStatus": "unverified"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-yesan-dongheung",
+          "name": "동흥대반점",
+          "currentAddress": "충청남도 예산군 예산읍 예산로 220-1",
+          "region": "충청남도 예산군",
+          "officialListing": "백년가게",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089",
+          "checkedAt": "2026-11-07",
+          "publicationYear": null,
+          "selectionYear": null,
+          "operatingStatus": "unknown",
+          "coordinateStatus": "unverified"
+        }
+      ]
     }
   ],
   "notes": [
@@ -29870,6 +30011,7 @@
     "2026-11-07 47회차 배포 후 시각 확인: 제주 4곳 카드·지도 표시, 월드 진입 정상, 등록 3250곳. 실제 좌표 1046곳이 sources의 1045보다 1 많았으나 이전 45회차 통영 좌표 1건 집계 누락으로 밝혀 1046/2204로 운영·출처 집계 정정. 데이터/게임 리비전 변경 없음.",
     "2026-11-07 19시 49회차 경기도 공식 먹거리 소개 구리6·평택7 추가(공식 선정 아님). 경기도 전체395곳 중 위치 대기342곳을 ID·주소·기존 출처로 이월. 좌표추정·폐업판정·비노출·회원추천변경 0.",
     "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349.",
-    "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존."
+    "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존.",
+    "2026-11-07 1/52 같은 회차 이어하기: 충남관광 백년가게 공식 상세·주소 4곳(원조옥수사·듀팡과자점·비봉횟집·동흥대반점) 추가. 회차 누적10곳, 위치 보강0·제외0·좌표 대기58. 회원 추천 및 기존 회차 유지."
   ]
 }
