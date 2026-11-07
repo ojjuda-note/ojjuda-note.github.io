@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 54,
-    "scheduledAt": "2026-11-08T00:00:00+09:00",
+    "slot": 55,
+    "scheduledAt": "2026-11-08T01:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "별도 예약시각 미제공; 자동실행 컨텍스트 2026-11-08 00:02:57 KST를 00:00 정각으로 내림(h=49,n=53,slot=54,cycle=1)."
+    "source": "예정된 한국시각 01:00 정각 기준 h=50, n=54, slot55, cycle1"
   },
   "entries": [
     {
@@ -30225,6 +30225,1358 @@
         "경상북도 공식 명단 대조"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 55,
+      "scheduledAtKST": "2026-11-08T01:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_review_one_andong_kto_listing",
+      "assignedRegions": [
+        "경상북도 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도",
+          "baseListedCount": 169,
+          "actuallyChecked": [
+            "도 공식 으뜸음식점 기존 선정 자료 대조",
+            "안동 관광 식당 소개 및 지방행정 인허가 개별 주소·전화 교차검증",
+            "기존 경북 169곳과 36·37·38회차 사이드카 중복·좌표 미등록 추적"
+          ],
+          "remainingAreas": [
+            "영양·영덕·울진·울릉 등 등록 0곳 또는 적은 군의 공식 명단",
+            "경북 전역 신규 블루리본 공식 식당별 등급",
+            "정확한 수치 좌표 미등록 66곳·영업상태"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "경북도 2025년 으뜸음식점 공식 선정 자료·기존 데이터",
+        "한국관광공사 안동 관광 음식점 소개 2025-01(진성식당/메밀꽃피면/맛50년헛제사밥 등)",
+        "지방행정 인허가 공개 자료 재게시 2026-08-24: 진성식당 상호·태사길25·업소전화",
+        "블루리본 공식 식당별 최신 경북 명단 추가 확증 못함"
+      ],
+      "additions": 1,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 66,
+      "locationPendingScope": "경북 기존169곳 중 위치누락65곳 + 신규1곳. 66곳을 개별 현장/지도 전수 검증했다는 뜻 아님.",
+      "addedRestaurantIds": [
+        "local-gyeongbuk-slot55-andong-jinseong"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
+        "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9",
+        "https://www.gb.go.kr/Main/finace/page.do?mnu_uid=15699"
+      ],
+      "verifiedOfficialListings": [
+        {
+          "restaurantId": "local-gyeongbuk-slot55-andong-jinseong",
+          "name": "진성식당",
+          "currentAddress": "경상북도 안동시 태사길 25, 1층 (북문동)",
+          "officialSourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
+          "addressSourceUrl": "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9",
+          "checkedAt": "2026-11-08",
+          "sourceAsOf": "2025-01",
+          "coordinateStatus": "not_verified",
+          "currentOperatingStatus": "unknown"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-gyeongju-hyeondae-milmyeon",
+          "name": "현대밀면",
+          "currentAddress": "경상북도 경주시 화랑로 61",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "현대밀면 경주시",
+            "현대밀면 경상북도 경주시 화랑로 61"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?cmd=2&con_uid=7285&mnu_uid=4830"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "blue-gyeongju-eohyangwon",
+          "name": "어향원",
+          "currentAddress": "경상북도 경주시 화랑로 76-1",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "어향원 경주시",
+            "어향원 경상북도 경주시 화랑로 76-1"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?mnu_uid=4695"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "blue-kinock-cafe-sniff",
+          "name": "카페 스니프",
+          "currentAddress": "경상북도 경주시 보문로 280-12 호텔 1층",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "카페 스니프 경주시",
+            "카페 스니프 경상북도 경주시 보문로 280-12 호텔 1층"
+          ],
+          "evidenceUrls": [
+            "https://m.kyowon.co.kr/Media/News_detail?iscont=&nttId=1163&searchword="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2020-1",
+          "name": "금산삼계탕고디탕",
+          "currentAddress": "경상북도 포항시 북구 중흥로 145 (죽도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "금산삼계탕고디탕 포항시",
+            "금산삼계탕고디탕 경상북도 포항시 북구 중흥로 145 (죽도동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-3",
+          "name": "대복삼계탕",
+          "currentAddress": "경상북도 포항시 남구 인덕로8번길 13-6",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "대복삼계탕 포항시",
+            "대복삼계탕 경상북도 포항시 남구 인덕로8번길 13-6"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-1",
+          "name": "포항고깃집 엄지척",
+          "currentAddress": "경상북도 포항시 남구 해동로 48-1, 1층 (해도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "포항고깃집 엄지척 포항시",
+            "포항고깃집 엄지척 경상북도 포항시 남구 해동로 48-1, 1층 (해도동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-2",
+          "name": "아사달",
+          "currentAddress": "경상북도 경주시 보문로 182-27(북군동) 한화리조트 \"아사달\"",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "아사달 경주시",
+            "아사달 경상북도 경주시 보문로 182-27(북군동) 한화리조트 \"아사달\""
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2018-2",
+          "name": "우천냉면",
+          "currentAddress": "경상북도 김천시 문당길 79",
+          "region": "경상북도 김천시",
+          "searchAliases": [
+            "우천냉면 김천시",
+            "우천냉면 경상북도 김천시 문당길 79"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2025-1",
+          "name": "미트미트",
+          "currentAddress": "경상북도 김천시 혁신6로 10(율곡동)",
+          "region": "경상북도 김천시",
+          "searchAliases": [
+            "미트미트 김천시",
+            "미트미트 경상북도 김천시 혁신6로 10(율곡동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2018-3",
+          "name": "금강옥",
+          "currentAddress": "경상북도 안동시 강남1길 133-16",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "금강옥 안동시",
+            "금강옥 경상북도 안동시 강남1길 133-16"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-3",
+          "name": "경복궁",
+          "currentAddress": "경상북도 안동시 충효로 4439(정하동)",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "경복궁 안동시",
+            "경복궁 경상북도 안동시 충효로 4439(정하동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2025-2",
+          "name": "농가맛집 숲속안골길",
+          "currentAddress": "경상북도 영천시 안골길 20-75(괴연동)",
+          "region": "경상북도 영천시",
+          "searchAliases": [
+            "농가맛집 숲속안골길 영천시",
+            "농가맛집 숲속안골길 경상북도 영천시 안골길 20-75(괴연동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-5",
+          "name": "새감포복집",
+          "currentAddress": "경상북도 상주시 낙양3길 39-51",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "새감포복집 상주시",
+            "새감포복집 경상북도 상주시 낙양3길 39-51"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-4",
+          "name": "러브리또",
+          "currentAddress": "경상북도 상주시 동수1길 88, 1층 (서문동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "러브리또 상주시",
+            "러브리또 경상북도 상주시 동수1길 88, 1층 (서문동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-5",
+          "name": "우정가든",
+          "currentAddress": "경상북도 문경시 문경읍 온천3길 1",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "우정가든 문경시",
+            "우정가든 경상북도 문경시 문경읍 온천3길 1"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-6",
+          "name": "새재할매집",
+          "currentAddress": "경상북도 문경시 문경읍 새재로 922",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "새재할매집 문경시",
+            "새재할매집 경상북도 문경시 문경읍 새재로 922"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-6",
+          "name": "산동네청국장",
+          "currentAddress": "경상북도 문경시 매봉6길 3-12",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "산동네청국장 문경시",
+            "산동네청국장 경상북도 문경시 매봉6길 3-12"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-3",
+          "name": "남원추어탕",
+          "currentAddress": "경상북도 문경시 매종로 56-1",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "남원추어탕 문경시",
+            "남원추어탕 경상북도 문경시 매종로 56-1"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-4",
+          "name": "마당바위",
+          "currentAddress": "경상북도 문경시 문경읍 새재로 898",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "마당바위 문경시",
+            "마당바위 경상북도 문경시 문경읍 새재로 898"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-5",
+          "name": "벨라테라",
+          "currentAddress": "경상북도 문경시 진남1길 152",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "벨라테라 문경시",
+            "벨라테라 경상북도 문경시 진남1길 152"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-6",
+          "name": "더반",
+          "currentAddress": "경상북도 경산시 삼성현로 185",
+          "region": "경상북도 경산시",
+          "searchAliases": [
+            "더반 경산시",
+            "더반 경상북도 경산시 삼성현로 185"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-9",
+          "name": "청호가든",
+          "currentAddress": "경상북도 의성군 봉양면 경북대로 4942",
+          "region": "경상북도 의성군",
+          "searchAliases": [
+            "청호가든 의성군",
+            "청호가든 경상북도 의성군 봉양면 경북대로 4942"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2025-3",
+          "name": "태산들",
+          "currentAddress": "경상북도 의성군 옥산면 노천길 79",
+          "region": "경상북도 의성군",
+          "searchAliases": [
+            "태산들 의성군",
+            "태산들 경상북도 의성군 옥산면 노천길 79"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2017-8",
+          "name": "청송영양축산농협한우프라자",
+          "currentAddress": "경상북도 청송군 부동면 주왕산로 440",
+          "region": "경상북도 청송군",
+          "searchAliases": [
+            "청송영양축산농협한우프라자 청송군",
+            "청송영양축산농협한우프라자 경상북도 청송군 부동면 주왕산로 440"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-10",
+          "name": "웰빙하우스",
+          "currentAddress": "경상북도 청송군 청송읍 휴양단지길 34-1",
+          "region": "경상북도 청송군",
+          "searchAliases": [
+            "웰빙하우스 청송군",
+            "웰빙하우스 경상북도 청송군 청송읍 휴양단지길 34-1"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2023-7",
+          "name": "주왕산가든",
+          "currentAddress": "경상북도 청송군 주왕산면 주왕산로 508-9",
+          "region": "경상북도 청송군",
+          "searchAliases": [
+            "주왕산가든 청송군",
+            "주왕산가든 경상북도 청송군 주왕산면 주왕산로 508-9"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-6",
+          "name": "봉성밥상",
+          "currentAddress": "경상북도 청송군 청송읍 중앙로 268",
+          "region": "경상북도 청송군",
+          "searchAliases": [
+            "봉성밥상 청송군",
+            "봉성밥상 경상북도 청송군 청송읍 중앙로 268"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-7",
+          "name": "본가한정식",
+          "currentAddress": "경상북도 청도군 화양읍 범곡길 32",
+          "region": "경상북도 청도군",
+          "searchAliases": [
+            "본가한정식 청도군",
+            "본가한정식 경상북도 청도군 화양읍 범곡길 32"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-11",
+          "name": "고령금산한우",
+          "currentAddress": "경상북도 고령군 성산면 성산로 946-5",
+          "region": "경상북도 고령군",
+          "searchAliases": [
+            "고령금산한우 고령군",
+            "고령금산한우 경상북도 고령군 성산면 성산로 946-5"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2021-11",
+          "name": "고방찬 남경식당",
+          "currentAddress": "경상북도 성주군 성주읍 시장길 10-10",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "고방찬 남경식당 성주군",
+            "고방찬 남경식당 경상북도 성주군 성주읍 시장길 10-10"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-12",
+          "name": "감골식당",
+          "currentAddress": "경상북도 성주군 경산길 9-3",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "감골식당 성주군",
+            "감골식당 경상북도 성주군 경산길 9-3"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-13",
+          "name": "거정숯불갈비",
+          "currentAddress": "경상북도 칠곡군 왜관읍 군청4길 24",
+          "region": "경상북도 칠곡군",
+          "searchAliases": [
+            "거정숯불갈비 칠곡군",
+            "거정숯불갈비 경상북도 칠곡군 왜관읍 군청4길 24"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2019-7",
+          "name": "언덕숯불",
+          "currentAddress": "경상북도 예천군 예천읍 충효로 512-5",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "언덕숯불 예천군",
+            "언덕숯불 경상북도 예천군 예천읍 충효로 512-5"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2020-11",
+          "name": "제주복집",
+          "currentAddress": "경상북도 예천군 예천읍 이미기길 71",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "제주복집 예천군",
+            "제주복집 경상북도 예천군 예천읍 이미기길 71"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-14",
+          "name": "한국관복어집",
+          "currentAddress": "경상북도 예천군 예천읍 군청길 42-4",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "한국관복어집 예천군",
+            "한국관복어집 경상북도 예천군 예천읍 군청길 42-4"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-16",
+          "name": "황소네집",
+          "currentAddress": "경상북도 예천군 예천읍 맛고을길 55",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "황소네집 예천군",
+            "황소네집 경상북도 예천군 예천읍 맛고을길 55"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-8",
+          "name": "백번고기집본점",
+          "currentAddress": "경상북도 예천군 풍양면 상풍로 1445",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "백번고기집본점 예천군",
+            "백번고기집본점 경상북도 예천군 풍양면 상풍로 1445"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-9",
+          "name": "오르비",
+          "currentAddress": "경상북도 예천군 예천읍 시장로 112-2",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "오르비 예천군",
+            "오르비 경상북도 예천군 예천읍 시장로 112-2"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-10",
+          "name": "용궁순대",
+          "currentAddress": "경상북도 예천군 용궁면 용궁로 158",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "용궁순대 예천군",
+            "용궁순대 경상북도 예천군 용궁면 용궁로 158"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2025-4",
+          "name": "신라식당",
+          "currentAddress": "경상북도 예천군 예천읍 군청길 37",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "신라식당 예천군",
+            "신라식당 경상북도 예천군 예천읍 군청길 37"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-17",
+          "name": "쉼터민물매운탕",
+          "currentAddress": "경상북도 봉화군 명호면 광석길 28-1",
+          "region": "경상북도 봉화군",
+          "searchAliases": [
+            "쉼터민물매운탕 봉화군",
+            "쉼터민물매운탕 경상북도 봉화군 명호면 광석길 28-1"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-ugong-sushi-namgu",
+          "name": "우공초밥 포항남구점",
+          "currentAddress": "경상북도 포항시 남구 상공로 47-1 (상도동) 1층",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "우공초밥 포항남구점 포항시",
+            "우공초밥 포항남구점 경상북도 포항시 남구 상공로 47-1 (상도동) 1층"
+          ],
+          "evidenceUrls": [
+            "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-marado-hoesikdang",
+          "name": "마라도회식당",
+          "currentAddress": "경상북도 포항시 북구 해안로 217-1 (두호동) 1층",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "마라도회식당 포항시",
+            "마라도회식당 경상북도 포항시 북구 해안로 217-1 (두호동) 1층"
+          ],
+          "evidenceUrls": [
+            "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-gwasuwon-saenggogi",
+          "name": "과수원 생고기",
+          "currentAddress": "경상북도 포항시 북구 양학로17번길 5 (득량동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "과수원 생고기 포항시",
+            "과수원 생고기 경상북도 포항시 북구 양학로17번길 5 (득량동)"
+          ],
+          "evidenceUrls": [
+            "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-pohang-slot36-jangnyong-jangeo",
+          "name": "장룡민물장어나라",
+          "currentAddress": "경상북도 포항시 남구 희망대로 911 (해도동)",
+          "region": "경상북도 포항시",
+          "searchAliases": [
+            "장룡민물장어나라 포항시",
+            "장룡민물장어나라 경상북도 포항시 남구 희망대로 911 (해도동)"
+          ],
+          "evidenceUrls": [
+            "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-sambu-sikdang",
+          "name": "삼부식당",
+          "currentAddress": "경상북도 경주시 봉황로51번길 14",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "삼부식당 경주시",
+            "삼부식당 경상북도 경주시 봉황로51번길 14"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-gohyang-milmyeon",
+          "name": "고향밀면",
+          "currentAddress": "경상북도 경주시 태종로791번길 7",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "고향밀면 경주시",
+            "고향밀면 경상북도 경주시 태종로791번길 7"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-hwangnam-kalguksu",
+          "name": "황남칼국수",
+          "currentAddress": "경상북도 경주시 봉황로 40-1",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "황남칼국수 경주시",
+            "황남칼국수 경상북도 경주시 봉황로 40-1"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongju-slot36-seasoning",
+          "name": "시즈닝",
+          "currentAddress": "경상북도 경주시 첨성로99번길 25-2 (황남동)",
+          "region": "경상북도 경주시",
+          "searchAliases": [
+            "시즈닝 경주시",
+            "시즈닝 경상북도 경주시 첨성로99번길 25-2 (황남동)"
+          ],
+          "evidenceUrls": [
+            "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-iljik",
+          "name": "일직식당",
+          "currentAddress": "경상북도 안동시 경동로 676",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "일직식당 안동시",
+            "일직식당 경상북도 안동시 경동로 676"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-kkachigumeong",
+          "name": "헛제사밥까치구멍집",
+          "currentAddress": "경상북도 안동시 석주로 203",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "헛제사밥까치구멍집 안동시",
+            "헛제사밥까치구멍집 경상북도 안동시 석주로 203"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-50year-jesabab",
+          "name": "맛50년헛제사밥",
+          "currentAddress": "경상북도 안동시 석주로 201",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "맛50년헛제사밥 안동시",
+            "맛50년헛제사밥 경상북도 안동시 석주로 201"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-yemijeong",
+          "name": "예미정",
+          "currentAddress": "경상북도 안동시 옹정골길 111",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "예미정 안동시",
+            "예미정 경상북도 안동시 옹정골길 111"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-hwaryeon",
+          "name": "안동화련",
+          "currentAddress": "경상북도 안동시 일직면 하나들길 150-23",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "안동화련 안동시",
+            "안동화련 경상북도 안동시 일직면 하나들길 150-23"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-nongga-tteul",
+          "name": "농가맛집뜰",
+          "currentAddress": "경상북도 안동시 와룡면 왼마길 21-10",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "농가맛집뜰 안동시",
+            "농가맛집뜰 경상북도 안동시 와룡면 왼마길 21-10"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-memilkkot",
+          "name": "메밀꽃피면",
+          "currentAddress": "경상북도 안동시 도산면 선성4길 22",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "메밀꽃피면 안동시",
+            "메밀꽃피면 경상북도 안동시 도산면 선성4길 22"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-andong-slot37-jebiwon",
+          "name": "제비원식당",
+          "currentAddress": "경상북도 안동시 번영4길 5",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "제비원식당 안동시",
+            "제비원식당 경상북도 안동시 번영4길 5"
+          ],
+          "evidenceUrls": [
+            "https://www.tourandong.com/public/sub3/sub1.cshtml"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-mungyeong-slot37-myeongseong",
+          "name": "명성송어장",
+          "currentAddress": "경상북도 문경시 마성면 동성길 59",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "명성송어장 문경시",
+            "명성송어장 경상북도 문경시 마성면 동성길 59"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
+            "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2832267"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-mungyeong-slot37-donghwawon",
+          "name": "동화원산장식당",
+          "currentAddress": "경상북도 문경시 문경읍 새재1길 48",
+          "region": "경상북도 문경시",
+          "searchAliases": [
+            "동화원산장식당 문경시",
+            "동화원산장식당 경상북도 문경시 문경읍 새재1길 48"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
+            "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2841330"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-durak",
+          "name": "두락",
+          "currentAddress": "경상북도 상주시 식산로 112",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "두락 상주시",
+            "두락 경상북도 상주시 식산로 112"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15157/100048.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-sandeulga",
+          "name": "산들가家",
+          "currentAddress": "경상북도 상주시 화북면 용화로 10",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "산들가家 상주시",
+            "산들가家 경상북도 상주시 화북면 용화로 10"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15157/100048.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-jongdari-boritdan",
+          "name": "종달이와 보릿단",
+          "currentAddress": "경상북도 상주시 천봉서로 110-8",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "종달이와 보릿단 상주시",
+            "종달이와 보릿단 경상북도 상주시 천봉서로 110-8"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15157/100048.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-gaeungung",
+          "name": "개운궁",
+          "currentAddress": "경상북도 상주시 경상대로 2882 (개운동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "개운궁 상주시",
+            "개운궁 경상북도 상주시 경상대로 2882 (개운동)"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15158/100049.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-godaegam",
+          "name": "고대감",
+          "currentAddress": "경상북도 상주시 왕산로 203 (남성동, 1층)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "고대감 상주시",
+            "고대감 경상북도 상주시 왕산로 203 (남성동, 1층)"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15158/100049.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-sangju-slot38-goryeogarden",
+          "name": "고려가든",
+          "currentAddress": "경상북도 상주시 경상대로 2870 (개운동)",
+          "region": "경상북도 상주시",
+          "searchAliases": [
+            "고려가든 상주시",
+            "고려가든 경상북도 상주시 경상대로 2870 (개운동)"
+          ],
+          "evidenceUrls": [
+            "https://www.sangju.go.kr/tour/page/15158/100049.tc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "기존 도·시 공식 수록 이력 보존. 이번 회차에서 개별 현주소·수치좌표 확증 못함.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongbuk-slot55-andong-jinseong",
+          "name": "진성식당",
+          "currentAddress": "경상북도 안동시 태사길 25, 1층 (북문동)",
+          "region": "경상북도 안동시",
+          "searchAliases": [
+            "진성식당 안동시",
+            "진성식당 경상북도 안동시 태사길 25, 1층 (북문동)"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
+            "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 55,
+          "checkResult": "KTO 2025-01 관광 소개·2026-08-24 행정 인허가 상호/전화/주소 대조. 업소 직접 위경도 없음. 현 영업 미확인.",
+          "reason": "정확한 식당·지점·현주소에 직접 귀속된 공개 수치좌표 미확인. 주소 지오코딩 추정 좌표 사용 금지."
+        }
+      ],
+      "unresolved": [
+        "주소 지오코딩값 대신 업소 직접 좌표 필요",
+        "진성식당 현재 영업·이전·정규 블루리본 여부 확정되지 않음",
+        "경북 관광/블루리본 전체 목록 전수 미완료",
+        "전북 1/53 회차 기록 없음: 다음 순환 재확인"
+      ],
+      "carryOver": [
+        {
+          "cycle": 1,
+          "slot": 53,
+          "region": "전북특별자치도",
+          "status": "no_audit_record_on_main",
+          "recheckCycle": 2,
+          "recheckSlot": 53
+        },
+        {
+          "cycle": 1,
+          "slot": 55,
+          "region": "경상북도",
+          "status": "partial_review_location_followup",
+          "restaurantIds": [
+            "blue-gyeongju-hyeondae-milmyeon",
+            "blue-gyeongju-eohyangwon",
+            "blue-kinock-cafe-sniff",
+            "local-gb-top-2020-1",
+            "local-gb-top-2021-3",
+            "local-gb-top-2024-1",
+            "local-gb-top-2024-2",
+            "local-gb-top-2018-2",
+            "local-gb-top-2025-1",
+            "local-gb-top-2018-3",
+            "local-gb-top-2024-3",
+            "local-gb-top-2025-2",
+            "local-gb-top-2022-5",
+            "local-gb-top-2024-4",
+            "local-gb-top-2021-5",
+            "local-gb-top-2021-6",
+            "local-gb-top-2022-6",
+            "local-gb-top-2023-3",
+            "local-gb-top-2023-4",
+            "local-gb-top-2024-5",
+            "local-gb-top-2023-6",
+            "local-gb-top-2022-9",
+            "local-gb-top-2025-3",
+            "local-gb-top-2017-8",
+            "local-gb-top-2022-10",
+            "local-gb-top-2023-7",
+            "local-gb-top-2024-6",
+            "local-gb-top-2024-7",
+            "local-gb-top-2022-11",
+            "local-gb-top-2021-11",
+            "local-gb-top-2022-12",
+            "local-gb-top-2022-13",
+            "local-gb-top-2019-7",
+            "local-gb-top-2020-11",
+            "local-gb-top-2022-14",
+            "local-gb-top-2022-16",
+            "local-gb-top-2024-8",
+            "local-gb-top-2024-9",
+            "local-gb-top-2024-10",
+            "local-gb-top-2025-4",
+            "local-gb-top-2022-17",
+            "local-pohang-slot36-ugong-sushi-namgu",
+            "local-pohang-slot36-marado-hoesikdang",
+            "local-pohang-slot36-gwasuwon-saenggogi",
+            "local-pohang-slot36-jangnyong-jangeo",
+            "local-gyeongju-slot36-sambu-sikdang",
+            "local-gyeongju-slot36-gohyang-milmyeon",
+            "local-gyeongju-slot36-hwangnam-kalguksu",
+            "local-gyeongju-slot36-seasoning",
+            "local-andong-slot37-iljik",
+            "local-andong-slot37-kkachigumeong",
+            "local-andong-slot37-50year-jesabab",
+            "local-andong-slot37-yemijeong",
+            "local-andong-slot37-hwaryeon",
+            "local-andong-slot37-nongga-tteul",
+            "local-andong-slot37-memilkkot",
+            "local-andong-slot37-jebiwon",
+            "local-mungyeong-slot37-myeongseong",
+            "local-mungyeong-slot37-donghwawon",
+            "local-sangju-slot38-durak",
+            "local-sangju-slot38-sandeulga",
+            "local-sangju-slot38-jongdari-boritdan",
+            "local-sangju-slot38-gaeungung",
+            "local-sangju-slot38-godaegam",
+            "local-sangju-slot38-goryeogarden",
+            "local-gyeongbuk-slot55-andong-jinseong"
+          ],
+          "recheckCycle": 2,
+          "recheckSlot": 55
+        }
+      ],
+      "nextSlot": 56,
+      "nextRegions": [
+        "경상남도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -30243,6 +31595,7 @@
     "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349.",
     "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존.",
     "2026-11-07 1/52 같은 회차 이어하기: 충남관광 백년가게 공식 상세·주소 4곳(원조옥수사·듀팡과자점·비봉횟집·동흥대반점) 추가. 회차 누적10곳, 위치 보강0·제외0·좌표 대기58. 회원 추천 및 기존 회차 유지.",
-    "2026-11-08 00시 1/54: 광주관광 추천식당 3곳 추가, 0곳 위치보강·0곳 제외. 미확인/이월 6곳을 이름·현재주소·검색별칭·근거URL과 함께 남김. 53회차 기록 없음 보충 필요. 회원 추천 정보 불변."
+    "2026-11-08 00시 1/54: 광주관광 추천식당 3곳 추가, 0곳 위치보강·0곳 제외. 미확인/이월 6곳을 이름·현재주소·검색별칭·근거URL과 함께 남김. 53회차 기록 없음 보충 필요. 회원 추천 정보 불변.",
+    "2026-11-08 01시 1/55 경북: 안동 진성식당 공식 KTO 2025-01 소개·2026-08-24 행정 인허가 주소/전화 대조로 1곳 추가. 경북 169→170, 위치누락65→66, 제외0. 지오코딩 좌표 제외·다음 순환 이월. 1/53 전북 미기록 보존."
   ]
 }
