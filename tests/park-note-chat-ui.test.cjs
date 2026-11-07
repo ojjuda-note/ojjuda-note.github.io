@@ -150,20 +150,24 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await frame.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
  await page.screenshot({path:'/tmp/ojjuda-world-park-single-ui.png',fullPage:true});
  if(process.env.OJJUDA_COPY_PROOF_DIR)await page.screenshot({path:path.join(process.env.OJJUDA_COPY_PROOF_DIR,'park-mobile.png'),fullPage:true});
+ // Short menu visits keep the embedded app connected without showing its UI.
+ await page.evaluate(()=>{window.parkInitialFrame=document.querySelector('[data-park-app] iframe');});
  // Collections remain available in Park; the shared menu no longer lists Park shortcuts.
  for(const action of ['saved','mine','events']){
   await page.locator('.bottomnav [data-tab="my"]').click();
-  assert.equal(await iframe.count(),0,'World menu exits the current Park view');
-  assert.equal(await page.locator('[data-my-group=park],[data-park-action]').count(),0);
+  assert.equal(await iframe.count(),1,'World menu keeps the cached Park frame');
+  assert.equal(await iframe.isVisible(),false,'the cached Park is hidden outside its menu');
+  assert.equal(await page.locator('[data-my-group=park],[data-park-action]:visible').count(),0);
   await page.evaluate(action=>parkFixture.open(action),action);
   await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
+  assert.equal(await page.evaluate(()=>document.querySelector('[data-park-app] iframe')===window.parkInitialFrame),true,'returning to Park reuses the loaded iframe');
   await frame.waitForFunction(mode=>typeof feedMode!=='undefined'&&feedMode===mode,action);
   assert.equal(await frame.locator('#feed').isVisible(),true,action+': queued action opens its real collection');
   assert.equal(await frame.locator('#note-my-screen').isVisible(),false,action+': collection does not expose a second app menu');
  }
  await frame.evaluate(()=>OjjudaParkFull.navigate('menu'));
  await page.locator('.my-hub').waitFor();
- assert.equal(await iframe.count(),0,'child menu action opens the shared World menu');
+ assert.equal(await iframe.isVisible(),false,'child menu action hides the cached Park');
  await page.evaluate(()=>parkFixture.open('event-new'));await iframe.waitFor();frame=await (await iframe.elementHandle()).contentFrame();
  await frame.locator('#composer-backdrop').waitFor({state:'visible'});
  assert.equal(await frame.evaluate(()=>kind),'event','World menu opens the complete event composer');
@@ -216,7 +220,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  await page.evaluate(()=>parkFixture.user('another-user'));
  await page.waitForFunction(()=>document.querySelector('[data-park-app] iframe').contentWindow.fixtureToken===undefined);
  await page.evaluate(()=>parkFixture.enter('arcade'));
- assert.equal(await page.locator('[data-park-app]').count(),0,'leaving removes the old account app');
+ assert.equal(await page.locator('[data-park-app]:visible').count(),0,'leaving hides the old account app');
  assert.equal(await page.locator('#plog,#pmsg,[data-act="pl-send"],[data-act="pl-react"]').count(),0,'returning to Arcade does not restore public chat');
  assert.equal(await page.locator('.arcade-social').count(),1,'the room section remains available');
  // Exercise the real child -> postMessage -> parent navigation path.
@@ -225,7 +229,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  assert.equal(await frame.evaluate(()=>OjjudaParkFull.embedded),true);
  await frame.evaluate(()=>OjjudaParkFull.navigate('library'));
  await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
- assert.equal(await iframe.count(),0,'a retired Park library message returns to the arcade');
+ assert.equal(await iframe.isVisible(),false,'a retired Park library message returns to the arcade');
  // Embedded feed gestures follow Park's position in the main menu.
  await page.evaluate(()=>parkFixture.enter('park'));await iframe.waitFor();
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
@@ -237,15 +241,15 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
  };
  await dragPark(-150);
  await page.waitForFunction(()=>parkFixture.state.tab==='my');
- assert.equal(await iframe.count(),0,'a left swipe from Park reaches the main menu');
+ assert.equal(await iframe.isVisible(),false,'a left swipe from Park reaches the main menu');
  await page.locator('.bottomnav [data-tab="park"]').click();await iframe.waitFor();
  frame=await (await iframe.elementHandle()).contentFrame();await frame.waitForFunction(()=>window.OjjudaParkFull?.navigate);
  await frame.evaluate(()=>{populateParkFixture();window.scrollTo({top:0,behavior:'instant'});});
  assert.equal(await page.locator('.bottomnav [aria-current="page"]').getAttribute('data-tab'),'park');
  await dragPark(150);
  await page.waitForFunction(()=>parkFixture.state.tab==='place'&&parkFixture.state.place?.id==='arcade');
- assert.equal(await iframe.count(),0,'a right swipe from Park reaches the arcade');
+ assert.equal(await iframe.isVisible(),false,'a right swipe from Park reaches the arcade');
  assert.deepEqual(errors,[]);
- console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, full Park editor and World-menu collections, queued navigation, account reset, sharing, responsive composer, room-only Arcade, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
+ console.log('PASS: real Park feed swipes and postMessage library navigation, single World chrome/scroller, cached Park frame on menu reentry, account reset, sharing, responsive composer, room-only Arcade, pending inquiry/charge navigation guards, and preserved drafts/scroll across render/back/leave');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

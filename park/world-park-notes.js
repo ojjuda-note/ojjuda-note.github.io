@@ -7,6 +7,10 @@
   }
   window.OjjudaParkNotes = {menuMarkup,install(app) {
     let frame=null,panel=null,owner=null,routed=false,initial=true,pending=null,overlayOpen=false,cardOpen=false,stopFrameNavigation=()=>{};
+    let cacheTimer=null,frameVisible=false;
+    // Short menu visits should not parse the entire Park app again. Retire an
+    // inactive iframe so its feed, scripts and connections do not live forever.
+    const cacheLifetime=60_000;
     const active=()=>app.place()?.id==='park';
     const requested=new URL(location.href).searchParams.get('place')==='park';
     const api=()=>{try{return frame?.contentWindow.OjjudaParkFull;}catch{return null;}};
@@ -16,31 +20,63 @@
     function route(){if(requested&&!routed){routed=true;app.enter();}}
     function syncFab(){const button=panel?.querySelector('.park-compose-fab');if(button)button.hidden=overlayOpen||cardOpen||frame?.dataset.view==='glasses';}
     function flush(){
-      if(!pending||!api()?.navigate)return;
+      if(!active()||!pending||!api()?.navigate)return;
       const action=pending;pending=null;api().navigate(action);
+    }
+    function stopGestures(){stopFrameNavigation();stopFrameNavigation=()=>{};}
+    function notifyVisibility(visible){
+      try{frame?.contentWindow?.postMessage({type:'ojjuda:park-visibility',visible},location.origin);}catch{}
+    }
+    function setVisible(visible){
+      if(frameVisible===visible)return;
+      frameVisible=visible;notifyVisibility(visible);
+    }
+    function clearRetirement(){if(cacheTimer!==null){clearTimeout(cacheTimer);cacheTimer=null;}}
+    function retire(){
+      cacheTimer=null;
+      if(active()||!panel?.hidden)return;
+      stopGestures();panel.remove();frame=panel=null;owner=null;frameVisible=false;overlayOpen=cardOpen=false;
+    }
+    function forget(){
+      clearRetirement();stopGestures();frame=panel=null;owner=null;frameVisible=false;overlayOpen=cardOpen=false;
     }
     function sync(){
       const next=document.querySelector('[data-park-app]');
       document.documentElement.classList.toggle('world-park-active',active()&&!!next);
-      if(!active()||!next){stopFrameNavigation();stopFrameNavigation=()=>{};frame=panel=null;owner=null;overlayOpen=false;cardOpen=false;return;}
-      if(frame?.isConnected&&panel===next&&owner===app.userId()){syncFab();flush();return;}
-      stopFrameNavigation();stopFrameNavigation=()=>{};
+      if(!active()||!next){
+        if(frame?.isConnected&&panel===next&&owner===app.userId()){
+          panel.hidden=true;panel.setAttribute('aria-hidden','true');
+          stopGestures();setVisible(false);
+          if(cacheTimer===null)cacheTimer=setTimeout(retire,cacheLifetime);
+          return;
+        }
+        forget();return;
+      }
+      if(frame?.isConnected&&panel===next&&owner===app.userId()){
+        const wasHidden=panel.hidden;
+        clearRetirement();panel.hidden=false;panel.removeAttribute('aria-hidden');
+        if(wasHidden){stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});}
+        setVisible(true);syncFab();flush();return;
+      }
+      forget();
       panel=next;owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
       const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261103-member-restaurants1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
+      frameVisible=true;
       panel.querySelector('[data-park-app-slot]').replaceChildren(frame);syncFab();
       const currentFrame=frame;
       frame.addEventListener('load',()=>{
         if(frame!==currentFrame||!frame?.isConnected)return;
-        stopFrameNavigation();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
         try{frame.dataset.view=frame.contentWindow.location.pathname.endsWith('/glasses.html')?'glasses':'cards';}catch{}
-        cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
+        if(!active()||panel.hidden){notifyVisibility(false);return;}
+        stopGestures();stopFrameNavigation=app.onFrameReady?.(frame)||(()=>{});
+        notifyVisibility(true);cardOpen=api()?.cardOpen?.()===true;syncFab();flush();
       });
     }
-    function canLeave(){try{return frame?.contentWindow.canCloseParkNote?.()!==false;}catch{return true;}}
-    function close(){try{if(api()?.back?.())return true;}catch{}return false;}
+    function canLeave(){if(!active())return true;try{return frame?.contentWindow.canCloseParkNote?.()!==false;}catch{return true;}}
+    function close(){if(!active())return false;try{if(api()?.back?.())return true;}catch{}return false;}
     function open(action='feed'){
       if(!actions.has(action))return;
       pending=action;
@@ -50,15 +86,20 @@
     }
     function refreshBalance(){api()?.refreshBalance?.();}
     function preserveShell(markup){
-      if(!active()||!frame?.isConnected||owner!==app.userId())return false;
+      if(!frame?.isConnected||owner!==app.userId())return false;
       const appNode=document.getElementById('app'),main=panel.parentElement;
       const template=document.createElement('template');template.innerHTML=markup;
       const nextPanel=template.content.querySelector('[data-park-app]'),nextMain=template.content.querySelector('main.main');
-      if(!nextPanel||!nextMain||!main?.matches('main.main'))return false;
+      if((active()&&!nextPanel)||!nextMain||!main?.matches('main.main'))return false;
       for(const selector of ['.side','.topbar','.bottomnav']){const old=appNode.querySelector(selector),next=template.content.querySelector(selector);if(old&&next)old.replaceWith(next);}
-      // Do not disconnect the card app while badges/balance/World menus repaint.
+      // Keep the iframe connected (reparenting it would reload the document).
+      // Rebuild the surrounding menu, but leave the Park panel in its place.
       for(const child of [...main.childNodes])if(child!==panel)child.remove();
-      for(const child of [...nextMain.childNodes])if(!child.matches?.('[data-park-app]'))main.insertBefore(child,panel);
+      let afterPanel=false;
+      for(const child of [...nextMain.childNodes]){
+        if(child.matches?.('[data-park-app]')){afterPanel=true;continue;}
+        if(afterPanel)main.append(child);else main.insertBefore(child,panel);
+      }
       return true;
     }
     document.addEventListener('click',event=>{
@@ -81,6 +122,6 @@
       }
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);
     });
-    return {refresh:()=>api()?.refresh?.()??false,markup,sync,route,canLeave,close,open,refreshBalance,preserveShell,requested};
+    return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,preserveShell,requested};
   }};
 })();
