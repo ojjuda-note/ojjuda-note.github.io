@@ -218,7 +218,7 @@ for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [[
   near(f.state().speed,initial,'advancing through stages never carries speed increases forward');
   for(let i=0;i<8;i++)f.catchItem(f.hit('fast'));
   near(f.state().speed,552,'within-stage speed can still reach the higher cap');
-  const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
+  const s=f.state();Object.assign(s.balls[0],{x:s.paddle.x+s.paddle.w/2,y:468,vx:0,vy:s.speed});f.game.update(.05);
   assert.ok(s.balls[0].vy<0&&s.balls[0].y<490,'the fastest ball cannot skip the paddle during a long frame');
 }
 {
