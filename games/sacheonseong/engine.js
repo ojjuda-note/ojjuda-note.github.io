@@ -1,7 +1,9 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 4, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 5, FACE_COUNT = 350;
+  // Each upper tile sits across the four tile centers directly below it.
+  const LAYER_OFFSET = .5;
   // Reserve roughly one seventh of all tiles for picture pairs; the rest
   // appear four times. At the inventory ceiling, fall back to four copies.
   function mixPlan(total) {
@@ -32,13 +34,20 @@
     stageInfo(stage);
     return stage<6?1:stage<11?2:stage<16?3:stage<26?4:stage<41?5:stage<71?6:stage<111?7:8;
   };
-  // Each layer is a real board with a different outline. Lower layers remain
-  // blocked until the exposed layer is cleared, so matching never crosses floors.
+  // Each layer keeps its own outline and pairs. A lower tile can be selected
+  // whenever none of the still-present upper tiles overlaps its face.
   function stackInfo(stage, columns) {
     const base=stageInfo(stage),count=layerCount(stage);
     if(stage<=2){const info=boardInfo(stage,columns??base.size);return {...info,layerCount:1,floors:[{total:info.total,...mixPlan(info.total)}]};}
-    const floorPairs=Math.floor(base.total/2/count),extras=base.total/2%count;
-    const targets=Array.from({length:count},(_,i)=>(floorPairs+(i<extras?1:0))*2);
+    // Alternate top-heavy and bottom-heavy stacks, rather than imposing a
+    // fixed number of tiles per floor. Each share remains a whole pair.
+    const weights=Array.from({length:count},(_,i)=>1+.28*Math.sin(stage*1.7+i*2.6)+.2*Math.cos(stage*.53-i*.83));
+    const totalWeight=weights.reduce((a,b)=>a+b,0),pairTotal=base.total/2;
+    const shares=weights.map(weight=>pairTotal*weight/totalWeight),pairs=shares.map(Math.floor);
+    const extraPairs=pairTotal-pairs.reduce((a,b)=>a+b,0);
+    const order=shares.map((share,i)=>({i,fraction:share-pairs[i]})).sort((a,b)=>b.fraction-a.fraction||a.i-b.i);
+    for(let i=0;i<extraPairs;i++)pairs[order[i].i]++;
+    const targets=pairs.map(value=>value*2);
     const biggest=Math.max(...targets),cols=columns??Math.ceil(Math.sqrt(biggest/.66));
     if(!Number.isInteger(cols)||cols<2||cols>base.total)throw new RangeError('Invalid stack columns');
     const rows=Math.max(3,Math.ceil(biggest/(cols*.66)));
@@ -111,6 +120,38 @@
     for (const cells of groups.values()) for (let i=0;i<cells.length;i++) for (let j=i+1;j<cells.length;j++) {
       const route = path(grid,cells[i],cells[j]);
       if (route) return {a:cells[i],b:cells[j],path:route};
+    }
+    return null;
+  }
+
+  function isExposed(grids, point) {
+    const layer=point?.layer, r=point?.r, c=point?.c;
+    if(!Number.isInteger(layer)||layer<0||layer>=grids.length||!Number.isInteger(r)||!Number.isInteger(c)||grids[layer]?.[r]?.[c]===undefined||grids[layer][r][c]===EMPTY)return false;
+    for(let above=0;above<layer;above++){
+      const grid=grids[above],shift=(layer-above)*LAYER_OFFSET;
+      const centerR=r+shift,centerC=c+shift;
+      for(let ar=Math.floor(centerR);ar<=Math.ceil(centerR);ar++){
+        for(let ac=Math.floor(centerC);ac<=Math.ceil(centerC);ac++){
+          if(Math.abs(ar-centerR)<1&&Math.abs(ac-centerC)<1&&grid[ar]?.[ac]!==undefined&&grid[ar][ac]!==EMPTY)return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function exposedMoves(grids) {
+    for(let layer=0;layer<grids.length;layer++){
+      const grid=grids[layer],groups=new Map();
+      for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++){
+        const value=grid[r][c];
+        if(value===EMPTY||!isExposed(grids,{layer,r,c}))continue;
+        if(!groups.has(value))groups.set(value,[]);
+        groups.get(value).push({layer,r,c});
+      }
+      for(const cells of groups.values())for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+        const route=path(grid,cells[i],cells[j]);
+        if(route)return {a:cells[i],b:cells[j],path:route};
+      }
     }
     return null;
   }
@@ -216,7 +257,7 @@
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,moves,generate,generateStack,reshuffle,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

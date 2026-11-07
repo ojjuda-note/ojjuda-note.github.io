@@ -40,7 +40,7 @@ async function layout(page){
    active:state.grid.flat().filter(v=>v!==-1).length,total:grids.flat(2).filter(v=>v!==-1).length,
    gaps:state.grid.flat().filter(v=>v===-1).length,faceCounts:[...faceCounts.values()],
    validFaces:grids.flat(2).every(v=>v===-1||(Number.isInteger(v)&&!!window.GardenFaces[v])),
-   lower:document.querySelectorAll('.board-underlay').length,buttons:document.querySelectorAll('.tile').length,
+   visibleFloors:document.querySelectorAll('.tile-layer').length,buttons:document.querySelectorAll('.tile').length,
    remaining:document.getElementById('remaining').textContent.match(/\d+/g).map(Number),
    canvas:rect(canvas),viewport:rect(viewport),tile:rect(document.querySelector('.tile:not(.empty)')),
    controls:[...document.querySelectorAll('.topbar,.game-hud,.game-actions,.game-actions button')].map(rect),
@@ -56,7 +56,7 @@ function assertFits(value,label){
  assert(value.scrollWidth<=value.width+1&&value.scrollHeight<=value.height+1,`${label}: no page overflow`);
  for(const box of value.controls)assert(box.x>=-.75&&box.y>=-.75&&box.x+box.width<=value.width+.75&&box.y+box.height<=value.height+.75,`${label}: controls remain visible`);
 }
-const tileSelector=p=>`.tile[data-r="${p.r}"][data-c="${p.c}"]`;
+const tileSelector=p=>`.tile[data-layer="${p.layer}"][data-r="${p.r}"][data-c="${p.c}"]`;
 async function screenshot(page,name){
  if(!process.env.SACHEONSEONG_QA_DIR)return;
  fs.mkdirSync(process.env.SACHEONSEONG_QA_DIR,{recursive:true});
@@ -75,16 +75,17 @@ async function screenshot(page,name){
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
       assertFits(value,label);
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
-      assert.equal(value.lower,E.layerCount(stage)-1,`${label}: lower-floor shadow cards`);
+      assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
+      assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);
       assert.equal(value.total,E.stageInfo(stage).total,`${label}: combined floor count`);
       assert.deepEqual(value.remaining,[value.total,value.total],`${label}: HUD includes all layers`);
       assert(value.gaps>0&&value.buttons>value.active,`${label}: varied silhouette has empty spaces`);
       assert(value.validFaces,`${label}: symbols all exist`);
       assert(value.faceCounts.includes(2)&&value.faceCounts.includes(4)&&value.faceCounts.every(n=>n===2||n===4),`${label}: two- and four-copy faces mixed`);
       assert(value.tile.width>=1,`${label}: visible interactive tiles`);
-      const last=await page.evaluate(()=>{const tile=[...document.querySelectorAll('.tile:not(.empty)')].at(-1);return{r:Number(tile.dataset.r),c:Number(tile.dataset.c)};});
+      const last=await page.evaluate(()=>{const tile=[...document.querySelectorAll('.tile:not(:disabled)')].at(-1);return{layer:Number(tile.dataset.layer),r:Number(tile.dataset.r),c:Number(tile.dataset.c)};});
       const lastTile=page.locator(tileSelector(last));await lastTile.focus();await page.keyboard.press('ArrowRight');
-      assert.equal(await lastTile.evaluate(el=>el===document.activeElement),true,`${label}: keyboard stays within the row`);
+      assert.equal(await page.evaluate(()=>document.activeElement?.classList.contains('tile')&&!document.activeElement.disabled),true,`${label}: keyboard stays on an uncovered face`);
       await page.locator('#all-stages').click();
       assert.equal(await page.locator('.stage-card').count(),200,`${label}: 200 stage cards`);
       for(const number of [6,12,18])assert.match(await page.locator(`.stage-card[data-stage="${number}"]`).getAttribute('aria-label'),new RegExp(`${E.layerCount(number)}층`));
@@ -99,7 +100,7 @@ async function screenshot(page,name){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
-   const move=await page.evaluate(()=>window.TileGarden.moves(JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')).grid));
+   const move=await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return window.TileGarden.exposedMoves([state.grid,...state.upcoming]);});
    const before=await snapshot(page);await page.locator(tileSelector(move.a)).tap();await page.locator(tileSelector(move.b)).tap();
    await page.waitForFunction(before=>JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')).grid.flat().filter(v=>v!==-1).length===before-2,before.state.grid.flat().filter(v=>v!==-1).length);
    assert.equal((await layout(page)).total,E.stageInfo(7).total-2,'touch removes one pair across a layered stage');
