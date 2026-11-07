@@ -1,7 +1,7 @@
 import './rules.js?v=20261106-solitaire-ranking1';
 import {SUITS,red,copy,createGame,getPile,canMove,move,draw,isWon,canFinish,legalMoves,suggest,validateState,visibleWasteCount,restoreWastePackets} from './engine.js?v=20261106-solitaire-ranking1';
 import {cardFace,CARD_RATIO} from './cards.js?v=20261106-solitaire-images1';
-import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261106-solitaire-ranking1';
+import {gestureSource,HOLD_DELAY} from './gestures.js?v=20261107-solitaire-hold250-1';
 import {playWinAnimation} from './celebration.js?v=20261106-solitaire-images1';
 import {overlappingTarget} from './drop-targets.js?v=20261106-solitaire-ranking1';
 import {createViewport} from './viewport.js?v=20261106-solitaire-ranking1';
@@ -252,7 +252,7 @@ function startNewGame(drawCount=state.drawCount){
 }
 function help(){
   if(locked)return;
-  openDialog('<div class="dialog-icon">♣</div><div class="dialog-kicker">HOW TO PLAY</div><h2 class="dialog-title">한 장씩, 차근차근</h2><ol class="rules"><li>위쪽 미션칸 네 곳에 <strong>같은 무늬끼리 A부터 K까지</strong> 모으면 완성이에요.</li><li>아래 줄은 <strong>빨강·검정을 번갈아, 큰 숫자부터</strong> 놓아요. 순서가 맞는 카드 묶음도 함께 옮길 수 있어요.</li><li><strong>빈 줄에는 K</strong> 또는 K로 시작하는 묶음만 놓을 수 있어요.</li><li>왼쪽 더미를 누르면 <strong>초보는 1장, 보통은 3장</strong>씩 공개돼요. 다 뽑으면 <strong>↻</strong>로 다시 돌릴 수 있어요.</li><li><strong>바로 끌면 맨 위 한 장</strong>, <strong>0.5초 누른 뒤 끌면 연결된 묶음</strong>을 옮겨요. 중간 카드를 길게 누르면 그 카드부터 선택돼요.</li><li>카드를 <strong>두 번 터치하면 미션칸으로 자동 이동</strong>해요. 선택 후 목적지를 눌러 옮길 수도 있어요.</li><li>옮기는 카드가 목적지 카드에 닿으면 놓을 수 있어요. <strong>두 손가락으로 확대·축소와 화면 이동</strong>이 가능해요. 아래 % 버튼을 누르면 화면에 다시 맞춰요.</li></ol><div class="rules-example">♠ K &nbsp; <span class="r">♥ Q</span> &nbsp; ♣ J &nbsp; <span class="r">♦ 10</span></div><div class="dialog-buttons"><button class="primary" data-close>알겠어요</button></div>');
+  openDialog('<div class="dialog-icon">♣</div><div class="dialog-kicker">HOW TO PLAY</div><h2 class="dialog-title">한 장씩, 차근차근</h2><ol class="rules"><li>위쪽 미션칸 네 곳에 <strong>같은 무늬끼리 A부터 K까지</strong> 모으면 완성이에요.</li><li>아래 줄은 <strong>빨강·검정을 번갈아, 큰 숫자부터</strong> 놓아요. 순서가 맞는 카드 묶음도 함께 옮길 수 있어요.</li><li><strong>빈 줄에는 K</strong> 또는 K로 시작하는 묶음만 놓을 수 있어요.</li><li>왼쪽 더미를 누르면 <strong>초보는 1장, 보통은 3장</strong>씩 공개돼요. 다 뽑으면 <strong>↻</strong>로 다시 돌릴 수 있어요.</li><li><strong>바로 끌면 맨 위 한 장</strong>, <strong>0.25초 누른 뒤 끌면 연결된 묶음</strong>을 옮겨요. 중간 카드를 길게 누르면 그 카드부터 선택돼요.</li><li>카드를 <strong>두 번 터치하면 미션칸으로 자동 이동</strong>해요. 선택 후 목적지를 눌러 옮길 수도 있어요.</li><li>옮기는 카드가 목적지 카드에 닿으면 놓을 수 있어요. <strong>두 손가락으로 확대·축소와 화면 이동</strong>이 가능해요. 아래 % 버튼을 누르면 화면에 다시 맞춰요.</li></ol><div class="rules-example">♠ K &nbsp; <span class="r">♥ Q</span> &nbsp; ♣ J &nbsp; <span class="r">♦ 10</span></div><div class="dialog-buttons"><button class="primary" data-close>알겠어요</button></div>');
 }
 function pause(){if(locked||isWon(state))return;openDialog('<div class="dialog-icon">Ⅱ</div><div class="dialog-kicker">TAKE YOUR TIME</div><h2 class="dialog-title">잠깐 쉬어 가요</h2><p class="dialog-text">카드도 시간도 잠시 멈췄어요.<br>준비되면 이어서 즐겨 주세요.</p><div class="dialog-buttons"><button class="primary" data-close>게임 계속하기</button></div>');save();}
 function win(){

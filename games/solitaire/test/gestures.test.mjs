@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gestureSource} from '../gestures.js';
+import {gestureSource,HOLD_DELAY} from '../gestures.js';
 import {move,canMove,draw,createGame} from '../engine.js';
 const card=(suit,rank,up=true)=>({id:`${suit}-${rank}`,suit,rank,up});
 const fixture=()=>({tableau:[[card('clubs',8,false),card('spades',13),card('hearts',12),card('clubs',11)],[card('diamonds',12)],[],[],[],[],[]],foundations:[[],[],[],[]],waste:[],stock:[],moves:0,score:0,drawCount:1});
+test('long-press gesture starts after a quarter of a second',()=>{
+  assert.equal(HOLD_DELAY,250);
+});
 test('a quick gesture moves only the top card even when touching an exposed lower card',()=>{
   const s=fixture(),source=gestureSource(s,{type:'tableau',col:0,index:1});
   assert.equal(source.index,3);assert.ok(move(s,source,{type:'tableau',col:1}));assert.equal(s.tableau[0].length,3);assert.equal(s.tableau[1].length,2);

@@ -1,5 +1,5 @@
 import {getPile,validSequence} from './engine.js?v=5';
-export const HOLD_DELAY=500;
+export const HOLD_DELAY=250;
 export function gestureSource(state,touched,grouped=false){
   const pile=getPile(state,touched);
   if(!pile?.length)return null;
