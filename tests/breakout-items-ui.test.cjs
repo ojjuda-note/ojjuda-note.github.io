@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..');
-const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed,baseSpeed});
+const engine=fs.readFileSync(path.join(root,'games/breakout/breakout-game.js'),'utf8').replace('    return game;',`    game.inspect=()=>({balls,bricks,drops,paddle,waiting,finished,completed,lives,score,level,speed});
     return game;`);
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,s=>(s.includes('/shared/games/world-game-assets.js')||s.includes('/shared/games/game-entry.js')||s.includes('/shared/games/game-results.js'))?s:'')
@@ -199,7 +199,7 @@ g.tab='friends';H();
    const continuedSecond=await snapshot();
    assert.deepEqual([continuedSecond.stage,continuedSecond.bricks,continuedSecond.score,continuedSecond.lives,continuedSecond.balls,continuedSecond.waiting,continuedSecond.cleared,continuedSecond.running,continuedSecond.drops,continuedSecond.piercing],[2,24,clearedFirst.score,2,1,true,false,true,0,false]);
    assert.equal(continuedSecond.paddleWidth,80,'next stage clears the paddle-size pickups');
-   assert.equal(continuedSecond.speed,await page.evaluate(()=>breakoutTest.current.game.inspect().baseSpeed),'next stage clears speed pickups while preserving normal progression');
+   assert.equal(continuedSecond.speed,280,'next stage clears prior acceleration and speed pickups, returning to base speed');
    assert.equal(await page.evaluate(()=>breakoutTest.current.game===window.firstBreakoutRun),true,'next uses the same run');
    assert.equal(await savedStage(),'2');assert.equal(await choices.count(),0);checks++;
    await page.evaluate(()=>breakoutTest.finishStage());await assertChoices(2);const clearedSecond=await snapshot();
