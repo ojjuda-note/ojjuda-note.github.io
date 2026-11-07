@@ -69,6 +69,19 @@
         "method": "published-official-tourism-coordinate-exact-name-address",
         "checkedAt": "2026-11-07"
       }
+    },
+    {
+      "id": "local-jeju-57",
+      "expectedName": "진주식당",
+      "expectedAddress": "제주특별자치도 서귀포시 태평로 353",
+      "lat": 33.2466426,
+      "lng": 126.5591353,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
     }
   ]
 }
