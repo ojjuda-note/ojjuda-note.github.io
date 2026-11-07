@@ -1511,22 +1511,22 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3295,
+    "uniqueRestaurants": 3300,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2564,
+      "local-guide": 2569,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2243,
+    "coordinatesMissing": 2248,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
       "충북": 223,
       "충남": 74,
       "울산": 36,
-      "경남": 320,
+      "경남": 325,
       "강원": 66,
       "전북": 215,
       "경기": 402,
@@ -1540,13 +1540,13 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1956,
+      "한식": 1959,
       "중식": 137,
       "일식": 139,
       "기타": 582,
       "양식": 213,
       "분식": 31,
-      "디저트": 237
+      "디저트": 239
     }
   },
   "coordinateEnrichment": {
@@ -13640,53 +13640,123 @@
         "주소를 지오코딩한 좌표는 근거 불충분으로 null 처리. 기존 ID와 회원 추천 유지.",
         "기존 시별 36~38회차 공식 등록 24곳과 중복 검사, 전북 53회차 결손 이월 유지."
       ]
+    },
+    {
+      "id": "2026-11-08-gyeongnam-slot56-five-kto-listings",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 56,
+      "previousCoverage": {
+        "uniqueRestaurants": 3295,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2564,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2243,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1956,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 213,
+          "분식": 31,
+          "디저트": 237
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3300,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2569,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2248,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1959,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 213,
+          "분식": 31,
+          "디저트": 239
+        }
+      },
+      "newRestaurantCount": 5,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gyeongnam-slot56-haman-27c-bakery",
+        "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+        "local-gyeongnam-slot56-geoje-papyeongok-main",
+        "local-gyeongnam-slot56-changwon-goryeodang",
+        "local-gyeongnam-slot56-hapcheon-daesik-hanwoo"
+      ],
+      "sourceUrls": [
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+        "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeongnam-slot56.json",
+      "scope": "경남 관광공사 공식 소개 4곳(함안·의령·거제·창원), 디지털 관광주민증 제휴 합천 1곳. 이름·지점·공개 도로명주소 개별 확인, 경남 전체 전수 아님.",
+      "notes": [
+        "KTO 상세 페이지 2025·2026 수정일은 선정연도로 사용하지 않음. 정규 미쉐린/블루리본 등급 부여하지 않음.",
+        "독립적으로 확인한 수치 위경도가 없어 신규 5곳 모두 좌표 null, 현재영업 여부 별도 미확정.",
+        "경남 기존 320곳 중 위치누락 51곳과 신규 5곳 총 56곳 후속 재검증. 제휴·관광 소개와 회원 추천은 분리."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-gyeongbuk-slot55-andong-kto-jinseong",
+    "id": "2026-11-08-gyeongnam-slot56-five-kto-listings",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 55,
+    "slot": 56,
     "previousCoverage": {
-      "uniqueRestaurants": 3294,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2563,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2242,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 223,
-        "충남": 74,
-        "울산": 36,
-        "경남": 320,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1956,
-        "중식": 137,
-        "일식": 139,
-        "기타": 582,
-        "양식": 212,
-        "분식": 31,
-        "디저트": 237
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3295,
       "providerCounts": {
         "michelin": 237,
@@ -13725,24 +13795,69 @@
         "디저트": 237
       }
     },
-    "newRestaurantCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3300,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2569,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2248,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 74,
+        "울산": 36,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1959,
+        "중식": 137,
+        "일식": 139,
+        "기타": 582,
+        "양식": 213,
+        "분식": 31,
+        "디저트": 239
+      }
+    },
+    "newRestaurantCount": 5,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gyeongbuk-slot55-andong-jinseong"
+      "local-gyeongnam-slot56-haman-27c-bakery",
+      "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+      "local-gyeongnam-slot56-geoje-papyeongok-main",
+      "local-gyeongnam-slot56-changwon-goryeodang",
+      "local-gyeongnam-slot56-hapcheon-daesik-hanwoo"
     ],
     "sourceUrls": [
-      "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=2ea46df5-fd65-4e7e-863c-b825659c973c",
-      "https://place.clariosync.com/p/733695/%EC%A7%84%EC%84%B1%EC%8B%9D%EB%8B%B9",
-      "https://www.gb.go.kr/Main/finace/page.do?mnu_uid=15699"
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot55.json",
-    "scope": "경북 169곳 중 위치 누락 65곳 추적·안동 KTO 관광 소개 진성식당 1곳의 상호/전화/도로명주소 확인. 현재영업·정규선정/전체명단은 미확정.",
+    "sourceSupplement": "games/certified-restaurants/official-gyeongnam-slot56.json",
+    "scope": "경남 관광공사 공식 소개 4곳(함안·의령·거제·창원), 디지털 관광주민증 제휴 합천 1곳. 이름·지점·공개 도로명주소 개별 확인, 경남 전체 전수 아님.",
     "notes": [
-      "KTO의 2025-01은 기사 갱신 시점이지 선정 연도 아님.",
-      "주소를 지오코딩한 좌표는 근거 불충분으로 null 처리. 기존 ID와 회원 추천 유지.",
-      "기존 시별 36~38회차 공식 등록 24곳과 중복 검사, 전북 53회차 결손 이월 유지."
+      "KTO 상세 페이지 2025·2026 수정일은 선정연도로 사용하지 않음. 정규 미쉐린/블루리본 등급 부여하지 않음.",
+      "독립적으로 확인한 수치 위경도가 없어 신규 5곳 모두 좌표 null, 현재영업 여부 별도 미확정.",
+      "경남 기존 320곳 중 위치누락 51곳과 신규 5곳 총 56곳 후속 재검증. 제휴·관광 소개와 회원 추천은 분리."
     ]
   },
   "latestMapCoverageAudit": {
@@ -22170,5 +22285,27 @@
     "selectionYearVerified": false,
     "currentOperatingStatusVerified": false,
     "notes": "경북 169→170, 위치 미등록 65→66. KTO 관광소개·공개 인허가 주소만 검증, 블루리본 등급 추정 없음."
+  },
+  "gyeongnamSlot56": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 56,
+    "sourceFile": "games/certified-restaurants/official-gyeongnam-slot56.json",
+    "sourceUrls": [
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
+    ],
+    "addedCount": 5,
+    "modifiedCount": 0,
+    "coordinatesAdded": 0,
+    "excludedCount": 0,
+    "pendingLocations": 56,
+    "completeProvincialVerification": false,
+    "officialBlueRibbonSelectionVerified": false,
+    "currentOperatingStatusVerified": false,
+    "notes": "한국관광공사 관광 음식점 소개/제휴자료 5곳만 추가. 시군 18개 지역 좌표누락 기존51+추가5 재확인 대기, 개인위치 및 임의좌표 사용하지 않음."
   }
 }

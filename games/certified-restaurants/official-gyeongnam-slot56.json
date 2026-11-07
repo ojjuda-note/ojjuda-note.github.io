@@ -1,0 +1,167 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 56,
+  "sourceName": "한국관광공사 열린관광 · 대한민국 구석구석 디지털 관광주민증",
+  "sourceUrls": [
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
+  ],
+  "sourceScope": "경남 공식 공개 관광 음식점 소개 4곳과 관광주민증 제휴업소 1곳만 개별 확인; 경남 전체 식당/블루리본 전수 검증 아님.",
+  "completeRegionalCollection": false,
+  "currentOperatingStatusChecked": false,
+  "coordinatePolicy": "상호·지점·현재 주소에 직접 귀속된 공개 수치좌표가 없으므로 null 유지. 일반 주소 지오코딩 금지.",
+  "restaurants": [
+    {
+      "id": "local-gyeongnam-slot56-haman-27c-bakery",
+      "name": "27도씨제빵소",
+      "category": "디저트",
+      "region": "경남",
+      "district": "함안군",
+      "address": "경상남도 함안군 산인면 모곡5길 19-59",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "빵",
+        "커피"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+          "sourceName": "한국관광공사 열린관광 음식점 소개",
+          "sourceAsOf": "2026-08-31",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 공식 음식점 소개의 현재 공개 수록 사실. 페이지 수정일은 선정연도가 아님. 현 영업·블루리본/미쉐린 선정과 별개."
+        }
+      ],
+      "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
+      "name": "금오암소한마당",
+      "category": "한식",
+      "region": "경남",
+      "district": "의령군",
+      "address": "경상남도 의령군 대의로 53-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이",
+        "육회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+          "sourceName": "한국관광공사 열린관광 음식점 소개",
+          "sourceAsOf": "2025-11-06",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 공식 음식점 소개의 현재 공개 수록 사실. 페이지 수정일은 선정연도가 아님. 현 영업·블루리본/미쉐린 선정과 별개."
+        }
+      ],
+      "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeongnam-slot56-geoje-papyeongok-main",
+      "name": "파평옥 본점",
+      "category": "한식",
+      "region": "경남",
+      "district": "거제시",
+      "address": "경상남도 거제시 아주1로 31 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해장국",
+        "곱창전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+          "sourceName": "한국관광공사 열린관광 음식점 소개",
+          "sourceAsOf": "2026-07-20",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 공식 음식점 소개의 현재 공개 수록 사실. 페이지 수정일은 선정연도가 아님. 현 영업·블루리본/미쉐린 선정과 별개."
+        }
+      ],
+      "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeongnam-slot56-changwon-goryeodang",
+      "name": "고려당",
+      "category": "디저트",
+      "region": "경남",
+      "district": "창원시 마산합포구",
+      "address": "경상남도 창원시 마산합포구 동서북10길 68",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꿀빵",
+        "파이만주"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+          "sourceName": "한국관광공사 열린관광 음식점 소개",
+          "sourceAsOf": "2026-10-08",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 공식 음식점 소개의 현재 공개 수록 사실. 페이지 수정일은 선정연도가 아님. 현 영업·블루리본/미쉐린 선정과 별개."
+        }
+      ],
+      "addressSourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeongnam-slot56-hapcheon-daesik-hanwoo",
+      "name": "대식한우명가",
+      "category": "한식",
+      "region": "경남",
+      "district": "합천군",
+      "address": "경상남도 합천군 용주면 합천호수로 873",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002",
+          "sourceName": "한국관광공사 디지털 관광주민증 제휴 음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_partner_listing",
+          "selectionCriteria": "한국관광공사 공식 관광주민증 가맹 음식점 공개 정보. 최신 협약/영업 여부 및 정규 블루리본·미쉐린 선정은 별도 검증 필요."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}
