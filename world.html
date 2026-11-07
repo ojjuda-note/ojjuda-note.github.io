@@ -28,7 +28,7 @@
 <script src="/admin/world-admin-loader.js?v=20261107-suspended1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
-<script src="/shared/games/world-game-assets.js?v=20261107-restaurants-slot44-1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261107-screw-box-touch1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
@@ -1439,7 +1439,7 @@ function El(){
  return pending;
 }
 window.addEventListener('pagehide',()=>{void El();});
-var Cl=t=>{let e=R.cv.getBoundingClientRect();return[(t.clientX-e.left)*Z/e.width,(t.clientY-e.top)*he/e.height]};function E2(t){if(!R||!R.running||!R.game)return;t.preventDefault();if(R.id==="screw"||R.id==="breakout")try{t.target.setPointerCapture(t.pointerId)}catch{}let[e,o]=Cl(t);R.ptr={x:e,y:o},R.game.onDown&&R.game.onDown(e,o,...(R.id==="screw"?[t.pointerId]:[]))}function A2(t){if(!R||!R.running||!R.game||!R.game.onMove)return;let[e,o]=Cl(t);R.game.onMove(e,o,...(R.id==="screw"?[t.pointerId]:[]))}function C2(t){if(!R||!R.running||!R.game)return;if(R.id==="screw"){let[e,o]=Cl(t);R.game.onUp&&R.game.onUp(e,o,t.pointerId);R.ptr=null;return}let e=R.ptr;if(R.ptr=null,!e||!R.game.onSwipe)return;let[o,r]=Cl(t),a=o-e.x,i=r-e.y;Math.max(Math.abs(a),Math.abs(i))>22&&R.game.onSwipe(Math.abs(a)>Math.abs(i)?a>0?"R":"L":i>0?"D":"U")}function M2(t){let e=t.target.closest("[data-g]");if(!e||!R)return;let o=e.dataset.g;if(R.id==="breakout"&&o==="breakout-stage"){
+var Cl=t=>{let e=R.cv.getBoundingClientRect();return[(t.clientX-e.left)*Z/e.width,(t.clientY-e.top)*he/e.height]};function E2(t){if(!R||!R.running||!R.game)return;t.preventDefault();if(R.id==="screw"||R.id==="breakout")try{t.target.setPointerCapture(t.pointerId)}catch{}let[e,o]=Cl(t);R.ptr={x:e,y:o},R.game.onDown&&R.game.onDown(e,o,...(R.id==="screw"?[t.pointerId,t.pointerType]:[]))}function A2(t){if(!R||!R.running||!R.game||!R.game.onMove)return;let[e,o]=Cl(t);R.game.onMove(e,o,...(R.id==="screw"?[t.pointerId]:[]))}function C2(t){if(!R||!R.running||!R.game)return;if(R.id==="screw"){let[e,o]=Cl(t);R.game.onUp&&R.game.onUp(e,o,t.pointerId);R.ptr=null;return}let e=R.ptr;if(R.ptr=null,!e||!R.game.onSwipe)return;let[o,r]=Cl(t),a=o-e.x,i=r-e.y;Math.max(Math.abs(a),Math.abs(i))>22&&R.game.onSwipe(Math.abs(a)>Math.abs(i)?a>0?"R":"L":i>0?"D":"U")}function M2(t){let e=t.target.closest("[data-g]");if(!e||!R)return;let o=e.dataset.g;if(R.id==="breakout"&&o==="breakout-stage"){
  if(e.disabled||!R.ov.contains(e))return;
  const stage=Number(e.dataset.stage);
  if(!canChooseBreakoutStage(stage))return;

@@ -1315,6 +1315,7 @@ function screw3d(api,startStage) {
   const BTN = [{ x: 336, y: 406, t: '+', f: () => zoomAt(1.4, CX, CY) }, { x: 336, y: 444, t: '−', f: () => zoomAt(1 / 1.4, CX, CY) }, { x: 336, y: 482, t: '⤢', f: () => { st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; } }];
   const canvasScale = () => { const n = Number(api.getCanvasScale?.()); return Number.isFinite(n) && n > 0 ? n : 1; };
   // Keep taps comfortable on narrow displays without widening a hit across a hidden screw.
+  const touchTapSlop = () => Math.min(26, Math.max(12, 12 / canvasScale()));
   const touchRadius = () => Math.min(44, Math.max(20, 22 / Math.max(0.4, canvasScale())));
   const zoomBtn = (x, y) => {
     const reach = Math.min(45, Math.max(19, 22 / Math.max(0.4, canvasScale())));
@@ -1533,10 +1534,10 @@ function screw3d(api,startStage) {
     },
     destroy() { finishAttempt(); destroyed = true; depthRenderer.destroy();if(warmWorker)warmWorker.terminate();warmWorker=null;warmLevel=null;
       st.drag = null; st.ptrs.clear(); st.pinch = null; st.lens = null; },
-    onDown(x, y, id = 0) {
+    onDown(x, y, id = 0, pointerType = 'mouse') {
       st.ptrs.set(id, { x, y });
       if (st.ptrs.size >= 2) { const [a, b] = [...st.ptrs.values()]; st.pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, zm0: st.zm, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], pan0: st.pan.slice() }; st.drag = null; st.lensHold = false; st.lens = null; return; }   // 두 손가락: 벌려서 확대, 끌어서 이동
-      st.drag = { id, x, y, x0: x, y0: y, moved: false, t0: st.t }; if (st.lens && !st.lens.hold) st.lens = { x, y, hold: false, t: st.t };
+      st.drag = { id, x, y, x0: x, y0: y, moved: false, t0: st.t, touch: pointerType === 'touch' }; if (st.lens && !st.lens.hold) st.lens = { x, y, hold: false, t: st.t };
     },
     onMove(x, y, id = 0) {
       if (st.ptrs.has(id)) st.ptrs.set(id, { x, y });
@@ -1545,7 +1546,7 @@ function screw3d(api,startStage) {
       if (d && d.id !== id) return; // another pointer cannot rotate this camera
       if (!d) { if (y > 196) st.lens = { x, y, hold: false, t: st.t }; else st.lens = null; return; }   // 마우스를 올리면 투시 돋보기
       if (st.lensHold) { st.lens = { x, y, hold: true, t: st.t }; d.x = x; d.y = y; return; }   // 꾹 누른 채 밀면 돋보기가 따라와요
-      if (!d.moved && Math.hypot(x - d.x0, y - d.y0) > 7) { d.moved = true; st.lens = null; if (st.ms && !st.next) st.ms.turns++; }
+      if (!d.moved && Math.hypot(x - d.x0, y - d.y0) > (d.touch ? touchTapSlop() : 7)) { d.moved = true; st.lens = null; if (st.ms && !st.next) st.ms.turns++; }
       if (d.moved) { st.touched = true; st.yaw = wrapTurn(st.yaw + (x - d.x) * 0.011); st.pitch = wrapTurn(st.pitch + (y - d.y) * 0.011); } d.x = x; d.y = y;
     },
     onUp(x, y, id = 0) {
@@ -1554,7 +1555,15 @@ function screw3d(api,startStage) {
       if (st.pinch) { if (!st.ptrs.size) st.pinch = null; st.drag = null; return; }
       const d = st.drag; st.drag = null;
       if (st.lensHold) { st.lensHold = false; st.lens = null; return; }   // 꾹 누르기는 보기만 해요
-      if (d && !d.moved) { const sb = shopBtn(x, y); if (sb) { sb(); return; } const org = organizeBtn(x, y); if(org) { org(); return; } const bt = zoomBtn(x, y); if (bt) { bt(); st.touched = true; return; } tap(x, y); }
+      // A small wobble is still a tap; resolve touch targets at finger-down.
+      // Do not activate anything if the final release jumped far without move events.
+      if (d && !d.moved && Math.hypot(x - d.x0, y - d.y0) <= (d.touch ? touchTapSlop() : 7)) {
+        const px = d.touch ? d.x0 : x, py = d.touch ? d.y0 : y;
+        const sb = shopBtn(px, py); if (sb) { sb(); return; }
+        const org = organizeBtn(px, py); if (org) { org(); return; }
+        const bt = zoomBtn(px, py); if (bt) { bt(); st.touched = true; return; }
+        tap(px, py);
+      }
     },
     onCancel(id = 0) {
       // A cancelled touch must never count as a tap or trigger a ZU purchase.
@@ -1579,7 +1588,7 @@ function screw3d(api,startStage) {
       st.t += dt; if (st.msgT > 0) st.msgT -= dt; if (st.shake && (st.shake.t -= dt) <= 0) st.shake = null;
       if (st.over) { st.over -= dt; if (st.over <= 0) { ended = true; sound('lose'); api.end(st.score, {outcome:'failure'}); } return; }
       if(st.sorting>0) { st.sorting=Math.max(0,st.sorting-dt); if(st.sorting===0)completeSort(); }
-      if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > 0.3 && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
+      if (st.drag && !st.drag.moved && !st.lensHold && st.t - st.drag.t0 > (st.drag.touch ? 0.65 : 0.3) && st.drag.y0 > 196) { st.lensHold = true; st.lens = { x: st.drag.x, y: st.drag.y, hold: true, t: st.t }; if (!st.lensTold) { st.lensTold = true; say('손 댄 조각이 투명해져요 · 가려진 나사는 돌려서 빼요', 1.9); } }
       if (st.lens && !st.lens.hold && st.t - st.lens.t > 2) st.lens = null;
       // The toy rotates relative to the room. Keep physical gravity directed
       // toward the visible floor, even when the model is turned upside down.

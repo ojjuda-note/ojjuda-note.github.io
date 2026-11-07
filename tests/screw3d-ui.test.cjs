@@ -71,6 +71,28 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
         },
         covered() { return {visible:state.drawn.filter(p=>p.owner===testScrew).length, state:testScrew.state,big:state.big,pixel:[...ctx.getImageData(180,392,1,1).data]}; },
         move(x) { obstacle.dyn.c=[x,0,0.25];game.draw(ctx); },
+        mobileTouch() {
+          const reset=()=>{ fixture(); obstacle.dyn.c[0]=.8;game.draw(ctx); };
+          reset();
+          const yaw=state.yaw,pitch=state.pitch;
+          game.onDown(180,392,51,'touch');game.onMove(187,396,51);
+          state.t+=.42;game.update(.02);game.draw(ctx);
+          game.onUp(189,398,51);
+          const jitter=testScrew.state==='out'&&state.yaw===yaw&&state.pitch===pitch;
+          reset();
+          game.onDown(180,392,52,'touch');game.onMove(210,402,52);game.onUp(210,402,52);
+          const drag=testScrew.state==='in'&&Math.abs(state.yaw)>0.01;
+          reset();
+          game.onDown(180,392,53,'touch');state.t+=.7;game.update(.02);game.onUp(180,392,53);
+          const hold=testScrew.state==='in';
+          reset();
+          game.onDown(180,392,54,'touch');game.onCancel(54);game.onUp(180,392,54);
+          const cancel=testScrew.state==='in';
+          reset();
+          game.onDown(180,392,55,'touch');game.onUp(215,401,55);
+          const jump=testScrew.state==='in';
+          return {jitter,drag,hold,cancel,jump};
+        },
         partial() {
           obstacle.dyn.c[0]=.20;game.draw(ctx);
           const points=state.drawn.filter(p=>p.owner===testScrew).flatMap(p=>p.pts);
@@ -214,6 +236,9 @@ const source = bundleScrew3d(file=>fs.readFileSync(path.join(__dirname,'..',file
     }
     await page.evaluate(() => screwTest.fixture());
     assert.deepEqual(await page.evaluate(() => screwTest.xray()), {visible:true,blocked:true}, 'intentional x-ray reveals the screw while keeping its physical blocker');
+    assert.deepEqual(await page.evaluate(() => screwTest.mobileTouch()),
+      {jitter:true,drag:true,hold:true,cancel:true,jump:true},
+      'mobile taps tolerate small drift and normal hold without accidental camera turns, while drags, long holds, cancelled touches and missed pointermoves do not tap');
     const play = await page.evaluate(() => screwTest.tutorials());
     assert.equal(play.stage, 4, 'touch gameplay advances through all three easy rounds');
     assert.deepEqual(play.rounds, [{stage:1,screws:15},{stage:2,screws:21},{stage:3,screws:27}]);

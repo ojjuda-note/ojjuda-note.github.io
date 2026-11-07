@@ -29,7 +29,7 @@
     const promise = (async () => {
       if (mode === 'box') {
         const retry = boxAttempts++;
-        return (await import('./screw3d.js?v=20261106-source-folders1' + (retry ? '&retry=' + retry : ''))).screw3d;
+        return (await import('./screw3d.js?v=20261107-screw-box-touch1' + (retry ? '&retry=' + retry : ''))).screw3d;
       }
       await script('/vendor/matter-0.20.0.min.js', () => !!window.Matter);
       await script('/vendor/poly-decomp-0.3.0.min.js',()=>!!window.decomp);
