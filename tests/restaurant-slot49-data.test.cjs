@@ -49,7 +49,7 @@ assert.equal(sources.coverage.providerCounts['local-guide'], 2539);
 assert.equal(sources.coverage.regionalCounts['경기'], 402);
 assert.equal(sources.coverage.coordinatesAvailable, 1052);
 assert.equal(sources.coverage.coordinatesMissing, 2218);
-assert.equal(Object.values(sources.coverage.categoryCounts).reduce((a,b) => a+b, 0), 3263);
+assert.equal(Object.values(sources.coverage.categoryCounts).reduce((a,b) => a+b, 0), 3270);
 assert.equal(sources.latestCoverageAudit.slot, 49);
 assert.equal(sources.latestCoverageAudit.newRestaurantCount, 7);
 const entry = audit.entries.filter(item => item.cycle === 1 && item.slot === 49);
