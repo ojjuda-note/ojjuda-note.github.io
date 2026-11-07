@@ -150,4 +150,23 @@ assert.equal(E.isExposed([stackedTop,stackedBottom,third],{layer:2,r:0,c:0}),fal
 const floorVariants=Array.from({length:60},(_,i)=>E.stackInfo(i+6).floors.map(f=>f.total));
 assert(floorVariants.some(sizes=>sizes[0]>sizes[1]),'Some stages have more tiles on top');
 assert(floorVariants.some(sizes=>sizes[0]<sizes[1]),'Some stages have more tiles below');
+for(const stage of [6,12,18,40,200]){
+ const grids=E.generateStack(stage,random).grids;
+ let left=grids.flat(2).filter(v=>v!==E.EMPTY).length,automaticShuffles=0;
+ while(left){
+  let move=E.exposedMoves(grids);
+  if(!move){
+   const top=grids.findIndex(grid=>grid.flat().some(v=>v!==E.EMPTY));
+   assert(top>=0);grids[top]=E.reshuffle(grids[top],random).grid;
+   move=E.exposedMoves(grids);automaticShuffles++;
+  }
+  assert(move,`Stage ${stage} always recovers an uncovered pair`);
+  assert(E.isExposed(grids,move.a)&&E.isExposed(grids,move.b));
+  const grid=grids[move.a.layer];assert(E.path(grid,move.a,move.b));
+  grid[move.a.r][move.a.c]=grid[move.b.r][move.b.c]=E.EMPTY;
+  left-=2;
+ }
+ assert(grids.flat(2).every(v=>v===E.EMPTY),`Stage ${stage} is completable with real overlap rules`);
+ assert(automaticShuffles<600,`Stage ${stage} avoids excessive deadlocks`);
+}
 console.log(`PASS: ${E.MAX_STAGE} stages, ${silhouettes.size} varied silhouettes, ${paths} independent path checks, ${boards} full legacy boards (${filledBoards} with added pairs), all stacked stage openings and selected complete games, ${recoveries} deadlock recoveries, copy limits and RNG fallback.`);
