@@ -1,0 +1,284 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 57,
+  "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+  "sourceScope": "제주시 공식 음식점 7곳 이름/주소/공개 수치좌표 확인과 기존 황금어장 1곳 좌표 보강, 제주 전역 명단 전수 아님.",
+  "completeRegionalCollection": false,
+  "sourceUrls": [
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+    "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507"
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeju-slot57-ijaemo-pizza",
+      "name": "이재모피자 제주점",
+      "category": "양식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 간월동로 6",
+      "lat": 33.4852049,
+      "lng": 126.5434909,
+      "menu": [
+        "피자",
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-sunok-myeongga",
+      "name": "순옥이네 명가",
+      "category": "한식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 도공로 8",
+      "lat": 33.505558,
+      "lng": 126.465065,
+      "menu": [
+        "전복물회",
+        "전복뚝배기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-jegalyang-hyeopjae",
+      "name": "제갈양 제주협재점",
+      "category": "한식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 한림읍 한림로 155",
+      "lat": 33.386135,
+      "lng": 126.224754,
+      "menu": [
+        "갈치조림",
+        "갈치구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-kimhuiseon-momguk",
+      "name": "김희선 제주몸국",
+      "category": "한식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 어영길 45-6",
+      "lat": 33.5185392,
+      "lng": 126.4981208,
+      "menu": [
+        "몸국",
+        "고사리육개장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-baeronggae",
+      "name": "배롱개",
+      "category": "분식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 구좌읍 해맞이해안로 434",
+      "lat": 33.557774,
+      "lng": 126.794556,
+      "menu": [
+        "국수",
+        "비빔국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-eomeong-galchi-airport",
+      "name": "제주 어멍통갈치 제주공항본점",
+      "category": "한식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 서해안로 372",
+      "lat": 33.5117036,
+      "lng": 126.4842202,
+      "menu": [
+        "갈치조림",
+        "갈치구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeju-slot57-manseonbada",
+      "name": "만선바다",
+      "category": "한식",
+      "region": "제주",
+      "district": "제주시",
+      "address": "제주특별자치도 제주시 삼무로1길 6",
+      "lat": 33.490963,
+      "lng": 126.489334,
+      "menu": [
+        "고등어회",
+        "고등어조림"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "제주관광공사 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+          "sourceName": "제주관광공사 VisitJeju 공식 음식점 상세",
+          "verifiedAt": "2026-11-08",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "제주관광공사 관광포털의 수록 이력. 블루리본·미쉐린 정규선정이나 현재 영업 확인과 별개."
+        }
+      ],
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      },
+      "addressSourceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "locationEnrichments": [
+    {
+      "id": "local-jeju-38",
+      "expectedName": "황금어장",
+      "expectedAddress": "제주특별자치도 제주시 사장길 14",
+      "lat": 33.4843984,
+      "lng": 126.4955557,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-08"
+      }
+    }
+  ],
+  "notes": [
+    "정규 블루리본·미쉐린 선정 등급과 관광포털 수록을 구분. 영업 상태는 확정하지 않음.",
+    "업소 이름과 현주소에 귀속된 제주관광공사 공식 숫자 좌표만 사용. 개인위치·추정 좌표 없음."
+  ]
+}
