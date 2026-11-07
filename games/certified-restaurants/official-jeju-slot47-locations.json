@@ -1,0 +1,61 @@
+{
+  "updatedAt": "2026-11-07",
+  "cycle": 1,
+  "slot": 47,
+  "sourceNote": "제주관광공사 VisitJeju 공식 식당 상세의 동일 상호·현 주소·공개 수치좌표만 보강. 블루리본 2022 수록 이력과 현영업은 구분.",
+  "restaurants": [],
+  "locationEnrichments": [
+    {
+      "id": "blue-jeju-2022-1",
+      "expectedName": "스시호시카이",
+      "expectedAddress": "제주특별자치도 제주시 오남로 90",
+      "lat": 33.487827,
+      "lng": 126.51764,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-3",
+      "expectedName": "국수마당 본점",
+      "expectedAddress": "제주특별자치도 제주시 삼성로 65",
+      "lat": 33.5080638,
+      "lng": 126.5322532,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-18",
+      "expectedName": "탑동산호전복",
+      "expectedAddress": "제주특별자치도 제주시 탑동로 59",
+      "lat": 33.5180133,
+      "lng": 126.5186772,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "local-jeju-34",
+      "expectedName": "고사리식당",
+      "expectedAddress": "제주특별자치도 제주시 조천읍 번영로 1680",
+      "lat": 33.4777041,
+      "lng": 126.7135515,
+      "coordinateSource": {
+        "name": "제주관광공사 VisitJeju 공식 음식점 상세·지도",
+        "url": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076",
+        "method": "published-official-tourism-coordinate-exact-name-address",
+        "checkedAt": "2026-11-07"
+      }
+    }
+  ]
+}
