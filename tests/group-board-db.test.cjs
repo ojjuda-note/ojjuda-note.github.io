@@ -2,6 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {PGlite}=require('@electric-sql/pglite');
 const file=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(x=>x.endsWith('_private_group_board.sql'));
 const sql=fs.readFileSync(path.join(__dirname,'../supabase/migrations',file),'utf8');
+const previewSql=fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261107062758_group_media_previews.sql'),'utf8');
 const uid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 test('private groups: approval, role changes, media isolation, events, pagination and deletion',async()=>{
 const db=new PGlite();try{
@@ -10,6 +11,7 @@ create table auth.users(id uuid primary key,is_anonymous boolean default false,d
 create table public.profiles(id uuid primary key references auth.users(id),nickname text);
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
 create function public.is_banned(uuid) returns boolean language sql stable as $$select false$$;
+create function public.is_admin() returns boolean language sql stable as $$select coalesce(current_setting('test.admin',true),'')='yes'$$;
 create function ojjuda_account_deletion.pending() returns boolean language sql stable as $$select coalesce(current_setting('test.pending',true),'')='yes'$$;
 create function ojjuda_account_deletion.check_owner(uuid) returns uuid language sql as $$select auth.uid()$$;
 create function ojjuda_restaurants_internal.photo_path_valid(text) returns boolean language sql immutable as $$select false$$;
@@ -20,6 +22,7 @@ create function storage.allow_any_operation(text[]) returns boolean language sql
 grant usage on schema auth,storage to anon,authenticated;grant select,insert,update,delete on storage.objects to anon,authenticated;
 create policy broad_legacy on storage.objects for all to anon,authenticated using(true) with check(true);`);
 await db.exec(sql);
+await db.exec(previewSql);
 for(let n=1;n<=4;n++)await db.query('insert into auth.users(id) values($1);',[uid(n)]);
 for(let n=1;n<=4;n++)await db.query('insert into public.profiles values($1,$2)',[uid(n),'회원'+n]);
 const as=async n=>db.exec(`reset role;set role ${n?'authenticated':'anon'};select set_config('request.jwt.claim.sub','${n?uid(n):''}',false);`);
@@ -34,16 +37,18 @@ await assert.rejects(api('feed',{room_id:room}));await assert.rejects(api('membe
 await api('request',{room_id:room});assert.equal((await api('directory'))[0].requested,true);await assert.rejects(api('feed',{room_id:room}));
 await assert.rejects(api('approve',{room_id:room,user_id:uid(2)}));await as(1);await api('approve',{room_id:room,user_id:uid(2)});
 await as(2);assert.equal((await api('rooms')).length,1);await assert.rejects(api('rename',{room_id:room,name:'hacked'}));await assert.rejects(api('invite',{room_id:room}));
-const id=uid(10),photo=`${uid(2)}/${room}/${id}/${uid(11)}.jpg`,video=`${uid(2)}/${room}/${id}/${uid(12)}.mp4`;
+const id=uid(10),photo=`${uid(2)}/${room}/${id}/${uid(11)}.jpg`,video=`${uid(2)}/${room}/${id}/${uid(12)}.mp4`,preview=photo.replace(/\.jpg$/,'.thumb.webp');
 await db.exec("select set_config('storage.operation','object.upload',false)");
-for(const [name,mime]of [[photo,'image/jpeg'],[video,'video/mp4']])await db.query("insert into storage.objects(bucket_id,name,owner_id,metadata) values('group-media',$1,$2,$3)",[name,uid(2),JSON.stringify({size:2048,mimetype:mime})]);
+for(const [name,mime]of [[photo,'image/jpeg'],[video,'video/mp4'],[preview,'image/webp']])await db.query("insert into storage.objects(bucket_id,name,owner_id,metadata) values('group-media',$1,$2,$3)",[name,uid(2),JSON.stringify({size:2048,mimetype:mime})]);
 await assert.rejects(db.query("insert into storage.objects(bucket_id,name,owner_id) values('group-media',$1,$2)",[`${uid(1)}/${room}/${id}/${uid(13)}.jpg`,uid(2)]));
 const post={id,room_id:room,kind:'trip',title:'강릉 여행',body:'기차 타고 바다 보기',location:'강릉역',starts_at:'2026-11-07T15:30:00+09:00',ends_at:'2026-11-09T18:00:00+09:00',media:[{path:photo,name:'사진.jpg'},{path:video,name:'영상.mp4'}]};
-const saved=await api('save',post);assert.equal(saved.media.length,2);
+const saved=await api('save',post);assert.equal(saved.media.length,2);assert.equal(saved.media[0].preview_path,preview,'only an owned thumbnail linked to an authorized original is exposed');assert.equal(saved.media[1].preview_path,undefined,'videos do not receive image previews');
 assert.equal((await api('save',post)).id,id,'initial publish retry is idempotent');
-await db.exec("select set_config('storage.operation','object.get_authenticated',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),2);
+await db.exec("select set_config('storage.operation','object.get_authenticated',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),3);
 await db.exec("select set_config('storage.operation','object.sign',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),0,'no shareable signed URLs');
 await as(3);await db.exec("select set_config('storage.operation','object.get_authenticated',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),0);assert.deepEqual(await api('feed'),[]);
+await db.exec("select set_config('test.admin','yes',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),3,'an authorized moderator keeps access to linked originals and previews');
+await db.exec("select set_config('test.admin','',false)");
 await api('join',{code});assert.equal((await api('rooms')).length,0,'invitation still requires approval');
 await as(1);assert.equal((await api('requests',{room_id:room})).length,1);await api('reject',{room_id:room,user_id:uid(3)});
 assert.equal((await api('feed',{room_id:room,date:'2026-11-08'})).length,1);
@@ -62,7 +67,7 @@ await as(1);await assert.rejects(api('feed',{room_id:room}));assert.equal(await 
 await as(2);for(let n=100;n<145;n++)await api('save',{room_id:room,id:uid(n),kind:'post',body:'글 '+n,media:[]});
 const first=await api('feed',{room_id:room});assert.equal(first.length,41);const last=first[39],next=await api('feed',{room_id:room,before:last.created_at,before_id:last.id});assert.equal(next.length,6);assert.equal(new Set([...first.slice(0,40),...next].map(p=>p.id)).size,46);
 await api('delete_room',{room_id:room});await assert.rejects(api('feed',{room_id:room}));assert.equal((await api('directory')).length,0);
-await assert.rejects(api('finish_delete',{room_id:room}));assert.equal((await api('deletion_files',{room_id:room})).length,2);
+await assert.rejects(api('finish_delete',{room_id:room}));assert.equal((await api('deletion_files',{room_id:room})).length,3);
 await db.exec("select set_config('storage.operation','object.delete_many',false)");await db.query("delete from storage.objects where bucket_id='group-media'");await api('finish_delete',{room_id:room});assert.equal((await api('rooms')).length,0);
 await db.exec('reset role');assert.equal(await val('select count(*)::int value from ojjuda_groups_internal.comments'),0);
 }finally{await db.close();}
