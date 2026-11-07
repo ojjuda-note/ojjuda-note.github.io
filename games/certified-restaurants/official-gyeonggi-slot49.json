@@ -1,0 +1,396 @@
+{
+  "updatedAt": "2026-11-07",
+  "sourceName": "경기도 경기뉴스포털 달달한 경기도 먹거리 · 구리(2026-01-27)·평택(2025-08-21)",
+  "sourceUrls": [
+    "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+    "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "경기도 전체 명단 대조 중 등록이 부족했던 구리 6곳·평택 7곳, 공식 기사에 업체명·지점·주소가 명확한 일부 소개를 수록. 2025/2026은 기사 발행 연도이며 개별 업체 선정 연도 아님. 영업 상태·정규 블루리본 등급·수치좌표는 별도 검증 필요.",
+  "restaurants": [
+    {
+      "id": "local-gyeonggi-slot49-guri-sangwoo",
+      "name": "상우씨알탕",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 안골로97번길 38 (수택동) 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "알탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-guri-denmark",
+      "name": "덴마크마가린",
+      "category": "기타",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 안골로63번길 42-4 (수택동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모둠수육전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-guri-doldari",
+      "name": "돌다리보쌈‧칼국수",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 안골로77번길 36-2 (수택동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전골칼국수",
+        "한방굴보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-guri-seoong",
+      "name": "서옹메밀막국수",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 경춘로 73 (교문동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-guri-yubaksa",
+      "name": "유박사곱창",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 안골로103번길 56 (수택동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "야채곱창"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-guri-majang",
+      "name": "마장동정육식당",
+      "category": "한식",
+      "region": "경기",
+      "district": "구리시",
+      "address": "경기도 구리시 검배로29번길 7 (수택동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우모둠"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2026-01-27",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-pungseong",
+      "name": "풍성원",
+      "category": "중식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 통복시장로22번길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-ondal",
+      "name": "온달해물국",
+      "category": "한식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 방여울로39번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "대구매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-ttalbuja",
+      "name": "딸부자 고추장 삼겹살",
+      "category": "한식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 평택5로 79",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고추장삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-yubaksa",
+      "name": "유박사칼국수",
+      "category": "한식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 팽성읍 팽성대교길 98-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바지락동죽칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-semo",
+      "name": "세모분식",
+      "category": "분식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 중앙시장로9번길 22-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쫄면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-kimnejip",
+      "name": "김네집",
+      "category": "한식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 중앙시장로25번길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "부대찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeonggi-slot49-pyeongtaek-yeongbin",
+      "name": "영빈루",
+      "category": "중식",
+      "region": "경기",
+      "district": "평택시",
+      "address": "경기도 평택시 탄현로 341",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경기도 공식 먹거리 소개",
+          "year": null,
+          "yearType": "source",
+          "sourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+          "sourceName": "경기도청 경기뉴스포털 · 달달한 경기도 먹거리",
+          "sourceAsOf": "2025-08-21",
+          "verifiedAt": "2026-11-07",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?SchMonth=&SchYear=&number=202508210924121303C109&page=1&s_code=C401",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ],
+  "notes": [
+    "2026-11-07 공식 기사 본문 확인. 선정·수록·기사 발행연도·출처 확인일 구분.",
+    "공식 소개만 기록하며 전체 블루리본 수록 또는 최신 영업 확인을 주장하지 않음.",
+    "주소는 해당 기사 원문 지점 표기. 좌표 확인 없이 null 유지.",
+    "기본 등록 및 이전 지역 보강 파일과 ID·업소명을 대조하여 중복 제외."
+  ]
+}
