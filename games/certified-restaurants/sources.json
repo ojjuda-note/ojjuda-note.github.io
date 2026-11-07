@@ -1511,15 +1511,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3300,
+    "uniqueRestaurants": 3307,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2569,
+      "local-guide": 2576,
       "post-office": 240
     },
-    "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2248,
+    "coordinatesAvailable": 1060,
+    "coordinatesMissing": 2247,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
@@ -1531,7 +1531,7 @@
       "전북": 215,
       "경기": 402,
       "인천": 341,
-      "제주": 113,
+      "제주": 120,
       "대구": 130,
       "전남": 183,
       "세종": 100,
@@ -1540,12 +1540,12 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1959,
+      "한식": 1964,
       "중식": 137,
       "일식": 139,
       "기타": 582,
-      "양식": 213,
-      "분식": 31,
+      "양식": 214,
+      "분식": 32,
       "디저트": 239
     }
   },
@@ -13749,53 +13749,130 @@
         "독립적으로 확인한 수치 위경도가 없어 신규 5곳 모두 좌표 null, 현재영업 여부 별도 미확정.",
         "경남 기존 320곳 중 위치누락 51곳과 신규 5곳 총 56곳 후속 재검증. 제휴·관광 소개와 회원 추천은 분리."
       ]
+    },
+    {
+      "id": "2026-11-08-jeju-slot57-visitjeju-seven-plus-one",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 57,
+      "previousCoverage": {
+        "uniqueRestaurants": 3300,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2569,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2248,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1959,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 213,
+          "분식": 31,
+          "디저트": 239
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3307,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2576,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1060,
+        "coordinatesMissing": 2247,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 74,
+          "울산": 36,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1964,
+          "중식": 137,
+          "일식": 139,
+          "기타": 582,
+          "양식": 214,
+          "분식": 32,
+          "디저트": 239
+        }
+      },
+      "newRestaurantCount": 7,
+      "modificationCount": 1,
+      "coordinateAddedCount": 8,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-jeju-slot57-ijaemo-pizza",
+        "local-jeju-slot57-sunok-myeongga",
+        "local-jeju-slot57-jegalyang-hyeopjae",
+        "local-jeju-slot57-kimhuiseon-momguk",
+        "local-jeju-slot57-baeronggae",
+        "local-jeju-slot57-eomeong-galchi-airport",
+        "local-jeju-slot57-manseonbada"
+      ],
+      "modifiedRestaurantIds": [
+        "local-jeju-38"
+      ],
+      "sourceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-jeju-slot57.json",
+      "scope": "제주관광공사 비짓제주 제주시 음식점 7곳과 기존 향토음식점 황금어장의 공식 수치좌표 1곳만 확인. 제주도 전체 명단 전수 아님.",
+      "notes": [
+        "관광포털 수록은 블루리본·미쉐린 정규 선정·등급과 별개이며 현재 영업 상태 또한 확인하지 않음.",
+        "제주 전체 113→120곳, 제주 위치 미확인 87→86곳, 전국 지도등록 1052→1060곳."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-gyeongnam-slot56-five-kto-listings",
+    "id": "2026-11-08-jeju-slot57-visitjeju-seven-plus-one",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 56,
+    "slot": 57,
     "previousCoverage": {
-      "uniqueRestaurants": 3295,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2564,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2243,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 223,
-        "충남": 74,
-        "울산": 36,
-        "경남": 320,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1956,
-        "중식": 137,
-        "일식": 139,
-        "기타": 582,
-        "양식": 213,
-        "분식": 31,
-        "디저트": 237
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3300,
       "providerCounts": {
         "michelin": 237,
@@ -13834,30 +13911,76 @@
         "디저트": 239
       }
     },
-    "newRestaurantCount": 5,
-    "modificationCount": 0,
-    "coordinateAddedCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3307,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2576,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1060,
+      "coordinatesMissing": 2247,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 74,
+        "울산": 36,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 120,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1964,
+        "중식": 137,
+        "일식": 139,
+        "기타": 582,
+        "양식": 214,
+        "분식": 32,
+        "디저트": 239
+      }
+    },
+    "newRestaurantCount": 7,
+    "modificationCount": 1,
+    "coordinateAddedCount": 8,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gyeongnam-slot56-haman-27c-bakery",
-      "local-gyeongnam-slot56-uiryeong-geumo-hanwoo",
-      "local-gyeongnam-slot56-geoje-papyeongok-main",
-      "local-gyeongnam-slot56-changwon-goryeodang",
-      "local-gyeongnam-slot56-hapcheon-daesik-hanwoo"
+      "local-jeju-slot57-ijaemo-pizza",
+      "local-jeju-slot57-sunok-myeongga",
+      "local-jeju-slot57-jegalyang-hyeopjae",
+      "local-jeju-slot57-kimhuiseon-momguk",
+      "local-jeju-slot57-baeronggae",
+      "local-jeju-slot57-eomeong-galchi-airport",
+      "local-jeju-slot57-manseonbada"
+    ],
+    "modifiedRestaurantIds": [
+      "local-jeju-38"
     ],
     "sourceUrls": [
-      "https://access.visitkorea.or.kr/food/detail.do?cotId=8f9eaa35-4c8e-4e4c-a818-6da317624350",
-      "https://access.visitkorea.or.kr/food/detail.do?cotId=a648c248-31bb-4091-9823-cd63df64278d",
-      "https://access.visitkorea.or.kr/food/detail.do?cotId=4c96d066-38d3-47c9-9bbf-5b4c93c38cce",
-      "https://access.visitkorea.or.kr/food/detail.do?cotId=0315b0f6-1192-487f-8452-d194f064ed0f",
-      "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=cdb5d60f-180d-11ef-b16c-0242ac130002"
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gyeongnam-slot56.json",
-    "scope": "경남 관광공사 공식 소개 4곳(함안·의령·거제·창원), 디지털 관광주민증 제휴 합천 1곳. 이름·지점·공개 도로명주소 개별 확인, 경남 전체 전수 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-jeju-slot57.json",
+    "scope": "제주관광공사 비짓제주 제주시 음식점 7곳과 기존 향토음식점 황금어장의 공식 수치좌표 1곳만 확인. 제주도 전체 명단 전수 아님.",
     "notes": [
-      "KTO 상세 페이지 2025·2026 수정일은 선정연도로 사용하지 않음. 정규 미쉐린/블루리본 등급 부여하지 않음.",
-      "독립적으로 확인한 수치 위경도가 없어 신규 5곳 모두 좌표 null, 현재영업 여부 별도 미확정.",
-      "경남 기존 320곳 중 위치누락 51곳과 신규 5곳 총 56곳 후속 재검증. 제휴·관광 소개와 회원 추천은 분리."
+      "관광포털 수록은 블루리본·미쉐린 정규 선정·등급과 별개이며 현재 영업 상태 또한 확인하지 않음.",
+      "제주 전체 113→120곳, 제주 위치 미확인 87→86곳, 전국 지도등록 1052→1060곳."
     ]
   },
   "latestMapCoverageAudit": {
@@ -22307,5 +22430,31 @@
     "officialBlueRibbonSelectionVerified": false,
     "currentOperatingStatusVerified": false,
     "notes": "한국관광공사 관광 음식점 소개/제휴자료 5곳만 추가. 시군 18개 지역 좌표누락 기존51+추가5 재확인 대기, 개인위치 및 임의좌표 사용하지 않음."
+  },
+  "jejuSlot57": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 57,
+    "sourceFile": "games/certified-restaurants/official-jeju-slot57.json",
+    "sourceUrls": [
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000013071",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020103",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021910",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020142",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021325",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000014911",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000021051",
+      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001507"
+    ],
+    "officialPublisher": "제주관광공사 VisitJeju",
+    "addedCount": 7,
+    "modifiedCount": 1,
+    "coordinatesAdded": 8,
+    "excludedCount": 0,
+    "pendingLocations": 86,
+    "completeRegionalVerification": false,
+    "officialBlueRibbonSelectionVerified": false,
+    "currentOperatingStatusVerified": false,
+    "notes": "이름·지점·현주소·공식 공개 숫자 좌표만 추가. 관광포털 수록과 선정, 영업 상태는 분리."
   }
 }

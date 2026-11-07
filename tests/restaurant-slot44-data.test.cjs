@@ -51,7 +51,8 @@ assert.ok(historical49, 'preserve previous slot totals when later official touri
 assert.equal(historical49.currentCoverage.uniqueRestaurants, 3270);
 assert.equal(historical49.currentCoverage.providerCounts['local-guide'], 2539);
 assert.ok(sources.coverage.uniqueRestaurants >= 3270);
-assert.equal(sources.coverage.coordinatesAvailable, sources.latestMapCoverageAudit.currentCoverage.coordinatesAvailable);
+assert.equal(sources.coverage.coordinatesAvailable, sources.latestCoverageAudit.currentCoverage.coordinatesAvailable, 'current position count follows the latest verified update');
+assert.ok(sources.coverage.coordinatesAvailable >= sources.latestMapCoverageAudit.currentCoverage.coordinatesAvailable, 'later map updates do not erase earlier verified positions');
 assert.equal(sources.coverage.coordinatesAvailable + sources.coverage.coordinatesMissing, sources.coverage.uniqueRestaurants);
 assert.ok(sources.coverage.providerCounts['local-guide'] >= 2539);
 const slot44 = audit.entries.find(item => item.cycle === 1 && item.slot === 44);
