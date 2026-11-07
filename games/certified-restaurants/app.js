@@ -629,8 +629,8 @@
       if (!slot41Map || !Array.isArray(slot41Map.locationEnrichments) || slot41Map.locationEnrichments.length > 50) throw new Error('Invalid official Michelin map enrichments');
       if (!slot44 || !Array.isArray(slot44.restaurants) || !Array.isArray(slot44.locationEnrichments) || slot44.restaurants.length > 30 || slot44.locationEnrichments.length > 20) throw new Error('Invalid Gyeongnam source data');
        if (!slot45Locations || !Array.isArray(slot45Locations.restaurants) || slot45Locations.restaurants.length !== 0 || !Array.isArray(slot45Locations.locationEnrichments) || slot45Locations.locationEnrichments.length > 20) throw new Error('Invalid Gyeongnam position audit');
-      if (!slot47Jeju || !Array.isArray(slot47Jeju.restaurants) || slot47Jeju.restaurants.length !== 0 || !Array.isArray(slot47Jeju.locationEnrichments) || slot47Jeju.locationEnrichments.length !== 4) throw new Error('Invalid Jeju official location audit');
-      if (!slot48Seogwipo || !Array.isArray(slot48Seogwipo.restaurants) || slot48Seogwipo.restaurants.length !== 0 || !Array.isArray(slot48Seogwipo.locationEnrichments) || slot48Seogwipo.locationEnrichments.length !== 5) throw new Error('Invalid Seogwipo official location audit');
+      if (!slot47Jeju || !Array.isArray(slot47Jeju.restaurants) || slot47Jeju.restaurants.length !== 0 || !Array.isArray(slot47Jeju.locationEnrichments) || slot47Jeju.locationEnrichments.length > 20) throw new Error('Invalid Jeju official location audit');
+      if (!slot48Seogwipo || !Array.isArray(slot48Seogwipo.restaurants) || slot48Seogwipo.restaurants.length !== 0 || !Array.isArray(slot48Seogwipo.locationEnrichments) || slot48Seogwipo.locationEnrichments.length > 20) throw new Error('Invalid Seogwipo official location audit');
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
