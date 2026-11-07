@@ -150,9 +150,20 @@ class GroupPreviewTests(unittest.TestCase):
         jpg = sample_jpeg()
         database = FakeDB([(ENTRY, AUTHOR, PHOTO, len(jpg) + 1)])
         storage = FakeStorage({PHOTO: jpg})
-        with self.assertRaises(ValueError):
-            backfill.backfill(database, storage, apply=True)
+        result = backfill.backfill(database, storage, apply=True)
+        self.assertEqual(result['skipped'], 1)
+        self.assertEqual(result['reasons']['size_mismatch'], 1)
         self.assertEqual(storage.writes, [])
+
+    def test_unreadable_jpeg_is_skipped_without_blocking_other_photos(self):
+        jpg = sample_jpeg()
+        other = PHOTO.replace('30000000-0000-4000-8000-000000000001.jpg', '30000000-0000-4000-8000-000000000002.jpg')
+        database = FakeDB([(ENTRY, AUTHOR, PHOTO, 15), (ENTRY, AUTHOR, other, len(jpg))])
+        storage = FakeStorage({PHOTO: b'not a jpeg file', other: jpg})
+        result = backfill.backfill(database, storage, apply=True)
+        self.assertEqual(result['skipped'], 1)
+        self.assertEqual(result['linked'], 1)
+        self.assertEqual(result['reasons']['image_unsupported'], 1)
 
     def test_failed_database_link_removes_only_the_new_sidecar(self):
         jpg = sample_jpeg()
