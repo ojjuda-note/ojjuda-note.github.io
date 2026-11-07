@@ -1511,20 +1511,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3281,
+    "uniqueRestaurants": 3287,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2550,
+      "local-guide": 2556,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2229,
+    "coordinatesMissing": 2235,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
       "충북": 223,
-      "충남": 64,
+      "충남": 70,
       "울산": 36,
       "경남": 320,
       "강원": 66,
@@ -1540,9 +1540,9 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1948,
+      "한식": 1953,
       "중식": 136,
-      "일식": 137,
+      "일식": 138,
       "기타": 582,
       "양식": 212,
       "분식": 30,
@@ -13213,53 +13213,126 @@
         "기존 217곳 중 수치 좌표 미등록 70곳과 신규 6곳을 합쳐 정확한 위치 재확인 대기 76곳. 좌표를 추정하지 않음.",
         "공식 관광사이트 정보는 실제 현재 영업·폐업 증명이 아니며, 2026 충북의 맛 책자 발행연도도 개별 업소 선정 연도가 아님."
       ]
+    },
+    {
+      "id": "2026-11-07-chungnam-slot52-six-official-provincial-selections",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 52,
+      "previousCoverage": {
+        "uniqueRestaurants": 3281,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2550,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2229,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1948,
+          "중식": 136,
+          "일식": 137,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 236
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3287,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2556,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2235,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 70,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1953,
+          "중식": 136,
+          "일식": 138,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 236
+        }
+      },
+      "newRestaurantCount": 6,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-chungnam-slot52-cheongyang-farmer-table",
+        "local-chungnam-slot52-cheongyang-jeong-guchu",
+        "local-chungnam-slot52-seocheon-jinmi",
+        "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+        "local-chungnam-slot52-nonsan-banwol-soba",
+        "local-chungnam-slot52-seocheon-surawon"
+      ],
+      "sourceUrls": [
+        "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-chungnam-slot52.json",
+      "scope": "충청남도 공식 2024·2025 대표 맛집 명단의 청양2·서천2·금산1·논산1의 개별 정확 주소 확인. 전역 전체 공식 명단·현재 영업상태·정규 리본 검증은 일부만.",
+      "notes": [
+        "선정 연도 2024/2025와 2025-07-04 공지 등록일·2026-11-07 확인일 구분.",
+        "상호·주소 일치한 6곳에만 과거 지방선정 이력을 추가. 미쉐린/블루리본 등급은 추가하지 않음.",
+        "기존 충남 64곳 중 숫자 좌표 누락 48, 추가 6곳 좌표 누락 → 54곳 재확인. 주소만으로 좌표 추정·폐업·비노출하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-chungbuk-slot51-six-official-tourism-listings",
+    "id": "2026-11-07-chungnam-slot52-six-official-provincial-selections",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 51,
+    "slot": 52,
     "previousCoverage": {
-      "uniqueRestaurants": 3275,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2544,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2223,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1945,
-        "중식": 136,
-        "일식": 136,
-        "기타": 582,
-        "양식": 212,
-        "분식": 29,
-        "디저트": 235
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3281,
       "providerCounts": {
         "michelin": 237,
@@ -13298,33 +13371,72 @@
         "디저트": 236
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3287,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2556,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2235,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 70,
+        "울산": 36,
+        "경남": 320,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1953,
+        "중식": 136,
+        "일식": 138,
+        "기타": 582,
+        "양식": 212,
+        "분식": 30,
+        "디저트": 236
+      }
+    },
     "newRestaurantCount": 6,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungbuk-slot51-cheongju-baekro-main",
-      "local-chungbuk-slot51-cheongju-sushiseoul",
-      "local-chungbuk-slot51-cheongju-dare-dare",
-      "local-chungbuk-slot51-cheongju-oseongdang",
-      "local-chungbuk-slot51-chungju-daerim",
-      "local-chungbuk-slot51-eumseong-pungmi"
+      "local-chungnam-slot52-cheongyang-farmer-table",
+      "local-chungnam-slot52-cheongyang-jeong-guchu",
+      "local-chungnam-slot52-seocheon-jinmi",
+      "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+      "local-chungnam-slot52-nonsan-banwol-soba",
+      "local-chungnam-slot52-seocheon-surawon"
     ],
     "sourceUrls": [
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
-      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+      "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungbuk-slot51.json",
-    "scope": "충청북도 도 단위 명단 대조 일부: 충북나드리 관광포털의 청주 4·충주 1·음성 1개 업소명·지점·주소 확인. 지정/선정, 리본 판본, 현재 영업 여부와는 별개.",
+    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot52.json",
+    "scope": "충청남도 공식 2024·2025 대표 맛집 명단의 청양2·서천2·금산1·논산1의 개별 정확 주소 확인. 전역 전체 공식 명단·현재 영업상태·정규 리본 검증은 일부만.",
     "notes": [
-      "청주시 백로식당은 본점으로, 스시서울은 청주점으로 지점별로 구분. 블루리본 전체 명단 전수확인 아님.",
-      "충북나드리 데어데어의 업소 소개글 속 블루리본 표현은 공식 블루리본 현행 리본 등급이나 판본 근거가 아니므로 관광 소개만 반영.",
-      "기존 217곳 중 수치 좌표 미등록 70곳과 신규 6곳을 합쳐 정확한 위치 재확인 대기 76곳. 좌표를 추정하지 않음.",
-      "공식 관광사이트 정보는 실제 현재 영업·폐업 증명이 아니며, 2026 충북의 맛 책자 발행연도도 개별 업소 선정 연도가 아님."
+      "선정 연도 2024/2025와 2025-07-04 공지 등록일·2026-11-07 확인일 구분.",
+      "상호·주소 일치한 6곳에만 과거 지방선정 이력을 추가. 미쉐린/블루리본 등급은 추가하지 않음.",
+      "기존 충남 64곳 중 숫자 좌표 누락 48, 추가 6곳 좌표 누락 → 54곳 재확인. 주소만으로 좌표 추정·폐업·비노출하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -21666,5 +21778,40 @@
       "데어데어베이커리카페"
     ],
     "note": "관광기관의 음식점 등재는 정규 블루리본 선정이나 업소의 현재 영업 증명이 아니다."
+  },
+  "chungnamSlot52": {
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 52,
+    "region": "충청남도",
+    "officialAnnouncementUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+    "announcementPublishedAt": "2025-07-04",
+    "sourceUrls": [
+      "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+      "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+    ],
+    "sidecar": "games/certified-restaurants/official-chungnam-slot52.json",
+    "verifiedSelectedRestaurants": 6,
+    "selectionYearCounts": {
+      "2024": 2,
+      "2025": 4
+    },
+    "addedRestaurantIds": [
+      "local-chungnam-slot52-cheongyang-farmer-table",
+      "local-chungnam-slot52-cheongyang-jeong-guchu",
+      "local-chungnam-slot52-seocheon-jinmi",
+      "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+      "local-chungnam-slot52-nonsan-banwol-soba",
+      "local-chungnam-slot52-seocheon-surawon"
+    ],
+    "coordinatesAdded": 0,
+    "coordinatePendingInProvince": 54,
+    "completeProvincialVerification": false,
+    "notes": "도와 국민이 함께 선정한 2024 1차·2025 2차 대표 맛집 일부. 선정 연도는 각 업소 별도 표기; 2025-07-04는 공지 등록일이며 현재 영업 여부는 확인하지 않음. 블루리본 정규 등급/공동선정과 무관."
   }
 }

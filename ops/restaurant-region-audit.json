@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 51,
-    "scheduledAt": "2026-11-07T21:00:00+09:00",
+    "slot": 52,
+    "scheduledAt": "2026-11-07T22:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "이번 자동 실행은 예약 시각을 별도로 전달받지 못해 현재 한국시각 2026-11-07 21:03:17+09:00을 21:00으로 내림해 배정(기준시각 2026-11-05 23:00에서 경과 46시간, n=50, slot=51, cycle=1)."
+    "source": "예약 시각 2026-11-07 22:00 KST를 기준으로 계산(2026-11-05 23:00 기준 경과 47시간, n=51, slot=52, cycle=1)."
   },
   "entries": [
     {
@@ -28652,6 +28652,1208 @@
         "충청남도 공식 명단 대조"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 52,
+      "scheduledAtKST": "2026-11-07T22:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_six_official_chungnam_2024_2025_selections",
+      "assignedRegions": [
+        "충청남도 공식 명단 대조"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청남도",
+          "baseListedCount": 64,
+          "afterListedCount": 70,
+          "scope": "충남 공식 방문의 해 2024·2025 대표 맛집 안내 중 6곳의 이름/주소를 각각 충남관광 음식점 상세와 대조. 15개 시군은 명단상 조사 범위이나 4개 시군의 6곳만 개별 확인.",
+          "actuallyChecked": [
+            "충청남도 청양군",
+            "충청남도 서천군",
+            "충청남도 금산군",
+            "충청남도 논산시"
+          ],
+          "remainingAreas": [
+            "천안시",
+            "공주시",
+            "보령시",
+            "아산시",
+            "서산시",
+            "계룡시",
+            "당진시",
+            "부여군",
+            "태안군",
+            "홍성군",
+            "예산군"
+          ],
+          "new": 6,
+          "updated": 0,
+          "remainingUnknownLocations": 54,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "충남관광 2025-07-04 공식 발표: 2024년 1차·2025년 2차 선정 식당 명단",
+        "충남관광 개별 음식점 공식 상세 6곳: 정확한 상호·현재 공개주소 대조",
+        "지도 공개 숫자좌표·현재 영업·정규 블루리본 판본은 미확인"
+      ],
+      "additions": 6,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 54,
+      "locationPendingScope": "기존 충남 64곳 중 위치 미등록 48곳에 신규 6곳 포함, 좌표 미확인 54곳. 이번에 6곳 주소만 확인했으며 기존 48곳 좌표 전수 재조사를 실시한 것은 아님.",
+      "addedRestaurantIds": [
+        "local-chungnam-slot52-cheongyang-farmer-table",
+        "local-chungnam-slot52-cheongyang-jeong-guchu",
+        "local-chungnam-slot52-seocheon-jinmi",
+        "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+        "local-chungnam-slot52-nonsan-banwol-soba",
+        "local-chungnam-slot52-seocheon-surawon"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+        "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+      ],
+      "verifiedSelections": [
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-farmer-table",
+          "name": "농부밥상",
+          "currentAddress": "충청남도 청양군 대치면 칠갑산로 704-18",
+          "region": "충청남도 청양군",
+          "selectedYear": 2025,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-jeong-guchu",
+          "name": "정여사고추장찌개",
+          "currentAddress": "충청남도 청양군 장평면 주미골길 22-46",
+          "region": "충청남도 청양군",
+          "selectedYear": 2024,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-seocheon-jinmi",
+          "name": "진미식당",
+          "currentAddress": "충청남도 서천군 판교면 종판로 883",
+          "region": "충청남도 서천군",
+          "selectedYear": 2024,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+          "name": "금산원조김정이삼계탕",
+          "currentAddress": "충청남도 금산군 금산읍 인삼약초로 33 대원상가 2층",
+          "region": "충청남도 금산군",
+          "selectedYear": 2025,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-nonsan-banwol-soba",
+          "name": "반월소바",
+          "currentAddress": "충청남도 논산시 해월로 132",
+          "region": "충청남도 논산시",
+          "selectedYear": 2025,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-seocheon-surawon",
+          "name": "수라원",
+          "currentAddress": "충청남도 서천군 장항읍 장산로 641-9",
+          "region": "충청남도 서천군",
+          "selectedYear": 2025,
+          "selectionSource": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "addressSource": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
+          "checkedAt": "2026-11-07",
+          "locationStatus": "numeric_coordinates_unverified",
+          "operatingStatus": "unknown"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-regional-dongsunwon-seonghwan",
+          "name": "동순원 성환본점",
+          "currentAddress": "충청남도 천안시 서북구 성환중앙로 33",
+          "region": "충청남도 천안시 서북구",
+          "searchAliases": [
+            "동순원 성환본점 천안시 서북구 충남",
+            "동순원 성환본점 충청남도 천안시 서북구 성환중앙로 33",
+            "천안시 서북구 동순원 성환본점"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=531"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-삽교커피클래식",
+          "name": "삽교커피클래식",
+          "currentAddress": "충청남도 예산군 삽교읍 두리3길 48-10",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "삽교커피클래식 예산군 충남",
+            "삽교커피클래식 충청남도 예산군 삽교읍 두리3길 48-10",
+            "예산군 삽교커피클래식"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://www.filmkorea.or.kr/location/location_view.jsp?id=10669&page=369"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-커피토트-로스터즈",
+          "name": "커피토트 로스터즈",
+          "currentAddress": "충청남도 계룡시 엄사면 엄사중앙로 95 2층",
+          "region": "충청남도 계룡시",
+          "searchAliases": [
+            "커피토트 로스터즈 계룡시 충남",
+            "커피토트 로스터즈 충청남도 계룡시 엄사면 엄사중앙로 95 2층",
+            "계룡시 커피토트 로스터즈"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://m.gyeryong.go.kr/tour/html/sub05/0504.html?GotoPage=2&gubun=&menu_dvs_cd=0504&site_dvs_cd=tour"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-만복정",
+          "name": "만복정",
+          "currentAddress": "충청남도 논산시 상월면 대촌4길 81",
+          "region": "충청남도 논산시",
+          "searchAliases": [
+            "만복정 논산시 충남",
+            "만복정 충청남도 논산시 상월면 대촌4길 81",
+            "논산시 만복정"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://www.nonsan.go.kr/tour/html/sub04/0408.html?mng_no=904&mode=V"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-평매매운탕",
+          "name": "평매매운탕",
+          "currentAddress": "충청남도 논산시 가야곡면 산노1길 89-21",
+          "region": "충청남도 논산시",
+          "searchAliases": [
+            "평매매운탕 논산시 충남",
+            "평매매운탕 충청남도 논산시 가야곡면 산노1길 89-21",
+            "논산시 평매매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://welfare.nonsan.go.kr/kor/html/sub06/06120203.html"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-꽃비원홈앤키친",
+          "name": "꽃비원홈앤키친",
+          "currentAddress": "충청남도 논산시 연무읍 연무로166번길 12-21",
+          "region": "충청남도 논산시",
+          "searchAliases": [
+            "꽃비원홈앤키친 논산시 충남",
+            "꽃비원홈앤키친 충청남도 논산시 연무읍 연무로166번길 12-21",
+            "논산시 꽃비원홈앤키친"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://ebook.nonsan.go.kr/kor/html/sub05/05050808.html?GotoPage=268&menu_dvs_cd=05050808&sch_area=&sch_skey=&sch_sval=&site_dvs_cd=kor"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-남촌가든",
+          "name": "남촌가든",
+          "currentAddress": "충청남도 금산군 제원면 낙안길 34-5",
+          "region": "충청남도 금산군",
+          "searchAliases": [
+            "남촌가든 금산군 충남",
+            "남촌가든 충청남도 금산군 제원면 낙안길 34-5",
+            "금산군 남촌가든"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://www.geumsan.go.kr/gshealing/html/sub05/0502.html?mng_no=64&mode=V&sch_category=&sch_dong=&sch_word=&sval="
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-금산관광농원",
+          "name": "금산관광농원",
+          "currentAddress": "충청남도 금산군 제원면 금강로 286-8",
+          "region": "충청남도 금산군",
+          "searchAliases": [
+            "금산관광농원 금산군 충남",
+            "금산관광농원 충청남도 금산군 제원면 금강로 286-8",
+            "금산군 금산관광농원"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632",
+            "https://www.geumsan.go.kr/tour/html/sub05/050104.html?mng_no=b88ea3397b6c4a8247e3d1d6f2f8135e&mode=V"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-d6e817cbe215befa",
+          "name": "용골가든",
+          "currentAddress": "충청남도 부여군 부여읍 가증남로 60-17",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "용골가든 부여군 충남",
+            "용골가든 충청남도 부여군 부여읍 가증남로 60-17",
+            "부여군 용골가든"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-12a8023181e0413c",
+          "name": "백제향",
+          "currentAddress": "충청남도 부여군 부여읍 사비로30번길 17",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "백제향 부여군 충남",
+            "백제향 충청남도 부여군 부여읍 사비로30번길 17",
+            "부여군 백제향"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-6ecd3fb0dded9c0c",
+          "name": "이민물장어하우스",
+          "currentAddress": "충청남도 부여군 규암면 백제문로304번길 59-2",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "이민물장어하우스 부여군 충남",
+            "이민물장어하우스 충청남도 부여군 규암면 백제문로304번길 59-2",
+            "부여군 이민물장어하우스"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-18cee7eb47dc2dbe",
+          "name": "오가네옻닭",
+          "currentAddress": "충청남도 부여군 홍산면 동헌로 1",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "오가네옻닭 부여군 충남",
+            "오가네옻닭 충청남도 부여군 홍산면 동헌로 1",
+            "부여군 오가네옻닭"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-7a2984d2619f1866",
+          "name": "나경버섯농가",
+          "currentAddress": "충청남도 부여군 석성면 비당로109번길 100",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "나경버섯농가 부여군 충남",
+            "나경버섯농가 충청남도 부여군 석성면 비당로109번길 100",
+            "부여군 나경버섯농가"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=1"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-786b55629db9fb59",
+          "name": "솔내음",
+          "currentAddress": "충청남도 부여군 부여읍 나루터로 39",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "솔내음 부여군 충남",
+            "솔내음 충청남도 부여군 부여읍 나루터로 39",
+            "부여군 솔내음"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-b5e98822b862142b",
+          "name": "고구락",
+          "currentAddress": "충청남도 부여군 은산면 지천로 933",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "고구락 부여군 충남",
+            "고구락 충청남도 부여군 은산면 지천로 933",
+            "부여군 고구락"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-ae5dad78496824b1",
+          "name": "서동맛고을",
+          "currentAddress": "충청남도 부여군 부여읍 계백로 310-3(동남리)",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "서동맛고을 부여군 충남",
+            "서동맛고을 충청남도 부여군 부여읍 계백로 310-3(동남리)",
+            "부여군 서동맛고을"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-6b45c1a9292d8811",
+          "name": "혜성식당",
+          "currentAddress": "충청남도 부여군 초촌면 초촌로 22",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "혜성식당 부여군 충남",
+            "혜성식당 충청남도 부여군 초촌면 초촌로 22",
+            "부여군 혜성식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-6ba8cfb0f4048ee2",
+          "name": "청솔가든",
+          "currentAddress": "충청남도 부여군 세도면 청송로 54",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "청솔가든 부여군 충남",
+            "청솔가든 충청남도 부여군 세도면 청송로 54",
+            "부여군 청솔가든"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-7361edb8cdfcc8ac",
+          "name": "온양식당",
+          "currentAddress": "충청남도 부여군 세도면 세도중앙로 27",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "온양식당 부여군 충남",
+            "온양식당 충청남도 부여군 세도면 세도중앙로 27",
+            "부여군 온양식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-1dda90792fe2efed",
+          "name": "산장식당",
+          "currentAddress": "충청남도 부여군 부여읍 사비로 11",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "산장식당 부여군 충남",
+            "산장식당 충청남도 부여군 부여읍 사비로 11",
+            "부여군 산장식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-55c47a34fc608ed5",
+          "name": "백제의집",
+          "currentAddress": "충청남도 부여군 부여읍 흑천로8번길 22",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "백제의집 부여군 충남",
+            "백제의집 충청남도 부여군 부여읍 흑천로8번길 22",
+            "부여군 백제의집"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-a0681b19944fa741",
+          "name": "장어촌",
+          "currentAddress": "충청남도 부여군 부여읍 궁남로 6-1",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "장어촌 부여군 충남",
+            "장어촌 충청남도 부여군 부여읍 궁남로 6-1",
+            "부여군 장어촌"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=3"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-afe2bda5d8e2f70f",
+          "name": "구드래돌쌈밥",
+          "currentAddress": "충청남도 부여군 부여읍 나루터로 31",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "구드래돌쌈밥 부여군 충남",
+            "구드래돌쌈밥 충청남도 부여군 부여읍 나루터로 31",
+            "부여군 구드래돌쌈밥"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=4"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-dc4be0683519de1a",
+          "name": "백제궁수라간",
+          "currentAddress": "충청남도 부여군 규암면 백제문로 555(호암리)",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "백제궁수라간 부여군 충남",
+            "백제궁수라간 충청남도 부여군 규암면 백제문로 555(호암리)",
+            "부여군 백제궁수라간"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=4"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-f34e34ca77413914",
+          "name": "서동한우",
+          "currentAddress": "충청남도 부여군 부여읍 성왕로 256",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "서동한우 부여군 충남",
+            "서동한우 충청남도 부여군 부여읍 성왕로 256",
+            "부여군 서동한우"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=4"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-ca16f7bd5f72aa07",
+          "name": "사비아구",
+          "currentAddress": "충청남도 부여군 부여읍 부장대로 28",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "사비아구 부여군 충남",
+            "사비아구 충청남도 부여군 부여읍 부장대로 28",
+            "부여군 사비아구"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=4"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-0c91b04ed2915215",
+          "name": "아우네순대",
+          "currentAddress": "충청남도 부여군 부여읍 부여로 6-14",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "아우네순대 부여군 충남",
+            "아우네순대 충청남도 부여군 부여읍 부여로 6-14",
+            "부여군 아우네순대"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=4"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-north-3e61397278b03628",
+          "name": "백제가든",
+          "currentAddress": "충청남도 부여군 부여읍 가증남로 99",
+          "region": "충청남도 부여군",
+          "searchAliases": [
+            "백제가든 부여군 충남",
+            "백제가든 충청남도 부여군 부여읍 가증남로 99",
+            "부여군 백제가든"
+          ],
+          "evidenceUrls": [
+            "https://www.buyeo.go.kr/_prog/food/?menu_dvs_cd=0403&mode2=F02&site_dvs_cd=tour&GotoPage=5"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-gongju-bapkkot-hana",
+          "name": "밥꽃하나피었네",
+          "currentAddress": "충남 공주시 계룡면 신원사로 502",
+          "region": "충청남도 공주시",
+          "searchAliases": [
+            "밥꽃하나피었네 공주시 충남",
+            "밥꽃하나피었네 충남 공주시 계룡면 신원사로 502",
+            "공주시 밥꽃하나피었네"
+          ],
+          "evidenceUrls": [
+            "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-gongju-yega-geumbyeok",
+          "name": "예가",
+          "currentAddress": "충남 공주시 금벽로 535",
+          "region": "충청남도 공주시",
+          "searchAliases": [
+            "예가 공주시 충남",
+            "예가 충남 공주시 금벽로 535",
+            "공주시 예가"
+          ],
+          "evidenceUrls": [
+            "https://www.gongju.go.kr/thumbnail/dwld/tour/sub07_03_04_12_book.pdf",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot25-cheonan-meokgeori-sundae",
+          "name": "먹거리순대",
+          "currentAddress": "충청남도 천안시 동남구 병천면 아우내순대길 27",
+          "region": "충청남도 천안시 동남구",
+          "searchAliases": [
+            "먹거리순대 천안시 동남구 충남",
+            "먹거리순대 충청남도 천안시 동남구 병천면 아우내순대길 27",
+            "천안시 동남구 먹거리순대"
+          ],
+          "evidenceUrls": [
+            "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot25-asan-gamasot-dubu",
+          "name": "가마솥두부명가",
+          "currentAddress": "충청남도 아산시 온주길 6-7",
+          "region": "충청남도 아산시",
+          "searchAliases": [
+            "가마솥두부명가 아산시 충남",
+            "가마솥두부명가 충청남도 아산시 온주길 6-7",
+            "아산시 가마솥두부명가"
+          ],
+          "evidenceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot25-asan-gogane-kalguksu",
+          "name": "고가네칼국수",
+          "currentAddress": "충청남도 아산시 번영로 83-5 (온천동)",
+          "region": "충청남도 아산시",
+          "searchAliases": [
+            "고가네칼국수 아산시 충남",
+            "고가네칼국수 충청남도 아산시 번영로 83-5 (온천동)",
+            "아산시 고가네칼국수"
+          ],
+          "evidenceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot25-asan-bujason-jjajang",
+          "name": "부자손짜장",
+          "currentAddress": "충청남도 아산시 음봉면 음봉로 385",
+          "region": "충청남도 아산시",
+          "searchAliases": [
+            "부자손짜장 아산시 충남",
+            "부자손짜장 충청남도 아산시 음봉면 음봉로 385",
+            "아산시 부자손짜장"
+          ],
+          "evidenceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot25-asan-oeam-pajeon-sangjeon",
+          "name": "외암파전 상전",
+          "currentAddress": "충청남도 아산시 송악면 외암로 1030-14, 14동 1층",
+          "region": "충청남도 아산시",
+          "searchAliases": [
+            "외암파전 상전 아산시 충남",
+            "외암파전 상전 충청남도 아산시 송악면 외암로 1030-14, 14동 1층",
+            "아산시 외암파전 상전"
+          ],
+          "evidenceUrls": [
+            "https://tour.asan.go.kr/tour/develop/m_food/"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-mimaji",
+          "name": "미마지",
+          "currentAddress": "충청남도 공주시 의당면 돌모루1길 40",
+          "region": "충청남도 공주시",
+          "searchAliases": [
+            "미마지 공주시 충남",
+            "미마지 충청남도 공주시 의당면 돌모루1길 40",
+            "공주시 미마지"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-myeongseong-bulgogi",
+          "name": "명성불고기",
+          "currentAddress": "충청남도 공주시 웅진로 200 (산성동)",
+          "region": "충청남도 공주시",
+          "searchAliases": [
+            "명성불고기 공주시 충남",
+            "명성불고기 충청남도 공주시 웅진로 200 (산성동)",
+            "공주시 명성불고기"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gongju-donghaewon",
+          "name": "동해원",
+          "currentAddress": "충청남도 공주시 납다리길 22 (소학동)",
+          "region": "충청남도 공주시",
+          "searchAliases": [
+            "동해원 공주시 충남",
+            "동해원 충청남도 공주시 납다리길 22 (소학동)",
+            "공주시 동해원"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=90"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gyeryong-hwapyeong",
+          "name": "화평",
+          "currentAddress": "충청남도 계룡시 계룡대로 486",
+          "region": "충청남도 계룡시",
+          "searchAliases": [
+            "화평 계룡시 충남",
+            "화평 충청남도 계룡시 계룡대로 486",
+            "계룡시 화평"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot26-gyeryong-myeonok",
+          "name": "계룡면옥",
+          "currentAddress": "충청남도 계룡시 새터산길 4",
+          "region": "충청남도 계룡시",
+          "searchAliases": [
+            "계룡면옥 계룡시 충남",
+            "계룡면옥 충청남도 계룡시 새터산길 4",
+            "계룡시 계룡면옥"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-dangjin-samhyeongje-gamjatang",
+          "name": "삼형제감자탕",
+          "currentAddress": "충청남도 당진시 송악읍 신흥동길 83",
+          "region": "충청남도 당진시",
+          "searchAliases": [
+            "삼형제감자탕 당진시 충남",
+            "삼형제감자탕 충청남도 당진시 송악읍 신흥동길 83",
+            "당진시 삼형제감자탕"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=904"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-dangjin-daedeulbo",
+          "name": "대들보",
+          "currentAddress": "충청남도 당진시 미락2안길 25",
+          "region": "충청남도 당진시",
+          "searchAliases": [
+            "대들보 당진시 충남",
+            "대들보 충청남도 당진시 미락2안길 25",
+            "당진시 대들보"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=186"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-dangjin-cafe-raw",
+          "name": "카페로우",
+          "currentAddress": "충청남도 당진시 남부로 453-32",
+          "region": "충청남도 당진시",
+          "searchAliases": [
+            "카페로우 당진시 충남",
+            "카페로우 충청남도 당진시 남부로 453-32",
+            "당진시 카페로우"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=183"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-seosan-jingukjip",
+          "name": "진국집",
+          "currentAddress": "충청남도 서산시 관아문길 19-10 (읍내동)",
+          "region": "충청남도 서산시",
+          "searchAliases": [
+            "진국집 서산시 충남",
+            "진국집 충청남도 서산시 관아문길 19-10 (읍내동)",
+            "서산시 진국집"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=272"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-seosan-anheung-ilpum",
+          "name": "안흥일품꽃게장",
+          "currentAddress": "충청남도 서산시 양열로 212",
+          "region": "충청남도 서산시",
+          "searchAliases": [
+            "안흥일품꽃게장 서산시 충남",
+            "안흥일품꽃게장 충청남도 서산시 양열로 212",
+            "서산시 안흥일품꽃게장"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=280"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-seosan-gabo",
+          "name": "가보",
+          "currentAddress": "충청남도 서산시 호수공원9로 47, 1층",
+          "region": "충청남도 서산시",
+          "searchAliases": [
+            "가보 서산시 충남",
+            "가보 충청남도 서산시 호수공원9로 47, 1층",
+            "서산시 가보"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=292"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-boryeong-daechon-islands",
+          "name": "대천 섬과섬사이조개구이",
+          "currentAddress": "충청남도 보령시 해수욕장10길 24",
+          "region": "충청남도 보령시",
+          "searchAliases": [
+            "대천 섬과섬사이조개구이 보령시 충남",
+            "대천 섬과섬사이조개구이 충청남도 보령시 해수욕장10길 24",
+            "보령시 대천 섬과섬사이조개구이"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1042"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot27-boryeong-paldo-gangsan",
+          "name": "팔도강산",
+          "currentAddress": "충청남도 보령시 대해로 893",
+          "region": "충청남도 보령시",
+          "searchAliases": [
+            "팔도강산 보령시 충남",
+            "팔도강산 충청남도 보령시 대해로 893",
+            "보령시 팔도강산"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1111"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "이번 도 단위 회차에는 개별 수치좌표 검증 미실시",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-farmer-table",
+          "name": "농부밥상",
+          "currentAddress": "충청남도 청양군 대치면 칠갑산로 704-18",
+          "region": "충청남도 청양군",
+          "searchAliases": [
+            "농부밥상 청양군 충남",
+            "농부밥상 충청남도 청양군 대치면 칠갑산로 704-18",
+            "청양군 농부밥상"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-cheongyang-jeong-guchu",
+          "name": "정여사고추장찌개",
+          "currentAddress": "충청남도 청양군 장평면 주미골길 22-46",
+          "region": "충청남도 청양군",
+          "searchAliases": [
+            "정여사고추장찌개 청양군 충남",
+            "정여사고추장찌개 충청남도 청양군 장평면 주미골길 22-46",
+            "청양군 정여사고추장찌개"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-seocheon-jinmi",
+          "name": "진미식당",
+          "currentAddress": "충청남도 서천군 판교면 종판로 883",
+          "region": "충청남도 서천군",
+          "searchAliases": [
+            "진미식당 서천군 충남",
+            "진미식당 충청남도 서천군 판교면 종판로 883",
+            "서천군 진미식당"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+          "name": "금산원조김정이삼계탕",
+          "currentAddress": "충청남도 금산군 금산읍 인삼약초로 33 대원상가 2층",
+          "region": "충청남도 금산군",
+          "searchAliases": [
+            "금산원조김정이삼계탕 금산군 충남",
+            "금산원조김정이삼계탕 충청남도 금산군 금산읍 인삼약초로 33 대원상가 2층",
+            "금산군 금산원조김정이삼계탕"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-nonsan-banwol-soba",
+          "name": "반월소바",
+          "currentAddress": "충청남도 논산시 해월로 132",
+          "region": "충청남도 논산시",
+          "searchAliases": [
+            "반월소바 논산시 충남",
+            "반월소바 충청남도 논산시 해월로 132",
+            "논산시 반월소바"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot52-seocheon-surawon",
+          "name": "수라원",
+          "currentAddress": "충청남도 서천군 장항읍 장산로 641-9",
+          "region": "충청남도 서천군",
+          "searchAliases": [
+            "수라원 서천군 충남",
+            "수라원 충청남도 서천군 장항읍 장산로 641-9",
+            "서천군 수라원"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+          ],
+          "checkedAt": "2026-11-07",
+          "recheckCycle": 2,
+          "recheckSlot": 52,
+          "checkResult": "충남관광 선정 명단 및 개별 상세에서 상호·현주소 대조. 수치좌표는 공식 검증 자료 미확보",
+          "reason": "정확한 업소·현주소 일치 공개 숫자 좌표 미확인. 추정 위치·폐업·선정 취소로 처리하지 않음."
+        }
+      ],
+      "unresolved": [
+        "기존 좌표 누락 48곳과 신규 6곳의 상호·지점·현주소 일치 공개 수치좌표 재검증",
+        "2024·2025 충남 대표 맛집 전체 시군 명단과 기존 데이터 대조 일부 미실시",
+        "블루리본 독립 검증 가능한 정규 리본 등급 및 현재 영업·폐업 확인 필요"
+      ],
+      "carryOver": [
+        "충남 15개 시군별 선정 전체 명단 추가 대조 및 위치 재조사: 2순환 52회차 우선",
+        "46회차 밀양·양산 등 타 회차 미기록 항목은 기존 이월 유지"
+      ],
+      "nextSlot": 53,
+      "nextRegions": [
+        "전북특별자치도 공식 명단 대조"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -28667,6 +29869,7 @@
     "2026-11-07 17시 47회차 제주시 86곳 중 위치 누락 75곳 추출, VisitJeju 공식 동일 상호·주소·좌표 4곳 확인, 위치 대기 71·신규0·비노출0. 46회차 미기록 이월. 추천맛집 회원 자료 변경 없음.",
     "2026-11-07 47회차 배포 후 시각 확인: 제주 4곳 카드·지도 표시, 월드 진입 정상, 등록 3250곳. 실제 좌표 1046곳이 sources의 1045보다 1 많았으나 이전 45회차 통영 좌표 1건 집계 누락으로 밝혀 1046/2204로 운영·출처 집계 정정. 데이터/게임 리비전 변경 없음.",
     "2026-11-07 19시 49회차 경기도 공식 먹거리 소개 구리6·평택7 추가(공식 선정 아님). 경기도 전체395곳 중 위치 대기342곳을 ID·주소·기존 출처로 이월. 좌표추정·폐업판정·비노출·회원추천변경 0.",
-    "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349."
+    "2026-11-07 1/49 이어하기: 구리시 공식 2026 와구리맛집 9곳 확인, 신규7·기존2 이력 추가. 회차 누적 20 신규·2 수정·위치0·제외0·위치대기349.",
+    "2026-11-07 22시 1/52: 충남 2024/2025 공식 대표 맛집 6곳(청양2·서천2·금산1·논산1) 실제 상호·주소 대조 신규 등록. 충남 기존 64→70, 위치 미확인 48→54. 정확 수치 좌표·영업 여부 미확정으로 null 보존."
   ]
 }
