@@ -1511,19 +1511,19 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3275,
+    "uniqueRestaurants": 3281,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 528,
-      "local-guide": 2544,
+      "local-guide": 2550,
       "post-office": 240
     },
     "coordinatesAvailable": 1052,
-    "coordinatesMissing": 2223,
+    "coordinatesMissing": 2229,
     "regionalCounts": {
       "서울": 351,
       "부산": 382,
-      "충북": 217,
+      "충북": 223,
       "충남": 64,
       "울산": 36,
       "경남": 320,
@@ -1540,13 +1540,13 @@
       "광주": 76
     },
     "categoryCounts": {
-      "한식": 1945,
+      "한식": 1948,
       "중식": 136,
-      "일식": 136,
+      "일식": 137,
       "기타": 582,
       "양식": 212,
-      "분식": 29,
-      "디저트": 235
+      "분식": 30,
+      "디저트": 236
     }
   },
   "coordinateEnrichment": {
@@ -13101,53 +13101,126 @@
         "강원 전체 66곳 중 공개 좌표 10곳, 미등록 56곳. 5곳 신규 수록 외 남은 51곳은 위치 개별 재확인 이월.",
         "공식 블루리본 전체 지도 링크 유지. 전체 명단을 전수 확인했다고 주장하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-07-chungbuk-slot51-six-official-tourism-listings",
+      "checkedAt": "2026-11-07",
+      "cycle": 1,
+      "slot": 51,
+      "previousCoverage": {
+        "uniqueRestaurants": 3275,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2544,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2223,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 217,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1945,
+          "중식": 136,
+          "일식": 136,
+          "기타": 582,
+          "양식": 212,
+          "분식": 29,
+          "디저트": 235
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3281,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 528,
+          "local-guide": 2550,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1052,
+        "coordinatesMissing": 2229,
+        "regionalCounts": {
+          "서울": 351,
+          "부산": 382,
+          "충북": 223,
+          "충남": 64,
+          "울산": 36,
+          "경남": 320,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 113,
+          "대구": 130,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 169,
+          "광주": 76
+        },
+        "categoryCounts": {
+          "한식": 1948,
+          "중식": 136,
+          "일식": 137,
+          "기타": 582,
+          "양식": 212,
+          "분식": 30,
+          "디저트": 236
+        }
+      },
+      "newRestaurantCount": 6,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-chungbuk-slot51-cheongju-baekro-main",
+        "local-chungbuk-slot51-cheongju-sushiseoul",
+        "local-chungbuk-slot51-cheongju-dare-dare",
+        "local-chungbuk-slot51-cheongju-oseongdang",
+        "local-chungbuk-slot51-chungju-daerim",
+        "local-chungbuk-slot51-eumseong-pungmi"
+      ],
+      "sourceUrls": [
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+        "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-chungbuk-slot51.json",
+      "scope": "충청북도 도 단위 명단 대조 일부: 충북나드리 관광포털의 청주 4·충주 1·음성 1개 업소명·지점·주소 확인. 지정/선정, 리본 판본, 현재 영업 여부와는 별개.",
+      "notes": [
+        "청주시 백로식당은 본점으로, 스시서울은 청주점으로 지점별로 구분. 블루리본 전체 명단 전수확인 아님.",
+        "충북나드리 데어데어의 업소 소개글 속 블루리본 표현은 공식 블루리본 현행 리본 등급이나 판본 근거가 아니므로 관광 소개만 반영.",
+        "기존 217곳 중 수치 좌표 미등록 70곳과 신규 6곳을 합쳐 정확한 위치 재확인 대기 76곳. 좌표를 추정하지 않음.",
+        "공식 관광사이트 정보는 실제 현재 영업·폐업 증명이 아니며, 2026 충북의 맛 책자 발행연도도 개별 업소 선정 연도가 아님."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-07-gangwon-slot50-five-official-tourism-introductions",
+    "id": "2026-11-07-chungbuk-slot51-six-official-tourism-listings",
     "checkedAt": "2026-11-07",
     "cycle": 1,
-    "slot": 50,
+    "slot": 51,
     "previousCoverage": {
-      "uniqueRestaurants": 3270,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2539,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2218,
-      "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
-      },
-      "categoryCounts": {
-        "한식": 1941,
-        "중식": 136,
-        "일식": 136,
-        "기타": 582,
-        "양식": 212,
-        "분식": 29,
-        "디저트": 234
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3275,
       "providerCounts": {
         "michelin": 237,
@@ -13186,30 +13259,72 @@
         "디저트": 235
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3281,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 528,
+        "local-guide": 2550,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1052,
+      "coordinatesMissing": 2229,
+      "regionalCounts": {
+        "서울": 351,
+        "부산": 382,
+        "충북": 223,
+        "충남": 64,
+        "울산": 36,
+        "경남": 320,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 113,
+        "대구": 130,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 169,
+        "광주": 76
+      },
+      "categoryCounts": {
+        "한식": 1948,
+        "중식": 136,
+        "일식": 137,
+        "기타": 582,
+        "양식": 212,
+        "분식": 30,
+        "디저트": 236
+      }
+    },
+    "newRestaurantCount": 6,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gangwon-slot50-chuncheon-sarang",
-      "local-gangwon-slot50-chuncheon-sigol",
-      "local-gangwon-slot50-chuncheon-nambu",
-      "local-gangwon-slot50-goseong-haegeumgang",
-      "local-gangwon-slot50-goseong-cheonghwang"
+      "local-chungbuk-slot51-cheongju-baekro-main",
+      "local-chungbuk-slot51-cheongju-sushiseoul",
+      "local-chungbuk-slot51-cheongju-dare-dare",
+      "local-chungbuk-slot51-cheongju-oseongdang",
+      "local-chungbuk-slot51-chungju-daerim",
+      "local-chungbuk-slot51-eumseong-pungmi"
     ],
     "sourceUrls": [
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=130",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=83",
-      "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=24",
-      "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=5a86fdaa-057e-42db-ba5d-e1657e446f8c"
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot50.json",
-    "scope": "강원특별자치도 공식 명단 대조 일부: 춘천시 관광포털 소개 3곳과 한국관광공사 2026년 8월 강원 고성군 미식 여행 소개 2곳. 블루리본·미쉐린 인증 및 현재 영업 상태를 확정하지 않음.",
+    "sourceSupplement": "games/certified-restaurants/official-chungbuk-slot51.json",
+    "scope": "충청북도 도 단위 명단 대조 일부: 충북나드리 관광포털의 청주 4·충주 1·음성 1개 업소명·지점·주소 확인. 지정/선정, 리본 판본, 현재 영업 여부와는 별개.",
     "notes": [
-      "춘천시 개별 상세와 KTO 기사에 업소 상호·주소 명시. 발행·자료 확인일을 선정 연도로 오인하지 않음.",
-      "현재 주소·상호에 맞는 공개 숫자 좌표의 독립 검증이 없어 신규 5곳의 lat/lng=null 유지.",
-      "강원 전체 66곳 중 공개 좌표 10곳, 미등록 56곳. 5곳 신규 수록 외 남은 51곳은 위치 개별 재확인 이월.",
-      "공식 블루리본 전체 지도 링크 유지. 전체 명단을 전수 확인했다고 주장하지 않음."
+      "청주시 백로식당은 본점으로, 스시서울은 청주점으로 지점별로 구분. 블루리본 전체 명단 전수확인 아님.",
+      "충북나드리 데어데어의 업소 소개글 속 블루리본 표현은 공식 블루리본 현행 리본 등급이나 판본 근거가 아니므로 관광 소개만 반영.",
+      "기존 217곳 중 수치 좌표 미등록 70곳과 신규 6곳을 합쳐 정확한 위치 재확인 대기 76곳. 좌표를 추정하지 않음.",
+      "공식 관광사이트 정보는 실제 현재 영업·폐업 증명이 아니며, 2026 충북의 맛 책자 발행연도도 개별 업소 선정 연도가 아님."
     ]
   },
   "latestMapCoverageAudit": {
@@ -21518,5 +21633,38 @@
       "local-gyeonggi-slot49-pyeongtaek-kimnejip",
       "local-gyeonggi-slot49-pyeongtaek-yeongbin"
     ]
+  },
+  "chungbukSlot51": {
+    "checkedAt": "2026-11-07",
+    "cycle": 1,
+    "slot": 51,
+    "region": "충청북도",
+    "sourceName": "충청북도 충북나드리 공식 관광포털",
+    "sourceUrls": [
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+      "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+    ],
+    "sidecar": "games/certified-restaurants/official-chungbuk-slot51.json",
+    "addedCount": 6,
+    "addedRestaurantIds": [
+      "local-chungbuk-slot51-cheongju-baekro-main",
+      "local-chungbuk-slot51-cheongju-sushiseoul",
+      "local-chungbuk-slot51-cheongju-dare-dare",
+      "local-chungbuk-slot51-cheongju-oseongdang",
+      "local-chungbuk-slot51-chungju-daerim",
+      "local-chungbuk-slot51-eumseong-pungmi"
+    ],
+    "coordinatesAdded": 0,
+    "coordinatesMissingAfter": 76,
+    "locationsHidden": 0,
+    "completeRegionalCollection": false,
+    "blueRibbonCandidatesUnverified": [
+      "데어데어베이커리카페"
+    ],
+    "note": "관광기관의 음식점 등재는 정규 블루리본 선정이나 업소의 현재 영업 증명이 아니다."
   }
 }
