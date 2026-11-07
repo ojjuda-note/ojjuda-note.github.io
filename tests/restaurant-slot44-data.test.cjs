@@ -69,9 +69,9 @@ assert.match(index, /\.\/app\.js\?v=\d{8}-[a-z0-9-]+/, 'the restaurant entry poi
 const seogwipo = file('games/certified-restaurants/official-jeju-slot48-locations.json');
 assert.equal(seogwipo.cycle, 1);
 assert.equal(seogwipo.slot, 48);
-assert.deepEqual(seogwipo.restaurants, [], 'all five locations reuse existing certified IDs');
-assert.equal(seogwipo.locationEnrichments.length, 5);
-assert.equal(new Set(seogwipo.locationEnrichments.map(item => item.id)).size, 5);
+assert.deepEqual(seogwipo.restaurants, [], 'all verified locations reuse existing certified IDs');
+assert.equal(seogwipo.locationEnrichments.length, 6);
+assert.equal(new Set(seogwipo.locationEnrichments.map(item => item.id)).size, 6);
 for (const candidate of seogwipo.locationEnrichments) {
   const original = db.restaurants.find(item => item.id === candidate.id);
   assert.ok(original, 'only known saved IDs get new coordinates');
