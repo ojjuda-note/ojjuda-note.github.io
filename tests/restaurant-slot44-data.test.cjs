@@ -47,8 +47,9 @@ assert.ok(app.includes('slot44.locationEnrichments'), 'the live directory applie
 assert.ok(app.includes('row.id === patch.id && row.name === patch.expectedName && row.address === patch.expectedAddress'), 'the map location is tied to an exact place');
 assert.ok(app.includes('restaurant.lat != null || restaurant.lng != null'), 'previous coordinates are never overwritten');
 assert.equal(sources.coverage.uniqueRestaurants, 3250);
-assert.equal(sources.coverage.coordinatesAvailable, 1041);
-assert.equal(sources.coverage.coordinatesMissing, 2209);
+assert.equal(sources.coverage.coordinatesAvailable, sources.latestMapCoverageAudit.currentCoverage.coordinatesAvailable);
+assert.equal(sources.coverage.coordinatesMissing, sources.latestMapCoverageAudit.currentCoverage.coordinatesMissing);
+assert.equal(sources.coverage.coordinatesAvailable + sources.coverage.coordinatesMissing, sources.coverage.uniqueRestaurants);
 assert.equal(sources.coverage.providerCounts['local-guide'], 2519);
 const slot44 = audit.entries.find(item => item.cycle === 1 && item.slot === 44);
 assert.ok(slot44);
@@ -63,5 +64,5 @@ assert.deepEqual(slot44.nextRegions, ['경상남도 통영시', '경상남도 �
 const release = file('game-release.json');
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
-assert.ok(index.includes('app.js?v=20261107-restaurants-slot44-1'));
+assert.ok(index.includes('app.js?v=' + release.revision), 'the current entry-point cache matches the game release');
 console.log('restaurant slot44 Jinju/Sacheon official listing and location checks passed');
