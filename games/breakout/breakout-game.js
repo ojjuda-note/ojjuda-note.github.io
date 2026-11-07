@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const W=360,H=540,MAX_BALLS=100,MIN_SPEED=140,MAX_SPEED=460,LEVELS=100;
+  const W=360,H=540,MAX_BALLS=100,MIN_SPEED=140,MAX_SPEED=552,LEVELS=100;
   const BASE_PADDLE=80,MIN_PADDLE=48,MAX_PADDLE=144,PADDLE_STEP=16,DROP_W=44,DROP_H=26;
   const STAGE_KEY='ojjuda-breakout-last-stage-v1';
   function readStage(){try{const n=Number(localStorage.getItem(STAGE_KEY));return Number.isInteger(n)&&n>=1&&n<=LEVELS?n:1;}catch(_){return 1;}}

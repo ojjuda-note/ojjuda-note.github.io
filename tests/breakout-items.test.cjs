@@ -200,7 +200,7 @@ for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [[
     Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
     assert.equal(f.game.continueStage(f.state().level+1),true);
   }
-  assert.ok(f.state().speed>initial&&f.state().speed<=460,'later stages stay within the reduced speed limit');
+  assert.ok(f.state().speed>initial&&f.state().speed<=552,'later stages stay within the speed cap');
   f.launch();const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
   assert.ok(s.balls[0].vy<0&&s.balls[0].y<490,'the fastest ball cannot skip the paddle during a long frame');
 }
@@ -392,7 +392,7 @@ for(const [setting,pace]of [['slow',.8],['normal',1],['fast',1.15]]){
     near(Math.hypot(ball.vx,ball.vy),f.state().speed,'a paddle bounce keeps the changed speed');
   }
   for(let i=0;i<8;i++)f.catchItem(f.hit('fast'));
-  near(f.state().speed,460*pace,`${setting}: repeated speed-ups respect the original speed limit`);
+  near(f.state().speed,552*pace,`${setting}: repeated speed-ups respect the 20% higher speed cap`);
   for(let i=0;i<14;i++)f.catchItem(f.hit('slow'));
   near(f.state().speed,140*pace,`${setting}: repeated slowdowns retain a playable minimum`);
   f.park();const before=f.state().speed;f.game.update(.05);
