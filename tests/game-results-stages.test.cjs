@@ -86,7 +86,7 @@ test('sacheonseong shares one compact result without replacing its level handler
   Object.defineProperties(d.getElementById('board-scroll'),{clientWidth:{value:378},clientHeight:{value:702}});
   w.OjjudaSacheonseongOnline={newId:()=>w.crypto.randomUUID(),stage(){},record:(stage,record)=>records.push({stage,record})};
   for(const file of ['engine.js','faces.js'])w.eval(read('games/sacheonseong/'+file));
-  const generate=w.TileGarden.generate;w.TileGarden.generate=(...args)=>{const value=generate(...args);value.grid=value.grid.map(row=>row.map(()=>w.TileGarden.EMPTY));value.grid[0][0]=value.grid[0][1]=0;return value;};
+  const generate=w.TileGarden.generateStack;w.TileGarden.generateStack=(...args)=>{const value=generate(...args),grid=value.grids[0].map(row=>row.map(()=>w.TileGarden.EMPTY));grid[0][0]=grid[0][1]=0;value.grids=[grid];value.info={...value.info,total:2,layerCount:1};return value;};
   w.eval(read('games/sacheonseong/app.js'));
   const complete=()=>{d.querySelector('[data-r="0"][data-c="0"]').click();d.querySelector('[data-r="0"][data-c="1"]').click();for(const task of timers.splice(0))if(task.delay===120)task.fn();};
   try{
