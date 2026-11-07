@@ -88,7 +88,10 @@
   });
   window.addEventListener('ojjuda:friends-presence', presence);
   new MutationObserver(records => {
-    if (records.some(record => [...record.addedNodes].some(node => node.nodeType === 1))) mount();
+    // Feed cards, rankings and chat update the DOM often. Only new game-entry
+    // markup needs the icon and mode setup pass.
+    if (records.some(record => [...record.addedNodes].some(node => node.nodeType === 1 &&
+      (node.matches?.('.game-entry,.ge-icon') || node.querySelector?.('.game-entry,.ge-icon'))))) mount();
   }).observe(document.body, {childList:true, subtree:true});
   mount();
 })();

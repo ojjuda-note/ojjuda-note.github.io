@@ -11,7 +11,7 @@
   function install({client, getUserId = () => null, isReady = () => true, canShow = () => true} = {}) {
     if (instance || !client?.rpc) return instance;
     let identity = getUserId() || null, epoch = 0, candidate = null, pending = null;
-    let timer, serverOffset = 0, lastFetch = 0, saving = false, priorFocus = null;
+    let timer, serverOffset = 0, lastFetch = 0, lastAttempt = 0, saving = false, priorFocus = null;
     const memory = new Map();
     const dialog = el('dialog','daily-updates-dialog'); dialog.id = 'daily-updates-dialog';
     dialog.setAttribute('aria-labelledby','daily-updates-title');
@@ -66,12 +66,13 @@
       expire();
       const next = userNow();
       if (next !== identity) {
-        epoch++; identity = next; candidate = null; pending = null; lastFetch = 0; saving = false;
+        epoch++; identity = next; candidate = null; pending = null; lastFetch = 0; lastAttempt = 0; saving = false;
         confirm.disabled = false; status.textContent = ''; close();
         void refresh(true); return;
       }
       if (dialog.open && (!isReady() || !canShow())) close();
-      if (isReady() && !lastFetch && !pending) void refresh(true);
+      // A failed RPC must not be retried for every unrelated DOM mutation.
+      if (isReady() && !lastFetch && !pending && (!lastAttempt || Date.now()-lastAttempt>=60000)) void refresh(true);
       show();
     }
     function schedule() {
@@ -87,6 +88,7 @@
       if (pending) return pending;
       if (!force && Date.now()-lastFetch < 60000) { show(); schedule(); return; }
       const user = identity, run = epoch;
+      lastAttempt = Date.now();
       const request = (async () => {
         try {
           const {data,error} = await client.rpc('get_daily_update_notice');
@@ -112,7 +114,7 @@
     function syncIdentityOnly() {
       const next = userNow();
       if (next === identity) return;
-      epoch++; identity = next; candidate = null; pending = null; lastFetch = 0; saving = false; close();
+      epoch++; identity = next; candidate = null; pending = null; lastFetch = 0; lastAttempt = 0; saving = false; close();
     }
     async function acknowledge() {
       if (saving || !candidate) return;

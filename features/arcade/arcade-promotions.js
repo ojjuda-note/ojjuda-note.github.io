@@ -62,6 +62,19 @@
   }
  }
  function schedule() { if (!queued) { queued=true;requestAnimationFrame(apply); } }
+ function catalogChanged(records) {
+  for (const record of records) {
+   if (record.type === 'attributes') {
+    if (record.target.matches?.('[data-arcade-games] > .gbtn')) return true;
+    continue;
+   }
+   if (record.target.matches?.('[data-arcade-games]')) return true;
+   for (const node of [...record.addedNodes,...record.removedNodes]) {
+    if (node.nodeType === 1 && (node.matches?.('[data-arcade-games]') || node.querySelector?.('[data-arcade-games]'))) return true;
+   }
+  }
+  return false;
+ }
  async function refresh(force=false) {
   if (pending || !document.querySelector('[data-arcade-games]') || (!force&&((received&&Date.now()-received<ttl)||(attempted&&Date.now()-attempted<60000)))) return pending;
   const config=window.OJJUDA_CONFIG;
@@ -79,7 +92,9 @@
  }
  window.OjjudaArcadePromotions=Object.freeze({refresh});
  function start() {
-  new MutationObserver(records=>{if(records.some(r=>r.type==='childList'||r.target.matches?.('.gbtn'))){schedule();if(!received)void refresh();}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
+  // Ignore unrelated chat, ranking and Park DOM updates. Layout reads and
+  // game sorting are only needed when the actual arcade catalog changes.
+  new MutationObserver(records=>{if(catalogChanged(records)){schedule();if(!received)void refresh();}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});
   apply();void refresh();
   setInterval(()=>{if(!document.hidden){apply();void refresh();}},60000);
  }
