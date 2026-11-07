@@ -1,0 +1,114 @@
+{
+  "updatedAt": "2026-11-07",
+  "cycle": 1,
+  "slot": 41,
+  "sourceName": "미쉐린 가이드 식당 상세페이지 및 같은 페이지 공식 지도 링크(주소 대조)",
+  "locationEnrichments": [
+    {
+      "id": "anmok",
+      "expectedName": "안목",
+      "expectedAddress": "부산 수영구 광남로22번길 3",
+      "lat": 35.14492,
+      "lng": 129.11076,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "jeongjitgan",
+      "expectedName": "정짓간",
+      "expectedAddress": "부산 사하구 비봉로 6",
+      "lat": 35.09561,
+      "lng": 128.96248,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "l-essence",
+      "expectedName": "레썽스",
+      "expectedAddress": "부산 수영구 광남로22번길 17, 3층",
+      "lat": 35.14477,
+      "lng": 129.11062,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "hanwolgwan",
+      "expectedName": "한월관",
+      "expectedAddress": "부산 수영구 광안로62번길 10",
+      "lat": 35.15469,
+      "lng": 129.11854,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "meerok-super",
+      "expectedName": "미락슈퍼",
+      "expectedAddress": "부산 수영구 민락로 24-8",
+      "lat": 35.15891,
+      "lng": 129.12601,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "eonyang-bulgogi-busanjip",
+      "expectedName": "언양불고기 부산집",
+      "expectedAddress": "부산 수영구 남천바다로 32",
+      "lat": 35.14788,
+      "lng": 129.11357,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "post-2026-24-0-1",
+      "expectedName": "차애전 할매 칼국수",
+      "expectedAddress": "부산 연제구 과정로191번가길 70",
+      "lat": 35.18716,
+      "lng": 129.10249,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    },
+    {
+      "id": "jin-dweji-gomtang",
+      "expectedName": "진돼지곰탕",
+      "expectedAddress": "부산 수영구 광안해변로284번길 4, 2층",
+      "lat": 35.15576,
+      "lng": 129.12476,
+      "coordinateSource": {
+        "name": "미쉐린 가이드 공식 식당 지도",
+        "url": "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang",
+        "method": "published-map-coordinate",
+        "checkedAt": "2026-11-07"
+      }
+    }
+  ],
+  "notExhaustive": true,
+  "notes": "기존 ID·선정 이력·회원 추천 정보는 유지하고 확인된 위치만 표시한다. 개별 식당 화면에 공식 지도 링크의 정확한 위경도가 공개된 8건만 수록."
+}

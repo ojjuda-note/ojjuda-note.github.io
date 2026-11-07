@@ -103,7 +103,7 @@ async function fixture(browser, options = {}) {
     if (options.noMap && url.pathname.endsWith('/vendor/leaflet.js')) return route.fulfill({ contentType: 'application/javascript', body: '' });
     if (/\/official-[^/]+\.json$/.test(url.pathname)) {
       // Keep synthetic scenarios scoped to their supplied base catalog.
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: [], enrichments: [], guideEnrichments: [] }) });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [] }) });
     }
     if (url.pathname.endsWith('/restaurants.json')) {
       network.data++;

@@ -14032,7 +14032,7 @@
       "slot": 41,
       "scheduledAtKST": "2026-11-07T11:00:00+09:00",
       "checkedAtKST": "2026-11-07",
-      "status": "partial_review_no_verified_catalog_change",
+      "status": "partial_review_eight_verified_official_coordinates_added",
       "assignedRegions": [
         "부산광역시 사하구",
         "부산광역시 강서구",
@@ -14048,8 +14048,10 @@
           "known2026BusanEditionCount": 2,
           "scope": "공식 2026 부산의 맛 지역 필터 및 2개 식당 상세 주소 대조. 기존 2곳 모두 등록됨. 좌표 미등록 검사.",
           "additions": 0,
-          "modifications": 0,
-          "notExhaustive": true
+          "modifications": 1,
+          "notExhaustive": true,
+          "coordinatesAdded": 1,
+          "remainingNullCoordinates": 4
         },
         {
           "region": "부산광역시 강서구",
@@ -14059,7 +14061,9 @@
           "scope": "기본 목록 및 공식 2026 부산의 맛 수록 정보 분포 대조. 개별 식당 새 원문/좌표/운영상태 확인은 이월.",
           "additions": 0,
           "modifications": 0,
-          "notExhaustive": true
+          "notExhaustive": true,
+          "coordinatesAdded": 0,
+          "remainingNullCoordinates": 7
         },
         {
           "region": "부산광역시 연제구",
@@ -14068,8 +14072,10 @@
           "known2026BusanEditionCount": 5,
           "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
           "additions": 0,
-          "modifications": 0,
-          "notExhaustive": true
+          "modifications": 1,
+          "notExhaustive": true,
+          "coordinatesAdded": 1,
+          "remainingNullCoordinates": 5
         },
         {
           "region": "부산광역시 수영구",
@@ -14078,8 +14084,10 @@
           "known2026BusanEditionCount": 23,
           "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
           "additions": 0,
-          "modifications": 0,
-          "notExhaustive": true
+          "modifications": 6,
+          "notExhaustive": true,
+          "coordinatesAdded": 6,
+          "remainingNullCoordinates": 37
         },
         {
           "region": "부산광역시 사상구",
@@ -14089,22 +14097,25 @@
           "scope": "공식 비짓부산 식당/공동선정 공개 사례 및 기존 2026판 수록 자료의 일부 대조. 전체 명단/운영상태 전수조사는 미완료.",
           "additions": 0,
           "modifications": 0,
-          "notExhaustive": true
+          "notExhaustive": true,
+          "coordinatesAdded": 0,
+          "remainingNullCoordinates": 8
         }
       ],
       "sourcesChecked": [
         "부산광역시 2026 부산의 맛 시청 공식 발행 안내/146개 수록 기준과 main 기본 데이터 146건 대조",
         "부산관광공사·블루리본 공동선정 노포 공개 목록 일부(정규 리본 등급 아님)",
         "비짓부산 2026 사하구 필터의 2곳 상세 주소, 연제구 서가원 국수, 수영구 안목 주소 대조",
-        "행정안전부 지방자치단체 공식 누리집 화면 개방 확인(행정구역 전체 변동 전수 검토 아님)"
+        "행정안전부 지방자치단체 공식 누리집 화면 개방 확인(행정구역 전체 변동 전수 검토 아님)",
+        "미쉐린 가이드 식당 공식 상세 및 지도 위치 링크 8곳 검증(사하1·연제1·수영6)"
       ],
       "additions": 0,
-      "modifications": 0,
+      "modifications": 8,
       "operatingStatusChanges": 0,
-      "locationCoordinatesAdded": 0,
+      "locationCoordinatesAdded": 8,
       "locationHidden": 0,
-      "locationPending": 69,
-      "locationPendingScope": "최신 main 기본 restaurants.json의 배정 5개 구 위경도 null 기록만 집계. 별도 보충 데이터와 좌표 의심 사례까지 전수 미검증.",
+      "locationPending": 61,
+      "locationPendingScope": "기존 기본 목록의 지정 5개 구 좌표 누락 69곳 중 공식 미쉐린 지도 연결 근거 8곳 보강, 61곳 이월. 주소 불일치 의심 항목은 별도 미검증.",
       "addedRestaurantIds": [],
       "existingItemsRechecked": [
         "영진돼지국밥 본점 (사하구)",
@@ -14121,7 +14132,15 @@
         "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002004000",
         "https://www.mois.go.kr/frt/sub/a04/localGovernment/screen.do",
         "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=177&lang_cd=ko",
-        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1118&lang_cd=ko"
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002001000&uc_seq=1118&lang_cd=ko",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/eonyang-bulgogi-busanjip",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu",
+        "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
       ],
       "locationRechecks": [
         {
@@ -14318,12 +14337,18 @@
             "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=24",
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/cha-ae-jeon-halmae-kalguksu"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.18716,
+            "lng": 129.10249
+          }
         },
         {
           "restaurantId": "post-2026-24-1-1",
@@ -14418,12 +14443,18 @@
           "evidenceUrls": [
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jeongjitgan"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.09561,
+            "lng": 128.96248
+          }
         },
         {
           "restaurantId": "hanwolgwan",
@@ -14438,12 +14469,18 @@
           "evidenceUrls": [
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/hanwolgwan"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.15469,
+            "lng": 129.11854
+          }
         },
         {
           "restaurantId": "jin-dweji-gomtang",
@@ -14458,12 +14495,18 @@
           "evidenceUrls": [
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/jin-dweji-gomtang"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.15576,
+            "lng": 129.12476
+          }
         },
         {
           "restaurantId": "eonyang-bulgogi-busanjip",
@@ -14480,12 +14523,18 @@
             "https://www.visitbusan.net/index.do?distance=0.0&favoriteThis=N&listCntPerPage2=9&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&page_no=8&sel_visit_place=N&ucc1_seq=29&ucl_seq=7&ucl_use_yn=Y&use_yn=Y",
             "https://www.busan.go.kr/promoboard/1726945"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.14788,
+            "lng": 129.11357
+          }
         },
         {
           "restaurantId": "meerok-super",
@@ -14500,12 +14549,18 @@
           "evidenceUrls": [
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/meerok-super"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.15891,
+            "lng": 129.12601
+          }
         },
         {
           "restaurantId": "matsuzaki",
@@ -14561,12 +14616,18 @@
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/l-essence",
             "https://www.busan.go.kr/promoboard/1726945"
           ],
-          "evidenceResult": "main 기본 목록의 위치 누락 확인. 이 업소의 현재 주소와 위경도를 독립 공개 지도·기관 자료로 이번 회차에 개별 교차검증하지 못함.",
-          "sourceRevalidated": false,
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
+          "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.14477,
+            "lng": 129.11062
+          }
         },
         {
           "restaurantId": "songheonjip",
@@ -14623,12 +14684,18 @@
             "https://guide.michelin.com/kr/ko/busan-region/busan_1025838/restaurant/anmok",
             "https://www.busan.go.kr/promoboard/1726945"
           ],
-          "evidenceResult": "비짓부산 공개 개별 안내의 상호 및 수영구 광남로22번길 3을 기등록 주소와 대조해 일치함. 공개 위경도 미확인.",
+          "evidenceResult": "미쉐린 가이드 식당 공식 상세의 주소·상호가 기존 ID와 같으며 공식 지도 연결 좌표 검증. 지도 표시 보강.",
           "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
           "recheckSlot": 41,
-          "unresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지."
+          "status": "resolved",
+          "resolvedAt": "2026-11-07",
+          "priorUnresolvedReason": "동일 업소·지점·현 주소에 일치하는 확인 가능한 공개 좌표 부족. 추정 좌표/주소 변경/폐업 단정/목록 제외 금지.",
+          "resolvedCoordinate": {
+            "lat": 35.14492,
+            "lng": 129.11076
+          }
         },
         {
           "restaurantId": "pili-pili",
@@ -15546,7 +15613,24 @@
         "울산광역시 동구",
         "울산광역시 북구"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "locationResolutionContinuation": {
+        "atScheduledKST": "2026-11-07T11:00:00+09:00",
+        "source": "동일 회차 이어하기",
+        "coordinatesAdded": 8,
+        "locationExcluded": 0,
+        "modifiedRestaurantIds": [
+          "anmok",
+          "jeongjitgan",
+          "l-essence",
+          "hanwolgwan",
+          "meerok-super",
+          "eonyang-bulgogi-busanjip",
+          "post-2026-24-0-1",
+          "jin-dweji-gomtang"
+        ],
+        "dataFile": "games/certified-restaurants/official-busan-slot41-michelin-map.json"
+      }
     }
   ],
   "notes": [
@@ -15555,6 +15639,7 @@
     "주소와 상호가 일치하는 출처 없는 좌표는 넣지 않는다.",
     "2026-11-05 18시 서울 남서 5개 구 공식관광 소개 8곳 추가 점검: 구로구 부분 검색에서 공식 등록 근거 미확인. 16곳 위치 재확인 대기, 검증 전 삭제·좌표추정 금지. 기존 03회차 기록이 아직 없어 미실행 단정 없이 이월 확인.",
     "2026-11-06 08시 14회차 평택·오산·안성의 최신 main 기록 부재: 수행 미확인 및 이월, 15회차에서 대체하지 않음",
-    "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음."
+    "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음.",
+    "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존."
   ]
 }
