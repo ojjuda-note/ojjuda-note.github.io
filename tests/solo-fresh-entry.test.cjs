@@ -24,23 +24,26 @@ function sacheon(t,saved,buy){
 }
 function oldGarden(pendingPurchase,stage=5,columns=stage*2){const tiles=E.generate(stage).grid.flat(),grid=Array.from({length:Math.ceil(tiles.length/columns)},(_,r)=>Array.from({length:columns},(_,c)=>tiles[r*columns+c]??E.EMPTY));grid[0][0]=grid[0][1]=E.EMPTY;return {rulesVersion:3,runId:randomUUID(),stage,unlocked:8,grid,startedAt:Date.now()-90000,finishedMs:null,penaltyMs:20000,sound:true,hints:2,shuffles:1,pendingPurchase};}
 function assertGarden(state,stage){
- assert.equal(state.stage,stage);assert.equal(state.rulesVersion,3);assert.equal(state.grid.flat().filter(value=>value!==E.EMPTY).length,stage===7?198:100);
- const [rows,columns]=stage===7?[18,11]:[10,10];assert.equal(state.grid.length,rows);assert.ok(state.grid.every(row=>row.length===columns));
- assert.ok(state.grid.flat().every(value=>value!==E.EMPTY),'every cell, including the last row, contains a real tile');assert.ok(E.withinCopyLimit(state.grid),'the filled rectangle still consists of pairs with at most four copies per face');
+ assert.equal(state.stage,stage);assert.equal(state.rulesVersion,E.RULES_VERSION);
+ assert.equal(state.layerCount,E.layerCount(stage));assert.equal(state.upcoming.length,state.layerCount-1);
+ assert.equal([state.grid,...state.upcoming].flat(2).filter(value=>value!==E.EMPTY).length,E.stageInfo(stage).total);
+ assert.ok(state.grid.every(row=>row.length===state.grid[0].length));
+ assert.ok(state.grid.flat().some(value=>value===E.EMPTY),'irregular boards preserve gaps');
+ assert.ok([state.grid,...state.upcoming].every(E.withinCopyLimit),'each layer consists of legal picture pairs');
 }
 
-for(const [stage,columns]of [[5,10],[7,14],[7,11]])test(`Sacheonseong stage ${stage} exit/reentry replaces its old ${columns}-column board with a full new board and run, keeping unlocks and records`,async t=>{
+for(const [stage,columns]of [[5,10],[7,14],[7,11]])test(`Sacheonseong stage ${stage} exit/reentry replaces its old ${columns}-column board with a fresh shaped stack, keeping unlocks and records`,async t=>{
  const saved=oldGarden(undefined,stage,columns),f=sacheon(t,saved),records=f.records();assert.equal(saved.grid.length,Math.ceil(4*stage*stage/columns));assert.ok(saved.grid.every(row=>row.length===columns));
  if(columns===11)assert.deepEqual(saved.grid.at(-1).slice(-2),[E.EMPTY,E.EMPTY],'the old portrait save contains the two former padding cells');
  const child=await f.enter(),first=f.state();
  assertGarden(first,stage);assert.notEqual(first.runId,saved.runId);
- assert.equal(child.document.querySelectorAll('.tile.empty').length,0);assert.equal(child.document.querySelectorAll('.tile:not(:disabled)').length,stage===7?198:100);
+ assert.ok(child.document.querySelectorAll('.tile.empty').length>0);assert.equal(child.document.querySelectorAll('.tile:not(:disabled)').length,first.grid.flat().filter(v=>v!==E.EMPTY).length);
  assert.equal(first.startedAt,null);assert.equal(first.finishedMs,null);assert.equal(first.penaltyMs,0);assert.equal(first.unlocked,8);assert.equal(first.sound,true);assert.equal(first.hints,0);assert.equal(first.shuffles,0);
  assert.deepEqual(f.records(),records,'records from both square and portrait stages survive the new visit');
- child.document.querySelector('.tile').click();let active=f.state();assert.ok(active.startedAt);
+ child.document.querySelector('.tile:not(.empty)').click();let active=f.state();assert.ok(active.startedAt);
  child.document.dispatchEvent(new child.Event('visibilitychange'));child.dispatchEvent(new child.Event('resize'));
  f.w.OjjudaSacheonseongGame.open({owner});assert.equal(f.w.document.querySelector('iframe').contentWindow,child);assert.deepEqual(f.state(),active,'focus/visibility changes do not restart an active visit');
- if(columns===11){child.document.getElementById('restart').click();child.document.getElementById('confirm-action').click();const restarted=f.state();assertGarden(restarted,stage);assert.notEqual(restarted.runId,active.runId);assert.equal(restarted.startedAt,null);assert.equal(child.document.querySelectorAll('.tile.empty').length,0);active=restarted;}
+ if(columns===11){child.document.getElementById('restart').click();child.document.getElementById('confirm-action').click();const restarted=f.state();assertGarden(restarted,stage);assert.notEqual(restarted.runId,active.runId);assert.equal(restarted.startedAt,null);assert.ok(child.document.querySelectorAll('.tile.empty').length>0);active=restarted;}
  child.document.getElementById('game-home').click();assert.equal(f.w.document.querySelector('iframe'),null);await f.enter();
  assert.notEqual(f.state().runId,active.runId);assert.equal(f.state().startedAt,null);assert.equal(f.state().penaltyMs,0);assertGarden(f.state(),stage);assert.equal(f.state().unlocked,8);assert.deepEqual(f.records(),records);
 });

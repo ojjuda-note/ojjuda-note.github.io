@@ -28,7 +28,7 @@ async function fixture(options={}){
   w.localStorage.setItem('ojjuda-sacheonseong-v1',JSON.stringify({stage:options.stage??9,unlocked:15,sound:false}));
   w.eval(read('shared/games/game-results.js'));
   for(const file of ['engine','faces','ranking','server'])w.eval(read('games/sacheonseong/'+file+'.js'));
-  const generate=w.TileGarden.generate;w.TileGarden.generate=(...args)=>{const result=generate(...args);result.grid=result.grid.map(row=>row.map(()=>w.TileGarden.EMPTY));result.grid[0][0]=result.grid[0][1]=0;return result;};
+  const generate=w.TileGarden.generateStack;w.TileGarden.generateStack=(...args)=>{const result=generate(...args),grid=result.grids[0].map(row=>row.map(()=>w.TileGarden.EMPTY));grid[0][0]=grid[0][1]=0;result.grids=[grid];result.info={...result.info,total:2,layerCount:1};return result;};
   w.eval(read('games/sacheonseong/app.js'));await flush();await flush();
   const runTimers=delay=>{for(const [id,timer]of [...timers])if(timer.delay===delay){timers.delete(id);timer.fn();}};
   return {w,$,calls,rules,row,get rankingCalls(){return rankingCalls;},get now(){return now;},set now(value){now=value;},set allowed(value){allowed=value;},set recordOk(value){options.recordOk=value;},resolveRanking:()=>resolveRanking(),runTimers,

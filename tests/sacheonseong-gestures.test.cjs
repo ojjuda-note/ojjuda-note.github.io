@@ -15,7 +15,7 @@ try{
  const size=()=>parseFloat(canvas.style.getPropertyValue('--tile')),initial=size();
  function pointer(type,id,x,y,target=viewport){const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y});Object.defineProperties(e,{pointerId:{value:id},pointerType:{value:'touch'}});target.dispatchEvent(e);return e;}
  const click=target=>target.dispatchEvent(new w.MouseEvent('click',{bubbles:true,cancelable:true,detail:1}));
- const first=d.querySelector('.tile');pointer('pointerdown',1,100,200,first);assert(first.classList.contains('pressed'),'touch-down gives immediate feedback');assert.equal(first.getAttribute('aria-pressed'),'false','a press alone does not commit a move');pointer('pointerup',1,100,200,first);assert.equal(first.getAttribute('aria-pressed'),'true','release selects without waiting for click');click(first);assert.equal(first.getAttribute('aria-pressed'),'true','compatibility click cannot toggle the selection again');first.click();assert.equal(first.getAttribute('aria-pressed'),'false','keyboard activation remains immediate');
+ const first=d.querySelector('.tile:not(.empty)');pointer('pointerdown',1,100,200,first);assert(first.classList.contains('pressed'),'touch-down gives immediate feedback');assert.equal(first.getAttribute('aria-pressed'),'false','a press alone does not commit a move');pointer('pointerup',1,100,200,first);assert.equal(first.getAttribute('aria-pressed'),'true','release selects without waiting for click');click(first);assert.equal(first.getAttribute('aria-pressed'),'true','compatibility click cannot toggle the selection again');first.click();assert.equal(first.getAttribute('aria-pressed'),'false','keyboard activation remains immediate');
  pointer('pointerdown',1,100,200);pointer('pointerdown',2,200,200);const move=pointer('pointermove',2,300,200);
  assert(move.defaultPrevented,'pinch consumes browser zoom');assert(size()>initial*1.9);assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'false');
  pointer('pointerup',2,300,200);pointer('pointerup',1,100,200);click(first);assert.equal(first.getAttribute('aria-pressed'),'false','ending a gesture does not select a tile');
@@ -30,10 +30,11 @@ try{
  assert.equal(d.querySelector('.topbar').style.transform,'');assert.equal(d.querySelector('.game-actions').style.transform,'');
  // A blocked same-face pair keeps the first selection, so a duplicate touch
  // click would incorrectly apply a second penalty rather than just deselecting.
- const blocked=[[2,2,3,3],[4,0,5,4],[6,5,0,6],[7,7,8,8]],generate=w.TileGarden.generate;
- w.TileGarden.generate=stage=>{
-  const made=generate(stage);made.grid=Array.from({length:stage*2},()=>Array(stage*2).fill(-1));
-  blocked.forEach((row,r)=>row.forEach((value,c)=>made.grid[r][c]=value));return made;
+ const blocked=[[2,2,3,3],[4,0,5,4],[6,5,0,6],[7,7,8,8]],generate=w.TileGarden.generateStack;
+ w.TileGarden.generateStack=stage=>{
+  const made=generate(stage);const grid=made.grids[0].map(row=>row.map(()=>-1));
+  blocked.forEach((row,r)=>row.forEach((value,c)=>grid[r][c]=value));
+  made.grids=[grid];made.info={...made.info,total:16,layerCount:1};return made;
  };
  d.getElementById('restart').click();d.getElementById('confirm-action').click();
  const a=d.querySelector('[data-r="1"][data-c="1"]'),b=d.querySelector('[data-r="2"][data-c="2"]'),clock=()=>d.getElementById('timer').textContent;

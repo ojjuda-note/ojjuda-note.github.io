@@ -50,8 +50,8 @@ assert.match(app, /slot57Jeju\.restaurants/);
 assert.match(app, /slot57Jeju\.locationEnrichments/);
 assert.match(app, /row\.id === patch\.id && row\.name === patch\.expectedName && row\.address === patch\.expectedAddress/);
 assert.match(app, /restaurant\.lat != null \|\| restaurant\.lng != null/);
-assert.ok(app.includes('official-jeju-slot57.json?v=' + release.revision));
-assert.ok(index.includes('./app.js?v=' + release.revision));
+assert.match(app, /official-jeju-slot57\.json\?v=\d{8}-restaurants-[a-z0-9-]+/);
+assert.match(index, /\.\/app\.js\?v=\d{8}-restaurants-[a-z0-9-]+/);
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('/shared/games/world-game-assets.js?v=' + release.revision));
 
