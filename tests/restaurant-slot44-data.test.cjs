@@ -64,7 +64,7 @@ assert.deepEqual(slot44.nextRegions, ['경상남도 통영시', '경상남도 �
 const release = file('game-release.json');
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
-assert.ok(index.includes('app.js?v=' + release.revision), 'the current entry-point cache matches the game release');
+assert.match(index, /\.\/app\.js\?v=\d{8}-[a-z0-9-]+/, 'the restaurant entry point keeps its own cache revision when another game is released');
 // Later slots must preserve historical source records while adding exact official locations.
 const seogwipo = file('games/certified-restaurants/official-jeju-slot48-locations.json');
 assert.equal(seogwipo.cycle, 1);
