@@ -1,0 +1,211 @@
+{
+  "updatedAt": "2026-11-07",
+  "cycle": 1,
+  "slot": 52,
+  "sourceName": "충청남도 공식 충남관광 · 2025~2026 충남 방문의 해 대표 맛집 선정",
+  "sourceUrls": [
+    "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330"
+  ],
+  "sourceScope": "충청남도 공식 발표 2024년 1차·2025년 2차 대표 맛집 중, 식당명과 주소가 관광포털 개별 상세에 일치하는 6곳만 추가. 발표일 2025-07-04는 개별 선정 연도 아님.",
+  "completeRegionalCollection": false,
+  "verifiedSelectionYears": [
+    2024,
+    2025
+  ],
+  "coordinatePolicy": "상호·지점·현주소에 대응하는 공개 수치 좌표 미확인. 추정 좌표 없이 null 유지.",
+  "currentOperatingStatusChecked": false,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot52-cheongyang-farmer-table",
+      "name": "농부밥상",
+      "category": "한식",
+      "region": "충남",
+      "district": "청양군",
+      "address": "충청남도 청양군 대치면 칠갑산로 704-18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "구기자떡갈비한상"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2025년 2차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=1053",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-cheongyang-jeong-guchu",
+      "name": "정여사고추장찌개",
+      "category": "한식",
+      "region": "충남",
+      "district": "청양군",
+      "address": "충청남도 청양군 장평면 주미골길 22-46",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고추장찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2024년 1차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=47",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-seocheon-jinmi",
+      "name": "진미식당",
+      "category": "한식",
+      "region": "충남",
+      "district": "서천군",
+      "address": "충청남도 서천군 판교면 종판로 883",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "콩국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2024년 1차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=41",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+      "name": "금산원조김정이삼계탕",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 인삼약초로 33 대원상가 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2025년 2차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=145",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-nonsan-banwol-soba",
+      "name": "반월소바",
+      "category": "일식",
+      "region": "충남",
+      "district": "논산시",
+      "address": "충청남도 논산시 해월로 132",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "메밀소바"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2025년 2차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=698",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungnam-slot52-seocheon-surawon",
+      "name": "수라원",
+      "category": "한식",
+      "region": "충남",
+      "district": "서천군",
+      "address": "충청남도 서천군 장항읍 장산로 641-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "석쇠불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남 방문의 해 대표 맛집 선정",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "sourceName": "충청남도 공식 충남관광 · 방문의 해 대표 맛집 선정 명단",
+          "verifiedAt": "2026-11-07",
+          "sourceAsOf": "2025-07-04",
+          "sourceRegisteredAt": "2025-07-04",
+          "sourceRegistrationUrl": "https://tour.chungnam.go.kr/bbs/BBSMSTR_000000000197/view.do?nttId=B000000150654Hi2wI1",
+          "status": "historical_selection",
+          "selectionCriteria": "충청남도와 국민이 함께 선정한 2025년 2차 대표 맛집. 블루리본·미쉐린 선정이나 현재 영업 여부와는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_01_01/view.do?rstNo=330",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
