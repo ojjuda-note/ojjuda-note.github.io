@@ -26,6 +26,14 @@ PATH = re.compile(
     r'[0-9a-f-]{36}[.]jpg$'
 )
 
+
+class PreviewFormatError(ValueError):
+    """Safe, non-identifying reason code for an unsupported private image."""
+
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
 # Each row has already been published by its author; no orphan or foreign images.
 CANDIDATES = """
 select e.id,e.author_id,f.value->>'path', (o.metadata->>'size')::bigint
@@ -87,18 +95,23 @@ def make_preview(raw):
     if not 1 <= len(raw) <= MAX_ORIGINAL_BYTES:
         raise ValueError('Original size outside private bucket limits')
     # Decoding huge or malformed images can exhaust the runner; fail safely.
-    Image.MAX_IMAGE_PIXELS = 100_000_000
+    Image.MAX_IMAGE_PIXELS = 300_000_000
     with Image.open(BytesIO(raw)) as source:
-        if source.format != 'JPEG':
-            raise ValueError('An original is not a JPEG')
+        # Some old .jpg uploads contain a different image container.
+        if source.format not in ('JPEG', 'PNG', 'WEBP', 'GIF', 'AVIF'):
+            raise PreviewFormatError('unrecognized_container')
         # JPEG draft shrinks the decode before allocating full-resolution pixels.
         # Large phone and panorama photos often exceed 35 million source pixels.
-        if source.width * source.height > 150_000_000:
-            raise ValueError('Original pixel count exceeds the safe header limit')
+        if source.width * source.height > 500_000_000:
+            raise PreviewFormatError('pixel_limit')
         source.draft('RGB', (960, 960))
         if source.width * source.height > 35_000_000:
-            raise ValueError('Decoded image would exceed the safe pixel limit')
-        image = ImageOps.exif_transpose(source).convert('RGB')
+            raise PreviewFormatError('pixel_limit')
+        try:
+            image = ImageOps.exif_transpose(source).convert('RGB')
+        except (ValueError, OSError):
+            # Broken EXIF must not make otherwise decodable pixels unusable.
+            image = source.convert('RGB')
     try:
         for bound, quality in ((960, 76), (960, 60), (768, 60), (640, 50), (480, 45)):
             reduced = image.copy()
@@ -113,7 +126,7 @@ def make_preview(raw):
                 reduced.close()
     finally:
         image.close()
-    raise ValueError('Cannot create a small enough WebP preview')
+    raise PreviewFormatError('webp_size')
 
 
 def exists(storage, key):
@@ -141,7 +154,7 @@ def backfill(conn, storage, apply=False):
     if not conn.execute("select pg_try_advisory_lock(hashtext('ojjuda_group_preview_backfill'))").fetchone()[0]:
         raise RuntimeError('A backfill is already running')
     created = linked = skipped = 0
-    reasons = {'size_mismatch': 0, 'image_unsupported': 0}
+    reasons = {}
     for entry, author, original, size in rows:
         thumb = preview_path(original, author)
         made = False
@@ -154,13 +167,19 @@ def backfill(conn, storage, apply=False):
                 body.close()
             if len(raw) != size:
                 skipped += 1
-                reasons['size_mismatch'] += 1
+                reasons['size_mismatch'] = reasons.get('size_mismatch', 0) + 1
                 continue
             try:
                 preview = make_preview(raw)
-            except (ValueError, UnidentifiedImageError, OSError, Image.DecompressionBombError):
+            except (ValueError, UnidentifiedImageError, OSError, Image.DecompressionBombError) as error:
                 skipped += 1
-                reasons['image_unsupported'] += 1
+                # Only fixed reason codes, never error text or image metadata.
+                reason = (error.code if isinstance(error, PreviewFormatError)
+                          else 'unidentified' if isinstance(error, UnidentifiedImageError)
+                          else 'pixel_limit' if isinstance(error, Image.DecompressionBombError)
+                          else 'decoder_error' if isinstance(error, OSError)
+                          else 'invalid_image')
+                reasons[reason] = reasons.get(reason, 0) + 1
                 continue
             # This never modifies originals. A race with another upload fails closed.
             storage.put_object(Bucket=BUCKET, Key=thumb, Body=preview,
