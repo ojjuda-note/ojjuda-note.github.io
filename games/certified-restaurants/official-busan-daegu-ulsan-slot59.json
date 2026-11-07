@@ -6,9 +6,12 @@
   "sourceUrls": [
     "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098",
     "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
-    "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+    "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+    "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+    "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
   ],
-  "sourceScope": "공식 개별 확인3곳 (전체 지역 명단 아님)",
+  "sourceScope": "부산·대구·울산 공식 개별 자료 6곳 확인 (전수 아님); 부산 2곳 및 대구 1곳 같은 회차 이어하기",
   "completeRegionalCollection": false,
   "coordinatePolicy": "공식 주소 확인만 수행, 식당 및 지점 일치 숫자 좌표 없어서 추정 좌표는 추가하지 않음",
   "currentOperatingStatusVerified": false,
@@ -93,6 +96,88 @@
         }
       ],
       "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    },
+    {
+      "id": "local-busan-slot59-cheongsan1954",
+      "name": "청산1954",
+      "category": "한식",
+      "region": "부산",
+      "district": "수영구",
+      "address": "부산광역시 수영구 황령산로 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "편백낙지보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산광역시 부산의 맛 관광 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+          "sourceName": "부산광역시 · VisitBusan 부산의 맛",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 소개·지정 확인. 판본·정규 미쉐린/블루리본 선정 등급 및 현재 영업 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367"
+    },
+    {
+      "id": "local-busan-slot59-ubongshabu",
+      "name": "우봉샤브",
+      "category": "한식",
+      "region": "부산",
+      "district": "해운대구",
+      "address": "부산광역시 해운대구 청사포로 127",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 차돌박이 샤브샤브"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산광역시 부산의 맛 관광 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+          "sourceName": "부산광역시 · VisitBusan 부산의 맛",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 소개·지정 확인. 판본·정규 미쉐린/블루리본 선정 등급 및 현재 영업 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384"
+    },
+    {
+      "id": "local-daegu-slot59-jungangtteokbokki",
+      "name": "중앙떡볶이",
+      "category": "분식",
+      "region": "대구",
+      "district": "중구",
+      "address": "대구광역시 중구 동성로2길 81 (동성로2가)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌀떡볶이",
+        "납작만두"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구 중구맛집 지정",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9",
+          "sourceName": "대구광역시 대구푸드 · 중구청 지정",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 소개·지정 확인. 판본·정규 미쉐린/블루리본 선정 등급 및 현재 영업 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
     }
   ]
 }
