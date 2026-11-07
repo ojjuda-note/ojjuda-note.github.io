@@ -38,7 +38,7 @@
   const VIEW_OF_TAB = { cards: 'card', risk: 'risk', archive: 'archive' }, TAB_OF_VIEW = { card: 'cards', risk: 'risk', archive: 'archive' };
   function openTab(id) {   // 탭을 고르면 카드 종류를 맞추고 불러와요
     if (!confirmLeave()) return false;
-    if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], offset: 0, expiredOffset: 0, query: '', state: 'all' });
+    if (VIEW_OF_TAB[id] && filters.cards.view !== VIEW_OF_TAB[id]) Object.assign(filters.cards, { view: VIEW_OF_TAB[id], riskReview: 'pending', offset: 0, expiredOffset: 0, query: '', state: 'all' });
     return load(id);
   }
   const TAB_ITEMS = Object.freeze(TABS.map(([id, label]) => Object.freeze({ id, label })));
@@ -60,9 +60,9 @@
     archive: '카드 보관', archive_card: '카드 보관', restore_archived_card: '보관 카드 복구',
     purge_card: '보관 자료 영구 정리', edit_event: '이벤트 조건 정정',
     restrict_user: '이용 제한', release_user: '이용 제한 해제', add_moderator: '운영자 지정',
-    remove_moderator: '운영자 해제', update_settings: '서비스 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변'
+    remove_moderator: '운영자 해제', update_settings: '서비스 공지 변경', update_spam_settings: '도배 방지 설정 변경', reply_inquiry: '문의 답변', risk_pass: '위험 신호 통과', risk_undo: '위험 신호 통과 취소'
   };
-  const filters = { cards: { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
+  const filters = { cards: { query: '', state: 'all', view: 'card', riskReview: 'pending', offset: 0, expiredOffset: 0 }, users: { query: '', offset: 0 }, actions: { offset: 0 }, reports: { offset: 0 } };
   let client = null, onChanged = null, userId = null, subscription = null;
   let instance = 0, pageRun = 0, busy = false, tabId = 'cards', actionReturn = null;
   let previousFocus = null, previousOverflow = '', inertState = [], disabledState = [], embedded = false;
@@ -279,6 +279,20 @@
     build(form, actions);
     form.append(actions); main.append(form);
     focusSection(heading);
+  }
+  function reviewRiskCard(card, pass) {
+    actionScreen(pass ? '위험 신호 통과' : '통과 취소', pass
+      ? '위험이 아닌 글로 확인했다면 통과시킬 수 있어요. 글은 그대로 공개되고 위험 목록에서 제외됩니다. 내용이 바뀌면 다시 검사해요.'
+      : '통과 처리를 취소하면 이 글이 위험 신호 검토 목록에 다시 나타납니다.', (form, actions) => {
+      form.append(el('blockquote', 'na-card-body', card.body || '원문 없음'));
+      const reason = reasonField(); form.append(reason.wrap);
+      const save = button(pass ? '통과 처리' : '통과 취소', () => {}, 'primary'); save.type = 'submit'; actions.append(save);
+      form.addEventListener('submit', event => {
+        event.preventDefault(); if (!validReason(reason.input)) return;
+        perform('admin_review_risk_card', { p_card_id: card.id, p_pass: pass, p_reason: reason.input.value.trim() },
+          pass ? '위험 신호를 통과 처리했어요.' : '위험 신호를 다시 검토하도록 돌렸어요.', 'risk');
+      });
+    });
   }
   function confirmVisibility(card) {
     const hide = !card.hidden;
@@ -605,13 +619,19 @@
     const filter = filters.cards;
     if (filter.view === 'archive') return renderArchive(run);
     if (filter.view === 'risk') {
-      main.append(el('p', 'na-warning na-risk-help', '자살·자해·폭력·협박과 관련된 표현을 자동으로 찾은 카드와 답글입니다. 오탐이 있을 수 있으니 내용을 확인해 주세요. 긴급한 상황은 112·119, 자살예방상담은 109로 연결해 주세요.'));
+      main.append(el('p', 'na-warning na-risk-help', '위험 표현이 감지된 글입니다. 실제 위험이 아니면 ‘통과’ 처리해 주세요. 글이 수정되면 자동으로 다시 검토 대상이 됩니다. 긴급 상황은 112·119, 자살예방상담은 109로 연결해 주세요.'));
+      const tabs = el('div', 'na-actions');
+      for (const [value, title] of [['pending', '검토 대기'], ['passed', '통과 내역']]) {
+        const control = button(title, () => { filter.riskReview = value; filter.offset = 0; load('risk'); }, filter.riskReview === value ? 'primary' : '');
+        control.setAttribute('aria-pressed', String((filter.riskReview || 'pending') === value)); tabs.append(control);
+      }
+      main.append(tabs);
     }
     const riskCount = filter.view === 'card'
       ? rpc('admin_risk_cards', { p_query: '', p_state: 'all', p_limit: 1, p_offset: 0 }).then(rows => ({ count: Number(rows?.[0]?.total_count || 0) }), () => ({ error: true }))
       : Promise.resolve(null);
     const [rows, risk] = await Promise.all([
-      rpc(filter.view === 'risk' ? 'admin_risk_cards' : 'admin_cards', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset }),
+      rpc(filter.view === 'risk' ? (filter.riskReview === 'passed' ? 'admin_passed_risk_cards' : 'admin_risk_cards') : 'admin_cards', { p_query: filter.query, p_state: filter.state, p_limit: PAGE_SIZE, p_offset: filter.offset }),
       riskCount
     ]);
     if (!validRun(run)) return;
@@ -620,18 +640,24 @@
       const alert = el('section', 'box na-box na-risk-summary');
       alert.append(el('strong', '', `⚠️ 위험 신호가 보이는 카드·답글 ${number(risk.count)}개`),
         el('p', '', '내용을 확인하고 필요한 조치를 해 주세요.'),
-        button('위험 신호 보기', () => { filters.cards.view = 'risk'; filters.cards.offset = 0; filters.cards.query = ''; filters.cards.state = 'all'; load('cards'); }, 'primary'));
+        button('위험 신호 보기', () => { filters.cards.view = 'risk'; filters.cards.offset = 0; filters.cards.query = ''; filters.cards.state = 'all'; filters.cards.riskReview = 'pending'; load('cards'); }, 'primary'));
       main.append(alert);
     }
     main.append(searchForm(filter.query, '글 내용이나 태그 검색', (query, state) => { filters.cards = { ...filters.cards, query, state, offset: 0 }; load('cards'); }, filter.state));
+    const passedIds = filter.view === 'card' && rows?.length
+      ? await rpc('admin_risk_passed_ids', { p_card_ids: rows.map(row => row.id) }) : [];
+    if (!validRun(run)) return;
+    const passedSet = new Set(passedIds || []);
     if (!rows?.length) { empty(main, filter.offset ? '이 페이지에 콘텐츠가 없어요.' : '조건에 맞는 카드와 답글이 없어요.'); if (filter.offset) main.append(button('첫 페이지로', () => { filters.cards.offset = 0; load('cards'); })); return; }
     const total = rows[0].total_count; main.append(el('p', 'na-count', `총 ${number(total)}개 · ${filter.offset + 1}–${filter.offset + rows.length}`));
     const list = el('div', 'na-list');
     for (const card of rows) {
-      const riskSignal = RISK_SIGNAL.test(String(card.body || ''));
+      const reviewedRisk = (filter.view === 'risk' && filter.riskReview === 'passed') || passedSet.has(card.id);
+      const riskSignal = RISK_SIGNAL.test(String(card.body || '')) && !reviewedRisk;
       const item = el('article', `adm-card na-item${riskSignal ? ' na-item--risk' : ''}`); const header = el('div', 'na-item-header');
       const meta = el('p', 'na-meta'); meta.append(badge(card.kind === 'comment' ? '답글' : card.kind === 'event' ? '이벤트 카드' : '익명카드'), badge(card.hidden ? '개별 숨김' : '개별 숨김 없음', card.hidden ? 'warn' : 'good'), el('span', '', formatDate(card.created_at)));
-      if (riskSignal) meta.prepend(badge('⚠️ 위험 신호', 'risk'));
+      if (reviewedRisk) meta.prepend(badge('✓ 통과됨', 'good'));
+      else if (riskSignal) meta.prepend(badge('⚠️ 위험 신호', 'risk'));
       header.append(meta); item.append(header, el('blockquote', 'na-card-body', card.body));
       if (card.tags?.length) { const tags = el('div', 'na-tags'); for (const tag of card.tags) tags.append(el('span', '', `#${tag}`)); item.append(tags); }
       item.append(el('p', 'na-reason', `작성자: ${shortUser(card.author_id)}`));
@@ -639,6 +665,7 @@
       item.append(details([['카드 번호', card.id], ['작성자 번호', card.author_id], ['원글 번호', card.parent_id], ['마지막 수정', formatDate(card.edited_at)]]));
       const actions = el('div', 'na-actions');
       actions.append(button('본문·태그 수정', () => editCard(card)), button(card.hidden ? '복구' : '숨김', () => confirmVisibility(card), card.hidden ? '' : 'danger'));
+      if (filter.view === 'risk') actions.append(button(reviewedRisk ? '통과 취소' : '통과', () => reviewRiskCard(card, !reviewedRisk), reviewedRisk ? '' : 'primary'));
       const more = moreCardActions(button('꾸미기·사진 지정', () => editCardVisual(card)), button('삭제', () => confirmDeleteCard(card), 'danger'));
       if (card.author_id) more.row.append(button('작성자 관리', () => { filters.users = { query: card.author_id, offset: 0 }; load('users'); }));
       if (card.author_id) more.row.append(button('이 작성자의 카드 모두 보기', () => { Object.assign(filters.cards, { view: 'card', query: card.author_id, state: 'all', offset: 0, expiredOffset: 0 }); load('cards'); }));
@@ -1065,7 +1092,7 @@
     if (!embedded) document.body.style.overflow = previousOverflow;
     const focus = previousFocus; previousFocus = null; userId = null; client = null; onChanged = null;
     externalNav = false; authorized = false; onTabChange = null;
-    filters.cards = { query: '', state: 'all', view: 'card', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0; filters.map = { offset: 0 };
+    filters.cards = { query: '', state: 'all', view: 'card', riskReview: 'pending', offset: 0, expiredOffset: 0 }; filters.users = { query: '', offset: 0 }; filters.reports.offset = 0; filters.actions.offset = 0; filters.map = { offset: 0 };
     if (embedded) {
       embedded = false; root.classList.remove('na-embedded'); root.remove();
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); closeButton.hidden = false;
