@@ -66,6 +66,23 @@ test('a retiring loader cannot unlock scrolling while another game is loading', 
   } finally {close();}
 });
 
+test('cancelled iframe loading frees its pending listener and timeout immediately', async () => {
+  const {w, close} = entrance();
+  try {
+    const host = w.document.createElement('section');
+    host.id = 'photo-ttang-overlay';
+    const frame = w.document.createElement('iframe');
+    host.append(frame);w.document.body.append(host);
+    const session = w.OjjudaGameLaunch.show('photo_ttang');
+    const pending = session.finishAfterOpen();
+    await pause(120);
+    session.cancel({silent:true});
+    const settled = await Promise.race([pending.then(() => true),pause(120).then(() => false)]);
+    assert.equal(settled,true,'closing the game does not keep its 5-second iframe wait alive');
+    assert.equal(w.document.querySelector('.ojjuda-game-launch-loading'),null);
+  } finally {close();}
+});
+
 test('lazy entry opens the game after assets load and ignores a cancelled request', async () => {
   const start = world.indexOf('function Al(');
   const end = world.indexOf('// User-requested exits ask first;', start);

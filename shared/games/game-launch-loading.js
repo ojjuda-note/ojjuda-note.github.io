@@ -61,7 +61,7 @@
     root.querySelector('.ogl-title').textContent = name+' 준비 중!';
     root.querySelector('.ogl-caption').textContent = line;
     const previous = document.activeElement;
-    let closed = false, shownAt = 0, fadeTimer = null, removeTimer = null;
+    let closed = false, shownAt = 0, fadeTimer = null, removeTimer = null, pendingFrameCleanup = null;
     const remove = () => {
       root.remove();
       if (!document.querySelector('.ojjuda-game-launch-loading')) document.body.classList.remove('ojjuda-game-launch-open');
@@ -80,6 +80,7 @@
       if (closed) return;
       closed = true;
       clearTimeout(revealTimer);clearTimeout(fadeTimer);clearTimeout(removeTimer);
+      pendingFrameCleanup?.();
       window.removeEventListener('keydown',listener,true);
       window.removeEventListener('pagehide',onPageHide);
       if (current === session) current = null;
@@ -110,9 +111,15 @@
           let ready = false;
           try {ready = iframe.contentDocument?.readyState === 'complete' && iframe.contentDocument?.URL !== 'about:blank';} catch {}
           if (!ready) await new Promise(resolve => {
-            const done = () => {clearTimeout(timer);iframe.removeEventListener('load',done);resolve();};
-            const timer = setTimeout(done,5000);
+            let timer;
+            const done = () => {
+              clearTimeout(timer);iframe.removeEventListener('load',done);
+              if (pendingFrameCleanup === done) pendingFrameCleanup = null;
+              resolve();
+            };
+            timer = setTimeout(done,5000);
             iframe.addEventListener('load',done,{once:true});
+            pendingFrameCleanup = done;
           });
         }
         if (!closed) dismiss();
