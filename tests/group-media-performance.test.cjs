@@ -140,3 +140,82 @@ test('account changes discard unfinished private downloads before a blob can be 
   assert.equal(f.revoked.length,0,'the stale blob never receives a visible URL');
  }finally{f.dom.window.close();}
 });
+
+test('gallery buttons, mouse wheel and keyboard zoom the full image, then reset for video',async()=>{
+ const video=photo.replace(/\.jpg$/,'.mp4');
+ const f=fixture({media:[{path:photo,mime:'image/jpeg',name:'풍경.jpg'},{path:video,mime:'video/mp4',name:'여행.mp4'}]});
+ try{
+  await tick(85);const w=f.w,d=w.document;
+  d.querySelector('.media-slot img').click();await tick(45);
+  const modal=d.querySelector('.lightbox'),stage=modal.querySelector('.gallery-stage'),bar=modal.querySelector('.gallery-zoom');
+  assert.equal(bar.hidden,false,'photo has visible zoom controls');
+  assert.equal(stage.dataset.zoomable,'true');
+  bar.querySelector('[data-zoom-in]').click();
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'150%');
+  assert.match(stage.querySelector('img').style.transform,/scale\(1\.5\)/);
+  const wheel=new w.WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:-100,clientX:20,clientY:20});
+  stage.dispatchEvent(wheel);assert.equal(wheel.defaultPrevented,true);
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'180%');
+  modal.dispatchEvent(new w.KeyboardEvent('keydown',{key:'0',bubbles:true,cancelable:true}));
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'100%');
+  modal.querySelector('[data-gallery-next]').click();await tick(45);
+  assert.equal(stage.querySelector('video')?.controls,true);
+  assert.equal(bar.hidden,true,'videos retain their normal playback controls');
+  assert.equal(stage.dataset.zoomable,undefined);
+ }finally{f.dom.window.close();}
+});
+
+test('pinch, pan and double tap zoom photos without accidentally swiping to another attachment',async()=>{
+ const next=photo.replace('30000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000002');
+ const f=fixture({media:[{path:photo,mime:'image/jpeg',name:'첫 번째'},{path:next,mime:'image/jpeg',name:'두 번째'}]});
+ try{
+  await tick(85);const w=f.w,d=w.document;d.querySelector('.media-slot img').click();await tick(45);
+  const modal=d.querySelector('.lightbox'),stage=modal.querySelector('.gallery-stage'),img=stage.querySelector('img'),bar=modal.querySelector('.gallery-zoom');
+  Object.defineProperties(stage,{clientWidth:{value:600,configurable:true},clientHeight:{value:400,configurable:true}});
+  Object.defineProperties(img,{clientWidth:{value:600,configurable:true},clientHeight:{value:400,configurable:true}});
+  stage.getBoundingClientRect=()=>({left:0,top:0,width:600,height:400});
+  const finger=(identifier,x,y)=>({identifier,clientX:x,clientY:y});
+  const touch=(name,touches,changed=touches)=>{
+   const e=new w.Event(name,{bubbles:true,cancelable:true});
+   Object.defineProperties(e,{touches:{value:touches},changedTouches:{value:changed}});
+   stage.dispatchEvent(e);return e;
+  };
+  touch('touchstart',[finger(1,200,200),finger(2,400,200)]);
+  const pinch=touch('touchmove',[finger(1,100,200),finger(2,500,200)]);
+  assert.equal(pinch.defaultPrevented,true);
+  assert.equal(stage.dataset.zoomed,'true');
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'200%');
+  touch('touchend',[],[finger(1,100,200),finger(2,500,200)]);
+  touch('touchstart',[finger(3,290,220)]);
+  touch('touchmove',[finger(3,350,240)]);
+  assert.match(img.style.transform,/translate3d\(60px,20px,0\)/,'one finger pans the enlarged image');
+  touch('touchend',[],[finger(3,350,240)]);
+  touch('touchstart',[finger(4,250,180)]);
+  touch('touchend',[],[finger(4,50,180)]);
+  assert.equal(modal.querySelector('[data-gallery-count]').textContent,'1 / 2','zoomed drag does not change photos');
+  touch('touchstart',[finger(5,220,190)]);touch('touchend',[],[finger(5,220,190)]);
+  touch('touchstart',[finger(6,220,190)]);touch('touchend',[],[finger(6,220,190)]);
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'100%','double tap resets zoom');
+  touch('touchstart',[finger(7,250,180)]);touch('touchend',[],[finger(7,50,180)]);
+  await tick(45);
+  assert.equal(modal.querySelector('[data-gallery-count]').textContent,'2 / 2','normal swipe still changes photos');
+  assert.equal(bar.querySelector('[data-zoom-reset]').textContent,'100%');
+ }finally{f.dom.window.close();}
+});
+
+test('desktop dragging pans enlarged images without leaving a dragging state behind',async()=>{
+ const f=fixture({media:[{path:photo,mime:'image/jpeg',name:'확대할 사진'}]});
+ try{
+  await tick(85);const w=f.w,d=w.document;d.querySelector('.media-slot img').click();await tick(45);
+  const modal=d.querySelector('.lightbox'),stage=modal.querySelector('.gallery-stage'),img=stage.querySelector('img');
+  Object.defineProperties(stage,{clientWidth:{value:600,configurable:true},clientHeight:{value:400,configurable:true}});
+  Object.defineProperties(img,{clientWidth:{value:600,configurable:true},clientHeight:{value:400,configurable:true}});
+  modal.querySelector('[data-zoom-in]').click();modal.querySelector('[data-zoom-in]').click();
+  stage.dispatchEvent(new w.MouseEvent('mousedown',{bubbles:true,cancelable:true,button:0,clientX:150,clientY:150}));
+  w.dispatchEvent(new w.MouseEvent('mousemove',{clientX:210,clientY:175}));
+  assert.match(img.style.transform,/translate3d\(60px,25px,0\)/);
+  w.dispatchEvent(new w.MouseEvent('mouseup'));
+  assert.equal(stage.classList.contains('dragging'),false);
+  modal.querySelector('[data-close]').click();assert.equal(modal.isConnected,false);
+ }finally{f.dom.window.close();}
+});
