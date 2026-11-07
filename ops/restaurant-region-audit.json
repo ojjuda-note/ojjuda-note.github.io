@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 45,
-    "scheduledAt": "2026-11-07T15:00:00+09:00",
+    "slot": 47,
+    "scheduledAt": "2026-11-07T17:00:00+09:00",
     "checkedAtKST": "2026-11-07",
-    "source": "자동 실행의 별도 원 예약시각 정보가 없어 제공된 현지 2026-11-07 15:59:29+09:00을 정각인 15:00으로 내림; 기준시각에서 h=40, n=44, slot=45."
+    "source": "원 예약시각 별도 제공 없음. 자동 실행 한국시각 2026-11-07 17:02:21+09:00 정각 내림, 기준 h=42 n=46 slot47."
   },
   "entries": [
     {
@@ -16395,6 +16395,1471 @@
           "browserTestUrl": "https://agent.tinyfish.ai/runs/1ef07caf-aab3-4342-a910-08fe68040226"
         }
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 47,
+      "scheduledAtKST": "2026-11-07T17:00:00+09:00",
+      "checkedAtKST": "2026-11-07",
+      "status": "partial_review_four_verified_jeju_official_tourism_positions",
+      "assignedRegions": [
+        "제주특별자치도 제주시"
+      ],
+      "regionAudit": [
+        {
+          "region": "제주특별자치도 제주시",
+          "baseListedCount": 86,
+          "scope": "86곳 중 좌표 누락 75곳 목록을 우선 추출, 공식 제주관광공사 업소 상세 4곳 좌표 확인; 나머지 71곳 개별 위치 검증 이월. 전수 확인 아님.",
+          "new": 0,
+          "updated": 4,
+          "remainingUnknownLocations": 71,
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "제주관광공사 VisitJeju 공식 식당 상세 주소·좌표 4건",
+        "VisitJeju 블루리본서베이 2022 공동수록 과거 목록",
+        "VisitJeju 제주 향토음식점 공개 선정 목록"
+      ],
+      "additions": 0,
+      "modifications": 4,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 4,
+      "locationHidden": 0,
+      "locationPending": 71,
+      "locationPendingScope": "기본 restaurants.json의 제주시 86곳 중 위치 미확인 75곳에서 4곳만 검증, 미확인 71곳은 현행 주소와 개별 수치좌표 아직 대조하지 않은 재확인 목록.",
+      "addedRestaurantIds": [],
+      "modifiedRestaurantIds": [
+        "blue-jeju-2022-1",
+        "local-jeju-3",
+        "local-jeju-18",
+        "local-jeju-34"
+      ],
+      "evidenceUrls": [
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+        "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076",
+        "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229",
+        "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+      ],
+      "verifiedLocations": [
+        {
+          "restaurantId": "blue-jeju-2022-1",
+          "name": "스시호시카이",
+          "currentAddress": "제주특별자치도 제주시 오남로 90",
+          "latitude": 33.487827,
+          "longitude": 126.51764,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000001031&menuId=DOM_000001818000000005",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-3",
+          "name": "국수마당 본점",
+          "currentAddress": "제주특별자치도 제주시 삼성로 65",
+          "latitude": 33.5080638,
+          "longitude": 126.5322532,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000019644",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-18",
+          "name": "탑동산호전복",
+          "currentAddress": "제주특별자치도 제주시 탑동로 59",
+          "latitude": 33.5180133,
+          "longitude": 126.5186772,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000501394&menuId=DOM_000001719001000000",
+          "checkedAt": "2026-11-07"
+        },
+        {
+          "restaurantId": "local-jeju-34",
+          "name": "고사리식당",
+          "currentAddress": "제주특별자치도 제주시 조천읍 번영로 1680",
+          "latitude": 33.4777041,
+          "longitude": 126.7135515,
+          "officialEvidenceUrl": "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008076",
+          "checkedAt": "2026-11-07"
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "blue-jeju-2022-2",
+          "name": "밭담",
+          "currentAddress": "제주특별자치도 제주시 구좌읍 행원로5길 35-20",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "밭담 제주시",
+            "밭담 제주특별자치도 제주시 구좌읍 행원로5길 35-20"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-3",
+          "name": "스시앤",
+          "currentAddress": "제주특별자치도 제주시 고산동산5길 21-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "스시앤 제주시",
+            "스시앤 제주특별자치도 제주시 고산동산5길 21-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-4",
+          "name": "우림일식",
+          "currentAddress": "제주특별자치도 제주시 도령로 28-2",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "우림일식 제주시",
+            "우림일식 제주특별자치도 제주시 도령로 28-2"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-5",
+          "name": "유메",
+          "currentAddress": "제주특별자치도 제주시 무근성7길 23",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "유메 제주시",
+            "유메 제주특별자치도 제주시 무근성7길 23"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-7",
+          "name": "제주이와이",
+          "currentAddress": "제주특별자치도 제주시 애월읍 하귀로 4",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "제주이와이 제주시",
+            "제주이와이 제주특별자치도 제주시 애월읍 하귀로 4"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-8",
+          "name": "탐모라",
+          "currentAddress": "제주특별자치도 제주시 탑동로 66",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "탐모라 제주시",
+            "탐모라 제주특별자치도 제주시 탑동로 66"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-12",
+          "name": "새우동",
+          "currentAddress": "제주특별자치도 제주시 중앙로 237",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "새우동 제주시",
+            "새우동 제주특별자치도 제주시 중앙로 237"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-15",
+          "name": "덕성원 이도점",
+          "currentAddress": "제주특별자치도 제주시 신설로 11길 8-6",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "덕성원 이도점 제주시",
+            "덕성원 이도점 제주특별자치도 제주시 신설로 11길 8-6"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-19",
+          "name": "십원향",
+          "currentAddress": "제주특별자치도 제주시 원노형로 23",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "십원향 제주시",
+            "십원향 제주특별자치도 제주시 원노형로 23"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-20",
+          "name": "아주반점",
+          "currentAddress": "제주특별자치도 제주시 관덕로 13길4",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "아주반점 제주시",
+            "아주반점 제주특별자치도 제주시 관덕로 13길4"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-21",
+          "name": "유일반점",
+          "currentAddress": "제주특별자치도 제주시 광양7길 13",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "유일반점 제주시",
+            "유일반점 제주특별자치도 제주시 광양7길 13"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-22",
+          "name": "협재온리원",
+          "currentAddress": "제주특별자치도 제주시 한림읍 협재1길 55",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "협재온리원 제주시",
+            "협재온리원 제주특별자치도 제주시 한림읍 협재1길 55"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-24",
+          "name": "라스또르따스",
+          "currentAddress": "제주특별자치도 제주시 광양11길 8-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "라스또르따스 제주시",
+            "라스또르따스 제주특별자치도 제주시 광양11길 8-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-27",
+          "name": "르부이부이",
+          "currentAddress": "제주특별자치도 제주시 사라봉7길 32",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "르부이부이 제주시",
+            "르부이부이 제주특별자치도 제주시 사라봉7길 32"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-28",
+          "name": "릴로제주",
+          "currentAddress": "제주특별자치도 제주시 구좌읍 종달로 60-12",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "릴로제주 제주시",
+            "릴로제주 제주특별자치도 제주시 구좌읍 종달로 60-12"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-30",
+          "name": "봉플라봉뱅",
+          "currentAddress": "제주특별자치도 제주시 문송1길 6-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "봉플라봉뱅 제주시",
+            "봉플라봉뱅 제주특별자치도 제주시 문송1길 6-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-31",
+          "name": "리스투아",
+          "currentAddress": "제주특별자치도 제주시 구남동2길 19-8",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "리스투아 제주시",
+            "리스투아 제주특별자치도 제주시 구남동2길 19-8"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-35",
+          "name": "동백키친",
+          "currentAddress": "제주특별자치도 제주시 한림읍 수원7길 42",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "동백키친 제주시",
+            "동백키친 제주특별자치도 제주시 한림읍 수원7길 42"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-36",
+          "name": "도르다이닝",
+          "currentAddress": "제주특별자치도 제주시 인다2길 65",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "도르다이닝 제주시",
+            "도르다이닝 제주특별자치도 제주시 인다2길 65"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-38",
+          "name": "모디카",
+          "currentAddress": "제주특별자치도 제주시 한림읍 한림상로 134-5",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "모디카 제주시",
+            "모디카 제주특별자치도 제주시 한림읍 한림상로 134-5"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-39",
+          "name": "피자굽는 돌하르방",
+          "currentAddress": "제주특별자치도 제주시 한경면 청수로 218",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "피자굽는 돌하르방 제주시",
+            "피자굽는 돌하르방 제주특별자치도 제주시 한경면 청수로 218"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-40",
+          "name": "오데뜨제주",
+          "currentAddress": "제주특별자치도 제주시 한림읍 중산간서로 4995-6",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "오데뜨제주 제주시",
+            "오데뜨제주 제주특별자치도 제주시 한림읍 중산간서로 4995-6"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-41",
+          "name": "핏제리아마노",
+          "currentAddress": "제주특별자치도 제주시 우령6길 75-2",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "핏제리아마노 제주시",
+            "핏제리아마노 제주특별자치도 제주시 우령6길 75-2"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-42",
+          "name": "이누팬",
+          "currentAddress": "제주특별자치도 제주시 한경면 고산로 33-3",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "이누팬 제주시",
+            "이누팬 제주특별자치도 제주시 한경면 고산로 33-3"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-jeju-2022-43",
+          "name": "하노이안브라더스",
+          "currentAddress": "제주특별자치도 제주시 천수동로1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "하노이안브라더스 제주시",
+            "하노이안브라더스 제주특별자치도 제주시 천수동로1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013990&menuId=DOM_000002000000000229"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "blue-add-연리지가든",
+          "name": "연리지가든",
+          "currentAddress": "제주 제주시 한경면 두조로 190-20",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "연리지가든 제주시",
+            "연리지가든 제주 제주시 한경면 두조로 190-20"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013659"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-1",
+          "name": "갯것이식당",
+          "currentAddress": "제주특별자치도 제주시 가령로 9",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "갯것이식당 제주시",
+            "갯것이식당 제주특별자치도 제주시 가령로 9"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-2",
+          "name": "고우니가든",
+          "currentAddress": "제주특별자치도 제주시 조천읍 남조로 2625",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "고우니가든 제주시",
+            "고우니가든 제주특별자치도 제주시 조천읍 남조로 2625"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-4",
+          "name": "대우정",
+          "currentAddress": "제주특별자치도 제주시 서사로 152",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "대우정 제주시",
+            "대우정 제주특별자치도 제주시 서사로 152"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-5",
+          "name": "도두횟집",
+          "currentAddress": "제주특별자치도 제주시 도두3길 48",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "도두횟집 제주시",
+            "도두횟집 제주특별자치도 제주시 도두3길 48"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-6",
+          "name": "돌하르방식당",
+          "currentAddress": "제주특별자치도 제주시 한림읍 한림로 300",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "돌하르방식당 제주시",
+            "돌하르방식당 제주특별자치도 제주시 한림읍 한림로 300"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-7",
+          "name": "물항탑동점",
+          "currentAddress": "제주특별자치도 제주시 임항로 37-4",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "물항탑동점 제주시",
+            "물항탑동점 제주특별자치도 제주시 임항로 37-4"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-8",
+          "name": "선흘방주할머니식당",
+          "currentAddress": "제주특별자치도 제주시 조천읍 선흘리 2040-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "선흘방주할머니식당 제주시",
+            "선흘방주할머니식당 제주특별자치도 제주시 조천읍 선흘리 2040-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-9",
+          "name": "비자림꿩메밀손칼국수",
+          "currentAddress": "제주특별자치도 제주시 정든로3길 28",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "비자림꿩메밀손칼국수 제주시",
+            "비자림꿩메밀손칼국수 제주특별자치도 제주시 정든로3길 28"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-10",
+          "name": "신현대식당",
+          "currentAddress": "제주특별자치도 제주시 임항로 40",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "신현대식당 제주시",
+            "신현대식당 제주특별자치도 제주시 임항로 40"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-11",
+          "name": "어우늘",
+          "currentAddress": "제주특별자치도 제주시 연북로 222",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "어우늘 제주시",
+            "어우늘 제주특별자치도 제주시 연북로 222"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-12",
+          "name": "어장군",
+          "currentAddress": "제주특별자치도 제주시 신대로 72",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "어장군 제주시",
+            "어장군 제주특별자치도 제주시 신대로 72"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-13",
+          "name": "유리네식당",
+          "currentAddress": "제주특별자치도 제주시 연북로 146",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "유리네식당 제주시",
+            "유리네식당 제주특별자치도 제주시 연북로 146"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-14",
+          "name": "유빈",
+          "currentAddress": "제주특별자치도 제주시 탑동로 55",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "유빈 제주시",
+            "유빈 제주특별자치도 제주시 탑동로 55"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-15",
+          "name": "제일식당",
+          "currentAddress": "제주특별자치도 제주시 추자면 추자로 16-2",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "제일식당 제주시",
+            "제일식당 제주특별자치도 제주시 추자면 추자로 16-2"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-16",
+          "name": "좀녀마을뚝배기",
+          "currentAddress": "제주특별자치도 제주시 은남길 25",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "좀녀마을뚝배기 제주시",
+            "좀녀마을뚝배기 제주특별자치도 제주시 은남길 25"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-17",
+          "name": "탐라정",
+          "currentAddress": "제주특별자치도 제주시 오복4길 11",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "탐라정 제주시",
+            "탐라정 제주특별자치도 제주시 오복4길 11"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-19",
+          "name": "태광식당",
+          "currentAddress": "제주특별자치도 제주시 탑동로 144",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "태광식당 제주시",
+            "태광식당 제주특별자치도 제주시 탑동로 144"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-20",
+          "name": "흑돈가",
+          "currentAddress": "제주특별자치도 제주시 한라대학로 11",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "흑돈가 제주시",
+            "흑돈가 제주특별자치도 제주시 한라대학로 11"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-26",
+          "name": "모메존",
+          "currentAddress": "제주특별자치도 제주시 도두3길 17",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "모메존 제주시",
+            "모메존 제주특별자치도 제주시 도두3길 17"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-27",
+          "name": "바다잔치",
+          "currentAddress": "제주특별자치도 제주시 탑동로 79",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "바다잔치 제주시",
+            "바다잔치 제주특별자치도 제주시 탑동로 79"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-28",
+          "name": "동복해녀식당",
+          "currentAddress": "제주특별자치도 제주시 구좌읍 동복로 5",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "동복해녀식당 제주시",
+            "동복해녀식당 제주특별자치도 제주시 구좌읍 동복로 5"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-30",
+          "name": "뱃머리식당",
+          "currentAddress": "제주특별자치도 제주시 임항로 43",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "뱃머리식당 제주시",
+            "뱃머리식당 제주특별자치도 제주시 임항로 43"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-31",
+          "name": "날래모슬포자리돔",
+          "currentAddress": "제주특별자치도 제주시 다랑곶 7길 21",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "날래모슬포자리돔 제주시",
+            "날래모슬포자리돔 제주특별자치도 제주시 다랑곶 7길 21"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-32",
+          "name": "명물",
+          "currentAddress": "제주특별자치도 제주시 탑동로 11길 2-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "명물 제주시",
+            "명물 제주특별자치도 제주시 탑동로 11길 2-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-33",
+          "name": "복희네각재기국",
+          "currentAddress": "제주특별자치도 제주시 복지로5길 16, 1층",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "복희네각재기국 제주시",
+            "복희네각재기국 제주특별자치도 제주시 복지로5길 16, 1층"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-36",
+          "name": "영주말가든",
+          "currentAddress": "제주특별자치도 제주시 연북로 196",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "영주말가든 제주시",
+            "영주말가든 제주특별자치도 제주시 연북로 196"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-37",
+          "name": "제주향토음식점(구. 제주향토골)",
+          "currentAddress": "제주특별자치도 제주시 공항로 2, 4층",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "제주향토음식점(구. 제주향토골) 제주시",
+            "제주향토음식점(구. 제주향토골) 제주특별자치도 제주시 공항로 2, 4층"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-38",
+          "name": "황금어장",
+          "currentAddress": "제주특별자치도 제주시 사장길 14",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "황금어장 제주시",
+            "황금어장 제주특별자치도 제주시 사장길 14"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-39",
+          "name": "정우말가든",
+          "currentAddress": "제주특별자치도 제주시 아연로 17",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "정우말가든 제주시",
+            "정우말가든 제주특별자치도 제주시 아연로 17"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-40",
+          "name": "만부정",
+          "currentAddress": "제주특별자치도 제주시 사장길 38",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "만부정 제주시",
+            "만부정 제주특별자치도 제주시 사장길 38"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-41",
+          "name": "삼대전통고기국수",
+          "currentAddress": "제주특별자치도 제주시 신대로 5길 17",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "삼대전통고기국수 제주시",
+            "삼대전통고기국수 제주특별자치도 제주시 신대로 5길 17"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-42",
+          "name": "햇살가득돌담집",
+          "currentAddress": "제주특별자치도 제주시 조천읍 함대로 25-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "햇살가득돌담집 제주시",
+            "햇살가득돌담집 제주특별자치도 제주시 조천읍 함대로 25-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-43",
+          "name": "동진식당",
+          "currentAddress": "제주특별자치도 제주시 용화로 51-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "동진식당 제주시",
+            "동진식당 제주특별자치도 제주시 용화로 51-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-44",
+          "name": "산지물식당",
+          "currentAddress": "제주특별자치도 제주시 임항로 26",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "산지물식당 제주시",
+            "산지물식당 제주특별자치도 제주시 임항로 26"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-45",
+          "name": "복집식당",
+          "currentAddress": "제주특별자치도 제주시 홍운길 85",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "복집식당 제주시",
+            "복집식당 제주특별자치도 제주시 홍운길 85"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-46",
+          "name": "골막식당",
+          "currentAddress": "제주특별자치도 제주시 천수로 12",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "골막식당 제주시",
+            "골막식당 제주특별자치도 제주시 천수로 12"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-47",
+          "name": "신성할망",
+          "currentAddress": "제주특별자치도 제주시 신대로 7길 23",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "신성할망 제주시",
+            "신성할망 제주특별자치도 제주시 신대로 7길 23"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-48",
+          "name": "고모네돔베",
+          "currentAddress": null,
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "고모네돔베 제주시",
+            "고모네돔베 null"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-49",
+          "name": "함덕촐래밥상",
+          "currentAddress": "제주특별자치도 제주시 조천읍 함대로 57",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "함덕촐래밥상 제주시",
+            "함덕촐래밥상 제주특별자치도 제주시 조천읍 함대로 57"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-50",
+          "name": "수다뜰",
+          "currentAddress": "제주특별자치도 제주시 명림로 164",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "수다뜰 제주시",
+            "수다뜰 제주특별자치도 제주시 명림로 164"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-58",
+          "name": "남경어곰탕",
+          "currentAddress": "제주특별자치도 제주시 연삼로 96",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "남경어곰탕 제주시",
+            "남경어곰탕 제주특별자치도 제주시 연삼로 96"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-59",
+          "name": "검은쇠몰고오는",
+          "currentAddress": "제주특별자치도 제주시 신대로20길 27",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "검은쇠몰고오는 제주시",
+            "검은쇠몰고오는 제주특별자치도 제주시 신대로20길 27"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-60",
+          "name": "속초식당",
+          "currentAddress": "제주특별자치도 제주시 임항로 39-1",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "속초식당 제주시",
+            "속초식당 제주특별자치도 제주시 임항로 39-1"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-61",
+          "name": "신제주보말칼국수제주본점",
+          "currentAddress": "제주특별자치도 제주시 선덕로5길 19",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "신제주보말칼국수제주본점 제주시",
+            "신제주보말칼국수제주본점 제주특별자치도 제주시 선덕로5길 19"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        },
+        {
+          "restaurantId": "local-jeju-62",
+          "name": "제주흑우",
+          "currentAddress": "제주특별자치도 제주시 아란서길 110, A동 1층",
+          "region": "제주특별자치도 제주시",
+          "searchAliases": [
+            "제주흑우 제주시",
+            "제주흑우 제주특별자치도 제주시 아란서길 110, A동 1층"
+          ],
+          "existingEvidenceUrls": [
+            "https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000013847"
+          ],
+          "inventoryAt": "2026-11-07",
+          "result": "기존 공개 명단 출처만 보존, 같은 지점의 현주소 일치 공식 공개 좌표 미검증",
+          "reason": "개별 상세 및 공개 지도 수치좌표 후속 교차대조 필요",
+          "recheckCycle": 2,
+          "recheckSlot": 47,
+          "checkedIndividually": false
+        }
+      ],
+      "unresolved": [
+        {
+          "topic": "제주시 위치 미확인 71곳",
+          "reason": "공식 개별 지도 수치좌표 검증 미완료",
+          "action": "2순환 47회차 우선 재조사·비노출 금지"
+        },
+        {
+          "topic": "블루리본 최신 정규 등급·새 지점",
+          "reason": "공식 전체 지도 개별 명단·판본 검증 불충분",
+          "action": "제휴기관 식당 단위 공식 근거 확보 후 추가"
+        },
+        {
+          "topic": "1순환 46회차 기록",
+          "reason": "현재 main에 16:00 경남 밀양·양산시 점검 기록 확인되지 않음",
+          "action": "다음 순환 동일 회차에서 누락 우선 보충"
+        }
+      ],
+      "carryOver": [
+        "제주시 미확인 71곳은 세부 pendingLocationInventory 보존 후 2순환 47회차 먼저 조사.",
+        "제주 추자면·우도면을 포함한 신규 선정·영업·위치 전수 검증 미완료.",
+        "미기록 29·31·35·40·42·46회차는 다음 순환 같은 정규 슬롯에 보완.",
+        "기존 45회차 지도 타일 회색 배경·핀 육안 확인 실패 상태는 별도 화면 검증 필요."
+      ],
+      "nextSlot": 48,
+      "nextRegions": [
+        "제주특별자치도 서귀포시"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -16406,6 +17871,7 @@
     "2026-11-07 11시 41회차: 40회차 최신 운영 기록 부재는 확인 필요로 남겼으며 41회차와 합치거나 대체하지 않음.",
     "2026-11-07 11시 41회차 이어하기: 미쉐린 공식 지도 위치 8곳(사하1·연제1·수영6) 보강, 미확인 69→61. 기존 41회차 기록·회원 글 보존.",
     "2026-11-07 13시 43회차: 창원·김해 기본 목록 175건(각 83·92) 중 위치 누락 7건(6·1) 이월. 김해시 공식 2026 김해맛집 3건은 전부 기등록. 데이터 변경 없으므로 게임 캐시·revision 및 아지트 버전 미수정.",
-    "2026-11-07 15시 45회차: 통영·거제 기본 56곳(통영7·거제49) 중 좌표 누락 8곳 우선 점검. 무전리샤브칼국수 수치좌표 1건 교차검증 보강, 남은 7건 이월. 신규/비노출 0. 추천맛집 회원 자료 불변."
+    "2026-11-07 15시 45회차: 통영·거제 기본 56곳(통영7·거제49) 중 좌표 누락 8곳 우선 점검. 무전리샤브칼국수 수치좌표 1건 교차검증 보강, 남은 7건 이월. 신규/비노출 0. 추천맛집 회원 자료 불변.",
+    "2026-11-07 17시 47회차 제주시 86곳 중 위치 누락 75곳 추출, VisitJeju 공식 동일 상호·주소·좌표 4곳 확인, 위치 대기 71·신규0·비노출0. 46회차 미기록 이월. 추천맛집 회원 자료 변경 없음."
   ]
 }
