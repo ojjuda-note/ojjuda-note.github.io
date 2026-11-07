@@ -4,7 +4,7 @@
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
-  const removalTimers=new Set(),REMOVE_MS=120;
+  const removalTimers=new Set(),REMOVE_MS=120,MIN_START_TILE=44;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -90,7 +90,7 @@
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
     fitSize=Math.min(n<=2?120:n<=4?100:Infinity,fit);
-    const size=overview?fitSize:customSize||Math.max(42,fit);
+    const size=overview?fitSize:Math.max(fitSize,customSize||MIN_START_TILE);
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     const board=$('board');board.style.width=`${(cols+extra)*size+(cols-1+extra)*gap}px`;board.style.height=`${(rows+extra)*size*1.19+(rows-1+extra)*gap}px`;
@@ -168,7 +168,15 @@
     stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
-    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;
+    state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
+    const viewport=$('board-scroll');
+    if(fitSize<MIN_START_TILE){
+      // Readable finger-sized tiles come first; the full-board view remains one tap away.
+      overview=false;customSize=MIN_START_TILE;sizeBoard();
+      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
+      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
+      $('status').textContent='패를 크게 표시했어요. 밀어서 이동하고, 전체 보기로 한눈에 볼 수 있어요.';
+    }else{viewport.scrollTop=0;viewport.scrollLeft=0;}
   }
   function ensureMove(){
     if(!count()||availableMove())return false;

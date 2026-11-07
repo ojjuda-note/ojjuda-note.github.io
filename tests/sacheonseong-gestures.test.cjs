@@ -25,8 +25,8 @@ try{
  const left=viewport.scrollLeft,top=viewport.scrollTop;pointer('pointerdown',3,200,300);pointer('pointermove',3,140,240);pointer('pointerup',3,140,240);assert(viewport.scrollLeft>left);assert(viewport.scrollTop>top);
  const enlarged=size();let wheel=new w.WheelEvent('wheel',{bubbles:true,cancelable:true,ctrlKey:true,deltaY:35,clientX:150,clientY:250});viewport.dispatchEvent(wheel);assert(wheel.defaultPrevented);assert(size()<enlarged);
  wheel=new w.WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:30});viewport.dispatchEvent(wheel);assert(!wheel.defaultPrevented,'ordinary scrolling remains native');
- d.getElementById('zoom-fit').click();assert.equal(size(),initial);assert.equal(viewport.scrollLeft,0);assert.equal(viewport.scrollTop,0);
- pointer('pointerdown',4,100,200);pointer('pointerdown',5,200,200);pointer('pointermove',5,120,200);assert.equal(size(),initial,'pinch-out stops at full-board fit');pointer('pointercancel',4,100,200);pointer('pointercancel',5,120,200);
+ d.getElementById('zoom-fit').click();const wholeSize=size();assert(wholeSize<=initial,'full-board view can shrink below the readable starting size');assert.equal(viewport.scrollLeft,0);assert.equal(viewport.scrollTop,0);
+ pointer('pointerdown',4,100,200);pointer('pointerdown',5,200,200);pointer('pointermove',5,120,200);assert.equal(size(),wholeSize,'pinch-out stops at full-board fit');pointer('pointercancel',4,100,200);pointer('pointercancel',5,120,200);
  assert.equal(d.querySelector('.topbar').style.transform,'');assert.equal(d.querySelector('.game-actions').style.transform,'');
  // A blocked same-face pair keeps the first selection, so a duplicate touch
  // click would incorrectly apply a second penalty rather than just deselecting.
