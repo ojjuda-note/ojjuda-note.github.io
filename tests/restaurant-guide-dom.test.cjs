@@ -25,8 +25,8 @@ for (const [name, category, label] of [
   assert.equal(row.lng, null, name + ' has no guessed longitude');
 }
 
-assert.deepEqual(seoulSupplement.restaurants.map(item => item.name), ['원대구탕', '제이드앤워터 옥수'], 'new Seoul history entries are present');
-assert.ok(seoulSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.guides.every(guide => guide.provider === 'blue-ribbon' && guide.label === '선정 이력' && guide.year === null && guide.yearType === 'selection' && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'new entries preserve evidence URLs, unknown grades/years and unknown coordinates');
+assert.deepEqual(seoulSupplement.restaurants.map(item => item.name), ['원대구탕', '제이드앤워터 옥수', '더마칸', '청돈옥'], 'all official Seoul blue-ribbon histories remain available');
+assert.ok(seoulSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.guides.every(guide => guide.provider === 'blue-ribbon' && guide.label.includes('이력') && guide.year === null && ['selection', 'listing'].includes(guide.yearType) && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'verified histories preserve official source URLs, unknown grades/years and unverified coordinates');
 const northeastTourism = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_restaurant_listing'));
 const northeastOraegage = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_selection_list' && guide.year === 2026));
 assert.equal(northeastSupplement.restaurants.length, 20, 'the northeast supplements retain 14 official tourism introductions and 6 added municipal selections');
