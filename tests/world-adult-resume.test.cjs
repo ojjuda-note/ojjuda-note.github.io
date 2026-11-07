@@ -59,7 +59,8 @@ async function until(test, message, timeout = 2600) {
     const buttonId = button => button.dataset.act === 'matgo-open' ? 'matgo' : button.dataset.v;
     const headings = host => [...host.querySelectorAll('h2')].map(heading => heading.textContent.trim());
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
-    const testIds = Object.entries(w._r).filter(([, game]) => game.test).map(([id]) => id);
+    const testIds = ['group','festival','restaurants','byeolcheonji'];
+    assert.deepEqual([...testIds].sort(), Object.entries(w._r).filter(([, game]) => game.test).map(([id]) => id).sort(), 'daily cards remain the complete registered set');
     const assertTestGamesLast = host => {
       const testMenu = host.querySelector('[data-arcade-games=test]');
       assert.ok(testMenu, 'test features remain available');
