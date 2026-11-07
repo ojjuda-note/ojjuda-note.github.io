@@ -1529,18 +1529,18 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3312,
+    "uniqueRestaurants": 3315,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2579,
+      "local-guide": 2582,
       "post-office": 240
     },
     "coordinatesAvailable": 1060,
-    "coordinatesMissing": 2252,
+    "coordinatesMissing": 2255,
     "regionalCounts": {
       "서울": 353,
-      "부산": 383,
+      "부산": 385,
       "충북": 223,
       "충남": 74,
       "울산": 37,
@@ -1550,7 +1550,7 @@
       "경기": 402,
       "인천": 341,
       "제주": 120,
-      "대구": 131,
+      "대구": 132,
       "전남": 183,
       "세종": 100,
       "대전": 110,
@@ -1558,12 +1558,12 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1966,
+      "한식": 1968,
       "중식": 138,
       "일식": 139,
       "기타": 584,
       "양식": 214,
-      "분식": 32,
+      "분식": 33,
       "디저트": 239
     }
   },
@@ -14094,53 +14094,119 @@
         "3곳 이름과 도로명 주소 확인, 검증 가능한 수치좌표 및 현 영업 상태 미확인으로 lat/lng null 유지.",
         "회원 직접 추천 자료와 기존 저장 ID, 블루리본 전체 지도 링크 유지."
       ]
+    },
+    {
+      "id": "2026-11-08-busan-daegu-ulsan-slot59-continuation-three-official",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 59,
+      "previousCoverage": {
+        "uniqueRestaurants": 3312,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2579,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1060,
+        "coordinatesMissing": 2252,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 383,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 131,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1966,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 32,
+          "디저트": 239
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3315,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2582,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1060,
+        "coordinatesMissing": 2255,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 341,
+          "제주": 120,
+          "대구": 132,
+          "전남": 183,
+          "세종": 100,
+          "대전": 110,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1968,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 33,
+          "디저트": 239
+        }
+      },
+      "newRestaurantCount": 3,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-busan-slot59-cheongsan1954",
+        "local-busan-slot59-ubongshabu",
+        "local-daegu-slot59-jungangtteokbokki"
+      ],
+      "sourceUrls": [
+        "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+        "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+        "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-busan-daegu-ulsan-slot59.json",
+      "scope": "같은 59회차 이어하기: 부산광역시 관광 목록(청산1954·우봉샤브), 대구시 중구맛집 지정(중앙떡볶이) 공식 이름·현주소 부분 대조",
+      "notes": [
+        "지역 공식 관광 소개는 블루리본 정규 등급이 아님. 중구맛집 지정은 대구시 자료에 명시되나 지정연도는 미확인.",
+        "3곳의 주소는 공식 자료와 맞으나 상호·지점·주소 일치 수치좌표와 현재 영업 확정은 미확인. 추정 좌표 미입력.",
+        "기존 ID·회원 추천과 블루리본 전체 지도 링크 보존; 전 지역 명단 전수 조사 아님."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-busan-daegu-ulsan-slot59-three-official",
+    "id": "2026-11-08-busan-daegu-ulsan-slot59-continuation-three-official",
     "checkedAt": "2026-11-08",
     "cycle": 1,
     "slot": 59,
     "previousCoverage": {
-      "uniqueRestaurants": 3309,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2576,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1060,
-      "coordinatesMissing": 2249,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 382,
-        "충북": 223,
-        "충남": 74,
-        "울산": 36,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 341,
-        "제주": 120,
-        "대구": 130,
-        "전남": 183,
-        "세종": 100,
-        "대전": 110,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1965,
-        "중식": 137,
-        "일식": 139,
-        "기타": 583,
-        "양식": 214,
-        "분식": 32,
-        "디저트": 239
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3312,
       "providerCounts": {
         "michelin": 237,
@@ -14179,26 +14245,65 @@
         "디저트": 239
       }
     },
+    "currentCoverage": {
+      "uniqueRestaurants": 3315,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2582,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1060,
+      "coordinatesMissing": 2255,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 385,
+        "충북": 223,
+        "충남": 74,
+        "울산": 37,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 341,
+        "제주": 120,
+        "대구": 132,
+        "전남": 183,
+        "세종": 100,
+        "대전": 110,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1968,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 33,
+        "디저트": 239
+      }
+    },
     "newRestaurantCount": 3,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-busan-slot59-hwagukbanjeom",
-      "local-daegu-slot59-chogasikdang",
-      "local-ulsan-slot59-gamudaengdaeng"
+      "local-busan-slot59-cheongsan1954",
+      "local-busan-slot59-ubongshabu",
+      "local-daegu-slot59-jungangtteokbokki"
     ],
     "sourceUrls": [
-      "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098",
-      "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
-      "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+      "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+      "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+      "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
     ],
     "sourceSupplement": "games/certified-restaurants/official-busan-daegu-ulsan-slot59.json",
-    "scope": "부산관광공사 공식 미식투어 화국반점, 대구시 대구푸드 초가식당 중구청 지정, 울산광역시 관광 가무댕댕. 지역 명단 전수 아님.",
+    "scope": "같은 59회차 이어하기: 부산광역시 관광 목록(청산1954·우봉샤브), 대구시 중구맛집 지정(중앙떡볶이) 공식 이름·현주소 부분 대조",
     "notes": [
-      "지역 공식 관광 소개와 중구맛집 지정을 분리하여 표기. 정규 미쉐린·블루리본 등급과 연도는 미확인.",
-      "3곳 이름과 도로명 주소 확인, 검증 가능한 수치좌표 및 현 영업 상태 미확인으로 lat/lng null 유지.",
-      "회원 직접 추천 자료와 기존 저장 ID, 블루리본 전체 지도 링크 유지."
+      "지역 공식 관광 소개는 블루리본 정규 등급이 아님. 중구맛집 지정은 대구시 자료에 명시되나 지정연도는 미확인.",
+      "3곳의 주소는 공식 자료와 맞으나 상호·지점·주소 일치 수치좌표와 현재 영업 확정은 미확인. 추정 좌표 미입력.",
+      "기존 ID·회원 추천과 블루리본 전체 지도 링크 보존; 전 지역 명단 전수 조사 아님."
     ]
   },
   "latestMapCoverageAudit": {
@@ -22704,27 +22809,35 @@
     "cycle": 1,
     "slot": 59,
     "sourceFile": "games/certified-restaurants/official-busan-daegu-ulsan-slot59.json",
-    "addedCount": 3,
+    "addedCount": 6,
     "modifiedCount": 0,
     "coordinatesAdded": 0,
     "locationsHidden": 0,
-    "pendingLocations": 426,
+    "pendingLocations": 429,
     "regionCounts": {
-      "부산": 383,
-      "대구": 131,
+      "부산": 385,
+      "대구": 132,
       "울산": 37
     },
     "addedRestaurantIds": [
       "local-busan-slot59-hwagukbanjeom",
       "local-daegu-slot59-chogasikdang",
-      "local-ulsan-slot59-gamudaengdaeng"
+      "local-ulsan-slot59-gamudaengdaeng",
+      "local-busan-slot59-cheongsan1954",
+      "local-busan-slot59-ubongshabu",
+      "local-daegu-slot59-jungangtteokbokki"
     ],
     "sourceUrls": [
       "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098",
       "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
-      "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+      "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+      "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+      "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+      "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
     ],
     "completeRegionalCollection": false,
-    "operatingStatusVerifiedCount": 0
+    "operatingStatusVerifiedCount": 0,
+    "continuationAtKST": "2026-11-08",
+    "continuationAddedCount": 3
   }
 }

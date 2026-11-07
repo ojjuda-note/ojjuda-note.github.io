@@ -47514,7 +47514,7 @@
       "slot": 59,
       "scheduledAtKST": "2026-11-08T05:00:00+09:00",
       "checkedAtKST": "2026-11-08",
-      "status": "partial_official_busan_daegu_ulsan_three_new",
+      "status": "partial_official_busan_daegu_ulsan_six_new_with_continuation",
       "assignedRegions": [
         "부산광역시 공식 명단 대조",
         "대구광역시 공식 명단 대조",
@@ -47524,13 +47524,14 @@
         {
           "region": "부산광역시",
           "baseListedCount": 382,
-          "afterListedCount": 383,
+          "afterListedCount": 385,
           "actuallyChecked": [
             "VisitBusan 화국반점 공식 미식 페이지와 주소",
-            "기등록 부산 목록 중복 대조, 미쉐린 기존 공식 지도 보강 데이터 확인"
+            "기등록 부산 목록 중복 대조, 미쉐린 기존 공식 지도 보강 데이터 확인",
+            "VisitBusan 청산1954·우봉샤브 공식 음식점 이름·주소 확인(회차 이어하기)"
           ],
           "remainingAreas": [
-            "좌표 미등록 269곳 개별 검증 필요",
+            "좌표 미등록 271곳 개별 검증 필요",
             "지역 전체 공식 선정/관광 명단 및 현재 영업 조사 미완료"
           ],
           "notExhaustive": true
@@ -47538,13 +47539,14 @@
         {
           "region": "대구광역시",
           "baseListedCount": 130,
-          "afterListedCount": 131,
+          "afterListedCount": 132,
           "actuallyChecked": [
             "대구푸드 초가식당 중구청 중구맛집 지정·주소",
-            "기등록 대구 중복 대조"
+            "기등록 대구 중복 대조",
+            "대구푸드 중앙떡볶이 중구청 지정·주소 확인(회차 이어하기)"
           ],
           "remainingAreas": [
-            "좌표 미등록 130곳, 지정판본·영업 확인 및 구군별 명단 후속 조사"
+            "좌표 미등록 131곳, 지정판본·영업 확인 및 구군별 명단 후속 조사"
           ],
           "notExhaustive": true
         },
@@ -47566,19 +47568,24 @@
         "부산관광공사 VisitBusan 미식투어",
         "대구시 대구푸드 구군별 인증업소",
         "울산광역시 울산관광 먹거리",
-        "블루리본 공식 전체 지도 및 미쉐린 기존 선정 목록"
+        "블루리본 공식 전체 지도 및 미쉐린 기존 선정 목록",
+        "부산광역시 부산의 맛 청산1954·우봉샤브 상세",
+        "대구광역시 대구푸드 중앙떡볶이 중구맛집 지정"
       ],
-      "additions": 3,
+      "additions": 6,
       "modifications": 0,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 426,
-      "locationPendingScope": "부산 269·대구 130·울산 27. 공식 개별 확인 3곳 외 나머지는 목록상 좌표 누락 추출이며 전수 외부 재검증이 아님.",
+      "locationPending": 429,
+      "locationPendingScope": "부산 271·대구 131·울산 27. 6곳 이름·주소 자료 확인, 전체 429건 중 나머지의 개별 외부 위치 재검증은 미완료.",
       "addedRestaurantIds": [
         "local-busan-slot59-hwagukbanjeom",
         "local-daegu-slot59-chogasikdang",
-        "local-ulsan-slot59-gamudaengdaeng"
+        "local-ulsan-slot59-gamudaengdaeng",
+        "local-busan-slot59-cheongsan1954",
+        "local-busan-slot59-ubongshabu",
+        "local-daegu-slot59-jungangtteokbokki"
       ],
       "modifiedRestaurantIds": [],
       "evidenceUrls": [
@@ -47586,7 +47593,10 @@
         "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
         "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
         "https://litt.ly/blueribbonsurvey",
-        "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants"
+        "https://guide.michelin.com/kr/ko/selection/south-korea/restaurants",
+        "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+        "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+        "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
       ],
       "locationRechecks": [
         {
@@ -47623,6 +47633,45 @@
           "checkedAt": "2026-11-08",
           "evidenceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
           "checkResult": "이름·현주소 공식 근거 확인, 수치좌표와 현재 영업 미확인",
+          "coordinatesVerified": false,
+          "operatingStatus": "unknown",
+          "recheckCycle": 2,
+          "recheckSlot": 59
+        },
+        {
+          "restaurantId": "local-busan-slot59-cheongsan1954",
+          "name": "청산1954",
+          "currentAddress": "부산광역시 수영구 황령산로 29",
+          "region": "부산광역시 수영구",
+          "checkedAt": "2026-11-08",
+          "evidenceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+          "checkResult": "공식 식당 명칭·주소 확인; 정확한 공개 수치 좌표 미검증",
+          "coordinatesVerified": false,
+          "operatingStatus": "unknown",
+          "recheckCycle": 2,
+          "recheckSlot": 59
+        },
+        {
+          "restaurantId": "local-busan-slot59-ubongshabu",
+          "name": "우봉샤브",
+          "currentAddress": "부산광역시 해운대구 청사포로 127",
+          "region": "부산광역시 해운대구",
+          "checkedAt": "2026-11-08",
+          "evidenceUrl": "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+          "checkResult": "공식 식당 명칭·주소 확인; 정확한 공개 수치 좌표 미검증",
+          "coordinatesVerified": false,
+          "operatingStatus": "unknown",
+          "recheckCycle": 2,
+          "recheckSlot": 59
+        },
+        {
+          "restaurantId": "local-daegu-slot59-jungangtteokbokki",
+          "name": "중앙떡볶이",
+          "currentAddress": "대구광역시 중구 동성로2길 81 (동성로2가)",
+          "region": "대구광역시 중구",
+          "checkedAt": "2026-11-08",
+          "evidenceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9",
+          "checkResult": "공식 식당 명칭·주소 확인; 정확한 공개 수치 좌표 미검증",
           "coordinatesVerified": false,
           "operatingStatus": "unknown",
           "recheckCycle": 2,
@@ -55954,6 +56003,63 @@
           "recheckSlot": 59,
           "checkResult": "공식 관광·행정 소개에서 이름과 주소 확인; 해당 업소 숫자 좌표와 현 영업 미확인",
           "reason": "식당·지점·현 주소와 일치하는 공개 수치좌표 미확보"
+        },
+        {
+          "restaurantId": "local-busan-slot59-cheongsan1954",
+          "name": "청산1954",
+          "currentAddress": "부산광역시 수영구 황령산로 29",
+          "region": "부산광역시 수영구",
+          "searchAliases": [
+            "부산광역시 수영구 청산1954",
+            "청산1954 부산광역시 수영구 황령산로 29",
+            "부산 청산1954"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 59,
+          "checkResult": "공식 관광·지자체 자료에서 식당명·현주소 확인. 이름·지점·현주소와 일치하는 공개 수치좌표는 확인하지 못함.",
+          "reason": "공식 명단·주소 확인, 정확한 수치좌표 및 현재 영업 여부 별도 확인 필요"
+        },
+        {
+          "restaurantId": "local-busan-slot59-ubongshabu",
+          "name": "우봉샤브",
+          "currentAddress": "부산광역시 해운대구 청사포로 127",
+          "region": "부산광역시 해운대구",
+          "searchAliases": [
+            "부산광역시 해운대구 우봉샤브",
+            "우봉샤브 부산광역시 해운대구 청사포로 127",
+            "부산 우봉샤브"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 59,
+          "checkResult": "공식 관광·지자체 자료에서 식당명·현주소 확인. 이름·지점·현주소와 일치하는 공개 수치좌표는 확인하지 못함.",
+          "reason": "공식 명단·주소 확인, 정확한 수치좌표 및 현재 영업 여부 별도 확인 필요"
+        },
+        {
+          "restaurantId": "local-daegu-slot59-jungangtteokbokki",
+          "name": "중앙떡볶이",
+          "currentAddress": "대구광역시 중구 동성로2길 81 (동성로2가)",
+          "region": "대구광역시 중구",
+          "searchAliases": [
+            "대구광역시 중구 중앙떡볶이",
+            "중앙떡볶이 대구광역시 중구 동성로2길 81 (동성로2가)",
+            "대구 중앙떡볶이"
+          ],
+          "evidenceUrls": [
+            "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 59,
+          "checkResult": "공식 관광·지자체 자료에서 식당명·현주소 확인. 이름·지점·현주소와 일치하는 공개 수치좌표는 확인하지 못함.",
+          "reason": "공식 명단·주소 확인, 정확한 수치좌표 및 현재 영업 여부 별도 확인 필요"
         }
       ],
       "unresolved": [
@@ -56000,7 +56106,34 @@
       "nextRegions": [
         "대전광역시 · 세종특별자치시 공식 명단 대조"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "checkedAtKST": "2026-11-08",
+          "type": "same_slot_continuation",
+          "regions": [
+            "부산광역시",
+            "대구광역시",
+            "울산광역시"
+          ],
+          "scope": "부산의 맛 관광 개별 소개 2곳 및 대구 중구맛집 지정 1곳 공식 이름·현주소 대조. 울산 기존 1곳 기록 유지. 전체 명단 전수 아님.",
+          "added": 3,
+          "modified": 0,
+          "coordinatesAdded": 0,
+          "locationsHidden": 0,
+          "locationPending": 429,
+          "findings": [
+            "청산1954·우봉샤브·중앙떡볶이 3곳 중복 없는 공식 음식점 근거 확인",
+            "정규 블루리본 리본 등급·개별 선정 연도·현재 영업 확인 근거 없음",
+            "공개 수치좌표 미검증으로 추가 3곳 null 및 재확인 대상으로 유지"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2367",
+            "https://www.visitbusan.net/index.do?lang_cd=ko&menuCd=DOM_000000201002001000&uc_seq=2384",
+            "https://www.daegufood.go.kr/kor/food/food.asp?idx=1688&snm=9"
+          ]
+        }
+      ]
     }
   ],
   "notes": [
