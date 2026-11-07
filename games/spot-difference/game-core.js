@@ -1,12 +1,14 @@
 (function(root){
   'use strict';
+  // Slightly forgive fingertip placement without matching distant differences.
+  const TOUCH_HIT_SCALE=1.15;
   function hitTest(puzzle,x,y,found=[]){
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>100||y<0||y>100)return null;
     if(puzzle.hitMode==='target-bounds'){
       const index=puzzle.spots.findIndex(s=>{const b=s.targetBounds;return b&&x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;});
       if(index>=0)return {index,alreadyFound:found.includes(index)};
     }
-    const candidates=puzzle.spots.map((s,i)=>({i,d:Math.min(...[s,...(s.hitRegions||[])].map(r=>((x-r.x)/r.rx)**2+((y-r.y)/r.ry)**2))})).filter(s=>s.d<=1).sort((a,b)=>a.d-b.d);
+    const candidates=puzzle.spots.map((s,i)=>({i,d:Math.min(...[s,...(s.hitRegions||[])].map(r=>((x-r.x)/r.rx)**2+((y-r.y)/r.ry)**2))})).filter(s=>s.d<=TOUCH_HIT_SCALE*TOUCH_HIT_SCALE).sort((a,b)=>a.d-b.d);
     if(!candidates.length)return null;
     const hit=candidates[0];
     return {index:hit.i,alreadyFound:found.includes(hit.i)};

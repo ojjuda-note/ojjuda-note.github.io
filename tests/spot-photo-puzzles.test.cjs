@@ -12,6 +12,20 @@ try{
  w.JjudaWallet={getState:()=>({ready:true,userId:'fixture-member',coins:0}),subscribe:fn=>fn({ready:true,userId:'fixture-member',coins:0}),recordClear:async(owner,stage)=>{scores.push(stage);return {ok:true};},refresh:async()=>{},buy:()=>{throw Error('unexpected payment');}};
  for(const f of ['puzzles.js','photo-puzzles.js','masterpiece-puzzles.js','game-core.js'])w.eval(read(f));
  const puzzles=w.JJUDA_PUZZLES,photos=puzzles.filter(p=>['city','mountain'].includes(p.category)),core=w.JjudaGame;
+ // A phone tap just beyond the painted ellipse should count, but not a distant miss.
+ const finger={spots:[
+  {x:30,y:40,rx:4,ry:6,hitRegions:[{x:30,y:70,rx:3,ry:2}]},
+  {x:60,y:40,rx:4,ry:6}
+ ]};
+ assert.equal(core.hitTest(finger,34.5,40)?.index,0,'a slightly off-center horizontal touch finds the spot');
+ assert.equal(core.hitTest(finger,30,46.6)?.index,0,'the same small margin applies vertically');
+ assert.equal(core.hitTest(finger,33.3,70)?.index,0,'secondary hit regions also have a small touch margin');
+ assert.equal(core.hitTest(finger,34.7,40),null,'a farther miss still loses a heart');
+ assert.equal(core.hitTest(finger,60,40,[1])?.alreadyFound,true,'the hit margin preserves already-found answers');
+ assert.equal(core.hitTest(finger,-.1,40),null,'out-of-image taps are ignored');
+ const bounds={hitMode:'target-bounds',spots:[{x:30,y:40,rx:4,ry:6,targetBounds:{left:28,top:38,right:32,bottom:42}}]};
+ assert.equal(core.hitTest(bounds,28,38)?.index,0,'the exact edited-image bounds still work');
+ assert.equal(core.hitTest(bounds,34.5,40)?.index,0,'small touches beside edited-image bounds are accepted');
  assert.equal(puzzles.length,82);assert.equal(new Set(puzzles.map(p=>p.id)).size,82);
  assert.deepEqual(Array.from(photos,p=>p.id),Array.from({length:14},(_,i)=>49+i));
  assert.equal(photos.filter(p=>p.category==='city').length,10);assert.equal(photos.filter(p=>p.category==='mountain').length,4);
