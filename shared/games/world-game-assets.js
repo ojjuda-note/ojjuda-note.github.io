@@ -1,37 +1,37 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261107-restaurants-slot39-1';
+ const revision='20261107-game-launch1';
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   group:'1.2.1',
   byeolcheonji:'1.0.5',
-  festival:'1.5.1',
-  restaurants:'1.10.1',
-  recommendations:'1.5.5',
-  archery:'3.1.2',
-  roulette:'1.8.4',
-  bang:'1.9.5',
-  poker:'1.5.6',
-  tank:'1.4.5',
-  solitaire:'1.1.7',
-  mines:'1.3.6',
-  sacheonseong:'1.9.6',
-  saetbyeol:'1.2.8',
-  tour:'1.4.5',
-  ttang:'1.4.6',
-  photo_ttang:'1.3.6',
-  mole:'1.4.5',
-  runner:'1.3.5',
-  stacker:'1.4.5',
-  breakout:'1.5.6',
-  spot:'1.10.7',
-  screw:'2.21.1',
+  festival:'1.6.0',
+  restaurants:'1.11.0',
+  recommendations:'1.6.0',
+  archery:'3.2.0',
+  roulette:'1.9.0',
+  bang:'1.10.0',
+  poker:'1.6.0',
+  tank:'1.5.0',
+  solitaire:'1.2.0',
+  mines:'1.4.0',
+  sacheonseong:'1.10.0',
+  saetbyeol:'1.3.0',
+  tour:'1.5.0',
+  ttang:'1.5.0',
+  photo_ttang:'1.4.0',
+  mole:'1.5.0',
+  runner:'1.4.0',
+  stacker:'1.5.0',
+  breakout:'1.6.0',
+  spot:'1.11.0',
+  screw:'2.22.0',
   janggi:'1.6.0',
   chess:'1.4.4',
   billiards:'1.4.4',
-  matgo:'1.4.6'
+  matgo:'1.5.0'
  });
  const controls=['/shared/games/game-controls.css?v=20261106-source-folders1','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261106-source-folders1';
