@@ -64,12 +64,13 @@ assert.equal(entry[0].locationPending, 349);
 assert.equal(entry[0].pendingLocationInventory.length, 349);
 assert.ok(entry[0].pendingLocationInventory.every(item => item.restaurantId && item.name && item.currentAddress && item.region && item.recheckCycle === 2));
 assert.ok(audit.active.slot >= 50, 'later official regional slots preserve slot49 history');
-assert.match(release.revision, /^\d{8}-restaurants-[a-z0-9-]+$/);
+assert.match(release.revision, /^\d{8}-[a-z0-9-]+$/);
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.match(assets,/restaurants:'\d+\.\d+\.\d+'/);
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
-assert.ok(index.includes('app.js?v=' + release.revision));
-assert.ok(frame.includes('index.html?v=' + release.revision));
+const restaurantRevision = index.match(/app\.js\?v=(\d{8}-restaurants-[a-z0-9-]+)/)?.[1];
+assert.ok(restaurantRevision,'restaurant-specific app cache revision must survive other game releases');
+assert.ok(frame.includes('index.html?v=' + restaurantRevision));
 console.log('Restaurant slot49 official source, history, ID, location safety and deployment revision checks passed');
 
 const guri = file("games/certified-restaurants/official-guri-slot15.json");

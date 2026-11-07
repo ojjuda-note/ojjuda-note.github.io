@@ -39,9 +39,10 @@ assert.equal(entry[0].locationPending,56);assert.equal(entry[0].pendingLocationI
 assert.ok(entry[0].pendingLocationInventory.every(x=>x.restaurantId&&x.name&&x.currentAddress&&x.region&&x.recheckCycle===2));
 assert.ok(audit.active.slot >= 50);
 assert.ok(source.latestCoverageAudit.slot >= 50);
-assert.match(release.revision, /^\d{8}-restaurants-/);
+assert.match(release.revision, /^\d{8}-[a-z0-9-]+$/);
 assert.ok(read('world.html').includes('world-game-assets.js?v='+release.revision));
-assert.ok(read('games/certified-restaurants/index.html').includes('app.js?v='+release.revision));
-assert.ok(read('games/certified-restaurants/world-restaurant-guide.js').includes('index.html?v='+release.revision));
+const restaurantRevision=read('games/certified-restaurants/index.html').match(/app\.js\?v=(\d{8}-restaurants-[a-z0-9-]+)/)?.[1];
+assert.ok(restaurantRevision,'restaurant app keeps its own cache revision');
+assert.ok(read('games/certified-restaurants/world-restaurant-guide.js').includes('index.html?v='+restaurantRevision));
 assert.match(read('shared/games/world-game-assets.js'), /restaurants:'\d+\.\d+\.\d+'/);
 console.log('Gangwon 1/50 official source and safe-location checks passed');
