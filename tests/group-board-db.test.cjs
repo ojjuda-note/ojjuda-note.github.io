@@ -3,6 +3,7 @@ const {PGlite}=require('@electric-sql/pglite');
 const file=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(x=>x.endsWith('_private_group_board.sql'));
 const sql=fs.readFileSync(path.join(__dirname,'../supabase/migrations',file),'utf8');
 const previewSql=fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261107062758_group_media_previews.sql'),'utf8');
+const legacyPreviewSql=fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261107082627_group_legacy_photo_backfill_access.sql'),'utf8');
 const uid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 test('private groups: approval, role changes, media isolation, events, pagination and deletion',async()=>{
 const db=new PGlite();try{
@@ -23,6 +24,7 @@ grant usage on schema auth,storage to anon,authenticated;grant select,insert,upd
 create policy broad_legacy on storage.objects for all to anon,authenticated using(true) with check(true);`);
 await db.exec(sql);
 await db.exec(previewSql);
+await db.exec(legacyPreviewSql);
 for(let n=1;n<=4;n++)await db.query('insert into auth.users(id) values($1);',[uid(n)]);
 for(let n=1;n<=4;n++)await db.query('insert into public.profiles values($1,$2)',[uid(n),'회원'+n]);
 const as=async n=>db.exec(`reset role;set role ${n?'authenticated':'anon'};select set_config('request.jwt.claim.sub','${n?uid(n):''}',false);`);
@@ -44,6 +46,21 @@ await assert.rejects(db.query("insert into storage.objects(bucket_id,name,owner_
 const post={id,room_id:room,kind:'trip',title:'강릉 여행',body:'기차 타고 바다 보기',location:'강릉역',starts_at:'2026-11-07T15:30:00+09:00',ends_at:'2026-11-09T18:00:00+09:00',media:[{path:photo,name:'사진.jpg'},{path:video,name:'영상.mp4'}]};
 const saved=await api('save',post);assert.equal(saved.media.length,2);assert.equal(saved.media[0].preview_path,preview,'only an owned thumbnail linked to an authorized original is exposed');assert.equal(saved.media[1].preview_path,undefined,'videos do not receive image previews');
 assert.equal((await api('save',post)).id,id,'initial publish retry is idempotent');
+await db.exec('reset role');
+await db.query('delete from storage.objects where bucket_id=$1 and name=$2',['group-media',preview]);
+await db.query('update ojjuda_groups_internal.entries set media=media where id=$1',[id]);
+await db.query("insert into storage.objects(bucket_id,name,metadata) values('group-media',$1,$2)",[preview,JSON.stringify({size:2048,mimetype:'image/webp'})]);
+const attached=await db.query(`update ojjuda_groups_internal.entries e set media=e.media
+where e.id=$1 and exists(select 1 from jsonb_array_elements(e.media) f where f->>'path'=$2 and f->>'preview_path' is null)
+returning exists(select 1 from jsonb_array_elements(e.media) f where f->>'path'=$3 and f->>'preview_path'=$4) as attached`,[id,photo,photo,preview]);
+assert.equal(attached.rows[0]?.attached,true,'the one-time worker can confirm the new preview was linked');
+await as(2);
+assert.equal((await api('feed',{room_id:room}))[0].media[0].preview_path,preview,'a verified server-generated preview remains linked without object ownership');
+await db.exec('reset role');
+await db.exec("select set_config('test.pending','yes',false)");
+assert.ok((await db.query('select photo_path from ojjuda_account_deletion.files($1,100)',[uid(2)])).rows.some(x=>x.photo_path===preview),'account deletion includes unowned, private backfill previews');
+await db.exec("select set_config('test.pending','',false)");
+await as(2);
 await db.exec("select set_config('storage.operation','object.get_authenticated',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),3);
 await db.exec("select set_config('storage.operation','object.sign',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),0,'no shareable signed URLs');
 await as(3);await db.exec("select set_config('storage.operation','object.get_authenticated',false)");assert.equal(await val("select count(*)::int value from storage.objects where bucket_id='group-media'"),0);assert.deepEqual(await api('feed'),[]);
