@@ -149,6 +149,18 @@
           "verifiedAt": "2026-11-07",
           "status": "official_restaurant_listing",
           "selectionCriteria": "경기도청의 지역 먹거리 소개로, 정식 가이드 선정이나 블루리본 등급·현 영업 상태 확인은 아닙니다."
+        },
+        {
+          "provider": "local-guide",
+          "label": "2026 와구리맛집 지정",
+          "year": 2026,
+          "yearType": "selection",
+          "sourceUrl": "https://www.guri.go.kr/www/contents.do?key=6016",
+          "sourceName": "구리시청 · 와구리맛집 지정업소 현황",
+          "sourceAsOf": "2026-10-28",
+          "verifiedAt": "2026-11-07",
+          "status": "historical_designation",
+          "selectionCriteria": "2026 구리시 공식 지정 사실. 현 영업 여부와 정규 블루리본 등급은 별도 확인 필요."
         }
       ],
       "addressSourceUrl": "https://gnews.gg.go.kr/news/news_detail.do?newsType=N&number=202601270911436829C049&s_code=C401",
