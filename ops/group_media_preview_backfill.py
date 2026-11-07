@@ -10,7 +10,7 @@ import re
 import sys
 from urllib.parse import quote, urlparse
 
-from PIL import Image, ImageOps, features
+from PIL import Image, ImageOps, UnidentifiedImageError, features
 
 
 PROJECT = 'ziezbdjofcugznowiuda'
@@ -87,13 +87,17 @@ def make_preview(raw):
     if not 1 <= len(raw) <= MAX_ORIGINAL_BYTES:
         raise ValueError('Original size outside private bucket limits')
     # Decoding huge or malformed images can exhaust the runner; fail safely.
-    Image.MAX_IMAGE_PIXELS = 35_000_000
+    Image.MAX_IMAGE_PIXELS = 100_000_000
     with Image.open(BytesIO(raw)) as source:
         if source.format != 'JPEG':
             raise ValueError('An original is not a JPEG')
-        if source.width * source.height > Image.MAX_IMAGE_PIXELS:
-            raise ValueError('Original pixel count exceeds the safe decoding limit')
+        # JPEG draft shrinks the decode before allocating full-resolution pixels.
+        # Large phone and panorama photos often exceed 35 million source pixels.
+        if source.width * source.height > 150_000_000:
+            raise ValueError('Original pixel count exceeds the safe header limit')
         source.draft('RGB', (960, 960))
+        if source.width * source.height > 35_000_000:
+            raise ValueError('Decoded image would exceed the safe pixel limit')
         image = ImageOps.exif_transpose(source).convert('RGB')
     try:
         for bound, quality in ((960, 76), (960, 60), (768, 60), (640, 50), (480, 45)):
@@ -136,7 +140,8 @@ def backfill(conn, storage, apply=False):
         return {'pending': len(rows), 'created': 0, 'linked': 0, 'dry_run': True}
     if not conn.execute("select pg_try_advisory_lock(hashtext('ojjuda_group_preview_backfill'))").fetchone()[0]:
         raise RuntimeError('A backfill is already running')
-    created = linked = 0
+    created = linked = skipped = 0
+    reasons = {'size_mismatch': 0, 'image_unsupported': 0}
     for entry, author, original, size in rows:
         thumb = preview_path(original, author)
         made = False
@@ -148,8 +153,15 @@ def backfill(conn, storage, apply=False):
             finally:
                 body.close()
             if len(raw) != size:
-                raise ValueError('Storage bytes differ from the authorized original metadata')
-            preview = make_preview(raw)
+                skipped += 1
+                reasons['size_mismatch'] += 1
+                continue
+            try:
+                preview = make_preview(raw)
+            except (ValueError, UnidentifiedImageError, OSError, Image.DecompressionBombError):
+                skipped += 1
+                reasons['image_unsupported'] += 1
+                continue
             # This never modifies originals. A race with another upload fails closed.
             storage.put_object(Bucket=BUCKET, Key=thumb, Body=preview,
                                ContentType='image/webp', CacheControl='0', IfNoneMatch='*')
@@ -164,7 +176,8 @@ def backfill(conn, storage, apply=False):
                 storage.delete_object(Bucket=BUCKET, Key=thumb)
             raise
         linked += 1
-    return {'pending': len(rows), 'created': created, 'linked': linked, 'dry_run': False}
+    return {'pending': len(rows), 'created': created, 'linked': linked,
+            'skipped': skipped, 'reasons': reasons, 'dry_run': False}
 
 
 def main():
