@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-07",
+  "updatedAt": "2026-11-08",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -10183,6 +10183,174 @@
         "미술",
         "건축"
       ]
+    },
+    {
+      "id": "suncheon-namseungryong-marathon-2026",
+      "title": "제26회 순천 남승룡마라톤대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "육상(마라톤)",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "전남",
+      "city": "순천시",
+      "venue": "순천팔마종합운동장",
+      "address": "전남 순천시 팔마로 333",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "순천시체육회가 개최하는 남승룡 선수 기념 전국 마라톤. 풀·하프·10km·5km 코스를 진행합니다.",
+      "scheduleNote": "11월 14일 07:40 헌화식 / 풀 08:20, 하프 08:30, 10km 08:40, 5km 09:00 출발.",
+      "priceNote": "선수 참가비 풀 50,000원·하프/10km 40,000원·5km 20,000원 / 일반 관람료 별도 공식 안내 확인",
+      "accessNote": "선수 참가 신청은 선착순 마감, 환불·종목 변경 공식 마감 10월 16일. 일반인 경기장 입장·관람 허용 범위는 별도 공식 확인 필요.",
+      "sourceUrl": "http://sc-marathon.kr/",
+      "sourceName": "순천시체육회·순천남승룡마라톤 조직위원회 공식 대회 사이트",
+      "sourceCheckedAt": "2026-11-08",
+      "tags": [
+        "마라톤",
+        "풀코스",
+        "하프",
+        "10km",
+        "5km",
+        "생활체육"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "yeosu-eleven-bridge-marathon-2026",
+      "title": "2026 여수 일레븐브리지마라톤 대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "육상(마라톤)",
+      "start": "2026-11-07",
+      "end": "2026-11-07",
+      "region": "전남",
+      "city": "여수시",
+      "venue": "여수시 화양면 조발전망대 광장 앞",
+      "address": "전남 여수시 화양면 조발리 조발전망대 일원",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "여수 화양면 조발전망대 광장 앞에서 열리는 하프·10km 도로 달리기 대회입니다.",
+      "scheduleNote": "11월 7일 08:30 집결, 09:20 하프 출발·09:30 10km 출발. 공식 홈페이지 상단 행사운영 시간 08:00~12:30.",
+      "priceNote": "선수 참가비 하프 45,000원·10km 45,000원 / 일반 관람료 공식 안내 확인",
+      "accessNote": "인터넷 접수는 10월 23일 23:59 마감. 하프 참가자는 18세 이상, 10km는 나이 제한 없음. 경기 일반 관람 가능 여부는 공식 안내 확인.",
+      "sourceUrl": "http://11bridge.com/",
+      "sourceName": "일레븐브리지마라톤 조직위원회 공식 대회 사이트",
+      "sourceCheckedAt": "2026-11-08",
+      "tags": [
+        "마라톤",
+        "하프",
+        "10km",
+        "여수",
+        "생활체육"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "mudeungsan-double-heart-trailrun-2026",
+      "title": "제3회 무등산 더블하트 국제 트레일런 대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "트레일러닝",
+      "start": "2026-11-15",
+      "end": "2026-11-15",
+      "region": "광주",
+      "city": "동구",
+      "venue": "조선대학교 대운동장 출발·무등산 일대",
+      "address": "광주 동구 조선대길 73",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "CUK 스포츠와 한국백혈병소아암협회 광주전남지회가 함께 개최하는 무등산 국제 트레일러닝 대회입니다. 백혈병·소아암 환아를 응원하는 취지의 산악 달리기 행사입니다.",
+      "scheduleNote": "11월 15일(일) 07:00 조선대학교 대운동장 출발. 코스별 거리와 세부 시상·운영시간은 공식 안내 확인.",
+      "priceNote": "선수 참가비와 일반 관람료는 각각 주최 측 공식 안내 확인",
+      "accessNote": "선수 참가신청과 일반인의 출발지·코스 관람은 별개입니다. 입장 허용 범위 및 출입 통제는 주최 측 확인.",
+      "sourceUrl": "https://www.cuk-sports.com/",
+      "sourceName": "CUK 스포츠(Challenge Unlimited Korea) 공식 주최사 공지",
+      "sourceCheckedAt": "2026-11-08",
+      "verificationSources": [
+        "https://run-pick.com/races/97ffdf21-77df-4c52-82fb-2f2b18530f37"
+      ],
+      "tags": [
+        "트레일런",
+        "무등산",
+        "산악달리기",
+        "생활체육",
+        "나눔"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "muan-yd-festival-2026",
+      "title": "제6회 무안 YD 페스티벌",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-20",
+      "end": "2026-11-22",
+      "region": "전남",
+      "city": "무안군",
+      "venue": "삼향읍 남악중앙공원",
+      "address": "전남 무안군 삼향읍 대죽서로16번길 16",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "무안군과 축제추진위원회가 개최하는 청년문화 축제입니다. 공연·거리 퍼레이드, 청년 참여 프로그램, 드론·AI 체험 등이 마련됩니다.",
+      "scheduleNote": "11월 20~22일, 상세 일자별 공연·체험 운영시간은 공식 안내 확인.",
+      "priceNote": "입장 무료 / 일부 체험 프로그램 유료",
+      "accessNote": "체험별 사전 신청 여부와 프로그램 참여 조건은 공식 공지 확인.",
+      "sourceUrl": "https://health.muan.go.kr/www/operation_guide/visual_popup_new",
+      "sourceName": "무안군청 제6회 YD페스티벌 공식 홍보 공지",
+      "sourceCheckedAt": "2026-11-08",
+      "verificationSources": [
+        "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=47cc094e-78e5-4ebc-a7d5-f65430621719"
+      ],
+      "tags": [
+        "청년",
+        "문화축제",
+        "AI",
+        "드론",
+        "공연"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "yeongam-wolchulsan-chrysanthemum-2026",
+      "title": "2026 월출산 국화축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-10-30",
+      "end": "2026-11-15",
+      "region": "전남",
+      "city": "영암군",
+      "venue": "월출산 기찬랜드 일원",
+      "address": "전남 영암군 영암읍 기찬랜드로 19-10",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "월출산 기찬랜드에서 국화 작품·분재·꽃 조형물과 포토존을 감상하는 영암 가을꽃 축제입니다.",
+      "scheduleNote": "10월 30일~11월 15일 전시 운영. 일일 개장·입장 시간은 공식 안내 확인.",
+      "priceNote": "무료(공식 관광기관 안내) / 판매·체험비는 별도 확인",
+      "accessNote": "축제장 산책·전시 관람 가능 여부 및 개장 시간은 영암군 최신 공지 확인.",
+      "sourceUrl": "https://newscms.gwangju.go.kr/gallery.es?act=view&bid=0009&list_no=7004&mid=a50101000000&obid=0009&tab_type=data",
+      "sourceName": "전남광주통합특별시 공식 온라인뉴스 2026 가을축제 일정",
+      "sourceCheckedAt": "2026-11-08",
+      "verificationSources": [
+        "https://travelweek.visitkorea.or.kr/kfes/detail/fstvlDetail.do?cntntsNm=%EC%9B%94%EC%B6%9C%EC%82%B0%EA%B5%AD%ED%99%94%EC%B6%95%EC%A0%9C&fstvlCntntsId=1cafbd17-e776-4714-8a6e-b2990ae88a08"
+      ],
+      "tags": [
+        "국화",
+        "가을꽃",
+        "영암",
+        "무료",
+        "산책"
+      ],
+      "status": "scheduled"
     }
   ]
 }
