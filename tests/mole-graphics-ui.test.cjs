@@ -51,6 +51,7 @@ g.tab='friends';H();
   }
   await page.setViewportSize({width:390,height:844});
   // Four selectable boards keep the correct count, scale and touch targets.
+  assert.deepEqual(await page.evaluate(()=>Array.from(OjjudaMoleGame.kinds)),['m','pink','blue','mint','purple','gold','bomb'],'the game has exactly seven visually different mole kinds');
   const positions={3:[60,190],4:[51,184],5:[42,183],6:[40,182]};
   for(const size of [3,4,5,6]){
    await open();
@@ -62,6 +63,8 @@ g.tab='friends';H();
    await page.locator('#gov [data-g="start"]').click();await page.evaluate(()=>moleTest.freeze());
    assert.deepEqual(await page.evaluate(()=>[moleTest.current.game.gridSize,moleTest.current.game.holeCount]),[size,size*size]);
    await page.evaluate(()=>moleTest.seed(.5));
+   assert.equal(await page.evaluate(()=>moleTest.current.game.activeCount),size-2,
+    `${size}×${size} launches ${size-2} simultaneous moles`);
    await tap(positions[size][0],positions[size][1]-10);
    assert.equal(await page.locator('#gsc').textContent(),'1점',`${size}×${size} first hole accepts touches`);
    await page.evaluate(()=>moleTest.close());
@@ -76,6 +79,13 @@ g.tab='friends';H();
   for(const [kind,score,audio] of [[.5,'1점','hit'],[.05,'3점','bonus'],[.17,'0점','bad']]){
    await open(true);await page.evaluate(k=>moleTest.seed(k),kind);await tap(60,180);
    assert.equal(await page.locator('#gsc').textContent(),score);assert.equal(await page.evaluate(()=>moleTest.audio.at(-1)),audio);
+   await page.evaluate(()=>moleTest.close());
+  }
+  // Newly introduced colours award the normal +1 point and keep the hit sound.
+  for(const kind of [.25,.35,.45,.65,.85]){
+   await open(true);await page.evaluate(k=>moleTest.seed(k),kind);await tap(60,180);
+   assert.equal(await page.locator('#gsc').textContent(),'1점');
+   assert.equal(await page.evaluate(()=>moleTest.audio.at(-1)),'hit');
    await page.evaluate(()=>moleTest.close());
   }
   const timing=await page.evaluate(()=>{
@@ -94,6 +104,6 @@ g.tab='friends';H();
   const f=await fallback.newPage();f.on('pageerror',e=>errors.push(e.message));await f.goto('https://fixture.test/world.html');await f.waitForFunction(()=>window.moleTest);await f.evaluate(()=>moleTest.open('mole'));
   await f.locator('#gov [data-g="start"]').click();assert.equal(await f.evaluate(()=>moleTest.current.running),true);await fallback.close();
   assert.deepEqual(errors,[]);
-  console.log('PASS: four selectable grids, grid-first score tiers, garden graphics, responsive touch, scoring and sound, 30-second finish, offline fallback');
+  console.log('PASS: seven mole kinds, increasing waves for 3–6 grids, grid-first scores, responsive touches, sound, 30-second finish and offline fallback');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
