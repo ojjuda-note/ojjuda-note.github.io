@@ -15852,9 +15852,11 @@
           "evidenceUrls": [
             "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=52",
             "https://www.placeview.co.kr/id/MTQzOTY3MDg1NyAg",
-            "https://dining.ayo.pe.kr/fastfood/fd949ac9005e0dee21a5b8f8ee64a6dc"
+            "https://dining.ayo.pe.kr/fastfood/fd949ac9005e0dee21a5b8f8ee64a6dc",
+            "https://jusoga.com/b/4825011500100430011046929/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84-%EA%B9%80%ED%95%B4%EC%8B%9C-%EC%A0%84%ED%95%98%EB%A1%9C176%EB%B2%88%EA%B8%B8-93-%EC%A0%84%ED%95%98%EB%8F%99",
+            "https://dorojuso.kr/4825011500100430012085500/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84-%EA%B9%80%ED%95%B4%EC%8B%9C-%EC%A0%84%ED%95%98%EB%A1%9C176%EB%B2%88%EA%B8%B8-93-1-%EC%A0%84%ED%95%98%EB%8F%99"
           ],
-          "evidenceResult": "공개 지도·행정인허가 기반 페이지에서 '전하로176번길 93'과 상호 일치. 지번주소도 확인됐으나 신뢰할 수 있는 현재 업소 좌표는 확보하지 못함.",
+          "evidenceResult": "공개 지도·행정인허가 기반 페이지에서 '전하로176번길 93'과 상호 일치. 지번주소도 확인됐으나 신뢰할 수 있는 현재 업소 좌표는 확보하지 못함. 2026-11-07 동일 회차 추가 대조: 전하로176번길 93과 93-1은 별도 주소. 일반 주소 웹사이트의 위경도만으로 현재 커피나무 업소 위치를 확정할 수 없어 좌표 미등록 유지.",
           "sourceRevalidated": true,
           "checkedAt": "2026-11-07",
           "recheckCycle": 2,
@@ -15874,9 +15876,9 @@
           "action": "창원시 공식 상세 명단과 블루리본 원출처 및 관광기관 별도 공개자료 재검색."
         },
         {
-          "topic": "김해시 2025/2023 목록 나머지 페이지와 개별 영업",
-          "reason": "2025·2023 각 13건 중 첫 페이지 8건만 확인해 두 연도에 대해 각각 5건의 추가 대조가 필요.",
-          "action": "차기 김해 배정 시 후속 페이지와 기존 등록 주소·운영 상태 대조."
+          "topic": "김해 2025/2023 공식 명단의 페이지별 건수·표시 정합성",
+          "reason": "2페이지의 2025·2023 명단 각 6곳은 기존 이름·주소 일치. 다만 페이지1 총 13건, 페이지2 총 14건으로 표시되고 일부 중복되어 최신 전체 건수 정합성 확인이 필요.",
+          "action": "다음 43회차 배정 때 최신 공식 전체 페이지 재대조. 현 등록·이력 유지."
         }
       ],
       "carryOver": [
@@ -15888,7 +15890,58 @@
         "경상남도 진주시",
         "경상남도 사천시"
       ],
-      "notExhaustive": true
+      "notExhaustive": true,
+      "continuationChecks": [
+        {
+          "reference": "2026-11-07-kimhae-page2-restaurant-addresses",
+          "checkedAtKST": "2026-11-07",
+          "type": "same_slot_continuation",
+          "regions": [
+            "경상남도 창원시",
+            "경상남도 김해시"
+          ],
+          "scope": "김해시 2025·2023 김해맛집 공식 명단 2페이지 상호·주소를 현재 main의 기본 restaurants.json과 대조. 창원시 상세 관광 명단은 공식 웹 오류로 추가 검증 미완료. 좌표가 없는 우체국 추천 7곳 중 김해 커피나무 현주소 93/93-1 구분을 재확인했으나 주소 지오코딩만으로 현재 업소 좌표 확정 불가.",
+          "pageTwo2025Names": [
+            "어방동스시",
+            "중국요리 상하이",
+            "청송갈비",
+            "카사벨라",
+            "코끼리식당",
+            "활천삼계탕"
+          ],
+          "pageTwo2023Names": [
+            "삼일뒷고기",
+            "수정방(수정루)",
+            "영국수",
+            "정통밀양돼지국밥",
+            "파스타정원",
+            "풍전숯불갈비"
+          ],
+          "matchedExistingNamesAndAddresses": 12,
+          "added": 0,
+          "modified": 0,
+          "locationCoordinatesAdded": 0,
+          "locationHidden": 0,
+          "locationPending": 7,
+          "findings": [
+            "2025 공식 2페이지 6개 표기 상호·도로명주소는 기존 main의 고유 ID 6건에 1:1 대응하여 추가 대상 없음.",
+            "2023 공식 2페이지 6개 표기 상호·도로명주소는 기존 main의 고유 ID 6건에 1:1 대응하여 추가 대상 없음.",
+            "해당 공식 목록 1페이지는 총 13건, 2페이지는 총 14건으로 표시되며 일부 식당이 양쪽 페이지에 중복 노출되어 건수·완전성 재확인 필요. 선정 해제 또는 폐업으로 판단하지 않음.",
+            "김해 커피나무 주소는 93과 93-1이 별개 도로명주소. 93의 일반 주소 지오코딩은 업소 좌표를 보증하지 않으므로 미등록 유지.",
+            "창원시 관광명단 웹페이지 오류로 새로운 업소 추가여부 단정 불가."
+          ],
+          "evidenceUrls": [
+            "https://www.gimhae.go.kr/07097/07111/09411.web",
+            "https://www.gimhae.go.kr/07097/07111/09411.web?cpage=2",
+            "https://www.gimhae.go.kr/07097/07111/08676.web",
+            "https://www.gimhae.go.kr/07097/07111/08676.web?cpage=2",
+            "https://jusoga.com/b/4825011500100430011046929/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84-%EA%B9%80%ED%95%B4%EC%8B%9C-%EC%A0%84%ED%95%98%EB%A1%9C176%EB%B2%88%EA%B8%B8-93-%EC%A0%84%ED%95%98%EB%8F%99",
+            "https://dorojuso.kr/4825011500100430012085500/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84-%EA%B9%80%ED%95%B4%EC%8B%9C-%EC%A0%84%ED%95%98%EB%A1%9C176%EB%B2%88%EA%B8%B8-93-1-%EC%A0%84%ED%95%98%EB%8F%99",
+            "https://changwon.go.kr/tour/index.do?menuCode=001_004004002000&page.pageNo=1&search.searchCategory=CGR&search.searchKeyword="
+          ],
+          "notExhaustive": true
+        }
+      ]
     }
   ],
   "notes": [
