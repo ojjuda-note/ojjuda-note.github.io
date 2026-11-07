@@ -43,6 +43,15 @@
 .nn-heading h2{font-family:var(--font-d);font-size:22px;font-weight:400}
 .nn-toolbar-actions{display:flex;gap:6px}
 .nn-copy{font-size:15px}.nn-empty{font-size:15px}
+.nn-update-copy{display:grid;gap:13px;margin-bottom:10px;line-height:1.6;letter-spacing:-.01em}
+.nn-unread .nn-update-copy{font-weight:400}
+.nn-update-intro{margin:0;font-size:18px;font-weight:700;line-height:1.4}
+.nn-update-section{display:grid;gap:5px}
+.nn-update-label{color:var(--accent-ink);font-size:15px;font-weight:700;line-height:1.4}
+.nn-update-detail,.nn-update-daily-item{margin:0;font-size:14px;font-weight:400;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+.nn-update-detail{color:var(--ink-2)}
+.nn-update-daily-item{position:relative;padding-left:13px;color:var(--ink)}
+.nn-update-daily-item:before{content:'•';position:absolute;left:0;color:var(--accent-ink)}
 .nn-source{padding:0 6px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
 .nn-entry :focus-visible,.nn-bell:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 @media(max-width:380px){.nn-top-actions{gap:5px}.nn-bell{width:32px;height:32px}.mobile-top .note-brand-row{gap:4px}.mobile-top .brand{font-size:20px}.mobile-top .brand-icon{width:27px;height:27px}}

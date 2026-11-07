@@ -5,6 +5,7 @@ const path = require('node:path');
 const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '../note/notifications.js'), 'utf8');
+const styles = fs.readFileSync(path.join(__dirname, '../note/notifications.css'), 'utf8');
 const world = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
 const tick = async () => { for (let i = 0; i < 7; i++) await new Promise(resolve => setImmediate(resolve)); };
 
@@ -16,7 +17,7 @@ test('member inbox displays safe daily and monthly changes; old popup is not mou
   const items = [
     {id:'daily:2026-11-06',kind:'daily_update',source:'updates',summary:'솔리테어 게임 추가 · 장기 대국 개선',created_at:'2026-11-06T15:00:00Z',read_at:null,target_type:'update',target_id:'2026-11-06'},
     {id:'broadcast:month-2026-10-07',kind:'broadcast_update',source:'updates',summary:'게임·일정·맛집 개선 <img src=x>',created_at:'2026-11-06T14:55:00Z',read_at:null,target_type:'update',target_id:'month-2026-10-07'},
-    {id:'broadcast:month-recap',kind:'broadcast_update',source:'updates',summary:'오쭈다 새 소식이에요 🌷 새 게임: 솔리테어! 맞고 타짜 8종도 추가됐어요. 일상에는 그룹도 생겼어요 💛',created_at:'2026-11-06T14:50:00Z',read_at:null,target_type:'update',target_id:'month-recap'}
+    {id:'broadcast:month-recap',kind:'broadcast_update',source:'updates',summary:'오쭈다 새 소식이에요 🌷 새 게임: 오쭈다 마블·샛별키우기·지뢰찾기·탱크·세븐포커·사천성·뱅·룰렛·바람의 궁수·솔리테어! 맞고 타짜 8종도 추가됐어요. 일상에는 그룹도 생겼어요 💛',created_at:'2026-11-06T14:50:00Z',read_at:null,target_type:'update',target_id:'month-recap'}
   ];
   const requests = [];
   const client = {
@@ -34,12 +35,19 @@ test('member inbox displays safe daily and monthly changes; old popup is not mou
     w.eval(source);
     const ui = w.OjjudaNotifications.install({client,getUserId:()=> '00000000-0000-4000-8000-000000000001'});
     ui.open(); await tick();
-    const rendered = [...w.document.querySelectorAll('.nn-copy')].map(n=>n.textContent);
-    assert.ok(rendered.includes('솔리테어 게임 추가장기 대국 개선'));
-    assert.ok(rendered.includes('게임·일정·맛집 개선 <img src=x>'));
-    assert.equal(w.document.querySelector('[data-notification-id="daily:2026-11-06"] .nn-copy').querySelectorAll('br').length,1,'daily changes get separate lines');
-    assert.equal(w.document.querySelector('[data-notification-id="broadcast:month-recap"] .nn-copy').querySelectorAll('br').length,3,'monthly games, improvements and daily-life changes get separate lines');
+    const daily = w.document.querySelector('[data-notification-id="daily:2026-11-06"] .nn-copy');
+    const monthly = w.document.querySelector('[data-notification-id="broadcast:month-recap"] .nn-copy');
+    assert.deepEqual([...daily.querySelectorAll('.nn-update-daily-item')].map(n=>n.textContent), ['솔리테어 게임 추가','장기 대국 개선']);
+    assert.equal(monthly.querySelector('.nn-update-intro').textContent,'오쭈다 새 소식이에요 🌷');
+    assert.deepEqual([...monthly.querySelectorAll('.nn-update-label')].map(n=>n.textContent), ['🎮 새 게임 10종','✨ 기존 게임 개선','🌷 일상 소식']);
+    assert.equal(monthly.querySelectorAll('.nn-update-section').length,3,'monthly changes are grouped by topic');
+    assert.equal(monthly.querySelector('.nn-update-section').querySelectorAll('.nn-update-detail').length,2,'long game names are shown in two shorter rows');
+    assert.ok(w.document.querySelector('[data-notification-id="broadcast:month-2026-10-07"] .nn-copy').textContent.includes('<img src=x>'));
     assert.equal(w.document.querySelector('.nn-item img'),null,'summary text is never HTML');
+    assert.match(styles,/\.nn-update-intro\{[^}]*font-size:18px/,'intro has its own larger font size');
+    assert.match(styles,/\.nn-update-label\{[^}]*font-size:15px/,'section headings have a middle font size');
+    assert.match(styles,/\.nn-update-detail,[^}]*font-size:14px/,'detail text is smaller and readable');
+    assert.match(styles,/\.nn-unread \.nn-update-copy\{font-weight:400\}/,'unread summaries are not entirely bold');
     assert.equal(w.document.querySelectorAll('.nn-source').length,3);
     assert.ok([...w.document.querySelectorAll('.nn-source')].every(n=>n.textContent==='오쭈다'));
     w.document.querySelector('[data-notification-read="daily:2026-11-06"]').click(); await tick();
