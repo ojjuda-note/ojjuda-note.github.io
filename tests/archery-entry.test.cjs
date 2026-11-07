@@ -67,7 +67,7 @@ const gameButton=id=>{
 };
 assert.doesNotMatch(gameButton('archery'),/game-test-badge/,'released archery has no trial badge');
 assert.equal(ctx._r.star,undefined,'the retired Star helper stays out of the production catalog');
-assert.match(gameButton('festival'),/<small class="game-test-badge">일상<\/small>/);
+assert.doesNotMatch(gameButton('festival'),/game-test-badge/,'daily festival information does not show a redundant category badge');
 let launchOptions;
 ctx.window.OjjudaArcheryGame={open:options=>{launchOptions=options;}};
 vm.runInContext(world.slice(world.indexOf('function Al('),world.indexOf('// User-requested exits ask first;',world.indexOf('function Al('))),ctx);
