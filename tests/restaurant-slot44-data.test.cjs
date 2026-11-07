@@ -47,8 +47,9 @@ assert.ok(app.includes('slot44.locationEnrichments'), 'the live directory applie
 assert.ok(app.includes('row.id === patch.id && row.name === patch.expectedName && row.address === patch.expectedAddress'), 'the map location is tied to an exact place');
 assert.ok(app.includes('restaurant.lat != null || restaurant.lng != null'), 'previous coordinates are never overwritten');
 assert.equal(sources.coverage.uniqueRestaurants, 3250);
-assert.equal(sources.coverage.coordinatesAvailable, 1041);
-assert.equal(sources.coverage.coordinatesMissing, 2209);
+assert.equal(sources.coverage.coordinatesAvailable, sources.latestMapCoverageAudit.currentCoverage.coordinatesAvailable);
+assert.equal(sources.coverage.coordinatesMissing, sources.latestMapCoverageAudit.currentCoverage.coordinatesMissing);
+assert.equal(sources.coverage.coordinatesAvailable + sources.coverage.coordinatesMissing, sources.coverage.uniqueRestaurants);
 assert.equal(sources.coverage.providerCounts['local-guide'], 2519);
 const slot44 = audit.entries.find(item => item.cycle === 1 && item.slot === 44);
 assert.ok(slot44);
@@ -63,5 +64,35 @@ assert.deepEqual(slot44.nextRegions, ['경상남도 통영시', '경상남도 �
 const release = file('game-release.json');
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
-assert.ok(index.includes('app.js?v=20261107-restaurants-slot44-1'));
+assert.ok(index.includes('app.js?v=' + release.revision), 'the current entry-point cache matches the game release');
+// Later slots must preserve historical source records while adding exact official locations.
+const seogwipo = file('games/certified-restaurants/official-jeju-slot48-locations.json');
+assert.equal(seogwipo.cycle, 1);
+assert.equal(seogwipo.slot, 48);
+assert.deepEqual(seogwipo.restaurants, [], 'all five locations reuse existing certified IDs');
+assert.equal(seogwipo.locationEnrichments.length, 5);
+assert.equal(new Set(seogwipo.locationEnrichments.map(item => item.id)).size, 5);
+for (const candidate of seogwipo.locationEnrichments) {
+  const original = db.restaurants.find(item => item.id === candidate.id);
+  assert.ok(original, 'only known saved IDs get new coordinates');
+  assert.equal(original.name, candidate.expectedName);
+  assert.equal(original.address, candidate.expectedAddress);
+  assert.equal(original.region, '제주');
+  assert.equal(original.district, '서귀포시');
+  assert.equal(original.lat, null); assert.equal(original.lng, null);
+  assert.ok(original.guides.some(guide => guide.provider === 'blue-ribbon' || guide.provider === 'local-guide'));
+  assert.ok(Number.isFinite(candidate.lat) && candidate.lat > 33 && candidate.lat < 34);
+  assert.ok(Number.isFinite(candidate.lng) && candidate.lng > 126 && candidate.lng < 127);
+  assert.match(candidate.coordinateSource.url, /^https:\/\/www\.visitjeju\.net\/kr\/detail\/view\?contentsid=(?:CNTS_|CONT_)/);
+  assert.equal(candidate.coordinateSource.checkedAt, '2026-11-07');
+}
+const seogwipoCoverage = sources.mapCoverageAuditHistory.find(item => item.cycle === 1 && item.slot === 48);
+assert.ok(seogwipoCoverage, 'the original slot48 official coordinate reconciliation remains preserved');
+assert.equal(seogwipoCoverage.currentCoverage.coordinatesAvailable, 1051);
+assert.equal(seogwipoCoverage.currentCoverage.coordinatesMissing, 2199);
+const slot48 = audit.entries.find(item => item.cycle === 1 && item.slot === 48);
+assert.ok(slot48, 'later slots must retain prior slot48 audit');
+assert.equal(slot48.locationPending, 17);
+assert.ok(app.includes('slot48Seogwipo.locationEnrichments'), 'the live app uses verified overlay');
+assert.match(assets, /restaurants:'\d+\.\d+\.\d+'/, 'the restaurant game has an independent release version');
 console.log('restaurant slot44 Jinju/Sacheon official listing and location checks passed');
