@@ -1,0 +1,98 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 59,
+  "sourceName": "부산관광공사 VisitBusan·대구광역시 대구푸드·울산광역시 울산관광",
+  "sourceUrls": [
+    "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098",
+    "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
+    "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+  ],
+  "sourceScope": "공식 개별 확인3곳 (전체 지역 명단 아님)",
+  "completeRegionalCollection": false,
+  "coordinatePolicy": "공식 주소 확인만 수행, 식당 및 지점 일치 숫자 좌표 없어서 추정 좌표는 추가하지 않음",
+  "currentOperatingStatusVerified": false,
+  "restaurants": [
+    {
+      "id": "local-busan-slot59-hwagukbanjeom",
+      "name": "화국반점",
+      "category": "중식",
+      "region": "부산",
+      "district": "중구",
+      "address": "부산광역시 중구 백산길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "간짜장",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산관광공사 미식투어 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098",
+          "sourceName": "부산관광공사 VisitBusan · 미식투어",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 음식점 소개로 정규 미쉐린·블루리본 선정, 등급 및 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/kr/index.do?lang_cd=ko&menuCd=DOM_000000202003001000&uc_seq=2098"
+    },
+    {
+      "id": "local-daegu-slot59-chogasikdang",
+      "name": "초가식당",
+      "category": "한식",
+      "region": "대구",
+      "district": "중구",
+      "address": "대구광역시 중구 동성로 81-2 (동성로1가)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오징어볶음",
+        "제육볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "대구 중구맛집 지정",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9",
+          "sourceName": "대구시 대구푸드 · 구군별 인증업소",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "중구청이 지정한 중구맛집으로 기재됨. 지정 연도와 현재 영업 여부는 별도 확인 필요."
+        }
+      ],
+      "addressSourceUrl": "https://www.daegufood.go.kr/kor/food/food.asp?idx=1869&snm=9"
+    },
+    {
+      "id": "local-ulsan-slot59-gamudaengdaeng",
+      "name": "가무댕댕",
+      "category": "기타",
+      "region": "울산",
+      "district": "남구",
+      "address": "울산광역시 남구 대학로94번길 11(무거동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산광역시 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 · 먹거리 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 음식점 소개로 정규 미쉐린·블루리본 선정, 등급 및 현재 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+    }
+  ]
+}
