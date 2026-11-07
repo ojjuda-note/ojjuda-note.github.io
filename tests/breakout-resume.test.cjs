@@ -176,7 +176,7 @@ test('breakout continues only to the next level and preserves the accumulated ru
   const after=run.state();
   assert.equal(run.game.stage,2);assert.equal(run.game.stageCleared,false);assert.equal(engine.readStage(),2);
   assert.equal(after.score,before.score);assert.equal(after.lives,before.lives);
-  assert.equal(after.speed,Math.min(552*1.15,before.speed+20*1.15),'continuation adds the normal next-level acceleration without resetting speed');
+  assert.equal(after.speed,280*1.15,'continuation resets the ball to the selected base speed');
   assert.equal(after.bricks.length,24);assert.ok(after.bricks.every(b=>b.on&&b.hp===b.maxHp));
   assert.equal(after.balls.length,1);assert.equal(after.balls[0].piercing,false);assert.equal(after.waiting,true);assert.equal(after.drops.length,0);
   assert.equal(run.game.continueStage(3),false);assert.equal(run.game.finishRun(),false);assert.deepEqual(run.ends,[]);assert.equal(run.clears.length,1);

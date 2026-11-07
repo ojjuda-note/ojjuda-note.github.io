@@ -183,7 +183,8 @@ for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [[
     const after=f.state();
     assert.equal(after.paddle.w,80,'each next board resets both helpful and harmful paddle sizes');
     assert.ok(after.paddle.x>=0&&after.paddle.x+after.paddle.w<=360);
-    near(after.speed,control.state().speed,'next-board speed matches a run without speed pickups, even after reaching a limit');
+    near(after.speed,280*({slow:.8,normal:1,fast:1.15})[speed], 'each new stage starts at the selected base speed');
+    near(after.speed,control.state().speed,'next-board speed ignores previous-stage pickups');
     assert.equal(after.score,before.score);assert.equal(after.lives,2,'continuing preserves the remaining lives');
     assert.equal(after.balls.length,1);assert.equal(after.balls[0].piercing,false);assert.equal(after.balls[0].pierceBounces,0);
     assert.equal(after.drops.length,0);assert.equal(after.waiting,true);
@@ -214,8 +215,10 @@ for(const speed of ['slow','normal','fast'])for(const [sizeItem,speedItem] of [[
     Object.assign(s.balls[0],{x:last.x+last.w/2,y:last.y+last.h+6,vx:0,vy:-s.speed});f.game.update(1/240);
     assert.equal(f.game.continueStage(f.state().level+1),true);
   }
-  assert.ok(f.state().speed>initial&&f.state().speed<=552,'later stages stay within the speed cap');
-  f.launch();const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
+  near(f.state().speed,initial,'advancing through stages never carries speed increases forward');
+  for(let i=0;i<8;i++)f.catchItem(f.hit('fast'));
+  near(f.state().speed,552,'within-stage speed can still reach the higher cap');
+  const s=f.state();Object.assign(s.balls[0],{x:180,y:468,vx:0,vy:s.speed});f.game.update(.05);
   assert.ok(s.balls[0].vy<0&&s.balls[0].y<490,'the fastest ball cannot skip the paddle during a long frame');
 }
 {

@@ -69,7 +69,6 @@
     const paddle={x:140,y:490,w:BASE_PADDLE,h:12};
     let balls=[],bricks=[],drops=[],waiting=true,finished=false,completed=false,stageCleared=false,lives=3,score=0,level=Number.isInteger(startStage)&&startStage>=1&&startStage<=LEVELS?startStage:1,speed=280*pace;
     let nextBallId=1,paddleTouchOrder=0,notice='',noticeTime=0,noticeBad=false;
-    let baseSpeed=speed;
     let brickBuckets=new Map(),brickPaint=[];
     const brickLayer=typeof OffscreenCanvas==='function'?new OffscreenCanvas(W*2,H*2):null,brickContext=brickLayer?.getContext('2d');
     brickContext?.scale(2,2);
@@ -98,8 +97,6 @@
       for(const ball of balls){const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude){ball.vx=ball.vx/magnitude*speed;ball.vy=ball.vy/magnitude*speed;}}
     }
     function faster(amount){
-      // Track normal progression separately so pickups cannot affect later boards.
-      baseSpeed=Math.max(MIN_SPEED*pace,Math.min(MAX_SPEED*pace,baseSpeed+amount*pace));
       setSpeed(speed+amount*pace);
     }
     function resizePaddle(amount){
@@ -275,7 +272,7 @@
       continueStage(next){
         if(!stageCleared||finished||next!==level+1||next>LEVELS)return false;
         level=next;stageCleared=false;
-        resizePaddle(BASE_PADDLE-paddle.w);setSpeed(baseSpeed);faster(20);
+        resizePaddle(BASE_PADDLE-paddle.w);setSpeed(280*pace);
         fillBricks();newTurn();setNotice(level+'단계');return true;
       },
       finishRun(){
