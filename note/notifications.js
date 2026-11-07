@@ -8,6 +8,42 @@
     .replace(/\s+(?=새 게임:)/g, '\n')
     .replace(/([!?])\s+(?=\S)/g, '$1\n')
     .replace(/\.\s+(?=[^\d\s])/g, '.\n').split('\n')).filter(Boolean);
+  function updateCopy(kind, summary) {
+    const copy = el('div', undefined, 'nn-copy nn-update-copy');
+    for (const [index, line] of updateLines(kind, summary).entries()) {
+      if (kind === 'daily_update') {
+        copy.append(el('p', line, 'nn-update-daily-item'));
+        continue;
+      }
+      if (index === 0 && line.startsWith('오쭈다')) {
+        copy.append(el('p', line, 'nn-update-intro'));
+        continue;
+      }
+      const section = el('div', undefined, 'nn-update-section');
+      let label = '', detail = line;
+      if (line.startsWith('새 게임:')) {
+        detail = line.slice('새 게임:'.length).trim();
+        const gameNames = detail.split('·').map(name => name.trim()).filter(Boolean);
+        label = `🎮 새 게임${gameNames.length > 1 ? ` ${gameNames.length}종` : ''}`;
+        if (gameNames.length >= 8) {
+          const middle = Math.ceil(gameNames.length / 2);
+          section.append(el('strong', label, 'nn-update-label'));
+          section.append(el('p', gameNames.slice(0, middle).join(' · '), 'nn-update-detail'));
+          section.append(el('p', gameNames.slice(middle).join(' · '), 'nn-update-detail'));
+          copy.append(section);
+          continue;
+        }
+      } else if (line.startsWith('맞고 타짜')) label = '✨ 기존 게임 개선';
+      else if (line.startsWith('일상에는')) {
+        label = '🌷 일상 소식';
+        detail = line.slice('일상에는'.length).trim();
+      }
+      if (label) section.append(el('strong', label, 'nn-update-label'));
+      section.append(el('p', detail.replace(/·/g, ' · '), 'nn-update-detail'));
+      copy.append(section);
+    }
+    return copy;
+  }
   let instance;
 
   function install({ client, getUserId = () => null, onOpenCard, onOpenInquiry, onKeepCard, onOpenWorld, onOpenGroup = id => location.assign('/groups/#room=' + encodeURIComponent(id)) } = {}) {
@@ -111,17 +147,11 @@
     function rowFor(item) {
       const row = el('li', undefined, `nn-item${item.read_at ? '' : ' nn-unread'}`); row.dataset.notificationId = item.id;
       const retention = item.kind === 'retention';
-      const text = el('p', retention
+      const update = ['daily_update','broadcast_update'].includes(item.kind)
+        && typeof item.summary === 'string' && item.summary.length <= 200;
+      const text = update ? updateCopy(item.kind, item.summary) : el('p', retention
         ? item.reason === 'parent_due' ? '상위 카드와 함께 공개 종료 예정이에요.' : '내 카드가 곧 공개 종료돼요.'
-        : ['daily_update','broadcast_update'].includes(item.kind) && typeof item.summary === 'string' && item.summary.length <= 200
-          ? item.summary : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
-      if (['daily_update','broadcast_update'].includes(item.kind) && typeof item.summary === 'string' && item.summary.length <= 200) {
-        text.replaceChildren();
-        updateLines(item.kind, item.summary).forEach((line, index) => {
-          if (index) text.append(el('br'));
-          text.append(document.createTextNode(line));
-        });
-      }
+        : item.kind === 'group_invite' && item.group_name ? `${item.sender_name || '방장'}님이 ‘${item.group_name}’ 그룹에 초대했어요.` : COPY[item.kind], 'nn-copy');
       const meta = el('div', undefined, 'nn-meta'), source = el('span',item.source==='updates'?'오쭈다':item.kind==='group_invite'?'그룹':item.kind==='inquiry_reply'?'문의':item.source==='world'?(item.kind==='world_message'?'쪽지':'친구'):'익명카드','nn-source'), state = el('span', item.read_at ? '읽음' : '안 읽음');
       const time = el('time'); const created = new Date(item.created_at);
       if (Number.isFinite(created.getTime())) { time.dateTime = created.toISOString(); time.textContent = created.toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
