@@ -1,0 +1,91 @@
+name: Publish lightweight Pages site
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'tests/**'
+      - 'scripts/**'
+      - 'supabase/**'
+      - 'ops/**'
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - '.gitignore'
+      - '_config.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/pages-publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Stage only public website files
+        shell: bash
+        run: |
+          set -euo pipefail
+          site="$RUNNER_TEMP/ojjuda-public"
+          mkdir -p "$site"
+          rsync -a \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/tests/' \
+            --exclude='/scripts/' \
+            --exclude='/supabase/' \
+            --exclude='/ops/' \
+            --exclude='/docs/' \
+            --exclude='/AGENTS.md' \
+            --exclude='/README.md' \
+            --exclude='/.gitignore' \
+            --exclude='/_config.yml' \
+            "$GITHUB_WORKSPACE/" "$site/"
+          touch "$site/.nojekyll"
+          for required in CNAME index.html world.html park/index.html note/index.html sw.js config.js version.json; do
+            if [[ ! -s "$site/$required" ]]; then
+              echo "Missing required public file: $required" >&2
+              exit 1
+            fi
+          done
+          if [[ "$(tr -d '\r\n' < "$site/CNAME")" != 'ojjuda.kr' ]]; then
+            echo 'Unexpected custom domain in staged site' >&2
+            exit 1
+          fi
+          echo 'Public site size and file count:'
+          du -sh "$site"
+          find "$site" -type f | wc -l
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/ojjuda-public
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy with a longer sync deadline
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          timeout: 1800000
