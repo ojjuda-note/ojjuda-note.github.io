@@ -12,7 +12,17 @@
     const copy = el('div', undefined, 'nn-copy nn-update-copy');
     for (const [index, line] of updateLines(kind, summary).entries()) {
       if (kind === 'daily_update') {
-        copy.append(el('p', line, 'nn-update-daily-item'));
+        // Daily headlines are structured as "짧은 제목 — 설명". Render the
+        // heading and description as distinct blocks, not a single dense line.
+        const parts = /^(.{2,26}?) — (.+)$/u.exec(line);
+        if (parts) {
+          const section = el('section', undefined, 'nn-update-section nn-update-daily-section');
+          section.append(el('strong', parts[1].trim(), 'nn-update-label'));
+          section.append(el('p', parts[2].trim(), 'nn-update-detail'));
+          copy.append(section);
+        } else {
+          copy.append(el('p', line, 'nn-update-daily-item'));
+        }
         continue;
       }
       if (index === 0 && line.startsWith('오쭈다')) {
