@@ -1,0 +1,186 @@
+{
+  "updatedAt": "2026-11-07",
+  "cycle": 1,
+  "slot": 51,
+  "sourceName": "충청북도 충북나드리 공식 관광포털",
+  "sourceUrls": [
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+    "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+  ],
+  "completeRegionalCollection": false,
+  "selectionScope": "충북 전체 공식 명단의 일부 공개 음식점 6곳을 개별 상호·지점·도로명주소로 확인. 출판·수록연도와 선정연도·현재 영업 여부를 구분하며 수치 좌표 미확인.",
+  "restaurants": [
+    {
+      "id": "local-chungbuk-slot51-cheongju-baekro-main",
+      "name": "백로식당(본점)",
+      "category": "한식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 상당구 성안로 47-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지양념구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2918",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungbuk-slot51-cheongju-sushiseoul",
+      "name": "스시서울 청주점",
+      "category": "일식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 서원구 예체로1번길 20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "런치 오마카세"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3292",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungbuk-slot51-cheongju-dare-dare",
+      "name": "데어데어베이커리카페",
+      "category": "디저트",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 상당구 무심동로 72",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쿠키앤크림 케이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2794",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungbuk-slot51-cheongju-oseongdang",
+      "name": "오성당",
+      "category": "분식",
+      "region": "충북",
+      "district": "청주시",
+      "address": "충청북도 청주시 흥덕구 풍산로 55",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쫄면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=3234",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungbuk-slot51-chungju-daerim",
+      "name": "대림불고기",
+      "category": "한식",
+      "region": "충북",
+      "district": "충주시",
+      "address": "충청북도 충주시 봉방9길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 암소 불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2104",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-chungbuk-slot51-eumseong-pungmi",
+      "name": "풍미식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "음성군",
+      "address": "충청북도 음성군 감곡면 장감로 186-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충북나드리 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009",
+          "sourceName": "충청북도 공식 관광포털 · 충북나드리 음식점 상세",
+          "verifiedAt": "2026-11-07",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "충청북도 관광포털에 음식점으로 수록된 사실. 정규 미쉐린·블루리본 선정 또는 현재 영업 상태 확인으로 간주하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009",
+      "addressSourceCheckedAt": "2026-11-07"
+    }
+  ]
+}
