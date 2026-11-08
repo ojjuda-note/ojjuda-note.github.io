@@ -1,3 +1,7 @@
+-- LEGACY BOOTSTRAP: run only before stock-market-activity.sql.
+-- The activity script replaces the temporary rules below with unlimited
+-- counted visits, measured game time, unique visitors, records and updates.
+-- Do not rerun this initial-price function after applying the newer script.
 -- Ojjuda arcade market: read-only historical activity index.
 -- Each listed game opens at 1000G on its first saved play in Asia/Seoul.
 -- Only stored, per-game play events are used: no inferred logins or play time.
