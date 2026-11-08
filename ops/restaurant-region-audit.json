@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 68,
-    "scheduledAt": "2026-11-08T14:00:00+09:00",
+    "slot": 69,
+    "scheduledAt": "2026-11-08T15:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "14:00 한국시각 예약 기준: h=63, n=67, slot68; 13시 67회차는 최신 main에 처리 기록 없어 이월 확인."
+    "source": "15:00 KST 예약시각 기준 h=64 n=68 slot=69. 실제 확인한 일부 목록만 반영."
   },
   "entries": [
     {
@@ -63371,6 +63371,920 @@
         "회원 추천맛집 게시물·좌표·사진·개인 위치에 접근하지 않았으며 삭제하지 않음.",
         "14시 동일 회차 이어하기: 영동군 관광포털 공식 모범음식점 5곳 추가(영동 총 21곳). 3곳 정확 좌표 검증, 2곳 신규 위치 미확인. 나머지 영동 공식 명단 일부 대조·영업 확인 이월."
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 69,
+      "scheduledAtKST": "2026-11-08T15:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_chungbuk_four_counties_17_listings",
+      "assignedRegions": [
+        "충청북도 진천군",
+        "충청북도 괴산군",
+        "충청북도 음성군",
+        "충청북도 단양군"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청북도 진천군",
+          "baseListedCount": 22,
+          "newCount": 9,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "진천군청 관광 모범음식점 9개 업소 상호·주소·메뉴 확인",
+            "기존 저장 ID 및 위치 미등록 대조"
+          ],
+          "remainingAreas": [
+            "좌표 미등록 15건의 숫자좌표 교차 확인 필요",
+            "이외 공식 블루리본·지자체 명단과 휴폐업·주소 변경 여부 추가 조사"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 괴산군",
+          "baseListedCount": 7,
+          "newCount": 3,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "괴산군 문화관광 인증음식점 개별 상세 3개 업소 지정 유형·도로명주소 확인",
+            "기존 수록 상호와 위치 누락 대조"
+          ],
+          "remainingAreas": [
+            "좌표 미등록 6건의 숫자좌표 교차 확인 필요",
+            "이외 공식 블루리본·지자체 명단과 휴폐업·주소 변경 여부 추가 조사"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 음성군",
+          "baseListedCount": 7,
+          "newCount": 0,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "기존 등록된 공식 수록 업소의 좌표 미등록 1건 검토",
+            "신규 공식 모범음식점 상호와 주소 교차입증 자료 미확보"
+          ],
+          "remainingAreas": [
+            "좌표 미등록 2건의 숫자좌표 교차 확인 필요",
+            "이외 공식 블루리본·지자체 명단과 휴폐업·주소 변경 여부 추가 조사"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 단양군",
+          "baseListedCount": 15,
+          "newCount": 5,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "단양군 음식점 공개 목록 1·13·14쪽 모범음식점 5곳 확인",
+            "기존 모범식당 및 좌표 누락 대조"
+          ],
+          "remainingAreas": [
+            "좌표 미등록 14건의 숫자좌표 교차 확인 필요",
+            "이외 공식 블루리본·지자체 명단과 휴폐업·주소 변경 여부 추가 조사"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "진천군 관광 모범음식점 공식 목록",
+        "괴산군 문화관광 공식 인증음식점 3곳",
+        "단양군 공식 음식점 목록 1·13·14쪽",
+        "기존 충북 공개 도청 수록과 4개군 위치 누락 식당 교차 대조",
+        "음성군 신규 공식 상호·주소 확정 자료 미확보"
+      ],
+      "additions": 17,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 37,
+      "locationPendingScope": "기존 좌표 미등록 20곳과 신규 미등록 17곳, 이 회차 4개군 기준; 타 지역 이월 보존.",
+      "addedRestaurantIds": [
+        "local-chungbuk-slot69-jincheon-kimsabu",
+        "local-chungbuk-slot69-jincheon-eommabapjip",
+        "local-chungbuk-slot69-jincheon-duchon-yeomsotang",
+        "local-chungbuk-slot69-jincheon-midonga",
+        "local-chungbuk-slot69-jincheon-mystery-kodari",
+        "local-chungbuk-slot69-jincheon-igang-dakgalbi",
+        "local-chungbuk-slot69-jincheon-duchonri-saenggogi",
+        "local-chungbuk-slot69-jincheon-soultable",
+        "local-chungbuk-slot69-jincheon-haru-donkatsu",
+        "local-chungbuk-slot69-goesan-singi-song-eo",
+        "local-chungbuk-slot69-goesan-goegang-olgaengi",
+        "local-chungbuk-slot69-goesan-myeongdong-shabu",
+        "local-chungbuk-slot69-danyang-gamgol-mukchon",
+        "local-chungbuk-slot69-danyang-gyeongju-sikdang",
+        "local-chungbuk-slot69-danyang-jangdari-sikdang",
+        "local-chungbuk-slot69-danyang-jangmi-sikdang",
+        "local-chungbuk-slot69-danyang-yeongnam-sikdang"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+        "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747",
+        "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272",
+        "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773",
+        "https://danyang.go.kr/food",
+        "https://danyang.go.kr/food?page=13",
+        "https://danyang.go.kr/food?page=14"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-north-b36170270bb081bb",
+          "name": "고향왕족발보쌈식당",
+          "currentAddress": "충청북도 진천군 광혜원면 중리2길 13-2",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=66"
+          ],
+          "searchAliases": [
+            "고향왕족발보쌈식당 진천군",
+            "고향왕족발보쌈식당 충청북도 진천군 광혜원면 중리2길 13-2",
+            "충북 진천군 고향왕족발보쌈식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-df08f97d8662b526",
+          "name": "장터순대",
+          "currentAddress": "충청북도 진천군 진천읍 원덕로390, D동102호",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=67"
+          ],
+          "searchAliases": [
+            "장터순대 진천군",
+            "장터순대 충청북도 진천군 진천읍 원덕로390, D동102호",
+            "충북 진천군 장터순대"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-be98a1de6f555553",
+          "name": "곰가내",
+          "currentAddress": "충청북도 진천군 백곡면 백곡로 835-8",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=67"
+          ],
+          "searchAliases": [
+            "곰가내 진천군",
+            "곰가내 충청북도 진천군 백곡면 백곡로 835-8",
+            "충북 진천군 곰가내"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-23ae8de77d01cc43",
+          "name": "산마루가든",
+          "currentAddress": "충청북도 진천군 덕산읍 덕금로 889",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=69"
+          ],
+          "searchAliases": [
+            "산마루가든 진천군",
+            "산마루가든 충청북도 진천군 덕산읍 덕금로 889",
+            "충북 진천군 산마루가든"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-a29b3f85253b4eb9",
+          "name": "신궁전가든",
+          "currentAddress": "충청북도 진천군 덕산면 용몽2길 34",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=69"
+          ],
+          "searchAliases": [
+            "신궁전가든 진천군",
+            "신궁전가든 충청북도 진천군 덕산면 용몽2길 34",
+            "충북 진천군 신궁전가든"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-4cd91a25d1860ba0",
+          "name": "은행나무집",
+          "currentAddress": "충청북도 진천군 문백면 농다리로 1094",
+          "region": "충청북도 진천군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=70"
+          ],
+          "searchAliases": [
+            "은행나무집 진천군",
+            "은행나무집 충청북도 진천군 문백면 농다리로 1094",
+            "충북 진천군 은행나무집"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-664fd89eba7c1474",
+          "name": "기사식당",
+          "currentAddress": "충청북도 괴산군 괴산읍 괴강로 8",
+          "region": "충청북도 괴산군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=73"
+          ],
+          "searchAliases": [
+            "기사식당 괴산군",
+            "기사식당 충청북도 괴산군 괴산읍 괴강로 8",
+            "충북 괴산군 기사식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-b3415a25e9383256",
+          "name": "주차장집식당",
+          "currentAddress": "충청북도 괴산군 괴산읍 읍내로 282",
+          "region": "충청북도 괴산군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=73"
+          ],
+          "searchAliases": [
+            "주차장집식당 괴산군",
+            "주차장집식당 충청북도 괴산군 괴산읍 읍내로 282",
+            "충북 괴산군 주차장집식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-c28f0a5e28b3fcb8",
+          "name": "갱치",
+          "currentAddress": "충청북도 괴산군 괴산읍 문무로역고개길 73-1",
+          "region": "충청북도 괴산군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=74"
+          ],
+          "searchAliases": [
+            "갱치 괴산군",
+            "갱치 충청북도 괴산군 괴산읍 문무로역고개길 73-1",
+            "충북 괴산군 갱치"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-7a5589fbd9a54802",
+          "name": "이조갈비",
+          "currentAddress": "충청북도 음성군 삼성면 삼문길 45-1",
+          "region": "충청북도 음성군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=77"
+          ],
+          "searchAliases": [
+            "이조갈비 음성군",
+            "이조갈비 충청북도 음성군 삼성면 삼문길 45-1",
+            "충북 음성군 이조갈비"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-d282947cc0094926",
+          "name": "금강식당",
+          "currentAddress": "충청북도 단양군 영춘면 백자1길 11",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "searchAliases": [
+            "금강식당 단양군",
+            "금강식당 충청북도 단양군 영춘면 백자1길 11",
+            "충북 단양군 금강식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-8cff18c656666905",
+          "name": "돌집식당",
+          "currentAddress": "충청북도 단양군 단양읍 중앙2로 11",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "searchAliases": [
+            "돌집식당 단양군",
+            "돌집식당 충청북도 단양군 단양읍 중앙2로 11",
+            "충북 단양군 돌집식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-3c66fff8c3f77a49",
+          "name": "보신각",
+          "currentAddress": "충청북도 단양군 단양읍 별곡12길 10-14",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=81"
+          ],
+          "searchAliases": [
+            "보신각 단양군",
+            "보신각 충청북도 단양군 단양읍 별곡12길 10-14",
+            "충북 단양군 보신각"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-01af4eaff4bdfc9a",
+          "name": "왕릉숯불갈비",
+          "currentAddress": "충청북도 단양군 단양읍 중앙2로 13",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "searchAliases": [
+            "왕릉숯불갈비 단양군",
+            "왕릉숯불갈비 충청북도 단양군 단양읍 중앙2로 13",
+            "충북 단양군 왕릉숯불갈비"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-6cfdaa56920f4ebf",
+          "name": "자연식당",
+          "currentAddress": "충청북도 단양군 단양읍 별곡10길 5-1",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "searchAliases": [
+            "자연식당 단양군",
+            "자연식당 충청북도 단양군 단양읍 별곡10길 5-1",
+            "충북 단양군 자연식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-461f5f96a38552ed",
+          "name": "한우일번가",
+          "currentAddress": "충청북도 단양군 매포읍 평동3로 3",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 대물림 전통음식 계승업소",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=82"
+          ],
+          "searchAliases": [
+            "한우일번가 단양군",
+            "한우일번가 충청북도 단양군 매포읍 평동3로 3",
+            "충북 단양군 한우일번가"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-630a7af6188425ff",
+          "name": "대교약선요리",
+          "currentAddress": "충청북도 단양군 단양읍 별곡9길 15",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=83"
+          ],
+          "searchAliases": [
+            "대교약선요리 단양군",
+            "대교약선요리 충청북도 단양군 단양읍 별곡9길 15",
+            "충북 단양군 대교약선요리"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-4ddedea44dc1e6d5",
+          "name": "영상강가든",
+          "currentAddress": "충청북도 단양군 영춘면 남천 계곡로 41",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=84"
+          ],
+          "searchAliases": [
+            "영상강가든 단양군",
+            "영상강가든 충청북도 단양군 영춘면 남천 계곡로 41",
+            "충북 단양군 영상강가든"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-north-7fa470f5fa946bd7",
+          "name": "장다리마늘약선",
+          "currentAddress": "충청북도 단양군 단양읍 삼봉로 370",
+          "region": "충청북도 단양군",
+          "sourceType": "충북 밥맛좋은집 지정 이력",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=84"
+          ],
+          "searchAliases": [
+            "장다리마늘약선 단양군",
+            "장다리마늘약선 충청북도 단양군 단양읍 삼봉로 370",
+            "충북 단양군 장다리마늘약선"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot51-eumseong-pungmi",
+          "name": "풍미식당",
+          "currentAddress": "충청북도 음성군 감곡면 장감로 186-1",
+          "region": "충청북도 음성군",
+          "sourceType": "충북나드리 공식 관광 음식점 소개",
+          "evidenceUrls": [
+            "https://tour.chungbuk.go.kr/www/selectTourCntnts.do?key=77&searchMainSe=FOOD&tourNo=2009"
+          ],
+          "searchAliases": [
+            "풍미식당 음성군",
+            "풍미식당 충청북도 음성군 감곡면 장감로 186-1",
+            "충북 음성군 풍미식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-kimsabu",
+          "name": "김사부",
+          "currentAddress": "충청북도 진천군 진천읍 남산8길 11-1",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "김사부 진천군",
+            "김사부 충청북도 진천군 진천읍 남산8길 11-1",
+            "충북 진천군 김사부"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-eommabapjip",
+          "name": "엄마밥집",
+          "currentAddress": "충청북도 진천군 진천읍 문화7길 20",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "엄마밥집 진천군",
+            "엄마밥집 충청북도 진천군 진천읍 문화7길 20",
+            "충북 진천군 엄마밥집"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-duchon-yeomsotang",
+          "name": "두촌염소탕",
+          "currentAddress": "충청북도 진천군 덕산읍 시가로 14, 2층 204호",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "두촌염소탕 진천군",
+            "두촌염소탕 충청북도 진천군 덕산읍 시가로 14, 2층 204호",
+            "충북 진천군 두촌염소탕"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-midonga",
+          "name": "진천맛집 미돈가",
+          "currentAddress": "충청북도 진천군 진천읍 중앙동5길 7-1",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "진천맛집 미돈가 진천군",
+            "진천맛집 미돈가 충청북도 진천군 진천읍 중앙동5길 7-1",
+            "충북 진천군 진천맛집 미돈가"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-mystery-kodari",
+          "name": "미스터리코다리",
+          "currentAddress": "충청북도 진천군 덕산읍 이영남로 7",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "미스터리코다리 진천군",
+            "미스터리코다리 충청북도 진천군 덕산읍 이영남로 7",
+            "충북 진천군 미스터리코다리"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-igang-dakgalbi",
+          "name": "이강식당명가닭갈비",
+          "currentAddress": "충청북도 진천군 진천읍 문화로 52",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "이강식당명가닭갈비 진천군",
+            "이강식당명가닭갈비 충청북도 진천군 진천읍 문화로 52",
+            "충북 진천군 이강식당명가닭갈비"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-duchonri-saenggogi",
+          "name": "두촌리생고기",
+          "currentAddress": "충청북도 진천군 덕산읍 공원로 48",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "두촌리생고기 진천군",
+            "두촌리생고기 충청북도 진천군 덕산읍 공원로 48",
+            "충북 진천군 두촌리생고기"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-soultable",
+          "name": "소울테이블",
+          "currentAddress": "충청북도 진천군 진천읍 중앙동로 37",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "소울테이블 진천군",
+            "소울테이블 충청북도 진천군 진천읍 중앙동로 37",
+            "충북 진천군 소울테이블"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-jincheon-haru-donkatsu",
+          "name": "하루돈까스",
+          "currentAddress": "충청북도 진천군 광혜원면 구암길 18",
+          "region": "충청북도 진천군",
+          "sourceType": "진천군 모범음식점",
+          "evidenceUrls": [
+            "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list"
+          ],
+          "searchAliases": [
+            "하루돈까스 진천군",
+            "하루돈까스 충청북도 진천군 광혜원면 구암길 18",
+            "충북 진천군 하루돈까스"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-goesan-singi-song-eo",
+          "name": "신기송어장횟집",
+          "currentAddress": "충청북도 괴산군 문광면 괴산로신기2길 8-25",
+          "region": "충청북도 괴산군",
+          "sourceType": "괴산군 모범음식점",
+          "evidenceUrls": [
+            "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747"
+          ],
+          "searchAliases": [
+            "신기송어장횟집 괴산군",
+            "신기송어장횟집 충청북도 괴산군 문광면 괴산로신기2길 8-25",
+            "충북 괴산군 신기송어장횟집"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-goesan-goegang-olgaengi",
+          "name": "괴강올갱이해장국",
+          "currentAddress": "충청북도 괴산군 괴산읍 충민로 1",
+          "region": "충청북도 괴산군",
+          "sourceType": "괴산군 모범음식점",
+          "evidenceUrls": [
+            "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272"
+          ],
+          "searchAliases": [
+            "괴강올갱이해장국 괴산군",
+            "괴강올갱이해장국 충청북도 괴산군 괴산읍 충민로 1",
+            "충북 괴산군 괴강올갱이해장국"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-goesan-myeongdong-shabu",
+          "name": "명동샤브칼국수",
+          "currentAddress": "충청북도 괴산군 괴산읍 읍내로15길 42",
+          "region": "충청북도 괴산군",
+          "sourceType": "괴산군 모범음식점",
+          "evidenceUrls": [
+            "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773"
+          ],
+          "searchAliases": [
+            "명동샤브칼국수 괴산군",
+            "명동샤브칼국수 충청북도 괴산군 괴산읍 읍내로15길 42",
+            "충북 괴산군 명동샤브칼국수"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-danyang-gamgol-mukchon",
+          "name": "감골묵촌",
+          "currentAddress": "충청북도 단양군 매포읍 평동23길 13",
+          "region": "충청북도 단양군",
+          "sourceType": "단양군 모범음식점",
+          "evidenceUrls": [
+            "https://danyang.go.kr/food"
+          ],
+          "searchAliases": [
+            "감골묵촌 단양군",
+            "감골묵촌 충청북도 단양군 매포읍 평동23길 13",
+            "충북 단양군 감골묵촌"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-danyang-gyeongju-sikdang",
+          "name": "경주식당",
+          "currentAddress": "충청북도 단양군 단양읍 도전6길 14",
+          "region": "충청북도 단양군",
+          "sourceType": "단양군 모범음식점",
+          "evidenceUrls": [
+            "https://danyang.go.kr/food"
+          ],
+          "searchAliases": [
+            "경주식당 단양군",
+            "경주식당 충청북도 단양군 단양읍 도전6길 14",
+            "충북 단양군 경주식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-danyang-jangdari-sikdang",
+          "name": "장다리식당",
+          "currentAddress": "충청북도 단양군 단양읍 삼봉로 370",
+          "region": "충청북도 단양군",
+          "sourceType": "단양군 모범음식점",
+          "evidenceUrls": [
+            "https://danyang.go.kr/food?page=14"
+          ],
+          "searchAliases": [
+            "장다리식당 단양군",
+            "장다리식당 충청북도 단양군 단양읍 삼봉로 370",
+            "충북 단양군 장다리식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-danyang-jangmi-sikdang",
+          "name": "장미식당",
+          "currentAddress": "충청북도 단양군 영춘면 백자1길 7",
+          "region": "충청북도 단양군",
+          "sourceType": "단양군 모범음식점",
+          "evidenceUrls": [
+            "https://danyang.go.kr/food?page=14"
+          ],
+          "searchAliases": [
+            "장미식당 단양군",
+            "장미식당 충청북도 단양군 영춘면 백자1길 7",
+            "충북 단양군 장미식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot69-danyang-yeongnam-sikdang",
+          "name": "영남식당",
+          "currentAddress": "충청북도 단양군 단양읍 다리안로 117-1",
+          "region": "충청북도 단양군",
+          "sourceType": "단양군 모범음식점",
+          "evidenceUrls": [
+            "https://danyang.go.kr/food?page=13"
+          ],
+          "searchAliases": [
+            "영남식당 단양군",
+            "영남식당 충청북도 단양군 단양읍 다리안로 117-1",
+            "충북 단양군 영남식당"
+          ],
+          "checkResult": "공식 상호·주소 수록 정보 대조, 해당 업소·현주소와 직접 일치하는 독립 수치좌표를 이번 범위에서 미확인. 영업 상태 별도 미판정.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 69,
+          "reason": "좌표 미등록만으로 폐업·가이드 선정 취소 처리하지 않으며 추정좌표를 사용하지 않음."
+        }
+      ],
+      "unresolved": [
+        {
+          "region": "강원특별자치도 인제군·고성군·양양군",
+          "cycle": 1,
+          "slot": 67,
+          "scheduledAtKST": "2026-11-08T13:00:00+09:00",
+          "reason": "최신 main 점검기록에서 1순환 67회차 미발견. 실제 수행·반영 확인 불가. 2순환 67회차에서 우선 보충 확인 필요."
+        },
+        {
+          "region": "전북특별자치도",
+          "cycle": 1,
+          "slot": 53,
+          "reason": "이전 회차의 미완료 조사는 기존 기록을 그대로 보존하며 후속 대조 필요."
+        },
+        {
+          "region": "충청북도 음성군",
+          "cycle": 1,
+          "slot": 69,
+          "reason": "새 공식 선정 업소의 상호·현주소 추가 검증 미완료. 다음 해당 군 배정에서 우선 확인."
+        }
+      ],
+      "nextSlot": 70,
+      "nextRegions": [
+        "충청남도 금산군",
+        "충청남도 부여군",
+        "충청남도 서천군",
+        "충청남도 청양군"
+      ],
+      "notes": [
+        "전체 지역 전수 확인 아님. 공식 목록 수록·선정연도·현 영업 여부 구분.",
+        "블루리본 정규 등급 추가 확인 0곳, 공개 숫자 좌표 추가 확인 0곳.",
+        "개인 위치·회원 추천글·사진 수정 안 함. 이전 회차 미완료 조사 기록 보존."
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
