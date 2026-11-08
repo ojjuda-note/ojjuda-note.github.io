@@ -5,6 +5,7 @@
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,panHintDismissed=false;
   const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14,MIN_PLAY_TILE=48;
+  let stageEightViewport='',stageEightLayout=null;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -69,10 +70,21 @@
     return Math.min((width-2*pad-(cols-1+extra)*gap)/(cols+extra),(height-2*pad-4-(rows-1+extra)*gap)/((rows+extra)*1.19));
   }
   const boardPadding=layerCount=>8+2*(layerCount-1);
+  function stageEightReference(){
+    const viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight,key=`${width}x${height}`;
+    if(stageEightLayout&&key===stageEightViewport)return stageEightLayout;
+    const cols=boardColumns(8),info=E.stackInfo(8,cols),gap=2,pad=boardPadding(info.layerCount);
+    const fit=Math.max(1,Math.floor(fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount)*100)/100);
+    const size=Math.max(fit,Math.min(72,Math.max(MIN_PLAY_TILE,fit*1.35)));
+    stageEightViewport=key;stageEightLayout={cols,size};return stageEightLayout;
+  }
   function boardColumns(stage){
     const {size}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
     if(stage<=2)return size;
     const typical=E.stackInfo(stage),target=Math.max(...typical.floors.map(floor=>floor.total)),span=Math.sqrt(target/.66);
+    // Later levels grow downward instead of packing more, smaller columns
+    // into the viewport. Keep the column rhythm of stage eight.
+    if(stage>8)return Math.max(3,Math.min(Math.floor(target/2),stageEightReference().cols));
     if(width<=20||height<=24)return typical.cols;
     const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=(typical.layerCount-1)*E.LAYER_OFFSET;
     const choices=[];
@@ -100,8 +112,8 @@
     fitSize=fit;
     // Start with readable cards and card-width walkways. The '전체' control
     // still fits every floor into one screen when the player wants an overview.
-    const readable=Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
-    const size=overview?fitSize:Math.max(fitSize,customSize??readable);
+    const readable=state.stage>8?stageEightReference().size:Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
+    const size=overview?fitSize:Math.max(fitSize,state.stage>8?readable:0,customSize??readable);
     if(size<=fitSize+.01){overview=true;customSize=null;}
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
@@ -111,7 +123,10 @@
       layer.style.left=`${index*E.LAYER_OFFSET*(size+gap)}px`;
       layer.style.top=`${index*E.LAYER_OFFSET*(size*1.19+gap)}px`;
     });
-    $('zoom-fit').setAttribute('aria-pressed',String(overview));
+    const fitButton=$('zoom-fit');fitButton.setAttribute('aria-pressed',String(overview));
+    fitButton.textContent=overview&&state.stage>8&&readable>fitSize+.01?'크게':'전체';
+    fitButton.setAttribute('aria-label',fitButton.textContent==='크게'?'8단계 카드 크기로 보기':'게임판 전체 보기');
+    $('zoom-out').disabled=state.stage>8&&(overview||size<=Math.max(fitSize,readable)+.01);
     $('board-pan-tip').hidden=overview||panHintDismissed;
     $('connection').replaceChildren();
     if(hints.length){const route=E.visiblePath(layers(),hints[0],hints[1]);if(route)draw(route,true,hints[0].layer??0);}
@@ -373,7 +388,8 @@
     x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
     y=Number.isFinite(y)?Math.max(rect.top,Math.min(rect.bottom,y)):rect.top+rect.height/2;
     const anchorX=before.width?(x-before.left)/before.width:.5,anchorY=before.height?(y-before.top)/before.height:.5;
-    customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
+    const minSize=state.stage>8?Math.max(fitSize,stageEightReference().size):fitSize;
+    customSize=Math.max(minSize,Math.min(Math.max(160,fitSize*4,minSize*3),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
     sizeBoard();const after=canvas.getBoundingClientRect();
     viewport.scrollLeft+=after.left+anchorX*after.width-x;viewport.scrollTop+=after.top+anchorY*after.height-y;
   }
@@ -414,7 +430,13 @@
     if(!event.ctrlKey||$('modal').open||$('options').open)return;
     event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);
   },{passive:false});
-  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
+  $('zoom-fit').onclick=()=>{
+    if(overview&&state.stage>8&&stageEightReference().size>fitSize+.01){
+      overview=false;customSize=null;sizeBoard();
+      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
+      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
+    }else{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;}
+  };
   $('zoom-in').onclick=()=>zoomBoard(tileSize()+Math.max(6,tileSize()*.2));
   $('zoom-out').onclick=()=>zoomBoard(tileSize()-Math.max(6,tileSize()*.2));
   window.addEventListener('resize',sizeBoard);

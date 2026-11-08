@@ -68,11 +68,20 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
    assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'true');
    assert.equal(d.getElementById('board-pan-tip').hidden,true,label+': no scrolling hint in full-screen view');
   };
+  const openingTile=parseFloat(canvas.style.getPropertyValue('--tile'));
   if(stage>=3){
-   assert(parseFloat(canvas.style.getPropertyValue('--tile'))>=47.99,label+': enlarged cards are readable on entry');
+   assert(openingTile>=47.99,label+': enlarged cards are readable on entry');
    d.getElementById('zoom-fit').click();
   }
   assertFit();
+  if(stage>8&&openingTile>parseFloat(canvas.style.getPropertyValue('--tile'))+.01){
+   assert.equal(d.getElementById('zoom-fit').textContent,'크게',label+': the overview offers a one-tap return to readable cards');
+   d.getElementById('zoom-fit').click();
+   assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'false');
+   assert(parseFloat(canvas.style.getPropertyValue('--tile'))>=openingTile-.01,label+': stage-eight tile size is restored');
+   assert.equal(d.getElementById('zoom-out').disabled,true,label+': cards cannot shrink below stage-eight size');
+   d.getElementById('zoom-fit').click();assertFit();
+  }
   const move=E.exposedMoves(every);assert(move,label+': has an uncovered legal move');
   const at=p=>d.querySelector('[data-layer="'+p.layer+'"][data-r="'+p.r+'"][data-c="'+p.c+'"]'),a=at(move.a),b=at(move.b);
   a.click();assert.equal(a.getAttribute('aria-pressed'),'true',label+': selects');

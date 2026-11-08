@@ -74,8 +74,16 @@ async function screenshot(page,name){
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
       assert(value.tile.width>=47.99,`${label}: large cards are readable on entry`);
+      if(stage>8)assert.equal(await page.locator('#zoom-out').isEnabled(),false,`${label}: zoom-out stops at stage-eight card size`);
       await page.locator('#zoom-fit').click();
       assertFits(await layout(page),`${label}: whole-board button`);
+      if(stage>8&&value.fit==='false'){
+       assert.equal(await page.locator('#zoom-fit').innerText(),'크게',`${label}: direct return to stage-eight-size cards`);
+       await page.locator('#zoom-fit').click();
+       assert((await layout(page)).tile.width>=value.tile.width-.1,`${label}: large cards return without repeated zoom taps`);
+       await page.locator('#zoom-fit').click();
+       assertFits(await layout(page),`${label}: whole-board view remains available`);
+      }
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
       assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
       assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);
