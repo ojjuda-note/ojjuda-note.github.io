@@ -1,0 +1,1579 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 72,
+  "scheduledAtKST": "2026-11-08T18:00:00+09:00",
+  "sourceName": "완주·진안·무주·장수군 공식 문화관광 음식점",
+  "sourceUrls": [
+    "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+    "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+    "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+    "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422300&menuCd=DOM_000000403002001000",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422308&menuCd=DOM_000000403002001000",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422302&menuCd=DOM_000000403002001000",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=548519&menuCd=DOM_000000403002001000",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=67&menuCd=DOM_000000403002001000",
+    "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422301&menuCd=DOM_000000403002001000"
+  ],
+  "completeRegionalCollection": false,
+  "verifiedRecords": 58,
+  "regionalAdds": {
+    "완주군": 35,
+    "진안군": 7,
+    "무주군": 10,
+    "장수군": 6
+  },
+  "designationRecords": 51,
+  "tourismDirectoryOnlyRecords": 7,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusVerifiedCount": 0,
+  "existingDuplicatesPreserved": [
+    "완주 화심순두부본점",
+    "완주 원조화심두부",
+    "완주 약수가든 (기존 668-38 vs 공식 668-27; 좌표/주소 미변경)"
+  ],
+  "notes": [
+    "완주군 모범음식점 38곳 중 기본 목록 기존 3곳 중복 방지, 신규 35곳.",
+    "진안군 관광기관 음식점 7곳은 별도 선정·심사가 아닌 공식 소개로만 구분.",
+    "무주 공식 모범음식점 25곳 가운데 1~2쪽 대조해 10개 누락을 추가. 장수군 개별 모범음식점 6곳 추가.",
+    "고솜 기존 1층/공식 목록 2층, 완주 약수가든 668-38/668-27의 주소 차이는 독립 출처로 확인 전 수정하지 않음.",
+    "좌표는 개별 업소 현주소와 일치하는 숫자 근거가 없어 전부 null. 현재 영업상태·리본 등급 추정 없음.",
+    "업소 식별 사실만 사용. 원문 소개글·사진·연락처·회원 개인정보 복제하지 않음."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonbuk-slot72-wanju-01",
+      "name": "송우즉석순두부",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 삼례읍 과학로 508",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-02",
+      "name": "한도령본가추어탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 삼례읍 녹색로 64",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-03",
+      "name": "풍천장어직판구이",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 삼례읍 삼례역로 28",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-04",
+      "name": "본토담집",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 삼례읍 왕궁로 14",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-05",
+      "name": "화산한우직판가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 과학로 1017",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-06",
+      "name": "오동태마을봉동 둔산점",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 둔산2로 14",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-07",
+      "name": "청주본가",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 둔산3로 19",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-08",
+      "name": "백제명가",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 둔산3로 97",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-09",
+      "name": "육삼오",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 봉동로 38",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-10",
+      "name": "백궁가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 서정길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-11",
+      "name": "한라산도야지",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 신보상길 26",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-12",
+      "name": "진양반갈비봉동점",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 완주산단7로 61",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-13",
+      "name": "대관령동태찌개와 낙지볶음",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 완주산단9로 7",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-14",
+      "name": "코리아숯불갈비",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 봉동읍 은하길 50",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-15",
+      "name": "대왕가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 구억명덕로 11",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-16",
+      "name": "초포가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 구억명덕로 19",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-17",
+      "name": "연화정",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 완주로 386-14",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-18",
+      "name": "코다리촌완주점",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 초포다리로 235-8",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-19",
+      "name": "소래버섯나라",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 초포다리로 242",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-20",
+      "name": "향뚝짬뽕",
+      "category": "중식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 용진읍 초포다리로 250",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-21",
+      "name": "방가네",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 상관면 왜목로 711",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-22",
+      "name": "갑기회관 전북혁신점",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 이서면 오공로 11-13",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-23",
+      "name": "양평해장국 이서혁신점",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 이서면 지사제로 3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-24",
+      "name": "이서순천방향 휴게소그린웰",
+      "category": "기타",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 이서면 호남고속도로 161",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-25",
+      "name": "이서천안방향 휴게소그린웰",
+      "category": "기타",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 이서면 호남고속도로 162",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-26",
+      "name": "화심장어",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 소양면 상관소양로 1107",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-27",
+      "name": "기양초",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 소양면 송광수만로 508",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-28",
+      "name": "송전산장",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 소양면 신지송광로 831",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-29",
+      "name": "몽펠리에레스토랑",
+      "category": "양식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 소양면 원대흥길 127-21",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-30",
+      "name": "모악산소야",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 구이면 모악산길 78-4",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-31",
+      "name": "한양회관",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 고산면 고산로 81",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-32",
+      "name": "고산촌",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 고산면 남봉로 132-4",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-33",
+      "name": "운암식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 고산면 대아저수로 292",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-34",
+      "name": "한밭식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 운주면 대둔산공원길 30",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-wanju-35",
+      "name": "곰바위산장",
+      "category": "한식",
+      "region": "전북",
+      "district": "완주군",
+      "address": "전북특별자치도 완주군 동상면 대아수목로 279",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+          "sourceName": "완주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-36",
+      "name": "진안 운일암일번지한식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 주천면 삼거길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "닭백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-37",
+      "name": "진안 월랑정",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 진안읍 학천변길 37-10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리주물럭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-38",
+      "name": "샘터가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 진안읍 중앙로 99",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-39",
+      "name": "꽃잔디 밥상",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 진안읍 원연장1길 21-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한식뷔페"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-40",
+      "name": "대박가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 용담면 안용로 947",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선구이정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-41",
+      "name": "제일식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 진안읍 우화4길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jinan-42",
+      "name": "행복한 밥상",
+      "category": "한식",
+      "region": "전북",
+      "district": "진안군",
+      "address": "전북특별자치도 진안군 진안읍 진무로 1183",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물갈비찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진안군 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+          "sourceName": "진안군 문화관광 · 공식 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "tourism_directory",
+          "selectionCriteria": "지자체 공식 관광 음식점 소개. 지정·선정/블루리본 등급과 현재 영업은 확인하지 못함."
+        }
+      ],
+      "addressSourceUrl": "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-43",
+      "name": "you 참치 & 생연어",
+      "category": "일식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 무주읍 단천로 100",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-44",
+      "name": "강나루",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 무주읍 내도로 123",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-45",
+      "name": "명륜진사갈비 NEW 버전 전북무주점",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 무주읍 단천로 151 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-46",
+      "name": "모든이의하우스",
+      "category": "기타",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 무주읍 주계로8길 8-6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-47",
+      "name": "무주명가",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 무주읍 단천로 99",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-48",
+      "name": "서울설렁탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 설천면 구천동로 837-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-49",
+      "name": "예촌본가",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 설천면 만선1로 90",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-50",
+      "name": "원조전주맛집",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 설천면 구천동1로 95",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-51",
+      "name": "전주콩나물국밥 유명한집",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 설천면 구천동1로 3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-muju-52",
+      "name": "칠연가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "무주군",
+      "address": "전북특별자치도 무주군 안성면 칠연로 442",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무주군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+          "sourceName": "무주군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-53",
+      "name": "본래순대",
+      "category": "한식",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장수읍 구시장길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422300&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422300&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-54",
+      "name": "콩마을 순두부",
+      "category": "한식",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장수읍 시장로 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순두부"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422308&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422308&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-55",
+      "name": "멕시카나치킨, 장충동왕족발보쌈",
+      "category": "기타",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장계면 장무로 243",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "치킨",
+        "족발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422302&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422302&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-56",
+      "name": "현대옥",
+      "category": "한식",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장수읍 교촌로 21",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=548519&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=548519&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-57",
+      "name": "붕붕오리나라",
+      "category": "한식",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장수읍 준비취락길 19-10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리주물럭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=67&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=67&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot72-jangsu-58",
+      "name": "넌짜장난짬뽕",
+      "category": "중식",
+      "region": "전북",
+      "district": "장수군",
+      "address": "전북특별자치도 장수군 장수읍 준비길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장수군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422301&menuCd=DOM_000000403002001000",
+          "sourceName": "장수군 문화관광 · 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 모범음식점 명단 수록. 선정연도·현재 영업은 미확인, 블루리본 정규 등급과 다름."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422301&menuCd=DOM_000000403002001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}

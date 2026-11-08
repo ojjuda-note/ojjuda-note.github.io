@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3472,
+    "uniqueRestaurants": 3530,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2739,
+      "local-guide": 2797,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2406,
+    "coordinatesMissing": 2464,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1546,7 +1546,7 @@
       "울산": 38,
       "경남": 325,
       "강원": 104,
-      "전북": 215,
+      "전북": 273,
       "경기": 412,
       "인천": 345,
       "제주": 120,
@@ -1558,11 +1558,11 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2092,
-      "중식": 145,
-      "일식": 146,
-      "기타": 588,
-      "양식": 219,
+      "한식": 2142,
+      "중식": 147,
+      "일식": 147,
+      "기타": 592,
+      "양식": 220,
       "분식": 40,
       "디저트": 242
     }
@@ -15825,8 +15825,8 @@
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2476,
-    "designationEvidenceCount": 2461,
+    "recordCount": 2534,
+    "designationEvidenceCount": 2512,
     "coordinatesAvailable": 758,
     "regionCount": 17,
     "regionalCoverage": [
@@ -15904,7 +15904,7 @@
       },
       {
         "region": "전북",
-        "uniqueRestaurants": 202,
+        "uniqueRestaurants": 260,
         "coordinatesAvailable": 57,
         "completeRegionalCollection": false
       },
@@ -24790,5 +24790,42 @@
     "operatingStatusConfirmed": 0,
     "blueRibbonGradeVerifiedNew": 0,
     "notes": "공식 모범음식점 명단 첫 쪽 12곳씩 확인하여 24곳 추가. 개별 지정·발행연도와 출처 확인일 구분. 기존 예산 소복갈비/공식 소복식당 동일 주소 중복 가능성 보류. 업소 정확 수치좌표와 현재 영업여부 미확인."
+  },
+  "jeonbukSlot72": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 72,
+    "scheduledAtKST": "2026-11-08T18:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-jeonbuk-slot72.json",
+    "sourceUrls": [
+      "https://www.wanju.go.kr/tour/index.9is?contentUid=ff8080818c5d9e6d018ca4655c346913",
+      "https://jinan.go.kr/tour/board/list.jtour?boardId=BBS_0000009&categoryCode1=B&categoryCode2=B-A&contentsSid=47&cpath=&menuCd=DOM_000000106003000000",
+      "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt",
+      "https://tour.muju.go.kr/tour/selectTourCntntsList.do?ctgryNo=5&key=93&rstrtTy=prgnRstrt&pageIndex=2",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422300&menuCd=DOM_000000403002001000",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422308&menuCd=DOM_000000403002001000",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422302&menuCd=DOM_000000403002001000",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=548519&menuCd=DOM_000000403002001000",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=67&menuCd=DOM_000000403002001000",
+      "https://www.jangsu.go.kr/tour/board/view.jangsu?boardId=BBS_0000016&dataSid=422301&menuCd=DOM_000000403002001000"
+    ],
+    "newCount": 58,
+    "regionalCounts": {
+      "완주군": 35,
+      "진안군": 7,
+      "무주군": 10,
+      "장수군": 6
+    },
+    "designationCount": 51,
+    "tourismIntroCount": 7,
+    "locationsAdded": 0,
+    "locationPending": 89,
+    "hidden": 0,
+    "currentOperatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "notes": [
+      "완주 약수가든 주소 668-38 대 668-27, 무주 고솜 1층 대 2층: 독립 근거 미확인으로 변경 보류",
+      "모든 신규 업소 현재 영업 별도 판단. 새 정규 블루리본 리본등급 확인되지 않음"
+    ]
   }
 }
