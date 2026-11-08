@@ -1529,20 +1529,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3429,
+    "uniqueRestaurants": 3448,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2696,
+      "local-guide": 2715,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2363,
+    "coordinatesMissing": 2382,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
       "충북": 270,
-      "충남": 74,
+      "충남": 93,
       "울산": 38,
       "경남": 325,
       "강원": 104,
@@ -1558,9 +1558,9 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2056,
+      "한식": 2074,
       "중식": 143,
-      "일식": 145,
+      "일식": 146,
       "기타": 587,
       "양식": 219,
       "분식": 38,
@@ -15337,53 +15337,138 @@
         "블루리본 정규 등급과 공동 선정으로 표시하지 않음. 신규좌표17곳 모두 검증 가능한 수치좌표 미확인으로 null.",
         "기존 ID·회원 추천·위치 개인정보 및 공식 블루리본 전체지도 링크 보존."
       ]
+    },
+    {
+      "id": "2026-11-08-chungnam-slot70-geumsan19",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 70,
+      "previousCoverage": {
+        "uniqueRestaurants": 3429,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2696,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2363,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2056,
+          "중식": 143,
+          "일식": 145,
+          "기타": 587,
+          "양식": 219,
+          "분식": 38,
+          "디저트": 241
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3448,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2715,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2382,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 93,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2074,
+          "중식": 143,
+          "일식": 146,
+          "기타": 587,
+          "양식": 219,
+          "분식": 38,
+          "디저트": 241
+        }
+      },
+      "newRestaurantCount": 19,
+      "modificationCount": 1,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-chungnam-slot70-geumsan-seongdeok",
+        "local-chungnam-slot70-geumsan-hwanggeum-ori",
+        "local-chungnam-slot70-geumsan-kkotnimi",
+        "local-chungnam-slot70-geumsan-hwangto-saram",
+        "local-chungnam-slot70-geumsan-samwon-garden",
+        "local-chungnam-slot70-geumsan-hansol-garden",
+        "local-chungnam-slot70-geumsan-insam-jangeo",
+        "local-chungnam-slot70-geumsan-golmok-chueo",
+        "local-chungnam-slot70-geumsan-insamgol-garden",
+        "local-chungnam-slot70-geumsan-sitang-ppuri",
+        "local-chungnam-slot70-geumsan-madalpi",
+        "local-chungnam-slot70-geumsan-boksu-hanwoo",
+        "local-chungnam-slot70-geumsan-bakgane",
+        "local-chungnam-slot70-geumsan-geumsan-song-eo",
+        "local-chungnam-slot70-geumsan-pungcheon-jangeo",
+        "local-chungnam-slot70-geumsan-meoksena",
+        "local-chungnam-slot70-geumsan-boriso-mokjang",
+        "local-chungnam-slot70-geumsan-bongseon-gui",
+        "local-chungnam-slot70-geumsan-namgyeong-garden"
+      ],
+      "modifiedRestaurantIds": [
+        "local-chungnam-slot52-geumsan-kimjeongi-samgyetang"
+      ],
+      "sourceUrls": [
+        "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+        "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-chungnam-slot70.json",
+      "scope": "금산군 공식 모범음식점 21곳 확인: 신규19, 기존 선정 이력 병합1, 머들령 현주소 불명 보류1; 부여·서천·청양 신규 대조 미완료",
+      "notes": [
+        "공식 지정·선정 이력과 현재 영업 여부 별도 판단.",
+        "연도 미확정은 null로 유지하며 확인일을 선정 연도로 대용하지 않음.",
+        "새 좌표 0, 목록 제외 0, 회차 지역 47곳 재확인 대기.",
+        "기존 ID·회원 추천·공식 블루리본 전체지도 보존."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-chungbuk-slot69-official17",
+    "id": "2026-11-08-chungnam-slot70-geumsan19",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 69,
+    "slot": 70,
     "previousCoverage": {
-      "uniqueRestaurants": 3412,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2679,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2346,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 253,
-        "충남": 74,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2042,
-        "중식": 142,
-        "일식": 144,
-        "기타": 587,
-        "양식": 218,
-        "분식": 38,
-        "디저트": 241
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3429,
       "providerCounts": {
         "michelin": 237,
@@ -15422,44 +15507,84 @@
         "디저트": 241
       }
     },
-    "newRestaurantCount": 17,
-    "modificationCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3448,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2715,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2382,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 93,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2074,
+        "중식": 143,
+        "일식": 146,
+        "기타": 587,
+        "양식": 219,
+        "분식": 38,
+        "디저트": 241
+      }
+    },
+    "newRestaurantCount": 19,
+    "modificationCount": 1,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungbuk-slot69-jincheon-kimsabu",
-      "local-chungbuk-slot69-jincheon-eommabapjip",
-      "local-chungbuk-slot69-jincheon-duchon-yeomsotang",
-      "local-chungbuk-slot69-jincheon-midonga",
-      "local-chungbuk-slot69-jincheon-mystery-kodari",
-      "local-chungbuk-slot69-jincheon-igang-dakgalbi",
-      "local-chungbuk-slot69-jincheon-duchonri-saenggogi",
-      "local-chungbuk-slot69-jincheon-soultable",
-      "local-chungbuk-slot69-jincheon-haru-donkatsu",
-      "local-chungbuk-slot69-goesan-singi-song-eo",
-      "local-chungbuk-slot69-goesan-goegang-olgaengi",
-      "local-chungbuk-slot69-goesan-myeongdong-shabu",
-      "local-chungbuk-slot69-danyang-gamgol-mukchon",
-      "local-chungbuk-slot69-danyang-gyeongju-sikdang",
-      "local-chungbuk-slot69-danyang-jangdari-sikdang",
-      "local-chungbuk-slot69-danyang-jangmi-sikdang",
-      "local-chungbuk-slot69-danyang-yeongnam-sikdang"
+      "local-chungnam-slot70-geumsan-seongdeok",
+      "local-chungnam-slot70-geumsan-hwanggeum-ori",
+      "local-chungnam-slot70-geumsan-kkotnimi",
+      "local-chungnam-slot70-geumsan-hwangto-saram",
+      "local-chungnam-slot70-geumsan-samwon-garden",
+      "local-chungnam-slot70-geumsan-hansol-garden",
+      "local-chungnam-slot70-geumsan-insam-jangeo",
+      "local-chungnam-slot70-geumsan-golmok-chueo",
+      "local-chungnam-slot70-geumsan-insamgol-garden",
+      "local-chungnam-slot70-geumsan-sitang-ppuri",
+      "local-chungnam-slot70-geumsan-madalpi",
+      "local-chungnam-slot70-geumsan-boksu-hanwoo",
+      "local-chungnam-slot70-geumsan-bakgane",
+      "local-chungnam-slot70-geumsan-geumsan-song-eo",
+      "local-chungnam-slot70-geumsan-pungcheon-jangeo",
+      "local-chungnam-slot70-geumsan-meoksena",
+      "local-chungnam-slot70-geumsan-boriso-mokjang",
+      "local-chungnam-slot70-geumsan-bongseon-gui",
+      "local-chungnam-slot70-geumsan-namgyeong-garden"
+    ],
+    "modifiedRestaurantIds": [
+      "local-chungnam-slot52-geumsan-kimjeongi-samgyetang"
     ],
     "sourceUrls": [
-      "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
-      "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747",
-      "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272",
-      "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773",
-      "https://danyang.go.kr/food",
-      "https://danyang.go.kr/food?page=13",
-      "https://danyang.go.kr/food?page=14"
+      "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungbuk-slot69.json",
-    "scope": "진천군9·괴산군3·단양군5 공식 모범음식점 확인. 음성군 기존 미확인 위치 검토, 신규 명단 추가 검증 미완료. 전수 확인 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot70.json",
+    "scope": "금산군 공식 모범음식점 21곳 확인: 신규19, 기존 선정 이력 병합1, 머들령 현주소 불명 보류1; 부여·서천·청양 신규 대조 미완료",
     "notes": [
-      "각 식당의 공식 모범음식점 수록명·도로명주소 확인. 개별 선정연도와 현 영업상태 별도 미확인.",
-      "블루리본 정규 등급과 공동 선정으로 표시하지 않음. 신규좌표17곳 모두 검증 가능한 수치좌표 미확인으로 null.",
-      "기존 ID·회원 추천·위치 개인정보 및 공식 블루리본 전체지도 링크 보존."
+      "공식 지정·선정 이력과 현재 영업 여부 별도 판단.",
+      "연도 미확정은 null로 유지하며 확인일을 선정 연도로 대용하지 않음.",
+      "새 좌표 0, 목록 제외 0, 회차 지역 47곳 재확인 대기.",
+      "기존 ID·회원 추천·공식 블루리본 전체지도 보존."
     ]
   },
   "latestMapCoverageAudit": {
@@ -15565,13 +15690,13 @@
     "sourceAuditFile": "games/certified-restaurants/sources.json"
   },
   "localGovernment": {
-    "checkedAt": "2026-11-06",
+    "checkedAt": "2026-11-08",
     "provider": "local-guide",
     "label": "지자체 지정",
     "completeNationalCollection": false,
     "scope": "지자체의 공식 미식 선정·지정 명단과 이력, 일부 지자체의 공식 음식점 소개를 분리하여 수록. 단순 소개는 정식 지정·심사로 간주하지 않으며 전국 모든 업소의 수집을 뜻하지 않음.",
-    "recordCount": 2457,
-    "designationEvidenceCount": 2442,
+    "recordCount": 2476,
+    "designationEvidenceCount": 2461,
     "coordinatesAvailable": 758,
     "regionCount": 17,
     "regionalCoverage": [
@@ -24463,5 +24588,38 @@
       "공식 명단 수록과 현재 영업상태 구분",
       "좌표 불명 17건은 추정 없이 보존"
     ]
+  },
+  "chungnamSlot70": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 70,
+    "sourceFile": "games/certified-restaurants/official-chungnam-slot70.json",
+    "publisher": "금산군 문화관광",
+    "sourceUrls": [
+      "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2"
+    ],
+    "addedCount": 19,
+    "modifiedCount": 1,
+    "existingGuideEnrichmentId": "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "pendingLocations": 47,
+    "scope": [
+      "충남 금산군",
+      "충남 부여군",
+      "충남 서천군",
+      "충남 청양군"
+    ],
+    "regionAdded": {
+      "금산군": 19,
+      "부여군": 0,
+      "서천군": 0,
+      "청양군": 0
+    },
+    "completeRegionalCollection": false,
+    "operatingStatusConfirmed": 0,
+    "blueRibbonGradeVerifiedNew": 0,
+    "notes": "금산군 공식 모범음식점 21곳: 신규19, 기존1 가이드 이력 병합, 머들령 주소 보류. 다른 3개군의 추가 공식 명단·영업상태는 미완료. 좌표는 추정하지 않음."
   }
 }

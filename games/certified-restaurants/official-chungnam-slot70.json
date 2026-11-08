@@ -1,0 +1,543 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 70,
+  "sourceName": "금산군 문화관광 모범음식점",
+  "sourceUrls": [
+    "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+    "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2"
+  ],
+  "completeRegionalCollection": false,
+  "listedTotal": 21,
+  "addedCount": 19,
+  "guideEnrichedCount": 1,
+  "notAddedUncertain": [
+    {
+      "name": "머들령",
+      "reason": "군명이 생략된 공식 표기 주소의 정확한 행정구역 미확정",
+      "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html"
+    }
+  ],
+  "operatingStatusConfirmed": 0,
+  "coordinatesVerifiedCount": 0,
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot70-geumsan-seongdeok",
+      "name": "성덕장수촌",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 삼풍로 163",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-hwanggeum-ori",
+      "name": "황금오리알",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 추부면 다복로 696",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-kkotnimi",
+      "name": "꽃님이가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 진산면 태고사로 360",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-hwangto-saram",
+      "name": "황토집 사람들",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 진산면 태고사로 444",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-samwon-garden",
+      "name": "금산삼원가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 남일면 무금로 2085",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-hansol-garden",
+      "name": "한솔가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 삼풍로 152",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-insam-jangeo",
+      "name": "인삼장어백탄구이",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 군청3길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-golmok-chueo",
+      "name": "골목추어탕",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 추부면 상마전길 9-3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-insamgol-garden",
+      "name": "인삼골가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 제원면 금강로 290",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-sitang-ppuri",
+      "name": "시탕뿌리",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 제원면 용화로 238-5",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-madalpi",
+      "name": "마달피가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 제원면 용화로 272",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-boksu-hanwoo",
+      "name": "복수할매한우",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 복수면 복수로 458",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-bakgane",
+      "name": "박가네집",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 남사직6길 33",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-geumsan-song-eo",
+      "name": "금산송어횟집",
+      "category": "일식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 진산면 휴양림로 2168",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-pungcheon-jangeo",
+      "name": "풍천민물장어",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 복수면 복수로 659",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-meoksena",
+      "name": "먹세나",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금성면 무금로 2527",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-boriso-mokjang",
+      "name": "잔치타운 보리소목장",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 비호로 89-6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-bongseon-gui",
+      "name": "봉선양념구이",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 비호로 99",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot70-geumsan-namgyeong-garden",
+      "name": "남경가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "금산군",
+      "address": "충청남도 금산군 금산읍 인삼약초1길 5-3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "금산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+          "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-chungnam-slot52-geumsan-kimjeongi-samgyetang",
+      "expectedName": "금산원조김정이삼계탕",
+      "expectedAddress": "충청남도 금산군 금산읍 인삼약초로 33 대원상가 2층",
+      "guide": {
+        "provider": "local-guide",
+        "label": "금산군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2",
+        "sourceName": "금산군 문화관광 · 공식 모범음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "공식 목록 수록 사실만 확인. 개별 지정연도·현재 영업 여부는 미확인. 정규 블루리본 등급과 다릅니다."
+      }
+    }
+  ],
+  "notes": [
+    "개별 선정연도·발행연도·현 영업 여부를 확인일과 혼동하지 않음.",
+    "금산군 관광 공식 모범음식점 21곳 중 신규 19, 기존 등록 1, 주소 재확인 보류 1.",
+    "정확한 업소·지점·현주소에 일치하는 독립 수치좌표가 없어 lat/lng=null.",
+    "기존 충남관광 2025 선정 기록과 북마크 ID 보존, 회원 추천 게시물 불변."
+  ]
+}
