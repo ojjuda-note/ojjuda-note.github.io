@@ -1,6 +1,6 @@
 {
   "generatedOn": "2026-10-23",
-  "note": "AI-generated photographic scenes. WebP format conversion retains the 1536×1024 framing. The game uses the identical original on both sides and reveals only six edited regions.",
+  "note": "AI-generated photographic scenes. WebP images retain the 1536×1024 framing. Photo puzzles have six local edits except stage 62, which has ten.",
   "puzzles": [
     {
       "id": 49,
@@ -1113,11 +1113,12 @@
       "title": "겨울 · 눈 내리는 산마을",
       "category": "mountain",
       "difficulty": "hard",
-      "differenceCount": 6,
+      "differenceCount": 10,
       "generationMode": "built-in image_gen",
       "originalPrompt": "Use case: photorealistic-natural. New original landscape game scene: a cozy snow-covered Alpine village square at blue hour, with a bakery kiosk, snowman in blue scarf, iced pond with two pairs of skates, village fountain, decorated fir tree and golden star, sled, red lamp, blue mailbox, warmly lit wooden chalets. 1536x1024 landscape photograph, balanced objects, no writing or UI.",
       "editPrompts": [
-        "Use case: precise-object-edit. Keep the original winter village photo composition and lighting. Change exactly six localized objects: remove the bakery brass bell, replace the counter cake with a bread loaf, change the snowman's neck scarf from navy to red, replace the tree-top star with a crescent, turn the white ice-skate pair red, and turn the blue mailbox yellow. No other intended changes; the game reveals only these six local masks."
+        "Use case: precise-object-edit. Keep the original winter village photo composition and lighting. Change exactly six localized objects: remove the bakery brass bell, replace the counter cake with a bread loaf, change the snowman's neck scarf from navy to red, replace the tree-top star with a crescent, turn the white ice-skate pair red, and turn the blue mailbox yellow. No other intended changes; the game reveals only these six local masks.",
+        "Second precise-object edit: turn left basket oranges into green pears, add a red lantern to the central fountain, recolor the upper sled slats turquoise, and turn the tall street lantern's warm glass light cyan. Only these local regions are revealed in stage 62."
       ],
       "files": {
         "original": {
@@ -1128,9 +1129,9 @@
           "height": 1024
         },
         "edited": {
-          "path": "assets/62-winter-village-edited.webp",
-          "sha256": "272c4409c994c3104f42c7f07054321a487da7822b14395101c1fe3b880e01b3",
-          "bytes": 282546,
+          "path": "assets/62-winter-village-edited-10.webp",
+          "sha256": "52229bd45ac36a00c58acc250b891e461881322bab9618addf2dc1814ba9e7c3",
+          "bytes": 261136,
           "width": 1536,
           "height": 1024
         }
@@ -1188,6 +1189,42 @@
             521,
             1522,
             679
+          ]
+        },
+        {
+          "text": "빵집 왼쪽 바구니의 오렌지가 초록 배로 바뀌었어요.",
+          "bounds1536x1024": [
+            139,
+            441,
+            254,
+            515
+          ]
+        },
+        {
+          "text": "광장 가운데 분수 위에 작은 빨간 등불이 생겼어요.",
+          "bounds1536x1024": [
+            756,
+            358,
+            853,
+            457
+          ]
+        },
+        {
+          "text": "오른쪽 나무 썰매의 윗부분이 파란색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1165,
+            463,
+            1288,
+            626
+          ]
+        },
+        {
+          "text": "오른쪽 가로등 안의 노란 불빛이 하늘색으로 바뀌었어요.",
+          "bounds1536x1024": [
+            1346,
+            111,
+            1476,
+            253
           ]
         }
       ],

@@ -33,11 +33,12 @@ try{
  const manifest=JSON.parse(read('photo-assets.json'));
  assert.equal(manifest.puzzles.length,14);
  for(const p of photos){
-  assert.equal(p.difficulty,'hard');assert.equal(p.spots.length,6);
+  const answers=p.id===62?10:6;
+  assert.equal(p.difficulty,'hard');assert.equal(p.spots.length,answers);
   assert.equal(p.original,p.difference,'both sides use identical base pixels outside the six masks');
   const regions=Array.from(p.layers).flatMap(layer=>Array.from(layer.regions)).sort((a,b)=>a.spotIndex-b.spotIndex);
-  assert.equal(regions.length,6);
-  assert.deepEqual(regions.map(r=>r.spotIndex),[0,1,2,3,4,5]);
+  assert.equal(regions.length,answers);
+  assert.deepEqual(regions.map(r=>r.spotIndex),Array.from({length:answers},(_,i)=>i));
   for(let i=0;i<6;i++){
    const s=p.spots[i],r=regions[i],b=s.targetBounds;
    assert.equal(r.shape,'rect');assert.ok(b.left>=0&&b.top>=0&&b.right<=100&&b.bottom<=100);
@@ -47,7 +48,9 @@ try{
    assert.equal(core.hitTest(p,s.x,s.y,[i]).alreadyFound,true);
    for(let j=0;j<i;j++){const t=p.spots[j].targetBounds;assert.ok(b.right<t.left||b.left>t.right||b.bottom<t.top||b.top>t.bottom,'six independent non-overlapping edited regions');}
   }
-  const assets=manifest.puzzles.find(m=>m.id===p.id).files;
+  const entry=manifest.puzzles.find(m=>m.id===p.id);
+  assert.equal(entry.differenceCount,answers);
+  const assets=entry.files;
   for(const file of [p.original,...Array.from(p.layers,layer=>layer.image)])assert.ok(Object.values(assets).some(f=>f.path===file),'all rendered photo assets are hash-verified');
   for(const f of Object.values(assets)){const bytes=fs.readFileSync(path.join(root,f.path));assert.equal(bytes.length,f.bytes);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),f.sha256);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(f.width,1536);assert.equal(f.height,1024);}
  }
@@ -70,13 +73,14 @@ try{
   assert.equal($('scene-title').textContent,p.title);assert.equal($('found-total').textContent,'10');
  }
  for(const p of photos){
+  const answers=p.id===62?10:6;
   $('stage-picker').value=p.id-1;$('stage-picker').dispatchEvent(new w.Event('change'));loadImages();
   assert.equal($('start').disabled,false);assert.match($('stage-label').textContent,/82.*어려움/);
   assert.doesNotMatch($('stage-label').textContent,/매우 어려움/,'existing photo stages keep the hard tier');
   assert.equal(w.document.querySelectorAll('.contrast-overlay').length,p.layers.length*2,'every mask layer appears in both main and zoom views');
   for(const id of ['difference','zoom-difference']){
    const overlays=Array.from($(id).parentElement.querySelectorAll('.contrast-overlay'));
-   assert.equal(overlays.reduce((n,im)=>n+im.style.maskImage.split('linear-gradient').length-1,0),6,'exactly six visible edits on each B surface');
+   assert.equal(overlays.reduce((n,im)=>n+im.style.maskImage.split('linear-gradient').length-1,0),answers,'all intended edits appear on each B surface');
   }
   $('start').click();assert.equal($('board-curtain').hidden,true);
   const surface=$('original').parentElement;
@@ -85,12 +89,12 @@ try{
   let miss;for(let y=2;y<100&&!miss;y+=7)for(let x=2;x<100&&!miss;x+=7)if(!core.hitTest(p,x,y))miss=[x,y];
   tap(surface,...miss);assert.equal($('hearts').getAttribute('aria-label'),'남은 하트 2개');
   for(const s of p.spots.slice(1))tap($('difference').parentElement,s.x,s.y);
-  assert.equal($('found-count').textContent,'6');assert.equal($('celebration').open,true);$('celebration').close();
+  assert.equal($('found-count').textContent,String(answers));assert.equal($('celebration').open,true);$('celebration').close();
  }
  assert.deepEqual(scores,Array.from({length:14},(_,i)=>49+i));
  assert.equal($('solved-total').textContent,'82','replaying photo stages preserves the existing completion history');
  const progress=registered.find(t=>t.name==='read_game_progress'),open=registered.find(t=>t.name==='open_game_stage');
  assert.equal(progress.execute().totalStages,82);assert.equal(open.inputSchema.properties.stage.maximum,82);
  assert.equal(open.execute({stage:82}).stage,82);assert.throws(()=>open.execute({stage:83}),/1~82/);
- console.log('PASS: 20 selectable very-hard masterpieces, 14 unchanged hard photo pairs, 84 independent photo masks, all target corners clickable, photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-82 WebMCP');
+ console.log('PASS: 20 selectable very-hard masterpieces, 14 unchanged hard photo pairs, 88 independent photo masks, all target corners clickable, photo asset hashes, grouping, duplicate/miss handling, completion recording and stage-82 WebMCP');
 }finally{w.close();}

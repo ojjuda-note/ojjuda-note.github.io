@@ -135,5 +135,19 @@ const migrationFile=process.env.SPOT70_MIGRATION||path.join(root,'supabase/migra
  assert.equal(await value('select count(*)::int value from ojjuda_note_internal.spend_requests'),6,'only six successful one-ZU purchases create receipts');
  assert.equal(await value("select count(*)::int value from ojjuda_ranking_internal.picture_clears where user_id=$1 and stage_key::integer between 83 and 152",[user]),70);
  await assert.rejects(db.exec('insert into ojjuda_guest_internal.spot_clears select actor_key,user_id,guest_hash,153,month_start,achieved_at from ojjuda_guest_internal.spot_clears limit 1'),/spot_clears_stage_check/);
- console.log('PASS: 70 stable IDs83–152, ten hints independent of display tier, 153 rejected, zero reward, unchanged auth/ACL/RLS/wallets/receipts/monthly ledger, atomic drift rejection');
+ // The later stage-62 artwork revision raises only its hint count to ten.
+ const tenBefore=await definitions(),tenGrants=await privileges(),tenData=await snapshot();
+ await db.exec(read('supabase/migrations/20261108063309_spot_stage62_ten_differences_hints.sql'));
+ assert.equal(await definitions(),tenBefore.replaceAll('p_stage between 63 and 152 then 9 else 5 end','p_stage between 62 and 152 then 9 else 5 end'),
+  'only stage 62 joins the existing ten-answer hint range; auth, owners, ACLs and fees remain unchanged');
+ assert.equal(await privileges(),tenGrants);
+ assert.equal(await snapshot(),tenData,'the new hint rule does not mutate any wallet, receipt or clear');
+ await claims(user,'authenticated');
+ for(const spot of [6,7,8,9])assert.equal((await buy(62,spot,randomUUID(),'hint',true)).reason,'not_found','stage 62 accepts all four added hints without charging during verification');
+ for(const [stage,spot]of [[61,6],[62,10],[63,10]])assert.equal((await buy(stage,spot)).reason,'invalid');
+ assert.equal((await buy(63,9,randomUUID(),'hint',true)).reason,'not_found','masterpiece ten-answer stages remain unchanged');
+ const tenReceipt=await buy(62,9);assert.equal(tenReceipt.ok,true);assert.equal(tenReceipt.coins,43);
+ assert.equal(await value('select count(*)::int value from ojjuda_note_internal.spend_requests'),7,'only the one new valid hint purchase charges a coin');
+ await db.exec('reset role');
+ console.log('PASS: 70 stable IDs83–152 plus hard stage 62 ten answers, independent hints, unchanged auth/ACL/RLS/wallets and exact-once receipts');
 }finally{await db.close();}})().catch(error=>{console.error(error);process.exitCode=1;});
