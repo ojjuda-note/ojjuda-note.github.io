@@ -7,24 +7,56 @@ const SESSION_LIFETIME_MS = 6 * 60 * 60 * 1000;
 
 export function installChachaRushPortal({ currentOwner, submitScore, onSaved, onNotice }) {
   const sessions = new Map();
+  let activeClose = null;
 
   function open() {
+    activeClose?.();
     const nonce = crypto.randomUUID();
     const owner = currentOwner();
     const fragment = new URLSearchParams({ ojjuda_run: nonce, ojjuda_origin: location.origin });
-    const popup = window.open(`${GAME_ORIGIN}/#${fragment}`, '_blank');
-    if (!popup) {
-      onNotice?.('차차 러시 창이 차단됐어요. 팝업을 허용하고 다시 눌러주세요.');
-      return false;
-    }
-    sessions.set(nonce, { popup, owner, startedAt: 0, round: 0, finished: false, createdAt: Date.now() });
-    setTimeout(() => sessions.delete(nonce), SESSION_LIFETIME_MS);
+
+    // Keep the game inside Ojjuda so cross-origin popup isolation cannot sever
+    // the score channel. The child is sandboxed and never sees member tokens.
+    const overlay = document.createElement('section');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', '차차 러시 게임');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;background:#101c31;';
+    const bar = document.createElement('div');
+    bar.style.cssText = 'height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:white;background:#182642;font:700 14px system-ui,sans-serif;';
+    const title = document.createElement('strong');
+    title.textContent = '🚗 차차 러시!';
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.textContent = '✕ 닫기';
+    close.setAttribute('aria-label', '차차 러시 닫기');
+    close.style.cssText = 'border:1px solid #8ea9ca;border-radius:9px;background:#304362;color:white;padding:7px 13px;font:700 13px system-ui,sans-serif;cursor:pointer;';
+    bar.append(title, close);
+    const frame = document.createElement('iframe');
+    frame.title = '차차 러시 3D 레이싱';
+    frame.src = `${GAME_ORIGIN}/#${fragment}`;
+    frame.style.cssText = 'display:block;flex:1;min-height:0;width:100%;border:0;background:#e5f1ff;';
+    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock');
+    frame.setAttribute('allow', 'autoplay; fullscreen');
+    frame.setAttribute('referrerpolicy', 'no-referrer');
+    overlay.append(bar, frame);
+    const oldOverflow = document.body.style.overflow;
+    const closeGame = () => {
+      overlay.remove();
+      document.body.style.overflow = oldOverflow;
+      sessions.delete(nonce);
+      if (activeClose === closeGame) activeClose = null;
+    };
+    close.addEventListener('click', closeGame);
+    activeClose = closeGame;
+    document.body.style.overflow = 'hidden';
+    document.body.append(overlay);
+    sessions.set(nonce, { target: frame.contentWindow, owner, startedAt: 0, round: 0, finished: false, createdAt: Date.now() });
+    setTimeout(() => { if (sessions.has(nonce)) closeGame(); }, SESSION_LIFETIME_MS);
     return true;
   }
 
   function respond(session, nonce, action, extra = {}) {
-    if (session.popup.closed) return;
-    session.popup.postMessage({ channel: CHANNEL, nonce, action, round: session.round, ...extra }, GAME_ORIGIN);
+    session.target?.postMessage({ channel: CHANNEL, nonce, action, round: session.round, ...extra }, GAME_ORIGIN);
   }
 
   document.addEventListener('click', event => {
@@ -39,7 +71,7 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     const data = event.data;
     if (!data || typeof data !== 'object' || data.channel !== CHANNEL || typeof data.nonce !== 'string') return;
     const session = sessions.get(data.nonce);
-    if (!session || event.source !== session.popup || Date.now() - session.createdAt > SESSION_LIFETIME_MS) return;
+    if (!session || event.source !== session.target || Date.now() - session.createdAt > SESSION_LIFETIME_MS) return;
 
     if (data.action === 'hello') {
       respond(session, data.nonce, 'connected', { signedIn: !!session.owner && session.owner === currentOwner() });
