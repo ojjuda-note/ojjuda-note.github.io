@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3359,
+    "uniqueRestaurants": 3382,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2626,
+      "local-guide": 2649,
       "post-office": 240
     },
-    "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2298,
+    "coordinatesAvailable": 1062,
+    "coordinatesMissing": 2320,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1545,7 +1545,7 @@
       "충남": 74,
       "울산": 38,
       "경남": 325,
-      "강원": 81,
+      "강원": 104,
       "전북": 215,
       "경기": 412,
       "인천": 345,
@@ -1558,12 +1558,12 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2002,
+      "한식": 2019,
       "중식": 141,
-      "일식": 140,
+      "일식": 144,
       "기타": 587,
-      "양식": 215,
-      "분식": 34,
+      "양식": 216,
+      "분식": 35,
       "디저트": 240
     }
   },
@@ -14974,53 +14974,146 @@
         "이름이 다르나 같은 주소인 뚜레/뚜레한우, 솔마루/솔마루송어, 홍천한우사랑말/홍천사랑말 한우식당 등은 중복 추가하지 않음.",
         "정규 블루리본 등급이나 현재 영업 여부로 해석하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-08-gangwon-slot66-official-23",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 66,
+      "previousCoverage": {
+        "uniqueRestaurants": 3359,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2626,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2298,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 81,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2002,
+          "중식": 141,
+          "일식": 140,
+          "기타": 587,
+          "양식": 215,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3382,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2649,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1062,
+        "coordinatesMissing": 2320,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2019,
+          "중식": 141,
+          "일식": 144,
+          "기타": 587,
+          "양식": 216,
+          "분식": 35,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 23,
+      "modificationCount": 0,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gangwon-slot66-yanggu-kkotboda-so",
+        "local-gangwon-slot66-yanggu-dochon-samgyetang",
+        "local-gangwon-slot66-yanggu-madang-chueotang",
+        "local-gangwon-slot66-yanggu-mobeom-tteokbokki",
+        "local-gangwon-slot66-yanggu-badaae",
+        "local-gangwon-slot66-yanggu-shabuhyang",
+        "local-gangwon-slot66-yanggu-hoemaeul",
+        "local-gangwon-slot66-yanggu-sonamu-naengmyeon",
+        "local-gangwon-slot66-yanggu-siraejeong",
+        "local-gangwon-slot66-yanggu-yanggu-susan",
+        "local-gangwon-slot66-yanggu-oraedream-gowon",
+        "local-gangwon-slot66-yanggu-igadonga",
+        "local-gangwon-slot66-yanggu-jeongjungang",
+        "local-gangwon-slot66-yanggu-cheongchamchi",
+        "local-gangwon-slot66-cheorwon-sting",
+        "local-gangwon-slot66-cheorwon-cheorwon-sikdang",
+        "local-gangwon-slot66-cheorwon-chunil-makguksu",
+        "local-gangwon-slot66-cheorwon-gungye-bapsang",
+        "local-gangwon-slot66-cheorwon-baekbanhanjan",
+        "local-gangwon-slot66-cheorwon-cheorwon-makguksu",
+        "local-gangwon-slot66-hwacheon-chae-won",
+        "local-gangwon-slot66-hwacheon-sanchaegol",
+        "local-gangwon-slot66-jeongseon-sanmasil"
+      ],
+      "sourceUrls": [
+        "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+        "https://www.cwg.go.kr/www/contents.do?key=360",
+        "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+        "https://tour.ihc.go.kr/tour/pleasure/military",
+        "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
+        "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
+        "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
+        "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
+        "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gangwon-slot66.json",
+      "scope": "강원 4개군 공식 일부 명단 대조. 정선1·철원6·화천2·양구14 신규. 지역 전체 전수 확인 아님.",
+      "notes": [
+        "지자체 지정과 단순 관광/우대업소 수록 이력을 구분.",
+        "선정·수록·명단기준일·현재 운영 여부를 혼동하지 않음.",
+        "좌표 증거 없으므로 23곳 lat/lng null, 지역별 다음 순환 재조사.",
+        "철원막국수 철원 갈말읍 명성로158번길 13 공개 건물명·주소·위경도 일치 근거로 1건 좌표 보강."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-gangwon-slot65-hongcheon-seven-continuation",
+    "id": "2026-11-08-gangwon-slot66-official-23",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 65,
+    "slot": 66,
     "previousCoverage": {
-      "uniqueRestaurants": 3352,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2619,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2291,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 223,
-        "충남": 74,
-        "울산": 38,
-        "경남": 325,
-        "강원": 74,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1997,
-        "중식": 141,
-        "일식": 140,
-        "기타": 585,
-        "양식": 215,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3359,
       "providerCounts": {
         "michelin": 237,
@@ -15059,32 +15152,92 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 7,
+    "currentCoverage": {
+      "uniqueRestaurants": 3382,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2649,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1062,
+      "coordinatesMissing": 2320,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 223,
+        "충남": 74,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2019,
+        "중식": 141,
+        "일식": 144,
+        "기타": 587,
+        "양식": 216,
+        "분식": 35,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 23,
     "modificationCount": 0,
-    "coordinateAddedCount": 0,
+    "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gangwon-slot65-hongcheon-daerangi",
-      "local-gangwon-slot65-hongcheon-dungine-dakgalbi",
-      "local-gangwon-slot65-hongcheon-memilmaeul",
-      "local-gangwon-slot65-hongcheon-keungol-simteo",
-      "local-gangwon-slot65-hongcheon-keunsaetteo-makguksu",
-      "local-gangwon-slot65-hongcheon-tosokchon",
-      "local-gangwon-slot65-hongcheon-pirigol-bapdoduk"
+      "local-gangwon-slot66-yanggu-kkotboda-so",
+      "local-gangwon-slot66-yanggu-dochon-samgyetang",
+      "local-gangwon-slot66-yanggu-madang-chueotang",
+      "local-gangwon-slot66-yanggu-mobeom-tteokbokki",
+      "local-gangwon-slot66-yanggu-badaae",
+      "local-gangwon-slot66-yanggu-shabuhyang",
+      "local-gangwon-slot66-yanggu-hoemaeul",
+      "local-gangwon-slot66-yanggu-sonamu-naengmyeon",
+      "local-gangwon-slot66-yanggu-siraejeong",
+      "local-gangwon-slot66-yanggu-yanggu-susan",
+      "local-gangwon-slot66-yanggu-oraedream-gowon",
+      "local-gangwon-slot66-yanggu-igadonga",
+      "local-gangwon-slot66-yanggu-jeongjungang",
+      "local-gangwon-slot66-yanggu-cheongchamchi",
+      "local-gangwon-slot66-cheorwon-sting",
+      "local-gangwon-slot66-cheorwon-cheorwon-sikdang",
+      "local-gangwon-slot66-cheorwon-chunil-makguksu",
+      "local-gangwon-slot66-cheorwon-gungye-bapsang",
+      "local-gangwon-slot66-cheorwon-baekbanhanjan",
+      "local-gangwon-slot66-cheorwon-cheorwon-makguksu",
+      "local-gangwon-slot66-hwacheon-chae-won",
+      "local-gangwon-slot66-hwacheon-sanchaegol",
+      "local-gangwon-slot66-jeongseon-sanmasil"
     ],
     "sourceUrls": [
-      "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1",
-      "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=2",
-      "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3",
-      "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4",
-      "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
+      "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "https://www.cwg.go.kr/www/contents.do?key=360",
+      "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+      "https://tour.ihc.go.kr/tour/pleasure/military",
+      "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
+      "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
+      "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
+      "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
+      "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot65.json",
-    "scope": "홍천군 으뜸맛집 공식 44곳 명단의 기존 37곳과 비교해 누락 7곳 추가; 65회차 이어하기.",
+    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot66.json",
+    "scope": "강원 4개군 공식 일부 명단 대조. 정선1·철원6·화천2·양구14 신규. 지역 전체 전수 확인 아님.",
     "notes": [
-      "기존 홍천 37곳은 좌표 모두 미확인; 신규 7곳도 정확 공개 수치좌표 없어 null.",
-      "이름이 다르나 같은 주소인 뚜레/뚜레한우, 솔마루/솔마루송어, 홍천한우사랑말/홍천사랑말 한우식당 등은 중복 추가하지 않음.",
-      "정규 블루리본 등급이나 현재 영업 여부로 해석하지 않음."
+      "지자체 지정과 단순 관광/우대업소 수록 이력을 구분.",
+      "선정·수록·명단기준일·현재 운영 여부를 혼동하지 않음.",
+      "좌표 증거 없으므로 23곳 lat/lng null, 지역별 다음 순환 재조사.",
+      "철원막국수 철원 갈말읍 명성로158번길 13 공개 건물명·주소·위경도 일치 근거로 1건 좌표 보강."
     ]
   },
   "latestMapCoverageAudit": {
@@ -23911,6 +24064,78 @@
       "영월군 공식 자료는 2017-10-24, 평창군 공식 자료는 2021-10-27 최종수정. 좌표 없이 추가, 추정/회원 자료 미사용.",
       "블루리본 최신판 등급 직접 확인되지 않아 블루리본 기록으로 추가하지 않음.",
       "홍천군 5쪽 공식 리스트 44곳 비교: 기존 37곳과 같은 위치·별칭 항목은 유지, 신규 7곳만 수록. 신규 위치는 모두 null, 홍천군 총 44곳 좌표 미확인."
+    ]
+  },
+  "gangwonSlot66": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 66,
+    "sourceFile": "games/certified-restaurants/official-gangwon-slot66.json",
+    "officialSources": [
+      "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "https://www.cwg.go.kr/www/contents.do?key=360",
+      "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+      "https://tour.ihc.go.kr/tour/pleasure/military",
+      "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
+      "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
+      "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
+      "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
+      "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98"
+    ],
+    "addedCount": 23,
+    "modifiedCount": 0,
+    "coordinateAdded": 1,
+    "locationsExcluded": 0,
+    "pendingLocations": 22,
+    "regions": [
+      "강원특별자치도 정선군",
+      "강원특별자치도 철원군",
+      "강원특별자치도 화천군",
+      "강원특별자치도 양구군"
+    ],
+    "restaurantsByRegion": {
+      "정선군": 1,
+      "철원군": 6,
+      "화천군": 2,
+      "양구군": 14
+    },
+    "restaurantIds": [
+      "local-gangwon-slot66-yanggu-kkotboda-so",
+      "local-gangwon-slot66-yanggu-dochon-samgyetang",
+      "local-gangwon-slot66-yanggu-madang-chueotang",
+      "local-gangwon-slot66-yanggu-mobeom-tteokbokki",
+      "local-gangwon-slot66-yanggu-badaae",
+      "local-gangwon-slot66-yanggu-shabuhyang",
+      "local-gangwon-slot66-yanggu-hoemaeul",
+      "local-gangwon-slot66-yanggu-sonamu-naengmyeon",
+      "local-gangwon-slot66-yanggu-siraejeong",
+      "local-gangwon-slot66-yanggu-yanggu-susan",
+      "local-gangwon-slot66-yanggu-oraedream-gowon",
+      "local-gangwon-slot66-yanggu-igadonga",
+      "local-gangwon-slot66-yanggu-jeongjungang",
+      "local-gangwon-slot66-yanggu-cheongchamchi",
+      "local-gangwon-slot66-cheorwon-sting",
+      "local-gangwon-slot66-cheorwon-cheorwon-sikdang",
+      "local-gangwon-slot66-cheorwon-chunil-makguksu",
+      "local-gangwon-slot66-cheorwon-gungye-bapsang",
+      "local-gangwon-slot66-cheorwon-baekbanhanjan",
+      "local-gangwon-slot66-cheorwon-cheorwon-makguksu",
+      "local-gangwon-slot66-hwacheon-chae-won",
+      "local-gangwon-slot66-hwacheon-sanchaegol",
+      "local-gangwon-slot66-jeongseon-sanmasil"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "sourceRecency": {
+      "cheorwon": "2026-06-22",
+      "hwacheon": "2024-12",
+      "yanggu": "undated",
+      "jeongseon": "undated"
+    },
+    "scope": "공식 명단 일부 수록 23곳, 개별 영업·지점 좌표 미검증. 양구 2개 업소는 주소/복합상호 불명으로 보류.",
+    "notes": [
+      "회원 추천맛집 글, 사진, 좌표, 개인위치 정보에 접근하거나 변경하지 않음.",
+      "철원막국수 공개 건물명·동일 도로명 주소 일치 좌표 1건 추가, 현재 영업은 별도 판정."
     ]
   }
 }

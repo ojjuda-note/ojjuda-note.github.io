@@ -1,0 +1,690 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 66,
+  "sourceName": "정선·철원·화천·양구 공식 관광·행정 자료",
+  "sourceUrls": [
+    "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+    "https://www.cwg.go.kr/www/contents.do?key=360",
+    "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+    "https://tour.ihc.go.kr/tour/pleasure/military",
+    "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
+    "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
+    "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
+    "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
+    "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 1,
+  "notes": [
+    "지자체 공개 음식점 명단 중 이름과 주소를 확인한 일부 기록. 선정/지정과 관광 단순 소개·착한가격·군장병 우대업소는 서로 구분합니다.",
+    "공식 자료에 개별 선정 연도 없는 경우 null; 2024-12·2026-06-22는 자료 목록 기준일이며 개별 선정 연도·현 영업 여부가 아닙니다.",
+    "철원막국수 1곳은 이름·주소가 동일한 공개 건물명 좌표를 업소 자료와 교차확인하였고 나머지 22곳은 위치 좌표 미확인. 양구 복합 상호 및 지번 주소 2곳은 보류."
+  ],
+  "restaurants": [
+    {
+      "id": "local-gangwon-slot66-yanggu-kkotboda-so",
+      "name": "꽃보다 소",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 중앙길 33-16",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "식육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-dochon-samgyetang",
+      "name": "도촌삼계탕",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 청춘로 39-37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-madang-chueotang",
+      "name": "마당너른집전통추어탕",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 택지길 58-19",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-mobeom-tteokbokki",
+      "name": "모범떡볶이",
+      "category": "분식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 중앙길 51",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡볶이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-badaae",
+      "name": "바다애",
+      "category": "일식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 해시계로 28-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-shabuhyang",
+      "name": "샤브향",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 양남로16번길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "샤브샤브"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-hoemaeul",
+      "name": "회마을",
+      "category": "일식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 비봉로 65",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-sonamu-naengmyeon",
+      "name": "소나무함흥냉면막국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 청춘로 82-38",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-siraejeong",
+      "name": "시래정",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 황강길 16-20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "시래기정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 으뜸음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-yanggu-susan",
+      "name": "양구수산횟집",
+      "category": "일식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 양록길23번길 6-2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-oraedream-gowon",
+      "name": "오래드림고원",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 양록길23번길 12-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "육류구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 으뜸음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-igadonga",
+      "name": "이가돈가",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 사명길 118-10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지고기구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-jeongjungang",
+      "name": "정중앙맛집",
+      "category": "한식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 해시계로 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "두부전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-yanggu-cheongchamchi",
+      "name": "청참치",
+      "category": "일식",
+      "region": "강원",
+      "district": "양구군",
+      "address": "강원특별자치도 양구군 양구읍 양록길23번길 6-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "참치회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양구군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+          "sourceName": "양구군보건소 모범·으뜸음식점 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-sting",
+      "name": "스팅",
+      "category": "양식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 갈말읍 삼부연로 7번길 7-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 착한가격업소",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+          "sourceName": "철원군청 착한가격업소 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2026-06-22"
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-cheorwon-sikdang",
+      "name": "철원식당",
+      "category": "한식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 갈말읍 태봉로 1529",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 착한가격업소",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+          "sourceName": "철원군청 착한가격업소 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2026-06-22"
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-chunil-makguksu",
+      "name": "춘일막국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 동송읍 이평1로 19",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 착한가격업소",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+          "sourceName": "철원군청 착한가격업소 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2026-06-22"
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-gungye-bapsang",
+      "name": "궁예밥상",
+      "category": "한식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 갈말읍 태봉로 1526-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "제육볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 착한가격업소",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+          "sourceName": "철원군청 착한가격업소 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2026-06-22"
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-baekbanhanjan",
+      "name": "철원맛집 백반한잔",
+      "category": "한식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 김화읍 김화로 622",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "제육백반"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 착한가격업소",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+          "sourceName": "철원군청 착한가격업소 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2026-06-22"
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/www/contents.do?key=360",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-cheorwon-cheorwon-makguksu",
+      "name": "철원막국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "철원군",
+      "address": "강원특별자치도 철원군 갈말읍 명성로158번길 13",
+      "lat": 38.1460037626439,
+      "lng": 127.308796995634,
+      "menu": [
+        "막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "철원군 문화관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+          "sourceName": "철원군 문화관광 음식점 안내",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSource": {
+        "name": "공개 건물명·주소 일치 위치 좌표",
+        "url": "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
+        "method": "published-building-address-coordinate",
+        "checkedAt": "2026-11-08",
+        "crosscheckUrls": [
+          "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
+          "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98",
+          "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958"
+        ],
+        "note": "공개 주소자료의 건물명 '철원막국수'와 도로명주소 '강원특별자치도 철원군 갈말읍 명성로158번길 13'이 업소 및 관광자료와 일치하며 공표 위경도 수치를 그대로 사용. 주변건물 임의 보정 없음. 현재 영업 여부는 별도 검증하지 않음."
+      }
+    },
+    {
+      "id": "local-gangwon-slot66-hwacheon-chae-won",
+      "name": "강원나물밥채원",
+      "category": "한식",
+      "region": "강원",
+      "district": "화천군",
+      "address": "강원특별자치도 화천군 화천읍 상승로 60-7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "나물밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화천군 군장병 우대업소 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.ihc.go.kr/tour/pleasure/military",
+          "sourceName": "화천군 문화관광 군장병 우대업소",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2024-12"
+        }
+      ],
+      "addressSourceUrl": "https://tour.ihc.go.kr/tour/pleasure/military",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-hwacheon-sanchaegol",
+      "name": "산채골",
+      "category": "한식",
+      "region": "강원",
+      "district": "화천군",
+      "address": "강원특별자치도 화천군 화천읍 상승로 54-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산채요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화천군 군장병 우대업소 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.ihc.go.kr/tour/pleasure/military",
+          "sourceName": "화천군 문화관광 군장병 우대업소",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다.",
+          "sourceAsOf": "2024-12"
+        }
+      ],
+      "addressSourceUrl": "https://tour.ihc.go.kr/tour/pleasure/military",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot66-jeongseon-sanmasil",
+      "name": "산마실",
+      "category": "한식",
+      "region": "강원",
+      "district": "정선군",
+      "address": "강원특별자치도 정선군 정선읍 정선로 1368, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곤드레밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "정선군 공식 관광 식당 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
+          "sourceName": "정선군 관광 공식 식당 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "지자체 공식 자료에 수록된 사실만 기록합니다. 개별 선정연도·현재 영업 여부는 확인하지 않았고 미쉐린·블루리본 등급과는 구분합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}
