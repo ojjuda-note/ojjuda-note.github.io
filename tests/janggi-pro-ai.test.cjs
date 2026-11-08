@@ -49,6 +49,21 @@ test('pro AI chooses only legal moves and never changes the current board', asyn
  }
 });
 
+test('starting pro play renders the computer name without throwing', () => {
+ const ctx = vm.createContext({
+  E: { kind: 'janggi', mode: 'ai', level: 'pro', me: 'c' },
+  Rp: [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']],
+  ze: () => ({ first: 'c', second: 'h', side: { c: '초', h: '한' } }),
+  da: side => side === 'c' ? 'h' : 'c'
+ });
+ vm.runInContext(source.slice(source.indexOf('function Op(){'), source.indexOf('var Lp={')), ctx);
+ assert.equal(ctx.Op().h, '컴퓨터 (프로)');
+ for (const [level, label] of [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']]) {
+  ctx.E.level = level;
+  assert.equal(ctx.Op().h, `컴퓨터 (${label})`);
+ }
+});
+
 test('pro search can see beyond a tempting shallow move', async () => {
  const { chooseJanggiProMove } = await import('../games/janggi/pro-ai.mjs');
  const root = { id: 0, t: 'c', n: 0 };
