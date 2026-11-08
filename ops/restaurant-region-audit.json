@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 62,
-    "scheduledAt": "2026-11-08T08:00:00+09:00",
+    "slot": 63,
+    "scheduledAt": "2026-11-08T09:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예정된 매시 정각 08:00 KST 사용. 관측 08:23 KST; 기준점 2026-11-05T23:00+09:00에서 h=57,n=61,slot62."
+    "source": "예약 시각 09:00 KST 기준; 기준점 2026-11-05T23:00+09:00에서 h=58,n=62,slot63. 09:11 이후 실행·해당 회차 누락 없이 기록."
   },
   "entries": [
     {
@@ -59510,6 +59510,544 @@
       "nextRegions": [
         "부산광역시 기장군",
         "울산광역시 울주군"
+      ],
+      "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 63,
+      "scheduledAtKST": "2026-11-08T09:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_gijang_ulju_three_listings_one_address_corrected",
+      "assignedRegions": [
+        "부산광역시 기장군",
+        "울산광역시 울주군"
+      ],
+      "regionAudit": [
+        {
+          "region": "부산광역시 기장군",
+          "baseListedCount": 24,
+          "listedCountAfter": 26,
+          "actuallyChecked": [
+            "기존 기장군 24곳의 좌표누락 17곳 선별",
+            "부산관광공사 VisitBusan 외국어 메뉴판 지원 음식점 청파장횟집·연화리 기장촌집장어 상호·현 주소 확인",
+            "일광바다횟집 기존 일광면 주소와 공식 일광읍 도로명주소 대조하여 현주소 교정",
+            "블루리본·부산의 맛 기존 기장군 지점과 중복 방지"
+          ],
+          "remainingAreas": [
+            "기존 좌표 미등록 17곳 및 신규 2곳 지점별 공개 위경도 대조",
+            "기장군 전체 부산의 맛·블루리본 정규 최신 선정판 명단 및 영업 현황 미완료",
+            "일광읍 승격에 따른 다른 구주소 의심 식당은 개별 재확인 후 교정"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "울산광역시 울주군",
+          "baseListedCount": 5,
+          "listedCountAfter": 6,
+          "actuallyChecked": [
+            "기존 울주군 우체국 4곳(좌표 미등록 2곳) + 울산관광 갈비구락부 1곳(좌표 미등록) 추출",
+            "울산시 울산관광 무장애 관광 먹거리 금장생복집 울주군 서생면 당물길 33 이름·주소 확인",
+            "기존 갈비구락부와 신규 금장생복집 중복 방지"
+          ],
+          "remainingAreas": [
+            "기존 3곳·신규 1곳 상호·현주소·개별 좌표 검증",
+            "울주군 영업·이전·폐업 상태 검증 및 전체 관광/우체국·블루리본 선정 최신 자료 점검"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "부산광역시 VisitBusan 외국어 메뉴판 지원 음식점(주소와 분류 확인, 블루리본 정규 등급 아님)",
+        "울산광역시 울산관광 무장애 먹거리 공식 목록(2026-04-21 최종 수정, 식당의 2026 선정 연도 아님)",
+        "부산지방우정청 2026 우체국 맛집가이드 기존 기장·울주 업소 중복 대조",
+        "기장군 2025 부산관광공사·블루리본 공동선정 기존 수록과 별도 구분"
+      ],
+      "additions": 3,
+      "modifications": 1,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 23,
+      "locationPendingScope": "기장군 기존 17곳+신규 2곳, 울주군 우체국 2곳+기존 울산관광 1곳+신규 1곳. null 23건을 추출한 것이며 모든 장소의 공개 좌표를 이번에 개별 검증했다는 의미는 아님.",
+      "addedRestaurantIds": [
+        "local-busan-slot63-gijang-cheongpajang-hoe",
+        "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+        "local-ulsan-slot63-ulju-geumjang-saengbok"
+      ],
+      "modifiedRestaurantIds": [
+        "local-busan-taste-fbd95ea18d3f287c"
+      ],
+      "evidenceUrls": [
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+        "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food",
+        "https://litt.ly/blueribbonsurvey",
+        "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "post-2026-32-1-1",
+          "name": "소달구지",
+          "currentAddress": "부산광역시 기장군 철마면 철마로 579 소달구지 한우직판장",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 소달구지",
+            "소달구지 부산광역시 기장군 철마면 철마로 579 소달구지 한우직판장",
+            "부산 기장군 소달구지"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=32"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "post-2026-37-0-0",
+          "name": "가정식당",
+          "currentAddress": "울산광역시 울주군 언양읍 언양로 76",
+          "region": "울산광역시 울주군",
+          "searchAliases": [
+            "울산광역시 울주군 가정식당",
+            "가정식당 울산광역시 울주군 언양읍 언양로 76",
+            "울산 울주군 가정식당"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=37"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "post-2026-37-0-1",
+          "name": "북경",
+          "currentAddress": "울산광역시 울주군 삼남읍 울산역1길 5, 다온빌 101호",
+          "region": "울산광역시 울주군",
+          "searchAliases": [
+            "울산광역시 울주군 북경",
+            "북경 울산광역시 울주군 삼남읍 울산역1길 5, 다온빌 101호",
+            "울산 울주군 북경"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=37"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-19",
+          "name": "일광대복집",
+          "currentAddress": "부산 기장군 일광읍 이화로 3 (일광읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 일광대복집",
+            "일광대복집 부산 기장군 일광읍 이화로 3 (일광읍)",
+            "부산 기장군 일광대복집"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=10"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-35",
+          "name": "대한명인기장곰장어",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 70 (기장읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 대한명인기장곰장어",
+            "대한명인기장곰장어 부산 기장군 기장읍 기장해안로 70 (기장읍)",
+            "부산 기장군 대한명인기장곰장어"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=14"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-39",
+          "name": "용암할매횟집",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 615 (기장읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 용암할매횟집",
+            "용암할매횟집 부산 기장군 기장읍 기장해안로 615 (기장읍)",
+            "부산 기장군 용암할매횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-40",
+          "name": "남항횟집",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 572 (기장읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 남항횟집",
+            "남항횟집 부산 기장군 기장읍 기장해안로 572 (기장읍)",
+            "부산 기장군 남항횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-41",
+          "name": "장군멸치회촌",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 607 (기장읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 장군멸치회촌",
+            "장군멸치회촌 부산 기장군 기장읍 기장해안로 607 (기장읍)",
+            "부산 기장군 장군멸치회촌"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-43",
+          "name": "꺼먹동네",
+          "currentAddress": "부산 기장군 일광면 문오성길 509 (일광면)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 꺼먹동네",
+            "꺼먹동네 부산 기장군 일광면 문오성길 509 (일광면)",
+            "부산 기장군 꺼먹동네"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=17"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan-2025-45",
+          "name": "무진장횟집",
+          "currentAddress": "부산 기장군 기장읍 연화1길 137 (기장읍)",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 무진장횟집",
+            "무진장횟집 부산 기장군 기장읍 연화1길 137 (기장읍)",
+            "부산 기장군 무진장횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.k-traveler.com/guides/file/15113892/6?dl=1#page=17",
+            "https://www.busan.go.kr/promoboard/1726945"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-6a131506ac",
+          "name": "아쁘앙",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 268-31",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 아쁘앙",
+            "아쁘앙 부산 기장군 기장읍 기장해안로 268-31",
+            "부산 기장군 아쁘앙"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&ucg_seq=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-2a181a5285",
+          "name": "맥퀸즈라운지",
+          "currentAddress": "부산 기장군 기장읍 기장해안로 268-32",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 맥퀸즈라운지",
+            "맥퀸즈라운지 부산 기장군 기장읍 기장해안로 268-32",
+            "부산 기장군 맥퀸즈라운지"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&ucg_seq=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "blue-busan100-extra-f21d39f164",
+          "name": "고스락",
+          "currentAddress": "부산 기장군 장안읍 해맞이로 286",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 고스락",
+            "고스락 부산 기장군 장안읍 해맞이로 286",
+            "부산 기장군 고스락"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?listCntPerPage2=12&list_type=TYPE_SMALL_CARD&menuCd=DOM_000000201002002000&order_type=NEW&ucg_seq=16"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-eb0e505559375882",
+          "name": "기장해변짚불곰장어",
+          "currentAddress": "부산광역시 기장군 기장읍 공수2길 11",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 기장해변짚불곰장어",
+            "기장해변짚불곰장어 부산광역시 기장군 기장읍 공수2길 11",
+            "부산 기장군 기장해변짚불곰장어"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-54ec596e8872d350",
+          "name": "대성갈치찌개구이",
+          "currentAddress": "부산광역시 기장군 기장읍 대변2길 9",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 대성갈치찌개구이",
+            "대성갈치찌개구이 부산광역시 기장군 기장읍 대변2길 9",
+            "부산 기장군 대성갈치찌개구이"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-882d9f48f49d1ec4",
+          "name": "레스토랑 엠비언스",
+          "currentAddress": "부산광역시 기장군 기장읍 내리1길 10",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 레스토랑 엠비언스",
+            "레스토랑 엠비언스 부산광역시 기장군 기장읍 내리1길 10",
+            "부산 기장군 레스토랑 엠비언스"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-fbf4f6595e56d0ca",
+          "name": "만세담",
+          "currentAddress": "부산광역시 기장군 일광읍 산수곡길 8-3",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 만세담",
+            "만세담 부산광역시 기장군 일광읍 산수곡길 8-3",
+            "부산 기장군 만세담"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-fbd95ea18d3f287c",
+          "name": "일광바다횟집",
+          "currentAddress": "부산광역시 기장군 일광면 기장해안로 1312",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 일광바다횟집",
+            "일광바다횟집 부산광역시 기장군 일광면 기장해안로 1312",
+            "부산 기장군 일광바다횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-taste-631a930a505529c9",
+          "name": "칠암사계",
+          "currentAddress": "부산광역시 기장군 일광읍 칠암1길 7-10",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 칠암사계",
+            "칠암사계 부산광역시 기장군 일광읍 칠암1길 7-10",
+            "부산 기장군 칠암사계"
+          ],
+          "evidenceUrls": [
+            "https://www.busan.go.kr/promoboard/1726945",
+            "https://www.busan.go.kr/comm/getFile?srvcId=BBSTY3&upperNo=1726945&fileTy=ATTACH&fileNo=2"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-ulsan-tour-galbi-gurakbu",
+          "name": "갈비구락부",
+          "currentAddress": "울산광역시 울주군 삼남읍 남상평2길 34-12",
+          "region": "울산광역시 울주군",
+          "searchAliases": [
+            "울산광역시 울주군 갈비구락부",
+            "갈비구락부 울산광역시 울주군 삼남읍 남상평2길 34-12",
+            "울산 울주군 갈비구락부"
+          ],
+          "evidenceUrls": [
+            "https://tour.ulsan.go.kr/tour/korean/unit/attrctn/list.ulsan?mId=001001000000000000&searchGubun=food"
+          ],
+          "checkedAt": null,
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "원본 선정·관광 수록 식당의 기존 lat/lng null 확인. 이번 회차 개별 공개 수치좌표나 영업 현황 재검증까지 완료한 것은 아님.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-slot63-gijang-cheongpajang-hoe",
+          "name": "청파장횟집",
+          "currentAddress": "부산광역시 기장군 기장읍 동암해안길 45",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 청파장횟집",
+            "청파장횟집 부산광역시 기장군 기장읍 동암해안길 45",
+            "부산 기장군 청파장횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "공식 관광 식당 상호·도로명주소 직접 확인. 개별 지점의 수치 위경도 및 2026 현재 영업은 공개 근거 미확인.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+          "name": "연화리 기장촌집장어",
+          "currentAddress": "부산광역시 기장군 기장읍 연화1길 167",
+          "region": "부산광역시 기장군",
+          "searchAliases": [
+            "부산광역시 기장군 연화리 기장촌집장어",
+            "연화리 기장촌집장어 부산광역시 기장군 기장읍 연화1길 167",
+            "부산 기장군 연화리 기장촌집장어"
+          ],
+          "evidenceUrls": [
+            "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "공식 관광 식당 상호·도로명주소 직접 확인. 개별 지점의 수치 위경도 및 2026 현재 영업은 공개 근거 미확인.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        },
+        {
+          "restaurantId": "local-ulsan-slot63-ulju-geumjang-saengbok",
+          "name": "금장생복집",
+          "currentAddress": "울산광역시 울주군 서생면 당물길 33",
+          "region": "울산광역시 울주군",
+          "searchAliases": [
+            "울산광역시 울주군 금장생복집",
+            "금장생복집 울산광역시 울주군 서생면 당물길 33",
+            "울산 울주군 금장생복집"
+          ],
+          "evidenceUrls": [
+            "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 63,
+          "checkResult": "공식 관광 식당 상호·도로명주소 직접 확인. 개별 지점의 수치 위경도 및 2026 현재 영업은 공개 근거 미확인.",
+          "reason": "상호·지점·현주소와 일치하는 독립 공개 수치 위경도 근거 부족. 가이드 수록과 현재 영업 여부를 별도 판단 필요."
+        }
+      ],
+      "unresolved": [
+        "정규 블루리본 기장·울주 최신 식당별 선정과 리본 등급은 개별 공식 근거 미확인",
+        "기존 20곳+신규 3곳의 좌표 확인 필요. 수치좌표 확인 전 사용자 거리 제공 금지",
+        "부산의 맛 과거 일광면 표기 등 다른 상호·지점의 현주소는 다음 배정에서 추가 확인",
+        "확실한 폐업이나 영업 재개를 입증하는 공식 근거 없음. 상태 임의 변경 금지"
+      ],
+      "carryOver": [
+        "전북특별자치도 1순환 53회차 누락된 정규 조사 이월",
+        "다른 회차의 누락·미확인 목록 모두 유지하며 이 순환의 재배정 순서 변경 없음",
+        "기장 19곳·울주 4곳 좌표·영업 상태 다음 순환 63회차 우선 재검증"
+      ],
+      "nextSlot": 64,
+      "nextRegions": [
+        "경기도 연천군",
+        "경기도 가평군",
+        "경기도 양평군"
       ],
       "notExhaustive": true
     }

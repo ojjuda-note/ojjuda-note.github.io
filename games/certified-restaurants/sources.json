@@ -1529,21 +1529,21 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3331,
+    "uniqueRestaurants": 3334,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2598,
+      "local-guide": 2601,
       "post-office": 240
     },
     "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2270,
+    "coordinatesMissing": 2273,
     "regionalCounts": {
       "서울": 353,
-      "부산": 385,
+      "부산": 387,
       "충북": 223,
       "충남": 74,
-      "울산": 37,
+      "울산": 38,
       "경남": 325,
       "강원": 66,
       "전북": 215,
@@ -1558,9 +1558,9 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1982,
+      "한식": 1984,
       "중식": 138,
-      "일식": 139,
+      "일식": 140,
       "기타": 584,
       "양식": 214,
       "분식": 34,
@@ -14537,53 +14537,125 @@
         "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
         "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-08-busan-ulsan-slot63-three-verified-tourism-listings",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 63,
+      "previousCoverage": {
+        "uniqueRestaurants": 3331,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2598,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2270,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1982,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3334,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2601,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2273,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1984,
+          "중식": 138,
+          "일식": 140,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 3,
+      "modificationCount": 1,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-busan-slot63-gijang-cheongpajang-hoe",
+        "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+        "local-ulsan-slot63-ulju-geumjang-saengbok"
+      ],
+      "modifiedRestaurantIds": [
+        "local-busan-taste-fbd95ea18d3f287c"
+      ],
+      "sourceUrls": [
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+        "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+      "scope": "부산 기장군·울산 울주군 공식 시 관광 음식점 부분 명단 대조. 비짓부산 메뉴판 지원 2건·울산관광 먹거리 1건 신규, 비짓부산 현재 기장 일광읍 도로명주소 1곳의 옛 일광면 표기 수정. 전체 명단 전수 아님.",
+      "notes": [
+        "공식 관광 소개/메뉴 지원 수록이며 미쉐린·블루리본 정규 등급 또는 현재 영업 검증이 아님.",
+        "상호·주소에 맞는 공개 수치 위경도 근거를 얻지 못해 신규 3곳 lat/lng null.",
+        "기존 일광바다횟집 ID·기존 선정 이력과 lat/lng 보존, 행정 읍면 표기만 수정.",
+        "기장군 기존 17곳·울주군 기본 2곳 및 관광 사이드카 갈비구락부 1곳 좌표 누락 이월.",
+        "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
+        "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-daegu-slot62-five-official-food-listings",
+    "id": "2026-11-08-busan-ulsan-slot63-three-verified-tourism-listings",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 62,
+    "slot": 63,
     "previousCoverage": {
-      "uniqueRestaurants": 3326,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2593,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2265,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 385,
-        "충북": 223,
-        "충남": 74,
-        "울산": 37,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 345,
-        "제주": 120,
-        "대구": 132,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1977,
-        "중식": 138,
-        "일식": 139,
-        "기타": 584,
-        "양식": 214,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3331,
       "providerCounts": {
         "michelin": 237,
@@ -14622,35 +14694,71 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 5,
-    "modificationCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3334,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2601,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1061,
+      "coordinatesMissing": 2273,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 223,
+        "충남": 74,
+        "울산": 38,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1984,
+        "중식": 138,
+        "일식": 140,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 3,
+    "modificationCount": 1,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
-      "local-daegu-slot62-dalseong-toseokjeong",
-      "local-daegu-slot62-dalseong-daeseong-eel",
-      "local-daegu-slot62-dalseong-dalseong-hoesikdang",
-      "local-daegu-slot62-dalseong-palsu"
+      "local-busan-slot63-gijang-cheongpajang-hoe",
+      "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+      "local-ulsan-slot63-ulju-geumjang-saengbok"
     ],
-    "modifiedRestaurantIds": [],
+    "modifiedRestaurantIds": [
+      "local-busan-taste-fbd95ea18d3f287c"
+    ],
     "sourceUrls": [
-      "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-daegu-slot62.json",
-    "scope": "달성군·군위군 부분 조사. 대구푸드 공식 상호·도로명주소를 확인해 달성군 5곳만 추가, 군위군 신규 공식 검증 없음. 2025년 대구음식점 가이드북 기존 18개와 비교. 지역 전수조사가 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+    "scope": "부산 기장군·울산 울주군 공식 시 관광 음식점 부분 명단 대조. 비짓부산 메뉴판 지원 2건·울산관광 먹거리 1건 신규, 비짓부산 현재 기장 일광읍 도로명주소 1곳의 옛 일광면 표기 수정. 전체 명단 전수 아님.",
     "notes": [
-      "본점과 직영점이 주소가 다른 연화정삼계탕의 두 지점을 별도로 유지.",
-      "대구푸드 목록의 개별 인증 종류·지정 연도와 현재 영업 여부는 확인하지 않음.",
-      "좌표 미등록 기존 18곳과 신규 5곳은 상호·현주소에 정확히 맞는 공개 수치좌표가 없으므로 null 유지.",
-      "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
-      "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
-      "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
+      "공식 관광 소개/메뉴 지원 수록이며 미쉐린·블루리본 정규 등급 또는 현재 영업 검증이 아님.",
+      "상호·주소에 맞는 공개 수치 위경도 근거를 얻지 못해 신규 3곳 lat/lng null.",
+      "기존 일광바다횟집 ID·기존 선정 이력과 lat/lng 보존, 행정 읍면 표기만 수정.",
+      "기장군 기존 17곳·울주군 기본 2곳 및 관광 사이드카 갈비구락부 1곳 좌표 누락 이월.",
+      "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
+      "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
     ]
   },
   "latestMapCoverageAudit": {
@@ -23321,6 +23429,46 @@
       "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
       "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
       "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
+    ]
+  },
+  "busanUlsanSlot63": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 63,
+    "sourceFile": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+    "officialSources": [
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
+    ],
+    "addedCount": 3,
+    "modifiedCount": 1,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "pendingLocations": 23,
+    "regions": [
+      "부산광역시 기장군",
+      "울산광역시 울주군"
+    ],
+    "restaurantIds": [
+      "local-busan-slot63-gijang-cheongpajang-hoe",
+      "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+      "local-ulsan-slot63-ulju-geumjang-saengbok"
+    ],
+    "addressCorrectedIds": [
+      "local-busan-taste-fbd95ea18d3f287c"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "blueRibbonGradeVerified": 0,
+    "scope": "부산 기장군·울산 울주군 공식 시 관광 음식점 부분 명단 대조. 비짓부산 메뉴판 지원 2건·울산관광 먹거리 1건 신규, 비짓부산 현재 기장 일광읍 도로명주소 1곳의 옛 일광면 표기 수정. 전체 명단 전수 아님.",
+    "notes": [
+      "공식 관광 소개/메뉴 지원 수록이며 미쉐린·블루리본 정규 등급 또는 현재 영업 검증이 아님.",
+      "상호·주소에 맞는 공개 수치 위경도 근거를 얻지 못해 신규 3곳 lat/lng null.",
+      "기존 일광바다횟집 ID·기존 선정 이력과 lat/lng 보존, 행정 읍면 표기만 수정.",
+      "기장군 기존 17곳·울주군 기본 2곳 및 관광 사이드카 갈비구락부 1곳 좌표 누락 이월.",
+      "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
+      "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
     ]
   }
 }

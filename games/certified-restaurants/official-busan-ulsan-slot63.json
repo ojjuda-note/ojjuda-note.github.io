@@ -1,0 +1,106 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 63,
+  "sourceName": "부산광역시 비짓부산 · 울산광역시 울산관광",
+  "sourceUrls": [
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+    "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "restaurants": [
+    {
+      "id": "local-busan-slot63-gijang-cheongpajang-hoe",
+      "name": "청파장횟집",
+      "category": "일식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 동암해안길 45",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "비짓부산 외국어 메뉴판 지원 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+          "sourceName": "부산광역시·부산관광공사 비짓부산 외국어 메뉴판 지원 식당",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 사이트의 식당 이름과 주소 수록을 확인함. 가이드 정규 선정·등급·선정연도 및 현재 영업 여부는 이 근거만으로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
+      "name": "연화리 기장촌집장어",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 연화1길 167",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "비짓부산 외국어 메뉴판 지원 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+          "sourceName": "부산광역시·부산관광공사 비짓부산 외국어 메뉴판 지원 식당",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 사이트의 식당 이름과 주소 수록을 확인함. 가이드 정규 선정·등급·선정연도 및 현재 영업 여부는 이 근거만으로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-ulsan-slot63-ulju-geumjang-saengbok",
+      "name": "금장생복집",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 서생면 당물길 33",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산관광 먹거리 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food",
+          "sourceName": "울산광역시 울산관광 무장애 여행지 먹거리",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광 사이트의 식당 이름과 주소 수록을 확인함. 가이드 정규 선정·등급·선정연도 및 현재 영업 여부는 이 근거만으로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "addressEnrichments": [
+    {
+      "id": "local-busan-taste-fbd95ea18d3f287c",
+      "expectedName": "일광바다횟집",
+      "expectedAddress": "부산광역시 기장군 일광면 기장해안로 1312",
+      "newAddress": "부산광역시 기장군 일광읍 기장해안로 1312",
+      "officialSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
+      "sourceName": "부산광역시 비짓부산 · 외국어 메뉴판 지원 음식점",
+      "checkedAt": "2026-11-08",
+      "note": "부산시 공개 음식점 목록의 '일광바다 횟집'·기장해안로 1312·일광읍 일치로 지명(면→읍) 표기 교정; 위경도 및 원래 ID·선정 이력 보존."
+    }
+  ]
+}
