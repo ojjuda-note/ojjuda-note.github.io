@@ -18,6 +18,11 @@ assert.doesNotMatch(flatSource,/철판 번호 순서대로|routeGateBlocked|wron
 assert.doesNotMatch(flatSource,/line\(c,\[\[0,-5\],\[0,5\]\]/,'no answer-signalling plus heads');
 const physicsSource=fs.readFileSync(require.resolve('../games/screw/screw-flat-physics.js'),'utf8');
 assert.doesNotMatch(physicsSource,/routeGateBlocked|routeUnlocked|routeProgress|orderRank/);
+// Six extra free moves apply to certified, early, late, and fallback budgets.
+assert.equal(Game.moveLimit({challengeMoves:12}),18);
+assert.equal(Game.moveLimit({stage:1,requiredMoves:9}),20);
+assert.equal(Game.moveLimit({stage:31,requiredMoves:9}),17);
+assert.equal(Game.moveLimit({route:[1,2,3]}),9);
 for(const stage of [1,30,31,122,123,244,245,366,367,488,489,610,611,732,733,854,855,976,977,1000]){
  assert.equal(Physics.spareHoleCount(stage),3,`stage ${stage} starts with only three free holes`);
 }
@@ -28,10 +33,10 @@ for(let stage=12;stage<=1000;stage++){
  assert.ok(level.requiredMoves>=level.screws.length,'every original pin must actually be lifted');
  if(stage<122){
   assert.equal(level.parkingClearance,undefined);
-  assert.equal(Game.moveLimit(level),level.requiredMoves+(stage<=30?5:2));
+  assert.equal(Game.moveLimit(level),level.requiredMoves+(stage<=30?5:2)+6);
  }else{
   assert.ok(level.parkingClearance>0&&level.parkingClearance<=1);
-  assert.equal(Game.moveLimit(level),level.challengeMoves);
+  assert.equal(Game.moveLimit(level),level.challengeMoves+6);
  }
  assert.equal(level.holes.length-level.screws.length,Physics.spareHoleCount(stage));
  const tray=level.holes.filter(h=>h.owner===null);
@@ -145,7 +150,7 @@ async function challenge122(){
  const stage=122,witness=certified(stage);let proof;
  const free=Game.flat({getUserId:()=>'three-hole-player',setScore(){},drillAction:async()=>({ok:true,balance:0}),
   verifyDrill:async p=>{proof=p;return {ok:true,balance:1,reward:'earned'};}},stage);
- assert.equal(free.state.moveLimit,witness.moves);assert.equal(witness.reason,null);
+ assert.equal(free.state.moveLimit,witness.moves+6);assert.equal(witness.reason,null);
  for(const step of witness.route)play(free,[step.screw,step.to,step.wait]);
  tick(free,8);assert.equal(free.state.complete,true);assert.equal(free.state.moves,witness.moves);
  await new Promise(resolve=>setImmediate(resolve));assert.ok(proof);assert.equal(proof.events.length,witness.moves);

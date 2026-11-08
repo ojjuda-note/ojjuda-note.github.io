@@ -37,7 +37,7 @@
       await script('/games/screw/screw-flat-physics.js?v=20261106-source-folders1', () => !!window.OjjudaFlatPhysics);
       await script('/games/screw/screw-flat-pictures.js?v=20261106-source-folders1', () => !!window.OjjudaFlatPictures);
       await script('/games/screw/screw-flat-drills.js?v=20261106-source-folders1',()=>!!window.OjjudaFlatDrills);
-      await script('/games/screw/screw-flat.js?v=20261106-source-folders1', () => !!window.OjjudaScrewGames?.flat);
+      await script('/games/screw/screw-flat.js?v=20261108-screw-flat-plus6', () => !!window.OjjudaScrewGames?.flat);
       return window.OjjudaScrewGames.flat;
     })().catch(error => { modes.delete(mode); throw error; });
     modes.set(mode, promise);
