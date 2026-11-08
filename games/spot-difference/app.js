@@ -436,7 +436,7 @@
       guess(point.x,point.y,surface,padding);
     }
     surface.addEventListener('pointerdown',e=>{
-      if(e.isPrimary===false||(e.pointerType==='mouse'&&e.button!==0))return;
+      if((e.isPrimary===false&&['touch','pen'].includes(e.pointerType))||(e.pointerType==='mouse'&&e.button!==0))return;
       down={id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop};
     });
     surface.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
