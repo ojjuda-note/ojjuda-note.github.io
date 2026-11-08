@@ -37,8 +37,8 @@ assert.equal(entry.length,1);assert.equal(entry[0].additions,5);assert.equal(ent
 assert.equal(entry[0].locationCoordinatesAdded,0);assert.equal(entry[0].locationHidden,0);
 assert.equal(entry[0].locationPending,56);assert.equal(entry[0].pendingLocationInventory.length,56);
 assert.ok(entry[0].pendingLocationInventory.every(x=>x.restaurantId&&x.name&&x.currentAddress&&x.region&&x.recheckCycle===2));
-assert.ok(audit.active.slot >= 50);
-assert.ok(source.latestCoverageAudit.slot >= 50);
+assert.ok(audit.active.cycle > 1 || (audit.active.cycle === 1 && audit.active.slot >= 50));
+assert.ok(source.latestCoverageAudit.cycle > 1 || (source.latestCoverageAudit.cycle === 1 && source.latestCoverageAudit.slot >= 50));
 assert.match(release.revision, /^\d{8}-[a-z0-9-]+$/);
 assert.ok(read('world.html').includes('world-game-assets.js?v='+release.revision));
 const restaurantRevision=read('games/certified-restaurants/index.html').match(/app\.js\?v=(\d{8}-restaurants-[a-z0-9-]+)/)?.[1];
