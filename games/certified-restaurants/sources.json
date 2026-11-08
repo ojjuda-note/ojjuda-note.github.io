@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-08",
+  "checkedAt": "2026-11-09",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3538,
+    "uniqueRestaurants": 3545,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2805,
+      "local-guide": 2812,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2472,
+    "coordinatesMissing": 2479,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1554,11 +1554,11 @@
       "전남": 249,
       "세종": 100,
       "대전": 117,
-      "경북": 170,
+      "경북": 177,
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2146,
+      "한식": 2153,
       "중식": 147,
       "일식": 150,
       "기타": 592,
@@ -25326,5 +25326,31 @@
     "currentDesignationStatus": "not_verified_since_period_ended",
     "currentOperatingStatus": "not_verified",
     "notes": "무안군 2025년 모범음식점 49개소 명단 중 22곳 신규·기존4건 이력 보강. 회원 추천은 미변경. 2026-10 지정 종료 후 2026-11 재지정 여부는 확인되지 않음."
+  },
+  "gyeongbukSlot79": {
+    "checkedAt": "2026-11-09",
+    "cycle": 1,
+    "slot": 79,
+    "scheduledAtKST": "2026-11-09T01:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-gyeongbuk-slot79.json",
+    "sourceUrls": [
+      "https://www.usc.go.kr/village/page.do?mnu_uid=1005&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D",
+      "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+    ],
+    "addedCount": 7,
+    "modifiedCount": 0,
+    "coordinatesVerified": 0,
+    "locationsHidden": 0,
+    "locationPending": 13,
+    "regionAdded": {
+      "의성군": 7,
+      "청송군": 0,
+      "영양군": 0,
+      "영덕군": 0
+    },
+    "completeRegionalCollection": false,
+    "currentDesignationStatus": "not_verified",
+    "currentOperatingStatus": "not_verified",
+    "notes": "의성읍 공식 관내지도 모범음식점 7곳 수록·주소 확인. 정규 블루리본 등급과 현재 선정/영업 상태·수치좌표는 미확인. 나머지 3군 상세 명단 이월. 원본 restaurants.json 미동기화(표시용 작은 공식 보완 파일 사용)."
   }
 }
