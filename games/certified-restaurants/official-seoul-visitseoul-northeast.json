@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05",
+  "updatedAt": "2026-11-09",
   "sourceName": "서울관광재단 Visit Seoul 및 서울특별시 2026 오래가게 공식 명단",
   "sourceUrl": "https://korean.visitseoul.net/",
   "completeRegionalCollection": false,
@@ -11,8 +11,8 @@
       "region": "서울",
       "district": "동대문구",
       "address": "서울 동대문구 휘경로 3-8",
-      "lat": null,
-      "lng": null,
+      "lat": 37.596581,
+      "lng": 127.060942,
       "menu": [
         "탕수육",
         "백짬뽕"
@@ -45,7 +45,13 @@
           "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/Yeonghwajang/KOPmq0c0r",
+      "coordinateSource": {
+        "name": "상호·도로명주소가 일치하는 공개 업소별 위경도",
+        "url": "https://qaj.purpleo.kr/article/5801",
+        "method": "published-place-coordinate-cross-checked-official-name-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-visitseoul-ddm-green-field",
@@ -199,8 +205,8 @@
       "region": "서울",
       "district": "성북구",
       "address": "서울 성북구 정릉로 237-2",
-      "lat": null,
-      "lng": null,
+      "lat": 37.605325,
+      "lng": 127.010793,
       "menu": [
         "돼지갈비"
       ],
@@ -219,7 +225,13 @@
           "selectionCriteria": "서울 공식 관광정보에 소개된 식당이며 미쉐린·블루리본 선정, 별도 심사·지정 또는 현재 영업 여부가 확인된 것은 아닙니다."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EC%B2%AD%EC%88%98%EC%9E%A5/KOP042377",
+      "coordinateSource": {
+        "name": "상호·도로명주소가 일치하는 공개 업소별 위경도",
+        "url": "https://smi.purpleo.kr/article/40835",
+        "method": "published-place-coordinate-cross-checked-official-name-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-visitseoul-sb-napoleon",
@@ -459,8 +471,8 @@
       "region": "서울",
       "district": "동대문구",
       "address": "서울 동대문구 왕산로 247-1",
-      "lat": null,
-      "lng": null,
+      "lat": 37.583421,
+      "lng": 127.048988,
       "menu": [
         "칼국수"
       ],
@@ -479,7 +491,13 @@
           "selectionCriteria": "서울시 시민 추천과 현장 검증·전문가 심사를 거친 2026 오래가게 지정. 현재 영업 상태는 별도로 확인하지 않음."
         }
       ],
-      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+      "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458",
+      "coordinateSource": {
+        "name": "상호·도로명주소가 일치하는 공개 업소별 위경도",
+        "url": "https://xju.purpleo.kr/article/14142",
+        "method": "published-place-coordinate-cross-checked-official-name-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-oraegage2026-ddm-hongneung-galbi",
@@ -596,12 +614,46 @@
         }
       ],
       "addressSourceUrl": "https://mediahub.seoul.go.kr/archives/2019458"
+    },
+    {
+      "id": "blue-seoul-dobong-burgerbrother-2025",
+      "name": "버거브라더",
+      "category": "양식",
+      "region": "서울",
+      "district": "도봉구",
+      "address": "서울 도봉구 마들로 657, 1층 101-4호",
+      "lat": 37.668332,
+      "lng": 127.045338,
+      "menu": [
+        "수제버거"
+      ],
+      "guides": [
+        {
+          "provider": "blue-ribbon",
+          "label": "2025년판 수록 이력(정규 리본 등급 미확인)",
+          "year": 2025,
+          "yearType": "edition",
+          "sourceUrl": "https://www.daangn.com/kr/local-profile/%EB%B2%84%EA%B1%B0%EB%B8%8C%EB%9D%BC%EB%8D%94-2r5c4b6or5cr/",
+          "sourceName": "버거브라더 업소 공식 계정의 블루리본 2025년판 수록 공지",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "업소 공지에 2025년판 수록을 명시. 2024 레드리본 공동선정과 정규 블루리본 리본 개수는 서로 다르며, 현재 정규 등급·영업 상태는 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.daangn.com/kr/local-profile/%EB%B2%84%EA%B1%B0%EB%B8%8C%EB%9D%BC%EB%8D%94-2r5c4b6or5cr/",
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상권정보 공개 업소 좌표",
+        "url": "https://dbt.purpleo.kr/article/3709",
+        "method": "published-business-coordinate-exact-name-address",
+        "checkedAt": "2026-11-09"
+      }
     }
   ],
   "notes": [
     "공식 관광 소개 항목이지 미쉐린·블루리본 선정이나 개별 지정으로 주장하지 않음",
     "이동·폐업 등 현재 영업상태를 개별 검증하지 않음",
-    "좌표는 해당 업소와 현재 주소 일치 근거가 없어 보류; 추정 좌표를 사용하지 않음",
-    "추가 6곳은 서울시가 2026년에 지정한 오래가게(2026-09-21 공식 발표), 기존 영화장 1곳은 소개 이력과 선정 이력 병기. 공식 지정·관광 일반 소개 구분. 위경도 미확인으로 모두 null."
+    "2순환 2회차 확인된 4곳 외 모든 좌표는 확정 근거가 없으면 null 유지.",
+    "1순환 2회차 등록 시 좌표 미확인; 2순환 2회차에 확인 가능한 공개 위치 근거로 기존 3곳의 좌표를 보강함.",
+    "2순환 2회차: 도봉구 버거브라더의 업소 직접 공지 2025 블루리본서베이 수록 이력 1곳 추가, 영화장·혜성칼국수·청수장 공개 업소 좌표 3곳 보강. 출처를 등록하며 회원 게시물은 변경하지 않음."
   ]
 }

@@ -577,7 +577,7 @@
         fetch('./restaurants.json?v=20261109-restaurants-c1s84-gyeongnam6-loc1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261108-restaurants-slot58-seoulblue-2', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-oraegage2', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-seoul-visitseoul-northeast.json?v=20261109-restaurants-c2s02-seoulblue1-loc4', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-southwest.json?v=20261105-restaurants-seoul-sw1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-southeast.json?v=20261105-restaurants-seoul-se1', { signal: controller.signal, cache: 'no-cache' }),
          fetch('./official-incheon-itour-slot06.json?v=20261106-restaurants-incheon-slot06-1', { signal: controller.signal, cache: 'no-cache' }),
