@@ -2,16 +2,30 @@
   'use strict';
   // Slightly forgive fingertip placement without matching distant differences.
   const TOUCH_HIT_SCALE=1.15;
-  function hitTest(puzzle,x,y,found=[]){
+  function hitTest(puzzle,x,y,found=[],padding={x:0,y:0}){
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>100||y<0||y>100)return null;
-    if(puzzle.hitMode==='target-bounds'){
-      const index=puzzle.spots.findIndex(s=>{const b=s.targetBounds;return b&&x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;});
-      if(index>=0)return {index,alreadyFound:found.includes(index)};
+    const candidates=puzzle.spots.map((spot,index)=>({
+      index,bounds:spot.targetBounds,
+      distance:Math.min(...[spot,...(spot.hitRegions||[])].map(region=>((x-region.x)/region.rx)**2+((y-region.y)/region.ry)**2))
+    }));
+    const inBounds=b=>b&&x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
+    // Keep explicitly bounded photo/artwork answers precise, including overlaps.
+    let matches=puzzle.hitMode==='target-bounds'?candidates.filter(c=>inBounds(c.bounds)):[];
+    if(!matches.length)matches=candidates.filter(c=>c.distance<=TOUCH_HIT_SCALE**2);
+    // Elliptical hotspots can miss visible corners of clothes and objects.
+    if(!matches.length)matches=candidates.filter(c=>inBounds(c.bounds));
+    if(!matches.length){
+      const px=Math.max(0,Number(padding?.x)||0),py=Math.max(0,Number(padding?.y)||0);
+      if(px&&py)matches=candidates.map(c=>{
+        const b=c.bounds;if(!b)return null;
+        const dx=Math.max(b.left-x,0,x-b.right),dy=Math.max(b.top-y,0,y-b.bottom);
+        return {...c,near:(dx/px)**2+(dy/py)**2};
+      }).filter(c=>c&&c.near<=1);
     }
-    const candidates=puzzle.spots.map((s,i)=>({i,d:Math.min(...[s,...(s.hitRegions||[])].map(r=>((x-r.x)/r.rx)**2+((y-r.y)/r.ry)**2))})).filter(s=>s.d<=TOUCH_HIT_SCALE*TOUCH_HIT_SCALE).sort((a,b)=>a.d-b.d);
-    if(!candidates.length)return null;
-    const hit=candidates[0];
-    return {index:hit.i,alreadyFound:found.includes(hit.i)};
+    if(!matches.length)return null;
+    matches.sort((a,b)=>(a.near??a.distance)-(b.near??b.distance));
+    const hit=matches[0];
+    return {index:hit.index,alreadyFound:found.includes(hit.index)};
   }
   const ROUND_MS=60000, EXTEND_MS=60000, HEARTS=3;
   const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value);

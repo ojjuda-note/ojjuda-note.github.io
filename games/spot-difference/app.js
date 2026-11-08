@@ -359,10 +359,10 @@
     const id=puzzle().id;
     state.found[id]=[];state.rounds[id]=core.freshRound();show(state.current);
   }
-  function guess(x,y,surface){
+  function guess(x,y,surface,padding){
     tick();const r=round();if(!canPlay(state.current)||r.status!=='playing'||paymentBusy||!imagesReady||answerReview)return;
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>100||y<0||y>100)return;
-    const result=core.hitTest(puzzle(),x,y,found());
+    const result=core.hitTest(puzzle(),x,y,found(),padding);
     if(!result){
       r.hearts--;if(r.hearts===0){finish('hearts');return;}
       refreshControls();save();speak(`아쉬워요. 하트가 ${r.hearts}개 남았어요.`);
@@ -427,9 +427,33 @@
     else if(remaining.length){r.hintIndex=remaining[(remaining.indexOf(r.hintIndex)+1)%remaining.length];showHint();save();}
   }
   for(const surface of surfaces){
-    let down=null;
-    surface.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop};});
-    surface.addEventListener('click',e=>{if(surface.classList.contains('loading')||!down)return;const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y)>9||Math.abs(surface.parentElement.scrollLeft-down.scrollX)>5||Math.abs(surface.parentElement.scrollTop-down.scrollY)>5;down=null;if(moved)return;const point=core.normalizedPoint(surface.getBoundingClientRect(),e.clientX,e.clientY);guess(point.x,point.y,surface);});
+    let down=null,ignoreClick=null;
+    const moved=e=>down&&(Math.hypot(e.clientX-down.x,e.clientY-down.y)>14||Math.abs(surface.parentElement.scrollLeft-down.scrollX)>5||Math.abs(surface.parentElement.scrollTop-down.scrollY)>5);
+    function choose(e,isTouch=false){
+      if(surface.classList.contains('loading'))return;
+      const rect=surface.getBoundingClientRect(),point=core.normalizedPoint(rect,e.clientX,e.clientY);
+      const padding=isTouch?{x:Math.min(4,1000/(rect.width||1)),y:Math.min(6,1000/(rect.height||1))}:undefined;
+      guess(point.x,point.y,surface,padding);
+    }
+    surface.addEventListener('pointerdown',e=>{
+      if(!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+      down={id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop};
+    });
+    surface.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
+    surface.addEventListener('pointerup',e=>{
+      if(!down||down.id!==e.pointerId||down.pointerType==='mouse')return;
+      const dragged=moved(e)||pictureDrag||!!picturePinch||picturePointers.size>1;
+      down=null;
+      // Recognize a fingertip lift without relying on a synthetic click.
+      ignoreClick={x:e.clientX,y:e.clientY,at:performance.now()};
+      if(!dragged)choose(e,true);
+    });
+    surface.addEventListener('click',e=>{
+      if(ignoreClick&&performance.now()-ignoreClick.at<900&&Math.hypot(e.clientX-ignoreClick.x,e.clientY-ignoreClick.y)<24){ignoreClick=null;return;}
+      if(down){const dragged=moved(e);down=null;if(dragged)return;}
+      if(e.detail===0)return; // Direction keys and Enter are handled below.
+      choose(e,e.pointerType==='touch'||e.pointerType==='pen'||e.sourceCapabilities?.firesTouchEvents===true);
+    });
     surface.addEventListener('keydown',e=>{
       if(surface.classList.contains('loading')||round().status!=='playing')return;
       const step=e.shiftKey?.3:2,delta={ArrowLeft:[-step,0],ArrowRight:[step,0],ArrowUp:[0,-step],ArrowDown:[0,step]}[e.key];
@@ -522,7 +546,7 @@
       const pair=pointerPair(),rect=picturePane.getBoundingClientRect();event.preventDefault();
       resizeZoom(picturePinch.scale*pair.distance/picturePinch.distance,{...picturePinch.anchor,x:clamp((pair.x-rect.left)/(picturePane.clientWidth||1),0,1),y:clamp((pair.y-rect.top)/(picturePane.clientHeight||1),0,1)});
     }else{
-      if(!pictureDrag&&Math.hypot(point.x-point.startX,point.y-point.startY)>9){pictureDrag=true;capturePicture(event.pointerId,picturePane||point.surface);}
+      if(!pictureDrag&&Math.hypot(point.x-point.startX,point.y-point.startY)>14){pictureDrag=true;capturePicture(event.pointerId,picturePane||point.surface);}
       if(pictureDrag){event.preventDefault();if(picturePane){picturePane.scrollLeft-=dx;picturePane.scrollTop-=dy;syncScroll(picturePane,picturePane===scrollA?scrollB:scrollA);}else window.scrollBy(0,-dy);}
     }
   },{passive:false});
