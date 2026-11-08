@@ -28,7 +28,8 @@
 <script src="/admin/world-admin-loader.js?v=20261107-suspended1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
-<script src="/shared/games/world-game-assets.js?v=20261108-janggi-master-ai1" defer></script>
+<link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
+<script src="/shared/games/world-game-assets.js?v=20261108-janggi-level-grid1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
@@ -1171,8 +1172,8 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,r.pendingAction=veri
  return `<div class="game-entry ge-board-entry" data-entry-key="${t}"><button class="ge-close" data-act="close" aria-label="닫기">×</button><div class="ge-icon" aria-hidden="true">${e.emoji}</div><span class="ge-kicker">오쭈다 오락실</span><h3 class="ge-title">${e.name}</h3><p class="ge-copy">한 수씩 천천히, 나만의 승부를 즐겨보세요.</p>
  <div class="seg ge-play-modes" aria-label="대결 방식"><button type="button" class="on" data-entry-mode="computer" aria-pressed="true">컴퓨터와 하기</button><button type="button" data-entry-mode="opponent" aria-pressed="false">상대와 하기</button></div>
  ${t==='janggi'?jgChooser():''}
- <section data-entry-panel="computer"><span class="ge-label">난이도</span><div class="seg bd-seg">${(t==='janggi'?[...Rp,...JG_EXTRA_LEVELS]:Rp).map(([l,s])=>`<button class="${o===l?'on':''}" data-act="bd-lv" data-v="${l}" data-k="${t}" aria-pressed="${o===l}">${s}</button>`).join('')}</div>
- ${t==='janggi'?'<p class="note">AI 수읽기: 프로 약 3초 · 마스터 약 5초 · 그랜드마스터 약 8초. 상위 AI는 별도 엔진에서 계산해요. 연승 기록은 어려움으로 합산돼요.</p>':''}
+ <section data-entry-panel="computer"><span class="ge-label">난이도</span><div class="seg bd-seg${t==='janggi'?' jg-level-grid':''}">${(t==='janggi'?[...Rp,...JG_EXTRA_LEVELS]:Rp).map(([l,s])=>`<button class="${o===l?'on':''}" data-act="bd-lv" data-v="${l}" data-k="${t}" aria-pressed="${o===l}">${s}</button>`).join('')}</div>
+ ${t==='janggi'?'<p class="note">AI 수읽기: 프로 약 3초 · 마스터 약 5초 · 그랜드마스터 약 8초.</p>':''}
  ${t==='janggi'?`<div class="ge-janggi-colors" role="group" aria-label="내 장기 진영 색상"><span class="ge-label">내 말 색상</span><div class="seg bd-seg jg-color-choices">${[['first','파랑 · 초','blue'],['second','빨강 · 한','red']].map(([side,label,color])=>`<button type="button" class="${r===side?'on':''}" data-act="bd-side" data-v="${side}" data-k="janggi" aria-pressed="${r===side}"><span class="jg-color-dot ${color}" aria-hidden="true"></span>${label}</button>`).join('')}</div><p class="ge-color-note">파랑(초)이 먼저, 빨강(한)은 나중에 둬요.</p></div>`:''}
  <button class="btn pri ge-primary" data-act="bd-start" data-k="${t}" data-mode="ai">시작하기</button>
  ${t==='janggi'?'':`<details class="ge-more"><summary>순서 설정</summary><div class="seg bd-seg">${[['first',`먼저 두기 (${e.side[e.first]})`],['second',`나중에 두기 (${e.side[e.second]})`]].map(([l,s])=>`<button class="${r===l?'on':''}" data-act="bd-side" data-v="${l}" data-k="${t}" aria-pressed="${r===l}">${s}</button>`).join('')}</div></details>`}</section>

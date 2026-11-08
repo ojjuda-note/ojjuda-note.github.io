@@ -28,6 +28,12 @@ test('the Janggi menu has six levels, without adding advanced levels to chess', 
  const chess = await rules.Hp('chess');
  assert.deepEqual([...janggi.matchAll(/data-act="bd-lv" data-v="([^"]+)"/g)].map(match => match[1]), ['easy', 'normal', 'hard', 'pro', 'master', 'grandmaster']);
  assert.deepEqual([...chess.matchAll(/data-act="bd-lv" data-v="([^"]+)"/g)].map(match => match[1]), ['easy', 'normal', 'hard']);
+ assert.match(janggi, /class="seg bd-seg jg-level-grid"/, 'Janggi uses its two-row difficulty grid');
+ assert.doesNotMatch(chess, /jg-level-grid/, 'chess keeps its existing layout');
+ assert.match(janggi, /AI 수읽기: 프로 약 3초/);
+ assert.doesNotMatch(janggi, /상위 AI는 별도 엔진|연승 기록은 어려움/, 'circled extra text was removed');
+ const css = fs.readFileSync(path.join(__dirname, '../games/janggi/janggi-levels.css'), 'utf8');
+ assert.match(css, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'three columns create two rows of three');
 
  rules.Qp['bd-lv']({ k: 'janggi', v: 'pro' });
  assert.equal(rules.g.bdLevel, 'pro');
