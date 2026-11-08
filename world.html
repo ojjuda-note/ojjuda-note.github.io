@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
-<script src="/shared/games/world-game-assets.js?v=20261108-restaurants-slot75-address3" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261108-chacha-inapp1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
@@ -2692,7 +2692,8 @@ function fy(){
 }
 var bm=null;var worldEntryRouted=false;
 function openWorldGameLink(id,options={}){
- if(id==='recommendations')return Al('restaurants',{...options,openRecommendations:true});
+ if(id==='chacha_rush')return chachaRushPortal.open();
+  if(id==='recommendations')return Al('restaurants',{...options,openRecommendations:true});
  if(id==='group'||id==='restaurants'||id==='byeolcheonji')return Al(id,options);
  if(['carom4','carom3','pool8','billiards'].includes(id))return xn(id==='billiards'?'carom4':id);
  if(['janggi','chess'].includes(id))return vn(id);
@@ -2742,7 +2743,7 @@ let chachaRushPortalPromise = null;
 const chachaRushPortal = {
  async open() {
   try {
-   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261108-ranking2').then(({installChachaRushPortal}) => installChachaRushPortal({
+   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261108-chacha-inapp1').then(({installChachaRushPortal}) => installChachaRushPortal({
     currentOwner:()=>worldRewardOwner(),
     submitScore:score=>tf('chacha_rush',score),
     onSaved:owner=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'chacha_rush'}})),
@@ -2752,6 +2753,14 @@ const chachaRushPortal = {
   } catch(error) { console.warn('Chacha Rush failed to load', error); M('차차 러시를 불러오지 못했어요. 다시 시도해 주세요.'); }
  }
 };
+// A direct game link and a game-card click must remain inside the Agit viewport.
+document.addEventListener('click', event => {
+  const entry = event.target.closest?.('a[data-v="chacha_rush"], a[href^="https://chacharush-arcade-2611.mj830417686850.chatgpt.site"], button[data-act="game-open"][data-v="chacha_rush"]');
+  if (!entry) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  void chachaRushPortal.open();
+}, true);
 function worldRankGames(){
  const ranked={billiards:{name:'당구',unit:'연승',rankingBasis:'difficulty_streak',game:'carom4'},janggi:{name:'장기',unit:'연승',rankingBasis:'difficulty_streak'},chess:{name:'체스',unit:'연승',rankingBasis:'difficulty_streak'}};
  return {solitaire:_r.solitaire,bang:_r.bang,archery:_r.archery,sacheonseong:_r.sacheonseong,tank:{name:'탱크게임',unit:'연승',rankingBasis:'opponents_streak'},saetbyeol:_r.saetbyeol,mines:_r.mines,tour:{name:'마블',unit:'연승',rankingBasis:'current_streak'},...ranked,
