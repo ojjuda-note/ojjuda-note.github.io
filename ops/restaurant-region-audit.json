@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 77,
-    "scheduledAt": "2026-11-08T23:00:00+09:00",
-    "checkedAtKST": "2026-11-08",
-    "source": "예약된 한국시간 2026-11-08 23:00, 앵커 대비 h=72, n=76, slot77, cycle1"
+    "slot": 80,
+    "scheduledAt": "2026-11-09T02:00:00+09:00",
+    "checkedAtKST": "2026-11-09",
+    "source": "예약 기준 h=75, n=79, (79%84)+1=80. 실행 지연 시에도 예약시각 02:00 사용."
   },
   "entries": [
     {
@@ -68417,6 +68417,807 @@
         "2025 지정기간 종료 뒤 재지정/현재 영업 미확인. 폐업·선정 취소로 처리하지 않음.",
         "블루리본 정규 등급 확인이나 지도 위치 좌표 추정 없음.",
         "좌표 미확인만으로 삭제·비노출 하지 않고 회원 추천 글과 사진 보존."
+      ]
+    },
+    {
+      "cycle": 1,
+      "slot": 80,
+      "scheduledAtKST": "2026-11-09T02:00:00+09:00",
+      "checkedAtKST": "2026-11-09",
+      "status": "partial_seongju_official_list_29_added_2_guide_history",
+      "assignedRegions": [
+        "경상북도 청도군",
+        "경상북도 고령군",
+        "경상북도 성주군",
+        "경상북도 칠곡군"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도 청도군",
+          "actuallyChecked": [
+            "관광/모범음식점 공식 명단 검색 시도; 식당별 확정 위치 신규 근거 확보 못함"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 1,
+          "pendingCoordinates": 1,
+          "remainingAreas": [
+            "공식 최신 지정/관광 명단 교차 대조",
+            "식당별 수치 좌표·현주소·실제 영업 상태 재확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 고령군",
+          "actuallyChecked": [
+            "2025-11-07 고령군 모범음식점 신규 지정 신청 재공고 확인(확정 선정 명단 아님)"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 1,
+          "pendingCoordinates": 1,
+          "remainingAreas": [
+            "공식 최신 지정/관광 명단 교차 대조",
+            "식당별 수치 좌표·현주소·실제 영업 상태 재확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 성주군",
+          "actuallyChecked": [
+            "성주군 문화관광 2026-08-13 수정 공식 모범음식점 명단 31곳 상호·도로명주소 대조",
+            "기존 2곳 ID와 역사 보존, 새29곳 수록"
+          ],
+          "new": 29,
+          "updated": 2,
+          "existingWithMissingCoordinates": 2,
+          "pendingCoordinates": 31,
+          "remainingAreas": [
+            "공식 최신 지정/관광 명단 교차 대조",
+            "식당별 수치 좌표·현주소·실제 영업 상태 재확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 칠곡군",
+          "actuallyChecked": [
+            "관광/모범음식점 공식 명단 검색 시도; 식당별 확정 위치 신규 근거 확보 못함"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 1,
+          "pendingCoordinates": 1,
+          "remainingAreas": [
+            "공식 최신 지정/관광 명단 교차 대조",
+            "식당별 수치 좌표·현주소·실제 영업 상태 재확인"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "https://sj.go.kr/tour/page.do?mnu_uid=3924 — 성주군 공식 모범음식점 31곳 (페이지 갱신 2026-08-13)",
+        "https://www.goryeong.go.kr/kor/boardView.do?BOARD_IDX=40671&BRD_ID=1023&IDX=154 — 2025 고령군 모집 공고(지정확정 명단 아님)"
+      ],
+      "additions": 29,
+      "modifications": 2,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 34,
+      "locationPendingScope": "해당 배정 4개 군에서 등록된 식당 34곳. 전국 전체 대기 수 아님.",
+      "addedRestaurantIds": [
+        "local-seongju-model-01",
+        "local-seongju-model-02",
+        "local-seongju-model-03",
+        "local-seongju-model-04",
+        "local-seongju-model-05",
+        "local-seongju-model-06",
+        "local-seongju-model-07",
+        "local-seongju-model-08",
+        "local-seongju-model-09",
+        "local-seongju-model-10",
+        "local-seongju-model-11",
+        "local-seongju-model-12",
+        "local-seongju-model-13",
+        "local-seongju-model-14",
+        "local-seongju-model-15",
+        "local-seongju-model-16",
+        "local-seongju-model-17",
+        "local-seongju-model-19",
+        "local-seongju-model-21",
+        "local-seongju-model-22",
+        "local-seongju-model-23",
+        "local-seongju-model-24",
+        "local-seongju-model-25",
+        "local-seongju-model-26",
+        "local-seongju-model-27",
+        "local-seongju-model-28",
+        "local-seongju-model-29",
+        "local-seongju-model-30",
+        "local-seongju-model-31"
+      ],
+      "modifiedRestaurantIds": [
+        "local-gb-top-2021-11",
+        "local-gb-top-2022-12"
+      ],
+      "evidenceUrls": [
+        "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+        "https://www.goryeong.go.kr/kor/boardView.do?BOARD_IDX=40671&BRD_ID=1023&IDX=154"
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-gb-top-2024-7",
+          "name": "본가한정식",
+          "currentAddress": "경상북도 청도군 화양읍 범곡길 32",
+          "region": "경상북도 청도군",
+          "searchAliases": [
+            "본가한정식 경북 청도군",
+            "본가한정식 경상북도 청도군 화양읍 범곡길 32",
+            "청도군 본가한정식"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "과거 지정·수록 자료의 상호와 기록 주소 확인. 현재 주소/공식 수치 좌표/현 영업 독립 재조사 대기.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-gb-top-2022-11",
+          "name": "고령금산한우",
+          "currentAddress": "경상북도 고령군 성산면 성산로 946-5",
+          "region": "경상북도 고령군",
+          "searchAliases": [
+            "고령금산한우 경북 고령군",
+            "고령금산한우 경상북도 고령군 성산면 성산로 946-5",
+            "고령군 고령금산한우"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "과거 지정·수록 자료의 상호와 기록 주소 확인. 현재 주소/공식 수치 좌표/현 영업 독립 재조사 대기.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-gb-top-2021-11",
+          "name": "고방찬 남경식당",
+          "currentAddress": "경상북도 성주군 성주읍 시장길 10-10",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "고방찬 남경식당 경북 성주군",
+            "고방찬 남경식당 경상북도 성주군 성주읍 시장길 10-10",
+            "성주군 고방찬 남경식당"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-gb-top-2022-12",
+          "name": "감골식당",
+          "currentAddress": "경상북도 성주군 경산길 9-3",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "감골식당 경북 성주군",
+            "감골식당 경상북도 성주군 경산길 9-3",
+            "성주군 감골식당"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word=",
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-gb-top-2022-13",
+          "name": "거정숯불갈비",
+          "currentAddress": "경상북도 칠곡군 왜관읍 군청4길 24",
+          "region": "경상북도 칠곡군",
+          "searchAliases": [
+            "거정숯불갈비 경북 칠곡군",
+            "거정숯불갈비 경상북도 칠곡군 왜관읍 군청4길 24",
+            "칠곡군 거정숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "과거 지정·수록 자료의 상호와 기록 주소 확인. 현재 주소/공식 수치 좌표/현 영업 독립 재조사 대기.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-01",
+          "name": "성밖수반애",
+          "currentAddress": "경상북도 성주군 성주읍 경산2길 51",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "성밖수반애 경북 성주군",
+            "성밖수반애 경상북도 성주군 성주읍 경산2길 51",
+            "성주군 성밖수반애"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-02",
+          "name": "농가맛집밀",
+          "currentAddress": "경상북도 성주군 수륜면 덕운로 1566",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "농가맛집밀 경북 성주군",
+            "농가맛집밀 경상북도 성주군 수륜면 덕운로 1566",
+            "성주군 농가맛집밀"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-03",
+          "name": "묵이랑밥이랑",
+          "currentAddress": "경상북도 성주군 성주읍 성밖숲길 5",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "묵이랑밥이랑 경북 성주군",
+            "묵이랑밥이랑 경상북도 성주군 성주읍 성밖숲길 5",
+            "성주군 묵이랑밥이랑"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-04",
+          "name": "높은들가든",
+          "currentAddress": "경상북도 성주군 초전면 주천로 1311",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "높은들가든 경북 성주군",
+            "높은들가든 경상북도 성주군 초전면 주천로 1311",
+            "성주군 높은들가든"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-05",
+          "name": "명인해장국",
+          "currentAddress": "경상북도 성주군 선남면 성주로 4089",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "명인해장국 경북 성주군",
+            "명인해장국 경상북도 성주군 선남면 성주로 4089",
+            "성주군 명인해장국"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-06",
+          "name": "강변애",
+          "currentAddress": "경상북도 성주군 성주읍 성주순환로 47-88",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "강변애 경북 성주군",
+            "강변애 경상북도 성주군 성주읍 성주순환로 47-88",
+            "성주군 강변애"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-07",
+          "name": "가야산아래",
+          "currentAddress": "경상북도 성주군 수륜면 성주가야산로 330",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "가야산아래 경북 성주군",
+            "가야산아래 경상북도 성주군 수륜면 성주가야산로 330",
+            "성주군 가야산아래"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-08",
+          "name": "대하삼계탕",
+          "currentAddress": "경상북도 성주군 성주읍 성주읍2길 30-1",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대하삼계탕 경북 성주군",
+            "대하삼계탕 경상북도 성주군 성주읍 성주읍2길 30-1",
+            "성주군 대하삼계탕"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-09",
+          "name": "예은바다회",
+          "currentAddress": "경상북도 성주군 성주읍 성주순환로2길 7-14",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "예은바다회 경북 성주군",
+            "예은바다회 경상북도 성주군 성주읍 성주순환로2길 7-14",
+            "성주군 예은바다회"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-10",
+          "name": "돈꽃",
+          "currentAddress": "경상북도 성주군 초전면 대장1길 50-1",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "돈꽃 경북 성주군",
+            "돈꽃 경상북도 성주군 초전면 대장1길 50-1",
+            "성주군 돈꽃"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-11",
+          "name": "선남명가",
+          "currentAddress": "경상북도 성주군 선남면 관화길 78-3",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "선남명가 경북 성주군",
+            "선남명가 경상북도 성주군 선남면 관화길 78-3",
+            "성주군 선남명가"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-12",
+          "name": "시골왕막창",
+          "currentAddress": "경상북도 성주군 초전면 대장길 79-4",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "시골왕막창 경북 성주군",
+            "시골왕막창 경상북도 성주군 초전면 대장길 79-4",
+            "성주군 시골왕막창"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-13",
+          "name": "생수장가든",
+          "currentAddress": "경상북도 성주군 수륜면 성주가야산로 277",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "생수장가든 경북 성주군",
+            "생수장가든 경상북도 성주군 수륜면 성주가야산로 277",
+            "성주군 생수장가든"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-14",
+          "name": "고향면옥",
+          "currentAddress": "경상북도 성주군 성주읍 성주순환로 283",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "고향면옥 경북 성주군",
+            "고향면옥 경상북도 성주군 성주읍 성주순환로 283",
+            "성주군 고향면옥"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-15",
+          "name": "고방찬 청기와가든",
+          "currentAddress": "경상북도 성주군 가천면 가천로 12",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "고방찬 청기와가든 경북 성주군",
+            "고방찬 청기와가든 경상북도 성주군 가천면 가천로 12",
+            "성주군 고방찬 청기와가든"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-16",
+          "name": "양지골쉼터식당",
+          "currentAddress": "경상북도 성주군 수륜면 성주가야산로 106",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "양지골쉼터식당 경북 성주군",
+            "양지골쉼터식당 경상북도 성주군 수륜면 성주가야산로 106",
+            "성주군 양지골쉼터식당"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-17",
+          "name": "날마다잔치",
+          "currentAddress": "경상북도 성주군 성주읍 본성로 961",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "날마다잔치 경북 성주군",
+            "날마다잔치 경상북도 성주군 성주읍 본성로 961",
+            "성주군 날마다잔치"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-19",
+          "name": "포천카페레스토랑",
+          "currentAddress": "경상북도 성주군 가천면 포천계곡로 81",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "포천카페레스토랑 경북 성주군",
+            "포천카페레스토랑 경상북도 성주군 가천면 포천계곡로 81",
+            "성주군 포천카페레스토랑"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-21",
+          "name": "대구통닭",
+          "currentAddress": "경상북도 성주군 성주읍 성주순환로2길 27",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대구통닭 경북 성주군",
+            "대구통닭 경상북도 성주군 성주읍 성주순환로2길 27",
+            "성주군 대구통닭"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-22",
+          "name": "대보유통(주)남성주참외(창원)휴게소(한식당)",
+          "currentAddress": "경상북도 성주군 선남면 중부내륙고속도로 77",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대보유통(주)남성주참외(창원)휴게소(한식당) 경북 성주군",
+            "대보유통(주)남성주참외(창원)휴게소(한식당) 경상북도 성주군 선남면 중부내륙고속도로 77",
+            "성주군 대보유통(주)남성주참외(창원)휴게소(한식당)"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-23",
+          "name": "대보유통(주)남성주참외(양평)휴게소(한식당)",
+          "currentAddress": "경상북도 성주군 용암면 중부내륙고속도로 76",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대보유통(주)남성주참외(양평)휴게소(한식당) 경북 성주군",
+            "대보유통(주)남성주참외(양평)휴게소(한식당) 경상북도 성주군 용암면 중부내륙고속도로 76",
+            "성주군 대보유통(주)남성주참외(양평)휴게소(한식당)"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-24",
+          "name": "새불고기식당",
+          "currentAddress": "경상북도 성주군 초전면 대고로 22",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "새불고기식당 경북 성주군",
+            "새불고기식당 경상북도 성주군 초전면 대고로 22",
+            "성주군 새불고기식당"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-25",
+          "name": "별고을한우",
+          "currentAddress": "경상북도 성주군 성주읍 참별로 2491-4",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "별고을한우 경북 성주군",
+            "별고을한우 경상북도 성주군 성주읍 참별로 2491-4",
+            "성주군 별고을한우"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-26",
+          "name": "착한막창",
+          "currentAddress": "경상북도 성주군 성주읍 성주읍1길 20-11",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "착한막창 경북 성주군",
+            "착한막창 경상북도 성주군 성주읍 성주읍1길 20-11",
+            "성주군 착한막창"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-27",
+          "name": "대자연횟집",
+          "currentAddress": "경상북도 성주군 가천면 포천계곡로 75",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대자연횟집 경북 성주군",
+            "대자연횟집 경상북도 성주군 가천면 포천계곡로 75",
+            "성주군 대자연횟집"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-28",
+          "name": "정성갈비",
+          "currentAddress": "경상북도 성주군 성주읍 성밖숲길 149",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "정성갈비 경북 성주군",
+            "정성갈비 경상북도 성주군 성주읍 성밖숲길 149",
+            "성주군 정성갈비"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-29",
+          "name": "우신탕본가",
+          "currentAddress": "경상북도 성주군 성주읍 성주순환로2길 68",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "우신탕본가 경북 성주군",
+            "우신탕본가 경상북도 성주군 성주읍 성주순환로2길 68",
+            "성주군 우신탕본가"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-30",
+          "name": "대가정통묵집",
+          "currentAddress": "경상북도 성주군 대가면 동강한강로 968",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "대가정통묵집 경북 성주군",
+            "대가정통묵집 경상북도 성주군 대가면 동강한강로 968",
+            "성주군 대가정통묵집"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        },
+        {
+          "restaurantId": "local-seongju-model-31",
+          "name": "성주집밥뷔페",
+          "currentAddress": "경상북도 성주군 선남면 도성3길 39-19",
+          "region": "경상북도 성주군",
+          "searchAliases": [
+            "성주집밥뷔페 경북 성주군",
+            "성주집밥뷔페 경상북도 성주군 선남면 도성3길 39-19",
+            "성주군 성주집밥뷔페"
+          ],
+          "evidenceUrls": [
+            "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "성주군 공식 모범음식점 상호·주소는 확인. 정확 숫자 좌표 및 현 영업은 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 80,
+          "reason": "정확한 식당명·지점·현재 도로명주소와 일치하는 공개 수치좌표 독립 확인 미완료"
+        }
+      ],
+      "unresolved": [
+        "블루리본 정규리본/공동선정 신규 확인 없음(검색 실패를 선정취소로 처리하지 않음)",
+        "청도·고령·칠곡 현재 확인 가능한 공식 음식점별 명단 및 공개 수치 좌표 이월",
+        "정확 수치좌표 검증 근거 없어 34곳 위치 누락 유지, 폐업·비노출 처리하지 않음",
+        "앞선 1/67·1/72·1/73·1/76·1/78·1/79 회차 최신 운영 기록 부재: 각각 다음 순환 같은 지역에서 보충"
+      ],
+      "followUpCandidates": [
+        "성주군 31곳 중 정확한 지도 좌표 31곳 추가 대조",
+        "청도군 모범·으뜸 선정명단, 고령군 2025 지정 결과, 칠곡군 지역 관광/위생 현행 명단",
+        "블루리본 공식 지도에서 청도·고령·성주·칠곡 검증 가능한 개별 선정 이력 찾기",
+        "이전 회차 기록 공백 1/67·1/72·1/73·1/76·1/78·1/79는 다음 순환 배정 유지"
+      ],
+      "nextSlot": 81,
+      "nextRegions": [
+        "경상북도 예천군",
+        "경상북도 봉화군",
+        "경상북도 울진군",
+        "경상북도 울릉군"
+      ],
+      "notExhaustive": true,
+      "notes": [
+        "공식 목록 갱신 2026-08-13과 검증 2026-11-09를 개별 업소 지정 연도로 사용하지 않음.",
+        "회원 추천 데이터와 개인 위치 미수집·미수정.",
+        "원본 restaurants.json 대용량 단일 갱신 전송 실패, 검증된 소형 보충자료를 사용해 화면 반영 예정. 원본 동기화 이월."
       ]
     }
   ],
