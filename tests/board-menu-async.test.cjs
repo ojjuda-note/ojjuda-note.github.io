@@ -8,6 +8,10 @@ const source = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'wo
 const modalSource = source.slice(source.indexOf('function ct('), source.indexOf('function Tt('));
 const menuStart = source.indexOf('async function Hp(');
 const menuSource = source.slice(menuStart, source.indexOf('var Qp={', menuStart));
+const boardActionsStart = source.indexOf('"bd-side"(t){');
+const boardActions = source.slice(boardActionsStart, source.indexOf(',"bd-sq"(t)', boardActionsStart));
+const boardSyncStart = source.indexOf('function Tp(t){');
+const boardSync = source.slice(boardSyncStart, source.indexOf('var to=[]', boardSyncStart));
 
 function fixture() {
   const dom = new JSDOM('<main id="modal-root"></main>', {runScripts: 'outside-only'});
@@ -157,5 +161,39 @@ test('a failed old refresh cannot replace a newer successful result', async () =
     await assert.doesNotReject(old);
     assert.equal(f.marker(), 'latest success');
     assert.equal(f.menu().querySelector('[role=alert]'), null);
+  } finally {f.close();}
+});
+
+test('janggi color choices set the actual computer-game side before starting', async () => {
+  const f = fixture();
+  try {
+    f.win.eval(`
+      function jgLayout(value){return value||'eheh';}
+      function zp(kind,mode,options){window.started={kind,mode,options};}
+      ${boardSync}
+      var boardActions={${boardActions}};
+    `);
+    const opening = f.win.vn('janggi');
+    f.finish(0, 'friends');
+    await opening;
+    const colors = [...f.menu().querySelectorAll('.jg-color-choices [data-act="bd-side"]')];
+    assert.deepEqual(colors.map(button => button.textContent), ['파랑 · 초', '빨강 · 한']);
+    assert.deepEqual(colors.map(button => button.getAttribute('aria-pressed')), ['true', 'false']);
+    assert.equal(f.menu().querySelector('details')?.textContent.includes('순서 설정'), false);
+
+    f.win.boardActions['bd-side']({v:'second',k:'janggi'});
+    assert.deepEqual(colors.map(button => button.getAttribute('aria-pressed')), ['false', 'true']);
+    f.win.boardActions['bd-start']({k:'janggi',mode:'ai'});
+    assert.equal(f.win.started.options.me, 'h', 'red selects Han and lets the computer move first');
+
+    f.win.boardActions['bd-side']({v:'first',k:'janggi'});
+    f.win.boardActions['bd-start']({k:'janggi',mode:'ai'});
+    assert.equal(f.win.started.options.me, 'c', 'blue selects Cho');
+
+    const chessOpening = f.win.vn('chess');
+    f.finish(1, 'friends');
+    await chessOpening;
+    assert.equal(f.menu().querySelector('.jg-color-choices'), null);
+    assert.match(f.menu().textContent, /순서 설정/);
   } finally {f.close();}
 });

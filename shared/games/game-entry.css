@@ -36,6 +36,14 @@
 .game-entry .ge-close{position:absolute;right:12px;top:12px;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:0;border:0;border-radius:50%;background:#f7f5fa;color:#827b91;font:18px/1 sans-serif;cursor:pointer}
 .game-entry .bd-resume{margin:14px 0}
 .game-entry .bd-layout{margin:0 0 12px}
+.game-entry .ge-janggi-colors .ge-label{margin-top:18px}
+.game-entry .jg-color-choices button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px}
+.game-entry .jg-color-choices button[data-v="first"].on{color:#1c63c7}
+.game-entry .jg-color-choices button[data-v="second"].on{color:#c92d35}
+.game-entry .jg-color-dot{display:inline-block;flex:none;width:15px;height:15px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #ddd}
+.game-entry .jg-color-dot.blue{background:#1c63c7}
+.game-entry .jg-color-dot.red{background:#d22f36}
+.game-entry .ge-color-note{margin:7px 0 0;color:var(--entry-muted);font-size:11px;text-align:left}
 .game-entry [hidden]{display:none!important}
 .game-entry .ge-play-modes{margin:18px 0 8px}
 .game-entry .ge-play-modes button{min-height:42px;font-size:13px}

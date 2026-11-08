@@ -51,9 +51,18 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  }
  if(viewport.width===390&&id==='chess')await page.screenshot({path:'/tmp/game-entry-proof/friend-invite.png'});
  await page.locator('[data-entry-mode=computer]').click();assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
+ if(id==='janggi'){
+  const colors=page.locator('[data-entry-panel=computer] [data-act=bd-side]');
+  assert.deepEqual(await colors.allTextContents(),['파랑 · 초','빨강 · 한']);
+  assert.equal(await colors.first().getAttribute('aria-pressed'),'true');
+  await colors.nth(1).click();
+  assert.equal(await colors.nth(1).getAttribute('aria-pressed'),'true');
+  assert.equal(await colors.first().getAttribute('aria-pressed'),'false');
+ }
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
  await page.locator('[data-entry-panel=computer] [data-act='+(/^(chess|janggi)$/.test(id)?'bd-start':'bl-start')+']').click();
  await page.locator(/^(chess|janggi)$/.test(id)?'#bd-root':'#bl-cv').waitFor();
+ if(id==='janggi')assert.equal(await page.evaluate(()=>E.me),'h','red Han choice controls the player side');
  assert.equal(await page.locator('.ge-board-entry').count(),0,id+': starts directly from the entry');
  if(await page.locator('#gov [data-bl=close]').count())await page.locator('#gov [data-bl=close]').click();
  await page.evaluate(()=>entryTest.closeBoard());
