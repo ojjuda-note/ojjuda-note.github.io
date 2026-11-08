@@ -1529,22 +1529,22 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3585,
+    "uniqueRestaurants": 3602,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2852,
+      "local-guide": 2869,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2519,
+    "coordinatesMissing": 2536,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
       "충북": 270,
       "충남": 117,
       "울산": 38,
-      "경남": 325,
+      "경남": 342,
       "강원": 104,
       "전북": 215,
       "경기": 412,
@@ -1558,13 +1558,13 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2187,
-      "중식": 147,
-      "일식": 152,
-      "기타": 595,
+      "한식": 2199,
+      "중식": 148,
+      "일식": 153,
+      "기타": 596,
       "양식": 221,
       "분식": 41,
-      "디저트": 242
+      "디저트": 244
     }
   },
   "coordinateEnrichment": {
@@ -16119,53 +16119,266 @@
         "기존 ID 2개 선정이력 병합, 독립된 회원 추천 데이터 미변경",
         "공식 목록 게시수정일·확인일·개별 지정연도는 다름"
       ]
+    },
+    {
+      "id": "2026-11-09-gyeongbuk-slot81-yecheon18",
+      "cycle": 1,
+      "slot": 81,
+      "checkedAt": "2026-11-09",
+      "previousCoverage": {
+        "uniqueRestaurants": 3567,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2834,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2501,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 199,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2171,
+          "중식": 147,
+          "일식": 152,
+          "기타": 593,
+          "양식": 221,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3585,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2852,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2519,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 217,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2187,
+          "중식": 147,
+          "일식": 152,
+          "기타": 595,
+          "양식": 221,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 18,
+      "modificationCount": 6,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-yecheon-model-c1s81-01",
+        "local-yecheon-model-c1s81-02",
+        "local-yecheon-model-c1s81-03",
+        "local-yecheon-model-c1s81-04",
+        "local-yecheon-model-c1s81-05",
+        "local-yecheon-model-c1s81-06",
+        "local-yecheon-model-c1s81-07",
+        "local-yecheon-model-c1s81-08",
+        "local-yecheon-model-c1s81-09",
+        "local-yecheon-model-c1s81-10",
+        "local-yecheon-model-c1s81-11",
+        "local-yecheon-model-c1s81-12",
+        "local-yecheon-model-c1s81-13",
+        "local-yecheon-model-c1s81-14",
+        "local-yecheon-model-c1s81-15",
+        "local-yecheon-model-c1s81-16",
+        "local-yecheon-model-c1s81-17",
+        "local-yecheon-model-c1s81-18"
+      ],
+      "modifiedRestaurantIds": [
+        "local-gb-top-2020-11",
+        "local-gb-top-2024-8",
+        "local-gb-top-2022-14",
+        "local-gb-top-2019-7",
+        "local-gb-top-2025-4",
+        "local-gb-top-2024-10"
+      ],
+      "sourceUrls": [
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot81.json",
+      "scope": "경북 예천·봉화·울진·울릉 1/81 회차 중 예천군 공식 모범음식점 3개 페이지 18곳 신규·기존6곳 이력 대조. 다른 3군 미완료.",
+      "notes": [
+        "예천군 공식 관광 페이지 최종수정일 2024-05-07은 개별 식당의 지정 연도가 아님.",
+        "정확한 공개 좌표·영업 상태 독립 근거 미확보: 27곳 위치 재확인 대기.",
+        "기존 6개 ID와 저장 이력을 보존, 회원 추천 데이터 미수정.",
+        "오르비/에밀테라스, 황소네집/황소고집 주소 충돌 후보는 추가 수록 보류."
+      ]
+    },
+    {
+      "id": "2026-11-09-gyeongnam-slot83-official17",
+      "cycle": 1,
+      "slot": 83,
+      "checkedAt": "2026-11-09",
+      "previousCoverage": {
+        "uniqueRestaurants": 3585,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2852,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2519,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 217,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2187,
+          "중식": 147,
+          "일식": 152,
+          "기타": 595,
+          "양식": 221,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3602,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2869,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2536,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 342,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 217,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2199,
+          "중식": 148,
+          "일식": 153,
+          "기타": 596,
+          "양식": 221,
+          "분식": 41,
+          "디저트": 244
+        }
+      },
+      "newRestaurantCount": 17,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gyeongnam-c1s83-kto-01",
+        "local-gyeongnam-c1s83-kto-02",
+        "local-gyeongnam-c1s83-kto-03",
+        "local-gyeongnam-c1s83-kto-04",
+        "local-gyeongnam-c1s83-kto-05",
+        "local-gyeongnam-c1s83-sancheong-01",
+        "local-gyeongnam-c1s83-sancheong-02",
+        "local-gyeongnam-c1s83-sancheong-03",
+        "local-gyeongnam-c1s83-sancheong-04",
+        "local-gyeongnam-c1s83-sancheong-05",
+        "local-gyeongnam-c1s83-sancheong-06",
+        "local-gyeongnam-c1s83-sancheong-07",
+        "local-gyeongnam-c1s83-sancheong-08",
+        "local-gyeongnam-c1s83-sancheong-09",
+        "local-gyeongnam-c1s83-sancheong-10",
+        "local-gyeongnam-c1s83-sancheong-11",
+        "local-gyeongnam-c1s83-sancheong-12"
+      ],
+      "sourceUrls": [
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+        "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeongnam-slot83.json",
+      "scope": "경남 남해·하동·산청 1/83: 한국관광공사 직접 접근 음식점 5곳과 산청군 공식 문화관광 검색 색인 명단 12곳 (원문 직접 응답 지연). 전수 조사 아님.",
+      "notes": [
+        "산청군 12곳은 공식 웹페이지 검색 색인으로 이름·주소를 확인했고 원문 직접 접근은 타임아웃. 최신 운영 상태 이월.",
+        "3군 정확 좌표 공개 근거 미확보, 추정 좌표 미등록.",
+        "관광공사 수정일·출처 확인일·개별 선정연도 구분, 회원추천 자료 불변.",
+        "기존 원본 restaurants.json 직접 동기화 이력은 별도 이월."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-09-gyeongbuk-slot81-yecheon18",
+    "id": "2026-11-09-gyeongnam-slot83-official17",
     "cycle": 1,
-    "slot": 81,
+    "slot": 83,
     "checkedAt": "2026-11-09",
     "previousCoverage": {
-      "uniqueRestaurants": 3567,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2834,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2501,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 117,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 249,
-        "세종": 100,
-        "대전": 117,
-        "경북": 199,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2171,
-        "중식": 147,
-        "일식": 152,
-        "기타": 593,
-        "양식": 221,
-        "분식": 41,
-        "디저트": 242
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3585,
       "providerCounts": {
         "michelin": 237,
@@ -16204,50 +16417,83 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 18,
-    "modificationCount": 6,
+    "currentCoverage": {
+      "uniqueRestaurants": 3602,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2869,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2536,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 342,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 249,
+        "세종": 100,
+        "대전": 117,
+        "경북": 217,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2199,
+        "중식": 148,
+        "일식": 153,
+        "기타": 596,
+        "양식": 221,
+        "분식": 41,
+        "디저트": 244
+      }
+    },
+    "newRestaurantCount": 17,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-yecheon-model-c1s81-01",
-      "local-yecheon-model-c1s81-02",
-      "local-yecheon-model-c1s81-03",
-      "local-yecheon-model-c1s81-04",
-      "local-yecheon-model-c1s81-05",
-      "local-yecheon-model-c1s81-06",
-      "local-yecheon-model-c1s81-07",
-      "local-yecheon-model-c1s81-08",
-      "local-yecheon-model-c1s81-09",
-      "local-yecheon-model-c1s81-10",
-      "local-yecheon-model-c1s81-11",
-      "local-yecheon-model-c1s81-12",
-      "local-yecheon-model-c1s81-13",
-      "local-yecheon-model-c1s81-14",
-      "local-yecheon-model-c1s81-15",
-      "local-yecheon-model-c1s81-16",
-      "local-yecheon-model-c1s81-17",
-      "local-yecheon-model-c1s81-18"
-    ],
-    "modifiedRestaurantIds": [
-      "local-gb-top-2020-11",
-      "local-gb-top-2024-8",
-      "local-gb-top-2022-14",
-      "local-gb-top-2019-7",
-      "local-gb-top-2025-4",
-      "local-gb-top-2024-10"
+      "local-gyeongnam-c1s83-kto-01",
+      "local-gyeongnam-c1s83-kto-02",
+      "local-gyeongnam-c1s83-kto-03",
+      "local-gyeongnam-c1s83-kto-04",
+      "local-gyeongnam-c1s83-kto-05",
+      "local-gyeongnam-c1s83-sancheong-01",
+      "local-gyeongnam-c1s83-sancheong-02",
+      "local-gyeongnam-c1s83-sancheong-03",
+      "local-gyeongnam-c1s83-sancheong-04",
+      "local-gyeongnam-c1s83-sancheong-05",
+      "local-gyeongnam-c1s83-sancheong-06",
+      "local-gyeongnam-c1s83-sancheong-07",
+      "local-gyeongnam-c1s83-sancheong-08",
+      "local-gyeongnam-c1s83-sancheong-09",
+      "local-gyeongnam-c1s83-sancheong-10",
+      "local-gyeongnam-c1s83-sancheong-11",
+      "local-gyeongnam-c1s83-sancheong-12"
     ],
     "sourceUrls": [
-      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
-      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
-      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+      "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot81.json",
-    "scope": "경북 예천·봉화·울진·울릉 1/81 회차 중 예천군 공식 모범음식점 3개 페이지 18곳 신규·기존6곳 이력 대조. 다른 3군 미완료.",
+    "sourceSupplement": "games/certified-restaurants/official-gyeongnam-slot83.json",
+    "scope": "경남 남해·하동·산청 1/83: 한국관광공사 직접 접근 음식점 5곳과 산청군 공식 문화관광 검색 색인 명단 12곳 (원문 직접 응답 지연). 전수 조사 아님.",
     "notes": [
-      "예천군 공식 관광 페이지 최종수정일 2024-05-07은 개별 식당의 지정 연도가 아님.",
-      "정확한 공개 좌표·영업 상태 독립 근거 미확보: 27곳 위치 재확인 대기.",
-      "기존 6개 ID와 저장 이력을 보존, 회원 추천 데이터 미수정.",
-      "오르비/에밀테라스, 황소네집/황소고집 주소 충돌 후보는 추가 수록 보류."
+      "산청군 12곳은 공식 웹페이지 검색 색인으로 이름·주소를 확인했고 원문 직접 접근은 타임아웃. 최신 운영 상태 이월.",
+      "3군 정확 좌표 공개 근거 미확보, 추정 좌표 미등록.",
+      "관광공사 수정일·출처 확인일·개별 선정연도 구분, 회원추천 자료 불변.",
+      "기존 원본 restaurants.json 직접 동기화 이력은 별도 이월."
     ]
   },
   "latestMapCoverageAudit": {
@@ -25523,5 +25769,36 @@
     "currentOperatingStatusVerified": false,
     "blueRibbonGradeVerified": false,
     "notes": "모범음식점 공식 수록 여부를 확인하였으나 개별 지정연도 및 현재 영업·위경도는 확인되지 않음. 원본 대용량 restaurants.json 직접 동기화는 대용량 전송 실패로 미완료; 화면은 독립 공식 보완 데이터에서 수록."
+  },
+  "gyeongnamSlot83": {
+    "cycle": 1,
+    "slot": 83,
+    "checkedAt": "2026-11-09",
+    "scheduledAtKST": "2026-11-09T05:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-gyeongnam-slot83.json",
+    "sourceUrls": [
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+      "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+      "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+    ],
+    "sourceScope": "KTO 상세 5개 직접 확인; 산청군 공식 목록 1쪽 12개 검색색인 확인, 본문 타임아웃",
+    "addedCount": 17,
+    "modifiedCount": 0,
+    "regionAdded": {
+      "남해군": 3,
+      "하동군": 2,
+      "산청군": 12
+    },
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "locationPending": 24,
+    "designationYearVerified": false,
+    "currentOperatingStatusVerified": false,
+    "officialBlueRibbonGradeVerified": false,
+    "regionalCollectionComplete": false,
+    "notes": "산청 원문 직접 접근과 현 영업 별도 후속확인. 기존 좌표누락7 + 신규17 = 해당 3군 24곳 위치 재확인 대기, 전국 전체 건수 아님."
   }
 }
