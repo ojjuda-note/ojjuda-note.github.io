@@ -74,7 +74,14 @@ async function screenshot(page,name){
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
       assert(value.tile.width>=47.99,`${label}: large cards are readable on entry`);
-      if(stage>8)assert.equal(await page.locator('#zoom-out').isEnabled(),false,`${label}: zoom-out stops at stage-eight card size`);
+      if(stage>8){
+       assert.equal(await page.locator('#zoom-out').isEnabled(),true,`${label}: minus is enabled`);
+       await page.locator('#zoom-in').click();
+       const enlarged=(await layout(page)).tile.width;
+       assert(enlarged>value.tile.width,`${label}: plus enlarges cards`);
+       await page.locator('#zoom-out').click();
+       assert((await layout(page)).tile.width<enlarged,`${label}: minus shrinks cards`);
+      }
       await page.locator('#zoom-fit').click();
       assertFits(await layout(page),`${label}: whole-board button`);
       if(stage>8&&value.fit==='false'){

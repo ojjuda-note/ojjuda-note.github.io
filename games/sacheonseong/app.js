@@ -113,7 +113,8 @@
     // Start with readable cards and card-width walkways. The '전체' control
     // still fits every floor into one screen when the player wants an overview.
     const readable=state.stage>8?stageEightReference().size:Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
-    const size=overview?fitSize:Math.max(fitSize,state.stage>8?readable:0,customSize??readable);
+    // Stage-eight size is the starting point, not a hard zoom limit.
+    const size=overview?fitSize:Math.max(fitSize,customSize??readable);
     if(size<=fitSize+.01){overview=true;customSize=null;}
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
@@ -126,7 +127,7 @@
     const fitButton=$('zoom-fit');fitButton.setAttribute('aria-pressed',String(overview));
     fitButton.textContent=overview&&state.stage>8&&readable>fitSize+.01?'크게':'전체';
     fitButton.setAttribute('aria-label',fitButton.textContent==='크게'?'8단계 카드 크기로 보기':'게임판 전체 보기');
-    $('zoom-out').disabled=state.stage>8&&(overview||size<=Math.max(fitSize,readable)+.01);
+    $('zoom-out').disabled=false;
     $('board-pan-tip').hidden=overview||panHintDismissed;
     $('connection').replaceChildren();
     if(hints.length){const route=E.visiblePath(layers(),hints[0],hints[1]);if(route)draw(route,true,hints[0].layer??0);}
@@ -388,8 +389,8 @@
     x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
     y=Number.isFinite(y)?Math.max(rect.top,Math.min(rect.bottom,y)):rect.top+rect.height/2;
     const anchorX=before.width?(x-before.left)/before.width:.5,anchorY=before.height?(y-before.top)/before.height:.5;
-    const minSize=state.stage>8?Math.max(fitSize,stageEightReference().size):fitSize;
-    customSize=Math.max(minSize,Math.min(Math.max(160,fitSize*4,minSize*3),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
+    const maxSize=Math.max(160,fitSize*4,state.stage>8?stageEightReference().size*3:0);
+    customSize=Math.max(fitSize,Math.min(maxSize,requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
     sizeBoard();const after=canvas.getBoundingClientRect();
     viewport.scrollLeft+=after.left+anchorX*after.width-x;viewport.scrollTop+=after.top+anchorY*after.height-y;
   }
