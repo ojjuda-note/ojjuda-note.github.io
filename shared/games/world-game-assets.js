@@ -1,40 +1,40 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261109-chacha-label1'
+ const revision='20261109-unified-game-ui1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   group:'1.2.1',
-  chacha_rush:'1.0.3',
+  chacha_rush:'1.0.4',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
   restaurants:'1.11.38',
   recommendations:'1.6.1',
-  archery:'3.2.2',
-  roulette:'1.9.1',
-  bang:'1.11.0',
-  poker:'1.6.1',
-  tank:'1.6.0',
-  solitaire:'1.2.2',
-  mines:'1.4.1',
-  sacheonseong:'1.14.4',
-  saetbyeol:'1.3.2',
-  tour:'1.5.1',
-  ttang:'1.6.0',
-  photo_ttang:'1.4.1',
-  mole:'1.7.0',
-  runner:'1.4.1',
-  stacker:'1.5.1',
-  breakout:'1.6.4',
-  spot:'1.11.10',
-  screw:'2.22.3',
-  janggi:'1.9.1',
-  chess:'1.4.4',
-  billiards:'1.4.4',
-  matgo:'1.5.1'
+  archery:'3.2.3',
+  roulette:'1.9.2',
+  bang:'1.11.1',
+  poker:'1.6.2',
+  tank:'1.6.1',
+  solitaire:'1.2.3',
+  mines:'1.4.2',
+  sacheonseong:'1.14.5',
+  saetbyeol:'1.3.3',
+  tour:'1.5.2',
+  ttang:'1.6.1',
+  photo_ttang:'1.4.2',
+  mole:'1.7.1',
+  runner:'1.4.2',
+  stacker:'1.5.2',
+  breakout:'1.6.5',
+  spot:'1.11.11',
+  screw:'2.22.4',
+  janggi:'1.9.2',
+  chess:'1.4.5',
+  billiards:'1.4.5',
+  matgo:'1.5.2'
  });
- const controls=['/shared/games/game-controls.css?v=20261106-source-folders1','/shared/games/game-controls.js?v=20261106-source-folders1'];
+ const controls=['/shared/games/game-controls.css?v=20261109-unified-game-ui1','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261108-streak-exit1';
  const minesRules='/games/mines/rules.js?v=20261022-ranks1';
  const solitaireRules='/games/solitaire/rules.js?v=20261106-solitaire-ranking1';

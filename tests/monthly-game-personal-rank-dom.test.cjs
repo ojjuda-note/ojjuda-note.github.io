@@ -81,30 +81,37 @@ test('shared entry/result links remain while extra ranking tiles stay out of the
  assert.equal(card.querySelectorAll('.game-entry-monthly-links').length,1,'rerendered entry receives a replacement link');
 });
 
-test('Chacha Rush keeps one compact rank link inside its game popup',t=>{
- const dom=new JSDOM('<!doctype html><html><body></body></html>',
+test('Chacha Rush keeps the game-first popup and closes like other arcade games',t=>{
+ const dom=new JSDOM('<!doctype html><html><body><button id="origin">오락실</button></body></html>',
   {url:'https://ojjuda.kr/world.html',runScripts:'outside-only'});
  t.after(()=>dom.window.close());
  const {window}=dom;
  Object.defineProperty(window.crypto,'randomUUID',{value:()=> 'test-nonce'});
  window.eval(read('shared/games/chacha-rush-portal.js').replace('export function installChachaRushPortal','function installChachaRushPortal'));
  const portal=window.installChachaRushPortal({currentOwner:()=>null,submitScore:async()=>null});
+ window.document.getElementById('origin').focus();
  assert.equal(portal.open(),true);
  const overlay=window.document.querySelector('section[role="dialog"]');
- const link=overlay.querySelector('a[href*="monthly-ranking.html"]');
- assert.ok(link,'game popup should keep the monthly ranking link');
- assert.equal(new URL(link.href).searchParams.get('game'),'chacha_rush');
- assert.equal(link.target,'_blank');
- assert.equal(overlay.querySelectorAll('a[href*="monthly-ranking.html"]').length,1);
+ assert.ok(overlay.querySelector('iframe[sandbox]'),'the external game remains sandboxed');
+ assert.equal(overlay.querySelectorAll('a').length,0,'the game popup does not add distracting ranking tiles');
  assert.equal(window.document.querySelectorAll('.chacha-monthly-rank-link').length,0);
+ assert.equal(window.document.activeElement?.getAttribute('aria-label'),'차차 러시 닫기');
+ window.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',cancelable:true,bubbles:true}));
+ assert.equal(window.document.querySelector('section[role="dialog"]'),null,'Escape closes the game');
+ assert.equal(window.document.activeElement?.id,'origin','focus returns to the arcade card');
+ assert.equal(window.document.body.style.overflow,'','page scrolling is restored');
+ assert.equal(portal.open(),true);
+ window.document.querySelector('section[role="dialog"] button').click();
+ assert.equal(window.document.querySelector('section[role="dialog"]'),null,'close button uses the same lifecycle');
+ assert.match(read('shared/games/chacha-rush-portal.js'),/location\.assign\('\/features\/arcade\/monthly-ranking\.html\?game=chacha_rush'\)/,'ranking stays available through the authenticated game bridge');
 });
 
 test('standalone games and shared scripts point to the shipped monthly viewer',()=>{
  const html=['world.html','games/solitaire/index.html','games/sacheonseong/index.html',
   'games/forest-archer/index.html','games/bulssi/index.html'];
- for(const file of html)assert.match(read(file),/monthly-ranking\.html\?game=|game-results\.js\?v=20261108-[\w-]+/,file);
+ for(const file of html)assert.match(read(file),/monthly-ranking\.html\?game=|game-results\.js\?v=\d{8}-[\w-]+/,file);
  const revision=JSON.parse(read('game-release.json')).revision;
- assert.ok(/^20261108-[\w-]+$/.test(revision));
+ assert.ok(/^\d{8}-[\w-]+$/.test(revision));
  assert.ok(read('shared/games/world-game-assets.js').includes("const revision='"+revision+"'"));
  assert.ok(read('world.html').includes('world-game-assets.js?v='+revision));
  assert.ok(read('world.html').includes('game-results.js?v='+revision));
