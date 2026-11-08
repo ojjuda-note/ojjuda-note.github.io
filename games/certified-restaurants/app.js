@@ -711,7 +711,7 @@
       if (!slot71 || slot71.cycle !== 1 || slot71.slot !== 71 || !Array.isArray(slot71.restaurants) || slot71.restaurants.length !== 24 || !slot71.restaurants.every(row => row.lat === null && row.lng === null && Array.isArray(row.guides) && row.guides.some(g => g.provider === 'local-guide' && g.status === 'official_listing'))) throw new Error('Invalid Chungnam slot71 data');
       if (!slot74 || slot74.cycle !== 1 || slot74.slot !== 74 || !Array.isArray(slot74.restaurants) || slot74.restaurants.length !== 10 || !Array.isArray(slot74.guideEnrichments) || slot74.guideEnrichments.length !== 3 || !slot74.restaurants.every(row => row.lat === null && row.lng === null && row.region === '전남' && row.district === '곡성군')) throw new Error('Invalid Jeonnam slot74 official data');
       if (!slot75 || slot75.cycle !== 1 || slot75.slot !== 75 || !Array.isArray(slot75.restaurants) || slot75.restaurants.length !== 34 || !Array.isArray(slot75.guideEnrichments) || slot75.guideEnrichments.length !== 7 || !slot75.restaurants.every(x => x.region === '전남' && ['고흥군','보성군','화순군'].includes(x.district) && x.lat === null && x.lng === null && Array.isArray(x.guides) && x.guides.some(g => g.provider === 'local-guide' && g.status === 'official_listing'))) throw new Error('Invalid Jeonnam slot75 data');
-      if (!Array.isArray(slot75.addressEnrichments) || slot75.addressEnrichments.length !== 3) throw new Error('Invalid Hwasun address corrections');
+      if (slot75.addressEnrichments !== undefined && (!Array.isArray(slot75.addressEnrichments) || slot75.addressEnrichments.length > 3)) throw new Error('Invalid Hwasun address corrections');
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
@@ -777,7 +777,7 @@
       }
       // Apply only cross-checked Hwasun county address corrections to the exact original IDs.
       // The separate historical Namdo designation remains intact; unknown coordinates stay null.
-      for (const patch of slot75.addressEnrichments) {
+      for (const patch of (Array.isArray(slot75.addressEnrichments) ? slot75.addressEnrichments : [])) {
         if (!patch || !patch.id || !patch.expectedName || !patch.expectedAddress || !patch.newAddress) continue;
         if (patch.officialSourceUrl !== 'https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05' || patch.checkedAt !== '2026-11-08') continue;
         if (!Array.isArray(patch.evidenceUrls) || patch.evidenceUrls.length < 2) continue;
