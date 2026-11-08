@@ -20,32 +20,22 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     const overlay = document.createElement('section');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-label', '차차 러시 게임');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;background:#101c31;';
-    const bar = document.createElement('div');
-    bar.style.cssText = 'height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;color:white;background:#182642;font:700 14px system-ui,sans-serif;';
-    const title = document.createElement('strong');
-    title.textContent = '🚗 차차 러시!';
-    const ranking = document.createElement('a');
-    ranking.href = '/features/arcade/monthly-ranking.html?game=chacha_rush';
-    ranking.target = '_blank';
-    ranking.rel = 'noopener noreferrer';
-    ranking.textContent = '🏆 순위';
-    ranking.setAttribute('aria-label', '차차 러시 이번 달 순위 보기');
-    ranking.style.cssText = 'margin-left:auto;margin-right:8px;padding:6px 9px;border-radius:8px;color:#e5f8ed;text-decoration:none;font:700 12px system-ui,sans-serif;white-space:nowrap;';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:block;background:#edf2e3;';
+    // Other Ojjuda games use a full-screen entrance with a quiet corner close.
+    // Keep this close outside the iframe so a failed game load can still exit.
     const close = document.createElement('button');
     close.type = 'button';
-    close.textContent = '✕ 닫기';
+    close.textContent = '×';
     close.setAttribute('aria-label', '차차 러시 닫기');
-    close.style.cssText = 'border:1px solid #8ea9ca;border-radius:9px;background:#304362;color:white;padding:7px 13px;font:700 13px system-ui,sans-serif;cursor:pointer;';
-    bar.append(title, ranking, close);
+    close.style.cssText = 'position:absolute;top:max(7px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));z-index:2;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #e8e6e9;border-radius:14px;background:#fff;color:#777485;font:400 24px/1 system-ui,sans-serif;cursor:pointer;';
     const frame = document.createElement('iframe');
     frame.title = '차차 러시 3D 레이싱';
     frame.src = `${GAME_ORIGIN}/#${fragment}`;
-    frame.style.cssText = 'display:block;flex:1;min-height:0;width:100%;border:0;background:#e5f1ff;';
+    frame.style.cssText = 'position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#edf2e3;';
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-pointer-lock');
     frame.setAttribute('allow', 'autoplay; fullscreen');
     frame.setAttribute('referrerpolicy', 'no-referrer');
-    overlay.append(bar, frame);
+    overlay.append(frame, close);
     const oldOverflow = document.body.style.overflow;
     const closeGame = () => {
       overlay.remove();
@@ -82,6 +72,11 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
 
     if (data.action === 'hello') {
       respond(session, data.nonce, 'connected', { signedIn: !!session.owner && session.owner === currentOwner() });
+      return;
+    }
+    if (data.action === 'ranking') {
+      activeClose?.();
+      location.assign('/features/arcade/monthly-ranking.html?game=chacha_rush');
       return;
     }
     if (data.action === 'start') {
