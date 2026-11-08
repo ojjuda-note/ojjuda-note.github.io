@@ -1,0 +1,879 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 80,
+  "sourceName": "성주군 성주문화관광 공식 모범음식점 현황",
+  "sourceUrls": [
+    "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+  ],
+  "sourcePageLastModified": "2026-08-13",
+  "sourceCheckedAt": "2026-11-09",
+  "sourceScope": "2026-08-13 갱신된 성주군 공식 모범음식점 31곳 확인. 기존 2곳은 동일 식당에 가이드 이력 병합; 신규 29곳만 추가.",
+  "completeRegionalCollection": false,
+  "coordinatesVerified": 0,
+  "operatingStatusVerified": 0,
+  "restaurants": [
+    {
+      "id": "local-seongju-model-01",
+      "name": "성밖수반애",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 경산2길 51",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-02",
+      "name": "농가맛집밀",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 수륜면 덕운로 1566",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-03",
+      "name": "묵이랑밥이랑",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성밖숲길 5",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "메밀묵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-04",
+      "name": "높은들가든",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 초전면 주천로 1311",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "제육볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-05",
+      "name": "명인해장국",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 선남면 성주로 4089",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "선지해장국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-06",
+      "name": "강변애",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주순환로 47-88",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어",
+        "흑돼지"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-07",
+      "name": "가야산아래",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 수륜면 성주가야산로 330",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "취나물밥",
+        "백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-08",
+      "name": "대하삼계탕",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주읍2길 30-1",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-09",
+      "name": "예은바다회",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주순환로2길 7-14",
+      "category": "일식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회",
+        "초밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-10",
+      "name": "돈꽃",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 초전면 대장1길 50-1",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비",
+        "삼겹살구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-11",
+      "name": "선남명가",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 선남면 관화길 78-3",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-12",
+      "name": "시골왕막창",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 초전면 대장길 79-4",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "백숙",
+        "돼지고기구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-13",
+      "name": "생수장가든",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 수륜면 성주가야산로 277",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "능이오리백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-14",
+      "name": "고향면옥",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주순환로 283",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살",
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-15",
+      "name": "고방찬 청기와가든",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 가천면 가천로 12",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "영양돌솥밥",
+        "정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-16",
+      "name": "양지골쉼터식당",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 수륜면 성주가야산로 106",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리고기정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-17",
+      "name": "날마다잔치",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 본성로 961",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "잔치국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-19",
+      "name": "포천카페레스토랑",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 가천면 포천계곡로 81",
+      "category": "양식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈까스",
+        "황태두부전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-21",
+      "name": "대구통닭",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주순환로2길 27",
+      "category": "기타",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "치킨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-22",
+      "name": "대보유통(주)남성주참외(창원)휴게소(한식당)",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 선남면 중부내륙고속도로 77",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "찌개",
+        "비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-23",
+      "name": "대보유통(주)남성주참외(양평)휴게소(한식당)",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 용암면 중부내륙고속도로 76",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "찌개",
+        "비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-24",
+      "name": "새불고기식당",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 초전면 대고로 22",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-25",
+      "name": "별고을한우",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 참별로 2491-4",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소고기구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-26",
+      "name": "착한막창",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주읍1길 20-11",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막창"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-27",
+      "name": "대자연횟집",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 가천면 포천계곡로 75",
+      "category": "일식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-28",
+      "name": "정성갈비",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성밖숲길 149",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-29",
+      "name": "우신탕본가",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 성주읍 성주순환로2길 68",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우신탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-30",
+      "name": "대가정통묵집",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 대가면 동강한강로 968",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "메밀묵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-seongju-model-31",
+      "name": "성주집밥뷔페",
+      "region": "경북",
+      "district": "성주군",
+      "address": "경상북도 성주군 선남면 도성3길 39-19",
+      "category": "한식",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "뷔페"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "성주군 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+          "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+        }
+      ]
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-gb-top-2021-11",
+      "expectedName": "고방찬 남경식당",
+      "expectedAddress": "경상북도 성주군 성주읍 시장길 10-10",
+      "guide": {
+        "provider": "local-guide",
+        "label": "성주군 모범음식점",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+        "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+        "verifiedAt": "2026-11-09",
+        "sourceAsOf": "2026-08-13",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+      }
+    },
+    {
+      "id": "local-gb-top-2022-12",
+      "expectedName": "감골식당",
+      "expectedAddress": "경상북도 성주군 경산길 9-3",
+      "guide": {
+        "provider": "local-guide",
+        "label": "성주군 모범음식점",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://sj.go.kr/tour/page.do?mnu_uid=3924",
+        "sourceName": "성주군 성주문화관광 · 모범음식점 현황",
+        "verifiedAt": "2026-11-09",
+        "sourceAsOf": "2026-08-13",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "성주군 공식 명단 수록. 개별 지정 연도와 현재 영업 여부는 확인되지 않았습니다."
+      }
+    }
+  ]
+}
