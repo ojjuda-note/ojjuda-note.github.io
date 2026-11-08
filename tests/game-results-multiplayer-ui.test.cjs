@@ -78,7 +78,7 @@ test('game styles preserve readable results and reachable share/replay controls 
         }
         assert.ok(layout.left >= -1 && layout.right <= width + 1, JSON.stringify(layout));
         assert.ok(layout.metricSize >= 16, JSON.stringify(layout));
-        assert.equal(layout.metricColor, 'rgb(64, 87, 74)', JSON.stringify(layout));
+        assert.equal(layout.metricColor, 'rgb(42, 100, 78)', JSON.stringify(layout));
         const usableHeight = height - (fixture.game === 'matgo' && height === 320 ? 34 : 0);
         assert.ok(layout.buttons.every(button => button.height >= 44 && button.reachable && button.top >= 0 && button.bottom <= usableHeight + 1), JSON.stringify(layout));
         await page.getByRole('button', { name: '공유하기', exact: true }).click();

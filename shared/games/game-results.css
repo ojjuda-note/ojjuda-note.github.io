@@ -1,6 +1,6 @@
-.game-result-dialog{padding:0!important;border:0!important;border-radius:26px!important;background:transparent!important;color:#27342f;width:min(430px,calc(100vw - 24px));max-width:430px;max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 24px 90px #10231c40}
+.game-result-dialog{padding:0!important;border:0!important;border-radius:24px!important;background:transparent!important;color:#223a30;width:min(430px,calc(100vw - 24px));max-width:430px;max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 24px 90px #10231c40}
 .game-result-dialog::backdrop{background:#101f27a6;backdrop-filter:blur(5px)}
-.game-result-card{--result-accent:#36876b;--result-soft:#eaf5ed;position:relative;isolation:isolate;box-sizing:border-box;width:100%;max-width:430px;margin:auto;padding:24px 22px 18px;border:1px solid #e4e9e2;border-radius:26px;background:#fffefa;color:#27342f;box-shadow:0 16px 52px #14291f26;text-align:center;font-family:inherit;overflow:hidden;line-height:1.5}
+.game-result-card{--result-accent:#2a644e;--result-soft:#edf5eb;position:relative;isolation:isolate;box-sizing:border-box;width:100%;max-width:430px;margin:auto;padding:24px 22px 18px;border:1px solid #dfe6dd;border-radius:24px;background:#fff;color:#223a30;box-shadow:0 16px 52px #14291f20;text-align:center;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;overflow:hidden;line-height:1.5;color-scheme:light}
 .game-result-card *, .game-result-card *::before,.game-result-card *::after{box-sizing:border-box}
 .game-result-card[data-result-outcome="record"],.game-result-card[data-result-outcome="gold-gain"]{--result-accent:#a77519;--result-soft:#fff2cb}
 .game-result-card[data-result-outcome="failure"],.game-result-card[data-result-outcome="gold-loss"]{--result-accent:#627a9a;--result-soft:#edf1f8}
@@ -10,32 +10,35 @@
 .game-result-icon svg{width:56px;height:56px}
 .game-result-icon-star{fill:#f7cd64;stroke-width:1.6}
 .game-result-icon-tear{fill:#93c3e7;stroke:#93c3e7;stroke-width:1}
-.game-result-card h2.game-result-title{margin:0 0 8px;padding:0;font-size:29px;font-weight:850;letter-spacing:-.04em;line-height:1.25;color:#27342f}
-.game-result-card .game-result-metric{min-height:0;margin:0;font-size:18px;font-weight:750;line-height:1.45;white-space:pre-line;overflow-wrap:anywhere;color:#40574a}
+.game-result-card h2.game-result-title{margin:0 0 8px;padding:0;font-size:27px;font-weight:800;letter-spacing:-.04em;line-height:1.3;color:#223a30}
+.game-result-card .game-result-metric{min-height:0;margin:0;font-size:18px;font-weight:750;line-height:1.45;white-space:pre-line;overflow-wrap:anywhere;color:#2a644e}
 .game-result-card .game-result-metric:empty{display:none}
 .game-result-card .game-result-metric>p,.game-result-card .game-result-metric>div{margin:0}
-.game-result-card .game-result-encouragement{margin:7px 0 0;font-size:14px;line-height:1.5;color:#728277;white-space:pre-line}
+.game-result-card .game-result-encouragement{margin:7px 0 0;font-size:14px;line-height:1.5;color:#667467;white-space:pre-line}
 .game-result-card [hidden]{display:none!important}
 .game-result-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:22px;align-items:stretch}
 .game-result-actions:empty{display:none}
 .game-result-actions>:only-child{grid-column:1/-1}
 .game-result-actions:has(>:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
 .game-result-actions>div,.game-result-actions>section{grid-column:1/-1}
-.game-result-actions button,.game-result-actions a,.game-result-card .game-result-extra button{min-height:44px;max-width:100%;margin:0;padding:10px 8px;border:1px solid #dbe5db;border-radius:12px;background:#f1f6ee;color:#304d3c;font:inherit;font-size:14px;font-weight:750;line-height:1.4;text-decoration:none;cursor:pointer;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
-.game-result-actions button:hover:not(:disabled),.game-result-card .game-result-extra button:hover:not(:disabled){background:#e4efdf}
+.game-result-actions button,.game-result-actions a,.game-result-card .game-result-extra button{min-height:44px;max-width:100%;margin:0;padding:10px 8px;border:1px solid #dfe6dd;border-radius:14px;background:#edf5eb;color:#223a30;font:inherit;font-size:14px;font-weight:750;line-height:1.4;text-decoration:none;cursor:pointer;white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+.game-result-actions button:hover:not(:disabled),.game-result-card .game-result-extra button:hover:not(:disabled){background:#e0eddf}
 .game-result-actions button:disabled,.game-result-card .game-result-extra button:disabled{opacity:.43;cursor:default;box-shadow:none}
-.game-result-card button:focus-visible,.game-result-card a:focus-visible,.game-result-card .game-result-copy input:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
+.game-result-card button:focus-visible,.game-result-card a:focus-visible,.game-result-card .game-result-copy input:focus-visible{outline:3px solid #2a644e;outline-offset:3px}
 .game-result-card .game-result-extra{margin-top:10px;font-size:13px;line-height:1.5;color:#788279;overflow-wrap:anywhere}
 .game-result-card .game-result-extra:empty{display:none}
 .game-result-card .game-result-extra p{margin:5px 0;font:inherit;color:inherit}
 .game-result-card button.game-result-share{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;min-height:46px;margin:12px 0 0;padding:11px 14px;border:0;border-radius:13px;background:var(--result-accent);color:#fff;font:inherit;font-size:15px;font-weight:800;line-height:1.5;cursor:pointer;box-shadow:none;touch-action:manipulation}
 .game-result-social{display:flex;align-items:stretch;justify-content:center;gap:7px;margin-top:12px;flex-wrap:wrap}
 .game-result-card .game-result-social button.game-result-share{flex:1 1 115px;width:auto;margin:0;font-size:14px;padding:10px}
-.game-result-card a.game-result-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 120px;min-height:46px;padding:9px 8px;border:1px solid #b7d1b9;border-radius:13px;background:#e9f5e6;color:#2b6143;font-size:13px;font-weight:850;text-decoration:none;line-height:1.35}
+.game-result-card a.game-result-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 120px;min-height:46px;padding:9px 8px;border:1px solid #b9cdbb;border-radius:14px;background:#edf5eb;color:#2a644e;font-size:13px;font-weight:800;text-decoration:none;line-height:1.35}
 .game-result-card a.game-result-monthly-link:hover,.game-entry-monthly-link:hover{filter:brightness(.97)}
 .game-entry-monthly-links{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:10px auto 0;width:100%;max-width:430px;justify-content:center}
-.game-entry-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 135px;min-height:44px;padding:10px 13px;border:1px solid #accdb4;border-radius:13px;background:#eaf5e9;color:#285d41;font-size:13px;font-weight:800;text-decoration:none;text-align:center;line-height:1.4}
-.game-entry-monthly-link:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
+.game-entry-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 135px;min-height:44px;padding:10px 13px;border:1px solid #b9cdbb;border-radius:14px;background:#edf5eb;color:#2a644e;font-size:13px;font-weight:800;text-decoration:none;text-align:center;line-height:1.4}
+.game-entry-monthly-link:focus-visible{outline:3px solid #2a644e;outline-offset:3px}
+/* Outcome colors still communicate wins and records; regular wins use the selected arcade theme. */
+:root[data-world-theme]:not([data-theme=dark]) .game-result-card[data-result-outcome="success"]{--result-accent:var(--accent,#2a644e);--result-soft:var(--accent-soft,#edf5eb)}
+:root[data-world-theme]:not([data-theme=dark]) .game-entry-monthly-link,:root[data-world-theme]:not([data-theme=dark]) .game-result-card a.game-result-monthly-link{background:var(--accent-soft,#edf5eb);color:var(--accent-ink,#2a644e);border-color:color-mix(in srgb,var(--accent,#2a644e) 30%,#dfe6dd)}
 .game-result-share svg{width:18px;height:18px;flex-shrink:0}
 .game-result-share:hover{filter:brightness(1.06)}
 .game-result-share:disabled{opacity:.65;cursor:wait}

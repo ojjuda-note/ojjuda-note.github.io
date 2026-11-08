@@ -37,18 +37,34 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     frame.setAttribute('referrerpolicy', 'no-referrer');
     overlay.append(frame, close);
     const oldOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement;
+    let expiryTimer = null;
+    const onKeyDown = event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeGame();
+    };
+    const onPageHide = () => closeGame();
     const closeGame = () => {
       overlay.remove();
       document.body.style.overflow = oldOverflow;
+      clearTimeout(expiryTimer);
+      window.removeEventListener('keydown', onKeyDown, true);
+      window.removeEventListener('pagehide', onPageHide);
       sessions.delete(nonce);
       if (activeClose === closeGame) activeClose = null;
+      if (previousFocus?.isConnected) previousFocus.focus?.({ preventScroll: true });
     };
     close.addEventListener('click', closeGame);
     activeClose = closeGame;
     document.body.style.overflow = 'hidden';
     document.body.append(overlay);
+    window.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('pagehide', onPageHide, { once: true });
+    close.focus({ preventScroll: true });
     sessions.set(nonce, { target: frame.contentWindow, owner, startedAt: 0, round: 0, finished: false, createdAt: Date.now() });
-    setTimeout(() => { if (sessions.has(nonce)) closeGame(); }, SESSION_LIFETIME_MS);
+    expiryTimer = setTimeout(() => { if (sessions.has(nonce)) closeGame(); }, SESSION_LIFETIME_MS);
     return true;
   }
 

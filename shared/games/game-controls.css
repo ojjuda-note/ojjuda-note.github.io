@@ -1,8 +1,11 @@
-.game-controls{box-sizing:border-box;text-align:left;margin:12px 0;padding:10px 12px;border:1px solid #aa9cce66;border-radius:14px;background:#ffffffed;color:#302742;font-size:14px;font-weight:400;line-height:1.5;max-width:100%}
+.game-controls{box-sizing:border-box;text-align:left;margin:12px 0;padding:10px 12px;border:1px solid #dfe6dd;border-radius:14px;background:#ffffffed;color:#223a30;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;font-weight:400;line-height:1.5;max-width:100%}
 .game-controls summary{cursor:pointer;font-weight:700;padding:2px 0;min-height:24px}
 .game-controls label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
-.game-controls select{font:inherit;color:#302742;background:#fff;border:1px solid #c5bcdb;border-radius:9px;padding:8px;max-width:65%;min-height:40px}
-.game-controls p{font-size:12px!important;line-height:1.5!important;margin:12px 0 8px!important;color:#62596f!important}
-.game-controls button{font:inherit;font-size:12px;padding:8px 10px;min-height:36px;border:1px solid #c5bcdb;border-radius:9px;color:#44355f;background:#f5f1fc;cursor:pointer}
-.game-controls [role=status]{display:block;font-size:12px;margin-top:6px;color:#62596f}
+.game-controls select{font:inherit;color:#223a30;background:#fff;border:1px solid #b9cdbb;border-radius:10px;padding:8px;max-width:65%;min-height:44px}
+.game-controls p{font-size:12px!important;line-height:1.5!important;margin:12px 0 8px!important;color:#667467!important}
+.game-controls button{font:inherit;font-size:12px;padding:8px 10px;min-height:44px;border:1px solid #b9cdbb;border-radius:10px;color:#2a644e;background:#edf5eb;cursor:pointer}
+.game-controls :is(button,select,summary):focus-visible{outline:3px solid #2a644e;outline-offset:3px}
+.game-controls [role=status]{display:block;font-size:12px;margin-top:6px;color:#667467}
+:root[data-world-theme]:not([data-theme=dark]) .game-controls button{color:var(--accent-ink,#2a644e);background:var(--accent-soft,#edf5eb);border-color:color-mix(in srgb,var(--accent,#2a644e) 28%,#dfe6dd)}
+:root[data-world-theme]:not([data-theme=dark]) .game-controls :is(button,select,summary):focus-visible{outline-color:var(--accent-ink,#2a644e)}
 #gov[data-game=breakout] .gcard{max-height:100%;overflow-y:auto;box-sizing:border-box;padding:16px}

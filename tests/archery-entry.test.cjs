@@ -82,7 +82,9 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]') && world.includes("gameDialog.dispatchEvent(new Event('cancel'"),'browser and app back use the tested dialog cancel handler');
 
 vm.runInContext(read('shared/games/world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.2.2');
+const archeryVersion=ctx.window.OjjudaGameAssets.version('archery').split('.').map(Number);
+assert.ok(archeryVersion[0]>3 || archeryVersion[0]===3 && (archeryVersion[1]>2 || archeryVersion[1]===2 && archeryVersion[2]>=2),
+ 'the released archer keeps its independently versioned 3.2.2-or-newer game');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
