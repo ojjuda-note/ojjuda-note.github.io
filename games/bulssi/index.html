@@ -80,6 +80,9 @@ body[data-mode="hub"] #panel{display:block}
 #ovText h2{font-size:28px;font-weight:700;margin:0 0 .5em;color:var(--flame)}
 #ovText .num{font-family:'IBM Plex Sans KR',sans-serif;font-size:15px;color:var(--dim);margin-top:1em;line-height:1.7}
 #ovBtns{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+.monthly-bulssi-link{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 14px;border:1px solid #e3af76;border-radius:999px;color:#f8d3a0;background:#ff9d401c;text-decoration:none;font-size:13px;font-weight:700;pointer-events:auto}
+.monthly-bulssi-link:hover{background:#ff9d402f}.monthly-bulssi-link:focus-visible{outline:3px solid #ffb66d;outline-offset:3px}
+.monthly-bulssi-entry{margin-top:12px;text-align:center}.monthly-bulssi-overlay{margin-top:13px}
 #ovHint{margin-top:28px;font-size:12px;color:var(--dim)}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #settings{position:fixed;right:16px;top:calc(env(safe-area-inset-top,0px) + 50px);background:var(--space);border:1px solid var(--line);border-radius:14px;padding:12px;display:none;flex-direction:column;gap:8px;z-index:8;min-width:180px}
@@ -116,10 +119,11 @@ body[data-mode="hub"] #panel{display:block}
   <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uLock" role="status" hidden></div><div id="uRow"><span id="uLv"></span><button id="buy" aria-describedby="uLock"></button></div></div>
   <div id="acts"><button id="go" class="primary">타오르기</button><button id="bossBtn"></button></div>
   <div id="memLine"></div><div id="starRecord" role="status"><span id="starRecordText">별을 키우면 성장 점수가 순위에 기록돼요.</span><button id="starRetry" type="button" hidden>다시 등록</button></div>
+  <div class="monthly-bulssi-entry"><a class="monthly-bulssi-link" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a></div>
 </div></div>
 <div id="toast" class="serif" role="status"></div>
 <div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
-<div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><div id="ovHint">눌러서 계속</div></div>
+<div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><a class="monthly-bulssi-link monthly-bulssi-overlay" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 순위 · 내 기록</a><div id="ovHint">눌러서 계속</div></div>
 <script src="./entry.js?v=20261106-playing-back1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261013-sky2001"></script>
@@ -354,6 +358,7 @@ function overlay(html,{buttons=[],tap=null,hint=false}={}){
 }
 function closeOv(){$('#overlay').classList.remove('on','catalog');ovTap=null}
 $('#overlay').addEventListener('click',()=>{if(ovTap)ovTap()});
+$('.monthly-bulssi-overlay').addEventListener('click',event=>event.stopPropagation());
 addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&ovTap&&$('#overlay').classList.contains('on')){e.preventDefault();ovTap()}});
 function story(lines,done){let i=0;const step=()=>{i++;const html=lines.slice(0,i).map((l,k)=>`<p class="${k===i-1?'new':''}">${l}</p>`).join('');overlay(html,{tap:i<lines.length?step:()=>{closeOv();if(done)done()},hint:true})};step()}
 

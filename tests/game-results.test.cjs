@@ -20,7 +20,7 @@ function fixture(t, options = {}) {
 }
 test('every game and mode shares a canonical game-only link without private session parameters', t => {
   const { api } = fixture(t);
-  assert.equal(Object.keys(api.games).length, 26);
+  assert.equal(Object.keys(api.games).length, 28);
   for (const game of Object.keys(api.games)) {
     const data = api.shareData({ game, outcome: 'success' });
     assert.equal(data.url, 'https://ojjuda.kr/world.html?game=' + game);

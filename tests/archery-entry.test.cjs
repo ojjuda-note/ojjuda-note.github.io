@@ -82,7 +82,7 @@ assert.ok(!world.includes("if(entryGame==='archery')Al('archery');"),'direct ent
 assert.ok(world.includes('.tour-game-dialog[open]') && world.includes("gameDialog.dispatchEvent(new Event('cancel'"),'browser and app back use the tested dialog cancel handler');
 
 vm.runInContext(read('shared/games/world-game-assets.js'),ctx);
-assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.2.1');
+assert.equal(ctx.window.OjjudaGameAssets.version('archery'),'3.2.2');
 assert.equal(ctx.window.OjjudaGameAssets.ready('archery'),false,'the bridge is loaded on demand');
 const revision=JSON.parse(read('game-release.json')).revision;
 assert.equal(ctx.window.OjjudaGameAssets.revision,revision);
@@ -109,7 +109,7 @@ assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-bullet-penetration1','unchanged wall colors retain their cache revision');
 assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-reset5','the client disables retired ammo purchases and keeps record recovery');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],archeryRevision,'the distance picker loads the updated navigation styles');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261108-monthly-personal1','the entrance uses the updated monthly ranking link styles');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
 assert.equal(cameraRevision,'20261104-archery-eagle-dive1','the unchanged camera keeps its cache revision');

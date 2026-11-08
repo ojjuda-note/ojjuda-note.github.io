@@ -407,6 +407,8 @@ jobs:
         run: node --test tests/reward-coupon-ui.test.cjs
       - name: Check account, card, administrator and RPC regressions
         run: npm --prefix tests run test:unit
+      - name: Check monthly top ten, personal positions and Korea-time reset
+        run: npm --prefix tests run test:monthly-personal
 
   regression_ui:
     name: UI regression (${{ matrix.shard }})

@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-chacha-inapp1'
+ const revision='20261108-monthly-personal1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -11,15 +11,15 @@
   festival:'1.6.1',
   restaurants:'1.11.37',
   recommendations:'1.6.1',
-  archery:'3.2.1',
+  archery:'3.2.2',
   roulette:'1.9.1',
   bang:'1.11.0',
   poker:'1.6.1',
   tank:'1.6.0',
-  solitaire:'1.2.1',
+  solitaire:'1.2.2',
   mines:'1.4.1',
-  sacheonseong:'1.14.3',
-  saetbyeol:'1.3.1',
+  sacheonseong:'1.14.4',
+  saetbyeol:'1.3.2',
   tour:'1.5.1',
   ttang:'1.6.0',
   photo_ttang:'1.4.1',

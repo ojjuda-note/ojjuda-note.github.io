@@ -17,3 +17,7 @@ dialog{border:1px solid #cabb8f55;border-radius:16px;background:#f8f4e8;color:#2
 .win-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.win-banner{flex-wrap:wrap;justify-content:center;gap:10px}.win-banner [data-restart]{font-weight:700}
 
 .card-fallback{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.card-art[hidden]{display:none}
+.topbar .monthly-shortcut{display:grid;place-items:center;flex:none;width:34px;height:40px;border-radius:6px;color:#f3dc9a;text-decoration:none;font-size:18px}
+.topbar .monthly-shortcut:hover{background:#ffffff12}.topbar .monthly-shortcut:focus-visible{outline:2px solid #f2da9f;outline-offset:-2px}
+.dialog-monthly-shortcut{display:block;width:100%;padding:12px 10px;margin:12px 0 8px;background:#e8efe1;border:1px solid #b3cbb2;border-radius:9px;color:#255740;text-align:center;font-size:13px;font-weight:800;text-decoration:none}
+.dialog-monthly-shortcut:hover{background:#dcead5}.dialog-monthly-shortcut:focus-visible{outline:3px solid #527fdf;outline-offset:2px}

@@ -14,6 +14,9 @@ svg{display:block}
 .app-shell{width:100%;height:100%;height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .topbar{flex:0 0 44px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 12px;background:#fffef9;border-bottom:1px solid var(--line)}
 .topbar h1{font-size:17px;font-weight:750;margin:0;letter-spacing:-.5px}
+.topbar-actions{display:flex;align-items:center;justify-self:end;gap:4px}
+.topbar-monthly-link{display:flex;align-items:center;justify-content:center;min-height:38px;padding:5px 8px;border-radius:9px;background:#e6efdd;color:#235d41;text-decoration:none;white-space:nowrap;font-size:12px;font-weight:800}
+.topbar-monthly-link:hover{background:#d9e8d1}.topbar-monthly-link:focus-visible{outline:3px solid #527fdf;outline-offset:1px}
 .back-link{justify-self:start;display:flex;align-items:center;min-height:44px;text-decoration:none;color:var(--ink);font-size:13px;padding-right:12px}
 .icon-button{justify-self:end;background:none;border:0;width:44px;height:44px;font-size:18px;letter-spacing:2px}
 .game-panel{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden}
