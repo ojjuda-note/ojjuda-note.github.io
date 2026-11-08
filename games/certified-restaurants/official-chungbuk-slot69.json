@@ -1,0 +1,506 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 69,
+  "sourceName": "충북 진천·괴산·단양군 공식 모범음식점 명단",
+  "sourceUrls": [
+    "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+    "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747",
+    "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272",
+    "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773",
+    "https://danyang.go.kr/food",
+    "https://danyang.go.kr/food?page=13",
+    "https://danyang.go.kr/food?page=14"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "notes": [
+    "공식 개별 업소 목록에서 진천9·괴산3·단양5곳의 이름·현재 명단주소를 확인했습니다. 지역 전체 전수 확인은 아닙니다.",
+    "음성군은 기존 목록과 위치 누락 확인에 집중해 새 식당을 확정하지 않았습니다.",
+    "선정연도와 현재 영업상태를 확인하지 못했으며 블루리본 정규 등급으로 표시하지 않습니다.",
+    "개별 상호·지점·현주소에 일치하는 공개 숫자좌표를 확인하지 못해 신규17곳 lat/lng null. 원본 사진·회원 추천·사용자 위치는 이용하지 않습니다."
+  ],
+  "restaurants": [
+    {
+      "id": "local-chungbuk-slot69-jincheon-kimsabu",
+      "name": "김사부",
+      "category": "중식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 진천읍 남산8길 11-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "마라탕",
+        "마라샹궈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-eommabapjip",
+      "name": "엄마밥집",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 진천읍 문화7길 20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈치조림",
+        "고등어조림"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-duchon-yeomsotang",
+      "name": "두촌염소탕",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 덕산읍 시가로 14, 2층 204호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "염소탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-midonga",
+      "name": "진천맛집 미돈가",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 진천읍 중앙동5길 7-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살",
+        "갈비살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-mystery-kodari",
+      "name": "미스터리코다리",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 덕산읍 이영남로 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "코다리찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-igang-dakgalbi",
+      "name": "이강식당명가닭갈비",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 진천읍 문화로 52",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "닭갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-duchonri-saenggogi",
+      "name": "두촌리생고기",
+      "category": "한식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 덕산읍 공원로 48",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-soultable",
+      "name": "소울테이블",
+      "category": "양식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 진천읍 중앙동로 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-jincheon-haru-donkatsu",
+      "name": "하루돈까스",
+      "category": "일식",
+      "region": "충북",
+      "district": "진천군",
+      "address": "충청북도 진천군 광혜원면 구암길 18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진천군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+          "sourceName": "진천군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.jincheon.go.kr/site/tour/sub.do?menukey=1627&mode=list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-goesan-singi-song-eo",
+      "name": "신기송어장횟집",
+      "category": "한식",
+      "region": "충북",
+      "district": "괴산군",
+      "address": "충청북도 괴산군 문광면 괴산로신기2길 8-25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "송어회",
+        "향어회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "괴산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747",
+          "sourceName": "괴산군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?key=858&tourNo=747",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-goesan-goegang-olgaengi",
+      "name": "괴강올갱이해장국",
+      "category": "한식",
+      "region": "충북",
+      "district": "괴산군",
+      "address": "충청북도 괴산군 괴산읍 충민로 1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "올갱이해장국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "괴산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272",
+          "sourceName": "괴산군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=272",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-goesan-myeongdong-shabu",
+      "name": "명동샤브칼국수",
+      "category": "한식",
+      "region": "충북",
+      "district": "괴산군",
+      "address": "충청북도 괴산군 괴산읍 읍내로15길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "샤브칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "괴산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773",
+          "sourceName": "괴산군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.goesan.go.kr/tour/selectTourInfo.do?clgn=&key=904&tourNo=773",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-danyang-gamgol-mukchon",
+      "name": "감골묵촌",
+      "category": "한식",
+      "region": "충북",
+      "district": "단양군",
+      "address": "충청북도 단양군 매포읍 평동23길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "도토리묵밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "단양군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://danyang.go.kr/food",
+          "sourceName": "단양군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://danyang.go.kr/food",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-danyang-gyeongju-sikdang",
+      "name": "경주식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "단양군",
+      "address": "충청북도 단양군 단양읍 도전6길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "밀복"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "단양군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://danyang.go.kr/food",
+          "sourceName": "단양군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://danyang.go.kr/food",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-danyang-jangdari-sikdang",
+      "name": "장다리식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "단양군",
+      "address": "충청북도 단양군 단양읍 삼봉로 370",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장다리마늘정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "단양군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://danyang.go.kr/food?page=14",
+          "sourceName": "단양군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://danyang.go.kr/food?page=14",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-danyang-jangmi-sikdang",
+      "name": "장미식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "단양군",
+      "address": "충청북도 단양군 영춘면 백자1길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장미한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "단양군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://danyang.go.kr/food?page=14",
+          "sourceName": "단양군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://danyang.go.kr/food?page=14",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot69-danyang-yeongnam-sikdang",
+      "name": "영남식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "단양군",
+      "address": "충청북도 단양군 단양읍 다리안로 117-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "더덕정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "단양군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://danyang.go.kr/food?page=13",
+          "sourceName": "단양군 공식 문화관광 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 자료에 모범음식점으로 수록된 사실. 개별 선정연도·현재 영업상태·미쉐린·블루리본 등급은 확인되지 않았습니다."
+        }
+      ],
+      "addressSourceUrl": "https://danyang.go.kr/food?page=13",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}
