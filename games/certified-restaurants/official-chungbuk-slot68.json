@@ -8,16 +8,22 @@
   "sourceUrls": [
     "https://www.oc.go.kr/tour/contents.do?key=4087",
     "https://safe.oc.go.kr/tour/contents.do?key=4087",
-    "https://xju.purpleo.kr/article/41"
+    "https://xju.purpleo.kr/article/41",
+    "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+    "https://smi.purpleo.kr/article/607",
+    "https://smi.purpleo.kr/article/1917",
+    "https://fmr.purpleo.co.kr/view/18200"
   ],
   "completeRegionalCollection": false,
   "operatingStatusConfirmed": false,
-  "coordinatesVerifiedCount": 1,
+  "coordinatesVerifiedCount": 4,
   "notes": [
     "공식 옥천군 지정 맛집 30곳 명단과 기본 데이터 상호·도로명 주소를 비교하여 신규 25곳과 기등록 5곳의 별도 지정 이력을 추가합니다.",
     "자료의 최종 수정일 2026-03-09는 선정연도가 아니며 현 영업 여부는 개별 검증되지 않았습니다.",
     "한알천의 수치 좌표만 동일 상호·지점·도로명 1217과 일치하는 공개 상권업소 자료에서 확인했습니다. 다른 새 업소는 좌표 미확인으로 null 유지.",
-    "보은·영동·증평은 도 공식 수록 기록과 미등록 위치를 확인했으나 이번 점검에서 새 지정 맛집을 검증하지 못했습니다."
+    "보은·영동·증평은 도 공식 수록 기록과 미등록 위치를 확인했으나 이번 점검에서 새 지정 맛집을 검증하지 못했습니다.",
+    "1순환68회차 이어하기: 영동군 문화관광 모범음식점 공식 공개명단 28곳 중 이름·도로명주소를 확인한 신규 5곳을 추가. 3곳은 별도 공개자료의 정확한 상호·주소·수치 좌표로 검증, 나머지 2곳 좌표 null.",
+    "영동군 명단은 개별 지정연도·현재 영업상태를 확정하지 않음. 블루리본 등급 아님. 원본 소개글·사진과 회원 추천 자료는 재사용하지 않음."
   ],
   "restaurants": [
     {
@@ -805,6 +811,164 @@
       ],
       "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
       "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-yeongdong-jangsaeng",
+      "name": "장생생고기",
+      "category": "한식",
+      "region": "충북",
+      "district": "영동군",
+      "address": "충청북도 영동군 영동읍 영동시장1길 19-1",
+      "lat": 36.175713,
+      "lng": 127.774631,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영동군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+          "sourceName": "영동군 문화관광 · 모범음식점 공식 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "영동군 관광포털 모범음식점 명단 수록 사실. 지정연도와 현재 영업상태는 별도 확인하지 않았으며 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSource": {
+        "name": "공개 상권·행정업소 정보 · 상호·도로명주소 일치",
+        "url": "https://smi.purpleo.kr/article/607",
+        "checkedAt": "2026-11-08",
+        "method": "published-business-coordinate"
+      }
+    },
+    {
+      "id": "local-chungbuk-slot68-yeongdong-bongi-gamjatang",
+      "name": "봉이감자탕, 칼국수",
+      "category": "한식",
+      "region": "충북",
+      "district": "영동군",
+      "address": "충청북도 영동군 용산면 용산로 354",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바지락칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영동군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+          "sourceName": "영동군 문화관광 · 모범음식점 공식 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "영동군 관광포털 모범음식점 명단 수록 사실. 지정연도와 현재 영업상태는 별도 확인하지 않았으며 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-yeongdong-wonjo-galbi",
+      "name": "원조숯불갈비",
+      "category": "한식",
+      "region": "충북",
+      "district": "영동군",
+      "address": "충청북도 영동군 영동읍 영동황간로 32",
+      "lat": 36.169171,
+      "lng": 127.776045,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영동군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+          "sourceName": "영동군 문화관광 · 모범음식점 공식 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "영동군 관광포털 모범음식점 명단 수록 사실. 지정연도와 현재 영업상태는 별도 확인하지 않았으며 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSource": {
+        "name": "공개 상권·행정업소 정보 · 상호·도로명주소 일치",
+        "url": "https://smi.purpleo.kr/article/1917",
+        "checkedAt": "2026-11-08",
+        "method": "published-business-coordinate"
+      }
+    },
+    {
+      "id": "local-chungbuk-slot68-yeongdong-godam-kkotdaepae",
+      "name": "고담 꽃대패",
+      "category": "한식",
+      "region": "충북",
+      "district": "영동군",
+      "address": "충청북도 영동군 영동읍 계산로6길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "대패삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영동군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+          "sourceName": "영동군 문화관광 · 모범음식점 공식 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "영동군 관광포털 모범음식점 명단 수록 사실. 지정연도와 현재 영업상태는 별도 확인하지 않았으며 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-yeongdong-tojong-sigyuk",
+      "name": "토종식육식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "영동군",
+      "address": "충청북도 영동군 황간면 남성2길 5",
+      "lat": 36.227918,
+      "lng": 127.91007,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영동군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+          "sourceName": "영동군 문화관광 · 모범음식점 공식 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "영동군 관광포털 모범음식점 명단 수록 사실. 지정연도와 현재 영업상태는 별도 확인하지 않았으며 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSource": {
+        "name": "공개 상권·행정업소 정보 · 상호·도로명주소 일치",
+        "url": "https://fmr.purpleo.co.kr/view/18200",
+        "checkedAt": "2026-11-08",
+        "method": "published-business-coordinate"
+      }
     }
   ],
   "guideEnrichments": [
