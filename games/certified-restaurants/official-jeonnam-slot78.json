@@ -1,0 +1,648 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 78,
+  "scheduledAtKST": "2026-11-09T00:00:00+09:00",
+  "verifiedAt": "2026-11-09",
+  "sourceUrls": [
+    "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+    "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+    "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+    "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195",
+    "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289",
+    "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=null&tCimTitle=%EC%B2%AD%EC%8B%A4%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000004422"
+  ],
+  "completeRegionalCollection": false,
+  "addedCount": 18,
+  "guideEnrichedCount": 7,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmedCount": 0,
+  "notes": [
+    "장성군 2025 행사 안내 공식 28곳 중 첫 페이지 10곳만 대조, 진도군 관광 22곳 중 첫 페이지 12곳과 기존 3곳 대조, 완도 개별 3곳 대조. 신안은 명단 미확보.",
+    "연도는 선정 연도가 아닌 관광 안내 수록 맥락. 진도 자료 2019년 페이지 수정일을 현재 선정 연도로 오인하지 않음.",
+    "동일 주소·상호가 다른 진도 두 업소 및 옥천회관 상호 이력은 별도 검증 전 보류.",
+    "좌표와 현재 영업 상태 미확인. 회원 추천 자료 불변."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonnam-slot78-js-nakji",
+      "name": "낙지한마당",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 단풍로 261",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-seongsan",
+      "name": "성산가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 성산2길 9-8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우족탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-hankook",
+      "name": "한국의집",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 수산2길 12-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-daeseong",
+      "name": "대성정육회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 역전로 186",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-sodam",
+      "name": "소담",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 전고개로 250",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-sammi",
+      "name": "삼미회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 청운3길 4-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "백반"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-saeng-sutbul",
+      "name": "생숯불갈비",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 청운길 10",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-sondalok",
+      "name": "손달옥한방족발",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 청운길 24",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-js-haeundae",
+      "name": "해운대",
+      "category": "한식",
+      "region": "전남",
+      "district": "장성군",
+      "address": "전남광주통합특별시 장성군 장성읍 청운길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+          "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-garden-dadam",
+      "name": "가든다담",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 진도읍 신흥길 173-29",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-gaon-jeonbok",
+      "name": "가온전복",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 의신면 초평길 70-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "전복요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-myeonghui",
+      "name": "명희식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 진도읍 동외3길 25",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-bak-galbi",
+      "name": "박가네왕갈비",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 진도읍 남산로 133",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-sodam-sharp",
+      "name": "소담#",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 의신면 초평길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-yeon",
+      "name": "연",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 진도읍 남동3길 4-15",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-jd-ire",
+      "name": "이레식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "진도군",
+      "address": "전남광주통합특별시 진도군 진도읍 철마길 4-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+          "sourceName": "진도군 문화관광 모범음식점 목록",
+          "verifiedAt": "2026-11-09",
+          "status": "historical_listing",
+          "sourceAsOf": "2019-08-13",
+          "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-w1-boritteok",
+      "name": "보리떡식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "완도군",
+      "address": "전남광주통합특별시 완도군 보길면 청별길 18-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완도군 모범음식점 (공식 홈페이지 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195",
+          "sourceName": "완도군 문화관광 음식점 개별 상세",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 관광 누리집에 모범음식점으로 표기. 지정연도·영업상태 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195",
+      "addressSourceCheckedAt": "2026-11-09"
+    },
+    {
+      "id": "local-jeonnam-slot78-w2-sinji-hoejip",
+      "name": "신지 횟집",
+      "category": "일식",
+      "region": "전남",
+      "district": "완도군",
+      "address": "전남광주통합특별시 완도군 완도읍 해변공원로 117",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "완도군 모범음식점 (공식 홈페이지 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289",
+          "sourceName": "완도군 문화관광 음식점 개별 상세",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 관광 누리집에 모범음식점으로 표기. 지정연도·영업상태 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289",
+      "addressSourceCheckedAt": "2026-11-09"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-namdo-599384",
+      "expectedName": "호산식당",
+      "expectedAddress": "전라남도 장성군 장성읍 미락단지길 32",
+      "guide": {
+        "provider": "local-guide",
+        "label": "장성군 모범음식점 (2025 행사 안내 수록)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+        "sourceName": "장성군청 2025 전남체육대회 모범음식점 안내",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "selectionCriteria": "2025 체육대회 안내에 수록. 실제 지정연도·현 영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-599389",
+      "expectedName": "묵은지",
+      "expectedAddress": "전라남도 진도군 진도읍 남동1길 12-5",
+      "guide": {
+        "provider": "local-guide",
+        "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+        "sourceName": "진도군 문화관광 모범음식점 목록",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "sourceAsOf": "2019-08-13",
+        "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-599387",
+      "expectedName": "신호등회관",
+      "expectedAddress": "전남 진도군 진도읍 남동1길 66",
+      "guide": {
+        "provider": "local-guide",
+        "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+        "sourceName": "진도군 문화관광 모범음식점 목록",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "sourceAsOf": "2019-08-13",
+        "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-3681174",
+      "expectedName": "진도아리랑회센터",
+      "expectedAddress": "전남 진도군 진도읍 쌍정1길 8-6, 2층",
+      "guide": {
+        "provider": "local-guide",
+        "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+        "sourceName": "진도군 문화관광 모범음식점 목록",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "sourceAsOf": "2019-08-13",
+        "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-599386",
+      "expectedName": "한우곰탕",
+      "expectedAddress": "전남 진도군 진도읍 남동1길 32",
+      "guide": {
+        "provider": "local-guide",
+        "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+        "sourceName": "진도군 문화관광 모범음식점 목록",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "sourceAsOf": "2019-08-13",
+        "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-608033",
+      "expectedName": "회타운",
+      "expectedAddress": "전남 진도군 진도읍 남동1길 57-8, 2층",
+      "guide": {
+        "provider": "local-guide",
+        "label": "진도군 모범음식점 (공식 자료 수록 이력)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+        "sourceName": "진도군 문화관광 모범음식점 목록",
+        "verifiedAt": "2026-11-09",
+        "status": "historical_listing",
+        "sourceAsOf": "2019-08-13",
+        "selectionCriteria": "군 관광 목록에 수록, 최종수정일 2019-08-13. 2026 지정·영업상태 미확인."
+      }
+    },
+    {
+      "id": "local-namdo-607492",
+      "expectedName": "청실횟집",
+      "expectedAddress": "전라남도 완도군 완도읍 해변공원로 51-1",
+      "guide": {
+        "provider": "local-guide",
+        "label": "완도군 모범음식점 (공식 홈페이지 수록)",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=null&tCimTitle=%EC%B2%AD%EC%8B%A4%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000004422",
+        "sourceName": "완도군 문화관광 음식점 개별 상세",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "군 관광 누리집에 모범음식점으로 표기. 지정연도·영업상태 별도 미확인."
+      }
+    }
+  ]
+}
