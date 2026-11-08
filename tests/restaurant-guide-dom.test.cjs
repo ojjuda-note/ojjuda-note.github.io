@@ -120,6 +120,14 @@ function fixture(options = {}) {
         const duplicate = { ...existing, lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
         return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 71, restaurants: Array(24).fill(duplicate) }) };
       }
+      if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
+        // Duplicate the fixture's base ID to test new source validation
+        // without importing external listings into isolated DOM scenarios.
+        const existing = (options.dataset || dataset).restaurants[0];
+        const duplicate = { ...existing, district: '곡성군', lat: null, lng: null,
+          guides: [{ provider: 'local-guide', status: 'official_listing' }] };
+        return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 74, restaurants: Array(12).fill(duplicate) }) };
+      }
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
       return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [], addressEnrichments: [] }) };
     }

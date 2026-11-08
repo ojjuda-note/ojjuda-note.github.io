@@ -1,0 +1,365 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 74,
+  "scheduledAtKST": "2026-11-08T20:00:00+09:00",
+  "sourceName": "곡성군 문화관광 · 모범음식점 공식 공개 명단",
+  "sourceUrls": [
+    "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+    "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+    "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+    "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+    "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+    "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+    "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view"
+  ],
+  "completeRegionalCollection": false,
+  "officialListCount": 21,
+  "addedCount": 12,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmed": 0,
+  "notes": [
+    "곡성군 공식 모범음식점 목록 및 개별 식당 페이지에서 상호·주소 확인된 신규 12곳만 수록. 담양·구례는 신규 선정/주소 교차 근거 미확보로 보류.",
+    "정규 블루리본 등급이나 미쉐린 선정으로 취급하지 않음. 지정 연도 미표기로 null, 현재 영업은 별도 검증 필요.",
+    "위도·경도는 해당 지점의 공개 수치 근거가 없어 null; 인근 건물 중심점·추정 위치·사용자 위치 미사용.",
+    "기존 남도음식명가 6곳은 중복 추가하지 않음. 별천지가든 과거 주소/군 관광주소 불일치는 미확정으로 이월."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonnam-slot74-gokseong-01",
+      "name": "곡성기차마을휴게소(순천방향)",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 겸면 호남고속도로 49",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "흑돼지김치찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-02",
+      "name": "곡성기차마을휴게소(천안방향)",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 겸면 호남고속도로 50",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-03",
+      "name": "도림장어",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 석곡면 주석로 623-12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어숯불구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-04",
+      "name": "돌실숯불회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 석곡면 석곡로 52-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "흑돼지숯불구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-05",
+      "name": "만리장성",
+      "category": "중식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 석곡면 주석로 620-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-06",
+      "name": "미연복집",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 오산면 오산로 968",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "복지리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-07",
+      "name": "사계절횟집",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 오곡면 대황강로 1589",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "참게탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-08",
+      "name": "산동네가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 석곡면 곡순로 114-30",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "능이닭백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-09",
+      "name": "초원숯불갈비",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 곡성읍 중앙로 110-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-10",
+      "name": "친정엄마네",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 곡성읍 곡성로 856",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우육개장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-11",
+      "name": "동막골",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 곡성읍 곡성로 882",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot74-gokseong-12",
+      "name": "석곡식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "곡성군",
+      "address": "전라남도 곡성군 석곡면 석곡로 60",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "석쇠불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "곡성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view",
+          "sourceName": "곡성군 문화관광 · 공식 모범음식점 목록",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록. 지정연도·현재 영업 여부 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}

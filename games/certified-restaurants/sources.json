@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3472,
+    "uniqueRestaurants": 3484,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2739,
+      "local-guide": 2751,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2406,
+    "coordinatesMissing": 2418,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1551,15 +1551,15 @@
       "인천": 345,
       "제주": 120,
       "대구": 137,
-      "전남": 183,
+      "전남": 195,
       "세종": 100,
       "대전": 117,
       "경북": 170,
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2092,
-      "중식": 145,
+      "한식": 2103,
+      "중식": 146,
       "일식": 146,
       "기타": 588,
       "양식": 219,
@@ -15588,53 +15588,133 @@
         "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
         "회원 추천·기존 저장 ID·아지트 버전 유지."
       ]
+    },
+    {
+      "id": "2026-11-08-jeonnam-slot74-gokseong12",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 74,
+      "previousCoverage": {
+        "uniqueRestaurants": 3472,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2739,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2406,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2092,
+          "중식": 145,
+          "일식": 146,
+          "기타": 588,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3484,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2751,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2418,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 195,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2103,
+          "중식": 146,
+          "일식": 146,
+          "기타": 588,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 12,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-jeonnam-slot74-gokseong-01",
+        "local-jeonnam-slot74-gokseong-02",
+        "local-jeonnam-slot74-gokseong-03",
+        "local-jeonnam-slot74-gokseong-04",
+        "local-jeonnam-slot74-gokseong-05",
+        "local-jeonnam-slot74-gokseong-06",
+        "local-jeonnam-slot74-gokseong-07",
+        "local-jeonnam-slot74-gokseong-08",
+        "local-jeonnam-slot74-gokseong-09",
+        "local-jeonnam-slot74-gokseong-10",
+        "local-jeonnam-slot74-gokseong-11",
+        "local-jeonnam-slot74-gokseong-12"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+        "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+        "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+        "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+        "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot74.json",
+      "scope": "곡성군 공식 모범음식점 목록 확인된 12곳을 신규 보강, 담양/구례 근거 미확정은 이월. 3군 위치 미확인 35곳 우선 재조사 대기.",
+      "notes": [
+        "별천지가든 주소 1266/1258 상충은 미확정으로 유지.",
+        "정규 블루리본 등급과 지정 연도·현재 영업상태는 이번 출처에서 미확인.",
+        "추정 위경도 미사용, 35곳은 좌표 미확인만으로 폐업/노출제외 처리하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-chungnam-slot71-taean12-yesan12",
+    "id": "2026-11-08-jeonnam-slot74-gokseong12",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 71,
+    "slot": 74,
     "previousCoverage": {
-      "uniqueRestaurants": 3448,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2715,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2382,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 93,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2074,
-        "중식": 143,
-        "일식": 146,
-        "기타": 587,
-        "양식": 219,
-        "분식": 38,
-        "디저트": 241
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3472,
       "providerCounts": {
         "michelin": 237,
@@ -15673,48 +15753,79 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 24,
+    "currentCoverage": {
+      "uniqueRestaurants": 3484,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2751,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2418,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 195,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2103,
+        "중식": 146,
+        "일식": 146,
+        "기타": 588,
+        "양식": 219,
+        "분식": 40,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 12,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungnam-slot71-taean-01",
-      "local-chungnam-slot71-taean-02",
-      "local-chungnam-slot71-taean-03",
-      "local-chungnam-slot71-taean-04",
-      "local-chungnam-slot71-taean-05",
-      "local-chungnam-slot71-taean-06",
-      "local-chungnam-slot71-taean-07",
-      "local-chungnam-slot71-taean-08",
-      "local-chungnam-slot71-taean-09",
-      "local-chungnam-slot71-taean-10",
-      "local-chungnam-slot71-taean-11",
-      "local-chungnam-slot71-taean-12",
-      "local-chungnam-slot71-yesan-13",
-      "local-chungnam-slot71-yesan-14",
-      "local-chungnam-slot71-yesan-15",
-      "local-chungnam-slot71-yesan-16",
-      "local-chungnam-slot71-yesan-17",
-      "local-chungnam-slot71-yesan-18",
-      "local-chungnam-slot71-yesan-19",
-      "local-chungnam-slot71-yesan-20",
-      "local-chungnam-slot71-yesan-21",
-      "local-chungnam-slot71-yesan-22",
-      "local-chungnam-slot71-yesan-23",
-      "local-chungnam-slot71-yesan-24"
+      "local-jeonnam-slot74-gokseong-01",
+      "local-jeonnam-slot74-gokseong-02",
+      "local-jeonnam-slot74-gokseong-03",
+      "local-jeonnam-slot74-gokseong-04",
+      "local-jeonnam-slot74-gokseong-05",
+      "local-jeonnam-slot74-gokseong-06",
+      "local-jeonnam-slot74-gokseong-07",
+      "local-jeonnam-slot74-gokseong-08",
+      "local-jeonnam-slot74-gokseong-09",
+      "local-jeonnam-slot74-gokseong-10",
+      "local-jeonnam-slot74-gokseong-11",
+      "local-jeonnam-slot74-gokseong-12"
     ],
     "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
-      "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+      "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+      "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+      "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot71.json",
-    "scope": "태안·예산군 지자체 모범음식점 공개 목록 1쪽씩 12곳 총24곳 등록; 홍성군 공식 개별 근거, 양 군 다른 쪽 73곳, 좌표 미검증은 이월",
+    "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot74.json",
+    "scope": "곡성군 공식 모범음식점 목록 확인된 12곳을 신규 보강, 담양/구례 근거 미확정은 이월. 3군 위치 미확인 35곳 우선 재조사 대기.",
     "notes": [
-      "공식 지자체 지정·선정 이력과 현재 영업 상태 별개 판단.",
-      "정규 블루리본 등급 미검증으로 지자체 모범음식점만 수록.",
-      "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
-      "회원 추천·기존 저장 ID·아지트 버전 유지."
+      "별천지가든 주소 1266/1258 상충은 미확정으로 유지.",
+      "정규 블루리본 등급과 지정 연도·현재 영업상태는 이번 출처에서 미확인.",
+      "추정 위경도 미사용, 35곳은 좌표 미확인만으로 폐업/노출제외 처리하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -24790,5 +24901,38 @@
     "operatingStatusConfirmed": 0,
     "blueRibbonGradeVerifiedNew": 0,
     "notes": "공식 모범음식점 명단 첫 쪽 12곳씩 확인하여 24곳 추가. 개별 지정·발행연도와 출처 확인일 구분. 기존 예산 소복갈비/공식 소복식당 동일 주소 중복 가능성 보류. 업소 정확 수치좌표와 현재 영업여부 미확인."
+  },
+  "jeonnamSlot74": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 74,
+    "scheduledAtKST": "2026-11-08T20:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-jeonnam-slot74.json",
+    "publisher": "곡성군 문화관광",
+    "sourceUrls": [
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+      "https://tour.gokseong.go.kr/tour/tourist/region?idx=1147&mode=view",
+      "https://tour.gokseong.go.kr/tour/tourist/temple?idx=1562&mode=view",
+      "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+      "https://www.gokseong.go.kr/tour/amusement/eatery/best?idx=1569&mode=view",
+      "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view"
+    ],
+    "officialListCount": 21,
+    "addedCount": 12,
+    "modifiedCount": 0,
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "pendingLocations": 35,
+    "pendingLocationScope": "담양 12곳·곡성 18곳·구례 5곳(기본 목록+이번 신규), 모두 숫자 좌표 미확정; 전국 합계 아님",
+    "regionalAdditions": {
+      "담양군": 0,
+      "곡성군": 12,
+      "구례군": 0
+    },
+    "completeRegionalCollection": false,
+    "operatingStatusConfirmed": 0,
+    "blueRibbonGradeVerifiedNew": 0,
+    "notes": "곡성군 모범음식점 12곳 신규(선정 연도 미표기), 기존 6곳 중복 회피. 담양·구례 후보는 추가 공식 근거 대기. 별천지가든 상충 주소 이월. 수치 좌표와 현재 영업 미확인."
   }
 }
