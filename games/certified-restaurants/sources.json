@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-08",
+  "checkedAt": "2026-11-09",
   "postalGuide": {
     "publisher": "부산지방우정청",
     "title": "2026년 우체국 추천 맛집가이드",
@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3538,
+    "uniqueRestaurants": 3556,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2805,
+      "local-guide": 2823,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2472,
+    "coordinatesMissing": 2490,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1551,16 +1551,16 @@
       "인천": 345,
       "제주": 120,
       "대구": 137,
-      "전남": 249,
+      "전남": 267,
       "세종": 100,
       "대전": 117,
       "경북": 170,
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2146,
+      "한식": 2163,
       "중식": 147,
-      "일식": 150,
+      "일식": 151,
       "기타": 592,
       "양식": 220,
       "분식": 41,
@@ -25326,5 +25326,34 @@
     "currentDesignationStatus": "not_verified_since_period_ended",
     "currentOperatingStatus": "not_verified",
     "notes": "무안군 2025년 모범음식점 49개소 명단 중 22곳 신규·기존4건 이력 보강. 회원 추천은 미변경. 2026-10 지정 종료 후 2026-11 재지정 여부는 확인되지 않음."
+  },
+  "jeonnamSlot78": {
+    "checkedAt": "2026-11-09",
+    "cycle": 1,
+    "slot": 78,
+    "scheduledAtKST": "2026-11-09T00:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-jeonnam-slot78.json",
+    "sourceUrls": [
+      "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+      "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+      "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+      "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195",
+      "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289"
+    ],
+    "addedCount": 18,
+    "modifiedCount": 7,
+    "coordinatesVerified": 0,
+    "locationsHidden": 0,
+    "locationPending": 42,
+    "regionAdded": {
+      "장성군": 9,
+      "완도군": 2,
+      "진도군": 7,
+      "신안군": 0
+    },
+    "completeRegionalCollection": false,
+    "currentDesignationStatus": "not_verified",
+    "currentOperatingStatus": "not_verified",
+    "notes": "2025 장성 행사안내·2019 수정 진도 관광 페이지·완도군 공식 관광 상세의 수록 이력. 현재 2026년 지정 및 영업은 별도 미확인. 신안군 조사 미완료. 위치대기 42는 기존 원본 24+이번 신규 18만 포함."
   }
 }
