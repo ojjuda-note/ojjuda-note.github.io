@@ -54,10 +54,6 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  if(id==='chess'){
  await page.evaluate(()=>entryTest.presence({offline:[{}]}));assert.equal(await page.locator('[data-friend-id]').first().getAttribute('data-friend-id'),'offline');
  assert.equal(await page.locator('[data-friend-id=online] .ge-presence').textContent(),'오프라인');await page.evaluate(()=>entryTest.presence({online:[{}]}));
- await page.locator('[data-friend-id=online] button').click();await page.waitForFunction(()=>window.invited);assert.deepEqual(await page.evaluate(()=>window.invited),{name:'game_invite',args:{p_kind:'chess',p_to:'online'}});
- // A successful invitation closes its entry dialog. Open it again to test computer play.
- await page.waitForFunction(()=>!document.querySelector('.ge-board-entry'));
- await openOpponent(id);
  }
  if(viewport.width===390&&id==='chess')await page.screenshot({path:'/tmp/game-entry-proof/friend-invite.png'});
  await page.locator('[data-entry-mode=computer]').click();assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
@@ -77,6 +73,13 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  if(await page.locator('#gov [data-bl=close]').count())await page.locator('#gov [data-bl=close]').click();
  await page.evaluate(()=>entryTest.closeBoard());
  }
+ // A successful invite refreshes the menu asynchronously. Keep this separate
+ // from the computer-start checks to avoid racing that intentional redraw.
+ await openOpponent('chess');
+ await page.locator('[data-friend-id=online] button').click();
+ await page.waitForFunction(()=>window.invited);
+ assert.deepEqual(await page.evaluate(()=>window.invited),{name:'game_invite',args:{p_kind:'chess',p_to:'online'}});
+ await page.evaluate(()=>entryTest.closeBoard());
  assert.deepEqual(errors,[]);await page.close();
  }
  console.log('PASS: consistent entry cards at 320/390/1280px, public box and flat screw chooser, five direct board starts and opponent menus, live friend sorting, search, safe names and exact invite recipient');
