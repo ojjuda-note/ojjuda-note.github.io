@@ -1529,19 +1529,19 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3382,
+    "uniqueRestaurants": 3407,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2649,
+      "local-guide": 2674,
       "post-office": 240
     },
-    "coordinatesAvailable": 1062,
-    "coordinatesMissing": 2320,
+    "coordinatesAvailable": 1063,
+    "coordinatesMissing": 2344,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
-      "충북": 223,
+      "충북": 248,
       "충남": 74,
       "울산": 38,
       "경남": 325,
@@ -1558,13 +1558,13 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2019,
-      "중식": 141,
+      "한식": 2037,
+      "중식": 142,
       "일식": 144,
       "기타": 587,
-      "양식": 216,
-      "분식": 35,
-      "디저트": 240
+      "양식": 218,
+      "분식": 38,
+      "디저트": 241
     }
   },
   "coordinateEnrichment": {
@@ -15109,50 +15109,11 @@
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-gangwon-slot66-official-23",
+    "id": "2026-11-08-chungbuk-slot68-okcheon25",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 66,
+    "slot": 68,
     "previousCoverage": {
-      "uniqueRestaurants": 3359,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2626,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2298,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 223,
-        "충남": 74,
-        "울산": 38,
-        "경남": 325,
-        "강원": 81,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2002,
-        "중식": 141,
-        "일식": 140,
-        "기타": 587,
-        "양식": 215,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3382,
       "providerCounts": {
         "michelin": 237,
@@ -15191,53 +15152,95 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 23,
-    "modificationCount": 0,
+    "currentCoverage": {
+      "uniqueRestaurants": 3407,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2674,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1063,
+      "coordinatesMissing": 2344,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 248,
+        "충남": 74,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2037,
+        "중식": 142,
+        "일식": 144,
+        "기타": 587,
+        "양식": 218,
+        "분식": 38,
+        "디저트": 241
+      }
+    },
+    "newRestaurantCount": 25,
+    "modificationCount": 5,
     "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-gangwon-slot66-yanggu-kkotboda-so",
-      "local-gangwon-slot66-yanggu-dochon-samgyetang",
-      "local-gangwon-slot66-yanggu-madang-chueotang",
-      "local-gangwon-slot66-yanggu-mobeom-tteokbokki",
-      "local-gangwon-slot66-yanggu-badaae",
-      "local-gangwon-slot66-yanggu-shabuhyang",
-      "local-gangwon-slot66-yanggu-hoemaeul",
-      "local-gangwon-slot66-yanggu-sonamu-naengmyeon",
-      "local-gangwon-slot66-yanggu-siraejeong",
-      "local-gangwon-slot66-yanggu-yanggu-susan",
-      "local-gangwon-slot66-yanggu-oraedream-gowon",
-      "local-gangwon-slot66-yanggu-igadonga",
-      "local-gangwon-slot66-yanggu-jeongjungang",
-      "local-gangwon-slot66-yanggu-cheongchamchi",
-      "local-gangwon-slot66-cheorwon-sting",
-      "local-gangwon-slot66-cheorwon-cheorwon-sikdang",
-      "local-gangwon-slot66-cheorwon-chunil-makguksu",
-      "local-gangwon-slot66-cheorwon-gungye-bapsang",
-      "local-gangwon-slot66-cheorwon-baekbanhanjan",
-      "local-gangwon-slot66-cheorwon-cheorwon-makguksu",
-      "local-gangwon-slot66-hwacheon-chae-won",
-      "local-gangwon-slot66-hwacheon-sanchaegol",
-      "local-gangwon-slot66-jeongseon-sanmasil"
+      "local-chungbuk-slot68-okcheon-hanalcheon",
+      "local-chungbuk-slot68-okcheon-chamsaem-trout",
+      "local-chungbuk-slot68-okcheon-daebakjip",
+      "local-chungbuk-slot68-okcheon-hanbang-yeomso",
+      "local-chungbuk-slot68-okcheon-eollukbaegi",
+      "local-chungbuk-slot68-okcheon-jangin-ureong",
+      "local-chungbuk-slot68-okcheon-bokgol",
+      "local-chungbuk-slot68-okcheon-ttalbujhae",
+      "local-chungbuk-slot68-okcheon-yuseong-galbi-okcheon",
+      "local-chungbuk-slot68-okcheon-munjeong",
+      "local-chungbuk-slot68-okcheon-imone",
+      "local-chungbuk-slot68-okcheon-gwansanseong",
+      "local-chungbuk-slot68-okcheon-offlam",
+      "local-chungbuk-slot68-okcheon-okcheon-mukjip",
+      "local-chungbuk-slot68-okcheon-songgoga",
+      "local-chungbuk-slot68-okcheon-hyangsu-hanwoo",
+      "local-chungbuk-slot68-okcheon-janggeumi",
+      "local-chungbuk-slot68-okcheon-hanwoo-jayul",
+      "local-chungbuk-slot68-okcheon-iseok-haemul",
+      "local-chungbuk-slot68-okcheon-gyeongseong-mandu",
+      "local-chungbuk-slot68-okcheon-pungmidang",
+      "local-chungbuk-slot68-okcheon-jeonwon-garden",
+      "local-chungbuk-slot68-okcheon-tutti-cucina",
+      "local-chungbuk-slot68-okcheon-forefora",
+      "local-chungbuk-slot68-okcheon-ocheonnyeon"
+    ],
+    "modifiedRestaurantIds": [
+      "local-north-c193196a43a34490",
+      "local-north-893f7bcb82688546",
+      "local-north-845a3158c3d5a8d9",
+      "local-north-3176c6d451b71e24",
+      "local-north-197299de2af35076"
     ],
     "sourceUrls": [
-      "https://www.yanggu.go.kr/health/user_sub?gfnc=health&mu_idx=551",
-      "https://www.cwg.go.kr/www/contents.do?key=360",
-      "https://www.cwg.go.kr/tour/selectTourCntntsWebView.do?ctgry=54&key=1659&tourNo=958",
-      "https://tour.ihc.go.kr/tour/pleasure/military",
-      "https://www.jeongseon.go.kr/tour/jeongseontour/restaurants",
-      "https://www.tabling.co.kr/place/677ccd6266de5f069880ee77",
-      "https://jusoga.com/b/4278025621109830006033212/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84-%EC%B2%A0%EC%9B%90%EA%B5%B0-%EA%B0%88%EB%A7%90%EC%9D%8D-%EB%AA%85%EC%84%B1%EB%A1%9C158%EB%B2%88%EA%B8%B8-13",
-      "https://www.placeview.co.kr/id/OTQ1ODU0NSAg",
-      "https://eatrank.co.kr/%EB%A7%A4%EC%9E%A5/%EC%B2%A0%EC%9B%90%EB%A7%89%EA%B5%AD%EC%88%98"
+      "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "https://safe.oc.go.kr/tour/contents.do?key=4087",
+      "https://xju.purpleo.kr/article/41"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot66.json",
-    "scope": "강원 4개군 공식 일부 명단 대조. 정선1·철원6·화천2·양구14 신규. 지역 전체 전수 확인 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-chungbuk-slot68.json",
+    "scope": "옥천군 공식 지정 맛집 30곳 중 새 25곳, 기존 식당 5곳에 별도 지정 이력을 중복 없이 병합. 보은·영동·증평은 기존 위치 누락과 공식 출처 일부 점검.",
     "notes": [
-      "지자체 지정과 단순 관광/우대업소 수록 이력을 구분.",
-      "선정·수록·명단기준일·현재 운영 여부를 혼동하지 않음.",
-      "좌표 증거 없으므로 23곳 lat/lng null, 지역별 다음 순환 재조사.",
-      "철원막국수 철원 갈말읍 명성로158번길 13 공개 건물명·주소·위경도 일치 근거로 1건 좌표 보강."
+      "옥천군 공식 안내 페이지 최종수정 2026-03-09는 선정연도나 현 영업 확인일이 아닙니다.",
+      "한알천 1곳만 공개 상권업소 상호·도로명·건물번호 일치 좌표 수록, 나머지 24곳 좌표 null 유지.",
+      "이전 등록 5곳의 ID·가이드 이력·저장 기능 보존. 회원 추천 자료와 개인정보는 미접근.",
+      "84회차 중 67회차 기록은 조사 미완료로 추정하지 않고 이월 확인 대상으로 보존."
     ]
   },
   "latestMapCoverageAudit": {
@@ -24137,5 +24140,34 @@
       "회원 추천맛집 글, 사진, 좌표, 개인위치 정보에 접근하거나 변경하지 않음.",
       "철원막국수 공개 건물명·동일 도로명 주소 일치 좌표 1건 추가, 현재 영업은 별도 판정."
     ]
+  },
+  "chungbukSlot68": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 68,
+    "sourceFile": "games/certified-restaurants/official-chungbuk-slot68.json",
+    "officialSources": [
+      "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "https://safe.oc.go.kr/tour/contents.do?key=4087",
+      "https://xju.purpleo.kr/article/41"
+    ],
+    "officialPageLastModified": "2026-03-09",
+    "districts": [
+      "충청북도 보은군",
+      "충청북도 옥천군",
+      "충청북도 영동군",
+      "충청북도 증평군"
+    ],
+    "officialListedRestaurants": 30,
+    "existingMatched": 5,
+    "newRecords": 25,
+    "guideHistoryAdded": 5,
+    "coordinateAdded": 1,
+    "unlocatedNew": 24,
+    "locationsExcluded": 0,
+    "remainingOtherRegionChecks": "보은·영동·증평에서 기존 수록 이력 및 좌표 누락부터 확인. 추가 선정 명단 완전 대조는 다음 회차로 이월.",
+    "sourceRecencyPolicy": "페이지 최종수정일·수록판·선정연도·출처확인일 분리. 명시되지 않은 선정연도 null.",
+    "completeRegionalCollection": false,
+    "currentOperatingStatusVerified": 0
   }
 }
