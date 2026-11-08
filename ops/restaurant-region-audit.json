@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 71,
-    "scheduledAt": "2026-11-08T17:00:00+09:00",
+    "slot": 73,
+    "scheduledAt": "2026-11-08T19:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약된 17:00 KST 시각으로 회차 산출: h=66,n=70,slot71,cycle1; 실행 중 실제 확인."
+    "source": "예약된 시각을 별도로 확인할 수 없어 자동 실행 시각 19:25 KST를 정각으로 내림해 1순환73회차(h=68,n=72) 처리"
   },
   "entries": [
     {
@@ -45284,13 +45284,13 @@
         },
         {
           "restaurantId": "local-north-1d3192c1db72d571",
-          "name": "이계종李복집",
+          "name": "이계종李복집",
           "currentAddress": "인천광역시 서구 가정로 168(석남동)",
           "region": "인천광역시 서구",
           "searchAliases": [
-            "이계종李복집 인천 서구",
-            "이계종李복집 인천광역시 서구 가정로 168(석남동)",
-            "인천 이계종李복집"
+            "이계종李복집 인천 서구",
+            "이계종李복집 인천광역시 서구 가정로 168(석남동)",
+            "인천 이계종李복집"
           ],
           "evidenceUrls": [
             "https://www.incheon.go.kr/comm/getFile?fileNo=1&amp;fileTy=ATTACH&amp;srvcId=BBSTY1&amp;upperNo=3078887",
@@ -65948,6 +65948,830 @@
         "전북특별자치도 장수군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 73,
+      "scheduledAtKST": "2026-11-08T19:00:00+09:00",
+      "checkedAtKST": "2026-11-08T19:25:14+09:00",
+      "status": "partial_verified_gochang_official_1_pending_location_audit",
+      "assignedRegions": [
+        "전북특별자치도 임실군",
+        "전북특별자치도 순창군",
+        "전북특별자치도 고창군",
+        "전북특별자치도 부안군"
+      ],
+      "regionAudit": [
+        {
+          "region": "전북특별자치도 임실군",
+          "baseListedCount": 24,
+          "previousLocationMissing": 24,
+          "newCount": 0,
+          "listedAfter": 24,
+          "actuallyChecked": [
+            "임실군청 2026-01-07 맛집 지정 현황 게시문과 별도 HWP 첨부 존재 확인",
+            "기존 등록 24곳과 좌표 누락 현황 점검; 첨부 HWP 식당별 검증은 미완료"
+          ],
+          "remainingAreas": [
+            "2026 임실군 맛집 HWP 원본 내 식당별 상호·주소·지정 기준 확인",
+            "기존 24곳의 개별 정확 좌표·영업 상태 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 순창군",
+          "baseListedCount": 1,
+          "previousLocationMissing": 1,
+          "newCount": 0,
+          "listedAfter": 1,
+          "actuallyChecked": [
+            "기존 등록 내역과 지자체 공식 선정/관광 자료 탐색",
+            "상호·현주소·좌표가 함께 확인되는 신규 음식점은 이번 확인 범위에서 추가 확정 못함"
+          ],
+          "remainingAreas": [
+            "순창군 공식 개별 선정 목록 추가 검색",
+            "현재 등재 1곳의 현주소·좌표 검증"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 고창군",
+          "baseListedCount": 19,
+          "previousLocationMissing": 4,
+          "newCount": 1,
+          "listedAfter": 20,
+          "actuallyChecked": [
+            "고창군 문화관광 공식 모범음식점 상세의 상호·도로명 주소와 기본 메뉴 확인",
+            "기존 등록 자료에서 같은 이름·주소 중복 확인",
+            "등록 중 좌표 미상 식당의 원본 출처·주소 정보를 후속 대조 대상으로 분류"
+          ],
+          "remainingAreas": [
+            "고창군 공식 모범음식점 348개 게시물 중 중복·테스트 항목 제외 후 나머지 점포 대조",
+            "새로 등록 1곳과 기존 위치 미상 4곳 주소 일치 숫자 좌표 검증"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 부안군",
+          "baseListedCount": 5,
+          "previousLocationMissing": 5,
+          "newCount": 0,
+          "listedAfter": 5,
+          "actuallyChecked": [
+            "기존 등록 내역과 지자체 공식 선정/관광 자료 탐색",
+            "상호·현주소·좌표가 함께 확인되는 신규 음식점은 이번 확인 범위에서 추가 확정 못함"
+          ],
+          "remainingAreas": [
+            "부안군 공식 선정 명단 확보와 기존 5곳 현주소·좌표·영업여부 대조"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "고창군 문화관광 공식 모범음식점 장어파는부부 개별 상세(상호·주소·대표메뉴)",
+        "임실군 위생관리팀 2026-01-07 맛집 현황 게시(첨부 HWP 미대조)",
+        "투어전북 임실·순창·고창·부안 음식점 연결 안내. 개별 업소 최신 주소/좌표 확인은 미완료.",
+        "기존 데이터 4개 군별 좌표 등록 현황 및 이름·주소 중복 확인"
+      ],
+      "additions": 1,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 35,
+      "locationPendingScope": "이번 회차 4군 기존 등재(기본 파일) 49곳 중 좌표 미상 34곳 + 신규 1곳. 전국 미확인 총계 아님.",
+      "addedRestaurantIds": [
+        "local-jeonbuk-slot73-gochang-eel-couple"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=837370&menuCd=DOM_000000403001001000&paging=ok&startPage=1",
+        "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&categoryCode1=72118&dataSid=136906&menuCd=DOM_000000108002001000&paging=ok&startPage=1",
+        "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003011000"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-jeonbuk-51",
+          "name": "길손집",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 32-5",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "길손집 임실군",
+            "길손집 전북특별자치도 임실군 강진면 호국로 32-5",
+            "전북 임실군 길손집"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-52",
+          "name": "강산에",
+          "currentAddress": "전북특별자치도 임실군 덕치면 회문3길 3",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "강산에 임실군",
+            "강산에 전북특별자치도 임실군 덕치면 회문3길 3",
+            "전북 임실군 강산에"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-53",
+          "name": "화탄매운탕",
+          "currentAddress": "전북특별자치도 순창군 유등면 화탄길 1",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "화탄매운탕 순창군",
+            "화탄매운탕 전북특별자치도 순창군 유등면 화탄길 1",
+            "전북 순창군 화탄매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-54",
+          "name": "신덕식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운사로 8",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "신덕식당 고창군",
+            "신덕식당 전북특별자치도 고창군 아산면 선운사로 8",
+            "전북 고창군 신덕식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-55",
+          "name": "유신식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운사로 25",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "유신식당 고창군",
+            "유신식당 전북특별자치도 고창군 아산면 선운사로 25",
+            "전북 고창군 유신식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-56",
+          "name": "연기식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운대로 2727",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "연기식당 고창군",
+            "연기식당 전북특별자치도 고창군 아산면 선운대로 2727",
+            "전북 고창군 연기식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-57",
+          "name": "청림가든정 금자할매집",
+          "currentAddress": "전북특별자치도 고창군 아산면 인천강서길 12",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "청림가든정 금자할매집 고창군",
+            "청림가든정 금자할매집 전북특별자치도 고창군 아산면 인천강서길 12",
+            "전북 고창군 청림가든정 금자할매집"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-58",
+          "name": "계화회관",
+          "currentAddress": "전북특별자치도 부안군 행안면 변산로 95",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "계화회관 부안군",
+            "계화회관 전북특별자치도 부안군 행안면 변산로 95",
+            "전북 부안군 계화회관"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-59",
+          "name": "원조바지락죽명가 변산온천산장",
+          "currentAddress": "전북특별자치도 부안군 변산면 묵정길 83-6",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "원조바지락죽명가 변산온천산장 부안군",
+            "원조바지락죽명가 변산온천산장 전북특별자치도 부안군 변산면 묵정길 83-6",
+            "전북 부안군 원조바지락죽명가 변산온천산장"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-60",
+          "name": "김인경 바지락죽",
+          "currentAddress": "전북특별자치도 부안군 변산면 묵정길 18",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "김인경 바지락죽 부안군",
+            "김인경 바지락죽 전북특별자치도 부안군 변산면 묵정길 18",
+            "전북 부안군 김인경 바지락죽"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-61",
+          "name": "변산 명인바지락죽",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 794,2층",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "변산 명인바지락죽 부안군",
+            "변산 명인바지락죽 전북특별자치도 부안군 변산면 변산해변로 794,2층",
+            "전북 부안군 변산 명인바지락죽"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-62",
+          "name": "당산마루",
+          "currentAddress": "전북특별자치도 부안군 부안읍 당산로 71",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "당산마루 부안군",
+            "당산마루 전북특별자치도 부안군 부안읍 당산로 71",
+            "전북 부안군 당산마루"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-1",
+          "name": "개미집",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 26",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "개미집 임실군",
+            "개미집 전북특별자치도 임실군 임실읍 운수로 26",
+            "전북 임실군 개미집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-2",
+          "name": "이도냉면숯불갈비",
+          "currentAddress": "전북특별자치도 임실군 임실읍 호국로 1716-4",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "이도냉면숯불갈비 임실군",
+            "이도냉면숯불갈비 전북특별자치도 임실군 임실읍 호국로 1716-4",
+            "전북 임실군 이도냉면숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-3",
+          "name": "도봉집",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 26",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "도봉집 임실군",
+            "도봉집 전북특별자치도 임실군 임실읍 운수로 26",
+            "전북 임실군 도봉집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-4",
+          "name": "여무누리한우&치즈",
+          "currentAddress": "전북특별자치도 임실군 임실읍 치즈마을2길 36-3",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "여무누리한우&치즈 임실군",
+            "여무누리한우&치즈 전북특별자치도 임실군 임실읍 치즈마을2길 36-3",
+            "전북 임실군 여무누리한우&치즈"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-5",
+          "name": "임실수제비",
+          "currentAddress": "전북특별자치도 임실군 임실읍 봉황로 134",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "임실수제비 임실군",
+            "임실수제비 전북특별자치도 임실군 임실읍 봉황로 134",
+            "전북 임실군 임실수제비"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-6",
+          "name": "기센장어구이",
+          "currentAddress": "전북특별자치도 임실군 임실읍 감천로 20",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "기센장어구이 임실군",
+            "기센장어구이 전북특별자치도 임실군 임실읍 감천로 20",
+            "전북 임실군 기센장어구이"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-7",
+          "name": "임실축협한우명품관",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 6",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "임실축협한우명품관 임실군",
+            "임실축협한우명품관 전북특별자치도 임실군 임실읍 운수로 6",
+            "전북 임실군 임실축협한우명품관"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-8",
+          "name": "갈마가든",
+          "currentAddress": "전북특별자치도 임실군 임실읍 호국로 1880-5",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "갈마가든 임실군",
+            "갈마가든 전북특별자치도 임실군 임실읍 호국로 1880-5",
+            "전북 임실군 갈마가든"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-9",
+          "name": "청웅반점",
+          "currentAddress": "전북특별자치도 임실군 청웅면 청웅로 172-1",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "청웅반점 임실군",
+            "청웅반점 전북특별자치도 임실군 청웅면 청웅로 172-1",
+            "전북 임실군 청웅반점"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-10",
+          "name": "옥정호산장",
+          "currentAddress": "전북특별자치도 임실군 운암면 운정길 7",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "옥정호산장 임실군",
+            "옥정호산장 전북특별자치도 임실군 운암면 운정길 7",
+            "전북 임실군 옥정호산장"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-11",
+          "name": "강남 참게장 전문",
+          "currentAddress": "전북특별자치도 임실군 운암면 강운로 1175-20",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "강남 참게장 전문 임실군",
+            "강남 참게장 전문 전북특별자치도 임실군 운암면 강운로 1175-20",
+            "전북 임실군 강남 참게장 전문"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-12",
+          "name": "시골밥상",
+          "currentAddress": "전북특별자치도 임실군 운암면 강운로 991-63",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "시골밥상 임실군",
+            "시골밥상 전북특별자치도 임실군 운암면 강운로 991-63",
+            "전북 임실군 시골밥상"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-13",
+          "name": "상운암전주식당",
+          "currentAddress": "전북특별자치도 임실군 운암면 임운로 1875-4",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "상운암전주식당 임실군",
+            "상운암전주식당 전북특별자치도 임실군 운암면 임운로 1875-4",
+            "전북 임실군 상운암전주식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-14",
+          "name": "운암5호",
+          "currentAddress": "전북특별자치도 임실군 운암면 종운로 802-19",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "운암5호 임실군",
+            "운암5호 전북특별자치도 임실군 운암면 종운로 802-19",
+            "전북 임실군 운암5호"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-15",
+          "name": "옥정호한우정육식당",
+          "currentAddress": "전북특별자치도 임실군 운암면 상운길 42",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "옥정호한우정육식당 임실군",
+            "옥정호한우정육식당 전북특별자치도 임실군 운암면 상운길 42",
+            "전북 임실군 옥정호한우정육식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-16",
+          "name": "수궁반점",
+          "currentAddress": "전북특별자치도 임실군 신평면 석등슬치로 351",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "수궁반점 임실군",
+            "수궁반점 전북특별자치도 임실군 신평면 석등슬치로 351",
+            "전북 임실군 수궁반점"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-17",
+          "name": "한우랑돼지랑",
+          "currentAddress": "전북특별자치도 임실군 오수면 삼일로 6-1",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "한우랑돼지랑 임실군",
+            "한우랑돼지랑 전북특별자치도 임실군 오수면 삼일로 6-1",
+            "전북 임실군 한우랑돼지랑"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-18",
+          "name": "초원장",
+          "currentAddress": "전북특별자치도 임실군 관촌면 사선2길 46-14",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "초원장 임실군",
+            "초원장 전북특별자치도 임실군 관촌면 사선2길 46-14",
+            "전북 임실군 초원장"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-19",
+          "name": "성심회관",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 11",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "성심회관 임실군",
+            "성심회관 전북특별자치도 임실군 강진면 호국로 11",
+            "전북 임실군 성심회관"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-20",
+          "name": "천담집",
+          "currentAddress": "전북특별자치도 임실군 강진면 강동로 1330",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "천담집 임실군",
+            "천담집 전북특별자치도 임실군 강진면 강동로 1330",
+            "전북 임실군 천담집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-21",
+          "name": "가나안식당",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 26-1",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "가나안식당 임실군",
+            "가나안식당 전북특별자치도 임실군 강진면 호국로 26-1",
+            "전북 임실군 가나안식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-imsil-22",
+          "name": "섬진강두부마을",
+          "currentAddress": "전북특별자치도 임실군 덕치면 인덕로 1164",
+          "currentAddressStatus": "기존 등재 주소(현재 동일한 업소·지점/이전 여부 재검증 대기)",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "섬진강두부마을 임실군",
+            "섬진강두부마을 전북특별자치도 임실군 덕치면 인덕로 1164",
+            "전북 임실군 섬진강두부마을"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "기존 등록된 업소·주소·출처를 대조 대상으로 분류. 이번 회차에 같은 상호·지점·현주소와 일치하는 공개 수치좌표는 별도 확정하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-gochang-eel-couple",
+          "name": "장어파는부부",
+          "currentAddress": "전북특별자치도 고창군 아산면 인천강서길 417",
+          "currentAddressStatus": "고창군 공식 명단에서 해당 주소 확인",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "장어파는부부 고창군",
+            "장어파는부부 전북특별자치도 고창군 아산면 인천강서길 417",
+            "전북 고창군 장어파는부부"
+          ],
+          "evidenceUrls": [
+            "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=837370&menuCd=DOM_000000403001001000&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "고창군 문화관광 공식 명단의 상호·주소 확인. 정확한 식당 수치 좌표를 공개 근거로 확인하지 못함.",
+          "reason": "현재 업소·지점·현주소에 일치하는 검증 가능한 숫자좌표 근거 미확보. 좌표 누락을 폐업·선정 취소로 간주하지 않음."
+        }
+      ],
+      "unresolved": [
+        "임실군 2026-01-07 최신 맛집 지정명단 HWP 식당별 자료 미대조",
+        "순창군·부안군 새로운 공식 지정 업소/정확 좌표 확인 근거 부족",
+        "고창군 공식 모범음식점 목록 348건(반복·시험 항목 포함) 전체 대조 미완료",
+        "4개 군 기존 등재 좌표 34곳 및 신규 1곳의 수치좌표와 현재 영업 상태는 검증되지 않음",
+        "1순환 72회차는 최신 운영 기록에 없어서 실행 여부 확인되지 않음. 누락이면 다음 순환 동일 회차에서 우선 보충"
+      ],
+      "carryOver": [
+        "1순환67회차 누락 기록 이전 보존",
+        "전북53회차 미완료 공식 명단 대조",
+        "1순환72회차 운영 기록 부재(완료 단정 금지)",
+        "고창군 다른 공식 식당의 중복·주소·영업상태 후속 검증"
+      ],
+      "nextSlot": 74,
+      "nextRegions": [
+        "전남광주통합특별시 담양군",
+        "전남광주통합특별시 곡성군",
+        "전남광주통합특별시 구례군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -65981,6 +66805,7 @@
     "2026-11-08 14시 순환1/68 충북 보은·옥천·영동·증평: 옥천군 지정 명단 새25·기존5 이력 병합, 좌표1(한알천), 비노출0, 재확인 대기41(기본DB 기존17+신규24). 67회차 기록 부재 및 전북 미완료 이월.",
     "2026-11-08 14시 순환1/68 이어하기: 영동군 모범음식점 명단에서 새5곳(모범업소 수록), 좌표3곳, 제외0, 해당 지역 대기43. 기존 옥천25·기존 선정이력5·한알천 좌표1 및 누락 67회차 기록 보존.",
     "2026-11-08 16시 순환1/70: 금산군 모범음식점 신규19·기존1 이력병합, 좌표0·목록제외0·4개군 위치 재확인47. 머들령 주소 이월. 홍성·예산·태안 다음.",
-    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조."
+    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조.",
+    "2026-11-08 19시 순환1/73: 임실·순창·고창·부안 공식 자료·기존 위치 누락 점검. 고창 공식 모범음식점 1곳 추가, 위치좌표 보강0, 비노출0, 기존34+신규1=35 재확인 대기. 72회차 기록 부재와 임실 2026 HWP/다른 3군 확장 대조 이월."
   ]
 }
