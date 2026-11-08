@@ -4,7 +4,7 @@
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
-  const removalTimers=new Set(),REMOVE_MS=120,MIN_START_TILE=44;
+  const removalTimers=new Set(),REMOVE_MS=100,MIN_START_TILE=44,TOUCH_SLOP=14;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -169,14 +169,10 @@
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
+    // Always open with the entire board visible, including on small phones.
     const viewport=$('board-scroll');
-    if(fitSize<MIN_START_TILE){
-      // Readable finger-sized tiles come first; the full-board view remains one tap away.
-      overview=false;customSize=MIN_START_TILE;sizeBoard();
-      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
-      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
-      $('status').textContent='패를 크게 표시했어요. 밀어서 이동하고, 전체 보기로 한눈에 볼 수 있어요.';
-    }else{viewport.scrollTop=0;viewport.scrollLeft=0;}
+    viewport.scrollTop=0;viewport.scrollLeft=0;
+    if(fitSize<MIN_START_TILE)$('status').textContent='전체 게임판이에요. 패가 작다면 ＋ 또는 두 손가락으로 확대해 주세요.';
   }
   function ensureMove(){
     if(!count()||availableMove())return false;
@@ -194,25 +190,25 @@
     if(selected&&selected.layer===p.layer&&selected.r===p.r&&selected.c===p.c){clearSelection();return;}
     if(!selected){const suggested=hints.some(q=>q.layer===p.layer&&q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
-    if(a.layer!==p.layer||grids[a.layer][a.r][a.c]!==grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');wrongPair('같은 그림의 패를 찾아주세요.');return;}
+    if(a.layer!==p.layer||grids[a.layer][a.r][a.c]!==grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');wrongPair(a.layer!==p.layer?'같은 층에 있는 패끼리 연결할 수 있어요.':'같은 그림의 패를 찾아주세요.');return;}
     const route=E.path(grid,a,p);
     if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');wrongPair('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
     const floorCleared=occupied(grid)===2,willFinish=count()===2;
     const finishDuration=willFinish?ms():null;clearSelection();draw(route,false,p.layer);sound('match');
     const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
-    buttons.forEach(button=>{button.classList.add('removing');button.disabled=true;});
     // Save and queue completion before animation: leaving now must not lose a record.
     grid[a.r][a.c]=E.EMPTY;grid[p.r][p.c]=E.EMPTY;
     if(floorCleared)state.floor=firstOccupiedLayer();
     if(willFinish)finish(finishDuration,false);
     else{save();updateStats();$('status').textContent=floorCleared?'한 층을 비웠어요! 다른 층의 겹침도 살펴보세요.':'잘 연결했어요! 새로 드러난 패도 살펴보세요.';}
+    // Make the removed tiles disappear before exposing lower tiles. A quick
+    // second tap must hit exactly the tile the player can now see.
+    for(const button of buttons){button.className='tile empty';button.disabled=true;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
     refreshCoverage();
     clearTimeout(moveTimer);
     const runId=state.runId,timer=setTimeout(()=>{
       removalTimers.delete(timer);
       if(state.runId!==runId)return;
-      // Keep the other tiles in place instead of rebuilding the whole board.
-      for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
       if($('connection').firstElementChild===line)$('connection').replaceChildren();
       if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}
       const next=$('board').querySelector('.tile:not(:disabled)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});
@@ -340,6 +336,23 @@
   $('options-close').onclick=()=>$('options').close();
   const viewport=$('board-scroll'),pointers=new Map();let pinch=null,dragging=false,ignoreClickUntil=0;
   function tileSize(){return parseFloat(getComputedStyle($('board-canvas')).getPropertyValue('--tile'));}
+  function touchTarget(event){
+    const direct=event.target.closest?.('.tile');
+    if(direct)return direct.disabled?null:direct;
+    if(!event.target.closest?.('#board')||!document.elementFromPoint)return null;
+    // Include narrow gaps between tiles without sweeping over an entire row.
+    const radius=Math.min(10,Math.max(4,tileSize()*.3));
+    const offsets=[[radius,0],[-radius,0],[0,radius],[0,-radius],[radius,radius],[-radius,radius],[radius,-radius],[-radius,-radius]];
+    let closest=null,distance=Infinity;
+    for(const [dx,dy] of offsets){
+      const tile=document.elementFromPoint(event.clientX+dx,event.clientY+dy)?.closest?.('.tile:not(:disabled)');
+      if(!tile)continue;
+      const rect=tile.getBoundingClientRect(),x=Math.max(rect.left,Math.min(rect.right,event.clientX)),y=Math.max(rect.top,Math.min(rect.bottom,event.clientY));
+      const d=Math.hypot(x-event.clientX,y-event.clientY);
+      if(d<distance){closest=tile;distance=d;}
+    }
+    return closest;
+  }
   function zoomBoard(requested,x,y){
     const rect=viewport.getBoundingClientRect(),canvas=$('board-canvas'),before=canvas.getBoundingClientRect();
     x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
@@ -355,7 +368,7 @@
   viewport.addEventListener('pointerdown',event=>{
     if(event.pointerType==='mouse'){ignoreClickUntil=0;return;}
     if(!['touch','pen'].includes(event.pointerType)||pointers.size>=2)return;
-    const button=event.target.closest('.tile:not(:disabled)');
+    const button=touchTarget(event);
     pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,button});
     if(pointers.size===2){clearPressed();pinch={...pair(),size:tileSize()};dragging=true;for(const id of pointers.keys())capture(id);event.preventDefault();}
     else{dragging=false;if(!locked&&!state.pendingPurchase&&!$('modal').open&&!$('options').open)button?.classList.add('pressed');}
@@ -367,13 +380,13 @@
       const next=pair();event.preventDefault();zoomBoard(pinch.size*next.distance/pinch.distance,pinch.x,pinch.y);
       viewport.scrollLeft+=pinch.x-next.x;viewport.scrollTop+=pinch.y-next.y;pinch.x=next.x;pinch.y=next.y;
     }else{
-      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>6){dragging=true;clearPressed();capture(event.pointerId);}
+      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>TOUCH_SLOP){dragging=true;clearPressed();capture(event.pointerId);}
       if(dragging){event.preventDefault();viewport.scrollLeft-=dx;viewport.scrollTop-=dy;}
     }
   },{passive:false});
   function endPointer(event){
     const point=pointers.get(event.pointerId);if(!point)return;
-    const tap=event.type==='pointerup'&&!dragging&&!pinch&&Math.hypot(event.clientX-point.startX,event.clientY-point.startY)<=6;
+    const tap=event.type==='pointerup'&&!dragging&&!pinch&&Math.hypot(event.clientX-point.startX,event.clientY-point.startY)<=TOUCH_SLOP;
     point.button?.classList.remove('pressed');ignoreClickUntil=Date.now()+700;
     pointers.delete(event.pointerId);pinch=null;if(!pointers.size)dragging=false;
     // Commit a tap on release, without waiting for the browser's compatibility click.

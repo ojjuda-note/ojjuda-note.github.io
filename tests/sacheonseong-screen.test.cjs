@@ -57,8 +57,7 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   assert.deepEqual(remaining(),[total,total],label+': counter includes lower floors');
   assert.equal(Number(canvas.style.getPropertyValue('--n')),cols,label+': grid CSS columns');
   assert.equal(d.getElementById('stage-label').textContent,stage+'단계'+(info.layerCount>1?' · '+info.layerCount+'층 남음':''));
-  assert(parseFloat(canvas.style.getPropertyValue('--tile'))>=44-.01,label+': default tiles are readable without pinching');
-  if(d.getElementById('zoom-fit').getAttribute('aria-pressed')==='false')d.getElementById('zoom-fit').click();
+  assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'true',label+': new games start with the whole board visible');
   if(stage<=2)assert.equal(active,rows*cols,label+': tutorial is rectangular');
   else assert(active<rows*cols,label+': complex silhouette has spaces');
   const assertFit=()=>{
@@ -86,6 +85,7 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
    assert.deepEqual(remaining(),[total,total]);
   }
   b.click();const after=saved();
+  assert(a.classList.contains('empty')&&b.classList.contains('empty'),label+': matched tiles disappear immediately so the next touch sees the right floor');
   const changed=move.a.layer===0?after.grid:after.upcoming[move.a.layer-1];
   assert.equal(occupied(changed),occupied(every[move.a.layer])-2,label+': matched pair removed from its own floor');
   assert.deepEqual(remaining(),[total-2,total],label+': correct remaining count');
@@ -94,6 +94,16 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   assert.deepEqual(JSON.parse(w.localStorage.getItem(RECORDS)),oldRecords);
   d.getElementById('zoom-in').click();assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'false');
   d.getElementById('zoom-fit').click();assertFit();
+  const nextTile=d.querySelector('.tile:not(:disabled)');
+  if(nextTile){
+   const touch=(type,x,y)=>{const e=new w.MouseEvent(type,{bubbles:true,clientX:x,clientY:y});Object.defineProperties(e,{pointerId:{value:42},pointerType:{value:'touch'}});return e;};
+   nextTile.dispatchEvent(touch('pointerdown',100,100));
+   w.dispatchEvent(touch('pointermove',109,106));
+   w.dispatchEvent(touch('pointerup',109,106));
+   assert.equal(nextTile.getAttribute('aria-pressed'),'true',label+': a small finger movement is still a tap');
+   nextTile.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));
+   assert.equal(nextTile.getAttribute('aria-pressed'),'true',label+': a synthetic touch click cannot cancel the selection');
+  }
   d.getElementById('options-open').click();assert(d.getElementById('options').open);
   d.getElementById('ranking').click();assert(d.getElementById('modal').open);
   d.getElementById('modal-close').click();
