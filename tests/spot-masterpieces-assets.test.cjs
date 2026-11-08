@@ -75,7 +75,7 @@ load('puzzles.js');
 load('photo-puzzles.js');
 const legacy = JSON.stringify(context.window.JJUDA_PUZZLES);
 assert.equal(context.window.JJUDA_PUZZLES.length, 62);
-assert.ok(context.window.JJUDA_PUZZLES.every(puzzle => puzzle.spots.length === 6));
+assert.ok(context.window.JJUDA_PUZZLES.every(puzzle => puzzle.spots.length === (puzzle.id === 62 ? 10 : 6)));
 load('masterpiece-puzzles.js');
 const puzzles = plain(context.window.JJUDA_PUZZLES);
 assert.equal(puzzles.length, 82, '62 existing stages plus 20 masterpieces');
@@ -203,4 +203,4 @@ for (const puzzle of puzzles.slice(62)) {
 
 assert.equal(hitFailures.length, 0, `${hitFailures.length} registered answer points are not clickable as the correct answer:\n${hitFailures.slice(0, 30).join('\n')}`);
 assert.equal(sources.size, 20);
-console.log(`PASS: 82 stages, 62 unchanged six-answer puzzles, 20 original JPEG hashes, ${verifiedPngs.size} aligned PNG assets, ${verifiedPublishedAssets.size} publish-manifest hashes, 200 separate edit masks, ${hitChecks} center/corner hits, and HTTPS museum attribution; repository files only`);
+console.log(`PASS: 82 stages, 61 six-answer puzzles plus stage 62 with ten answers, 20 original JPEG hashes, ${verifiedPngs.size} aligned PNG assets, ${verifiedPublishedAssets.size} publish-manifest hashes, 200 separate edit masks, ${hitChecks} center/corner hits, and HTTPS museum attribution; repository files only`);
