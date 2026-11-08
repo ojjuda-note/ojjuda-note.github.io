@@ -27,5 +27,9 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule, {once:true});
   else schedule();
-  new MutationObserver(schedule).observe(document.documentElement, {childList:true,subtree:true});
+  new MutationObserver(records => {
+    if (records.some(record => [...record.addedNodes].some(node =>
+      node.nodeType === 1 && (node.matches?.('[data-arcade-games="solo"]') ||
+        node.querySelector?.('[data-arcade-games="solo"]'))))) schedule();
+  }).observe(document.body, {childList:true,subtree:true});
 })();

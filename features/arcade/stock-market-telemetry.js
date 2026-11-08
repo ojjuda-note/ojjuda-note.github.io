@@ -82,11 +82,13 @@
   document.addEventListener('keydown',noteInput,true);
 
   // A game may close without navigating away from the arcade tab.
-  const watcher = new MutationObserver(() => {
+  const activityChanged = () => {
     if (active && !gameVisible()) void finish();
     if (!active && candidate && gameVisible()) void start(candidate);
-  });
-  watcher.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  };
+  // Game shells are mounted/unmounted; body classes cover the canvas games.
+  new MutationObserver(activityChanged).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(activityChanged).observe(document.body,{attributes:true,attributeFilter:['class']});
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { candidate = null; void finish(); }
   });
