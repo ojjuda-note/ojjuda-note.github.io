@@ -100,3 +100,14 @@ dialog{max-height:calc(100dvh - 24px);overflow:auto}
 .completion .game-result-card .win-time{font-size:inherit;display:inline}
 .completion .game-result-card small{margin-top:4px}
 
+/* Floor colors are tied to the visible 1–8 floor labels, not the stage number. */
+.tile-layer[data-floor="1"]{--floor-card-light:#fff9ed;--floor-card-shade:#f3dcaa}
+.tile-layer[data-floor="2"]{--floor-card-light:#ecf8ff;--floor-card-shade:#c7e5f6}
+.tile-layer[data-floor="3"]{--floor-card-light:#f6efff;--floor-card-shade:#ddc9f2}
+.tile-layer[data-floor="4"]{--floor-card-light:#effbf1;--floor-card-shade:#c7e8cb}
+.tile-layer[data-floor="5"]{--floor-card-light:#fff1e9;--floor-card-shade:#f2c9b4}
+.tile-layer[data-floor="6"]{--floor-card-light:#fff1f8;--floor-card-shade:#f1c5db}
+.tile-layer[data-floor="7"]{--floor-card-light:#e9faf8;--floor-card-shade:#b9e5df}
+.tile-layer[data-floor="8"]{--floor-card-light:#f0f2ff;--floor-card-shade:#cbd4f7}
+.tile-layer .tile:not(.empty){background:linear-gradient(145deg,var(--floor-card-light,#fffef9),var(--floor-card-shade,#f7efd9))}
+.tile-layer .tile:not(.empty):not(:disabled):hover{background:linear-gradient(145deg,#ffffff88,#ffffff08),linear-gradient(145deg,var(--floor-card-light,#fffef9),var(--floor-card-shade,#f7efd9))}

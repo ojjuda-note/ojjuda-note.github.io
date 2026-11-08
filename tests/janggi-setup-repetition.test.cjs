@@ -63,6 +63,7 @@ test('the visible pre-game chooser selects actual starting pieces and reopens fo
  try{
   w.eval(engineSource);
   w.eval(world.slice(world.indexOf('var Xe='),world.indexOf('function pa(')));
+  w.JG_EXTRA_LEVELS=[['pro','프로'],['master','마스터'],['grandmaster','그랜드마스터']];
   w.eval(world.slice(world.indexOf('function jgChooser('),world.indexOf('async function vn(')));
   w.eval(world.slice(world.indexOf('var Qp={'),world.indexOf('var to=[]')));
   w.g={};w.D={online:false};w.newPracticeStreakRound=()=>null;w.ln=async()=>'<button data-online-invite>초대</button>';

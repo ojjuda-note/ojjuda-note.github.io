@@ -1,14 +1,14 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-janggi-pro-ai1'
+ const revision='20261108-janggi-level-grid1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
   group:'1.2.1',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
-  restaurants:'1.11.33',
+  restaurants:'1.11.34',
   recommendations:'1.6.1',
   archery:'3.2.1',
   roulette:'1.9.1',
@@ -17,7 +17,7 @@
   tank:'1.6.0',
   solitaire:'1.2.1',
   mines:'1.4.1',
-  sacheonseong:'1.14.2',
+  sacheonseong:'1.14.3',
   saetbyeol:'1.3.1',
   tour:'1.5.1',
   ttang:'1.6.0',
@@ -28,7 +28,7 @@
   breakout:'1.6.4',
   spot:'1.11.10',
   screw:'2.22.3',
-  janggi:'1.8.0',
+  janggi:'1.9.1',
   chess:'1.4.4',
   billiards:'1.4.4',
   matgo:'1.5.1'
@@ -43,12 +43,12 @@
   group:[],
   byeolcheonji:[],
   festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261107-festival-location2'],
-  restaurants:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261108-restaurants-slot70-geumsan19','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
+  restaurants:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261108-restaurants-slot71-taean12-yesan12','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
   recommendations:[...restaurantRatings,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261106-source-folders1'],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261106-source-folders1'],
   roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261106-source-folders1'],
   bang:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/bang/world-bang-game.js?v=20261106-source-folders1'],
-  sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261108-sacheonseong-zoom-controls1'],
+  sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261108-sacheonseong-floor-colors1'],
   poker:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.js?v=20261106-poker-red1'],
   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261106-source-folders1'],
   solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261107-solitaire-hold250-1'],
