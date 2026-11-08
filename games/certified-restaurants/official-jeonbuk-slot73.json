@@ -1,0 +1,1463 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 73,
+  "scheduledAtKST": "2026-11-08T19:00:00+09:00",
+  "sourceName": "전북 부안·순창 공식 모범음식점, 고창 문화관광 음식점",
+  "sourceUrls": [
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+    "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=7",
+    "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+    "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+    "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772889&menuCd=DOM_000000403001001000",
+    "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772903&menuCd=DOM_000000403001001000"
+  ],
+  "completeRegionalCollection": false,
+  "listedCountsAtSource": {
+    "부안군": 37,
+    "순창군": 14,
+    "고창군": 2
+  },
+  "addedCount": 48,
+  "enrichedCount": 5,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmed": 0,
+  "notes": [
+    "부안군 모범음식점 공식 7쪽 37곳과 순창군 모범음식점 2쪽 14곳, 고창 문화관광 개별 2곳을 이름·주소로 대조.",
+    "이미 있던 식당 5곳은 중복 생성하지 않고 기존 ID의 공식 명단 수록 이력을 추가.",
+    "지정 연도·현영업 상태·수치좌표 및 정규 블루리본 등급은 추정하지 않음. 전 지역 전수조사 완료 아님."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonbuk-slot73-buan-01",
+      "name": "강식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 행안면 매창로 52",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우·비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-02",
+      "name": "격포항횟집",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 격포항길 24-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-03",
+      "name": "고창부안축협 한우명품관",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 번영로 85-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-04",
+      "name": "곰소꽃게장",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 청자로 1217",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃게장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-05",
+      "name": "누들보쌈족발 변산점",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산로 1788",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-06",
+      "name": "대신수산식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 격포항길 51",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃게탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-07",
+      "name": "더테이블",
+      "category": "기타",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산해변로 51",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "뷔페"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-08",
+      "name": "라벤하임상록점",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 궁항로 72",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한식뷔페"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-09",
+      "name": "목살집부안점",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 오리정로 156",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "목살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-10",
+      "name": "백합골",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 청자로 894",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "백합죽"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-11",
+      "name": "백합식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산해변로 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "백합돌솥밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-12",
+      "name": "부안연가",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 용계길 53",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-13",
+      "name": "부안장수촌",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 서신1길 22",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-14",
+      "name": "부안초밥집",
+      "category": "일식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 부풍로 57",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "초밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-15",
+      "name": "부안할매바지락죽",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 하서면 변산로 1453",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바지락죽"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-16",
+      "name": "산호초횟집",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산로 1802",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-17",
+      "name": "새전주횟집",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산해변로 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모둠회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-18",
+      "name": "설악냉면",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 동중길 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-19",
+      "name": "수라청",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 오리정로 104",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고기구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-20",
+      "name": "아리랑 명품 추어탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 예술회관길 23",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-21",
+      "name": "아리랑꽃게랑",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 청자로 976",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃게장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-22",
+      "name": "아향설렁탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 석정로 205-17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "설렁탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-23",
+      "name": "원조해물칼국수",
+      "category": "분식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 청자로 912",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-24",
+      "name": "유한회사 부안솔가",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 쟁갈송학길 61",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-25",
+      "name": "장수갈비",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 동중3길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-26",
+      "name": "전라도매운탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 부령로 99",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "민물매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-27",
+      "name": "정은수산회타운",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 곰소항길 60",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-28",
+      "name": "채석강맛집",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 변산면 변산해변로 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃게장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-29",
+      "name": "칠산꽃게장전문점",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 진서면 청자로 906",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "꽃게장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-30",
+      "name": "풍차백합바지락죽큰집",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 하서면 변산로 1449",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "바지락죽"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-31",
+      "name": "풍천장어 을가람",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 용암로 54",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-32",
+      "name": "한오백년추어탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 석정로 252 105호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-buan-33",
+      "name": "현대옥부안점",
+      "category": "한식",
+      "region": "전북",
+      "district": "부안군",
+      "address": "전북특별자치도 부안군 부안읍 오리정로 170",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "콩나물국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=7",
+          "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=7",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-01",
+      "name": "가마솥",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창로 205-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곰탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-02",
+      "name": "녹원",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창5길 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-03",
+      "name": "다미식당",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 옥천로 34",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기 쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-04",
+      "name": "대궁",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창로 5길 20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기 정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-05",
+      "name": "돈까스클라스",
+      "category": "양식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 금산로 8-15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈까스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-06",
+      "name": "뜨란채",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 팔덕면 강천로 664-26",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "고추장불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-07",
+      "name": "모아식당",
+      "category": "분식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창11길 18-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수제비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-08",
+      "name": "물통골 한우마을",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창로 137(가남리)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-09",
+      "name": "본때감자탕",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창11길 8-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "감자탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-10",
+      "name": "순창맛집",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 민속마을길 6-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기 전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-11",
+      "name": "엄마손",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 복흥면 정산로 19",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우불백"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-12",
+      "name": "옥천면옥",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 순창2길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-sunchang-13",
+      "name": "텃밭",
+      "category": "한식",
+      "region": "전북",
+      "district": "순창군",
+      "address": "전북특별자치도 순창군 순창읍 장류로 401-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기 쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "순창군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+          "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-gochang-01",
+      "name": "양자강",
+      "category": "중식",
+      "region": "전북",
+      "district": "고창군",
+      "address": "전북특별자치도 고창군 고창읍 동리로 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "자장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "고창군 문화관광 음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772889&menuCd=DOM_000000403001001000",
+          "sourceName": "고창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772889&menuCd=DOM_000000403001001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonbuk-slot73-gochang-02",
+      "name": "병암산가든",
+      "category": "한식",
+      "region": "전북",
+      "district": "고창군",
+      "address": "전북특별자치도 고창군 아산면 인천강변로 468-35",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "옻닭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "고창군 문화관광 음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772903&menuCd=DOM_000000403001001000",
+          "sourceName": "고창군 문화관광 · 공식 공개 음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772903&menuCd=DOM_000000403001001000",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-jeonbuk-58",
+      "expectedName": "계화회관",
+      "expectedAddress": "전북특별자치도 부안군 행안면 변산로 95",
+      "guide": {
+        "provider": "local-guide",
+        "label": "부안군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+        "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+      }
+    },
+    {
+      "id": "local-jeonbuk-60",
+      "expectedName": "김인경 바지락죽",
+      "expectedAddress": "전북특별자치도 부안군 변산면 묵정길 18",
+      "guide": {
+        "provider": "local-guide",
+        "label": "부안군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+        "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+      }
+    },
+    {
+      "id": "local-jeonbuk-62",
+      "expectedName": "당산마루",
+      "expectedAddress": "전북특별자치도 부안군 부안읍 당산로 71",
+      "guide": {
+        "provider": "local-guide",
+        "label": "부안군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+        "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+      }
+    },
+    {
+      "id": "local-jeonbuk-59",
+      "expectedName": "원조바지락죽명가 변산온천산장",
+      "expectedAddress": "전북특별자치도 부안군 변산면 묵정길 83-6",
+      "guide": {
+        "provider": "local-guide",
+        "label": "부안군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+        "sourceName": "부안군 문화관광 · 공식 공개 음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+      }
+    },
+    {
+      "id": "local-jeonbuk-53",
+      "expectedName": "화탄매운탕",
+      "expectedAddress": "전북특별자치도 순창군 유등면 화탄길 1",
+      "guide": {
+        "provider": "local-guide",
+        "label": "순창군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+        "sourceName": "순창군 문화관광 · 공식 공개 음식점 명단",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 관광·모범음식점 명단에서 업소명과 주소 확인. 지정연도·현재 영업 여부는 별도 미확인."
+      }
+    }
+  ]
+}

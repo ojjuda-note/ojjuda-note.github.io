@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 71,
-    "scheduledAt": "2026-11-08T17:00:00+09:00",
+    "slot": 73,
+    "scheduledAt": "2026-11-08T19:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약된 17:00 KST 시각으로 회차 산출: h=66,n=70,slot71,cycle1; 실행 중 실제 확인."
+    "source": "예약 시각 19:00 KST 기준 h=68,n=72,slot73,cycle1. 직전 72회차 기록은 확인되지 않아 이월."
   },
   "entries": [
     {
@@ -65948,6 +65948,1753 @@
         "전북특별자치도 장수군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 73,
+      "scheduledAtKST": "2026-11-08T19:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_jeonbuk_48_added_5_enriched",
+      "assignedRegions": [
+        "전북특별자치도 임실군",
+        "전북특별자치도 순창군",
+        "전북특별자치도 고창군",
+        "전북특별자치도 부안군"
+      ],
+      "regionAudit": [
+        {
+          "region": "전북특별자치도 임실군",
+          "listedAfter": 24,
+          "newCount": 0,
+          "actuallyChecked": [
+            "기존 24곳의 좌표 누락 확인",
+            "과거 공식 자료는 현행 명단 근거가 아니므로 신규 반영하지 않음"
+          ],
+          "remainingAreas": [
+            "임실군 최신 공식 명단·현재 상호/주소/영업 근거 확보",
+            "24곳 위치 재확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 순창군",
+          "listedAfter": 14,
+          "newCount": 13,
+          "actuallyChecked": [
+            "순창군 문화관광 모범음식점 2쪽 14곳 상호·주소 대조",
+            "기존 화탄매운탕 ID에 출처 이력 병합"
+          ],
+          "remainingAreas": [
+            "대궁 도로명 주소 표기 독립 검증",
+            "14곳 현영업·좌표 근거 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 고창군",
+          "listedAfter": 21,
+          "newCount": 2,
+          "actuallyChecked": [
+            "고창군 문화관광 공식 업소 상세 2건 상호·주소 확인",
+            "기존 19곳 중복 대조"
+          ],
+          "remainingAreas": [
+            "군 다른 공식 음식점 명단 누락 대조",
+            "현주소·영업·좌표 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전북특별자치도 부안군",
+          "listedAfter": 38,
+          "newCount": 33,
+          "actuallyChecked": [
+            "부안군 공식 모범음식점 목록 7쪽 37건 확인",
+            "기존 4곳은 기존 ID 유지·지자체 출처 병합"
+          ],
+          "remainingAreas": [
+            "최신 명단에 없는 과거 업소의 이력 별도 재조사(명단 누락≠폐업)",
+            "현주소·좌표·영업 상태 확인"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "부안군 공식 모범음식점 7쪽 37곳",
+        "순창군 공식 모범음식점 2쪽 14곳",
+        "고창군 공식 업소 개별 2건",
+        "임실군 기존 24곳의 좌표 공란·과거 이력, 현행 명단 불확인"
+      ],
+      "additions": 48,
+      "modifications": 5,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 82,
+      "locationPendingScope": "회차 대상 임실·순창·고창·부안군 중 위치 좌표 null 82곳. 개별 공개 수치 좌표의 재검증은 미완료.",
+      "addedRestaurantIds": [
+        "local-jeonbuk-slot73-buan-01",
+        "local-jeonbuk-slot73-buan-02",
+        "local-jeonbuk-slot73-buan-03",
+        "local-jeonbuk-slot73-buan-04",
+        "local-jeonbuk-slot73-buan-05",
+        "local-jeonbuk-slot73-buan-06",
+        "local-jeonbuk-slot73-buan-07",
+        "local-jeonbuk-slot73-buan-08",
+        "local-jeonbuk-slot73-buan-09",
+        "local-jeonbuk-slot73-buan-10",
+        "local-jeonbuk-slot73-buan-11",
+        "local-jeonbuk-slot73-buan-12",
+        "local-jeonbuk-slot73-buan-13",
+        "local-jeonbuk-slot73-buan-14",
+        "local-jeonbuk-slot73-buan-15",
+        "local-jeonbuk-slot73-buan-16",
+        "local-jeonbuk-slot73-buan-17",
+        "local-jeonbuk-slot73-buan-18",
+        "local-jeonbuk-slot73-buan-19",
+        "local-jeonbuk-slot73-buan-20",
+        "local-jeonbuk-slot73-buan-21",
+        "local-jeonbuk-slot73-buan-22",
+        "local-jeonbuk-slot73-buan-23",
+        "local-jeonbuk-slot73-buan-24",
+        "local-jeonbuk-slot73-buan-25",
+        "local-jeonbuk-slot73-buan-26",
+        "local-jeonbuk-slot73-buan-27",
+        "local-jeonbuk-slot73-buan-28",
+        "local-jeonbuk-slot73-buan-29",
+        "local-jeonbuk-slot73-buan-30",
+        "local-jeonbuk-slot73-buan-31",
+        "local-jeonbuk-slot73-buan-32",
+        "local-jeonbuk-slot73-buan-33",
+        "local-jeonbuk-slot73-sunchang-01",
+        "local-jeonbuk-slot73-sunchang-02",
+        "local-jeonbuk-slot73-sunchang-03",
+        "local-jeonbuk-slot73-sunchang-04",
+        "local-jeonbuk-slot73-sunchang-05",
+        "local-jeonbuk-slot73-sunchang-06",
+        "local-jeonbuk-slot73-sunchang-07",
+        "local-jeonbuk-slot73-sunchang-08",
+        "local-jeonbuk-slot73-sunchang-09",
+        "local-jeonbuk-slot73-sunchang-10",
+        "local-jeonbuk-slot73-sunchang-11",
+        "local-jeonbuk-slot73-sunchang-12",
+        "local-jeonbuk-slot73-sunchang-13",
+        "local-jeonbuk-slot73-gochang-01",
+        "local-jeonbuk-slot73-gochang-02"
+      ],
+      "modifiedRestaurantIds": [
+        "local-jeonbuk-58",
+        "local-jeonbuk-60",
+        "local-jeonbuk-62",
+        "local-jeonbuk-59",
+        "local-jeonbuk-53"
+      ],
+      "evidenceUrls": [
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6",
+        "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=7",
+        "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC",
+        "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2",
+        "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772889&menuCd=DOM_000000403001001000",
+        "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772903&menuCd=DOM_000000403001001000"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-jeonbuk-51",
+          "name": "길손집",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 32-5",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "길손집 임실군",
+            "길손집 전북특별자치도 임실군 강진면 호국로 32-5",
+            "전북 임실군 길손집"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-52",
+          "name": "강산에",
+          "currentAddress": "전북특별자치도 임실군 덕치면 회문3길 3",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "강산에 임실군",
+            "강산에 전북특별자치도 임실군 덕치면 회문3길 3",
+            "전북 임실군 강산에"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-53",
+          "name": "화탄매운탕",
+          "currentAddress": "전북특별자치도 순창군 유등면 화탄길 1",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "화탄매운탕 순창군",
+            "화탄매운탕 전북특별자치도 순창군 유등면 화탄길 1",
+            "전북 순창군 화탄매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-54",
+          "name": "신덕식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운사로 8",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "신덕식당 고창군",
+            "신덕식당 전북특별자치도 고창군 아산면 선운사로 8",
+            "전북 고창군 신덕식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-55",
+          "name": "유신식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운사로 25",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "유신식당 고창군",
+            "유신식당 전북특별자치도 고창군 아산면 선운사로 25",
+            "전북 고창군 유신식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-56",
+          "name": "연기식당",
+          "currentAddress": "전북특별자치도 고창군 아산면 선운대로 2727",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "연기식당 고창군",
+            "연기식당 전북특별자치도 고창군 아산면 선운대로 2727",
+            "전북 고창군 연기식당"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-57",
+          "name": "청림가든정 금자할매집",
+          "currentAddress": "전북특별자치도 고창군 아산면 인천강서길 12",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "청림가든정 금자할매집 고창군",
+            "청림가든정 금자할매집 전북특별자치도 고창군 아산면 인천강서길 12",
+            "전북 고창군 청림가든정 금자할매집"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-58",
+          "name": "계화회관",
+          "currentAddress": "전북특별자치도 부안군 행안면 변산로 95",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "계화회관 부안군",
+            "계화회관 전북특별자치도 부안군 행안면 변산로 95",
+            "전북 부안군 계화회관"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-59",
+          "name": "원조바지락죽명가 변산온천산장",
+          "currentAddress": "전북특별자치도 부안군 변산면 묵정길 83-6",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "원조바지락죽명가 변산온천산장 부안군",
+            "원조바지락죽명가 변산온천산장 전북특별자치도 부안군 변산면 묵정길 83-6",
+            "전북 부안군 원조바지락죽명가 변산온천산장"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-60",
+          "name": "김인경 바지락죽",
+          "currentAddress": "전북특별자치도 부안군 변산면 묵정길 18",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "김인경 바지락죽 부안군",
+            "김인경 바지락죽 전북특별자치도 부안군 변산면 묵정길 18",
+            "전북 부안군 김인경 바지락죽"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-61",
+          "name": "변산 명인바지락죽",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 794,2층",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "변산 명인바지락죽 부안군",
+            "변산 명인바지락죽 전북특별자치도 부안군 변산면 변산해변로 794,2층",
+            "전북 부안군 변산 명인바지락죽"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-62",
+          "name": "당산마루",
+          "currentAddress": "전북특별자치도 부안군 부안읍 당산로 71",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "당산마루 부안군",
+            "당산마루 전북특별자치도 부안군 부안읍 당산로 71",
+            "전북 부안군 당산마루"
+          ],
+          "evidenceUrls": [
+            "https://www.jeonbuk.go.kr/board/view.jeonbuk?boardId=BBS_0000166&dataSid=654327&menuCd=DOM_000000104003008001&orderBy=REGISTER_DATE%3ADESC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-1",
+          "name": "개미집",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 26",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "개미집 임실군",
+            "개미집 전북특별자치도 임실군 임실읍 운수로 26",
+            "전북 임실군 개미집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-2",
+          "name": "이도냉면숯불갈비",
+          "currentAddress": "전북특별자치도 임실군 임실읍 호국로 1716-4",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "이도냉면숯불갈비 임실군",
+            "이도냉면숯불갈비 전북특별자치도 임실군 임실읍 호국로 1716-4",
+            "전북 임실군 이도냉면숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-3",
+          "name": "도봉집",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 26",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "도봉집 임실군",
+            "도봉집 전북특별자치도 임실군 임실읍 운수로 26",
+            "전북 임실군 도봉집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-4",
+          "name": "여무누리한우&치즈",
+          "currentAddress": "전북특별자치도 임실군 임실읍 치즈마을2길 36-3",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "여무누리한우&치즈 임실군",
+            "여무누리한우&치즈 전북특별자치도 임실군 임실읍 치즈마을2길 36-3",
+            "전북 임실군 여무누리한우&치즈"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-5",
+          "name": "임실수제비",
+          "currentAddress": "전북특별자치도 임실군 임실읍 봉황로 134",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "임실수제비 임실군",
+            "임실수제비 전북특별자치도 임실군 임실읍 봉황로 134",
+            "전북 임실군 임실수제비"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-6",
+          "name": "기센장어구이",
+          "currentAddress": "전북특별자치도 임실군 임실읍 감천로 20",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "기센장어구이 임실군",
+            "기센장어구이 전북특별자치도 임실군 임실읍 감천로 20",
+            "전북 임실군 기센장어구이"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-7",
+          "name": "임실축협한우명품관",
+          "currentAddress": "전북특별자치도 임실군 임실읍 운수로 6",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "임실축협한우명품관 임실군",
+            "임실축협한우명품관 전북특별자치도 임실군 임실읍 운수로 6",
+            "전북 임실군 임실축협한우명품관"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-8",
+          "name": "갈마가든",
+          "currentAddress": "전북특별자치도 임실군 임실읍 호국로 1880-5",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "갈마가든 임실군",
+            "갈마가든 전북특별자치도 임실군 임실읍 호국로 1880-5",
+            "전북 임실군 갈마가든"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-9",
+          "name": "청웅반점",
+          "currentAddress": "전북특별자치도 임실군 청웅면 청웅로 172-1",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "청웅반점 임실군",
+            "청웅반점 전북특별자치도 임실군 청웅면 청웅로 172-1",
+            "전북 임실군 청웅반점"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-10",
+          "name": "옥정호산장",
+          "currentAddress": "전북특별자치도 임실군 운암면 운정길 7",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "옥정호산장 임실군",
+            "옥정호산장 전북특별자치도 임실군 운암면 운정길 7",
+            "전북 임실군 옥정호산장"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-11",
+          "name": "강남 참게장 전문",
+          "currentAddress": "전북특별자치도 임실군 운암면 강운로 1175-20",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "강남 참게장 전문 임실군",
+            "강남 참게장 전문 전북특별자치도 임실군 운암면 강운로 1175-20",
+            "전북 임실군 강남 참게장 전문"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-12",
+          "name": "시골밥상",
+          "currentAddress": "전북특별자치도 임실군 운암면 강운로 991-63",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "시골밥상 임실군",
+            "시골밥상 전북특별자치도 임실군 운암면 강운로 991-63",
+            "전북 임실군 시골밥상"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-13",
+          "name": "상운암전주식당",
+          "currentAddress": "전북특별자치도 임실군 운암면 임운로 1875-4",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "상운암전주식당 임실군",
+            "상운암전주식당 전북특별자치도 임실군 운암면 임운로 1875-4",
+            "전북 임실군 상운암전주식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-14",
+          "name": "운암5호",
+          "currentAddress": "전북특별자치도 임실군 운암면 종운로 802-19",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "운암5호 임실군",
+            "운암5호 전북특별자치도 임실군 운암면 종운로 802-19",
+            "전북 임실군 운암5호"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-15",
+          "name": "옥정호한우정육식당",
+          "currentAddress": "전북특별자치도 임실군 운암면 상운길 42",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "옥정호한우정육식당 임실군",
+            "옥정호한우정육식당 전북특별자치도 임실군 운암면 상운길 42",
+            "전북 임실군 옥정호한우정육식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-16",
+          "name": "수궁반점",
+          "currentAddress": "전북특별자치도 임실군 신평면 석등슬치로 351",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "수궁반점 임실군",
+            "수궁반점 전북특별자치도 임실군 신평면 석등슬치로 351",
+            "전북 임실군 수궁반점"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-17",
+          "name": "한우랑돼지랑",
+          "currentAddress": "전북특별자치도 임실군 오수면 삼일로 6-1",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "한우랑돼지랑 임실군",
+            "한우랑돼지랑 전북특별자치도 임실군 오수면 삼일로 6-1",
+            "전북 임실군 한우랑돼지랑"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-18",
+          "name": "초원장",
+          "currentAddress": "전북특별자치도 임실군 관촌면 사선2길 46-14",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "초원장 임실군",
+            "초원장 전북특별자치도 임실군 관촌면 사선2길 46-14",
+            "전북 임실군 초원장"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-19",
+          "name": "성심회관",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 11",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "성심회관 임실군",
+            "성심회관 전북특별자치도 임실군 강진면 호국로 11",
+            "전북 임실군 성심회관"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-20",
+          "name": "천담집",
+          "currentAddress": "전북특별자치도 임실군 강진면 강동로 1330",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "천담집 임실군",
+            "천담집 전북특별자치도 임실군 강진면 강동로 1330",
+            "전북 임실군 천담집"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-21",
+          "name": "가나안식당",
+          "currentAddress": "전북특별자치도 임실군 강진면 호국로 26-1",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "가나안식당 임실군",
+            "가나안식당 전북특별자치도 임실군 강진면 호국로 26-1",
+            "전북 임실군 가나안식당"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-imsil-22",
+          "name": "섬진강두부마을",
+          "currentAddress": "전북특별자치도 임실군 덕치면 인덕로 1164",
+          "region": "전북특별자치도 임실군",
+          "searchAliases": [
+            "섬진강두부마을 임실군",
+            "섬진강두부마을 전북특별자치도 임실군 덕치면 인덕로 1164",
+            "전북 임실군 섬진강두부마을"
+          ],
+          "evidenceUrls": [
+            "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&menuCd=DOM_000000108002001000&paging=ok&startPage=1&categoryCode1=72118&dataSid=136906"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-01",
+          "name": "강식당",
+          "currentAddress": "전북특별자치도 부안군 행안면 매창로 52",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "강식당 부안군",
+            "강식당 전북특별자치도 부안군 행안면 매창로 52",
+            "전북 부안군 강식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-02",
+          "name": "격포항횟집",
+          "currentAddress": "전북특별자치도 부안군 변산면 격포항길 24-5",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "격포항횟집 부안군",
+            "격포항횟집 전북특별자치도 부안군 변산면 격포항길 24-5",
+            "전북 부안군 격포항횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-03",
+          "name": "고창부안축협 한우명품관",
+          "currentAddress": "전북특별자치도 부안군 부안읍 번영로 85-1",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "고창부안축협 한우명품관 부안군",
+            "고창부안축협 한우명품관 전북특별자치도 부안군 부안읍 번영로 85-1",
+            "전북 부안군 고창부안축협 한우명품관"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-04",
+          "name": "곰소꽃게장",
+          "currentAddress": "전북특별자치도 부안군 진서면 청자로 1217",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "곰소꽃게장 부안군",
+            "곰소꽃게장 전북특별자치도 부안군 진서면 청자로 1217",
+            "전북 부안군 곰소꽃게장"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-05",
+          "name": "누들보쌈족발 변산점",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산로 1788",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "누들보쌈족발 변산점 부안군",
+            "누들보쌈족발 변산점 전북특별자치도 부안군 변산면 변산로 1788",
+            "전북 부안군 누들보쌈족발 변산점"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-06",
+          "name": "대신수산식당",
+          "currentAddress": "전북특별자치도 부안군 변산면 격포항길 51",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "대신수산식당 부안군",
+            "대신수산식당 전북특별자치도 부안군 변산면 격포항길 51",
+            "전북 부안군 대신수산식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-07",
+          "name": "더테이블",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 51",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "더테이블 부안군",
+            "더테이블 전북특별자치도 부안군 변산면 변산해변로 51",
+            "전북 부안군 더테이블"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-08",
+          "name": "라벤하임상록점",
+          "currentAddress": "전북특별자치도 부안군 변산면 궁항로 72",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "라벤하임상록점 부안군",
+            "라벤하임상록점 전북특별자치도 부안군 변산면 궁항로 72",
+            "전북 부안군 라벤하임상록점"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-09",
+          "name": "목살집부안점",
+          "currentAddress": "전북특별자치도 부안군 부안읍 오리정로 156",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "목살집부안점 부안군",
+            "목살집부안점 전북특별자치도 부안군 부안읍 오리정로 156",
+            "전북 부안군 목살집부안점"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-10",
+          "name": "백합골",
+          "currentAddress": "전북특별자치도 부안군 진서면 청자로 894",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "백합골 부안군",
+            "백합골 전북특별자치도 부안군 진서면 청자로 894",
+            "전북 부안군 백합골"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-11",
+          "name": "백합식당",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 17",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "백합식당 부안군",
+            "백합식당 전북특별자치도 부안군 변산면 변산해변로 17",
+            "전북 부안군 백합식당"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-12",
+          "name": "부안연가",
+          "currentAddress": "전북특별자치도 부안군 부안읍 용계길 53",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "부안연가 부안군",
+            "부안연가 전북특별자치도 부안군 부안읍 용계길 53",
+            "전북 부안군 부안연가"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-13",
+          "name": "부안장수촌",
+          "currentAddress": "전북특별자치도 부안군 부안읍 서신1길 22",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "부안장수촌 부안군",
+            "부안장수촌 전북특별자치도 부안군 부안읍 서신1길 22",
+            "전북 부안군 부안장수촌"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-14",
+          "name": "부안초밥집",
+          "currentAddress": "전북특별자치도 부안군 부안읍 부풍로 57",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "부안초밥집 부안군",
+            "부안초밥집 전북특별자치도 부안군 부안읍 부풍로 57",
+            "전북 부안군 부안초밥집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-15",
+          "name": "부안할매바지락죽",
+          "currentAddress": "전북특별자치도 부안군 하서면 변산로 1453",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "부안할매바지락죽 부안군",
+            "부안할매바지락죽 전북특별자치도 부안군 하서면 변산로 1453",
+            "전북 부안군 부안할매바지락죽"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=3"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-16",
+          "name": "산호초횟집",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산로 1802",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "산호초횟집 부안군",
+            "산호초횟집 전북특별자치도 부안군 변산면 변산로 1802",
+            "전북 부안군 산호초횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-17",
+          "name": "새전주횟집",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 12",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "새전주횟집 부안군",
+            "새전주횟집 전북특별자치도 부안군 변산면 변산해변로 12",
+            "전북 부안군 새전주횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-18",
+          "name": "설악냉면",
+          "currentAddress": "전북특별자치도 부안군 부안읍 동중길 29",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "설악냉면 부안군",
+            "설악냉면 전북특별자치도 부안군 부안읍 동중길 29",
+            "전북 부안군 설악냉면"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-19",
+          "name": "수라청",
+          "currentAddress": "전북특별자치도 부안군 부안읍 오리정로 104",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "수라청 부안군",
+            "수라청 전북특별자치도 부안군 부안읍 오리정로 104",
+            "전북 부안군 수라청"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-20",
+          "name": "아리랑 명품 추어탕",
+          "currentAddress": "전북특별자치도 부안군 부안읍 예술회관길 23",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "아리랑 명품 추어탕 부안군",
+            "아리랑 명품 추어탕 전북특별자치도 부안군 부안읍 예술회관길 23",
+            "전북 부안군 아리랑 명품 추어탕"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-21",
+          "name": "아리랑꽃게랑",
+          "currentAddress": "전북특별자치도 부안군 진서면 청자로 976",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "아리랑꽃게랑 부안군",
+            "아리랑꽃게랑 전북특별자치도 부안군 진서면 청자로 976",
+            "전북 부안군 아리랑꽃게랑"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=4"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-22",
+          "name": "아향설렁탕",
+          "currentAddress": "전북특별자치도 부안군 부안읍 석정로 205-17",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "아향설렁탕 부안군",
+            "아향설렁탕 전북특별자치도 부안군 부안읍 석정로 205-17",
+            "전북 부안군 아향설렁탕"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-23",
+          "name": "원조해물칼국수",
+          "currentAddress": "전북특별자치도 부안군 진서면 청자로 912",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "원조해물칼국수 부안군",
+            "원조해물칼국수 전북특별자치도 부안군 진서면 청자로 912",
+            "전북 부안군 원조해물칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-24",
+          "name": "유한회사 부안솔가",
+          "currentAddress": "전북특별자치도 부안군 부안읍 쟁갈송학길 61",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "유한회사 부안솔가 부안군",
+            "유한회사 부안솔가 전북특별자치도 부안군 부안읍 쟁갈송학길 61",
+            "전북 부안군 유한회사 부안솔가"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-25",
+          "name": "장수갈비",
+          "currentAddress": "전북특별자치도 부안군 부안읍 동중3길 17",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "장수갈비 부안군",
+            "장수갈비 전북특별자치도 부안군 부안읍 동중3길 17",
+            "전북 부안군 장수갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-26",
+          "name": "전라도매운탕",
+          "currentAddress": "전북특별자치도 부안군 부안읍 부령로 99",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "전라도매운탕 부안군",
+            "전라도매운탕 전북특별자치도 부안군 부안읍 부령로 99",
+            "전북 부안군 전라도매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=5"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-27",
+          "name": "정은수산회타운",
+          "currentAddress": "전북특별자치도 부안군 진서면 곰소항길 60",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "정은수산회타운 부안군",
+            "정은수산회타운 전북특별자치도 부안군 진서면 곰소항길 60",
+            "전북 부안군 정은수산회타운"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-28",
+          "name": "채석강맛집",
+          "currentAddress": "전북특별자치도 부안군 변산면 변산해변로 25",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "채석강맛집 부안군",
+            "채석강맛집 전북특별자치도 부안군 변산면 변산해변로 25",
+            "전북 부안군 채석강맛집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-29",
+          "name": "칠산꽃게장전문점",
+          "currentAddress": "전북특별자치도 부안군 진서면 청자로 906",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "칠산꽃게장전문점 부안군",
+            "칠산꽃게장전문점 전북특별자치도 부안군 진서면 청자로 906",
+            "전북 부안군 칠산꽃게장전문점"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-30",
+          "name": "풍차백합바지락죽큰집",
+          "currentAddress": "전북특별자치도 부안군 하서면 변산로 1449",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "풍차백합바지락죽큰집 부안군",
+            "풍차백합바지락죽큰집 전북특별자치도 부안군 하서면 변산로 1449",
+            "전북 부안군 풍차백합바지락죽큰집"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-31",
+          "name": "풍천장어 을가람",
+          "currentAddress": "전북특별자치도 부안군 부안읍 용암로 54",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "풍천장어 을가람 부안군",
+            "풍천장어 을가람 전북특별자치도 부안군 부안읍 용암로 54",
+            "전북 부안군 풍천장어 을가람"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-32",
+          "name": "한오백년추어탕",
+          "currentAddress": "전북특별자치도 부안군 부안읍 석정로 252 105호",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "한오백년추어탕 부안군",
+            "한오백년추어탕 전북특별자치도 부안군 부안읍 석정로 252 105호",
+            "전북 부안군 한오백년추어탕"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=6"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-buan-33",
+          "name": "현대옥부안점",
+          "currentAddress": "전북특별자치도 부안군 부안읍 오리정로 170",
+          "region": "전북특별자치도 부안군",
+          "searchAliases": [
+            "현대옥부안점 부안군",
+            "현대옥부안점 전북특별자치도 부안군 부안읍 오리정로 170",
+            "전북 부안군 현대옥부안점"
+          ],
+          "evidenceUrls": [
+            "https://www.buan.go.kr/tour/board/list.buan?boardId=BBS_0000245&categoryCode1=AA&menuCd=DOM_000000211002003000&orderBy=DATA_TITLE+ASC&paging=ok&startPage=7"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-01",
+          "name": "가마솥",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창로 205-9",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "가마솥 순창군",
+            "가마솥 전북특별자치도 순창군 순창읍 순창로 205-9",
+            "전북 순창군 가마솥"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-02",
+          "name": "녹원",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창5길 28",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "녹원 순창군",
+            "녹원 전북특별자치도 순창군 순창읍 순창5길 28",
+            "전북 순창군 녹원"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-03",
+          "name": "다미식당",
+          "currentAddress": "전북특별자치도 순창군 순창읍 옥천로 34",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "다미식당 순창군",
+            "다미식당 전북특별자치도 순창군 순창읍 옥천로 34",
+            "전북 순창군 다미식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-04",
+          "name": "대궁",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창로 5길 20",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "대궁 순창군",
+            "대궁 전북특별자치도 순창군 순창읍 순창로 5길 20",
+            "전북 순창군 대궁"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-05",
+          "name": "돈까스클라스",
+          "currentAddress": "전북특별자치도 순창군 순창읍 금산로 8-15",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "돈까스클라스 순창군",
+            "돈까스클라스 전북특별자치도 순창군 순창읍 금산로 8-15",
+            "전북 순창군 돈까스클라스"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-06",
+          "name": "뜨란채",
+          "currentAddress": "전북특별자치도 순창군 팔덕면 강천로 664-26",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "뜨란채 순창군",
+            "뜨란채 전북특별자치도 순창군 팔덕면 강천로 664-26",
+            "전북 순창군 뜨란채"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-07",
+          "name": "모아식당",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창11길 18-4",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "모아식당 순창군",
+            "모아식당 전북특별자치도 순창군 순창읍 순창11길 18-4",
+            "전북 순창군 모아식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-08",
+          "name": "물통골 한우마을",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창로 137(가남리)",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "물통골 한우마을 순창군",
+            "물통골 한우마을 전북특별자치도 순창군 순창읍 순창로 137(가남리)",
+            "전북 순창군 물통골 한우마을"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-09",
+          "name": "본때감자탕",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창11길 8-3",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "본때감자탕 순창군",
+            "본때감자탕 전북특별자치도 순창군 순창읍 순창11길 8-3",
+            "전북 순창군 본때감자탕"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-10",
+          "name": "순창맛집",
+          "currentAddress": "전북특별자치도 순창군 순창읍 민속마을길 6-3",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "순창맛집 순창군",
+            "순창맛집 전북특별자치도 순창군 순창읍 민속마을길 6-3",
+            "전북 순창군 순창맛집"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-11",
+          "name": "엄마손",
+          "currentAddress": "전북특별자치도 순창군 복흥면 정산로 19",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "엄마손 순창군",
+            "엄마손 전북특별자치도 순창군 복흥면 정산로 19",
+            "전북 순창군 엄마손"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-12",
+          "name": "옥천면옥",
+          "currentAddress": "전북특별자치도 순창군 순창읍 순창2길 6",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "옥천면옥 순창군",
+            "옥천면옥 전북특별자치도 순창군 순창읍 순창2길 6",
+            "전북 순창군 옥천면옥"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-sunchang-13",
+          "name": "텃밭",
+          "currentAddress": "전북특별자치도 순창군 순창읍 장류로 401-3",
+          "region": "전북특별자치도 순창군",
+          "searchAliases": [
+            "텃밭 순창군",
+            "텃밭 전북특별자치도 순창군 순창읍 장류로 401-3",
+            "전북 순창군 텃밭"
+          ],
+          "evidenceUrls": [
+            "https://www.sunchang.go.kr/tour/board/post/list.do?boardUid=ff8080819a2f0e3b019a4dd2275811fb&menuUid=ff80808199f0d907019a2de148570490&codeUids=ff8080819a2f0e3b019a4dd8d5ea1217&orders=postTtl:ASC&page=2"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-gochang-01",
+          "name": "양자강",
+          "currentAddress": "전북특별자치도 고창군 고창읍 동리로 25",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "양자강 고창군",
+            "양자강 전북특별자치도 고창군 고창읍 동리로 25",
+            "전북 고창군 양자강"
+          ],
+          "evidenceUrls": [
+            "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772889&menuCd=DOM_000000403001001000"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        },
+        {
+          "restaurantId": "local-jeonbuk-slot73-gochang-02",
+          "name": "병암산가든",
+          "currentAddress": "전북특별자치도 고창군 아산면 인천강변로 468-35",
+          "region": "전북특별자치도 고창군",
+          "searchAliases": [
+            "병암산가든 고창군",
+            "병암산가든 전북특별자치도 고창군 아산면 인천강변로 468-35",
+            "전북 고창군 병암산가든"
+          ],
+          "evidenceUrls": [
+            "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=772903&menuCd=DOM_000000403001001000"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 73,
+          "checkResult": "공식 기존·신규 기록의 상호·주소가 있으나 해당 지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 영업 여부 별도 미확인.",
+          "reason": "좌표 누락만으로 선정 취소·폐업·비노출 판단 불가. 임의 좌표 금지."
+        }
+      ],
+      "unresolved": [
+        "임실군 현행 공식 명단 확보 필요",
+        "순창 대궁 도로명 표기 재확인",
+        "전체 현재 영업·정확한 위치 수치 근거 재조사",
+        "전북 72회차 미기록 이월"
+      ],
+      "carryOver": [
+        {
+          "cycle": 1,
+          "slot": 72,
+          "scheduledAtKST": "2026-11-08T18:00:00+09:00",
+          "status": "missing_in_latest_main_audit",
+          "note": "전북 완주·진안·무주·장수군 배정 회차의 저장 기록 미확인. 완료로 간주하지 않고 다음 배정에서 우선 보충."
+        },
+        {
+          "cycle": 1,
+          "slot": 67,
+          "status": "prior_unrecorded_pending"
+        },
+        {
+          "cycle": 1,
+          "slot": 53,
+          "status": "prior_incomplete_items"
+        }
+      ],
+      "nextSlot": 74,
+      "nextRegions": [
+        "전남광주통합특별시 담양군",
+        "전남광주통합특별시 곡성군",
+        "전남광주통합특별시 구례군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -65981,6 +67728,7 @@
     "2026-11-08 14시 순환1/68 충북 보은·옥천·영동·증평: 옥천군 지정 명단 새25·기존5 이력 병합, 좌표1(한알천), 비노출0, 재확인 대기41(기본DB 기존17+신규24). 67회차 기록 부재 및 전북 미완료 이월.",
     "2026-11-08 14시 순환1/68 이어하기: 영동군 모범음식점 명단에서 새5곳(모범업소 수록), 좌표3곳, 제외0, 해당 지역 대기43. 기존 옥천25·기존 선정이력5·한알천 좌표1 및 누락 67회차 기록 보존.",
     "2026-11-08 16시 순환1/70: 금산군 모범음식점 신규19·기존1 이력병합, 좌표0·목록제외0·4개군 위치 재확인47. 머들령 주소 이월. 홍성·예산·태안 다음.",
-    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조."
+    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조.",
+    "2026-11-08 19시 순환1/73: 부안33·순창13·고창2 신규48, 기존5 지자체 수록 이력 병합. 위치보강0, 목록제외0, 4군 좌표 재확인 대기82. 임실·전북72회차 미완료 이월."
   ]
 }
