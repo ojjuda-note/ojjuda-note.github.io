@@ -4,7 +4,7 @@
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
-  const removalTimers=new Set(),REMOVE_MS=100,MIN_START_TILE=44,TOUCH_SLOP=14;
+  const removalTimers=new Set(),REMOVE_MS=120,MIN_START_TILE=44,TOUCH_SLOP=14;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -196,19 +196,20 @@
     const floorCleared=occupied(grid)===2,willFinish=count()===2;
     const finishDuration=willFinish?ms():null;clearSelection();draw(route,false,p.layer);sound('match');
     const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
+    buttons.forEach(button=>{button.classList.add('removing');button.disabled=true;});
     // Save and queue completion before animation: leaving now must not lose a record.
     grid[a.r][a.c]=E.EMPTY;grid[p.r][p.c]=E.EMPTY;
     if(floorCleared)state.floor=firstOccupiedLayer();
     if(willFinish)finish(finishDuration,false);
     else{save();updateStats();$('status').textContent=floorCleared?'한 층을 비웠어요! 다른 층의 겹침도 살펴보세요.':'잘 연결했어요! 새로 드러난 패도 살펴보세요.';}
-    // Make the removed tiles disappear before exposing lower tiles. A quick
-    // second tap must hit exactly the tile the player can now see.
-    for(const button of buttons){button.className='tile empty';button.disabled=true;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
+    // The stylesheet hides removing tiles immediately, before the newly
+    // uncovered floor accepts touch. Keep the existing completion timing.
     refreshCoverage();
     clearTimeout(moveTimer);
     const runId=state.runId,timer=setTimeout(()=>{
       removalTimers.delete(timer);
       if(state.runId!==runId)return;
+      for(const button of buttons){if(!button.isConnected)continue;button.className='tile empty';button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','빈 칸');button.removeAttribute('title');delete button.dataset.face;button.replaceChildren();}
       if($('connection').firstElementChild===line)$('connection').replaceChildren();
       if(willFinish){showCompletion(state.lastRank||1);sound('win');return;}
       const next=$('board').querySelector('.tile:not(:disabled)');if(next&&document.activeElement?.classList.contains('empty'))next.focus({preventScroll:true});

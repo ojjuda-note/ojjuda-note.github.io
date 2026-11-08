@@ -85,7 +85,7 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
    assert.deepEqual(remaining(),[total,total]);
   }
   b.click();const after=saved();
-  assert(a.classList.contains('empty')&&b.classList.contains('empty'),label+': matched tiles disappear immediately so the next touch sees the right floor');
+  assert(a.classList.contains('removing')&&b.classList.contains('removing')&&a.disabled&&b.disabled,label+': removed tiles stop receiving taps immediately');
   const changed=move.a.layer===0?after.grid:after.upcoming[move.a.layer-1];
   assert.equal(occupied(changed),occupied(every[move.a.layer])-2,label+': matched pair removed from its own floor');
   assert.deepEqual(remaining(),[total-2,total],label+': correct remaining count');
