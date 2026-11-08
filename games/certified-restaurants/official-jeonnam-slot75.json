@@ -18,42 +18,18 @@
   "completeRegionalCollection": false,
   "verifiedAt": "2026-11-08",
   "addedCount": 34,
-  "guideEnrichedCount": 7,
+  "guideEnrichedCount": 10,
   "coordinatesVerifiedCount": 0,
   "operatingStatusConfirmedCount": 0,
-  "unresolvedAddressConflicts": [
-    {
-      "id": "local-namdo-599297",
-      "name": "색동두부",
-      "existingAddress": "전남 화순군 도곡면 지강로 542",
-      "officialAddress": "화순군 도곡면 지강로 438",
-      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
-      "reason": "기존·공식 주소 충돌. 이전·지점 동일성 미확정"
-    },
-    {
-      "id": "local-namdo-599293",
-      "name": "사평다슬기수제비",
-      "existingAddress": "전남 화순군 화순읍 서양로 29",
-      "officialAddress": "화순군 화순읍 서양로 79",
-      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
-      "reason": "도로명 건물번호 29/79 충돌. 현재 주소 미확정"
-    },
-    {
-      "id": "local-namdo-3678084",
-      "name": "전원",
-      "existingAddress": "전남 화순군 도곡면 지강로 542",
-      "officialAddress": "화순군 능주면 죽수길 4",
-      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
-      "reason": "지점이나 동일 업소 여부 미확정"
-    }
-  ],
+  "unresolvedAddressConflicts": [],
   "notes": [
     "보성군 모범음식점 19곳 중 신규15·기존4 선정 이력 보강.",
     "화순군 25건 중 신규18·기존3 이력 보강. 상호·주소 충돌 3곳과 달맞이흑두부 다른 지점 보류.",
     "고흥군은 관광 상세 1곳만 대조. 3개군 전수 확인 아님.",
     "페이지 수정일/출처 확인일은 개별 선정연도가 아님.",
     "상호·현재 주소와 일치하는 수치좌표 없어서 null; 영업상태·폐업 추정하지 않음.",
-    "회원 추천 자료·사진·위치는 처리하지 않음."
+    "회원 추천 자료·사진·위치는 처리하지 않음.",
+    "1/75 이어하기: 화순군 상호·전화 확인 및 독립 관광·인허가 자료로 기존 3개 ID의 화면 표시 주소를 보완. 기본 DB는 그대로 두고 배포 로더의 보완표에서 원본 주소를 검증한 뒤 교정한다. 이전·현 영업 여부 판정 없음."
   ],
   "restaurants": [
     {
@@ -1099,5 +1075,121 @@
         "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
       }
     }
-  ]
+  ],
+  "addressEnrichments": [
+    {
+      "id": "local-namdo-599297",
+      "expectedName": "색동두부",
+      "expectedAddress": "전남 화순군 도곡면 지강로 542",
+      "newAddress": "전남 화순군 도곡면 지강로 438",
+      "telephone": "061-375-5066",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=932acd12-6ee3-4839-911e-47daf436f5cd"
+      ],
+      "officialSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "checkedAt": "2026-11-08",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 문화관광 음식점 소개",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599293",
+      "expectedName": "사평다슬기수제비",
+      "expectedAddress": "전남 화순군 화순읍 서양로 29",
+      "newAddress": "전남 화순군 화순읍 서양로 79",
+      "telephone": "061-372-6004",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://opengo.kr/5601fb560e887edf2ce924a2"
+      ],
+      "officialSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "checkedAt": "2026-11-08",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 문화관광 음식점 소개",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-3678084",
+      "expectedName": "전원",
+      "expectedAddress": "전남 화순군 도곡면 지강로 542",
+      "newAddress": "전남 화순군 능주면 죽수길 4",
+      "telephone": "061-372-1663",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://fmr.purpleo.co.kr/view/22629"
+      ],
+      "officialSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "checkedAt": "2026-11-08",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 문화관광 음식점 소개",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    }
+  ],
+  "resolvedAddressCorrections": [
+    {
+      "id": "local-namdo-599297",
+      "name": "색동두부",
+      "priorStoredAddress": "전남 화순군 도곡면 지강로 542",
+      "verifiedCurrentAddress": "전남 화순군 도곡면 지강로 438",
+      "telephone": "061-375-5066",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=932acd12-6ee3-4839-911e-47daf436f5cd"
+      ],
+      "verifiedAt": "2026-11-08",
+      "coordinateStatus": "unverified"
+    },
+    {
+      "id": "local-namdo-599293",
+      "name": "사평다슬기수제비",
+      "priorStoredAddress": "전남 화순군 화순읍 서양로 29",
+      "verifiedCurrentAddress": "전남 화순군 화순읍 서양로 79",
+      "telephone": "061-372-6004",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://opengo.kr/5601fb560e887edf2ce924a2"
+      ],
+      "verifiedAt": "2026-11-08",
+      "coordinateStatus": "unverified"
+    },
+    {
+      "id": "local-namdo-3678084",
+      "name": "전원",
+      "priorStoredAddress": "전남 화순군 도곡면 지강로 542",
+      "verifiedCurrentAddress": "전남 화순군 능주면 죽수길 4",
+      "telephone": "061-372-1663",
+      "evidenceUrls": [
+        "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "https://fmr.purpleo.co.kr/view/22629"
+      ],
+      "verifiedAt": "2026-11-08",
+      "coordinateStatus": "unverified"
+    }
+  ],
+  "displayAddressCorrectedCount": 3
 }

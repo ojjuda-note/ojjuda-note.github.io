@@ -574,7 +574,7 @@
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
       const [response, supplementResponse, seoulResponse, northeastResponse, southwestResponse, southeastResponse, incheonResponse, incheonBResponse, gyeonggiResponse, seongnamResponse, goyangPajuResponse, bucheonGimpoResponse, gyeonggiSlot12Response, gyeonggiSlot13Response, guriSlot15Response, slot17Response, slot18Response, slot19Response, slot20Response, slot21Response, slot23Response, slot25Response, slot26Response, slot27Response, slot28Response, slot30Response, slot32Response, slot33Response, slot34Response, slot36Response, slot37Response, slot38Response, slot39Response, slot41MapResponse, slot44Response, slot45LocationResponse, slot47JejuResponse, slot48SeogwipoResponse, slot49GyeonggiResponse, slot50GangwonResponse, slot51ChungbukResponse, slot52ChungnamResponse, slot55GyeongbukResponse, slot56GyeongnamResponse, slot57JejuResponse, slot59Response, slot61Response, slot62Response, slot63Response, slot64Response, slot65Response, slot66Response, slot68Response, slot69Response, slot70Response, slot71Response, slot74Response, slot75Response] = await Promise.all([
-        fetch('./restaurants.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./restaurants.json?v=20261108-restaurants-slot75-address3', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261108-restaurants-slot58-seoulblue-2', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-northeast.json?v=20261105-restaurants-seoul-oraegage2', { signal: controller.signal, cache: 'no-cache' }),
@@ -631,7 +631,7 @@
         fetch('./official-chungnam-slot70.json?v=20261108-restaurants-slot70-geumsan19', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-chungnam-slot71.json?v=20261108-restaurants-slot71-taean12-yesan12', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-jeonnam-slot74.json?v=20261108-restaurants-slot74-gokseong10', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-jeonnam-slot75.json?v=20261108-restaurants-slot75-official34', { signal: controller.signal, cache: 'no-cache' })
+        fetch('./official-jeonnam-slot75.json?v=20261108-restaurants-slot75-address3', { signal: controller.signal, cache: 'no-cache' })
       ]);
       if (!response.ok || !supplementResponse.ok || !seoulResponse.ok || !northeastResponse.ok || !southwestResponse.ok || !southeastResponse.ok || !incheonResponse.ok || !incheonBResponse.ok || !gyeonggiResponse.ok || !seongnamResponse.ok || !goyangPajuResponse.ok || !bucheonGimpoResponse.ok || !gyeonggiSlot12Response.ok || !gyeonggiSlot13Response.ok || !guriSlot15Response.ok || !slot17Response.ok || !slot18Response.ok || !slot19Response.ok || !slot20Response.ok || !slot21Response.ok || !slot23Response.ok || !slot25Response.ok || !slot26Response.ok || !slot27Response.ok || !slot28Response.ok || !slot30Response.ok || !slot32Response.ok || !slot33Response.ok || !slot34Response.ok || !slot36Response.ok || !slot37Response.ok || !slot38Response.ok || !slot39Response.ok) throw new Error('Catalog HTTP ' + response.status + '/' + supplementResponse.status + '/' + seoulResponse.status + '/' + northeastResponse.status + '/' + southwestResponse.status + '/' + southeastResponse.status + '/' + incheonResponse.status + '/' + incheonBResponse.status + '/' + gyeonggiResponse.status + '/' + seongnamResponse.status + '/' + goyangPajuResponse.status + '/' + bucheonGimpoResponse.status + '/' + gyeonggiSlot12Response.status + '/' + gyeonggiSlot13Response.status + '/' + guriSlot15Response.status + '/' + slot17Response.status + '/' + slot18Response.status + '/' + slot19Response.status + '/' + slot20Response.status + '/' + slot21Response.status + '/' + slot23Response.status + '/' + slot25Response.status + '/' + slot26Response.status + '/' + slot27Response.status + '/' + slot28Response.status + '/' + slot30Response.status + '/' + slot32Response.status + '/' + slot36Response.status + '/' + slot37Response.status + '/' + slot38Response.status + '/' + slot39Response.status);
       if (!slot41MapResponse.ok) throw new Error('Official Michelin map enrichment HTTP ' + slot41MapResponse.status);
@@ -711,6 +711,7 @@
       if (!slot71 || slot71.cycle !== 1 || slot71.slot !== 71 || !Array.isArray(slot71.restaurants) || slot71.restaurants.length !== 24 || !slot71.restaurants.every(row => row.lat === null && row.lng === null && Array.isArray(row.guides) && row.guides.some(g => g.provider === 'local-guide' && g.status === 'official_listing'))) throw new Error('Invalid Chungnam slot71 data');
       if (!slot74 || slot74.cycle !== 1 || slot74.slot !== 74 || !Array.isArray(slot74.restaurants) || slot74.restaurants.length !== 10 || !Array.isArray(slot74.guideEnrichments) || slot74.guideEnrichments.length !== 3 || !slot74.restaurants.every(row => row.lat === null && row.lng === null && row.region === '전남' && row.district === '곡성군')) throw new Error('Invalid Jeonnam slot74 official data');
       if (!slot75 || slot75.cycle !== 1 || slot75.slot !== 75 || !Array.isArray(slot75.restaurants) || slot75.restaurants.length !== 34 || !Array.isArray(slot75.guideEnrichments) || slot75.guideEnrichments.length !== 7 || !slot75.restaurants.every(x => x.region === '전남' && ['고흥군','보성군','화순군'].includes(x.district) && x.lat === null && x.lng === null && Array.isArray(x.guides) && x.guides.some(g => g.provider === 'local-guide' && g.status === 'official_listing'))) throw new Error('Invalid Jeonnam slot75 data');
+      if (!Array.isArray(slot75.addressEnrichments) || slot75.addressEnrichments.length !== 3) throw new Error('Invalid Hwasun address corrections');
       // Keep the base catalog and member recommendations unchanged; add only proven municipal listing facts.
       const combined = [...data.restaurants];
       const knownIds = new Set(combined.map(item => item.id));
@@ -773,6 +774,21 @@
         const g = patch.guide;
         if (!item || !Array.isArray(item.guides) || !g || g.provider !== 'local-guide' || !['보성군 모범음식점','화순군 모범음식점'].includes(g.label)) continue;
         if (!item.guides.some(x => x.provider === g.provider && x.label === g.label && x.sourceUrl === g.sourceUrl)) item.guides.push(g);
+      }
+      // Apply only cross-checked Hwasun county address corrections to the exact original IDs.
+      // The separate historical Namdo designation remains intact; unknown coordinates stay null.
+      for (const patch of slot75.addressEnrichments) {
+        if (!patch || !patch.id || !patch.expectedName || !patch.expectedAddress || !patch.newAddress) continue;
+        if (patch.officialSourceUrl !== 'https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05' || patch.checkedAt !== '2026-11-08') continue;
+        if (!Array.isArray(patch.evidenceUrls) || patch.evidenceUrls.length < 2) continue;
+        const item = combined.find(x => x.id === patch.id && x.name === patch.expectedName && x.address === patch.expectedAddress && x.region === '전남' && x.district === '화순군' && x.lat === null && x.lng === null);
+        const guide = patch.guide;
+        if (!item || !Array.isArray(item.guides) || !guide || guide.provider !== 'local-guide' || guide.label !== '화순군 모범음식점') continue;
+        item.address = patch.newAddress;
+        item.addressSourceUrl = patch.officialSourceUrl;
+        item.addressSourceCheckedAt = patch.checkedAt;
+        item.addressAdditionalEvidenceUrls = patch.evidenceUrls.slice(1);
+        if (!item.guides.some(g => g.provider === guide.provider && g.label === guide.label && g.sourceUrl === guide.sourceUrl)) item.guides.push(guide);
       }
       // Add the independently verified Okcheon county guide to existing saved IDs only on exact name and current address matches.
       // Keep previous selections, location information, member saves and separate restaurant identities untouched.
