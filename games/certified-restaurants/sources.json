@@ -23470,5 +23470,54 @@
       "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
       "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
     ]
+  },
+  "gyeonggiSlot64": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 64,
+    "sourceFile": "games/certified-restaurants/official-gyeonggi-slot64.json",
+    "officialSources": [
+      "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087",
+      "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113",
+      "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115",
+      "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381",
+      "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667"
+    ],
+    "addedCount": 10,
+    "modifiedCount": 0,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "pendingLocations": 13,
+    "regions": [
+      "경기도 연천군",
+      "경기도 가평군",
+      "경기도 양평군"
+    ],
+    "restaurantsByRegion": {
+      "연천군": 3,
+      "가평군": 5,
+      "양평군": 2
+    },
+    "restaurantIds": [
+      "local-gyeonggi-slot64-yeoncheon-geumjandi",
+      "local-gyeonggi-slot64-yeoncheon-myeongsin",
+      "local-gyeonggi-slot64-yeoncheon-jungwon",
+      "local-gyeonggi-slot64-gapyeong-cheongpyeong-jjajang",
+      "local-gyeonggi-slot64-gapyeong-cheongdaemun",
+      "local-gyeonggi-slot64-gapyeong-chenou",
+      "local-gyeonggi-slot64-gapyeong-dream-dakgalbi",
+      "local-gyeonggi-slot64-gapyeong-seorak-makguksu",
+      "local-gyeonggi-slot64-yangpyeong-gaegun-sundae",
+      "local-gyeonggi-slot64-yangpyeong-gwangiwon"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "scope": "연천군 3, 가평군 공식 100대 맛집 명단 5, 양평군 관광 2 부분 검증. 지자체 전체 전수 아님.",
+    "notes": [
+      "연도·현재 영업 미확인 별도 유지, 양평 개군할머니만 2019 선정.",
+      "13곳 공개 정확한 수치 좌표 미확인. 호텔길조와 식당 길조 관계 재확인 필요.",
+      "블루리본 정규 등급 확인되지 않음. 회원 추천·사진·개인 위치 정보 불변."
+    ]
   }
 }

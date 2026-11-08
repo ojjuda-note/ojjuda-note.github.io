@@ -1,0 +1,299 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 64,
+  "sourceName": "연천군 문화관광 · 가평군 관광 · 양평군 관광",
+  "sourceUrls": [
+    "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087",
+    "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113",
+    "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115",
+    "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+    "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381",
+    "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "restaurants": [
+    {
+      "id": "local-gyeonggi-slot64-yeoncheon-geumjandi",
+      "name": "금잔디 우렁이 쌈밥집",
+      "category": "한식",
+      "region": "경기",
+      "district": "연천군",
+      "address": "경기도 연천군 청산면 전영로 403",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우렁이쌈밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "연천군 문화관광 모범음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087",
+          "sourceName": "연천군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·모범음식점 명칭과 주소 수록. 개별 선정 연도 및 현재 영업은 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-yeoncheon-myeongsin",
+      "name": "명신반점",
+      "category": "중식",
+      "region": "경기",
+      "district": "연천군",
+      "address": "경기도 연천군 전곡읍 전곡역로 61",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "중식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "연천군 문화관광 모범음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113",
+          "sourceName": "연천군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·모범음식점 명칭과 주소 수록. 개별 선정 연도 및 현재 영업은 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-yeoncheon-jungwon",
+      "name": "중원",
+      "category": "중식",
+      "region": "경기",
+      "district": "연천군",
+      "address": "경기도 연천군 전곡읍 전곡로 25-23 (2동 1층)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "중식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "연천군 문화관광 모범음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115",
+          "sourceName": "연천군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·모범음식점 명칭과 주소 수록. 개별 선정 연도 및 현재 영업은 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-gapyeong-cheongpyeong-jjajang",
+      "name": "청평돌짜장",
+      "category": "중식",
+      "region": "경기",
+      "district": "가평군",
+      "address": "경기도 가평군 청평면 북한강로 2040",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돌짜장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "가평군 관광 외식업지부 선정 100대 맛집 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+          "sourceName": "가평군 문화관광·외식업지부",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 가평군 관광 '100대 맛집' 67개소 중 명칭과 주소 수록. 연도 및 현재 영업 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-gapyeong-cheongdaemun",
+      "name": "청대문",
+      "category": "한식",
+      "region": "경기",
+      "district": "가평군",
+      "address": "경기도 가평군 가평읍 가화로 490",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "시래기정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "가평군 관광 외식업지부 선정 100대 맛집 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+          "sourceName": "가평군 문화관광·외식업지부",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 가평군 관광 '100대 맛집' 67개소 중 명칭과 주소 수록. 연도 및 현재 영업 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-gapyeong-chenou",
+      "name": "쉐누",
+      "category": "양식",
+      "region": "경기",
+      "district": "가평군",
+      "address": "경기도 가평군 청평면 잠곡로91번길 29",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "라끌레트"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "가평군 관광 외식업지부 선정 100대 맛집 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+          "sourceName": "가평군 문화관광·외식업지부",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 가평군 관광 '100대 맛집' 67개소 중 명칭과 주소 수록. 연도 및 현재 영업 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-gapyeong-dream-dakgalbi",
+      "name": "드림닭갈비",
+      "category": "한식",
+      "region": "경기",
+      "district": "가평군",
+      "address": "경기도 가평군 청평면 여울길 47",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "드림잣닭갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "가평군 관광 외식업지부 선정 100대 맛집 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+          "sourceName": "가평군 문화관광·외식업지부",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 가평군 관광 '100대 맛집' 67개소 중 명칭과 주소 수록. 연도 및 현재 영업 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-gapyeong-seorak-makguksu",
+      "name": "설악유명막국수",
+      "category": "한식",
+      "region": "경기",
+      "district": "가평군",
+      "address": "경기도 가평군 설악면 유명로 1641-5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순메밀막국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "가평군 관광 외식업지부 선정 100대 맛집 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+          "sourceName": "가평군 문화관광·외식업지부",
+          "verifiedAt": "2026-11-08",
+          "status": "official_selection_list",
+          "selectionCriteria": "공식 가평군 관광 '100대 맛집' 67개소 중 명칭과 주소 수록. 연도 및 현재 영업 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-yangpyeong-gaegun-sundae",
+      "name": "개군할머니 토종순대국 본점",
+      "category": "한식",
+      "region": "경기",
+      "district": "양평군",
+      "address": "경기도 양평군 개군면 하자포길 31",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "토종순대국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양평군 2019년 장수음식점 선정 이력",
+          "year": 2019,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381",
+          "sourceName": "양평군 관광",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_designation",
+          "selectionCriteria": "2019 선정 이력이며 현재 영업·2026 재선정은 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gyeonggi-slot64-yangpyeong-gwangiwon",
+      "name": "광이원",
+      "category": "한식",
+      "region": "경기",
+      "district": "양평군",
+      "address": "경기도 양평군 용문면 용문산로 120-13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "비빔덮밥정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "양평군 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667",
+          "sourceName": "양평군 관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·모범음식점 명칭과 주소 수록. 개별 선정 연도 및 현재 영업은 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}

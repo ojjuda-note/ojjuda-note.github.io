@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 63,
-    "scheduledAt": "2026-11-08T09:00:00+09:00",
+    "slot": 64,
+    "scheduledAt": "2026-11-08T10:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약 시각 09:00 KST 기준; 기준점 2026-11-05T23:00+09:00에서 h=58,n=62,slot63. 09:11 이후 실행·해당 회차 누락 없이 기록."
+    "source": "예약 시각 10:00 KST 기준. 기준 2026-11-05 23:00 KST에서 h=59,n=63,slot64."
   },
   "entries": [
     {
@@ -60050,6 +60050,373 @@
         "경기도 양평군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 64,
+      "scheduledAtKST": "2026-11-08T10:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_county_listings_10",
+      "assignedRegions": [
+        "경기도 연천군",
+        "경기도 가평군",
+        "경기도 양평군"
+      ],
+      "regionAudit": [
+        {
+          "region": "경기도 연천군",
+          "baseListedCount": 1,
+          "listedCountAfter": 4,
+          "actuallyChecked": [
+            "대교여울목 기존 현주소 공식 대조",
+            "연천군 모범음식점 3곳 이름·주소 공식 확인"
+          ],
+          "remainingAreas": [
+            "관광 식당 나머지 조사",
+            "4곳 위경도·영업 상태 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 가평군",
+          "baseListedCount": 0,
+          "listedCountAfter": 5,
+          "actuallyChecked": [
+            "가평군 공식 외식업지부 선정 100대 맛집 67개소 중 5곳 확인"
+          ],
+          "remainingAreas": [
+            "명단 내 나머지 62개소 및 블루리본 대조",
+            "빗고개식당/빗고개청국장 지점명 관계 확인",
+            "5곳 위치·영업 조사"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경기도 양평군",
+          "baseListedCount": 2,
+          "listedCountAfter": 4,
+          "actuallyChecked": [
+            "중미산막국수 2021 장수음식점 선정 이력 공식 확인",
+            "길조와 같은 주소 호텔길조 자료 확인(식당 동일성 미해결)",
+            "양평군 음식점 명단 2곳 상호·주소 확인"
+          ],
+          "remainingAreas": [
+            "길조 업태·지점 관계 확인",
+            "4곳 위치 및 영업 재확인, 관광 전체 명단 대조"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "연천군 문화관광 모범음식점 상세",
+        "가평군 외식업지부 선정 100대 맛집 67개소 공개 명단",
+        "양평군 관광 음식점 개별 소개·장수음식점 연도",
+        "기존 경기으뜸맛집 기록 ID 대조"
+      ],
+      "additions": 10,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 13,
+      "locationPendingScope": "기존 3곳+신규 10곳의 미확인 공개 좌표, 영업 상태 별도 확인",
+      "addedRestaurantIds": [
+        "local-gyeonggi-slot64-yeoncheon-geumjandi",
+        "local-gyeonggi-slot64-yeoncheon-myeongsin",
+        "local-gyeonggi-slot64-yeoncheon-jungwon",
+        "local-gyeonggi-slot64-gapyeong-cheongpyeong-jjajang",
+        "local-gyeonggi-slot64-gapyeong-cheongdaemun",
+        "local-gyeonggi-slot64-gapyeong-chenou",
+        "local-gyeonggi-slot64-gapyeong-dream-dakgalbi",
+        "local-gyeonggi-slot64-gapyeong-seorak-makguksu",
+        "local-gyeonggi-slot64-yangpyeong-gaegun-sundae",
+        "local-gyeonggi-slot64-yangpyeong-gwangiwon"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087",
+        "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113",
+        "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115",
+        "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected",
+        "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381",
+        "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667",
+        "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10009",
+        "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4435&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1088",
+        "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=9&pageUnit=6&searchCnd=all&sortTy=NM&tourNo=389",
+        "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=36&key=143&pageIndex=5&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=595",
+        "https://litt.ly/blueribbonsurvey"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-north-e033bf16c2d4fe1d",
+          "name": "대교여울목",
+          "currentAddress": "경기도 연천군 백학면 청정로46번길 25",
+          "region": "경기도 연천군",
+          "evidenceUrls": [
+            "https://ggtour.or.kr/dulegil/usr/wap/detail.do?app=24910&seq=10009",
+            "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4435&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1088"
+          ],
+          "checkResult": "경기도·연천군 공식 관광에서 상호와 주소 일치, 좌표 수치 미확인.",
+          "searchAliases": [
+            "대교여울목 경기도 연천군",
+            "대교여울목 경기도 연천군 백학면 청정로46번길 25",
+            "경기도 연천군 대교여울목"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-north-e7b199154040454e",
+          "name": "중미산막국수",
+          "currentAddress": "경기도 양평군 옥천면 마유산로 586",
+          "region": "경기도 양평군",
+          "evidenceUrls": [
+            "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=9&pageUnit=6&searchCnd=all&sortTy=NM&tourNo=389"
+          ],
+          "checkResult": "양평군 2021 장수음식점 선정·상호·주소 확인, 수치 좌표 미확인.",
+          "searchAliases": [
+            "중미산막국수 경기도 양평군",
+            "중미산막국수 경기도 양평군 옥천면 마유산로 586",
+            "경기도 양평군 중미산막국수"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-north-89aaa95bdc9db732",
+          "name": "길조",
+          "currentAddress": "경기도 양평군 강상면 독배길 32-25",
+          "region": "경기도 양평군",
+          "evidenceUrls": [
+            "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=36&key=143&pageIndex=5&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=595"
+          ],
+          "checkResult": "양평관광에 같은 주소 '호텔길조' 숙박시설 있음. 원래 식당 길조와의 관계 미확인, 기존 기록 유지.",
+          "searchAliases": [
+            "길조 경기도 양평군",
+            "길조 경기도 양평군 강상면 독배길 32-25",
+            "경기도 양평군 길조"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-yeoncheon-geumjandi",
+          "name": "금잔디 우렁이 쌈밥집",
+          "currentAddress": "경기도 연천군 청산면 전영로 403",
+          "region": "경기도 연천군",
+          "evidenceUrls": [
+            "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=80&key=4678&tourNo=1087"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "금잔디 우렁이 쌈밥집 경기도 연천군",
+            "금잔디 우렁이 쌈밥집 경기도 연천군 청산면 전영로 403",
+            "경기도 연천군 금잔디 우렁이 쌈밥집"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-yeoncheon-myeongsin",
+          "name": "명신반점",
+          "currentAddress": "경기도 연천군 전곡읍 전곡역로 61",
+          "region": "경기도 연천군",
+          "evidenceUrls": [
+            "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1113"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "명신반점 경기도 연천군",
+            "명신반점 경기도 연천군 전곡읍 전곡역로 61",
+            "경기도 연천군 명신반점"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-yeoncheon-jungwon",
+          "name": "중원",
+          "currentAddress": "경기도 연천군 전곡읍 전곡로 25-23 (2동 1층)",
+          "region": "경기도 연천군",
+          "evidenceUrls": [
+            "https://tour.yeoncheon.go.kr/tour/selectTourCntntsWebView.do?ctgry=81&key=4429&pageIndex=1&pageUnit=9&searchCnd=all&sortTy=RECOMEND&tourNo=1115"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "중원 경기도 연천군",
+            "중원 경기도 연천군 전곡읍 전곡로 25-23 (2동 1층)",
+            "경기도 연천군 중원"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-gapyeong-cheongpyeong-jjajang",
+          "name": "청평돌짜장",
+          "currentAddress": "경기도 가평군 청평면 북한강로 2040",
+          "region": "경기도 가평군",
+          "evidenceUrls": [
+            "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "청평돌짜장 경기도 가평군",
+            "청평돌짜장 경기도 가평군 청평면 북한강로 2040",
+            "경기도 가평군 청평돌짜장"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-gapyeong-cheongdaemun",
+          "name": "청대문",
+          "currentAddress": "경기도 가평군 가평읍 가화로 490",
+          "region": "경기도 가평군",
+          "evidenceUrls": [
+            "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "청대문 경기도 가평군",
+            "청대문 경기도 가평군 가평읍 가화로 490",
+            "경기도 가평군 청대문"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-gapyeong-chenou",
+          "name": "쉐누",
+          "currentAddress": "경기도 가평군 청평면 잠곡로91번길 29",
+          "region": "경기도 가평군",
+          "evidenceUrls": [
+            "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "쉐누 경기도 가평군",
+            "쉐누 경기도 가평군 청평면 잠곡로91번길 29",
+            "경기도 가평군 쉐누"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-gapyeong-dream-dakgalbi",
+          "name": "드림닭갈비",
+          "currentAddress": "경기도 가평군 청평면 여울길 47",
+          "region": "경기도 가평군",
+          "evidenceUrls": [
+            "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "드림닭갈비 경기도 가평군",
+            "드림닭갈비 경기도 가평군 청평면 여울길 47",
+            "경기도 가평군 드림닭갈비"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-gapyeong-seorak-makguksu",
+          "name": "설악유명막국수",
+          "currentAddress": "경기도 가평군 설악면 유명로 1641-5",
+          "region": "경기도 가평군",
+          "evidenceUrls": [
+            "https://www.gptour.go.kr/food/food_best_list.jsp?menu=food&submenu=selected"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "설악유명막국수 경기도 가평군",
+            "설악유명막국수 경기도 가평군 설악면 유명로 1641-5",
+            "경기도 가평군 설악유명막국수"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-yangpyeong-gaegun-sundae",
+          "name": "개군할머니 토종순대국 본점",
+          "currentAddress": "경기도 양평군 개군면 하자포길 31",
+          "region": "경기도 양평군",
+          "evidenceUrls": [
+            "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&tourNo=381"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "개군할머니 토종순대국 본점 경기도 양평군",
+            "개군할머니 토종순대국 본점 경기도 양평군 개군면 하자포길 31",
+            "경기도 양평군 개군할머니 토종순대국 본점"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        },
+        {
+          "restaurantId": "local-gyeonggi-slot64-yangpyeong-gwangiwon",
+          "name": "광이원",
+          "currentAddress": "경기도 양평군 용문면 용문산로 120-13",
+          "region": "경기도 양평군",
+          "evidenceUrls": [
+            "https://tour.yp21.go.kr/www/selectTourCntntsWebView.do?ctgry=37&key=541&pageIndex=8&pageUnit=6&searchCnd=all&sortTy=HIT&tourNo=667"
+          ],
+          "checkResult": "공식 지자체 음식점 명단에 업소명·주소 수록 확인. 개별 수치좌표 및 현재 영업 미확인.",
+          "searchAliases": [
+            "광이원 경기도 양평군",
+            "광이원 경기도 양평군 용문면 용문산로 120-13",
+            "경기도 양평군 광이원"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 64,
+          "reason": "상호·지점·현주소와 일치하는 공개 위경도 수치 근거 부족. 영업상태 별도 검증 필요, 임의 비노출 금지."
+        }
+      ],
+      "unresolved": [
+        "가평 100대 명단의 판본·연도 불명, 공식 자료는 67개 업소",
+        "길조와 호텔길조 같은 주소의 실제 식당 위치 불명, 검증 전 비노출 보류",
+        "가평 빗고개식당/빗고개청국장 이름 충돌하여 신규 보류",
+        "좌표 미확인 13, 현재 영업 미확인 13",
+        "블루리본 최신 정규 리본/판본 교차 확인 미완료"
+      ],
+      "carryOver": [
+        "전북 1순환 53회차 누락 조사 기존 이월",
+        "제주 57회차 및 이전 누락 항목 보존",
+        "경기 연천·가평·양평 13곳 순환2 회차64 재점검"
+      ],
+      "nextSlot": 65,
+      "nextRegions": [
+        "강원특별자치도 홍천군",
+        "강원특별자치도 횡성군",
+        "강원특별자치도 영월군",
+        "강원특별자치도 평창군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -60076,6 +60443,7 @@
     "2026-11-08 05시 1/59 부산·대구·울산 공식 3곳 추가; 위치0·제외0·재확인 대기426, 전북53 등 이월, 회원 추천 불변.",
     "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변.",
     "2026-11-08 07시 1/61 강화군·옹진군: 공식 관광 음식점 4곳 추가, 기존 좌표 누락 28곳과 신규 4곳 재확인 대기32; 위치보강0·비노출0. 옹진 백령면만 일부 확인, 전북53·제주57 이월, 회원 추천 불변. 편가네된장 공식 주소 1건 교정.",
-    "2026-11-08 08시 1/62 대구 달성·군위: 대구푸드 공식 달성군 5곳 추가·수정0·위치0·비노출0, 기존18 및 신규5 좌표 미확인 총23 이월. 군위군 별도 명단 미완료, 전북53·제주57 등 기존 이월 보존, 회원 추천 불변."
+    "2026-11-08 08시 1/62 대구 달성·군위: 대구푸드 공식 달성군 5곳 추가·수정0·위치0·비노출0, 기존18 및 신규5 좌표 미확인 총23 이월. 군위군 별도 명단 미완료, 전북53·제주57 등 기존 이월 보존, 회원 추천 불변.",
+    "2026-11-08 10시 순환1/64 경기 연천·가평·양평 관광 공식 10곳 추가·기존 수정0·좌표0·비노출0, 위치 대기13. 길조 숙박 동주소·빗고개 별칭 미확인 및 전북53·제주57 이월, 회원 추천 불변."
   ]
 }
