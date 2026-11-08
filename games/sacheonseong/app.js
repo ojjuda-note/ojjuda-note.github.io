@@ -3,7 +3,7 @@
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
-  let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,autoLayout=true,panHintDismissed=false;
+  let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,panHintDismissed=false;
   const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14;
   let purchaseBusy=false;
   let globalResult=null;
@@ -68,30 +68,27 @@
     const extra=(layerCount-1)*E.LAYER_OFFSET;
     return Math.min((width-2*pad-(cols-1+extra)*gap)/(cols+extra),(height-2*pad-4-(rows-1+extra)*gap)/((rows+extra)*1.19));
   }
-  const preferredTile=width=>width>=900?60:48;
   const boardPadding=layerCount=>8+2*(layerCount-1);
   function boardColumns(stage){
     const {size}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
     if(stage<=2)return size;
     const typical=E.stackInfo(stage),target=Math.max(...typical.floors.map(floor=>floor.total)),span=Math.sqrt(target/.66);
     if(width<=20||height<=24)return typical.cols;
-    const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=(typical.layerCount-1)*E.LAYER_OFFSET,comfortable=preferredTile(width);
+    const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=(typical.layerCount-1)*E.LAYER_OFFSET;
     const choices=[];
     for(let cols=Math.max(3,Math.floor(span*.45));cols<=Math.min(Math.ceil(span*2.5),Math.ceil(target/2));cols++){
       const info=E.stackInfo(stage,cols);
       const tile=fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount);
-      const boardWidth=(cols+extra)*comfortable+(cols-1+extra)*gap+2*pad;
-      const boardHeight=(info.rows+extra)*comfortable*1.19+(info.rows-1+extra)*gap+2*pad+4;
-      // A tall scroll is easier on a phone than forcing tiny pictures or
-      // scrolling an equally large distance in both directions.
-      const score=3*Math.max(0,boardWidth/width-1)+.7*Math.max(0,boardHeight/height-1)
-        +.35*Math.max(0,1-boardWidth/width)+.35*Math.max(0,1-boardHeight/height);
-      choices.push({cols,extra:info.rows*cols-target,tile,score});
+      const boardWidth=(cols+extra)*tile+(cols-1+extra)*gap+2*pad;
+      const boardHeight=(info.rows+extra)*tile*1.19+(info.rows-1+extra)*gap+2*pad+4;
+      const coverage=Math.max(0,boardWidth/width)*Math.max(0,boardHeight/height);
+      choices.push({cols,extra:info.rows*cols-target,tile,coverage});
     }
     const largest=Math.max(...choices.map(choice=>choice.tile));
     if(!(largest>0))return typical.cols;
-    if(largest>=comfortable)return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.extra-b.extra||b.tile-a.tile||b.cols-a.cols)[0].cols;
-    return choices.sort((a,b)=>a.score-b.score||a.extra-b.extra||a.cols-b.cols)[0].cols;
+    // Use the largest tile size that keeps every floor inside the screen;
+    // among equally large fits, prefer the board that fills more of it.
+    return choices.filter(choice=>choice.tile>=largest*.995).sort((a,b)=>b.coverage-a.coverage||a.extra-b.extra||b.tile-a.tile)[0].cols;
   }
   function sizeBoard(){
     if(!state)return;
@@ -101,11 +98,9 @@
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
     fitSize=fit;
-    // Show comfortably sized pictures by default; '전체' still reveals every
-    // tile at once. Small levels naturally grow to fill the available space.
-    const size=autoLayout?Math.max(fitSize,preferredTile(available)):overview?fitSize:Math.max(fitSize,customSize??preferredTile(available));
-    if(autoLayout)overview=size<=fitSize+.01;
-    else if(size<=fitSize+.01){overview=true;customSize=null;}
+    // The entire board is visible on entry. Zoom only when the player asks.
+    const size=overview?fitSize:Math.max(fitSize,customSize??fitSize);
+    if(size<=fitSize+.01){overview=true;customSize=null;}
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     const board=$('board');board.style.width=`${(cols+extra)*size+(cols-1+extra)*gap}px`;board.style.height=`${(rows+extra)*size*1.19+(rows-1+extra)*gap}px`;
@@ -181,15 +176,13 @@
   }
   function newStage(stage,pendingPurchase=null){
     globalResult=null;
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=false;autoLayout=true;panHintDismissed=false;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;panHintDismissed=false;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
-    // On crowded stages, start with readable tiles. The whole-board button
-    // still provides the previous overview whenever the player wants it.
+    // Every stage opens with all floors visible, regardless of screen size.
     const viewport=$('board-scroll');
     viewport.scrollTop=0;viewport.scrollLeft=0;
-    if(!overview)$('status').textContent='패를 크게 배치했어요. 화면을 밀어 다른 패를 보고, 전체를 누르면 한눈에 볼 수 있어요.';
   }
   function ensureMove(){
     if(!count()||availableMove())return false;
@@ -347,7 +340,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>같은 층에서 다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>패가 많은 단계는 큰 패로 시작해요. 판을 손가락이나 마우스로 밀어서 다른 위치를 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 두 손가락으로 확대·축소할 수도 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>같은 층에서 다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>모든 패가 한 화면에 보이게 시작해요. 더 크게 보고 싶다면 ＋ 또는 두 손가락으로 확대하고, 커진 판은 손가락이나 마우스로 밀어 이동할 수 있어요. 전체를 누르면 다시 한눈에 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
@@ -376,7 +369,7 @@
     x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
     y=Number.isFinite(y)?Math.max(rect.top,Math.min(rect.bottom,y)):rect.top+rect.height/2;
     const anchorX=before.width?(x-before.left)/before.width:.5,anchorY=before.height?(y-before.top)/before.height:.5;
-    autoLayout=false;customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
+    customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
     sizeBoard();const after=canvas.getBoundingClientRect();
     viewport.scrollLeft+=after.left+anchorX*after.width-x;viewport.scrollTop+=after.top+anchorY*after.height-y;
   }
@@ -417,7 +410,7 @@
     if(!event.ctrlKey||$('modal').open||$('options').open)return;
     event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);
   },{passive:false});
-  $('zoom-fit').onclick=()=>{autoLayout=false;overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
+  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
   $('zoom-in').onclick=()=>zoomBoard(tileSize()+Math.max(6,tileSize()*.2));
   $('zoom-out').onclick=()=>zoomBoard(tileSize()-Math.max(6,tileSize()*.2));
   window.addEventListener('resize',sizeBoard);

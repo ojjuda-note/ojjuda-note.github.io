@@ -57,12 +57,6 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   assert.deepEqual(remaining(),[total,total],label+': counter includes lower floors');
   assert.equal(Number(canvas.style.getPropertyValue('--n')),cols,label+': grid CSS columns');
   assert.equal(d.getElementById('stage-label').textContent,stage+'단계'+(info.layerCount>1?' · '+info.layerCount+'층 남음':''));
-  const defaultTile=()=>parseFloat(canvas.style.getPropertyValue('--tile'));
-  const readable=()=>{
-   assert(defaultTile()>= (width>=900?60:48)-.01,label+': new games use readable tiles');
-   if(d.getElementById('zoom-fit').getAttribute('aria-pressed')==='true')assertFit();
-   else assert.equal(d.getElementById('board-pan-tip').hidden,false,label+': larger board explains dragging');
-  };
   if(stage<=2)assert.equal(active,rows*cols,label+': tutorial is rectangular');
   else assert(active<rows*cols,label+': complex silhouette has spaces');
   const assertFit=()=>{
@@ -72,8 +66,9 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
    assert((cols+extra)*tile+(cols-1+extra)*gap+pad*2<=width+.1,label+': all floors fit width');
    assert((rows+extra)*tile*1.19+(rows-1+extra)*gap+pad*2+4<=height+.1,label+': all floors fit height');
    assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'true');
+   assert.equal(d.getElementById('board-pan-tip').hidden,true,label+': no scrolling hint in full-screen view');
   };
-  readable();
+  assertFit();
   const move=E.exposedMoves(every);assert(move,label+': has an uncovered legal move');
   const at=p=>d.querySelector('[data-layer="'+p.layer+'"][data-r="'+p.r+'"][data-c="'+p.c+'"]'),a=at(move.a),b=at(move.b);
   a.click();assert.equal(a.getAttribute('aria-pressed'),'true',label+': selects');
@@ -82,7 +77,7 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   const beforeRotation=saved(),beforeTiles=[...d.querySelectorAll('.tile')].map(b=>[b.dataset.face,b.className]);
   for(const resized of sizes){
    ({width,height}=resized);w.dispatchEvent(new w.Event('resize'));ticks.forEach(tick=>tick());
-   readable();
+   assertFit();
    assert.deepEqual(saved(),beforeRotation,label+': resizing keeps the same board, time and floors');
    assert.deepEqual([...d.querySelectorAll('.tile')].map(b=>[b.dataset.face,b.className]),beforeTiles,label+': tile faces and covered states survive rotation');
    assert.equal(at(move.a),a,label+': selected tile retains identity');
@@ -109,12 +104,14 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
    nextTile.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));
    assert.equal(nextTile.getAttribute('aria-pressed'),'true',label+': a synthetic touch click cannot cancel the selection');
    // A mouse drag pans the enlarged board and must not activate a tile.
+   d.getElementById('zoom-in').click();
    const mouse=(type,x,y)=>{const e=new w.MouseEvent(type,{bubbles:true,clientX:x,clientY:y,button:0});Object.defineProperties(e,{pointerId:{value:77},pointerType:{value:'mouse'}});return e;};
    nextTile.dispatchEvent(mouse('pointerdown',100,100));
    w.dispatchEvent(mouse('pointermove',130,130));
    w.dispatchEvent(mouse('pointerup',130,130));
    nextTile.dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));
    assert.equal(nextTile.getAttribute('aria-pressed'),'true',label+': dragging a board with a mouse does not select a tile');
+   d.getElementById('zoom-fit').click();assertFit();
   }
   d.getElementById('options-open').click();assert(d.getElementById('options').open);
   d.getElementById('ranking').click();assert(d.getElementById('modal').open);
