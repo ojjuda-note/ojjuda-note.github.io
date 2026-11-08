@@ -60423,7 +60423,7 @@
       "slot": 65,
       "scheduledAtKST": "2026-11-08T11:00:00+09:00",
       "checkedAtKST": "2026-11-08",
-      "status": "partial_official_gangwon_four_counties_eight_listings_no_verified_coordinates",
+      "status": "partial_official_gangwon_four_counties_15_listings_slot65_continuation",
       "assignedRegions": [
         "강원특별자치도 홍천군",
         "강원특별자치도 횡성군",
@@ -60434,15 +60434,17 @@
         {
           "region": "강원특별자치도 홍천군",
           "baseListedCount": 37,
-          "listedCountAfter": 37,
+          "listedCountAfter": 44,
           "actuallyChecked": [
             "기존 저장된 홍천군 37곳 ID·도로명주소·lat/lng 누락 전수 점검(37곳 null)",
-            "홍천군 홈페이지와 공식 관광 자료 접근 및 신규 후보 탐색"
+            "홍천군 홈페이지와 공식 관광 자료 접근 및 신규 후보 탐색",
+            "홍천군 문화관광 현재 공개 44곳 5쪽 전체와 기존37곳 교차대조; 일치37곳 및 추가7곳, 이름차이·같은 주소3곳 중복 방지."
           ],
           "remainingAreas": [
             "홍천 기존 37곳 공식 원문·이전·영업 여부 개별 재조사",
             "기존 원문 주소 표기 및 정확 위경도 근거 수집",
-            "군 관광·정규 블루리본 누락 식당 추가 발굴"
+            "군 관광·정규 블루리본 누락 식당 추가 발굴",
+            "홍천군 44곳 정확 위치 좌표 및 현 영업·이전 여부 개별 확인"
           ],
           "notExhaustive": true
         },
@@ -60494,15 +60496,16 @@
         "한국관광공사 K-로컬 미식여행 33선 한우편: 횡성축협 한우프라자 본점·삼정·라오니아",
         "영월군 공식 문화관광 모범음식점 청풍가든·무릉송어장횟집: 2017 최종수정 이력",
         "평창군 공식 문화관광 부림식당·메밀하우스·초원갈비: 2021 최종수정 자료",
-        "홍천군 홈페이지 및 기존 37곳의 미확인 좌표 자료상태"
+        "홍천군 홈페이지 및 기존 37곳의 미확인 좌표 자료상태",
+        "홍천군 문화관광 으뜸맛집 공식 명단 전체 44곳(5쪽)과 기존 홍천 37곳 이름·주소 비교: 누락7곳 발견."
       ],
-      "additions": 8,
+      "additions": 15,
       "modifications": 0,
       "operatingStatusChanges": 0,
       "locationCoordinatesAdded": 0,
       "locationHidden": 0,
-      "locationPending": 46,
-      "locationPendingScope": "홍천 기존37·횡성 기존1·신규 횡성3/영월2/평창3의 위경도 null 총46건. 기존 원문 전체 재방문을 뜻하지 않음.",
+      "locationPending": 53,
+      "locationPendingScope": "홍천 기존37+신규7, 횡성 기존1+신규3, 영월 신규2, 평창 신규3: 총 53곳. 공개된 업소명·주소만으로 위경도를 추정하지 않음.",
       "addedRestaurantIds": [
         "local-gangwon-slot65-hoengseong-hanu-plaza-main",
         "local-gangwon-slot65-hoengseong-samjeong",
@@ -60511,7 +60514,14 @@
         "local-gangwon-slot65-yeongwol-mureung-trout",
         "local-gangwon-slot65-pyeongchang-burim",
         "local-gangwon-slot65-pyeongchang-memil-house",
-        "local-gangwon-slot65-pyeongchang-chowon"
+        "local-gangwon-slot65-pyeongchang-chowon",
+        "local-gangwon-slot65-hongcheon-daerangi",
+        "local-gangwon-slot65-hongcheon-dungine-dakgalbi",
+        "local-gangwon-slot65-hongcheon-memilmaeul",
+        "local-gangwon-slot65-hongcheon-keungol-simteo",
+        "local-gangwon-slot65-hongcheon-keunsaetteo-makguksu",
+        "local-gangwon-slot65-hongcheon-tosokchon",
+        "local-gangwon-slot65-hongcheon-pirigol-bapdoduk"
       ],
       "modifiedRestaurantIds": [],
       "evidenceUrls": [
@@ -60520,7 +60530,12 @@
         "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
         "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
         "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
-        "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery"
+        "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery",
+        "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=1",
+        "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=2",
+        "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=3",
+        "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4",
+        "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=5"
       ],
       "verifiedLocations": [],
       "pendingLocationInventory": [
@@ -61502,18 +61517,160 @@
           "recheckCycle": 2,
           "recheckSlot": 65,
           "reason": "상호·현주소와 일치하는 공개 수치 좌표가 확인되지 않아 추정 좌표 및 폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-daerangi",
+          "name": "돼랑이숙성생고기",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 신장대로 60",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=2"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "돼랑이숙성생고기 강원특별자치도 홍천군",
+            "돼랑이숙성생고기 강원특별자치도 홍천군 홍천읍 신장대로 60",
+            "강원 홍천 돼랑이숙성생고기"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-dungine-dakgalbi",
+          "name": "둥이네닭갈비",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 닭바위1길 17",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=2"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "둥이네닭갈비 강원특별자치도 홍천군",
+            "둥이네닭갈비 강원특별자치도 홍천군 홍천읍 닭바위1길 17",
+            "강원 홍천 둥이네닭갈비"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-memilmaeul",
+          "name": "메밀마을",
+          "currentAddress": "강원특별자치도 홍천군 영귀미면 사락골길 24-2",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=2"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "메밀마을 강원특별자치도 홍천군",
+            "메밀마을 강원특별자치도 홍천군 영귀미면 사락골길 24-2",
+            "강원 홍천 메밀마을"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-keungol-simteo",
+          "name": "큰골쉼터",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 큰골길 95",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "큰골쉼터 강원특별자치도 홍천군",
+            "큰골쉼터 강원특별자치도 홍천군 홍천읍 큰골길 95",
+            "강원 홍천 큰골쉼터"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-keunsaetteo-makguksu",
+          "name": "큰샛터막국수",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 소옥개로 104",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "큰샛터막국수 강원특별자치도 홍천군",
+            "큰샛터막국수 강원특별자치도 홍천군 홍천읍 소옥개로 104",
+            "강원 홍천 큰샛터막국수"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-tosokchon",
+          "name": "토속촌",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 송학강변로 19",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "토속촌 강원특별자치도 홍천군",
+            "토속촌 강원특별자치도 홍천군 홍천읍 송학강변로 19",
+            "강원 홍천 토속촌"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
+        },
+        {
+          "restaurantId": "local-gangwon-slot65-hongcheon-pirigol-bapdoduk",
+          "name": "피리골 밥도둑",
+          "currentAddress": "강원특별자치도 홍천군 홍천읍 연봉중앙로 76",
+          "region": "강원특별자치도 홍천군",
+          "sourceType": "홍천군 문화관광 공식 지정 으뜸맛집 명단",
+          "evidenceUrls": [
+            "https://www.hongcheon.go.kr/tour/selectTourCntntsWebBbsList.do?ctgry=30&key=2444&pageIndex=4"
+          ],
+          "checkResult": "2026-11-08 홍천군 공식 공개 으뜸맛집 명단에서 상호·주소 확인. 해당 업소의 수치좌표·현재 영업 상태는 별도 확인되지 않음.",
+          "searchAliases": [
+            "피리골 밥도둑 강원특별자치도 홍천군",
+            "피리골 밥도둑 강원특별자치도 홍천군 홍천읍 연봉중앙로 76",
+            "강원 홍천 피리골 밥도둑"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 65,
+          "reason": "공개된 숫자 좌표와 현재 영업을 개별 대조하지 못해 임의 좌표·폐업·비노출 처리 보류."
         }
       ],
       "unresolved": [
         "홍천 기존 37곳 개별 수치좌표·주소 및 영업 여부 재확인 미완료",
         "영월 모범음식점 2017 자료 이후 현 영업상태 미확인",
         "평창 관광 2021 자료 이후 현 영업상태 미확인",
-        "미쉐린·블루리본 2026/2027 전체 명단 해당 군 단위 교차 대조 미완료"
+        "미쉐린·블루리본 2026/2027 전체 명단 해당 군 단위 교차 대조 미완료",
+        "홍천군 신규 7곳 좌표·현재 영업 미확인"
       ],
       "carryOver": [
         "전북 53회차 누락 점검 이월",
         "이전 회차 이월 항목은 유지",
-        "46곳 순환2 65회차 위치 우선 재조사"
+        "46곳 순환2 65회차 위치 우선 재조사",
+        "홍천군 으뜸맛집 같은 주소 상호 별칭 3곳의 공식/현장 표기 확인"
       ],
       "nextSlot": 66,
       "nextRegions": [
@@ -61550,6 +61707,7 @@
     "2026-11-08 06시 1/60 대전·세종: 대전 중구 공식 3대30년 업소 7곳 추가, 연아식당 공개 일치 좌표1, 목록 제외0·대전 위치대기102, 타 구 및 전북53 이월. 회원 추천 불변.",
     "2026-11-08 07시 1/61 강화군·옹진군: 공식 관광 음식점 4곳 추가, 기존 좌표 누락 28곳과 신규 4곳 재확인 대기32; 위치보강0·비노출0. 옹진 백령면만 일부 확인, 전북53·제주57 이월, 회원 추천 불변. 편가네된장 공식 주소 1건 교정.",
     "2026-11-08 08시 1/62 대구 달성·군위: 대구푸드 공식 달성군 5곳 추가·수정0·위치0·비노출0, 기존18 및 신규5 좌표 미확인 총23 이월. 군위군 별도 명단 미완료, 전북53·제주57 등 기존 이월 보존, 회원 추천 불변.",
-    "2026-11-08 10시 순환1/64 경기 연천·가평·양평 관광 공식 10곳 추가·기존 수정0·좌표0·비노출0, 위치 대기13. 길조 숙박 동주소·빗고개 별칭 미확인 및 전북53·제주57 이월, 회원 추천 불변."
+    "2026-11-08 10시 순환1/64 경기 연천·가평·양평 관광 공식 10곳 추가·기존 수정0·좌표0·비노출0, 위치 대기13. 길조 숙박 동주소·빗고개 별칭 미확인 및 전북53·제주57 이월, 회원 추천 불변.",
+    "2026-11-08 11시 순환1/65 이어하기: 홍천군 공식 으뜸맛집 명단 44곳 전체 대조, 누락7곳 추가(홍천37→44). 횡성·영월·평창 기존 조사 보존, 위치보강0·비노출0·지역 위치재확인 53곳 대기, 좌표·영업 추정 안함."
   ]
 }
