@@ -17,6 +17,16 @@
  const canonical = key => ['carom4','carom3','pool8'].includes(key)?'billiards':key;
  const keyOf = button => canonical(button.dataset.act === 'matgo-open'?'matgo':button.dataset.v);
  const month = 30*24*60*60*1000, ttl = 5*60*1000;
+ function marketModules() {
+  const root = '/features/arcade/';
+  if (!document.querySelector('link[href^="/features/arcade/stock-market-entry.css"]')) {
+   const style=document.createElement('link');style.rel='stylesheet';style.href=root+'stock-market-entry.css?v=20261109-game-market2';document.head.append(style);
+  }
+  for (const file of ['stock-market-entry.js','stock-market-telemetry.js']) {
+   if (document.querySelector(`script[src^="${root+file}"]`)) continue;
+   const script=document.createElement('script');script.src=root+file+'?v=20261109-game-market2';script.defer=true;document.head.append(script);
+  }
+ }
  let counts = new Map(), received = 0, attempted = 0, serverTime = 0, client, pending, queued = false;
  const now = () => serverTime ? serverTime + Math.max(0,Date.now()-received) : Date.now();
  function apply() {
@@ -93,6 +103,7 @@
  }
  window.OjjudaArcadePromotions=Object.freeze({refresh});
  function start() {
+  marketModules();
   // Ignore unrelated chat, ranking and Park DOM updates. Layout reads and
   // game sorting are only needed when the actual arcade catalog changes.
   new MutationObserver(records=>{if(catalogChanged(records)){schedule();if(!received)void refresh();}}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','style']});

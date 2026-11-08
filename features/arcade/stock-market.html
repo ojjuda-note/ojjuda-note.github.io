@@ -7,10 +7,10 @@
 <meta name="description" content="오쭈다 게임별 첫 기록일을 상장일로 삼아 1,000G부터 시작하는 실제 기록 기반 게임 주가를 확인해요.">
 <title>게임 주식시장 · 오쭈다 아지트</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./stock-market.css?v=20261109-game-market1">
+<link rel="stylesheet" href="./stock-market.css?v=20261109-game-market2">
 <script src="/config.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" defer></script>
-<script src="./stock-market.js?v=20261109-game-market1" defer></script>
+<script src="./stock-market.js?v=20261109-game-market2" defer></script>
 </head>
 <body>
 <header class="topbar">
@@ -20,16 +20,27 @@
 </header>
 <main>
   <section class="hero" aria-labelledby="market-title">
-    <div class="eyebrow">OJJUDA GAME EXCHANGE</div>
-    <h1 id="market-title">게임도 주식처럼 <span aria-hidden="true">📈</span></h1>
-    <p>게임마다 <strong>첫 번째 저장 기록일에 1,000G</strong>로 상장했어요. 실제 기록을 바탕으로 지금까지 어떻게 달라졌는지 살펴보세요.</p>
-    <div class="hero-tags"><span>실제 저장 기록 기반</span><span>게임별 별도 상장일</span><span>과거 시세 시뮬레이션</span></div>
+    <div class="eyebrow">OJJUDA MARKET</div>
+    <h1 id="market-title">게임 주식시장 <span aria-hidden="true">📈</span></h1>
+    <p>모든 게임은 첫 기록일에 <strong>1,000G</strong>로 시작해요.</p>
   </section>
 
   <section class="stats" aria-label="게임 주식시장 현황">
     <div><small>상장 게임</small><strong id="stock-count">—</strong><span>개 종목</span></div>
     <div><small>기록 기준일</small><strong id="stock-asof">—</strong><span>한국시간</span></div>
     <div><small>저장된 기록</small><strong id="stock-records">—</strong><span>건</span></div>
+  </section>
+
+  <section class="wallet panel" aria-labelledby="wallet-title">
+    <div class="wallet-heading"><h2 id="wallet-title">내 투자 지갑</h2><span>가상 G · 환전 불가</span></div>
+    <div id="wallet-login" class="wallet-login">로그인하면 연습용 <strong>10,000G</strong>로 시작해요. <a href="/world.html?tab=arcade">로그인하기</a></div>
+    <div id="wallet-dashboard" hidden>
+      <div class="wallet-grid">
+        <div><small>사용 가능</small><strong id="wallet-cash">—</strong></div>
+        <div><small>주식 평가액</small><strong id="wallet-holdings-value">—</strong></div>
+        <div><small>총 수익</small><strong id="wallet-profit">—</strong></div>
+      </div>
+    </div>
   </section>
 
   <p id="market-status" class="status" role="status" aria-live="polite">운영 기록을 불러오는 중이에요…</p>
@@ -51,30 +62,40 @@
     <section class="detail panel" aria-labelledby="detail-name">
       <div class="detail-header"><span class="eyebrow">PRICE HISTORY</span><span id="detail-listed" class="listed-date">—</span></div>
       <h2 id="detail-name">게임을 선택해 주세요</h2>
-      <div class="current"><strong id="detail-price">—</strong><span id="detail-change" class="price-change">—</span></div>
+      <div class="current"><strong id="detail-price">—</strong><span id="detail-change" class="price-change">—</span><span id="detail-status" class="delisted-badge" hidden>상장폐지</span></div>
+      <section class="trade-box" aria-label="주식 거래">
+        <div class="trade-switch" role="group" aria-label="매수 또는 매도">
+          <button type="button" id="trade-buy" aria-pressed="true">매수</button>
+          <button type="button" id="trade-sell" aria-pressed="false">매도</button>
+        </div>
+        <div class="trade-fields">
+          <label for="trade-quantity">수량 <input type="number" id="trade-quantity" min="1" max="100" step="1" value="1" inputmode="numeric"></label>
+          <div><small>예상 금액</small><strong id="trade-estimate">—</strong></div>
+        </div>
+        <button type="button" id="trade-submit" disabled>로그인 후 거래 가능</button>
+        <p id="trade-message" class="trade-message" role="status" aria-live="polite"></p>
+      </section>
       <div class="chart-wrap"><svg id="stock-chart" viewBox="0 0 600 280" role="img" aria-label="게임 주가 변화 그래프" preserveAspectRatio="xMidYMid meet"></svg></div>
       <div class="chart-dates"><span id="detail-start">상장일</span><span id="detail-end">현재</span></div>
       <div class="detail-stats">
-        <div><small>상장 기준가</small><strong>1,000G</strong></div>
         <div><small>저장 기록</small><strong id="detail-records">—</strong></div>
+        <div><small>게임 방문</small><strong id="detail-visits">—</strong></div>
+        <div><small>측정된 시간</small><strong id="detail-minutes">—</strong></div>
+        <div><small>순이용자</small><strong id="detail-unique">—</strong></div>
+        <div><small>공식 개선</small><strong id="detail-updates">—</strong></div>
         <div><small>기록이 있는 날</small><strong id="detail-days">—</strong></div>
         <div><small>마지막 기록</small><strong id="detail-last">—</strong></div>
       </div>
-      <p class="detail-note">기록이 없는 날에는 가격을 그대로 유지해요. 게임별 이용자가 적을수록 가격 변동을 작게 계산해요.</p>
+      <p class="detail-note">활동이 없는 날에는 가격을 유지해요.</p>
     </section>
   </div>
-
-  <section class="method panel" aria-labelledby="method-title">
-    <span class="eyebrow">FAIR PRICE RULE</span>
-    <h2 id="method-title">어떻게 계산하나요?</h2>
-    <ol>
-      <li><strong>첫 기록일에 1,000G.</strong> 게임별 상장일이 서로 달라요.</li>
-      <li><strong>실제 참여자 65% + 저장 기록 35%.</strong> 각 게임의 이전 기록일 평균과 비교해요.</li>
-      <li><strong>과도한 반복 방지.</strong> 같은 이용자의 기록은 게임별 하루 최대 3회만 활동 점수에 반영해요.</li>
-      <li><strong>하루 변동폭 ±10% 제한.</strong> 이용자가 적은 게임은 변화를 완만하게 계산해요.</li>
-    </ol>
-    <p>과거 게임별 접속 시간과 정확한 플레이 시간이 저장되어 있지 않아 이번 가격에는 포함하지 않았어요. 저장된 결과가 실제 모든 플레이를 뜻하지는 않으며, 시세는 참고용 가상 활동 지수예요. 실제 돈이나 매매 기능과 연결되어 있지 않아요.</p>
+  <section class="portfolio panel" aria-labelledby="portfolio-title">
+    <h2 id="portfolio-title">내 보유 주식</h2>
+    <p id="portfolio-empty" class="portfolio-empty">로그인하면 보유 주식이 보여요.</p>
+    <div id="portfolio-list" class="portfolio-list"></div>
+    <details id="trade-history"><summary>최근 거래 내역</summary><div id="trade-history-list"></div></details>
   </section>
+  <p class="method-summary">방문 40% · 게임시간 30% · 순이용자 15% · 기록 10% · 공식 개선 5%<br>횟수 제한 없음 · 100G 이하 상장폐지 · 로그인 플레이시간만 실측</p>
 </main>
 </body>
 </html>

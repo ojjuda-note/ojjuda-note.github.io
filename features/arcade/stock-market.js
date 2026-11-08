@@ -1,4 +1,4 @@
-/* Ojjuda's first-record-to-today game activity index. No trading or balances. */
+/* First-record index with isolated, server-verified practice-G trading. */
 (() => {
   'use strict';
 
@@ -17,6 +17,7 @@
   });
   const $ = selector => document.querySelector(selector);
   const comma = number => Number(number).toLocaleString('ko-KR');
+  const money = number => `${comma(number)}G`;
   const labelDate = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '')
     ? iso.slice(2).replace(/-/g, '.') : '—';
   const dayNumber = iso => Date.parse(`${iso}T00:00:00Z`);
@@ -28,6 +29,7 @@
   const list = $('#stock-list'), status = $('#market-status'), search = $('#stock-search');
   const layout = $('#market-layout'), refresh = $('#refresh-market');
   let games = [], selected = '', sort = 'change', client = null, loading = false;
+  let account = null, memberId = null, side = 'buy', ordering = false, checkingAccount = false;
   const requested = new URL(location.href).searchParams.get('game');
   selected = aliases[requested] || requested || '';
 
@@ -43,11 +45,145 @@
     showDetail(game);
   }
 
+  const selectedStock = () => games.find(game => game.id === selected);
+  const holdingFor = game => account?.holdings?.find(item => item.game === game) || null;
+  function orderQuantity() {
+    const raw = $('#trade-quantity').value.trim();
+    const qty = Number(raw);
+    return /^\d+$/.test(raw) && Number.isInteger(qty) && qty >= 1 && qty <= 100 ? qty : null;
+  }
+
+  function showTrade() {
+    const game = selectedStock(), qty = orderQuantity(), holding = game && holdingFor(game.id);
+    const available = Number(holding?.shares || 0);
+    const cost = qty && game ? qty * game.priceG : null;
+    $('#trade-buy').setAttribute('aria-pressed', String(side === 'buy'));
+    $('#trade-sell').setAttribute('aria-pressed', String(side === 'sell'));
+    $('#trade-estimate').textContent = cost === null ? '—' : money(cost);
+    const button = $('#trade-submit');
+    button.className = side === 'sell' ? 'sell' : '';
+    const canTrade = !!account && !!game && !!qty && !ordering &&
+      (side === 'buy' ? game.status !== 'delisted' && account.cashG >= cost : available >= qty);
+    button.disabled = !canTrade;
+    button.textContent = ordering ? '처리 중…' : !account ? '로그인 후 거래 가능'
+      : game?.status === 'delisted' && side === 'buy' ? '상장폐지 · 매수 불가'
+      : game?.status === 'delisted' && side === 'sell' ? '보유 주식 정리 매도'
+      : side === 'buy' ? '매수하기' : '매도하기';
+  }
+
+  function showAccount() {
+    const signedIn = !!account;
+    $('#wallet-login').hidden = signedIn;
+    $('#wallet-dashboard').hidden = !signedIn;
+    const holdings = $('#portfolio-list');
+    holdings.replaceChildren();
+    $('#trade-history-list').replaceChildren();
+    if (!signedIn) {
+      $('#portfolio-empty').textContent = '로그인하면 보유 주식이 보여요.';
+      $('#portfolio-empty').hidden = false;
+      $('#trade-history').hidden = true;
+      showTrade();
+      return;
+    }
+
+    const byId = new Map(games.map(game => [game.id, game]));
+    const value = account.holdings.reduce((sum, holding) =>
+      sum + holding.shares * (byId.get(holding.game)?.priceG || 0), 0);
+    const profit = account.cashG + value - account.starterG;
+    $('#wallet-cash').textContent = money(account.cashG);
+    $('#wallet-holdings-value').textContent = money(value);
+    const profitNode = $('#wallet-profit');
+    profitNode.textContent = `${profit > 0 ? '+' : ''}${money(profit)}`;
+    profitNode.className = tone(profit);
+
+    $('#portfolio-empty').hidden = account.holdings.length > 0;
+    $('#portfolio-empty').textContent = '아직 보유한 주식이 없어요.';
+    for (const holding of account.holdings) {
+      const stock = byId.get(holding.game);
+      const current = holding.shares * (stock?.priceG || 0);
+      const gain = current - holding.costBasisG;
+      const item = document.createElement('div'); item.className = 'portfolio-item';
+      const left = document.createElement('div');
+      const pick = document.createElement('button'); pick.type = 'button';
+      pick.textContent = nameOf(holding.game);
+      pick.addEventListener('click', () => {
+        if (stock) { choose(holding.game); layout.scrollIntoView({behavior:'smooth',block:'start'}); }
+      });
+      const meta = document.createElement('small'); meta.textContent = `${comma(holding.shares)}주 보유`;
+      left.append(pick,meta);
+      const right = document.createElement('div');
+      const amount = document.createElement('strong'); amount.textContent = money(current);
+      const change = document.createElement('small'); change.className = tone(gain);
+      change.textContent = `${gain > 0 ? '+' : ''}${money(gain)}`;
+      right.append(amount,change); item.append(left,right); holdings.append(item);
+    }
+    $('#trade-history').hidden = !account.trades.length;
+    for (const trade of account.trades) {
+      const item = document.createElement('div'); item.className = 'trade-history-item';
+      const left = document.createElement('span');
+      left.textContent = `${trade.side === 'buy' ? '매수' : '매도'} · ${nameOf(trade.game)} · ${trade.quantity}주`;
+      const right = document.createElement('span'); right.textContent = money(trade.totalG);
+      item.append(left,right); $('#trade-history-list').append(item);
+    }
+    showTrade();
+  }
+
+  async function loadAccount() {
+    if (!client || checkingAccount) return;
+    checkingAccount = true;
+    try {
+      const {data:{user},error:authError} = await client.auth.getUser();
+      if (authError || !user) { account = null; memberId = null; showAccount(); return; }
+      memberId = user.id;
+      const {data,error} = await client.rpc('community_game_stock_account');
+      if (error || !Number.isSafeInteger(data?.cashG) || !Array.isArray(data.holdings) ||
+        !Array.isArray(data.trades)) throw error || Error('invalid_account');
+      if (memberId !== user.id) return;
+      account = {cashG:data.cashG,starterG:Number(data.starterG) || 10000,
+        holdings:data.holdings.filter(item => goodId(item.game) &&
+          Number.isSafeInteger(item.shares) && item.shares > 0 &&
+          Number.isSafeInteger(item.costBasisG) && item.costBasisG >= 0),
+        trades:data.trades.filter(item => goodId(item.game))};
+      showAccount();
+    } catch (error) {
+      account = null; showAccount();
+      $('#wallet-login').textContent = '투자 지갑에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      console.warn('Stock account', error?.message || error);
+    } finally { checkingAccount = false; }
+  }
+
+  async function submitOrder() {
+    const stock = selectedStock(), qty = orderQuantity();
+    if (!client || !account || !stock || !qty || ordering) return;
+    const capturedSide = side, capturedGame = stock.id;
+    ordering = true; $('#trade-message').textContent = ''; showTrade();
+    try {
+      const {data,error} = await client.rpc('community_game_stock_order', {
+        p_game:capturedGame,p_side:capturedSide,p_quantity:qty,
+        p_request_id:crypto.randomUUID()
+      });
+      if (error || !data?.ok) throw error || Error('order_failed');
+      $('#trade-message').textContent = `${capturedSide === 'buy' ? '매수' : '매도'} 완료 · ${qty}주 · ${money(data.totalG)}`;
+      await loadAccount();
+    } catch (error) {
+      const code = String(error?.message || '');
+      $('#trade-message').textContent = code.includes('insufficient_funds') ? '보유 G가 부족해요.'
+        : code.includes('insufficient_shares') ? '보유한 주식 수량이 부족해요.'
+        : code.includes('stock_unavailable') ? '종목 가격을 새로고침해 주세요.'
+        : code.includes('stock_delisted') ? '상장폐지된 종목은 매수할 수 없어요.'
+        : code.includes('login_required') ? '로그인 후 다시 시도해 주세요.'
+        : '거래하지 못했어요. 잠시 후 다시 시도해 주세요.';
+      console.warn('Stock order', code);
+    } finally { ordering = false; showTrade(); }
+  }
+
   function stocksInOrder() {
     const term = search.value.trim().toLocaleLowerCase('ko-KR');
     return games.filter(game => !term || nameOf(game.id).toLocaleLowerCase('ko-KR').includes(term))
       .sort((a, b) => {
-        const value = sort === 'price' ? b.priceG - a.priceG
+      const value = a.status === 'delisted' && b.status !== 'delisted' ? 1
+        : b.status === 'delisted' && a.status !== 'delisted' ? -1
+        : sort === 'price' ? b.priceG - a.priceG
           : sort === 'records' ? b.savedRecords - a.savedRecords
           : sort === 'listed' ? a.listedAt.localeCompare(b.listedAt)
           : b.changePct - a.changePct;
@@ -69,7 +205,8 @@
       const left = document.createElement('span');
       const name = document.createElement('span'); name.className = 'stock-name'; name.textContent = nameOf(game.id);
       const meta = document.createElement('span'); meta.className = 'stock-meta';
-      meta.textContent = `${labelDate(game.listedAt)} 상장 · 기록 ${comma(game.savedRecords)}건`;
+      meta.textContent = game.status === 'delisted' ? '상장폐지 · 정리 매도만 가능'
+        : `${labelDate(game.listedAt)} 상장 · 기록 ${comma(game.savedRecords)}건`;
       left.append(name, meta);
       const right = document.createElement('span'); right.className = 'stock-value';
       const amount = document.createElement('strong'); amount.textContent = `${comma(game.priceG)}G`;
@@ -137,13 +274,20 @@
     $('#detail-price').textContent = `${comma(game.priceG)}G`;
     const change = $('#detail-change'); change.textContent = plusPct(game.changePct);
     change.className = `price-change ${tone(game.changePct)}`;
+    $('#detail-status').hidden = game.status !== 'delisted';
     $('#detail-listed').textContent = `${labelDate(game.listedAt)} 상장`;
     $('#detail-start').textContent = `${labelDate(game.listedAt)} · 1,000G`;
     $('#detail-end').textContent = `${labelDate(game.asOf)} · ${comma(game.priceG)}G`;
     $('#detail-records').textContent = `${comma(game.savedRecords)}건`;
+    $('#detail-visits').textContent = `${comma(game.visits || 0)}회`;
+    $('#detail-minutes').textContent = `${comma(game.playMinutes || 0)}분`;
+    $('#detail-unique').textContent = `${comma(game.uniqueVisitors || 0)}명`;
+    $('#detail-updates').textContent = `${comma(game.updates || 0)}회`;
     $('#detail-days').textContent = `${comma(game.recordedDays)}일`;
     $('#detail-last').textContent = labelDate(game.lastRecordAt);
     showChart(game);
+    $('#trade-message').textContent = '';
+    showTrade();
   }
 
   async function load() {
@@ -160,7 +304,7 @@
       }
       const {data, error} = await client.rpc('community_game_stock_history').abortSignal(controller.signal);
       if (error) throw error;
-      if (data?.method !== 'record-activity-v1' || !Array.isArray(data.games) ||
+      if (!['record-activity-v1','visit-time-v2','balanced-v3'].includes(data?.method) || !Array.isArray(data.games) ||
         !/^\d{4}-\d{2}-\d{2}$/.test(data.asOf)) throw Error('시세 형식을 확인하지 못했어요.');
       games = data.games.filter(game => goodId(game.id) && Number.isInteger(game.priceG) &&
         game.priceG > 0 && Number.isInteger(game.savedRecords) &&
@@ -174,6 +318,8 @@
         selected = games.slice().sort((a,b) => b.changePct - a.changePct)[0].id;
       showList(); choose(selected);
       layout.hidden = false; status.textContent = '';
+      showAccount();
+      void loadAccount();
     } catch (error) {
       status.textContent = '게임 시세를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
       if (!games.length) layout.hidden = true;
@@ -185,6 +331,10 @@
 
   search.addEventListener('input', showList);
   refresh.addEventListener('click', () => void load());
+  $('#trade-quantity').addEventListener('input', showTrade);
+  $('#trade-buy').addEventListener('click', () => { side = 'buy'; $('#trade-message').textContent=''; showTrade(); });
+  $('#trade-sell').addEventListener('click', () => { side = 'sell'; $('#trade-message').textContent=''; showTrade(); });
+  $('#trade-submit').addEventListener('click', () => void submitOrder());
   for (const button of document.querySelectorAll('[data-stock-sort]')) {
     button.addEventListener('click', () => {
       sort = button.dataset.stockSort;
@@ -193,5 +343,6 @@
       showList();
     });
   }
+  showAccount();
   void load();
 })();
