@@ -147,7 +147,7 @@ const migrationFile=process.env.SPOT70_MIGRATION||path.join(root,'supabase/migra
  for(const [stage,spot]of [[61,6],[62,10],[63,10]])assert.equal((await buy(stage,spot)).reason,'invalid');
  assert.equal((await buy(63,9,randomUUID(),'hint',true)).reason,'not_found','masterpiece ten-answer stages remain unchanged');
  const tenReceipt=await buy(62,9);assert.equal(tenReceipt.ok,true);assert.equal(tenReceipt.coins,43);
- assert.equal(await value('select count(*)::int value from ojjuda_note_internal.spend_requests'),7,'only the one new valid hint purchase charges a coin');
  await db.exec('reset role');
+ assert.equal(await value('select count(*)::int value from ojjuda_note_internal.spend_requests'),7,'only the one new valid hint purchase charges a coin');
  console.log('PASS: 70 stable IDs83–152 plus hard stage 62 ten answers, independent hints, unchanged auth/ACL/RLS/wallets and exact-once receipts');
 }finally{await db.close();}})().catch(error=>{console.error(error);process.exitCode=1;});
