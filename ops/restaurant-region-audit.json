@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 66,
-    "scheduledAt": "2026-11-08T12:00:00+09:00",
+    "slot": 68,
+    "scheduledAt": "2026-11-08T14:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "12시 예약 회차 기준: h=61, n=65, slot66. 사용자가 제공한 정각 기준."
+    "source": "14:00 한국시각 예약 기준: h=63, n=67, slot68; 13시 67회차는 최신 main에 처리 기록 없어 이월 확인."
   },
   "entries": [
     {
@@ -62282,6 +62282,1001 @@
         "강원특별자치도 양양군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 68,
+      "scheduledAtKST": "2026-11-08T14:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_okcheon_30_listings_25_add_5_guide_enrich",
+      "assignedRegions": [
+        "충청북도 보은군",
+        "충청북도 옥천군",
+        "충청북도 영동군",
+        "충청북도 증평군"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청북도 보은군",
+          "baseListedCount": 14,
+          "newCount": 0,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "충청북도 도청의 기존 지정 업소 자료 및 해당 군 등록 식당의 좌표 누락 확인",
+            "기존 위치 미확인 업소 재조사 후보 정리"
+          ],
+          "remainingAreas": [
+            "기존 위치 미확인 3곳 주소·좌표 재조사",
+            "군 내 블루리본·우체국·관광 추천의 나머지 공식 명단, 휴·폐업·이전 여부 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 옥천군",
+          "baseListedCount": 12,
+          "newCount": 25,
+          "guideHistoryAdded": 5,
+          "actuallyChecked": [
+            "옥천군 문화관광 2026-03-09 최종수정 지정 맛집 30곳의 상호·메뉴·도로명 주소 명단 대조",
+            "기존 동일 식당 5곳 ID 그대로 보존하여 공식 지정 이력 추가",
+            "한알천의 공개 상권업소 정보에서 동일 상호·도로명·건물번호 및 위경도 교차 확인"
+          ],
+          "remainingAreas": [
+            "지정 맛집의 24곳 수치좌표·현 영업상태",
+            "군 공식 목록 이후 갱신 및 블루리본 판본 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 영동군",
+          "baseListedCount": 16,
+          "newCount": 0,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "충북 도청 기존 지정·수록 자료와 영동군 관광 모범음식점 명단 일부 대조",
+            "모범음식점 목록만으로 새 공식 맛집 선정 기록을 만들지 않음"
+          ],
+          "remainingAreas": [
+            "기존 위치 미확인 8곳 주소·좌표 재조사",
+            "군 내 블루리본·우체국·관광 추천의 나머지 공식 명단, 휴·폐업·이전 여부 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청북도 증평군",
+          "baseListedCount": 9,
+          "newCount": 0,
+          "guideHistoryAdded": 0,
+          "actuallyChecked": [
+            "충청북도 도청의 기존 지정 업소 자료 및 해당 군 등록 식당의 좌표 누락 확인",
+            "기존 위치 미확인 업소 재조사 후보 정리"
+          ],
+          "remainingAreas": [
+            "기존 위치 미확인 2곳 주소·좌표 재조사",
+            "군 내 블루리본·우체국·관광 추천의 나머지 공식 명단, 휴·폐업·이전 여부 확인"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "옥천군 문화관광 2026-03-09 최종수정 지정 맛집 30개 명단",
+        "충청북도 공식 충북의 맛 기존 보은·옥천·영동·증평 수록 자료",
+        "영동군 공식 관광 모범음식점 공개 목록(추천/선정과 구분)",
+        "한알천 공개 상권업소 주소·좌표"
+      ],
+      "additions": 25,
+      "modifications": 5,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 1,
+      "locationHidden": 0,
+      "locationPending": 41,
+      "locationPendingScope": "이번 회차 4개군: 기존 기본 DB 좌표 미등록 17곳과 신규 25곳 중 좌표 미등록 24곳. 기타 지역 및 과거 이월 별도 보존.",
+      "addedRestaurantIds": [
+        "local-chungbuk-slot68-okcheon-hanalcheon",
+        "local-chungbuk-slot68-okcheon-chamsaem-trout",
+        "local-chungbuk-slot68-okcheon-daebakjip",
+        "local-chungbuk-slot68-okcheon-hanbang-yeomso",
+        "local-chungbuk-slot68-okcheon-eollukbaegi",
+        "local-chungbuk-slot68-okcheon-jangin-ureong",
+        "local-chungbuk-slot68-okcheon-bokgol",
+        "local-chungbuk-slot68-okcheon-ttalbujhae",
+        "local-chungbuk-slot68-okcheon-yuseong-galbi-okcheon",
+        "local-chungbuk-slot68-okcheon-munjeong",
+        "local-chungbuk-slot68-okcheon-imone",
+        "local-chungbuk-slot68-okcheon-gwansanseong",
+        "local-chungbuk-slot68-okcheon-offlam",
+        "local-chungbuk-slot68-okcheon-okcheon-mukjip",
+        "local-chungbuk-slot68-okcheon-songgoga",
+        "local-chungbuk-slot68-okcheon-hyangsu-hanwoo",
+        "local-chungbuk-slot68-okcheon-janggeumi",
+        "local-chungbuk-slot68-okcheon-hanwoo-jayul",
+        "local-chungbuk-slot68-okcheon-iseok-haemul",
+        "local-chungbuk-slot68-okcheon-gyeongseong-mandu",
+        "local-chungbuk-slot68-okcheon-pungmidang",
+        "local-chungbuk-slot68-okcheon-jeonwon-garden",
+        "local-chungbuk-slot68-okcheon-tutti-cucina",
+        "local-chungbuk-slot68-okcheon-forefora",
+        "local-chungbuk-slot68-okcheon-ocheonnyeon"
+      ],
+      "modifiedRestaurantIds": [
+        "local-north-c193196a43a34490",
+        "local-north-893f7bcb82688546",
+        "local-north-845a3158c3d5a8d9",
+        "local-north-3176c6d451b71e24",
+        "local-north-197299de2af35076"
+      ],
+      "evidenceUrls": [
+        "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "https://safe.oc.go.kr/tour/contents.do?key=4087",
+        "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335",
+        "https://tour.yd21.go.kr/tour/html/sub04/0402.html",
+        "https://xju.purpleo.kr/article/41"
+      ],
+      "verifiedLocations": [
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-hanalcheon",
+          "name": "한알천",
+          "region": "충청북도 옥천군",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1217",
+          "lat": 36.3136856150236,
+          "lng": 127.574517979556,
+          "coordinateSourceUrl": "https://xju.purpleo.kr/article/41",
+          "crosscheckUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "옥천군 공개 지정 명단과 상권업소 공개 자료에서 상호·도로명·건물번호 정확히 일치. 현 영업 상태 별도 미확인."
+        }
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-north-52f8ed707bd9944f",
+          "name": "속리토속음식점",
+          "currentAddress": "충청북도 보은군 속리산면 법주사로 261",
+          "region": "충청북도 보은군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=42"
+          ],
+          "searchAliases": [
+            "속리토속음식점 보은군",
+            "속리토속음식점 충청북도 보은군 속리산면 법주사로 261",
+            "충청북도 보은군 속리토속음식점"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-4fa979fcbc2b4892",
+          "name": "보은누룽지백숙",
+          "currentAddress": "충청북도 보은군 보은읍 보은로 62-1",
+          "region": "충청북도 보은군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=44"
+          ],
+          "searchAliases": [
+            "보은누룽지백숙 보은군",
+            "보은누룽지백숙 충청북도 보은군 보은읍 보은로 62-1",
+            "충청북도 보은군 보은누룽지백숙"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-65a11a0f789c5200",
+          "name": "속리산(청주방향)휴게소",
+          "currentAddress": "충청북도 보은군 마로면 적암길 56-18",
+          "region": "충청북도 보은군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=45"
+          ],
+          "searchAliases": [
+            "속리산(청주방향)휴게소 보은군",
+            "속리산(청주방향)휴게소 충청북도 보은군 마로면 적암길 56-18",
+            "충청북도 보은군 속리산(청주방향)휴게소"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-59edd588d412610d",
+          "name": "일미해장국",
+          "currentAddress": "충청북도 옥천군 옥천읍 금장로 105",
+          "region": "충청북도 옥천군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=48"
+          ],
+          "searchAliases": [
+            "일미해장국 옥천군",
+            "일미해장국 충청북도 옥천군 옥천읍 금장로 105",
+            "충청북도 옥천군 일미해장국"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-893f7bcb82688546",
+          "name": "과수원가든",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1454",
+          "region": "충청북도 옥천군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=48"
+          ],
+          "searchAliases": [
+            "과수원가든 옥천군",
+            "과수원가든 충청북도 옥천군 옥천읍 성왕로 1454",
+            "충청북도 옥천군 과수원가든"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-2361792e09ca4f1f",
+          "name": "새강변가든",
+          "currentAddress": "충청북도 옥천군 군북면 성왕로 1564",
+          "region": "충청북도 옥천군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=49"
+          ],
+          "searchAliases": [
+            "새강변가든 옥천군",
+            "새강변가든 충청북도 옥천군 군북면 성왕로 1564",
+            "충청북도 옥천군 새강변가든"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-6d3c8590ed5200f5",
+          "name": "옛장터숯불갈비",
+          "currentAddress": "충청북도 옥천군 이원면 이원로 809",
+          "region": "충청북도 옥천군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=49"
+          ],
+          "searchAliases": [
+            "옛장터숯불갈비 옥천군",
+            "옛장터숯불갈비 충청북도 옥천군 이원면 이원로 809",
+            "충청북도 옥천군 옛장터숯불갈비"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-f450ce86210eee0c",
+          "name": "원조엄나무백숙",
+          "currentAddress": "충청북도 영동군 영동읍 어미실길 33",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=55"
+          ],
+          "searchAliases": [
+            "원조엄나무백숙 영동군",
+            "원조엄나무백숙 충청북도 영동군 영동읍 어미실길 33",
+            "충청북도 영동군 원조엄나무백숙"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-192e55bf75dbfca6",
+          "name": "인터식당",
+          "currentAddress": "충청북도 영동군 황간면 신촌2길 4",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=56"
+          ],
+          "searchAliases": [
+            "인터식당 영동군",
+            "인터식당 충청북도 영동군 황간면 신촌2길 4",
+            "충청북도 영동군 인터식당"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-17c6f67069881e14",
+          "name": "일미식당",
+          "currentAddress": "충청북도 영동군 영동읍 영동시장4길 7",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=56"
+          ],
+          "searchAliases": [
+            "일미식당 영동군",
+            "일미식당 충청북도 영동군 영동읍 영동시장4길 7",
+            "충청북도 영동군 일미식당"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-d5db3a628b548025",
+          "name": "소풍",
+          "currentAddress": "충청북도 영동군 양산면 양산심천로 48",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=57"
+          ],
+          "searchAliases": [
+            "소풍 영동군",
+            "소풍 충청북도 영동군 양산면 양산심천로 48",
+            "충청북도 영동군 소풍"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-052398ae7f6a5929",
+          "name": "추풍령해물탕·찜",
+          "currentAddress": "충청북도 영동군 추풍령면 추풍령로7길 45-42",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "searchAliases": [
+            "추풍령해물탕·찜 영동군",
+            "추풍령해물탕·찜 충청북도 영동군 추풍령면 추풍령로7길 45-42",
+            "충청북도 영동군 추풍령해물탕·찜"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-35a9caa169811447",
+          "name": "폭포가든",
+          "currentAddress": "충청북도 영동군 심천면 옥계폭포길 144",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "searchAliases": [
+            "폭포가든 영동군",
+            "폭포가든 충청북도 영동군 심천면 옥계폭포길 144",
+            "충청북도 영동군 폭포가든"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-a56748df2bc04d40",
+          "name": "한천가든",
+          "currentAddress": "충청북도 영동군 황간면 원촌동1길 52",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "searchAliases": [
+            "한천가든 영동군",
+            "한천가든 충청북도 영동군 황간면 원촌동1길 52",
+            "충청북도 영동군 한천가든"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-d782757964190992",
+          "name": "황간휴게소(하행선)",
+          "currentAddress": "충청북도 영동군 황간면 회포길 102",
+          "region": "충청북도 영동군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=58"
+          ],
+          "searchAliases": [
+            "황간휴게소(하행선) 영동군",
+            "황간휴게소(하행선) 충청북도 영동군 황간면 회포길 102",
+            "충청북도 영동군 황간휴게소(하행선)"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-2b436bfa4d675824",
+          "name": "본가",
+          "currentAddress": "충청북도 증평군 증평읍 삼보로7길 32",
+          "region": "충청북도 증평군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=61"
+          ],
+          "searchAliases": [
+            "본가 증평군",
+            "본가 충청북도 증평군 증평읍 삼보로7길 32",
+            "충청북도 증평군 본가"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-north-a399715d9b223a2e",
+          "name": "원갈비",
+          "currentAddress": "충청북도 증평군 증평읍 중앙로 235",
+          "region": "충청북도 증평군",
+          "sourceType": "충청북도 식의약안전과 · 2026 충북의 맛",
+          "evidenceUrls": [
+            "https://www.chungbuk.go.kr/www/downloadBbsFile.do?key=425&bbsNo=62&atchmnflNo=276335#page=62"
+          ],
+          "searchAliases": [
+            "원갈비 증평군",
+            "원갈비 충청북도 증평군 증평읍 중앙로 235",
+            "충청북도 증평군 원갈비"
+          ],
+          "checkResult": "기존 지정·수록 명단과 좌표 미등록 상태 재대조. 현재 업소명·주소에 일치하는 수치좌표 추가 검증은 이월.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-chamsaem-trout",
+          "name": "참샘송어 직판장",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1236",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "참샘송어 직판장 옥천군",
+            "참샘송어 직판장 충청북도 옥천군 옥천읍 성왕로 1236",
+            "충청북도 옥천군 참샘송어 직판장"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-daebakjip",
+          "name": "대박집",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1250",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "대박집 옥천군",
+            "대박집 충청북도 옥천군 옥천읍 성왕로 1250",
+            "충청북도 옥천군 대박집"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-hanbang-yeomso",
+          "name": "한방염소촌",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1280",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "한방염소촌 옥천군",
+            "한방염소촌 충청북도 옥천군 옥천읍 성왕로 1280",
+            "충청북도 옥천군 한방염소촌"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-eollukbaegi",
+          "name": "얼룩배기 보리밥 식당",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1309",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "얼룩배기 보리밥 식당 옥천군",
+            "얼룩배기 보리밥 식당 충청북도 옥천군 옥천읍 성왕로 1309",
+            "충청북도 옥천군 얼룩배기 보리밥 식당"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-jangin-ureong",
+          "name": "장인우렁쌈밥",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1354",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "장인우렁쌈밥 옥천군",
+            "장인우렁쌈밥 충청북도 옥천군 옥천읍 성왕로 1354",
+            "충청북도 옥천군 장인우렁쌈밥"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-bokgol",
+          "name": "맛있는 복골올갱이",
+          "currentAddress": "충청북도 옥천군 옥천읍 성왕로 1441",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "맛있는 복골올갱이 옥천군",
+            "맛있는 복골올갱이 충청북도 옥천군 옥천읍 성왕로 1441",
+            "충청북도 옥천군 맛있는 복골올갱이"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-ttalbujhae",
+          "name": "딸부자해장국",
+          "currentAddress": "충청북도 옥천군 옥천읍 지용로 25",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "딸부자해장국 옥천군",
+            "딸부자해장국 충청북도 옥천군 옥천읍 지용로 25",
+            "충청북도 옥천군 딸부자해장국"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-yuseong-galbi-okcheon",
+          "name": "유성갈비 옥천점",
+          "currentAddress": "충청북도 옥천군 옥천읍 지용로 31",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "유성갈비 옥천점 옥천군",
+            "유성갈비 옥천점 충청북도 옥천군 옥천읍 지용로 31",
+            "충청북도 옥천군 유성갈비 옥천점"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-munjeong",
+          "name": "문정식당",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수3길 20",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "문정식당 옥천군",
+            "문정식당 충청북도 옥천군 옥천읍 향수3길 20",
+            "충청북도 옥천군 문정식당"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-imone",
+          "name": "이모네 냄비백반",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수3길 30",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "이모네 냄비백반 옥천군",
+            "이모네 냄비백반 충청북도 옥천군 옥천읍 향수3길 30",
+            "충청북도 옥천군 이모네 냄비백반"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-gwansanseong",
+          "name": "관산성 한우",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수3길 8, 1~2층",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "관산성 한우 옥천군",
+            "관산성 한우 충청북도 옥천군 옥천읍 향수3길 8, 1~2층",
+            "충청북도 옥천군 관산성 한우"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-offlam",
+          "name": "오프램",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수5길 3",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "오프램 옥천군",
+            "오프램 충청북도 옥천군 옥천읍 향수5길 3",
+            "충청북도 옥천군 오프램"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-okcheon-mukjip",
+          "name": "옥천묵집",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수7길 8",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "옥천묵집 옥천군",
+            "옥천묵집 충청북도 옥천군 옥천읍 향수7길 8",
+            "충청북도 옥천군 옥천묵집"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-songgoga",
+          "name": "송고가",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수길 100",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "송고가 옥천군",
+            "송고가 충청북도 옥천군 옥천읍 향수길 100",
+            "충청북도 옥천군 송고가"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-hyangsu-hanwoo",
+          "name": "향수한우소국밥",
+          "currentAddress": "충청북도 옥천군 옥천읍 향수길 6, 1층",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "향수한우소국밥 옥천군",
+            "향수한우소국밥 충청북도 옥천군 옥천읍 향수길 6, 1층",
+            "충청북도 옥천군 향수한우소국밥"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-janggeumi",
+          "name": "옥천장금이맛집",
+          "currentAddress": "충청북도 옥천군 군북면 성왕로 1567",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "옥천장금이맛집 옥천군",
+            "옥천장금이맛집 충청북도 옥천군 군북면 성왕로 1567",
+            "충청북도 옥천군 옥천장금이맛집"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-hanwoo-jayul",
+          "name": "한우자율식당",
+          "currentAddress": "충청북도 옥천군 옥천읍 가화길 86",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "한우자율식당 옥천군",
+            "한우자율식당 충청북도 옥천군 옥천읍 가화길 86",
+            "충청북도 옥천군 한우자율식당"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-iseok-haemul",
+          "name": "이석해물칼국수, 왕만두",
+          "currentAddress": "충청북도 옥천군 옥천읍 옥천로 1559",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "이석해물칼국수, 왕만두 옥천군",
+            "이석해물칼국수, 왕만두 충청북도 옥천군 옥천읍 옥천로 1559",
+            "충청북도 옥천군 이석해물칼국수, 왕만두"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-gyeongseong-mandu",
+          "name": "경성만두요리전문점",
+          "currentAddress": "충청북도 옥천군 옥천읍 옥천로 1644",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "경성만두요리전문점 옥천군",
+            "경성만두요리전문점 충청북도 옥천군 옥천읍 옥천로 1644",
+            "충청북도 옥천군 경성만두요리전문점"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-pungmidang",
+          "name": "풍미당",
+          "currentAddress": "충청북도 옥천군 옥천읍 중앙로 23-1",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "풍미당 옥천군",
+            "풍미당 충청북도 옥천군 옥천읍 중앙로 23-1",
+            "충청북도 옥천군 풍미당"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-jeonwon-garden",
+          "name": "전원가든",
+          "currentAddress": "충청북도 옥천군 이원면 이원심천로 24",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "전원가든 옥천군",
+            "전원가든 충청북도 옥천군 이원면 이원심천로 24",
+            "충청북도 옥천군 전원가든"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-tutti-cucina",
+          "name": "뚜띠쿠치나",
+          "currentAddress": "충청북도 옥천군 군서면 월전2길 3",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "뚜띠쿠치나 옥천군",
+            "뚜띠쿠치나 충청북도 옥천군 군서면 월전2길 3",
+            "충청북도 옥천군 뚜띠쿠치나"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-forefora",
+          "name": "포레포라",
+          "currentAddress": "충청북도 옥천군 군북면 감로길 24-9",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "포레포라 옥천군",
+            "포레포라 충청북도 옥천군 군북면 감로길 24-9",
+            "충청북도 옥천군 포레포라"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        },
+        {
+          "restaurantId": "local-chungbuk-slot68-okcheon-ocheonnyeon",
+          "name": "오천년코다리",
+          "currentAddress": "충청북도 옥천군 옥천읍 삼금로1길 15",
+          "region": "충청북도 옥천군",
+          "sourceType": "옥천군 문화관광 · 지정 맛집 30곳",
+          "evidenceUrls": [
+            "https://www.oc.go.kr/tour/contents.do?key=4087"
+          ],
+          "searchAliases": [
+            "오천년코다리 옥천군",
+            "오천년코다리 충청북도 옥천군 옥천읍 삼금로1길 15",
+            "충청북도 옥천군 오천년코다리"
+          ],
+          "checkResult": "옥천군 공식 지정 목록의 업소명·주소는 확인했으나 이 매장에 일치하는 공개 수치좌표 근거는 미확보. 영업 상태는 별도 미확인.",
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 68,
+          "reason": "추정 좌표, 지번 중심점, 이용자 위치를 사용하지 않음. 좌표 미확인은 폐업·선정 취소 근거가 아님."
+        }
+      ],
+      "unresolved": [
+        {
+          "region": "강원특별자치도 인제군·고성군·양양군",
+          "cycle": 1,
+          "slot": 67,
+          "scheduledAtKST": "2026-11-08T13:00:00+09:00",
+          "reason": "최신 main 점검기록에서 1순환 67회차 미발견. 실제 수행·반영 확인 불가. 2순환 67회차에서 우선 보충 확인 필요."
+        },
+        {
+          "region": "전북특별자치도",
+          "cycle": 1,
+          "slot": 53,
+          "reason": "이전 회차의 미완료 조사는 기존 기록을 그대로 보존하며 후속 대조 필요."
+        }
+      ],
+      "nextSlot": 69,
+      "nextRegions": [
+        "충청북도 진천군",
+        "충청북도 괴산군",
+        "충청북도 음성군",
+        "충청북도 단양군"
+      ],
+      "notes": [
+        "이번 회차는 지정 30개 공식 명단 가운데 기존5·신규25 식별을 비교했으며 4개군 전체 맛집을 조사한 것은 아님.",
+        "최종 수정일(2026-03-09)을 선정연도로 오기하지 않고 선정연도 미확인 null로 기록.",
+        "회원 추천맛집 게시물·좌표·사진·개인 위치에 접근하지 않았으며 삭제하지 않음."
+      ]
     }
   ],
   "notes": [
@@ -62311,6 +63306,7 @@
     "2026-11-08 08시 1/62 대구 달성·군위: 대구푸드 공식 달성군 5곳 추가·수정0·위치0·비노출0, 기존18 및 신규5 좌표 미확인 총23 이월. 군위군 별도 명단 미완료, 전북53·제주57 등 기존 이월 보존, 회원 추천 불변.",
     "2026-11-08 10시 순환1/64 경기 연천·가평·양평 관광 공식 10곳 추가·기존 수정0·좌표0·비노출0, 위치 대기13. 길조 숙박 동주소·빗고개 별칭 미확인 및 전북53·제주57 이월, 회원 추천 불변.",
     "2026-11-08 11시 순환1/65 이어하기: 홍천군 공식 으뜸맛집 명단 44곳 전체 대조, 누락7곳 추가(홍천37→44). 횡성·영월·평창 기존 조사 보존, 위치보강0·비노출0·지역 위치재확인 53곳 대기, 좌표·영업 추정 안함.",
-    "2026-11-08 12시 순환1/66 강원 정선·철원·화천·양구 공식 목록 부분 확인 23곳 신규, 수정0, 정확 좌표 보강1(철원막국수), 비노출0, 재확인 대기22. 이전 이월 및 회원추천 불변."
+    "2026-11-08 12시 순환1/66 강원 정선·철원·화천·양구 공식 목록 부분 확인 23곳 신규, 수정0, 정확 좌표 보강1(철원막국수), 비노출0, 재확인 대기22. 이전 이월 및 회원추천 불변.",
+    "2026-11-08 14시 순환1/68 충북 보은·옥천·영동·증평: 옥천군 지정 명단 새25·기존5 이력 병합, 좌표1(한알천), 비노출0, 재확인 대기41(기본DB 기존17+신규24). 67회차 기록 부재 및 전북 미완료 이월."
   ]
 }
