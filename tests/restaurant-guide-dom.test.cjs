@@ -132,6 +132,14 @@ function fixture(options = {}) {
         const duplicate = { ...(options.dataset || dataset).restaurants[0], region: '전남', district: '보성군', lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
         return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 75, restaurants: Array(34).fill(duplicate), guideEnrichments: [{},{},{},{},{},{},{}] }) };
       }
+      if (url.pathname.endsWith('/official-jeonnam-slot77.json')) {
+        // Match slot 77's strict published schema without adding fixture-only restaurants.
+        const duplicate = { ...(options.dataset || dataset).restaurants[0], region: '전남', district: '무안군', lat: null, lng: null,
+          guides: [{ provider: 'local-guide', year: 2025, status: 'historical_selection' }] };
+        return { ok: true, status: 200, json: async () => ({
+          cycle: 1, slot: 77, restaurants: Array(22).fill(duplicate), guideEnrichments: [{}, {}, {}, {}]
+        }) };
+      }
       if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
         // Keep fixture restaurant IDs and original result counts unchanged.
         const base = (options.dataset || dataset).restaurants[0];

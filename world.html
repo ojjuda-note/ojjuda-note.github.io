@@ -33,8 +33,8 @@
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-game-ui1">
-<script src="/shared/games/game-results.js?v=20261109-unified-game-ui1" defer></script>
+<link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
+<script src="/shared/games/game-results.js?v=20261109-unified-multiplayer-ui2" defer></script>
 <script src="/app/world/world-navigation.js?v=20261106-source-folders1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 
@@ -174,7 +174,7 @@
 <script src="/shared/viewport/mobile-viewport.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/shared/brand/brand-copy.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/features/wallet/paid-ui.css?v=20261106-source-folders1">
-<link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-game-ui1">
+<link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-entry.js?v=20261107-observer-guard1" defer></script>
 <script src="/shared/games/game-friend-invites.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
@@ -196,7 +196,7 @@
 <meta name="twitter:description" content="오늘 하루 어땠나요? 괜찮았나요. 게임을 즐기고, 공원에서 오늘의 이야기를 나누는 오쭈다 아지트.">
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
-<link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261106-source-folders1">
+<link rel="stylesheet" href="/shared/games/multiplayer-entry.css?v=20261109-unified-multiplayer-ui2">
 <link rel="stylesheet" href="/shared/games/world-game-screen.css?v=20261106-source-folders1">
 <script src="/shared/games/multiplayer-entry.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-promotions.css?v=20261106-source-folders1">
@@ -2743,7 +2743,7 @@ let chachaRushPortalPromise = null;
 const chachaRushPortal = {
  async open() {
   try {
-   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261109-unified-game-ui1').then(({installChachaRushPortal}) => installChachaRushPortal({
+   chachaRushPortalPromise ??= import('/shared/games/chacha-rush-portal.js?v=20261109-unified-multiplayer-ui2').then(({installChachaRushPortal}) => installChachaRushPortal({
     currentOwner:()=>worldRewardOwner(),
     submitScore:score=>tf('chacha_rush',score),
     onSaved:owner=>window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner,game:'chacha_rush'}})),

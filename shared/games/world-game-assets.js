@@ -12,16 +12,16 @@
   restaurants:'1.11.39',
   recommendations:'1.6.1',
   archery:'3.2.3',
-  roulette:'1.9.2',
-  bang:'1.11.1',
-  poker:'1.6.2',
-  tank:'1.6.1',
+  roulette:'1.9.3',
+  bang:'1.11.2',
+  poker:'1.6.3',
+  tank:'1.6.2',
   solitaire:'1.2.3',
   mines:'1.4.2',
   sacheonseong:'1.14.5',
   saetbyeol:'1.3.3',
-  tour:'1.5.2',
-  ttang:'1.6.1',
+  tour:'1.5.3',
+  ttang:'1.6.2',
   photo_ttang:'1.4.2',
   mole:'1.7.1',
   runner:'1.4.2',
@@ -29,12 +29,12 @@
   breakout:'1.6.5',
   spot:'1.11.11',
   screw:'2.22.4',
-  janggi:'1.9.2',
-  chess:'1.4.5',
-  billiards:'1.4.5',
-  matgo:'1.5.2'
+  janggi:'1.9.3',
+  chess:'1.4.6',
+  billiards:'1.4.6',
+  matgo:'1.5.3'
  });
- const controls=['/shared/games/game-controls.css?v=20261109-unified-game-ui1','/shared/games/game-controls.js?v=20261106-source-folders1'];
+ const controls=['/shared/games/game-controls.css?v=20261109-unified-multiplayer-ui2','/shared/games/game-controls.js?v=20261106-source-folders1'];
  const session='/shared/games/game-session.js?v=20261108-streak-exit1';
  const minesRules='/games/mines/rules.js?v=20261022-ranks1';
  const solitaireRules='/games/solitaire/rules.js?v=20261106-solitaire-ranking1';
