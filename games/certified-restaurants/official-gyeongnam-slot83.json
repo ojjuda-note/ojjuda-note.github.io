@@ -1,0 +1,445 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 83,
+  "scheduledAtKST": "2026-11-09T05:00:00+09:00",
+  "sourceCheckedAt": "2026-11-09",
+  "sourceName": "한국관광공사 열린관광 음식점 소개 5곳 / 산청군 문화관광 모범음식점 색인 12곳",
+  "sourceUrls": [
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+    "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+  ],
+  "sourceScope": "한국관광공사 상세 페이지의 상호·주소 5건 확인. 산청군 문화관광 공식 검색 색인 1쪽 12건을 확인했으나 현재 본문 직접 접근은 시간 초과. 다른 페이지 7건과 블루리본 등급은 미확인. 전체 명단·현재 영업 확인 아님.",
+  "completeRegionalCollection": false,
+  "operatingStatusVerified": false,
+  "exactCoordinatesVerified": 0,
+  "notes": [
+    "기존 등록 ID 및 회원 추천 자료는 수정하지 않음.",
+    "장소별 선정·수록 연도는 확인되지 않아 null로 둠. 관광공사 상세 마지막 수정일은 지정 연도가 아님.",
+    "주소에서 추정한 좌표나 사용자 개인 위치는 사용하지 않음."
+  ],
+  "restaurants": [
+    {
+      "id": "local-gyeongnam-c1s83-kto-01",
+      "name": "미조식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 미조면 미조로 232",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+          "sourceName": "한국관광공사 열린관광 모두의 여행",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-02-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 음식점 소개 수록 사실만 확인. 공식 가이드 리본·별 선정이나 현재 영업 상태의 확증은 아닙니다."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-kto-02",
+      "name": "할로브리즈",
+      "category": "디저트",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 동부대로1122번길 131-6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+          "sourceName": "한국관광공사 열린관광 모두의 여행",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-09-28",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 음식점 소개 수록 사실만 확인. 공식 가이드 리본·별 선정이나 현재 영업 상태의 확증은 아닙니다."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-kto-03",
+      "name": "보물섬남해한우프라자",
+      "category": "한식",
+      "region": "경남",
+      "district": "남해군",
+      "address": "경상남도 남해군 남해읍 스포츠로 34",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+          "sourceName": "한국관광공사 열린관광 모두의 여행",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-02-05",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 음식점 소개 수록 사실만 확인. 공식 가이드 리본·별 선정이나 현재 영업 상태의 확증은 아닙니다."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-kto-04",
+      "name": "쉬어가기좋은날식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 쌍계사길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+          "sourceName": "한국관광공사 열린관광 모두의 여행",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-08-21",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 음식점 소개 수록 사실만 확인. 공식 가이드 리본·별 선정이나 현재 영업 상태의 확증은 아닙니다."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-kto-05",
+      "name": "하동야생차치유관 티카페하동",
+      "category": "디저트",
+      "region": "경남",
+      "district": "하동군",
+      "address": "경상남도 하동군 화개면 쌍계로 571-27 1층 티카페하동",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 열린관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+          "sourceName": "한국관광공사 열린관광 모두의 여행",
+          "verifiedAt": "2026-11-09",
+          "sourceAsOf": "2026-10-13",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "관광공사 음식점 소개 수록 사실만 확인. 공식 가이드 리본·별 선정이나 현재 영업 상태의 확증은 아닙니다."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-01",
+      "name": "갑을가든",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 삼장면 대원사길 572",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-02",
+      "name": "강변식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 산청읍 꽃봉산로 30-5",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-03",
+      "name": "개미정산장식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 시천면 지리산대로 1387",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-04",
+      "name": "남원식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 생초면 산수로 1018",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-05",
+      "name": "동의약선관",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 금서면 동의보감로555번길 150",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-06",
+      "name": "만포정횟집",
+      "category": "일식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 신안면 원지강변로 67-15",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-07",
+      "name": "물장구식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 생비량면 지리산대로 4285",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-08",
+      "name": "보현갈비식육식당",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 시천면 남명로 223",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-09",
+      "name": "아리산반점",
+      "category": "중식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 산청읍 친환경로 2655",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-10",
+      "name": "열매랑뿌리랑",
+      "category": "기타",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 시천면 남명로 228",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-11",
+      "name": "영도숯불갈비",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 신안면 원지강변로63번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    },
+    {
+      "id": "local-gyeongnam-c1s83-sancheong-12",
+      "name": "영실한우프라자",
+      "category": "한식",
+      "region": "경남",
+      "district": "산청군",
+      "address": "경상남도 산청군 단성면 목화로 912",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "산청군 문화관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453",
+          "sourceName": "산청군 문화관광 · 모범음식점 공개 명단",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing_snapshot",
+          "selectionCriteria": "군청 공식 명단의 공개 검색 색인에서 상호·주소를 확인. 페이지 원문은 이번 확인 중 응답 지연; 개별 지정연도·현재 영업상태 미확인."
+        }
+      ]
+    }
+  ]
+}
