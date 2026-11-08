@@ -1110,87 +1110,88 @@
     },
     {
       "id": 62,
-      "title": "겨울 · 눈 덮인 산과 다리",
+      "title": "겨울 · 눈 내리는 산마을",
       "category": "mountain",
       "difficulty": "hard",
       "differenceCount": 6,
       "generationMode": "built-in image_gen",
-      "originalPrompt": "Use case: photorealistic-natural. Asset: original photograph for an advanced spot-the-difference browser game. One ultra-realistic 1536x1024 landscape photograph, full frame, no borders, no collage, no text or watermark. Deep focus, beautiful fine realistic detail, natural colors and physically plausible light, not illustration or miniature. Scattered distinct small natural details and modest scene-appropriate objects useful for later subtle edits. No prominent people. Winter mountain landscape: snowy rugged peaks above snow-laden evergreen forest, partially frozen clear stream, a rustic timber footbridge and a small distant wooden cabin with a chimney. Foreground snow-covered rocks, a modest wooden trail post without letters, protruding dark twigs and pine cones. Crisp pale morning sun and realistic snow texture. Authentic landscape photography.",
+      "originalPrompt": "Use case: photorealistic-natural. New original landscape game scene: a cozy snow-covered Alpine village square at blue hour, with a bakery kiosk, snowman in blue scarf, iced pond with two pairs of skates, village fountain, decorated fir tree and golden star, sled, red lamp, blue mailbox, warmly lit wooden chalets. 1536x1024 landscape photograph, balanced objects, no writing or UI.",
       "editPrompts": [
-        "Use case: precise-object-edit. Supplied image is the edit target. Make a HARD spot-the-difference second photograph. Exact 1536x1024 dimensions and alignment; keep all other objects, colors, lighting and textures unchanged. No crop, new camera, global changes, text or watermark. Make exactly six localized changes below at original-image pixel coordinates. Each small modification must look naturally photographed:\n1. Remove only the isolated pine cone on the right foreground snow near (1280,797), fill with matching undisturbed snow.\n2. Remove only the dark chimney on the distant cabin roof near (1188,371), retain roof, snow and sky.\n3. Add a narrow natural red painted trail-marker band around the right wooden post at y=558, keeping wood texture and snow cap; band about 14 pixels tall.\n4. Add a small cluster of three dark red winter berries to the existing bare twig near (172,600), each berry about 5 pixels across, naturally lit.\n5. Remove only the center vertical timber railing post near (695,491), leave the horizontal rails, snow and bridge deck.\n6. Cover only the small dark rounded rock just right of center near (1052,711) with a natural thin white snow cap, retain its shape and surrounding stream."
+        "Use case: precise-object-edit. Keep the original winter village photo composition and lighting. Change exactly six localized objects: remove the bakery brass bell, replace the counter cake with a bread loaf, change the snowman's neck scarf from navy to red, replace the tree-top star with a crescent, turn the white ice-skate pair red, and turn the blue mailbox yellow. No other intended changes; the game reveals only these six local masks."
       ],
       "files": {
         "original": {
-          "path": "assets/62-original.webp",
-          "sha256": "76c857a587dd1c229909e04aeb83135c12a2b126c7a89463dcb473d55b8aa87a",
-          "bytes": 890132,
+          "path": "assets/62-winter-village-original.webp",
+          "sha256": "bfedcda5bdb033d9644423716a539343eab5932241211486bfa4dd170efbedd4",
+          "bytes": 345208,
           "width": 1536,
           "height": 1024
         },
         "edited": {
-          "path": "assets/62-photo-difference.webp",
-          "sha256": "54bb1d1684c9ec169f4c22c7822d898490c0d3fa76fe18f0a712f07a132024f1",
-          "bytes": 763052,
+          "path": "assets/62-winter-village-edited.webp",
+          "sha256": "272c4409c994c3104f42c7f07054321a487da7822b14395101c1fe3b880e01b3",
+          "bytes": 282546,
           "width": 1536,
           "height": 1024
         }
       },
       "differences": [
         {
-          "text": "오른쪽 눈 위의 솔방울 하나가 없어졌어요.",
+          "text": "빵집 앞에 매달린 황금 종이 없어졌어요.",
           "bounds1536x1024": [
-            1251,
-            769,
-            1307,
-            824
+            58,
+            248,
+            164,
+            384
           ]
         },
         {
-          "text": "뒤쪽 산장 굴뚝의 연기가 없어졌어요.",
+          "text": "빵집 진열대의 케이크가 빵으로 바뀌었어요.",
           "bounds1536x1024": [
-            1166,
-            308,
-            1212,
-            378
+            256,
+            419,
+            360,
+            494
           ]
         },
         {
-          "text": "오른쪽 나무 말뚝에 붉은 띠가 생겼어요.",
+          "text": "눈사람 목도리의 목 부분이 빨간색으로 바뀌었어요.",
           "bounds1536x1024": [
-            1374,
-            514,
-            1432,
-            546
+            42,
+            611,
+            258,
+            699
           ]
         },
         {
-          "text": "왼쪽 잔가지에 작은 붉은 열매가 생겼어요.",
+          "text": "크리스마스트리 꼭대기의 별이 초승달로 바뀌었어요.",
           "bounds1536x1024": [
-            171,
-            508,
-            211,
-            548
+            1118,
+            7,
+            1236,
+            121
           ]
         },
         {
-          "text": "다리 가운데 세로 기둥 하나가 없어졌어요.",
+          "text": "하얀 스케이트가 빨간 스케이트로 바뀌었어요.",
           "bounds1536x1024": [
-            676,
-            451,
-            712,
-            538
+            724,
+            698,
+            875,
+            831
           ]
         },
         {
-          "text": "가운데 오른쪽의 어두운 바위에 눈이 덮였어요.",
+          "text": "오른쪽 파란 우체통이 노란색으로 바뀌었어요.",
           "bounds1536x1024": [
-            1011,
-            680,
-            1089,
-            739
+            1391,
+            521,
+            1522,
+            679
           ]
         }
-      ]
+      ],
+      "revisedOn": "2026-11-08"
     }
   ]
 }
