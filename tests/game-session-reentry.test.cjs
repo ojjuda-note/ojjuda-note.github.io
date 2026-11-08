@@ -81,6 +81,14 @@ for(const kind of Object.keys(kinds)){
  });
 }
 
+test('bang solo exit leaves the unfinished match unranked instead of surrendering',async t=>{
+ const f=await fixture(t,'bang',room('bang',{mode:'solo',status:'active',state:{players:[{alive:true}],forfeited:[]}}));
+ await f.ready();
+ assert.deepEqual(f.calls.map(call=>call.action),['mine','leave']);
+ assert.equal(f.room(),null);
+ assert.equal(await f.api.close(),true);
+});
+
 test('roulette rejects foreign frames, foreign origins and unsupported wallet commands',async t=>{
  const f=await fixture(t,'roulette',null);await f.ready();const before=f.calls.length,child=f.w.document.querySelector('iframe').contentWindow;
  for(const [origin,source] of [['https://foreign.test',child],[f.w.location.origin,f.w]]){

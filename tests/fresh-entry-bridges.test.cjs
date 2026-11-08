@@ -122,7 +122,7 @@ for(const mode of ['host','join'])test('old ttang iframe load cannot '+mode+' a 
  }finally{f.w.OjjudaTtangBridge.close();f.dispose();}
 });
 
-test('ttang close records the current unfinished round once and late room creation leaves only its own old room',async()=>{
+test('ttang close ignores an unfinished round and late room creation leaves only its own old room',async()=>{
  const f=fixture('games/ttang/ttang-bridge.js');f.load();const created=deferred(),calls=[],scores=[];
  const client={rpc(name,args){calls.push({...args});return args.p_action==='create'?created.promise:Promise.resolve({data:{ok:true}});}};
  try{
@@ -133,8 +133,44 @@ test('ttang close records the current unfinished round once and late room creati
   const pending=f.w.OjjudaTtangBridge.createPublicRoom();await new Promise(resolve=>setImmediate(resolve));assert.equal(calls[0]?.p_action,'create');f.w.OjjudaTtangBridge.close();f.w.OjjudaTtangBridge.close();
   f.w.OjjudaTtangBridge.open({client,owner:'member',arcadeRoom:'new-room'});const current=f.frame();
   created.resolve({data:{ok:true,room:{id:'old-room',code:'a'.repeat(24)}}});assert.equal(await pending,false);
-  assert.equal(f.frame(),current);assert.deepEqual(scores,[{won:false,round}]);
+  assert.equal(f.frame(),current);assert.deepEqual(scores,[],'leaving without a result cannot reset the previous streak');
   assert.deepEqual(calls.filter(call=>call.p_action==='leave'),[{p_action:'leave',p_room:'old-room'}]);
+ }finally{f.w.OjjudaTtangBridge.close();f.dispose();}
+});
+
+test('ttang keeps completed wins across separate game visits',async()=>{
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const scores=[];
+ const onResult=async(won,round)=>{scores.push({won,round});return {ok:true};};
+ try{
+  for(let i=1;i<=2;i++){
+   f.w.OjjudaTtangBridge.open({owner:'member',onResult});
+   const round=`10000000-0000-4000-8000-${String(i).padStart(12,'0')}`,old=f.frame();
+   f.w.dispatchEvent(new f.w.MessageEvent('message',{origin:f.w.location.origin,source:old.contentWindow,data:{type:'ojjuda:ttang:start',mode:'solo',round}}));
+   old.contentWindow.OjjudaTtang={result:()=>({round,win:true}),dispose(){}};
+   f.w.OjjudaTtangBridge.close();await new Promise(resolve=>setImmediate(resolve));
+  }
+  assert.equal(scores.length,2);assert.ok(scores.every(score=>score.won),'reentry adds the next win instead of a false exit loss');
+ }finally{f.w.OjjudaTtangBridge.close();f.dispose();}
+});
+
+test('ttang solo abandon and legacy abandoned-result messages do not count as losses',async()=>{
+ const script=source('games/ttang.html').match(/^function abandonRound\(\)\{[^\n]*$/m)?.[0];
+ assert.ok(script,'iframe contains the real abandon handler');
+ const w=new JSDOM('',{runScripts:'outside-only'}).window;
+ try{
+  w.eval(`var mode='solo',roundId='round',roundReported=false,roundEligible=true,sent=false;function sendResult(){sent=true;}function excludeRound(){};${script};abandonRound();`);
+  assert.equal(w.roundEligible,false);assert.equal(w.roundReported,true);assert.equal(w.sent,false,'abandoning the iframe emits no fabricated loss');
+ }finally{w.close();}
+ const f=fixture('games/ttang/ttang-bridge.js');f.load();const scores=[];
+ try{
+  f.w.OjjudaTtangBridge.open({owner:'member',onResult:async(won,round)=>{scores.push({won,round});return {ok:true};}});
+  const iframe=f.frame(),round='10000000-0000-4000-8000-000000000020';
+  const post=data=>f.w.dispatchEvent(new f.w.MessageEvent('message',{origin:f.w.location.origin,source:iframe.contentWindow,data}));
+  post({type:'ojjuda:ttang:start',mode:'solo',round});
+  post({type:'ojjuda:ttang:result',mode:'solo',round,win:false,abandoned:true});
+  iframe.contentWindow.OjjudaTtang={result:()=>({round,win:false,abandoned:true}),dispose(){}};
+  f.w.OjjudaTtangBridge.close();await flush();
+  assert.deepEqual(scores,[],'old cached abandonment messages cannot break a saved streak');
  }finally{f.w.OjjudaTtangBridge.close();f.dispose();}
 });
 

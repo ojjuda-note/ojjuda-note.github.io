@@ -19,6 +19,10 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029072338_bang_solo_streaks.sql'),'utf8'));
  await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261029162439_bang_paid_hints_random_roles.sql'),'utf8'));
  await require('./game-handoff-migration.cjs')(db,'bang');
+ const exitMigration=fs.readFileSync(path.join(__dirname,'../supabase/migrations/20261108064126_preserve_streak_across_game_exits.sql'),'utf8');
+ const exitStart=exitMigration.indexOf('do $streak_bang_exit$'),exitEnd=exitMigration.indexOf('end;\n$streak_bang_exit$;',exitStart);
+ assert.ok(exitStart>=0&&exitEnd>exitStart);
+ await db.exec(exitMigration.slice(exitStart,exitEnd+'end;\n$streak_bang_exit$;'.length));
  const users=Array.from({length:5},()=>randomUUID());for(let i=0;i<5;i++){await db.query('insert into auth.users(id) values($1)',[users[i]]);await db.query('insert into public.profiles values($1,$2)',[users[i],'P'+i]);await db.query('insert into public.user_private(user_id) values($1)',[users[i]]);}
  const rpc=async(actor,action,room=null,code=null,request=null,options={},version=null,next=null)=>(await db.query('select public.bang_online_service($1,$2,$3,$4,$5,$6,$7,$8) v',[actor,action,room,code,request,options,version,next])).rows[0].v;
  const request=randomUUID();let c=await rpc(users[0],'create',null,null,request,{capacity:4,title:'TEST'});const room=c.room.id;
@@ -130,16 +134,25 @@ test('BANG rooms, authorization, settlement, monthly streaks and ties',async()=>
   }
   let solo=await startSolo();
   assert.equal((await call(users[0],{action:'solo',request_id:randomUUID(),options:soloOptions})).error,'room_in_progress');
-  assert.equal((await call(users[0],{action:'leave',room_id:solo.room.id})).error,'use_surrender');
   assert.equal((await call(users[0],{action:'move',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID(),move:{type:'win',winner:'sheriff'}})).error,'invalid_action');
-  assert.equal((await call(users[0],{action:'mine'})).room.id,solo.room.id);
+  const abandonedId=solo.room.id;
+  assert.equal((await call(users[0],{action:'leave',room_id:abandonedId})).room,null);
+  assert.equal((await call(users[0],{action:'mine'})).room,null);
+  assert.equal((await db.query('select count(*)::int n from ojjuda_bang_internal.results where room_id=$1',[abandonedId])).rows[0].n,0,'an unfinished exit does not insert a loss');
+  await db.query("update ojjuda_bang_internal.rooms set created_at=now()-interval '2 minutes' where host_id=$1",[users[0]]);
+  solo=await startSolo();
+  const thirdCard=await nearWin(solo.room);
+  solo=await call(users[0],{action:'move',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID(),move:{type:'play',card:thirdCard,target:1}});
+  assert.equal(solo.room.status,'finished');assert.equal(solo.room.record.streak,3,'wins across separate visits extend the previous streak');
+  await db.query("update ojjuda_bang_internal.rooms set created_at=now()-interval '2 minutes' where host_id=$1",[users[0]]);
+  solo=await startSolo();
   solo=await call(users[0],{action:'surrender',room_id:solo.room.id,version:solo.room.version,request_id:randomUUID()});
   assert.equal(solo.room.record.won,false);assert.equal(solo.room.record.streak,0);
   assert.deepEqual((await db.query("select public.community_game_monthly_ranking('bang') v")).rows[0].v,[]);
   await db.exec("update ojjuda_bang_internal.rooms set created_at=now()-interval '2 minutes'");
   solo=await startSolo();await db.query("update ojjuda_bang_internal.rooms set expires_at=now()-interval '1 minute' where id=$1",[solo.room.id]);
   assert.equal((await call(users[0],{action:'mine'})).room,null);
-  assert.equal((await db.query('select won from ojjuda_bang_internal.results where room_id=$1',[solo.room.id])).rows[0].won,false);
+  assert.equal((await db.query('select count(*)::int n from ojjuda_bang_internal.results where room_id=$1',[solo.room.id])).rows[0].n,0,'timeout also leaves the streak unchanged');
   // Complete a full game through HTTP: bots run only on the server; the fixture chooses human moves.
   solo=await startSolo();
   for(let step=0;step<1000&&solo.room.status==='active';step++){

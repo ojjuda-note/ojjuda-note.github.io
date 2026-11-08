@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-spot62-hard10'
+ const revision='20261108-streak-exit1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -12,15 +12,15 @@
   recommendations:'1.6.1',
   archery:'3.2.1',
   roulette:'1.9.1',
-  bang:'1.10.1',
+  bang:'1.11.0',
   poker:'1.6.1',
-  tank:'1.5.1',
+  tank:'1.6.0',
   solitaire:'1.2.1',
   mines:'1.4.1',
   sacheonseong:'1.14.2',
   saetbyeol:'1.3.1',
   tour:'1.5.1',
-  ttang:'1.5.1',
+  ttang:'1.6.0',
   photo_ttang:'1.4.1',
   mole:'1.7.0',
   runner:'1.4.1',
@@ -34,7 +34,7 @@
   matgo:'1.5.1'
  });
  const controls=['/shared/games/game-controls.css?v=20261106-source-folders1','/shared/games/game-controls.js?v=20261106-source-folders1'];
- const session='/shared/games/game-session.js?v=20261106-source-folders1';
+ const session='/shared/games/game-session.js?v=20261108-streak-exit1';
  const minesRules='/games/mines/rules.js?v=20261022-ranks1';
  const solitaireRules='/games/solitaire/rules.js?v=20261106-solitaire-ranking1';
  const restaurantRatings=['/games/certified-restaurants/restaurant-ratings.css?v=20261106-source-folders1','/games/certified-restaurants/restaurant-ratings.js?v=20261106-source-folders1'];
@@ -56,7 +56,7 @@
   saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261106-source-folders1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261106-source-folders1'],
   spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261108-spot62-hard10'],
-  ttang:['/games/ttang/ttang-bridge.js?v=20261106-source-folders1'],
+  ttang:['/games/ttang/ttang-bridge.js?v=20261108-streak-exit1'],
   photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261106-source-folders1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261106-source-folders1','/games/runner/runner-game.js?v=20261106-source-folders1'],

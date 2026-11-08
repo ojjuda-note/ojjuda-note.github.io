@@ -18,26 +18,18 @@
    if(!result?.ok)throw Error(result?.error||'unavailable');
    return result;
   }
-  function needsSurrender(room){
-   // Ranked Bang solo still uses its existing loss settlement. Multiplayer
-   // leave hands the unchanged seat to a computer through the server.
-   return kind==='bang'&&room.mode==='solo'&&room.status==='active'&&room.state?.players?.[room.seat]?.alive===true;
-  }
   async function finishPrevious(code=''){
    if(!available())return;
    let room=(await call({action:'mine'})).room;
    for(let attempt=0;room&&attempt<5;attempt++){
     // A just-created public room or an accepted invitation is an explicit target.
     if(code&&room.code?.toUpperCase()===code.toUpperCase())return;
-    const settlingSolo=kind==='bang'&&room.mode==='solo'&&room.status==='active'&&room.state?.players?.[room.seat]?.alive===false&&!room.state?.forfeited?.includes(room.seat);
-    const action=needsSurrender(room)?'surrender':settlingSolo?'read':'leave';
+    // A visit ending is not an explicit surrender. Finished results are
+    // already recorded server-side; unfinished rounds remain unranked.
     try{
-     const result=await call({action,room_id:room.id,version:room.version,request_id:crypto.randomUUID()});
-     if(action==='leave'){
-      if(result.room)throw Error('state_conflict');
-      return;
-     }
-     room=result.room;
+     const result=await call({action:'leave',room_id:room.id,version:room.version,request_id:crypto.randomUUID()});
+     if(result.room)throw Error('state_conflict');
+     return;
     }catch(error){
      if(!['state_conflict','already_eliminated','room_not_found','room_unavailable','game_finished'].includes(error.message))throw error;
      room=(await call({action:'mine'})).room;

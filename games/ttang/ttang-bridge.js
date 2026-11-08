@@ -7,10 +7,10 @@
  function close(){
   if(!overlay){if(!retired.size)return true;const pending=finishRetired();pending.catch(()=>{});return pending;}
   const current=session;current.closed=true;let networkClose,roomClose;
-  try{const game=frame?.contentWindow?.OjjudaTtang,result=game?.result?.();if(result?.round===current.round&&typeof result.win==='boolean')current.outcomes.set(result.round,result.win);if(game?.dispose)networkClose=game.dispose();else game?.menu();}catch{}
-  // A live multiplayer exit hands this seat to AI; it is neither a win nor a
-  // loss in this member's streak. An already finished result may still retry.
-  if(current.round&&!current.submitted.has(current.round)&&!current.excluded.has(current.round)&&(current.mode==='solo'||current.outcomes.has(current.round)))void saveResult(current,current.outcomes.get(current.round)??false,current.round);
+  try{const game=frame?.contentWindow?.OjjudaTtang,result=game?.result?.();if(result?.round===current.round&&!result.abandoned&&typeof result.win==='boolean')current.outcomes.set(result.round,result.win);if(game?.dispose)networkClose=game.dispose();else game?.menu();}catch{}
+  // Leaving an unfinished round is not a loss. Retry only a result that the
+  // game actually completed, so a later visit can extend the saved streak.
+  if(current.round&&!current.submitted.has(current.round)&&!current.excluded.has(current.round)&&current.outcomes.has(current.round))void saveResult(current,current.outcomes.get(current.round),current.round);
   if(current.arcadeRoom||current.createRpc){retired.add(current);roomClose=leavePublicRoom(current);roomClose.catch(()=>{});}
   clearInterval(watcher);overlay.remove();overlay=frame=session=null;bridge.client=null;
   document.body.classList.remove('ttang-open','gaming');
@@ -63,7 +63,7 @@
   const bar=document.createElement('header');bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 12px;flex:none;color:#684a8a;background:#fff9ee;border-bottom:1px solid #e5d5ef;font-size:12px';
   const status=document.createElement('span');status.id='ttang-save-status';status.setAttribute('role','status');status.textContent='월드땅따먹기';
   const done=document.createElement('button');done.type='button';done.textContent='오락실로 ✕';done.setAttribute('aria-label','월드땅따먹기 닫기');done.style.cssText='font:inherit;color:inherit;border:1px solid #ddccec;background:#eee2f8;border-radius:12px;min-height:36px;padding:0 12px;cursor:pointer';done.onclick=close;
-  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261106-source-folders1';frame.allow='web-share; clipboard-write';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
+  frame=document.createElement('iframe');frame.title='월드땅따먹기';frame.src='/games/ttang.html?v=20261108-streak-exit1';frame.allow='web-share; clipboard-write';frame.style.cssText='width:100%;flex:1;min-height:0;border:0';
   const current=session,openedFrame=frame;
   if(/^[a-f0-9]{24}$/.test(hostCode||''))frame.addEventListener('load',async()=>{
    if(session!==current||!current.authorized())return;
@@ -109,7 +109,7 @@
   if(d.type==='ojjuda:ttang:excluded'&&d.round===current.round){current.excluded.add(d.round);current.outcomes.delete(d.round);return;}
   if(d.type==='ojjuda:ttang:close'){close();return;}
   if(d.type==='ojjuda:ttang:start'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(d.round||'')&&['solo','duo'].includes(d.mode)){current.round=d.round;current.mode=d.mode;status.textContent='월드땅따먹기';return;}
-  if(d.type!=='ojjuda:ttang:result'||d.mode!==current.mode||!d.round||d.round!==current.round||typeof d.win!=='boolean'||current.submitted.has(d.round)||current.excluded.has(d.round))return;
+  if(d.type!=='ojjuda:ttang:result'||d.abandoned||d.mode!==current.mode||!d.round||d.round!==current.round||typeof d.win!=='boolean'||current.submitted.has(d.round)||current.excluded.has(d.round))return;
   if(!current.owner&&!current.guestFinished){current.guestFinished=true;window.OjjudaGuestAccess?.finished();}
   await saveResult(current,d.win,d.round);
  });

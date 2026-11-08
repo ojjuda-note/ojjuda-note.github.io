@@ -481,7 +481,7 @@ function closePanels(){ document.querySelectorAll('.overlay').forEach(o=>{ if(o.
 let roundId=null,roundReported=false,roundEligible=true,roundOutcome=null;
 function beginRound(kind,id=newRoundId()){roundId=id;roundReported=false;roundEligible=true;roundOutcome=null;if(parent!==window)parent.postMessage({type:'ojjuda:ttang:start',round:roundId,mode:kind},location.origin);}
 function excludeRound(){if(!roundId||roundReported)return;roundEligible=false;roundReported=true;if(parent!==window)parent.postMessage({type:'ojjuda:ttang:excluded',round:roundId},location.origin);}
-function abandonRound(){if(mode==='net'){excludeRound();return;}if(mode==='solo'&&roundId&&!roundReported)sendResult({mode:'solo',win:false,abandoned:true});}
+function abandonRound(){if(mode==='net'){excludeRound();return;}if(mode==='solo'&&roundId&&!roundReported){roundEligible=false;roundReported=true;}}
 function sendResult(r){ if(roundReported||!roundEligible||!roundId)return;roundReported=true;const msg=Object.assign({type:'ojjuda:ttang:result',round:roundId},r);roundOutcome=msg; try{ if(window.parent!==window) window.parent.postMessage(msg,location.origin); }catch{} try{ window.OjjudaTtang&&window.OjjudaTtang.onResult&&window.OjjudaTtang.onResult(msg); }catch{} }
 function showEnd(){ sendResult({mode:'solo',win:false,best:+me.best.toFixed(1),kills:me.kills,seconds:Math.floor(world.time),score:Math.round(me.best*10)});
   panel(window.OjjudaGameResults.markup({game:'ttang',outcome:'failure',key:roundId,metric:`최고 땅 ${me.best.toFixed(1)}% · ${Math.floor(world.time)}초`,actions:'<button id="again" data-game-result-play>다시 하기</button><button id="home">처음으로</button>'}),{again:()=>startSolo(),home:()=>toMenu()}); }

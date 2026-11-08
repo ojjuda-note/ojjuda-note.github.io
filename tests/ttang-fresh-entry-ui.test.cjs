@@ -19,7 +19,7 @@ const fixture=`<meta charset="utf-8"><script src="/games/ttang/ttang-bridge.js">
   await page.evaluate(()=>{localStorage.setItem('saved-unlocks','keep');openGame();});let frame=await game();
   await frame.locator('#soloBtn').click();await frame.waitForFunction(()=>world.time>0);const first=await frame.evaluate(()=>{world.time=25;return roundId;});
   await page.evaluate(()=>OjjudaTtangBridge.close());assert.equal(await page.locator('iframe').count(),0);
-  assert.deepEqual(await page.evaluate(()=>scores),[{won:false,round:first}]);
+  assert.deepEqual(await page.evaluate(()=>scores),[],'leaving the unfinished solo round must not break the previous streak');
   await page.evaluate(()=>openGame());frame=await game();assert.deepEqual(await frame.evaluate(()=>({mode,round:roundId})),{mode:'attract',round:null});
   await frame.locator('#soloBtn').click();assert.notEqual(await frame.evaluate(()=>roundId),first);assert.ok(await frame.evaluate(()=>world.time<2));
   assert.equal(await page.evaluate(()=>localStorage.getItem('saved-unlocks')),'keep');await page.evaluate(()=>OjjudaTtangBridge.close());
@@ -43,6 +43,6 @@ const fixture=`<meta charset="utf-8"><script src="/games/ttang/ttang-bridge.js">
   await page.evaluate(()=>channels[2].receive({payload:{t:'join'}}));await frame.waitForFunction(()=>mode==='net'&&role==='host');
   assert.ok(await frame.evaluate(()=>roundId),'explicit invitation still starts a new network match');
   await page.evaluate(()=>OjjudaTtangBridge.close());assert.deepEqual(await page.evaluate(()=>removed),['ttang-'+a,'ttang-'+a,'ttang-'+b]);
-  assert.deepEqual(errors,[]);console.log('PASS: fresh solo re-entry, one abandoned-round result, pending subscribe cleanup before iframe removal, stale init/retry isolation and explicit invitation play.');
+  assert.deepEqual(errors,[]);console.log('PASS: fresh solo re-entry without an abandoned-round loss, pending subscribe cleanup before iframe removal, stale init/retry isolation and explicit invitation play.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
