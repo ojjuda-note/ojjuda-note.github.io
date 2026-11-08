@@ -15986,53 +15986,125 @@
         "지정연도와 출처 확인일·현 영업상태를 분리. 정확 위치 좌표는 미기재.",
         "기존 ID와 회원 추천, 블루리본 공식 전체 지도 보존."
       ]
+    },
+    {
+      "id": "2026-11-09-gyeongbuk-slot79-uiseong7",
+      "checkedAt": "2026-11-09",
+      "cycle": 1,
+      "slot": 79,
+      "previousCoverage": {
+        "uniqueRestaurants": 3538,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2805,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2472,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2146,
+          "중식": 147,
+          "일식": 150,
+          "기타": 592,
+          "양식": 220,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3545,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2812,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2479,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 177,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2153,
+          "중식": 147,
+          "일식": 150,
+          "기타": 592,
+          "양식": 220,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 7,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gyeongbuk-slot79-uiseong-01",
+        "local-gyeongbuk-slot79-uiseong-02",
+        "local-gyeongbuk-slot79-uiseong-03",
+        "local-gyeongbuk-slot79-uiseong-04",
+        "local-gyeongbuk-slot79-uiseong-05",
+        "local-gyeongbuk-slot79-uiseong-06",
+        "local-gyeongbuk-slot79-uiseong-07"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot79.json",
+      "scope": "경북 의성·청송·영양·영덕군 중 의성읍 공식 관내지도 1~3쪽 모범음식점 7곳. 다른 읍면·군 미완료.",
+      "notes": [
+        "공식 수록 이력(판본/선정·현재 영업 연도 미확인)으로만 기록, 정규 블루리본 등급 및 현재 영업 여부 불명.",
+        "독립 위치 수치좌표가 확보되지 않아 모두 lat/lng null. 주소 추정좌표 없음.",
+        "원본 restaurants.json 대용량 제약에 따른 화면 보완 JSON 병합. 기존 ID·회원 추천 정보 보존.",
+        "누락된 1/78회차는 병합되지 않았으므로 이 수치에 포함하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-jeonnam-slot77-muan22",
-    "checkedAt": "2026-11-08",
+    "id": "2026-11-09-gyeongbuk-slot79-uiseong7",
+    "checkedAt": "2026-11-09",
     "cycle": 1,
-    "slot": 77,
+    "slot": 79,
     "previousCoverage": {
-      "uniqueRestaurants": 3516,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2783,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2450,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 117,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 227,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2130,
-        "중식": 147,
-        "일식": 149,
-        "기타": 589,
-        "양식": 219,
-        "분식": 40,
-        "디저트": 242
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3538,
       "providerCounts": {
         "michelin": 237,
@@ -16071,49 +16143,71 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 22,
-    "modificationCount": 4,
+    "currentCoverage": {
+      "uniqueRestaurants": 3545,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2812,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2479,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 249,
+        "세종": 100,
+        "대전": 117,
+        "경북": 177,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2153,
+        "중식": 147,
+        "일식": 150,
+        "기타": 592,
+        "양식": 220,
+        "분식": 41,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 7,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-jeonnam-slot77-muan-01",
-      "local-jeonnam-slot77-muan-02",
-      "local-jeonnam-slot77-muan-03",
-      "local-jeonnam-slot77-muan-04",
-      "local-jeonnam-slot77-muan-05",
-      "local-jeonnam-slot77-muan-07",
-      "local-jeonnam-slot77-muan-08",
-      "local-jeonnam-slot77-muan-09",
-      "local-jeonnam-slot77-muan-10",
-      "local-jeonnam-slot77-muan-11",
-      "local-jeonnam-slot77-muan-12",
-      "local-jeonnam-slot77-muan-13",
-      "local-jeonnam-slot77-muan-14",
-      "local-jeonnam-slot77-muan-15",
-      "local-jeonnam-slot77-muan-16",
-      "local-jeonnam-slot77-muan-17",
-      "local-jeonnam-slot77-muan-18",
-      "local-jeonnam-slot77-muan-19",
-      "local-jeonnam-slot77-muan-21",
-      "local-jeonnam-slot77-muan-22",
-      "local-jeonnam-slot77-muan-24",
-      "local-jeonnam-slot77-muan-49"
+      "local-gyeongbuk-slot79-uiseong-01",
+      "local-gyeongbuk-slot79-uiseong-02",
+      "local-gyeongbuk-slot79-uiseong-03",
+      "local-gyeongbuk-slot79-uiseong-04",
+      "local-gyeongbuk-slot79-uiseong-05",
+      "local-gyeongbuk-slot79-uiseong-06",
+      "local-gyeongbuk-slot79-uiseong-07"
     ],
-    "modifiedRestaurantIds": [
-      "local-namdo-599330",
-      "local-namdo-2217021",
-      "local-namdo-2217011",
-      "local-namdo-599365"
-    ],
+    "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://health.muan.go.kr/health/business/food_improve/model_list"
+      "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
     ],
-    "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot77.json",
-    "scope": "영암·무안·함평·영광 가운데 무안군 보건소의 2025.11~2026.10 모범음식점 49개소 명단 일부 22건 신규, 기존4건 이력 병합. 나머지 23개 공식 명단 항목과 다른 3개 군의 현행 명단 대조 필요.",
+    "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot79.json",
+    "scope": "경북 의성·청송·영양·영덕군 중 의성읍 공식 관내지도 1~3쪽 모범음식점 7곳. 다른 읍면·군 미완료.",
     "notes": [
-      "2025년 지정 자료이며 2026년 11월 현재 지정 여부 및 영업은 미확인.",
-      "지정연도와 출처 확인일·현 영업상태를 분리. 정확 위치 좌표는 미기재.",
-      "기존 ID와 회원 추천, 블루리본 공식 전체 지도 보존."
+      "공식 수록 이력(판본/선정·현재 영업 연도 미확인)으로만 기록, 정규 블루리본 등급 및 현재 영업 여부 불명.",
+      "독립 위치 수치좌표가 확보되지 않아 모두 lat/lng null. 주소 추정좌표 없음.",
+      "원본 restaurants.json 대용량 제약에 따른 화면 보완 JSON 병합. 기존 ID·회원 추천 정보 보존.",
+      "누락된 1/78회차는 병합되지 않았으므로 이 수치에 포함하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
