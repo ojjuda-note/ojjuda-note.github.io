@@ -132,6 +132,12 @@ async function fixture(browser, options = {}) {
           guides: [{ provider: 'local-guide', year: null, yearType: 'listing', sourceUrl: 'https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/', status: 'official_listing' }] };
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ cycle: 1, slot: 81, restaurants: Array(18).fill(duplicate), guideEnrichments: [{}, {}, {}, {}, {}, {}] }) });
       }
+      if (url.pathname.endsWith('/official-gyeongnam-slot83.json')) {
+        const duplicate = { ...records.restaurants[0], region: '경남', district: '산청군', lat: null, lng: null,
+          guides: [{ provider: 'local-guide', year: null, yearType: 'listing', sourceUrl: 'https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453' }] };
+        return route.fulfill({ status: 200, contentType: 'application/json',
+          body: JSON.stringify({ cycle: 1, slot: 83, restaurants: Array(17).fill(duplicate) }) });
+      }
       if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
         // Isolate the fixture from new catalog additions, retaining the base count.
         const duplicate = { ...records.restaurants[0], region: '전남', district: '곡성군',
@@ -157,6 +163,12 @@ async function fixture(browser, options = {}) {
 }
 
 (async () => {
+  const slot83Official = JSON.parse(fs.readFileSync(path.join(directory, 'official-gyeongnam-slot83.json'), 'utf8'));
+  assert.equal(slot83Official.restaurants.length, 17, 'slot83 verified source entries');
+  assert.equal(new Set(slot83Official.restaurants.map(row => row.id)).size, 17, 'slot83 unique IDs');
+  assert.ok(slot83Official.restaurants.every(row => row.lat === null && row.lng === null &&
+    row.guides.some(guide => guide.provider === 'local-guide' && guide.year === null &&
+      guide.yearType === 'listing' && guide.sourceUrl.startsWith('https://'))), 'slot83 sources without inferred coordinates');
   assert.ok(Array.isArray(dataset.restaurants) && dataset.restaurants.length, 'the published data contains restaurants');
   fs.mkdirSync(proof, { recursive: true });
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'], ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}) });
