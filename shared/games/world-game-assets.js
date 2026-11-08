@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-restaurants-slot70-geumsan19'
+ const revision='20261108-janggi-pro-ai1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -28,7 +28,7 @@
   breakout:'1.6.4',
   spot:'1.11.10',
   screw:'2.22.3',
-  janggi:'1.7.0',
+  janggi:'1.8.0',
   chess:'1.4.4',
   billiards:'1.4.4',
   matgo:'1.5.1'
