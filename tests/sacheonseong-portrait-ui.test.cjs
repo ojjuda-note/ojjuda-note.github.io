@@ -73,12 +73,7 @@ async function screenshot(page,name){
      const {page,errors}=await openPage(context,stage);
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
-      assert(value.tile.width>=43.99,`${label}: default tiles are at least 44px wide for touch`);
-      if(value.fit==='false'){
-       assert(value.canvas.width>value.viewport.width||value.canvas.height>value.viewport.height,`${label}: readable board can be panned`);
-       await page.locator('#zoom-fit').click();
-      }
-      assertFits(await layout(page),label);
+      assertFits(value,label);
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
       assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
       assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);
@@ -105,6 +100,9 @@ async function screenshot(page,name){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
+   assertFits(await layout(page),'stage 7 initial full-board view');
+   for(let i=0;i<12&&(await layout(page)).tile.width<43.99;i++)await page.locator('#zoom-in').click();
+   assert((await layout(page)).tile.width>=43.99,'zoom creates comfortable 44px touch targets');
    const zoomedTile=page.locator('.tile:not(:disabled)').first();
    await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'true','a readable enlarged tile responds to touch');
    await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'false','an enlarged tile can be deselected');
