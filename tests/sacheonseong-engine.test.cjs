@@ -127,6 +127,16 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
   assert(E.moves(grid),`Stage ${stage}: an opening pair exists on each floor`);
   if(stage>=3)assert(grid.flat().includes(E.EMPTY),`Stage ${stage}: irregular outlines have actual voids`);
  }
+ if(stage>=3){
+  const midR=Math.floor((info.rows-1+(info.layerCount-1)*E.LAYER_OFFSET)/2);
+  const midC=Math.floor((info.cols-1+(info.layerCount-1)*E.LAYER_OFFSET)/2);
+  grids.forEach((grid,layer)=>grid.forEach((row,r)=>row.forEach((value,c)=>{
+   if(value===E.EMPTY)return;
+   const shift=layer*E.LAYER_OFFSET;
+   if(info.rows>=4)assert(Math.abs(r+shift-midR)>=1,`Stage ${stage}: horizontal card-width passage stays clear across floors`);
+   if(info.cols>=4)assert(Math.abs(c+shift-midC)>=1,`Stage ${stage}: vertical card-width passage stays clear across floors`);
+  })));
+ }
  silhouettes.add(grids[0].map(row=>row.map(v=>v===E.EMPTY?'_':'#').join('')).join('|'));
  assert(E.exposedMoves(grids),`Stage ${stage}: a visible opening pair always exists`);
  if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);

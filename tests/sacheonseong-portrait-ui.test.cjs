@@ -73,7 +73,9 @@ async function screenshot(page,name){
      const {page,errors}=await openPage(context,stage);
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
-      assertFits(value,label);
+      assert(value.tile.width>=47.99,`${label}: large cards are readable on entry`);
+      await page.locator('#zoom-fit').click();
+      assertFits(await layout(page),`${label}: whole-board button`);
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
       assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
       assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);
@@ -101,7 +103,8 @@ async function screenshot(page,name){
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
    const initial=await layout(page);
-   assertFits(initial,'stage 7 starts with all tiles visible');
+   assert(initial.tile.width>=47.99,'stage 7 starts with large, touchable cards');
+   await page.locator('#zoom-fit').click();assertFits(await layout(page),'stage 7 whole-board view');
    for(let i=0;i<12&&(await layout(page)).tile.width<47.99;i++)await page.locator('#zoom-in').click();
    assert((await layout(page)).tile.width>=47.99,'zoom gives a comfortable touch size when needed');
    assert.equal((await layout(page)).fit,'false','enlarged level can be panned');

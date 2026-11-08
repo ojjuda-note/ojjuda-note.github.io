@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 6, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 7, FACE_COUNT = 350;
   // Each upper tile sits across the four tile centers directly below it.
   const LAYER_OFFSET = .5;
   // Reserve roughly one seventh of all tiles for picture pairs; the rest
@@ -34,6 +34,23 @@
     stageInfo(stage);
     return stage<6?1:stage<11?2:stage<16?3:stage<26?4:stage<41?5:stage<71?6:stage<111?7:8;
   };
+  // Reserve an uninterrupted horizontal and vertical passage, each at least
+  // one card wide in the projected view. Every floor respects the same
+  // physical lanes even though successive floors shift by half a cell.
+  function walkwayCenter(rows,cols,count){
+    return {r:Math.floor((rows-1+(count-1)*LAYER_OFFSET)/2),c:Math.floor((cols-1+(count-1)*LAYER_OFFSET)/2)};
+  }
+  function walkwayOpen(rows,cols,count,layer,r,c){
+    const mid=walkwayCenter(rows,cols,count),shift=layer*LAYER_OFFSET;
+    return (rows<4||Math.abs(r+shift-mid.r)>=1)&&(cols<4||Math.abs(c+shift-mid.c)>=1);
+  }
+  function walkwayCapacity(rows,cols,count,layer){
+    const mid=walkwayCenter(rows,cols,count),shift=layer*LAYER_OFFSET;
+    let allowedRows=0,allowedCols=0;
+    for(let r=0;r<rows;r++)if(rows<4||Math.abs(r+shift-mid.r)>=1)allowedRows++;
+    for(let c=0;c<cols;c++)if(cols<4||Math.abs(c+shift-mid.c)>=1)allowedCols++;
+    return allowedRows*allowedCols;
+  }
   // Each layer keeps its own outline and pairs. A lower tile can be selected
   // whenever none of the still-present upper tiles overlaps its face.
   function stackInfo(stage, columns) {
@@ -50,7 +67,8 @@
     const targets=pairs.map(value=>value*2);
     const biggest=Math.max(...targets),cols=columns??Math.ceil(Math.sqrt(biggest/.66));
     if(!Number.isInteger(cols)||cols<2||cols>base.total)throw new RangeError('Invalid stack columns');
-    const rows=Math.max(3,Math.ceil(biggest/(cols*.66)));
+    let rows=Math.max(3,Math.ceil(biggest/(cols*.66)));
+    while(targets.some((total,layer)=>walkwayCapacity(rows,cols,count,layer)<total))rows++;
     if(rows*cols<biggest)throw new RangeError('Stack is too small');
     const floors=targets.map(total=>({total,...mixPlan(total)}));
     const typeCount=floors.reduce((sum,f)=>sum+f.typeCount,0);
@@ -283,9 +301,10 @@
     throw new Error('No connectable visible positions');
   }
   const SHAPES=['hourglass','cross','ring','steps','islands','diamond','zigzag','castle'];
-  function shapedGrid(rows,cols,needed,variant,random) {
+  function shapedGrid(rows,cols,needed,variant,random,layer=0,count=1) {
     const cells=[];
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      if(!walkwayOpen(rows,cols,count,layer,r,c))continue;
       let x=(c+.5-cols/2)/(cols/2),y=(r+.5-rows/2)/(rows/2);
       if(variant%2===1)x=-x;
       if(variant%3===2)y=-y;
@@ -314,7 +333,7 @@
     let offset=0;
     const grids=info.floors.map((floor,i)=>{
       const variant=(stage*3+i*5+Math.floor(random()*SHAPES.length))%SHAPES.length;
-      const input=shapedGrid(info.rows,info.cols,floor.total,variant,random);
+      const input=shapedGrid(info.rows,info.cols,floor.total,variant,random,i,info.layerCount);
       const types=mixedValues(palette.slice(offset,offset+floor.typeCount),floor);
       offset+=floor.typeCount;
       return arrange(input,types,random).grid;

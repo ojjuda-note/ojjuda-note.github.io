@@ -4,7 +4,7 @@
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,panHintDismissed=false;
-  const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14;
+  const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14,MIN_PLAY_TILE=48;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -98,8 +98,10 @@
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
     fitSize=fit;
-    // The entire board is visible on entry. Zoom only when the player asks.
-    const size=overview?fitSize:Math.max(fitSize,customSize??fitSize);
+    // Start with readable cards and card-width walkways. The '전체' control
+    // still fits every floor into one screen when the player wants an overview.
+    const readable=Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
+    const size=overview?fitSize:Math.max(fitSize,customSize??readable);
     if(size<=fitSize+.01){overview=true;customSize=null;}
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
@@ -170,19 +172,21 @@
   function render(){
     window.OjjudaSacheonseongOnline?.stage(state.stage);
     $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 어긋나 쌓여 있어요. 윗패와 겹치지 않은 같은 그림을 연결하세요. 큰 판은 밀어서 이동할 수 있고 전체 버튼으로 한눈에 볼 수 있어요.`);
-    $('status').textContent=state.layerCount>1?'윗패와 겹치지 않은 패만 누를 수 있어요. 같은 그림을 두 번까지 꺾어 연결하세요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
+    $('status').textContent=state.layerCount>1?'카드 한 장 너비의 빈 통로를 따라 연결하세요. 큰 판은 밀어서 볼 수 있어요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
     globalResult=null;
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;panHintDismissed=false;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=stage<=2;panHintDismissed=false;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
-    // Every stage opens with all floors visible, regardless of screen size.
+    // With enlarged cards, open near the crossing passage rather than the
+    // empty corner. The whole-board button still returns to the fitted view.
     const viewport=$('board-scroll');
-    viewport.scrollTop=0;viewport.scrollLeft=0;
+    viewport.scrollTop=overview?0:Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
+    viewport.scrollLeft=overview?0:Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
   }
   function ensureMove(){
     if(!count()||availableMove())return false;
@@ -340,7 +344,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 층이라도 화면에 보이는 패를 가로질러 연결할 수 없어요. 빈 칸과 바깥 여백을 이용하세요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>모든 패가 한 화면에 보이게 시작해요. 더 크게 보고 싶다면 ＋ 또는 두 손가락으로 확대하고, 커진 판은 손가락이나 마우스로 밀어 이동할 수 있어요. 전체를 누르면 다시 한눈에 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>카드 한 장 너비의 빈 통로와 바깥 여백을 이용하세요. 보이는 다른 패를 가로지를 수는 없어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>큰 패로 시작해요. 판을 손가락으로 밀어 이동하거나 ＋와 두 손가락으로 확대할 수 있어요. 전체를 누르면 모든 패를 한 화면에서 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
