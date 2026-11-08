@@ -2,6 +2,7 @@
   'use strict';
   const games = { bang: ['🤠', '뱅!'], tank: ['🪖', '탱크게임'], tour: ['🌏', '마블'], ttang: ['🟣', '월드땅따먹기'], janggi: ['🀄', '장기'], chess: ['♟️', '체스'], carom4: ['🎱', '4구'], carom3: ['🎯', '3구'], pool8: ['🎱', '포켓볼'], matgo: ['🎴', '맞고'], poker: ['♠️', '세븐포커'], roulette: ['🎡', '룰렛'] };
   const nativeGames = new Set(['bang','tank','tour','ttang','poker','roulette']);
+  const ACTIVE_POLL_MS = 4000, IDLE_POLL_MS = 12000;
   const layouts = [['eheh', '상마상마'], ['hehe', '마상마상'], ['ehhe', '상마마상'], ['heeh', '마상상마']];
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const errors = {
@@ -29,6 +30,8 @@
     const current = id => !disposed && id && options.getUserId() === id;
     const paused = () => document.hidden || document.body.classList.contains('gaming') || document.body.classList.contains('matgo-open') || !!document.querySelector('#gov,#matgo-overlay,#ttang-overlay,.tour-game-dialog,.roulette-game-dialog,#bd-root');
     const needsUpdates = () => !disposed && owner && !paused() && (root?.isConnected || mine?.status === 'waiting' || mine?.status === 'playing');
+    // Detect an opponent promptly; casual lobby browsing needs fewer server reads.
+    const pollInterval = () => mine?.status === 'waiting' || mine?.status === 'playing' ? ACTIVE_POLL_MS : IDLE_POLL_MS;
     async function call(action, params = {}) {
       const { data, error } = await options.client.rpc('arcade_room_service', { p_action: action, ...params });
       if (error) throw error;
@@ -38,7 +41,7 @@
     function schedule() {
       if (!needsUpdates()) { clearTimeout(timer); timer = null; return; }
       if (timer) return;
-      timer = setTimeout(() => void poll(), 4000);
+      timer = setTimeout(() => void poll(), pollInterval());
     }
     let suspended = paused();
     function activityChanged() {
@@ -142,7 +145,7 @@
       if (changed) signature = '';
       render();
       if (changedOwner && owner) void poll(true);
-      else if (changed && root && owner && (lastRead === null || Date.now() - lastRead >= 4000)) void poll();
+      else if (changed && root && owner && (lastRead === null || Date.now() - lastRead >= pollInterval())) void poll();
       else schedule();
     }
     function layoutSelect(selected) {
