@@ -23,8 +23,10 @@ svg{display:block}
 #remaining{font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 #remaining small{font-size:11px;color:#819077;font-weight:400}
 #timer{margin-left:auto;font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
-.board-area{flex:1;min-height:0;display:flex;background:#28594b;background-image:radial-gradient(#ffffff09 .8px,transparent .8px);background-size:13px 13px;margin:0 6px;border-radius:12px;overflow:hidden}
+.board-area{flex:1;min-height:0;display:flex;position:relative;background:#28594b;background-image:radial-gradient(#ffffff09 .8px,transparent .8px);background-size:13px 13px;margin:0 6px;border-radius:12px;overflow:hidden}
 .board-scroll{touch-action:none;flex:1;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:none;display:flex;align-items:flex-start;position:relative}
+.board-pan-tip{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;pointer-events:none;padding:7px 12px;border-radius:999px;background:#173e34d9;color:#fffced;font-size:11px;font-weight:650;white-space:nowrap;box-shadow:0 2px 12px #122c2555}
+.board-pan-tip[hidden]{display:none}
 .board-scroll::-webkit-scrollbar{display:none}
 .board-scroll:focus:not(:focus-visible){outline:none}
 .board-canvas{--tile:90px;--gap:6px;--pad:8px;position:relative;margin:auto;padding:var(--pad);padding-bottom:calc(var(--pad) + 4px);width:max-content;flex-shrink:0}
@@ -82,6 +84,7 @@ dialog{max-height:calc(100dvh - 24px);overflow:auto}
 .online-rank-name{overflow-wrap:anywhere;font-size:14px;min-width:0}
 .online-rank-result{margin-left:auto}
 @media(min-width:900px){.topbar{padding-inline:24px}.game-hud{padding-inline:24px}.board-area{margin-inline:12px}.game-actions{padding-inline:24px}}
+@media(max-width:899px){.board-area{margin-inline:0;border-radius:8px}.game-hud{flex-basis:38px}.game-actions{flex-basis:52px;padding-block:4px}}
 @media(max-width:380px){.game-hud{gap:8px;padding-inline:8px;font-size:11px}#all-stages{padding-inline:8px}.game-actions{gap:5px;padding-inline:6px}.action-button{padding-inline:10px;font-size:12px}.zoom-controls{gap:4px}.zoom-controls button{min-width:40px;padding-inline:7px}}
 @media(max-height:600px){.completion{padding:16px}.completion-card{padding:20px 16px}.win-bloom{width:50px;height:56px;margin-bottom:8px}.completion h2{font-size:20px;margin:10px 0}.completion p{margin-bottom:16px}.completion .completion-hint{margin-top:10px}.level-choice{min-height:60px}}
 @media(max-height:450px){.topbar{flex-basis:38px}.back-link,.icon-button{min-height:38px;height:38px}.game-hud{flex-basis:36px}#all-stages{min-height:32px}.game-actions{flex-basis:48px;padding-block:3px}.completion-card{max-width:420px;padding:12px 16px}.win-bloom,.completion .eyebrow{display:none}.completion h2{font-size:19px;margin:5px 0}.completion p{line-height:1.5;margin-bottom:10px}.completion .win-time{font-size:26px;line-height:1.25}.completion .win-rank{line-height:1.4;margin-bottom:3px}.completion small{margin-top:8px}}

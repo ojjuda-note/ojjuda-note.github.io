@@ -3,8 +3,8 @@
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
-  let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1;
-  const removalTimers=new Set(),REMOVE_MS=120,MIN_START_TILE=44,TOUCH_SLOP=14;
+  let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,autoLayout=true,panHintDismissed=false;
+  const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14;
   let purchaseBusy=false;
   let globalResult=null;
   let audioContext,saveAvailable=true,rankingStage=1;
@@ -68,29 +68,44 @@
     const extra=(layerCount-1)*E.LAYER_OFFSET;
     return Math.min((width-2*pad-(cols-1+extra)*gap)/(cols+extra),(height-2*pad-4-(rows-1+extra)*gap)/((rows+extra)*1.19));
   }
+  const preferredTile=width=>width>=900?60:48;
+  const boardPadding=layerCount=>8+2*(layerCount-1);
   function boardColumns(stage){
     const {size}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
     if(stage<=2)return size;
     const typical=E.stackInfo(stage),target=Math.max(...typical.floors.map(floor=>floor.total)),span=Math.sqrt(target/.66);
     if(width<=20||height<=24)return typical.cols;
+    const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=(typical.layerCount-1)*E.LAYER_OFFSET,comfortable=preferredTile(width);
     const choices=[];
-    for(let cols=Math.max(3,Math.floor(span*.66));cols<=Math.ceil(span*1.43);cols++){
+    for(let cols=Math.max(3,Math.floor(span*.45));cols<=Math.min(Math.ceil(span*2.5),Math.ceil(target/2));cols++){
       const info=E.stackInfo(stage,cols);
-      choices.push({cols,extra:info.rows*cols-target,tile:fittingTile(info.rows,cols,width,height,2,8+3*(info.layerCount-1),info.layerCount)});
+      const tile=fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount);
+      const boardWidth=(cols+extra)*comfortable+(cols-1+extra)*gap+2*pad;
+      const boardHeight=(info.rows+extra)*comfortable*1.19+(info.rows-1+extra)*gap+2*pad+4;
+      // A tall scroll is easier on a phone than forcing tiny pictures or
+      // scrolling an equally large distance in both directions.
+      const score=3*Math.max(0,boardWidth/width-1)+.7*Math.max(0,boardHeight/height-1)
+        +.35*Math.max(0,1-boardWidth/width)+.35*Math.max(0,1-boardHeight/height);
+      choices.push({cols,extra:info.rows*cols-target,tile,score});
     }
     const largest=Math.max(...choices.map(choice=>choice.tile));
     if(!(largest>0))return typical.cols;
-    return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.extra-b.extra||b.tile-a.tile||b.cols-a.cols)[0].cols;
+    if(largest>=comfortable)return choices.filter(choice=>choice.tile>=largest*.99).sort((a,b)=>a.extra-b.extra||b.tile-a.tile||b.cols-a.cols)[0].cols;
+    return choices.sort((a,b)=>a.score-b.score||a.extra-b.extra||a.cols-b.cols)[0].cols;
   }
   function sizeBoard(){
     if(!state)return;
     const n=E.stageInfo(state.stage).size,rows=state.grid.length,cols=state.grid[0].length,viewport=$('board-scroll'),available=viewport.clientWidth,height=viewport.clientHeight;
     if(!available||!height)return;
-    const gap=n<=4?6:n<=10?3:2,pad=8+3*(state.layerCount-1);
+    const gap=n<=4?6:n<=10?3:2,pad=boardPadding(state.layerCount);
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
-    fitSize=Math.min(n<=2?120:n<=4?100:Infinity,fit);
-    const size=overview?fitSize:Math.max(fitSize,customSize||MIN_START_TILE);
+    fitSize=fit;
+    // Show comfortably sized pictures by default; '전체' still reveals every
+    // tile at once. Small levels naturally grow to fill the available space.
+    const size=autoLayout?Math.max(fitSize,preferredTile(available)):overview?fitSize:Math.max(fitSize,customSize??preferredTile(available));
+    if(autoLayout)overview=size<=fitSize+.01;
+    else if(size<=fitSize+.01){overview=true;customSize=null;}
     const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     const board=$('board');board.style.width=`${(cols+extra)*size+(cols-1+extra)*gap}px`;board.style.height=`${(rows+extra)*size*1.19+(rows-1+extra)*gap}px`;
@@ -100,6 +115,7 @@
       layer.style.top=`${index*E.LAYER_OFFSET*(size*1.19+gap)}px`;
     });
     $('zoom-fit').setAttribute('aria-pressed',String(overview));
+    $('board-pan-tip').hidden=overview||panHintDismissed;
     $('connection').replaceChildren();
     if(hints.length){const route=E.path(layers()[hints[0].layer??0],hints[0],hints[1]);if(route)draw(route,true,hints[0].layer??0);}
   }
@@ -158,21 +174,22 @@
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
   function render(){
     window.OjjudaSacheonseongOnline?.stage(state.stage);
-    $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 어긋나 쌓여 있어요. 윗패와 겹치지 않은 같은 그림을 연결하세요.`);
+    $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 어긋나 쌓여 있어요. 윗패와 겹치지 않은 같은 그림을 연결하세요. 큰 판은 밀어서 이동할 수 있고 전체 버튼으로 한눈에 볼 수 있어요.`);
     $('status').textContent=state.layerCount>1?'윗패와 겹치지 않은 패만 누를 수 있어요. 같은 그림을 두 번까지 꺾어 연결하세요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
     globalResult=null;
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=false;autoLayout=true;panHintDismissed=false;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
-    // Always open with the entire board visible, including on small phones.
+    // On crowded stages, start with readable tiles. The whole-board button
+    // still provides the previous overview whenever the player wants it.
     const viewport=$('board-scroll');
     viewport.scrollTop=0;viewport.scrollLeft=0;
-    if(fitSize<MIN_START_TILE)$('status').textContent='전체 게임판이에요. 패가 작다면 ＋ 또는 두 손가락으로 확대해 주세요.';
+    if(!overview)$('status').textContent='패를 크게 배치했어요. 화면을 밀어 다른 패를 보고, 전체를 누르면 한눈에 볼 수 있어요.';
   }
   function ensureMove(){
     if(!count()||availableMove())return false;
@@ -330,7 +347,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>같은 층에서 다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않는 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>두 손가락으로 벌리거나 오므리면 게임판만 확대·축소돼요. 커진 판은 한 손가락으로 밀고, 전체를 누르면 다시 한눈에 볼 수 있어요. 전체 보기에서도 바로 패를 선택해 연결할 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>같은 층에서 다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>패가 많은 단계는 큰 패로 시작해요. 판을 손가락이나 마우스로 밀어서 다른 위치를 보고, 전체를 누르면 다시 한눈에 볼 수 있어요. 두 손가락으로 확대·축소할 수도 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
@@ -359,7 +376,7 @@
     x=Number.isFinite(x)?Math.max(rect.left,Math.min(rect.right,x)):rect.left+rect.width/2;
     y=Number.isFinite(y)?Math.max(rect.top,Math.min(rect.bottom,y)):rect.top+rect.height/2;
     const anchorX=before.width?(x-before.left)/before.width:.5,anchorY=before.height?(y-before.top)/before.height:.5;
-    customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
+    autoLayout=false;customSize=Math.max(fitSize,Math.min(Math.max(160,fitSize*4),requested));overview=customSize<=fitSize+.01;if(overview)customSize=null;
     sizeBoard();const after=canvas.getBoundingClientRect();
     viewport.scrollLeft+=after.left+anchorX*after.width-x;viewport.scrollTop+=after.top+anchorY*after.height-y;
   }
@@ -367,10 +384,10 @@
   function capture(id){try{viewport.setPointerCapture(id);}catch{}}
   function clearPressed(){for(const point of pointers.values())point.button?.classList.remove('pressed');}
   viewport.addEventListener('pointerdown',event=>{
-    if(event.pointerType==='mouse'){ignoreClickUntil=0;return;}
-    if(!['touch','pen'].includes(event.pointerType)||pointers.size>=2)return;
-    const button=touchTarget(event);
-    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,button});
+    if(event.pointerType==='mouse'&&event.button!==0)return;
+    if(!['touch','pen','mouse'].includes(event.pointerType)||pointers.size>=2)return;
+    const button=event.pointerType==='mouse'?null:touchTarget(event);
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,button,type:event.pointerType});
     if(pointers.size===2){clearPressed();pinch={...pair(),size:tileSize()};dragging=true;for(const id of pointers.keys())capture(id);event.preventDefault();}
     else{dragging=false;if(!locked&&!state.pendingPurchase&&!$('modal').open&&!$('options').open)button?.classList.add('pressed');}
   });
@@ -381,17 +398,17 @@
       const next=pair();event.preventDefault();zoomBoard(pinch.size*next.distance/pinch.distance,pinch.x,pinch.y);
       viewport.scrollLeft+=pinch.x-next.x;viewport.scrollTop+=pinch.y-next.y;pinch.x=next.x;pinch.y=next.y;
     }else{
-      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>TOUCH_SLOP){dragging=true;clearPressed();capture(event.pointerId);}
+      if(!dragging&&Math.hypot(point.x-point.startX,point.y-point.startY)>TOUCH_SLOP){dragging=true;clearPressed();capture(event.pointerId);panHintDismissed=true;$('board-pan-tip').hidden=true;}
       if(dragging){event.preventDefault();viewport.scrollLeft-=dx;viewport.scrollTop-=dy;}
     }
   },{passive:false});
   function endPointer(event){
     const point=pointers.get(event.pointerId);if(!point)return;
     const tap=event.type==='pointerup'&&!dragging&&!pinch&&Math.hypot(event.clientX-point.startX,event.clientY-point.startY)<=TOUCH_SLOP;
-    point.button?.classList.remove('pressed');ignoreClickUntil=Date.now()+700;
+    point.button?.classList.remove('pressed');ignoreClickUntil=point.type==='mouse'?(dragging?Date.now()+80:0):Date.now()+700;
     pointers.delete(event.pointerId);pinch=null;if(!pointers.size)dragging=false;
     // Commit a tap on release, without waiting for the browser's compatibility click.
-    if(tap&&point.button?.isConnected)select({layer:Number(point.button.dataset.layer),r:Number(point.button.dataset.r),c:Number(point.button.dataset.c)});
+    if(tap&&point.type!=='mouse'&&point.button?.isConnected)select({layer:Number(point.button.dataset.layer),r:Number(point.button.dataset.r),c:Number(point.button.dataset.c)});
   }
   window.addEventListener('pointerup',endPointer);window.addEventListener('pointercancel',endPointer);
   // Ignore duplicate touch clicks; keyboard activation and fresh pointer taps stay immediate.
@@ -400,7 +417,7 @@
     if(!event.ctrlKey||$('modal').open||$('options').open)return;
     event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);
   },{passive:false});
-  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
+  $('zoom-fit').onclick=()=>{autoLayout=false;overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
   $('zoom-in').onclick=()=>zoomBoard(tileSize()+Math.max(6,tileSize()*.2));
   $('zoom-out').onclick=()=>zoomBoard(tileSize()-Math.max(6,tileSize()*.2));
   window.addEventListener('resize',sizeBoard);
