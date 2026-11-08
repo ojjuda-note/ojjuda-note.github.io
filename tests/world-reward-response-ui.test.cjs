@@ -78,7 +78,7 @@ window.rewardTest={
   const f=await fixture('result'),old=await startResult(f);await f.page.evaluate(()=>rewardTest.restart());const latest=await startResult(f,999);
   await f.settle(latest.submit,{...receipt,coins:800,best:999});const ranking=(await f.pending()).find(job=>job.id>latest.submit&&job.kind==='community_game_monthly_ranking');assert.ok(ranking);
   await f.settle(ranking.id,[{score:999,me:true}]);await f.done(latest.task);const before=await f.snapshot(),callsBefore=await f.page.evaluate(()=>rewardTest.calls());
-  assert.equal(before.metric,'999점 · 이번 달 1등');assert.equal(before.outcome,'record');assert.equal(before.coins,800);
+  assert.equal(before.metric,'3×3 · 999점 · 이번 달 1등');assert.equal(before.outcome,'record');assert.equal(before.coins,800);
   await f.settle(old.submit,{...receipt,best:1});await f.done(old.task);assert.deepEqual(await f.snapshot(),before,'a result from before restart cannot replace the new result');assert.deepEqual(await f.page.evaluate(()=>rewardTest.calls()),callsBefore,'the stale result never requests ranking again');await f.close();
  }
  {

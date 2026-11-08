@@ -63,7 +63,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.match(roulette.textContent,/최대 4명/,'roulette displays its four-player capacity');
   const gameId=button=>button.dataset.act==='matgo-open'?'matgo':button.dataset.act==='bl-open'?'billiards':button.dataset.v;
   const categories={
-   solo:['solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
+   solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang'],
    test:['group','festival','restaurants','byeolcheonji']
@@ -84,6 +84,13 @@ function fixture(url='https://ojjuda.kr/world.html'){
    const id=gameId(button);
    assert.equal(button.querySelectorAll('.game-version').length,0,id+' does not expose release metadata in the menu');
    assert.doesNotMatch(button.textContent,/v\d+\.\d+\.\d+/);
+   if(id==='chacha_rush'){
+    assert.equal(button.tagName,'A','the separately hosted 3D racer remains a link');
+    assert.equal(new URL(button.href).protocol,'https:');
+    assert.equal(button.target,'_blank');
+    assert.match(button.rel,/noopener/);
+    continue;
+   }
    assert.match(w.OjjudaGameAssets.version(id),/^\d+\.\d+\.\d+$/,id+' retains its internal release version');
   }
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=18};t.render();

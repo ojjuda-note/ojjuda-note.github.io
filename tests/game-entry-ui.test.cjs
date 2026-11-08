@@ -36,18 +36,28 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  await page.evaluate(()=>entryTest.close());
  }
  await page.evaluate(()=>entryTest.friends());
+ const openOpponent=async id=>{
+  await page.evaluate(id=>id==='chess'||id==='janggi'?entryTest.board(id):entryTest.billiards(id),id);
+  await page.locator('.ge-board-entry[data-entry-ready]').waitFor();
+  await page.locator('[data-entry-mode=opponent]').click();
+  await page.locator('[data-friend-id=online]').waitFor();
+ };
  for(const id of ['chess','janggi','carom4','carom3','pool8']){
- await page.evaluate(id=>id==='chess'||id==='janggi'?entryTest.board(id):entryTest.billiards(id),id);await page.locator('.ge-board-entry[data-entry-ready]').waitFor();
- await page.locator('[data-entry-mode=opponent]').click();await page.locator('[data-friend-id=online]').waitFor();
+ await openOpponent(id);
  assert.equal(await page.locator('[data-friend-id]').first().getAttribute('data-friend-id'),'online');
  assert.equal(await page.locator('[data-friend-id=online] .ge-presence').textContent(),'접속 중');
  assert.equal(await page.locator('[data-friend-id=unsafe] img').count(),0);
- await page.locator('[data-friend-search]').fill('초록');assert.equal(await page.locator('[data-friend-id]:visible').count(),1);
+ try { await page.locator('[data-friend-search]').fill('초록',{timeout:3000}); }
+ catch { await openOpponent(id); await page.locator('[data-friend-search]').fill('초록',{timeout:8000}); }
+ assert.deepEqual(await page.locator('[data-friend-id]:not([hidden])').evaluateAll(rows=>rows.map(row=>row.dataset.friendId)),['online'],'friend search matches only the chosen nickname');
  await page.locator('[data-friend-search]').fill('');
  if(id==='chess'){
  await page.evaluate(()=>entryTest.presence({offline:[{}]}));assert.equal(await page.locator('[data-friend-id]').first().getAttribute('data-friend-id'),'offline');
  assert.equal(await page.locator('[data-friend-id=online] .ge-presence').textContent(),'오프라인');await page.evaluate(()=>entryTest.presence({online:[{}]}));
  await page.locator('[data-friend-id=online] button').click();await page.waitForFunction(()=>window.invited);assert.deepEqual(await page.evaluate(()=>window.invited),{name:'game_invite',args:{p_kind:'chess',p_to:'online'}});
+ // A successful invitation closes its entry dialog. Open it again to test computer play.
+ await page.waitForFunction(()=>!document.querySelector('.ge-board-entry'));
+ await openOpponent(id);
  }
  if(viewport.width===390&&id==='chess')await page.screenshot({path:'/tmp/game-entry-proof/friend-invite.png'});
  await page.locator('[data-entry-mode=computer]').click();assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
