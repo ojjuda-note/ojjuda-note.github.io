@@ -109,6 +109,10 @@ function fixture(options = {}) {
   window.fetch = async requested => {
     const url = new URL(requested, window.location.href);
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
+    if (url.pathname.endsWith('/official-jeonbuk-slot73.json')) {
+      // Simulate an empty current-run supplement; actual slot 73 facts have independent source checks.
+      return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 73, restaurants: [] }) };
+    }
     if (/\/official-[^/]+\.json$/.test(url.pathname)) {
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
       return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [], addressEnrichments: [] }) };
