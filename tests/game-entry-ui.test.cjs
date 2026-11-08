@@ -66,12 +66,13 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
   assert.equal(await colors.first().getAttribute('aria-pressed'),'false');
  }
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
+ console.log('Starting computer game:',viewport.width,id);
  await page.locator('[data-entry-panel=computer] [data-act='+(/^(chess|janggi)$/.test(id)?'bd-start':'bl-start')+']').click();
  await page.locator(/^(chess|janggi)$/.test(id)?'#bd-root':'#bl-cv').waitFor();
  if(id==='janggi')assert.equal(await page.evaluate(()=>entryTest.boardMe()),'h','red Han choice controls the player side');
  assert.equal(await page.locator('.ge-board-entry').count(),0,id+': starts directly from the entry');
  if(await page.locator('#gov [data-bl=close]').count())await page.locator('#gov [data-bl=close]').click();
- await page.evaluate(()=>entryTest.closeBoard());
+ await page.evaluate(()=>entryTest.close());
  }
  // A successful invite refreshes the menu asynchronously. Keep this separate
  // from the computer-start checks to avoid racing that intentional redraw.
