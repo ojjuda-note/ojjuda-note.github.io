@@ -128,6 +128,7 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
   if(stage>=3)assert(grid.flat().includes(E.EMPTY),`Stage ${stage}: irregular outlines have actual voids`);
  }
  silhouettes.add(grids[0].map(row=>row.map(v=>v===E.EMPTY?'_':'#').join('')).join('|'));
+ assert(E.exposedMoves(grids),`Stage ${stage}: a visible opening pair always exists`);
  if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);
 }
 assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
@@ -147,6 +148,32 @@ assert.equal(E.exposedMoves(stack)?.a.layer,1,'An exposed lower floor can be pla
 stackedTop[1][1]=9;
 const third=Array.from({length:4},()=>Array(4).fill(E.EMPTY));third[0][0]=third[0][1]=11;
 assert.equal(E.isExposed([stackedTop,stackedBottom,third],{layer:2,r:0,c:0}),false,'Any overlapping upper floor blocks a face');
+// A faded tile may be passed via the narrow visible seam beside a half-step
+// upper floor, while its covered position remains in the board inventory.
+const ghostTop=Array.from({length:5},()=>Array(5).fill(E.EMPTY));ghostTop[2][2]=99;
+const ghostBottom=Array.from({length:5},(_,r)=>Array.from({length:5},(_,c)=>20+r*5+c));
+ghostBottom[2]=[7,E.EMPTY,8,E.EMPTY,7];
+const ghostStack=[ghostTop,ghostBottom],shirtA={layer:1,r:2,c:0},shirtB={layer:1,r:2,c:4};
+assert(E.isExposed(ghostStack,shirtA)&&E.isExposed(ghostStack,shirtB),'Both matching lower tiles are exposed');
+assert.equal(E.isExposed(ghostStack,{layer:1,r:2,c:2}),false,'The middle blocker is covered by the upper floor');
+assert.equal(E.path(ghostBottom,shirtA,shirtB),null,'The raw lower grid contains a hidden blocker');
+assert.deepEqual(E.visiblePath(ghostStack,shirtA,shirtB),[shirtA,shirtB],'The visible seam lets the shirts connect');
+assert.equal(E.visiblePath(ghostStack,{layer:1,r:2,c:2},shirtB),null,'A covered endpoint cannot be selected');
+assert.equal(E.visiblePath(ghostStack,{layer:0,r:2,c:2},shirtB),null,'Separate floors cannot be paired');
+assert.deepEqual(E.exposedMoves(ghostStack)?.a,shirtA,'Hints recognize the open lane');
+// A route may also be falsely accepted when it crosses an exposed tile on
+// another floor. Seek a genuine two-turn detour, or reject the pair.
+const crossingTop=Array.from({length:5},()=>Array(5).fill(9));
+crossingTop[2]=[7,E.EMPTY,E.EMPTY,E.EMPTY,7];crossingTop[3][2]=crossingTop[3][3]=E.EMPTY;
+const crossingMiddle=Array.from({length:5},()=>Array(5).fill(E.EMPTY));
+const crossingBottom=Array.from({length:5},()=>Array(5).fill(E.EMPTY));crossingBottom[1][1]=8;
+const crossingStack=[crossingTop,crossingMiddle,crossingBottom],acrossA={layer:0,r:2,c:0},acrossB={layer:0,r:2,c:4};
+assert(E.isExposed(crossingStack,{layer:2,r:1,c:1}),'The aligned tile on another floor is exposed');
+assert(E.path(crossingTop,acrossA,acrossB),'The old single-floor test missed an overlapping card');
+assert.equal(E.visiblePath(crossingStack,acrossA,acrossB),null,'The actual view blocks that misleading connection');
+const detourTop=Array.from({length:5},()=>Array(5).fill(E.EMPTY));detourTop[2][0]=detourTop[2][4]=7;
+const detour=E.visiblePath([detourTop,crossingMiddle,crossingBottom],acrossA,acrossB);
+assert(detour&&detour.length>=3,'A clear path around the other floor remains available');
 const floorVariants=Array.from({length:60},(_,i)=>E.stackInfo(i+6).floors.map(f=>f.total));
 assert(floorVariants.some(sizes=>sizes[0]>sizes[1]),'Some stages have more tiles on top');
 assert(floorVariants.some(sizes=>sizes[0]<sizes[1]),'Some stages have more tiles below');
@@ -156,13 +183,17 @@ for(const stage of [6,12,18,40,200]){
  while(left){
   let move=E.exposedMoves(grids);
   if(!move){
-   const top=grids.findIndex(grid=>grid.flat().some(v=>v!==E.EMPTY));
-   assert(top>=0);grids[top]=E.reshuffle(grids[top],random).grid;
+   const before=grids.map(grid=>histogram(grid));
+   const remade=E.recoverVisibleStack(grids,random);
+   remade.forEach((grid,i)=>{
+    assert.deepEqual(histogram(grid),before[i],`Stage ${stage}: automatic repair preserves pictures on floor ${i}`);
+    grids[i]=grid;
+   });
    move=E.exposedMoves(grids);automaticShuffles++;
   }
   assert(move,`Stage ${stage} always recovers an uncovered pair`);
   assert(E.isExposed(grids,move.a)&&E.isExposed(grids,move.b));
-  const grid=grids[move.a.layer];assert(E.path(grid,move.a,move.b));
+  const grid=grids[move.a.layer];assert(E.visiblePath(grids,move.a,move.b));
   grid[move.a.r][move.a.c]=grid[move.b.r][move.b.c]=E.EMPTY;
   left-=2;
  }
@@ -170,3 +201,4 @@ for(const stage of [6,12,18,40,200]){
  assert(automaticShuffles<600,`Stage ${stage} avoids excessive deadlocks`);
 }
 console.log(`PASS: ${E.MAX_STAGE} stages, ${silhouettes.size} varied silhouettes, ${paths} independent path checks, ${boards} full legacy boards (${filledBoards} with added pairs), all stacked stage openings and selected complete games, ${recoveries} deadlock recoveries, copy limits and RNG fallback.`);
+

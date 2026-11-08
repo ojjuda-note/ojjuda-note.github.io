@@ -112,7 +112,7 @@
     $('zoom-fit').setAttribute('aria-pressed',String(overview));
     $('board-pan-tip').hidden=overview||panHintDismissed;
     $('connection').replaceChildren();
-    if(hints.length){const route=E.path(layers()[hints[0].layer??0],hints[0],hints[1]);if(route)draw(route,true,hints[0].layer??0);}
+    if(hints.length){const route=E.visiblePath(layers(),hints[0],hints[1]);if(route)draw(route,true,hints[0].layer??0);}
   }
   function cancelRemovals(){for(const timer of removalTimers)clearTimeout(timer);removalTimers.clear();clearTimeout(moveTimer);}
   function refreshCoverage(){
@@ -187,8 +187,8 @@
   function ensureMove(){
     if(!count()||availableMove())return false;
     const top=firstOccupiedLayer();if(top<0)return false;
-    clearSelection();const shuffled=E.reshuffle(layers()[top]).grid;
-    if(top===0)state.grid=shuffled;else state.upcoming[top-1]=shuffled;
+    clearSelection();const shuffled=E.recoverVisibleStack(layers());
+    state.grid=shuffled[0];state.upcoming=shuffled.slice(1);
     state.hintPair=null;save();renderBoard();
     $('status').textContent='선택할 수 있는 짝이 없어 위쪽 패를 자동으로 다시 섞었어요.';toast('막힌 정원을 자동으로 다시 섞었어요.');return true;
   }
@@ -201,8 +201,8 @@
     if(!selected){const suggested=hints.some(q=>q.layer===p.layer&&q.r===p.r&&q.c===p.c)?hints.slice():[];clearSelection();hints=suggested;hints.forEach(q=>cell(q).classList.add('hinted'));selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');sound('tap');return;}
     const a=selected;
     if(a.layer!==p.layer||grids[a.layer][a.r][a.c]!==grid[p.r][p.c]){clearSelection();selected=p;cell(p).classList.add('selected');cell(p).setAttribute('aria-pressed','true');wrongPair(a.layer!==p.layer?'같은 층에 있는 패끼리 연결할 수 있어요.':'같은 그림의 패를 찾아주세요.');return;}
-    const route=E.path(grid,a,p);
-    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');wrongPair('다른 패에 막혀 있어요. 두 번까지만 꺾어 연결해요.');return;}
+    const route=E.visiblePath(grids,a,p);
+    if(!route){cell(p).classList.remove('wrong');void cell(p).offsetWidth;cell(p).classList.add('wrong');wrongPair('눈에 보이는 다른 패가 길을 막고 있어요.');return;}
     const floorCleared=occupied(grid)===2,willFinish=count()===2;
     const finishDuration=willFinish?ms():null;clearSelection();draw(route,false,p.layer);sound('match');
     const buttons=[cell(a),cell(p)],line=$('connection').firstElementChild;
@@ -287,7 +287,7 @@
     const pair=state.hintPair;
     if(!Array.isArray(pair)||pair.length!==2||!pair.every(p=>Number.isInteger(p?.layer)&&Number.isInteger(p?.r)&&Number.isInteger(p?.c)&&E.isExposed(layers(),p)))return;
     if(pair[0].layer!==pair[1].layer||layers()[pair[0].layer][pair[0].r][pair[0].c]!==layers()[pair[1].layer][pair[1].r][pair[1].c])return;
-    const route=E.path(layers()[pair[0].layer],pair[0],pair[1]);if(!route)return;
+    const route=E.visiblePath(layers(),pair[0],pair[1]);if(!route)return;
     hints=pair;hints.forEach(p=>cell(p).classList.add('hinted'));draw(route,true,pair[0].layer);
   }
   async function useTool(kind){
@@ -315,7 +315,7 @@
       const requestedAt=item.runId!==activeRun?recoveryStartedAt:Number.isFinite(item.requestedAt)&&item.requestedAt>0?Math.min(item.requestedAt,Date.now()):Date.now();
       const next={...state,pendingPurchase:null,startedAt:state.startedAt||requestedAt};
       if(kind==='hint'){const move=availableMove();if(!move){syncTools();toast('구매 다시 확인을 눌러 주세요.');return;}next.hints=(state.hints||0)+1;next.hintPair=[move.a,move.b];}
-      else{const remade=layers().map(grid=>occupied(grid)?E.reshuffle(grid).grid:E.copy(grid));next.grid=remade[0];next.upcoming=remade.slice(1);next.shuffles=(state.shuffles||0)+1;next.hintPair=null;}
+      else{const reshuffled=layers().map(grid=>occupied(grid)?E.reshuffle(grid).grid:E.copy(grid)),remade=E.recoverVisibleStack(reshuffled);next.grid=remade[0];next.upcoming=remade.slice(1);next.shuffles=(state.shuffles||0)+1;next.hintPair=null;}
       // Save the consumed receipt and its effect together, so reloading cannot charge twice.
       if(!write(KEY,next)){syncTools();toast('저장 공간을 확인한 뒤 구매 다시 확인을 눌러 주세요.');return;}
       state=next;clearSelection();renderBoard();restoreHint();updateStats();
@@ -340,7 +340,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>같은 층에서 다른 패를 통과할 수 없어요. 빈 칸과 바깥 여백을 이용할 수 있어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>모든 패가 한 화면에 보이게 시작해요. 더 크게 보고 싶다면 ＋ 또는 두 손가락으로 확대하고, 커진 판은 손가락이나 마우스로 밀어 이동할 수 있어요. 전체를 누르면 다시 한눈에 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>다른 층이라도 화면에 보이는 패를 가로질러 연결할 수 없어요. 빈 칸과 바깥 여백을 이용하세요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>모든 패가 한 화면에 보이게 시작해요. 더 크게 보고 싶다면 ＋ 또는 두 손가락으로 확대하고, 커진 판은 손가락이나 마우스로 밀어 이동할 수 있어요. 전체를 누르면 다시 한눈에 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();

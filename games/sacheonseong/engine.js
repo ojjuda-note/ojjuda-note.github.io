@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 5, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 6, FACE_COUNT = 350;
   // Each upper tile sits across the four tile centers directly below it.
   const LAYER_OFFSET = .5;
   // Reserve roughly one seventh of all tiles for picture pairs; the rest
@@ -69,7 +69,7 @@
   const same = (a, b) => a.r === b.r && a.c === b.c;
   const copy = grid => grid.map(row => row.slice());
 
-  function path(grid, a, b) {
+  function path(grid, a, b, acceptsRoute) {
     const rows = grid.length, columns = grid[0]?.length || 0;
     const inside = p => p && Number.isInteger(p.r) && Number.isInteger(p.c) && p.r >= 0 && p.r < rows && p.c >= 0 && p.c < columns && p.c < grid[p.r].length;
     if (!inside(a) || !inside(b) || same(a, b) || grid[a.r][a.c] === EMPTY || grid[b.r][b.c] === EMPTY) return null;
@@ -104,6 +104,7 @@
     for (const candidate of options) {
       if (!candidate.slice(1).every((p,i) => line(candidate[i],p))) continue;
       const p = clean(candidate);
+      if(acceptsRoute&&!acceptsRoute(p))continue;
       const length = p.slice(1).reduce((sum,x,i) => sum + Math.abs(x.r-p[i].r) + Math.abs(x.c-p[i].c),0);
       const score = p.length * (2 * (rows + columns) + 4) + length;
       if (score < bestScore) { best = p; bestScore = score; }
@@ -139,17 +140,55 @@
     return true;
   }
 
+  // Covered, faded tiles do not obstruct a visible route, but uncovered
+  // cards on ANY floor do. Both the hint and the actual match use this same
+  // projected layout so a highlighted line never runs through a white tile.
+  function visibleBoard(grids) {
+    const obstacles=[];
+    const masks=grids.map((grid,layer)=>grid.map((row,r)=>row.map((value,c)=>{
+      if(value===EMPTY||!isExposed(grids,{layer,r,c}))return EMPTY;
+      const shift=layer*LAYER_OFFSET;
+      obstacles.push({layer,r,c,x:c+shift,y:r+shift});
+      return value;
+    })));
+    return {masks,obstacles};
+  }
+  function routeAvoidsTiles(route,layer,obstacles,a,b) {
+    // Half-offset floors leave a thin green seam at +/-0.5 of a cell.
+    // Treat that seam as open, but never cross another tile's interior.
+    const shift=layer*LAYER_OFFSET,margin=.498;
+    const points=route.map(p=>({x:p.c+shift,y:p.r+shift}));
+    for(const tile of obstacles){
+      if(tile.layer===layer&&(same(tile,a)||same(tile,b)))continue;
+      for(let i=1;i<points.length;i++){
+        const u=points[i-1],v=points[i];
+        if(u.y===v.y){
+          if(Math.abs(tile.y-u.y)<margin&&tile.x+margin>Math.min(u.x,v.x)&&tile.x-margin<Math.max(u.x,v.x))return false;
+        }else if(u.x===v.x){
+          if(Math.abs(tile.x-u.x)<margin&&tile.y+margin>Math.min(u.y,v.y)&&tile.y-margin<Math.max(u.y,v.y))return false;
+        }
+      }
+    }
+    return true;
+  }
+  function visiblePath(grids, a, b) {
+    if(!a||!b||a.layer!==b.layer||!isExposed(grids,a)||!isExposed(grids,b))return null;
+    const {masks,obstacles}=visibleBoard(grids);
+    return path(masks[a.layer],a,b,route=>routeAvoidsTiles(route,a.layer,obstacles,a,b));
+  }
+
   function exposedMoves(grids) {
+    const {masks,obstacles}=visibleBoard(grids);
     for(let layer=0;layer<grids.length;layer++){
-      const grid=grids[layer],groups=new Map();
+      const grid=masks[layer],groups=new Map();
       for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++){
         const value=grid[r][c];
-        if(value===EMPTY||!isExposed(grids,{layer,r,c}))continue;
+        if(value===EMPTY)continue;
         if(!groups.has(value))groups.set(value,[]);
         groups.get(value).push({layer,r,c});
       }
       for(const cells of groups.values())for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
-        const route=path(grid,cells[i],cells[j]);
+        const route=path(grid,cells[i],cells[j],candidate=>routeAvoidsTiles(candidate,layer,obstacles,cells[i],cells[j]));
         if(route)return {a:cells[i],b:cells[j],path:route};
       }
     }
@@ -213,6 +252,36 @@
     for(const [type,count] of counts) {if(count%2) throw new Error('Unpaired tile');for(let i=0;i<count;i++) types.push(type);}
     return arrange(grid,types,random);
   }
+  // A normal single-floor reshuffle can leave every visible pair blocked by
+  // another floor. Preserve each floor's pictures and holes, then guarantee
+  // one geometrically clear matching pair without charging the player.
+  function recoverVisibleStack(grids, random = Math.random) {
+    const result=grids.map(copy);
+    if(!result.some(grid=>grid.some(row=>row.some(value=>value!==EMPTY)))||exposedMoves(result))return result;
+    const top=result.findIndex(grid=>grid.some(row=>row.some(value=>value!==EMPTY)));
+    result[top]=reshuffle(result[top],random).grid;
+    if(exposedMoves(result))return result;
+    const {masks,obstacles}=visibleBoard(result);
+    for(let layer=0;layer<result.length;layer++){
+      const grid=masks[layer],cells=[];
+      for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++)if(grid[r][c]!==EMPTY)cells.push({layer,r,c});
+      for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){
+        const a=cells[i],b=cells[j];
+        if(!path(grid,a,b,route=>routeAvoidsTiles(route,layer,obstacles,a,b)))continue;
+        const face=result[layer][a.r][a.c];
+        if(result[layer][b.r][b.c]!==face){
+          const donor=[];
+          for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++)if((r!==a.r||c!==a.c)&&result[layer][r][c]===face)donor.push({r,c});
+          if(!donor.length)throw new Error('Unpaired tile');
+          const target=donor[Math.floor(random()*donor.length)];
+          [result[layer][b.r][b.c],result[layer][target.r][target.c]]=[result[layer][target.r][target.c],result[layer][b.r][b.c]];
+        }
+        if(!exposedMoves(result))throw new Error('Visible pair repair failed');
+        return result;
+      }
+    }
+    throw new Error('No connectable visible positions');
+  }
   const SHAPES=['hourglass','cross','ring','steps','islands','diamond','zigzag','castle'];
   function shapedGrid(rows,cols,needed,variant,random) {
     const cells=[];
@@ -250,14 +319,15 @@
       offset+=floor.typeCount;
       return arrange(input,types,random).grid;
     });
-    return {grids,info};
+    return {grids:recoverVisibleStack(grids,random),info};
   }
   function withinCopyLimit(grid) {
     const counts=new Map();
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
+
