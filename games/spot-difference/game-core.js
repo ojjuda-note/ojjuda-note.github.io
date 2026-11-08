@@ -9,18 +9,23 @@
       distance:Math.min(...[spot,...(spot.hitRegions||[])].map(region=>((x-region.x)/region.rx)**2+((y-region.y)/region.ry)**2))
     }));
     const inBounds=b=>b&&x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
-    // Keep explicitly bounded photo/artwork answers precise, including overlaps.
-    let matches=puzzle.hitMode==='target-bounds'?candidates.filter(c=>inBounds(c.bounds)):[];
-    if(!matches.length)matches=candidates.filter(c=>c.distance<=TOUCH_HIT_SCALE**2);
-    // Elliptical hotspots can miss visible corners of clothes and objects.
-    if(!matches.length)matches=candidates.filter(c=>inBounds(c.bounds));
+    // Preserve the authored priority of photo and artwork answer bounds.
+    if(puzzle.hitMode==='target-bounds'){
+      const exact=candidates.find(c=>inBounds(c.bounds));
+      if(exact)return {index:exact.index,alreadyFound:found.includes(exact.index)};
+    }
+    let matches=candidates.filter(c=>c.distance<=TOUCH_HIT_SCALE**2);
     if(!matches.length){
       const px=Math.max(0,Number(padding?.x)||0),py=Math.max(0,Number(padding?.y)||0);
-      if(px&&py)matches=candidates.map(c=>{
-        const b=c.bounds;if(!b)return null;
-        const dx=Math.max(b.left-x,0,x-b.right),dy=Math.max(b.top-y,0,y-b.bottom);
-        return {...c,near:(dx/px)**2+(dy/py)**2};
-      }).filter(c=>c&&c.near<=1);
+      if(px&&py){
+        // Keep legacy mouse hit zones unchanged; finger taps can reach corners.
+        matches=candidates.filter(c=>inBounds(c.bounds));
+        if(!matches.length)matches=candidates.map(c=>{
+          const b=c.bounds;if(!b)return null;
+          const dx=Math.max(b.left-x,0,x-b.right),dy=Math.max(b.top-y,0,y-b.bottom);
+          return {...c,near:(dx/px)**2+(dy/py)**2};
+        }).filter(c=>c&&c.near<=1);
+      }
     }
     if(!matches.length)return null;
     matches.sort((a,b)=>(a.near??a.distance)-(b.near??b.distance));

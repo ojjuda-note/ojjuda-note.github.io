@@ -436,7 +436,7 @@
       guess(point.x,point.y,surface,padding);
     }
     surface.addEventListener('pointerdown',e=>{
-      if(!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+      if(e.isPrimary===false||(e.pointerType==='mouse'&&e.button!==0))return;
       down={id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop};
     });
     surface.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
@@ -450,8 +450,9 @@
     });
     surface.addEventListener('click',e=>{
       if(ignoreClick&&performance.now()-ignoreClick.at<900&&Math.hypot(e.clientX-ignoreClick.x,e.clientY-ignoreClick.y)<24){ignoreClick=null;return;}
+      const hadDown=!!down;
       if(down){const dragged=moved(e);down=null;if(dragged)return;}
-      if(e.detail===0)return; // Direction keys and Enter are handled below.
+      if(e.detail===0&&!hadDown)return; // Direction keys and Enter are handled below.
       choose(e,e.pointerType==='touch'||e.pointerType==='pen'||e.sourceCapabilities?.firesTouchEvents===true);
     });
     surface.addEventListener('keydown',e=>{
