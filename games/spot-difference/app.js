@@ -427,8 +427,10 @@
     else if(remaining.length){r.hintIndex=remaining[(remaining.indexOf(r.hintIndex)+1)%remaining.length];showHint();save();}
   }
   for(const surface of surfaces){
-    let down=null,ignoreClick=null;
+    let down=null,ignoreClick=null,touchStart=null,lastHandledTouch=null;
     const moved=e=>down&&(Math.hypot(e.clientX-down.x,e.clientY-down.y)>14||Math.abs(surface.parentElement.scrollLeft-down.scrollX)>5||Math.abs(surface.parentElement.scrollTop-down.scrollY)>5);
+    const sameTouch=e=>lastHandledTouch&&performance.now()-lastHandledTouch.at<120&&Math.hypot(e.clientX-lastHandledTouch.x,e.clientY-lastHandledTouch.y)<18;
+    const rememberTouch=e=>{lastHandledTouch={x:e.clientX,y:e.clientY,at:performance.now()};ignoreClick=lastHandledTouch;};
     function choose(e,isTouch=false){
       if(surface.classList.contains('loading'))return;
       const rect=surface.getBoundingClientRect(),point=core.normalizedPoint(rect,e.clientX,e.clientY);
@@ -440,14 +442,42 @@
       down={id:e.pointerId,pointerType:e.pointerType,x:e.clientX,y:e.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop};
     });
     surface.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
-    surface.addEventListener('pointerup',e=>{
+    function finishPointer(e){
       if(!down||down.id!==e.pointerId||down.pointerType==='mouse')return;
       const dragged=moved(e)||pictureDrag||!!picturePinch||picturePointers.size>1;
       down=null;
-      // Recognize a fingertip lift without relying on a synthetic click.
-      ignoreClick={x:e.clientX,y:e.clientY,at:performance.now()};
+      if(sameTouch(e))return;
+      // Pointer capture can move the release event to the zoom scroll pane.
+      rememberTouch(e);
       if(!dragged)choose(e,true);
-    });
+    }
+    surface.addEventListener('pointerup',finishPointer);
+    window.addEventListener('pointerup',finishPointer);
+    window.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
+    // Some mobile browsers cancel pointer events after a pinch. The matching
+    // touchend still recognizes a stationary tap without turning drags into guesses.
+    surface.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1){touchStart=null;return;}
+      const t=e.changedTouches[0]||e.touches[0];
+      touchStart={id:t.identifier,x:t.clientX,y:t.clientY,scrollX:surface.parentElement.scrollLeft,scrollY:surface.parentElement.scrollTop,dragged:false};
+    },{passive:true});
+    surface.addEventListener('touchmove',e=>{
+      if(!touchStart)return;
+      if(e.touches.length!==1){touchStart=null;return;}
+      const t=Array.from(e.touches).find(t=>t.identifier===touchStart.id);
+      if(t&&Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)>14)touchStart.dragged=true;
+    },{passive:true});
+    surface.addEventListener('touchcancel',()=>{touchStart=null;},{passive:true});
+    surface.addEventListener('touchend',e=>{
+      if(!touchStart)return;
+      const t=Array.from(e.changedTouches).find(t=>t.identifier===touchStart.id);
+      if(!t)return;
+      const start=touchStart;touchStart=null;
+      if(down?.pointerType==='touch')down=null;
+      if(start.dragged||Math.hypot(t.clientX-start.x,t.clientY-start.y)>14||Math.abs(surface.parentElement.scrollLeft-start.scrollX)>5||Math.abs(surface.parentElement.scrollTop-start.scrollY)>5||pictureDrag||picturePinch||picturePointers.size>1)return;
+      if(sameTouch(t))return;
+      rememberTouch(t);choose(t,true);
+    },{passive:true});
     surface.addEventListener('click',e=>{
       if(ignoreClick&&performance.now()-ignoreClick.at<900&&Math.hypot(e.clientX-ignoreClick.x,e.clientY-ignoreClick.y)<24){ignoreClick=null;return;}
       const hadDown=!!down;
@@ -530,7 +560,10 @@
   }
   for(const surface of surfaces){
     surface.addEventListener('pointerdown',event=>{
-      if(!['touch','pen'].includes(event.pointerType)||picturePointers.size>=2||surface.classList.contains('loading'))return;
+      if(!['touch','pen'].includes(event.pointerType)||surface.classList.contains('loading'))return;
+      // A fresh primary touch recovers if a previous pinch lost its release event.
+      if(event.isPrimary===true&&picturePointers.size)clearPictureGesture();
+      if(picturePointers.size>=2)return;
       picturePointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,surface});
       if(picturePointers.size===1){picturePane=surface.classList.contains('zoom-picture')?surface.parentElement:null;pictureDrag=false;return;}
       const pair=pointerPair(),first=picturePointers.values().next().value,ready=enterPairedZoom(first.surface,pair.x,pair.y);
