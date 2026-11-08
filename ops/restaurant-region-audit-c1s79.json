@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "canonicalAuditFile": "ops/restaurant-region-audit.json",
+  "canonicalAuditSyncStatus": "pending_large_file_safe_transfer",
+  "cycle": 1,
+  "slot": 79,
+  "scheduledAtKST": "2026-11-09T01:00:00+09:00",
+  "checkedAtKST": "2026-11-09",
+  "scheduleBasis": "원래 예약 시각 01:00 KST; anchor 2026-11-05T23:00+09:00에서 h=74, n=78, cycle1 slot79",
+  "status": "partial_official_listing_seven_verified_addresses_no_geocoordinates",
+  "assignedRegions": [
+    "경상북도 의성군",
+    "경상북도 청송군",
+    "경상북도 영양군",
+    "경상북도 영덕군"
+  ],
+  "regionAudit": [
+    {
+      "region": "경상북도 의성군",
+      "actuallyChecked": [
+        "의성읍 관내지도 1~3쪽의 모범음식점 7개 상호·주소",
+        "2025년 의성군 보건소 으뜸음식점 소개에서 기존 2곳의 상호·주소 확인"
+      ],
+      "new": 7,
+      "updated": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "remainingAreas": [
+        "해당 군 전체 공식 선정 및 지정 명단 대조",
+        "현재 영업·이전·휴업·폐업 개별 교차확인",
+        "업소·지점·현주소와 일치하는 독립 수치좌표"
+      ],
+      "notExhaustive": true,
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+        "https://www.usc.go.kr/health/main.do"
+      ]
+    },
+    {
+      "region": "경상북도 청송군",
+      "actuallyChecked": [
+        "공식 명단 검색 시도; 현시점의 식당별 공식 상호·현재 주소 및 지정 확인까지는 미도달"
+      ],
+      "new": 0,
+      "updated": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "remainingAreas": [
+        "해당 군 전체 공식 선정 및 지정 명단 대조",
+        "현재 영업·이전·휴업·폐업 개별 교차확인",
+        "업소·지점·현주소와 일치하는 독립 수치좌표"
+      ],
+      "notExhaustive": true,
+      "evidenceUrls": []
+    },
+    {
+      "region": "경상북도 영양군",
+      "actuallyChecked": [
+        "공식 명단 검색 시도; 현시점의 식당별 공식 상호·현재 주소 및 지정 확인까지는 미도달"
+      ],
+      "new": 0,
+      "updated": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "remainingAreas": [
+        "해당 군 전체 공식 선정 및 지정 명단 대조",
+        "현재 영업·이전·휴업·폐업 개별 교차확인",
+        "업소·지점·현주소와 일치하는 독립 수치좌표"
+      ],
+      "notExhaustive": true,
+      "evidenceUrls": []
+    },
+    {
+      "region": "경상북도 영덕군",
+      "actuallyChecked": [
+        "영덕문화관광 일반 음식점 상세 선미횟집: 현재 주소 공란이어서 데이터 반영 보류"
+      ],
+      "new": 0,
+      "updated": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "remainingAreas": [
+        "해당 군 전체 공식 선정 및 지정 명단 대조",
+        "현재 영업·이전·휴업·폐업 개별 교차확인",
+        "업소·지점·현주소와 일치하는 독립 수치좌표"
+      ],
+      "notExhaustive": true,
+      "evidenceUrls": [
+        "https://tour.yd.go.kr/kor/food/foodView.aspx?idx=153"
+      ]
+    }
+  ],
+  "additions": 7,
+  "modifications": 0,
+  "locationCoordinatesAdded": 0,
+  "locationHidden": 0,
+  "locationPending": 13,
+  "locationPendingScope": "배정한 4개군 중 이번에 접근한 기본 데이터의 좌표 없는 6곳과 신규 7곳; 추가 보완 파일의 다른 식당이나 전국의 전부가 아님.",
+  "addedRestaurantIds": [
+    "local-gyeongbuk-slot79-uiseong-01",
+    "local-gyeongbuk-slot79-uiseong-02",
+    "local-gyeongbuk-slot79-uiseong-03",
+    "local-gyeongbuk-slot79-uiseong-04",
+    "local-gyeongbuk-slot79-uiseong-05",
+    "local-gyeongbuk-slot79-uiseong-06",
+    "local-gyeongbuk-slot79-uiseong-07"
+  ],
+  "modifiedRestaurantIds": [],
+  "verifiedLocations": [],
+  "pendingLocationInventory": [
+    {
+      "restaurantId": "local-gb-top-2022-9",
+      "name": "청호가든",
+      "currentAddress": "경상북도 의성군 봉양면 경북대로 4942",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "청호가든 의성군",
+        "청호가든 경상북도 의성군 봉양면 경북대로 4942",
+        "경북 의성군 청호가든"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gb-top-2025-3",
+      "name": "태산들",
+      "currentAddress": "경상북도 의성군 옥산면 노천길 79",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "태산들 의성군",
+        "태산들 경상북도 의성군 옥산면 노천길 79",
+        "경북 의성군 태산들"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gb-top-2017-8",
+      "name": "청송영양축산농협한우프라자",
+      "currentAddress": "경상북도 청송군 부동면 주왕산로 440",
+      "region": "경상북도 청송군",
+      "searchAliases": [
+        "청송영양축산농협한우프라자 청송군",
+        "청송영양축산농협한우프라자 경상북도 청송군 부동면 주왕산로 440",
+        "경북 청송군 청송영양축산농협한우프라자"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gb-top-2022-10",
+      "name": "웰빙하우스",
+      "currentAddress": "경상북도 청송군 청송읍 휴양단지길 34-1",
+      "region": "경상북도 청송군",
+      "searchAliases": [
+        "웰빙하우스 청송군",
+        "웰빙하우스 경상북도 청송군 청송읍 휴양단지길 34-1",
+        "경북 청송군 웰빙하우스"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gb-top-2023-7",
+      "name": "주왕산가든",
+      "currentAddress": "경상북도 청송군 주왕산면 주왕산로 508-9",
+      "region": "경상북도 청송군",
+      "searchAliases": [
+        "주왕산가든 청송군",
+        "주왕산가든 경상북도 청송군 주왕산면 주왕산로 508-9",
+        "경북 청송군 주왕산가든"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gb-top-2024-6",
+      "name": "봉성밥상",
+      "currentAddress": "경상북도 청송군 청송읍 중앙로 268",
+      "region": "경상북도 청송군",
+      "searchAliases": [
+        "봉성밥상 청송군",
+        "봉성밥상 경상북도 청송군 청송읍 중앙로 268",
+        "경북 청송군 봉성밥상"
+      ],
+      "evidenceUrls": [
+        "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "기존 저장소의 선정 이력·주소만 재대조. 신규 원문/현재 영업·정확한 업소별 수치좌표는 이번 회차에 검증되지 않음.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-01",
+      "name": "가빈정추어탕",
+      "currentAddress": "경상북도 의성군 의성읍 후죽5길 32",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "가빈정추어탕 의성군",
+        "가빈정추어탕 경상북도 의성군 의성읍 후죽5길 32",
+        "경북 의성군 가빈정추어탕"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-02",
+      "name": "경북한우참숯불갈비",
+      "currentAddress": "경상북도 의성군 의성읍 문소3길 49-1",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "경북한우참숯불갈비 의성군",
+        "경북한우참숯불갈비 경상북도 의성군 의성읍 문소3길 49-1",
+        "경북 의성군 경북한우참숯불갈비"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-03",
+      "name": "매일식육식당",
+      "currentAddress": "경상북도 의성군 의성읍 북부길 2",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "매일식육식당 의성군",
+        "매일식육식당 경상북도 의성군 의성읍 북부길 2",
+        "경북 의성군 매일식육식당"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-04",
+      "name": "성안식육식당",
+      "currentAddress": "경상북도 의성군 의성읍 후죽5길 8-2",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "성안식육식당 의성군",
+        "성안식육식당 경상북도 의성군 의성읍 후죽5길 8-2",
+        "경북 의성군 성안식육식당"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-05",
+      "name": "성주숯불갈비",
+      "currentAddress": "경상북도 의성군 의성읍 동서1길 18",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "성주숯불갈비 의성군",
+        "성주숯불갈비 경상북도 의성군 의성읍 동서1길 18",
+        "경북 의성군 성주숯불갈비"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-06",
+      "name": "시골황토매운탕",
+      "currentAddress": "경상북도 의성군 의성읍 중리길 20-1",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "시골황토매운탕 의성군",
+        "시골황토매운탕 경상북도 의성군 의성읍 중리길 20-1",
+        "경북 의성군 시골황토매운탕"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    },
+    {
+      "restaurantId": "local-gyeongbuk-slot79-uiseong-07",
+      "name": "장수생오리",
+      "currentAddress": "경상북도 의성군 의성읍 문소3길 97-1",
+      "region": "경상북도 의성군",
+      "searchAliases": [
+        "장수생오리 의성군",
+        "장수생오리 경상북도 의성군 의성읍 문소3길 97-1",
+        "경북 의성군 장수생오리"
+      ],
+      "evidenceUrls": [
+        "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+      ],
+      "checkedAt": "2026-11-09",
+      "checkResult": "의성군 읍면포털의 상호·모범음식점 분류·주소 확인. 수치좌표/2026년 지정 여부/현재 영업 미확인.",
+      "recheckCycle": 2,
+      "recheckSlot": 79,
+      "reason": "동일 업소·현주소에 일치하는 독립 공개 수치좌표 미확인"
+    }
+  ],
+  "followUpCandidates": [
+    "의성군 의성읍 관내지도 나머지 4쪽 및 군내 다른 읍면 목록",
+    "청송군·영양군·영덕군의 현행 공식 선정 명단 확보",
+    "공식 지정 식당에 대한 독립 위치·영업 확인",
+    "기존 누락 회차와 다른 순환의 조사기록을 원본 대형 감사 파일에 병합"
+  ],
+  "preservationNotes": [
+    "회원 추천 및 사진·좌표·개인정보는 다루지 않음",
+    "기존 ID·선정 이력 보존",
+    "정규 블루리본 리본등급을 추정하지 않음",
+    "이 운영 기록은 메인 감사 파일 크기 제한으로 인한 별도 회차 보조기록이며 통합 반영이 아직 필요함"
+  ]
+}

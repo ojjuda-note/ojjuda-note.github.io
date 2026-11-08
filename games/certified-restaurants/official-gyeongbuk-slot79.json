@@ -1,0 +1,214 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 79,
+  "scheduledAtKST": "2026-11-09T01:00:00+09:00",
+  "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+  "sourceUrls": [
+    "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+    "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+    "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd="
+  ],
+  "completeRegionalCollection": false,
+  "addedCount": 7,
+  "modifiedCount": 0,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmedCount": 0,
+  "notes": [
+    "의성읍 관내지도 1~3쪽 중 모범음식점 7개를 이름·도로명 주소로 대조. 군 전체 명단 전수 조사 아님.",
+    "군 누리집에 명시된 모범음식점 유형의 공식 수록 사실만 기록. 2026 지정 연도·현재 영업 상태·미쉐린/블루리본 등급은 주장하지 않음.",
+    "주소 기반 지오코딩이나 건물 중심점으로 수치좌표를 추정하지 않음. 청송·영양·영덕의 추가 목록과 잔여 지역은 이월.",
+    "회원 작성 추천맛집, 기존 등록 ID 및 저장값 변경 없음."
+  ],
+  "restaurants": [
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-01",
+      "name": "가빈정추어탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 후죽5길 32",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-02",
+      "name": "경북한우참숯불갈비",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 문소3길 49-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-03",
+      "name": "매일식육식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 북부길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=1&pageNo=3&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-04",
+      "name": "성안식육식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 후죽5길 8-2",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-05",
+      "name": "성주숯불갈비",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 동서1길 18",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-06",
+      "name": "시골황토매운탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 중리길 20-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=2&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    },
+    {
+      "id": "local-gyeongbuk-slot79-uiseong-07",
+      "name": "장수생오리",
+      "category": "한식",
+      "region": "경북",
+      "district": "의성군",
+      "address": "경상북도 의성군 의성읍 문소3길 97-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "의성군 모범음식점 (읍면포털 수록)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+          "sourceName": "의성군 읍면포털 · 관내지도 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "군 운영 포털의 유형이 '모범음식점'으로 표시됨. 지정 시작·종료 연도와 현 영업 여부는 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.usc.go.kr/village/page.do?map_name=&mnu_uid=1005&pageNo=3&pageNo=4&pageSize=10&srchArea=%EC%9D%98%EC%84%B1%EC%9D%8D&srchEnable=1&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-09",
+      "locationEvidenceNote": "공식 의성군 관내지도에 상호와 도로명주소가 함께 수록. 업소 위치 수치좌표 검증 전까지 거리 미표시."
+    }
+  ]
+}
