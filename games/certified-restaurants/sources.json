@@ -1529,20 +1529,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3448,
+    "uniqueRestaurants": 3472,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2715,
+      "local-guide": 2739,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2382,
+    "coordinatesMissing": 2406,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
       "충북": 270,
-      "충남": 93,
+      "충남": 117,
       "울산": 38,
       "경남": 325,
       "강원": 104,
@@ -1558,13 +1558,13 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2074,
-      "중식": 143,
+      "한식": 2092,
+      "중식": 145,
       "일식": 146,
-      "기타": 587,
+      "기타": 588,
       "양식": 219,
-      "분식": 38,
-      "디저트": 241
+      "분식": 40,
+      "디저트": 242
     }
   },
   "coordinateEnrichment": {
@@ -15461,53 +15461,141 @@
         "새 좌표 0, 목록 제외 0, 회차 지역 47곳 재확인 대기.",
         "기존 ID·회원 추천·공식 블루리본 전체지도 보존."
       ]
+    },
+    {
+      "id": "2026-11-08-chungnam-slot71-taean12-yesan12",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 71,
+      "previousCoverage": {
+        "uniqueRestaurants": 3448,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2715,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2382,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 93,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2074,
+          "중식": 143,
+          "일식": 146,
+          "기타": 587,
+          "양식": 219,
+          "분식": 38,
+          "디저트": 241
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3472,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2739,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2406,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2092,
+          "중식": 145,
+          "일식": 146,
+          "기타": 588,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 24,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-chungnam-slot71-taean-01",
+        "local-chungnam-slot71-taean-02",
+        "local-chungnam-slot71-taean-03",
+        "local-chungnam-slot71-taean-04",
+        "local-chungnam-slot71-taean-05",
+        "local-chungnam-slot71-taean-06",
+        "local-chungnam-slot71-taean-07",
+        "local-chungnam-slot71-taean-08",
+        "local-chungnam-slot71-taean-09",
+        "local-chungnam-slot71-taean-10",
+        "local-chungnam-slot71-taean-11",
+        "local-chungnam-slot71-taean-12",
+        "local-chungnam-slot71-yesan-13",
+        "local-chungnam-slot71-yesan-14",
+        "local-chungnam-slot71-yesan-15",
+        "local-chungnam-slot71-yesan-16",
+        "local-chungnam-slot71-yesan-17",
+        "local-chungnam-slot71-yesan-18",
+        "local-chungnam-slot71-yesan-19",
+        "local-chungnam-slot71-yesan-20",
+        "local-chungnam-slot71-yesan-21",
+        "local-chungnam-slot71-yesan-22",
+        "local-chungnam-slot71-yesan-23",
+        "local-chungnam-slot71-yesan-24"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+        "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-chungnam-slot71.json",
+      "scope": "태안·예산군 지자체 모범음식점 공개 목록 1쪽씩 12곳 총24곳 등록; 홍성군 공식 개별 근거, 양 군 다른 쪽 73곳, 좌표 미검증은 이월",
+      "notes": [
+        "공식 지자체 지정·선정 이력과 현재 영업 상태 별개 판단.",
+        "정규 블루리본 등급 미검증으로 지자체 모범음식점만 수록.",
+        "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
+        "회원 추천·기존 저장 ID·아지트 버전 유지."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-chungnam-slot70-geumsan19",
+    "id": "2026-11-08-chungnam-slot71-taean12-yesan12",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 70,
+    "slot": 71,
     "previousCoverage": {
-      "uniqueRestaurants": 3429,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2696,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2363,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 74,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2056,
-        "중식": 143,
-        "일식": 145,
-        "기타": 587,
-        "양식": 219,
-        "분식": 38,
-        "디저트": 241
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3448,
       "providerCounts": {
         "michelin": 237,
@@ -15546,45 +15634,87 @@
         "디저트": 241
       }
     },
-    "newRestaurantCount": 19,
-    "modificationCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3472,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2739,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2406,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2092,
+        "중식": 145,
+        "일식": 146,
+        "기타": 588,
+        "양식": 219,
+        "분식": 40,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 24,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungnam-slot70-geumsan-seongdeok",
-      "local-chungnam-slot70-geumsan-hwanggeum-ori",
-      "local-chungnam-slot70-geumsan-kkotnimi",
-      "local-chungnam-slot70-geumsan-hwangto-saram",
-      "local-chungnam-slot70-geumsan-samwon-garden",
-      "local-chungnam-slot70-geumsan-hansol-garden",
-      "local-chungnam-slot70-geumsan-insam-jangeo",
-      "local-chungnam-slot70-geumsan-golmok-chueo",
-      "local-chungnam-slot70-geumsan-insamgol-garden",
-      "local-chungnam-slot70-geumsan-sitang-ppuri",
-      "local-chungnam-slot70-geumsan-madalpi",
-      "local-chungnam-slot70-geumsan-boksu-hanwoo",
-      "local-chungnam-slot70-geumsan-bakgane",
-      "local-chungnam-slot70-geumsan-geumsan-song-eo",
-      "local-chungnam-slot70-geumsan-pungcheon-jangeo",
-      "local-chungnam-slot70-geumsan-meoksena",
-      "local-chungnam-slot70-geumsan-boriso-mokjang",
-      "local-chungnam-slot70-geumsan-bongseon-gui",
-      "local-chungnam-slot70-geumsan-namgyeong-garden"
+      "local-chungnam-slot71-taean-01",
+      "local-chungnam-slot71-taean-02",
+      "local-chungnam-slot71-taean-03",
+      "local-chungnam-slot71-taean-04",
+      "local-chungnam-slot71-taean-05",
+      "local-chungnam-slot71-taean-06",
+      "local-chungnam-slot71-taean-07",
+      "local-chungnam-slot71-taean-08",
+      "local-chungnam-slot71-taean-09",
+      "local-chungnam-slot71-taean-10",
+      "local-chungnam-slot71-taean-11",
+      "local-chungnam-slot71-taean-12",
+      "local-chungnam-slot71-yesan-13",
+      "local-chungnam-slot71-yesan-14",
+      "local-chungnam-slot71-yesan-15",
+      "local-chungnam-slot71-yesan-16",
+      "local-chungnam-slot71-yesan-17",
+      "local-chungnam-slot71-yesan-18",
+      "local-chungnam-slot71-yesan-19",
+      "local-chungnam-slot71-yesan-20",
+      "local-chungnam-slot71-yesan-21",
+      "local-chungnam-slot71-yesan-22",
+      "local-chungnam-slot71-yesan-23",
+      "local-chungnam-slot71-yesan-24"
     ],
-    "modifiedRestaurantIds": [
-      "local-chungnam-slot52-geumsan-kimjeongi-samgyetang"
-    ],
+    "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://www.geumsan.go.kr/tour/html/sub05/050103.html",
-      "https://www.geumsan.go.kr/tour/html/sub05/050103.html?GotoPage=2"
+      "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot70.json",
-    "scope": "금산군 공식 모범음식점 21곳 확인: 신규19, 기존 선정 이력 병합1, 머들령 현주소 불명 보류1; 부여·서천·청양 신규 대조 미완료",
+    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot71.json",
+    "scope": "태안·예산군 지자체 모범음식점 공개 목록 1쪽씩 12곳 총24곳 등록; 홍성군 공식 개별 근거, 양 군 다른 쪽 73곳, 좌표 미검증은 이월",
     "notes": [
-      "공식 지정·선정 이력과 현재 영업 여부 별도 판단.",
-      "연도 미확정은 null로 유지하며 확인일을 선정 연도로 대용하지 않음.",
-      "새 좌표 0, 목록 제외 0, 회차 지역 47곳 재확인 대기.",
-      "기존 ID·회원 추천·공식 블루리본 전체지도 보존."
+      "공식 지자체 지정·선정 이력과 현재 영업 상태 별개 판단.",
+      "정규 블루리본 등급 미검증으로 지자체 모범음식점만 수록.",
+      "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
+      "회원 추천·기존 저장 ID·아지트 버전 유지."
     ]
   },
   "latestMapCoverageAudit": {
@@ -24621,5 +24751,44 @@
     "operatingStatusConfirmed": 0,
     "blueRibbonGradeVerifiedNew": 0,
     "notes": "금산군 공식 모범음식점 21곳: 신규19, 기존1 가이드 이력 병합, 머들령 주소 보류. 다른 3개군의 추가 공식 명단·영업상태는 미완료. 좌표는 추정하지 않음."
+  },
+  "chungnamSlot71": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 71,
+    "scheduledAtKST": "2026-11-08T17:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-chungnam-slot71.json",
+    "publishers": [
+      "태안군 오감관광",
+      "예산군 문화관광"
+    ],
+    "sourceUrls": [
+      "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+    ],
+    "listedAtOfficialSources": {
+      "태안군": 57,
+      "예산군": 40
+    },
+    "addedCount": 24,
+    "modifiedCount": 0,
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "pendingLocations": 26,
+    "pendingLocationScope": "현재 등록 1/71 대상군(홍성·예산·태안) 26곳: 24신규 및 기존 예산 2건; 전국 합계 아님.",
+    "regionAdded": {
+      "홍성군": 0,
+      "예산군": 12,
+      "태안군": 12
+    },
+    "notYetAddedOfficialListings": {
+      "홍성군": "공식 사업과 정확 주소 확인 대기",
+      "예산군": "명단 2~4쪽 28건 비교/위치/중복 재확인 필요",
+      "태안군": "명단 2~5쪽 45건 비교/위치/중복 재확인 필요"
+    },
+    "completeRegionalCollection": false,
+    "operatingStatusConfirmed": 0,
+    "blueRibbonGradeVerifiedNew": 0,
+    "notes": "공식 모범음식점 명단 첫 쪽 12곳씩 확인하여 24곳 추가. 개별 지정·발행연도와 출처 확인일 구분. 기존 예산 소복갈비/공식 소복식당 동일 주소 중복 가능성 보류. 업소 정확 수치좌표와 현재 영업여부 미확인."
   }
 }

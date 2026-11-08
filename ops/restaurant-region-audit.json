@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 70,
-    "scheduledAt": "2026-11-08T16:00:00+09:00",
+    "slot": 71,
+    "scheduledAt": "2026-11-08T17:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약 시각 불명: 실행 시작 2026-11-08 16:56 KST을 16:00 정각으로 내림. h=65,n=69,slot70,cycle1."
+    "source": "예약된 17:00 KST 시각으로 회차 산출: h=66,n=70,slot71,cycle1; 실행 중 실제 확인."
   },
   "entries": [
     {
@@ -65323,6 +65323,631 @@
         "충청남도 태안군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 71,
+      "scheduledAtKST": "2026-11-08T17:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_taean12_yesan12_added_other_list_pages_carried",
+      "assignedRegions": [
+        "충청남도 홍성군",
+        "충청남도 예산군",
+        "충청남도 태안군"
+      ],
+      "regionAudit": [
+        {
+          "region": "충청남도 홍성군",
+          "listedAfter": 0,
+          "newCount": 0,
+          "actuallyChecked": [
+            "기본 데이터·충남 광역 공식 수록 내역과 지역별 영업·명단 검색을 확인",
+            "홍성군 공식 개별 선정근거·현재 주소를 확인할 수 없어 신규 등록 보류"
+          ],
+          "remainingAreas": [
+            "홍성군 공식 군청/관광관할 명단 확보",
+            "식당별 상호·현주소·현재 영업·위치 근거 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 예산군",
+          "listedAfter": 18,
+          "newCount": 12,
+          "actuallyChecked": [
+            "군 공식 모범음식점 명단 1/4쪽 상호·주소·대표메뉴 12건 확인",
+            "기존 6곳과 중복·좌표 누락 선점검"
+          ],
+          "remainingAreas": [
+            "공식 명단 2~4쪽 나머지 28건 명단 및 중복/영업 확인",
+            "소복식당과 기존 소복갈비 동일주소: 동일 업소 여부 미검증",
+            "기존 포함 좌표 미등록 14곳 일치 숫자 위치 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "충청남도 태안군",
+          "listedAfter": 12,
+          "newCount": 12,
+          "actuallyChecked": [
+            "군 공식 모범음식점 명단 1/5쪽 상호·주소·대표메뉴 12건 확인",
+            "신규 12곳 숫자 좌표는 개별 독립 근거 미확정"
+          ],
+          "remainingAreas": [
+            "공식 명단 2~5쪽 나머지 45건 이름/지점/주소 대조",
+            "같은 건물의 다른 업소·이전/영업 여부 구분",
+            "신규 12곳 숫자좌표 확인"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "태안군 오감관광 모범음식점 57곳 공개 목록 중 1쪽 12건 확인",
+        "예산군 문화관광 모범음식점 40곳 공개 목록 중 1쪽 12건 확인",
+        "홍성군 공식 명단/주소 근거 추가 검색했으나 신규 확정 유보",
+        "기존 예산군 6곳과 중복·위치 현황 대조. 미쉐린/블루리본 직접 선정 또는 현재 영업 별도 미확인"
+      ],
+      "additions": 24,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 26,
+      "locationPendingScope": "대상 3개군 현재 노출 식당에서 숫자 좌표 미등록 26곳(신규 24+기존 2), 전국 누적 아님",
+      "addedRestaurantIds": [
+        "local-chungnam-slot71-taean-01",
+        "local-chungnam-slot71-taean-02",
+        "local-chungnam-slot71-taean-03",
+        "local-chungnam-slot71-taean-04",
+        "local-chungnam-slot71-taean-05",
+        "local-chungnam-slot71-taean-06",
+        "local-chungnam-slot71-taean-07",
+        "local-chungnam-slot71-taean-08",
+        "local-chungnam-slot71-taean-09",
+        "local-chungnam-slot71-taean-10",
+        "local-chungnam-slot71-taean-11",
+        "local-chungnam-slot71-taean-12",
+        "local-chungnam-slot71-yesan-13",
+        "local-chungnam-slot71-yesan-14",
+        "local-chungnam-slot71-yesan-15",
+        "local-chungnam-slot71-yesan-16",
+        "local-chungnam-slot71-yesan-17",
+        "local-chungnam-slot71-yesan-18",
+        "local-chungnam-slot71-yesan-19",
+        "local-chungnam-slot71-yesan-20",
+        "local-chungnam-slot71-yesan-21",
+        "local-chungnam-slot71-yesan-22",
+        "local-chungnam-slot71-yesan-23",
+        "local-chungnam-slot71-yesan-24"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+        "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=2",
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=3",
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=4",
+        "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=5",
+        "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=2",
+        "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=3",
+        "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=4"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-chungnam-slot52-yesan-dongheung",
+          "name": "동흥대반점",
+          "currentAddress": "충청남도 예산군 예산읍 예산로 220-1",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "동흥대반점 예산군",
+            "동흥대반점 충청남도 예산군 예산읍 예산로 220-1",
+            "충남 예산군 동흥대반점"
+          ],
+          "evidenceUrls": [
+            "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=1089"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "blue-chungnam-joint-삽교커피클래식",
+          "name": "삽교커피클래식",
+          "currentAddress": "충청남도 예산군 삽교읍 두리3길 48-10",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "삽교커피클래식 예산군",
+            "삽교커피클래식 충청남도 예산군 삽교읍 두리3길 48-10",
+            "충남 예산군 삽교커피클래식"
+          ],
+          "evidenceUrls": [
+            "https://www.monthler.kr/programs/3632"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-01",
+          "name": "815커피",
+          "currentAddress": "충청남도 태안군 근흥면 근흥로 815-2 2층",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "815커피 태안군",
+            "815커피 충청남도 태안군 근흥면 근흥로 815-2 2층",
+            "충남 태안군 815커피"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-02",
+          "name": "BHC치킨피자",
+          "currentAddress": "충청남도 태안군 태안읍 동문2길 37",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "BHC치킨피자 태안군",
+            "BHC치킨피자 충청남도 태안군 태안읍 동문2길 37",
+            "충남 태안군 BHC치킨피자"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-03",
+          "name": "가보",
+          "currentAddress": "충청남도 태안군 태안읍 군청8길 14-1",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "가보 태안군",
+            "가보 충청남도 태안군 태안읍 군청8길 14-1",
+            "충남 태안군 가보"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-04",
+          "name": "갈매기횟집",
+          "currentAddress": "충청남도 태안군 안면읍 백사장1길 129-1",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "갈매기횟집 태안군",
+            "갈매기횟집 충청남도 태안군 안면읍 백사장1길 129-1",
+            "충남 태안군 갈매기횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-05",
+          "name": "강릉옻닭",
+          "currentAddress": "충청남도 태안군 태안읍 군청13길 21",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "강릉옻닭 태안군",
+            "강릉옻닭 충청남도 태안군 태안읍 군청13길 21",
+            "충남 태안군 강릉옻닭"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-06",
+          "name": "국일대반점",
+          "currentAddress": "충청남도 태안군 태안읍 서문5길 19",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "국일대반점 태안군",
+            "국일대반점 충청남도 태안군 태안읍 서문5길 19",
+            "충남 태안군 국일대반점"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-07",
+          "name": "김밥천국",
+          "currentAddress": "충청남도 태안군 태안읍 환동로 81",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "김밥천국 태안군",
+            "김밥천국 충청남도 태안군 태안읍 환동로 81",
+            "충남 태안군 김밥천국"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-08",
+          "name": "남면인천식당",
+          "currentAddress": "충청남도 태안군 태안읍 동문5길 12",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "남면인천식당 태안군",
+            "남면인천식당 충청남도 태안군 태안읍 동문5길 12",
+            "충남 태안군 남면인천식당"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-09",
+          "name": "남문정",
+          "currentAddress": "충청남도 태안군 태안읍 군청4길 3",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "남문정 태안군",
+            "남문정 충청남도 태안군 태안읍 군청4길 3",
+            "충남 태안군 남문정"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-10",
+          "name": "다미횟집",
+          "currentAddress": "충청남도 태안군 안면읍 방포항길 115",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "다미횟집 태안군",
+            "다미횟집 충청남도 태안군 안면읍 방포항길 115",
+            "충남 태안군 다미횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-11",
+          "name": "다복정",
+          "currentAddress": "충청남도 태안군 태안읍 독샘로 27-6",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "다복정 태안군",
+            "다복정 충청남도 태안군 태안읍 독샘로 27-6",
+            "충남 태안군 다복정"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-taean-12",
+          "name": "담채",
+          "currentAddress": "충청남도 태안군 태안읍 동문6길 7",
+          "region": "충청남도 태안군",
+          "searchAliases": [
+            "담채 태안군",
+            "담채 충청남도 태안군 태안읍 동문6길 7",
+            "충남 태안군 담채"
+          ],
+          "evidenceUrls": [
+            "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-13",
+          "name": "태백산가든",
+          "currentAddress": "충청남도 예산군 대술면 충령사로 99",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "태백산가든 예산군",
+            "태백산가든 충청남도 예산군 대술면 충령사로 99",
+            "충남 예산군 태백산가든"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-14",
+          "name": "예산(대전방향)휴게소",
+          "currentAddress": "충청남도 예산군 신양면 당진영덕고속도로 34",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "예산(대전방향)휴게소 예산군",
+            "예산(대전방향)휴게소 충청남도 예산군 신양면 당진영덕고속도로 34",
+            "충남 예산군 예산(대전방향)휴게소"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-15",
+          "name": "부부한우촌식당",
+          "currentAddress": "충청남도 예산군 광시면 예당로 170",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "부부한우촌식당 예산군",
+            "부부한우촌식당 충청남도 예산군 광시면 예당로 170",
+            "충남 예산군 부부한우촌식당"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-16",
+          "name": "박속황태칼국수",
+          "currentAddress": "충청남도 예산군 응봉면 증곡리 357-3",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "박속황태칼국수 예산군",
+            "박속황태칼국수 충청남도 예산군 응봉면 증곡리 357-3",
+            "충남 예산군 박속황태칼국수"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-17",
+          "name": "바촉생선굽는집",
+          "currentAddress": "충청남도 예산군 신양면 신양리 373-1",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "바촉생선굽는집 예산군",
+            "바촉생선굽는집 충청남도 예산군 신양면 신양리 373-1",
+            "충남 예산군 바촉생선굽는집"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-18",
+          "name": "강경불고기",
+          "currentAddress": "충청남도 예산군 예산읍 금오대로 33-39",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "강경불고기 예산군",
+            "강경불고기 충청남도 예산군 예산읍 금오대로 33-39",
+            "충남 예산군 강경불고기"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-19",
+          "name": "한일식당",
+          "currentAddress": "충청남도 예산군 삽교읍 삽교역로 58",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "한일식당 예산군",
+            "한일식당 충청남도 예산군 삽교읍 삽교역로 58",
+            "충남 예산군 한일식당"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-20",
+          "name": "한우명품관",
+          "currentAddress": "충청남도 예산군 예산읍 산성공원2길 19",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "한우명품관 예산군",
+            "한우명품관 충청남도 예산군 예산읍 산성공원2길 19",
+            "충남 예산군 한우명품관"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-21",
+          "name": "한양수미옥 청주본가 내포점",
+          "currentAddress": "충청남도 예산군 삽교읍 신촌길 6",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "한양수미옥 청주본가 내포점 예산군",
+            "한양수미옥 청주본가 내포점 충청남도 예산군 삽교읍 신촌길 6",
+            "충남 예산군 한양수미옥 청주본가 내포점"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-22",
+          "name": "충남왕족발",
+          "currentAddress": "충청남도 예산군 예산읍 사직로 25",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "충남왕족발 예산군",
+            "충남왕족발 충청남도 예산군 예산읍 사직로 25",
+            "충남 예산군 충남왕족발"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-23",
+          "name": "채선당예산점",
+          "currentAddress": "충청남도 예산군 예산읍 금오대로 35-9",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "채선당예산점 예산군",
+            "채선당예산점 충청남도 예산군 예산읍 금오대로 35-9",
+            "충남 예산군 채선당예산점"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        },
+        {
+          "restaurantId": "local-chungnam-slot71-yesan-24",
+          "name": "장혁민부대찌개",
+          "currentAddress": "충청남도 예산군 삽교읍 예학로 81",
+          "region": "충청남도 예산군",
+          "searchAliases": [
+            "장혁민부대찌개 예산군",
+            "장혁민부대찌개 충청남도 예산군 삽교읍 예학로 81",
+            "충남 예산군 장혁민부대찌개"
+          ],
+          "evidenceUrls": [
+            "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 71,
+          "checkResult": "공식 선정/공동선정 또는 지자체 명단과 주소를 확인했으나 업소·지점·현주소를 직접 가리키는 공개 숫자 좌표를 확보하지 못함. 현재 영업 여부도 검증하지 않음.",
+          "reason": "상호·현주소 동일 숫자 위치 근거 미확보; 추정 좌표 사용 금지. 좌표 누락을 폐업/선정 취소 근거로 사용하지 않음."
+        }
+      ],
+      "unresolved": [
+        "홍성군 공식 식당 선정·현재 주소 검증 자료 재확인 필요",
+        "예산군 소복식당/기존 블루리본 소복갈비 동일 주소의 실제 사업체·상호 대응 확인 전 신규·변경 유보",
+        "태안군 나머지 45곳·예산군 나머지 28곳 공식 명단 대조 미완료",
+        "모든 신규 식당 현재 영업여부와 숫자 좌표 미검증; 추정 또는 폐업 단정 금지"
+      ],
+      "carryOver": [
+        "1순환67회차 누락 기록 이전 보존",
+        "전북53회차 미완료 조사 이전 보존",
+        "현재 3개군 공식 명단 남은 73건은 다음 동일 권역 배정에서 우선 비교"
+      ],
+      "nextSlot": 72,
+      "nextRegions": [
+        "전북특별자치도 완주군",
+        "전북특별자치도 진안군",
+        "전북특별자치도 무주군",
+        "전북특별자치도 장수군"
+      ],
+      "notExhaustive": true
     }
   ],
   "notes": [
@@ -65355,6 +65980,7 @@
     "2026-11-08 12시 순환1/66 강원 정선·철원·화천·양구 공식 목록 부분 확인 23곳 신규, 수정0, 정확 좌표 보강1(철원막국수), 비노출0, 재확인 대기22. 이전 이월 및 회원추천 불변.",
     "2026-11-08 14시 순환1/68 충북 보은·옥천·영동·증평: 옥천군 지정 명단 새25·기존5 이력 병합, 좌표1(한알천), 비노출0, 재확인 대기41(기본DB 기존17+신규24). 67회차 기록 부재 및 전북 미완료 이월.",
     "2026-11-08 14시 순환1/68 이어하기: 영동군 모범음식점 명단에서 새5곳(모범업소 수록), 좌표3곳, 제외0, 해당 지역 대기43. 기존 옥천25·기존 선정이력5·한알천 좌표1 및 누락 67회차 기록 보존.",
-    "2026-11-08 16시 순환1/70: 금산군 모범음식점 신규19·기존1 이력병합, 좌표0·목록제외0·4개군 위치 재확인47. 머들령 주소 이월. 홍성·예산·태안 다음."
+    "2026-11-08 16시 순환1/70: 금산군 모범음식점 신규19·기존1 이력병합, 좌표0·목록제외0·4개군 위치 재확인47. 머들령 주소 이월. 홍성·예산·태안 다음.",
+    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조."
   ]
 }

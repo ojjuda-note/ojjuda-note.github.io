@@ -1,0 +1,699 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 71,
+  "scheduledAtKST": "2026-11-08T17:00:00+09:00",
+  "sourceName": "충남 태안·예산군 문화관광 공식 모범음식점",
+  "sourceUrls": [
+    "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+    "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+  ],
+  "completeRegionalCollection": false,
+  "listedCountsAtSource": {
+    "태안군": 57,
+    "예산군": 40
+  },
+  "addedCount": 24,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmed": 0,
+  "notes": [
+    "태안·예산 각 모범음식점 명단 1쪽의 12곳씩 상호·지점·주소를 확인. 홍성군은 공신력 있는 개별 선정·주소 근거를 확보하지 못해 추가하지 않음.",
+    "각 군의 나머지 명단은 후속 회차 대조. 예산 소복식당/기존 소복갈비 동일주소 등 중복 가능성 보류.",
+    "선정연도는 출처 확인일과 구분하며, 현재 영업 여부는 직접 검증하지 못했음.",
+    "숫자 좌표는 정확한 업소·현주소를 가리키는 공개 근거가 없어 모두 null. 추정 위치 사용 안 함."
+  ],
+  "restaurants": [
+    {
+      "id": "local-chungnam-slot71-taean-01",
+      "name": "815커피",
+      "category": "디저트",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 근흥면 근흥로 815-2 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "아메리카노"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-02",
+      "name": "BHC치킨피자",
+      "category": "기타",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 동문2길 37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "치킨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-03",
+      "name": "가보",
+      "category": "중식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 군청8길 14-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "자장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-04",
+      "name": "갈매기횟집",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 안면읍 백사장1길 129-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모듬회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-05",
+      "name": "강릉옻닭",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 군청13길 21",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "옻닭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-06",
+      "name": "국일대반점",
+      "category": "중식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 서문5길 19",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "중국요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-07",
+      "name": "김밥천국",
+      "category": "분식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 환동로 81",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "김밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-08",
+      "name": "남면인천식당",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 동문5길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "복매운탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-09",
+      "name": "남문정",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 군청4길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-10",
+      "name": "다미횟집",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 안면읍 방포항길 115",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우럭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-11",
+      "name": "다복정",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 독샘로 27-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우럭젓국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-taean-12",
+      "name": "담채",
+      "category": "한식",
+      "region": "충남",
+      "district": "태안군",
+      "address": "충청남도 태안군 태안읍 동문6길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태안군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+          "sourceName": "태안군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-13",
+      "name": "태백산가든",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 대술면 충령사로 99",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생등심구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-14",
+      "name": "예산(대전방향)휴게소",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 신양면 당진영덕고속도로 34",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "김치찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-15",
+      "name": "부부한우촌식당",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 광시면 예당로 170",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우모듬"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-16",
+      "name": "박속황태칼국수",
+      "category": "분식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 응봉면 증곡리 357-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "메밀국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-17",
+      "name": "바촉생선굽는집",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 신양면 신양리 373-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-18",
+      "name": "강경불고기",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 예산읍 금오대로 33-39",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-19",
+      "name": "한일식당",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 삽교읍 삽교역로 58",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-20",
+      "name": "한우명품관",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 예산읍 산성공원2길 19",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우생고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-21",
+      "name": "한양수미옥 청주본가 내포점",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 삽교읍 신촌길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-22",
+      "name": "충남왕족발",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 예산읍 사직로 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지족발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-23",
+      "name": "채선당예산점",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 예산읍 금오대로 35-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "샤브샤브"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungnam-slot71-yesan-24",
+      "name": "장혁민부대찌개",
+      "category": "한식",
+      "region": "충남",
+      "district": "예산군",
+      "address": "충청남도 예산군 삽교읍 예학로 81",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "부대찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예산군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+          "sourceName": "예산군 문화관광 · 공식 모범음식점 명단",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 공개 목록 수록 확인. 지정연도·현재 영업상태·미쉐린/블루리본 등급 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}
