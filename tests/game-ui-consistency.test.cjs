@@ -6,6 +6,11 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const revision = JSON.parse(read('game-release.json')).revision;
+// A game release has its own revision; unchanged shared CSS/JS keep their existing
+// cache keys. AGENTS.md requires refreshing assets modified by the release,
+// not all unrelated game entrances.
+const sharedUiRevision = (read('world.html').match(/\/shared\/games\/game-results\.css\?v=([\w-]+)/) || [])[1];
+assert.ok(/^\d{8}-[a-z0-9-]+$/.test(sharedUiRevision), 'shared UI cache revision is valid');
 const entry = read('shared/games/game-entry.css');
 const multiplayer = read('shared/games/multiplayer-entry.css');
 const results = read('shared/games/game-results.css');
@@ -54,7 +59,7 @@ test('game entry, settings and result use the same Ojjuda color and focus vocabu
   }
 });
 
-test('the arcade and every standalone game load one current shared game UI revision', () => {
+test('shared UI caches stay consistent while the game release revision updates independently', () => {
   const games = fs.readdirSync(path.join(root, 'games'), { withFileTypes: true });
   const pages = ['world.html'];
   for (const game of games) {
@@ -69,18 +74,18 @@ test('the arcade and every standalone game load one current shared game UI revis
     const html = read(page);
     for (const match of html.matchAll(/\/shared\/games\/game-(entry|results|controls)\.css\?v=([\w-]+)/g)) {
       sharedReferences++;
-      assert.equal(match[2], revision, `${page}: outdated ${match[1]} CSS cache revision`);
+      assert.equal(match[2], sharedUiRevision, `${page}: inconsistent ${match[1]} CSS cache revision`);
     }
     for (const match of html.matchAll(/\/shared\/games\/multiplayer-entry\.css\?v=([\w-]+)/g)) {
       multiplayerReferences++;
-      assert.equal(match[1], revision, `${page}: outdated multiplayer entrance CSS revision`);
+      assert.equal(match[1], sharedUiRevision, `${page}: inconsistent multiplayer entrance CSS revision`);
     }
   }
   assert.ok(sharedReferences >= 25, 'the shared style covers many game entrances and outcomes');
   assert.ok(multiplayerReferences >= 8, 'each multiplayer game loads the unified entrance styles');
   assert.ok(world.includes(`/shared/games/world-game-assets.js?v=${revision}`));
-  assert.ok(world.includes(`/shared/games/game-results.js?v=${revision}`));
-  assert.ok(world.includes(`/shared/games/chacha-rush-portal.js?v=${revision}`));
+  assert.ok(world.includes(`/shared/games/game-results.js?v=${sharedUiRevision}`));
+  assert.ok(world.includes(`/shared/games/chacha-rush-portal.js?v=${sharedUiRevision}`));
   assert.ok(read('shared/games/world-game-assets.js').includes(`const revision='${revision}'`));
-  assert.ok(read('shared/games/world-game-assets.js').includes(`/shared/games/game-controls.css?v=${revision}`));
+  assert.ok(read('shared/games/world-game-assets.js').includes(`/shared/games/game-controls.css?v=${sharedUiRevision}`));
 });
