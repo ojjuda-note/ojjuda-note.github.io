@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 77,
-    "scheduledAt": "2026-11-08T23:00:00+09:00",
-    "checkedAtKST": "2026-11-08",
-    "source": "예약된 한국시간 2026-11-08 23:00, 앵커 대비 h=72, n=76, slot77, cycle1"
+    "slot": 78,
+    "scheduledAt": "2026-11-09T00:00:00+09:00",
+    "checkedAtKST": "2026-11-09",
+    "source": "예약 한국시각 2026-11-09 00:00을 기준으로 앵커 대비 h=73, n=77, slot78, cycle1"
   },
   "entries": [
     {
@@ -68418,6 +68418,982 @@
         "블루리본 정규 등급 확인이나 지도 위치 좌표 추정 없음.",
         "좌표 미확인만으로 삭제·비노출 하지 않고 회원 추천 글과 사진 보존."
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 78,
+      "scheduledAtKST": "2026-11-09T00:00:00+09:00",
+      "checkedAtKST": "2026-11-09",
+      "status": "partial_official_18_new_7_listing_enriched",
+      "assignedRegions": [
+        "전남광주통합특별시 장성군",
+        "전남광주통합특별시 완도군",
+        "전남광주통합특별시 진도군",
+        "전남광주통합특별시 신안군"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시 장성군",
+          "actuallyChecked": [
+            "2025 전남체육대회 장성군 모범음식점 28곳 중 첫 페이지 10곳",
+            "기존 호산식당 저장 ID/주소/이력 대조"
+          ],
+          "remainingAreas": [
+            "나머지 공식 명단 18곳 및 현재 지정/영업·좌표",
+            "그 밖의 장성군 등록업소 추가 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 완도군",
+          "actuallyChecked": [
+            "완도군 관광 공식 모범음식점 보리떡식당·신지 횟집·청실횟집 3개 개별 상세"
+          ],
+          "remainingAreas": [
+            "공식 모범음식점 전체 명단, 섬·읍면 누락",
+            "기존 업소 현재주소 및 수치좌표 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 진도군",
+          "actuallyChecked": [
+            "진도군 문화관광 모범음식점 22곳 중 첫 페이지 12곳",
+            "기존 3곳의 두 번째 페이지 수록과 2019 최종수정일 대조"
+          ],
+          "remainingAreas": [
+            "나머지 공식 명단 7곳(2쪽 신규 후보)",
+            "옥천회관/옥천횟집 상호 이력, 동일주소 이왕이면오리·이조숯불갈비 지점 구별",
+            "2026년 영업·재지정과 좌표 교차 검증"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 신안군",
+          "actuallyChecked": [
+            "기존 남도음식명가 저장 5건의 미등록 좌표 재점검 후보 추출",
+            "군청 공식 모범음식점 공개 목록 검색"
+          ],
+          "remainingAreas": [
+            "신안군 직접 발행 공식 지정 목록·관광/음식점 명단 확보",
+            "기존 5개점 공식 현주소/영업상태·정확한 좌표 대조"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "장성군 공식 2025 행사 모범음식점 1쪽",
+        "진도군 문화관광 모범음식점 공식 1~2쪽(2019 최종수정 표시)",
+        "완도군 문화관광 보리떡식당·신지 횟집·청실횟집 상세",
+        "신안군 공식 지정 목록 검색(결과 미확보; 선정 취소 아님)",
+        "기존 4군 원본 24건 위치 미등록 확인"
+      ],
+      "additions": 18,
+      "modifications": 7,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 42,
+      "locationPendingScope": "배정 4개 군의 기존 원본 24곳 + 이번 신규 18곳(lat/lng null); 전국 전체 미확인 건수가 아님.",
+      "addedRestaurantIds": [
+        "local-jeonnam-slot78-js-nakji",
+        "local-jeonnam-slot78-js-seongsan",
+        "local-jeonnam-slot78-js-hankook",
+        "local-jeonnam-slot78-js-daeseong",
+        "local-jeonnam-slot78-js-sodam",
+        "local-jeonnam-slot78-js-sammi",
+        "local-jeonnam-slot78-js-saeng-sutbul",
+        "local-jeonnam-slot78-js-sondalok",
+        "local-jeonnam-slot78-js-haeundae",
+        "local-jeonnam-slot78-jd-garden-dadam",
+        "local-jeonnam-slot78-jd-gaon-jeonbok",
+        "local-jeonnam-slot78-jd-myeonghui",
+        "local-jeonnam-slot78-jd-bak-galbi",
+        "local-jeonnam-slot78-jd-sodam-sharp",
+        "local-jeonnam-slot78-jd-yeon",
+        "local-jeonnam-slot78-jd-ire",
+        "local-jeonnam-slot78-w1-boritteok",
+        "local-jeonnam-slot78-w2-sinji-hoejip"
+      ],
+      "modifiedRestaurantIds": [
+        "local-namdo-599384",
+        "local-namdo-599389",
+        "local-namdo-599387",
+        "local-namdo-3681174",
+        "local-namdo-599386",
+        "local-namdo-608033",
+        "local-namdo-607492"
+      ],
+      "evidenceUrls": [
+        "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/",
+        "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1",
+        "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2",
+        "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195",
+        "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289",
+        "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=null&tCimTitle=%EC%B2%AD%EC%8B%A4%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000004422"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-namdo-599374",
+          "name": "가든 한국관",
+          "currentAddress": "전남 완도군 완도읍 군내3번길 24-6",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "가든 한국관 완도군",
+            "가든 한국관 전남 완도군 완도읍 군내3번길 24-6",
+            "전남광주통합특별시 완도군 가든 한국관"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599372",
+          "name": "단풍두부",
+          "currentAddress": "전라남도 장성군 북하면 백양로 1115-7",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "단풍두부 장성군",
+            "단풍두부 전라남도 장성군 북하면 백양로 1115-7",
+            "전남광주통합특별시 장성군 단풍두부"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599381",
+          "name": "대성회식당",
+          "currentAddress": "전라남도 완도군 완도읍 해변공원로 59",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "대성회식당 완도군",
+            "대성회식당 전라남도 완도군 완도읍 해변공원로 59",
+            "전남광주통합특별시 완도군 대성회식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599389",
+          "name": "묵은지",
+          "currentAddress": "전라남도 진도군 진도읍 남동1길 12-5",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "묵은지 진도군",
+            "묵은지 전라남도 진도군 진도읍 남동1길 12-5",
+            "전남광주통합특별시 진도군 묵은지"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599376",
+          "name": "불태산진원성한우전문점",
+          "currentAddress": "전라남도 장성군 진원면 고산로 17",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "불태산진원성한우전문점 장성군",
+            "불태산진원성한우전문점 전라남도 장성군 진원면 고산로 17",
+            "전남광주통합특별시 장성군 불태산진원성한우전문점"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599380",
+          "name": "산골짜기",
+          "currentAddress": "전라남도 장성군 황룡면 홍길동로 388-10",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "산골짜기 장성군",
+            "산골짜기 전라남도 장성군 황룡면 홍길동로 388-10",
+            "전남광주통합특별시 장성군 산골짜기"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-3681184",
+          "name": "소담소담 다복정",
+          "currentAddress": "전남 신안군 지도읍 해제지도로 792",
+          "region": "전남광주통합특별시 신안군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "소담소담 다복정 신안군",
+            "소담소담 다복정 전남 신안군 지도읍 해제지도로 792",
+            "전남광주통합특별시 신안군 소담소담 다복정"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-3660914",
+          "name": "송가네밥상",
+          "currentAddress": "전남 장성군 북하면 단풍로 1862",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "송가네밥상 장성군",
+            "송가네밥상 전남 장성군 북하면 단풍로 1862",
+            "전남광주통합특별시 장성군 송가네밥상"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217081",
+          "name": "수문풍천민물장어",
+          "currentAddress": "전남 신안군 압해읍 원신장길 10-2",
+          "region": "전남광주통합특별시 신안군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "수문풍천민물장어 신안군",
+            "수문풍천민물장어 전남 신안군 압해읍 원신장길 10-2",
+            "전남광주통합특별시 신안군 수문풍천민물장어"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599387",
+          "name": "신호등회관",
+          "currentAddress": "전남 진도군 진도읍 남동1길 66",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "신호등회관 진도군",
+            "신호등회관 전남 진도군 진도읍 남동1길 66",
+            "전남광주통합특별시 진도군 신호등회관"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217051",
+          "name": "완도맛집 모래뜰",
+          "currentAddress": "전남 완도군 신지면 명사십리길74",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "완도맛집 모래뜰 완도군",
+            "완도맛집 모래뜰 전남 완도군 신지면 명사십리길74",
+            "전남광주통합특별시 완도군 완도맛집 모래뜰"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599378",
+          "name": "완도회타운",
+          "currentAddress": "전라남도 완도군 완도읍 해변공원로 136",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "완도회타운 완도군",
+            "완도회타운 전라남도 완도군 완도읍 해변공원로 136",
+            "전남광주통합특별시 완도군 완도회타운"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217061",
+          "name": "우리곰탕",
+          "currentAddress": "전남 신안군 압해읍 압해로 850",
+          "region": "전남광주통합특별시 신안군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "우리곰탕 신안군",
+            "우리곰탕 전남 신안군 압해읍 압해로 850",
+            "전남광주통합특별시 신안군 우리곰탕"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-3681164",
+          "name": "이도삼계탕",
+          "currentAddress": "전남 완도군 완도읍 장보고대로 235",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "이도삼계탕 완도군",
+            "이도삼계탕 전남 완도군 완도읍 장보고대로 235",
+            "전남광주통합특별시 완도군 이도삼계탕"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-3681174",
+          "name": "진도아리랑회센터",
+          "currentAddress": "전남 진도군 진도읍 쌍정1길 8-6, 2층",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "진도아리랑회센터 진도군",
+            "진도아리랑회센터 전남 진도군 진도읍 쌍정1길 8-6, 2층",
+            "전남광주통합특별시 진도군 진도아리랑회센터"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599388",
+          "name": "천사신안아구찜",
+          "currentAddress": "전남 신안군 압해읍 무지개길 321",
+          "region": "전남광주통합특별시 신안군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "천사신안아구찜 신안군",
+            "천사신안아구찜 전남 신안군 압해읍 무지개길 321",
+            "전남광주통합특별시 신안군 천사신안아구찜"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599386",
+          "name": "한우곰탕",
+          "currentAddress": "전남 진도군 진도읍 남동1길 32",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "한우곰탕 진도군",
+            "한우곰탕 전남 진도군 진도읍 남동1길 32",
+            "전남광주통합특별시 진도군 한우곰탕"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599384",
+          "name": "호산식당",
+          "currentAddress": "전라남도 장성군 장성읍 미락단지길 32",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "호산식당 장성군",
+            "호산식당 전라남도 장성군 장성읍 미락단지길 32",
+            "전남광주통합특별시 장성군 호산식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-608033",
+          "name": "회타운",
+          "currentAddress": "전남 진도군 진도읍 남동1길 57-8, 2층",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=2"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "회타운 진도군",
+            "회타운 전남 진도군 진도읍 남동1길 57-8, 2층",
+            "전남광주통합특별시 진도군 회타운"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607495",
+          "name": "문화식당",
+          "currentAddress": "전라남도 완도군 완도읍 청해진남로 24번길 32",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "문화식당 완도군",
+            "문화식당 전라남도 완도군 완도읍 청해진남로 24번길 32",
+            "전남광주통합특별시 완도군 문화식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599390",
+          "name": "보광식당",
+          "currentAddress": "전라남도 신안군 도초면 불섬길 85-12",
+          "region": "전남광주통합특별시 신안군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "보광식당 신안군",
+            "보광식당 전라남도 신안군 도초면 불섬길 85-12",
+            "전남광주통합특별시 신안군 보광식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607476",
+          "name": "옥천회관",
+          "currentAddress": "전라남도 진도군 진도읍 성동길 5",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "옥천회관 진도군",
+            "옥천회관 전라남도 진도군 진도읍 성동길 5",
+            "전남광주통합특별시 진도군 옥천회관"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607498",
+          "name": "용강식당",
+          "currentAddress": "전라남도 장성군 장성읍 단풍로 510",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "기존 공식 선정 기록, 이번 회차 현 위치 검증 미완료",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkResult": "기존 선정 자료의 상호·주소·좌표 누락을 확인. 이번 회차 현 주소의 독립 지도 교차 검증 미완료.",
+          "searchAliases": [
+            "용강식당 장성군",
+            "용강식당 전라남도 장성군 장성읍 단풍로 510",
+            "전남광주통합특별시 장성군 용강식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607492",
+          "name": "청실횟집",
+          "currentAddress": "전라남도 완도군 완도읍 해변공원로 51-1",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "기존 남도음식명가/공식 군 관광 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1",
+            "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=null&tCimTitle=%EC%B2%AD%EC%8B%A4%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000004422"
+          ],
+          "checkResult": "기존 상호·주소와 지자체 공식 관광/행사 목록 일치. 신뢰 가능한 수치좌표 미확인.",
+          "searchAliases": [
+            "청실횟집 완도군",
+            "청실횟집 전라남도 완도군 완도읍 해변공원로 51-1",
+            "전남광주통합특별시 완도군 청실횟집"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-nakji",
+          "name": "낙지한마당",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 단풍로 261",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "낙지한마당 장성군",
+            "낙지한마당 전남광주통합특별시 장성군 장성읍 단풍로 261",
+            "전남광주통합특별시 장성군 낙지한마당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-seongsan",
+          "name": "성산가든",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 성산2길 9-8",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "성산가든 장성군",
+            "성산가든 전남광주통합특별시 장성군 장성읍 성산2길 9-8",
+            "전남광주통합특별시 장성군 성산가든"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-hankook",
+          "name": "한국의집",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 수산2길 12-5",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "한국의집 장성군",
+            "한국의집 전남광주통합특별시 장성군 장성읍 수산2길 12-5",
+            "전남광주통합특별시 장성군 한국의집"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-daeseong",
+          "name": "대성정육회관",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 역전로 186",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "대성정육회관 장성군",
+            "대성정육회관 전남광주통합특별시 장성군 장성읍 역전로 186",
+            "전남광주통합특별시 장성군 대성정육회관"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-sodam",
+          "name": "소담",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 전고개로 250",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "소담 장성군",
+            "소담 전남광주통합특별시 장성군 장성읍 전고개로 250",
+            "전남광주통합특별시 장성군 소담"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-sammi",
+          "name": "삼미회관",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 청운3길 4-1",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "삼미회관 장성군",
+            "삼미회관 전남광주통합특별시 장성군 장성읍 청운3길 4-1",
+            "전남광주통합특별시 장성군 삼미회관"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-saeng-sutbul",
+          "name": "생숯불갈비",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 청운길 10",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "생숯불갈비 장성군",
+            "생숯불갈비 전남광주통합특별시 장성군 장성읍 청운길 10",
+            "전남광주통합특별시 장성군 생숯불갈비"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-sondalok",
+          "name": "손달옥한방족발",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 청운길 24",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "손달옥한방족발 장성군",
+            "손달옥한방족발 전남광주통합특별시 장성군 장성읍 청운길 24",
+            "전남광주통합특별시 장성군 손달옥한방족발"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-js-haeundae",
+          "name": "해운대",
+          "currentAddress": "전남광주통합특별시 장성군 장성읍 청운길 5",
+          "region": "전남광주통합특별시 장성군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jangseong.go.kr/home/jssports/athletic/tour/food/participating/"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "해운대 장성군",
+            "해운대 전남광주통합특별시 장성군 장성읍 청운길 5",
+            "전남광주통합특별시 장성군 해운대"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-garden-dadam",
+          "name": "가든다담",
+          "currentAddress": "전남광주통합특별시 진도군 진도읍 신흥길 173-29",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "가든다담 진도군",
+            "가든다담 전남광주통합특별시 진도군 진도읍 신흥길 173-29",
+            "전남광주통합특별시 진도군 가든다담"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-gaon-jeonbok",
+          "name": "가온전복",
+          "currentAddress": "전남광주통합특별시 진도군 의신면 초평길 70-1",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "가온전복 진도군",
+            "가온전복 전남광주통합특별시 진도군 의신면 초평길 70-1",
+            "전남광주통합특별시 진도군 가온전복"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-myeonghui",
+          "name": "명희식당",
+          "currentAddress": "전남광주통합특별시 진도군 진도읍 동외3길 25",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "명희식당 진도군",
+            "명희식당 전남광주통합특별시 진도군 진도읍 동외3길 25",
+            "전남광주통합특별시 진도군 명희식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-bak-galbi",
+          "name": "박가네왕갈비",
+          "currentAddress": "전남광주통합특별시 진도군 진도읍 남산로 133",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "박가네왕갈비 진도군",
+            "박가네왕갈비 전남광주통합특별시 진도군 진도읍 남산로 133",
+            "전남광주통합특별시 진도군 박가네왕갈비"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-sodam-sharp",
+          "name": "소담#",
+          "currentAddress": "전남광주통합특별시 진도군 의신면 초평길 5",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "소담# 진도군",
+            "소담# 전남광주통합특별시 진도군 의신면 초평길 5",
+            "전남광주통합특별시 진도군 소담#"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-yeon",
+          "name": "연",
+          "currentAddress": "전남광주통합특별시 진도군 진도읍 남동3길 4-15",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "연 진도군",
+            "연 전남광주통합특별시 진도군 진도읍 남동3길 4-15",
+            "전남광주통합특별시 진도군 연"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-jd-ire",
+          "name": "이레식당",
+          "currentAddress": "전남광주통합특별시 진도군 진도읍 철마길 4-1",
+          "region": "전남광주통합특별시 진도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.jindo.go.kr/tour/tour/info/food/001.cs?category=001&pageIndex=1"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "이레식당 진도군",
+            "이레식당 전남광주통합특별시 진도군 진도읍 철마길 4-1",
+            "전남광주통합특별시 진도군 이레식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-w1-boritteok",
+          "name": "보리떡식당",
+          "currentAddress": "전남광주통합특별시 완도군 보길면 청별길 18-1",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdMenuChoice=tCfdArea&tCimTitle=%EB%B3%B4%EB%A6%AC%EB%96%A1%EC%8B%9D%EB%8B%B9&tCimUniqId=TCIM_000000000007195"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "보리떡식당 완도군",
+            "보리떡식당 전남광주통합특별시 완도군 보길면 청별길 18-1",
+            "전남광주통합특별시 완도군 보리떡식당"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot78-w2-sinji-hoejip",
+          "name": "신지 횟집",
+          "currentAddress": "전남광주통합특별시 완도군 완도읍 해변공원로 117",
+          "region": "전남광주통합특별시 완도군",
+          "sourceType": "이번 회차 지자체 공식 모범음식점 수록",
+          "evidenceUrls": [
+            "https://www.wando.go.kr/tour/sub.cs?m=163&tCfdFoodChoice=JAP&tCimTitle=%EC%8B%A0%EC%A7%80+%ED%9A%9F%EC%A7%91&tCimUniqId=TCIM_000000000007289"
+          ],
+          "checkResult": "공식 상호·해당 군·도로명주소 대조. 수치좌표와 현 영업상태는 검증되지 않음.",
+          "searchAliases": [
+            "신지 횟집 완도군",
+            "신지 횟집 전남광주통합특별시 완도군 완도읍 해변공원로 117",
+            "전남광주통합특별시 완도군 신지 횟집"
+          ],
+          "checkedAt": "2026-11-09",
+          "recheckCycle": 2,
+          "recheckSlot": 78,
+          "reason": "현 업소명·지점·주소와 일치하는 독립 공개 수치좌표 미확인"
+        }
+      ],
+      "followUpCandidates": [
+        "장성 행사 명단 남은 18곳 및 완도 모범음식점 전체 명단",
+        "진도 2쪽 잔여 7곳과 상호/공유 주소 충돌 검증",
+        "신안군 공식 명단 확보 및 5개 기존 위치 점검",
+        "함평군 공식 5곳 미반영 이슈 #762의 1/77 이어하기",
+        "운영기록 누락 1/72·1/73·1/76·1/67은 다음 순환 보충"
+      ],
+      "notes": [
+        "2025 장성 행사목록과 2019 수정 진도 관광목록은 2026 지정 명단으로 간주하지 않음.",
+        "공식 명단의 수록과 현재 영업 여부는 분리. 근거 없는 폐업·주소·좌표·등급 변경 없음.",
+        "회원 추천 및 개인 위치 미수집·미변경. 84회차 순환 유지."
+      ]
     }
   ],
   "notes": [
@@ -68455,6 +69431,7 @@
     "2026-11-08 20시 1/74: 곡성10 추가·기존3 별도 지자체 가이드 병합. 14곳 수치좌표 재확인 대기, 담양·구례와 1/67·1/72·1/73 이월.",
     "2026-11-08 21시 1순환75회차: 고흥1·보성15·화순18 신규, 기존7곳 모범음식점 병합, 위치대기53, 주소충돌3 확인필요, 목록제외0. 다음 장흥·강진·해남군.",
     "2026-11-08 순환1/75 이어하기: 화순 기존3곳 상호·전화·주소 공식 대조 및 보완자료 정정, 회차 누적 새34·수정10·좌표0·비노출0·재확인53.",
-    "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존."
+    "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존.",
+    "2026-11-09 00시 1순환78회차 장성·완도·진도·신안: 지자체 관광/행사 공식 수록 신규18·기존7 이력보강, 좌표0·비노출0·위치대기42. 장성 나머지, 진도 잔여, 완도 전역, 신안 공식명단 미확보 이월."
   ]
 }
