@@ -29,11 +29,24 @@ assert.deepEqual(seoulSupplement.restaurants.map(item => item.name), ['원대구
 assert.ok(seoulSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.guides.every(guide => guide.provider === 'blue-ribbon' && guide.label.includes('이력') && guide.year === null && ['selection', 'listing'].includes(guide.yearType) && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'verified histories preserve official source URLs, unknown grades/years and unverified coordinates');
 const northeastTourism = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_restaurant_listing'));
 const northeastOraegage = northeastSupplement.restaurants.filter(item => item.guides.some(guide => guide.status === 'official_selection_list' && guide.year === 2026));
-assert.equal(northeastSupplement.restaurants.length, 20, 'the northeast supplements retain 14 official tourism introductions and 6 added municipal selections');
-assert.equal(new Set(northeastSupplement.restaurants.map(item => item.id)).size, 20, 'the northeast entries have stable unique IDs');
+assert.ok(northeastSupplement.restaurants.length >= 21, 'the northeast supplements preserve the initial 20 restaurants plus later source-backed additions');
+assert.equal(new Set(northeastSupplement.restaurants.map(item => item.id)).size, northeastSupplement.restaurants.length, 'the northeast entries have stable unique IDs');
 assert.equal(northeastTourism.length, 14, 'all 14 previously verified Visit Seoul introductions are preserved');
 assert.equal(northeastOraegage.length, 7, 'the six municipal restaurants plus previously listed Yeonghwajang have 2026 selection badges');
-assert.ok(northeastSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.address.startsWith('서울 ')), 'no unverifiable coordinates were introduced');
+assert.ok(northeastSupplement.restaurants.every(item => item.address.startsWith('서울 ')), 'all northeast entries retain verified Seoul addresses');
+for (const [id, sourceUrl] of [
+  ['local-seoul-visitseoul-ddm-yeonghwajang', 'https://qaj.purpleo.kr/article/5801'],
+  ['local-seoul-oraegage2026-ddm-hyeseong-kalguksu', 'https://xju.purpleo.kr/article/14142'],
+  ['local-seoul-visitseoul-sb-cheongsujang', 'https://smi.purpleo.kr/article/40835'],
+  ['blue-seoul-dobong-burgerbrother-2025', 'https://dbt.purpleo.kr/article/3709']
+]) {
+  const item = northeastSupplement.restaurants.find(row => row.id === id);
+  assert.ok(item && Number.isFinite(item.lat) && Number.isFinite(item.lng), id + ' has source-backed coordinates');
+  assert.equal(item.coordinateSource.url, sourceUrl, id + ' retains the published location source');
+}
+const pastRibbon = northeastSupplement.restaurants.find(item => item.id === 'blue-seoul-dobong-burgerbrother-2025');
+assert.ok(pastRibbon.guides.some(g => g.provider === 'blue-ribbon' && g.year === 2025 && g.yearType === 'edition' && g.status === 'historical_listing' && g.label.includes('등급 미확인')), '2025 historical Blue Ribbon edition inclusion remains distinct from regular grades and current operation');
+assert.equal(northeastSupplement.restaurants.find(item => item.id === 'local-seoul-visitseoul-sb-napoleon').lat, null, 'conflicting Napoleon bakery coordinates are not guessed');
 assert.ok(northeastTourism.every(item => item.guides.some(guide => guide.provider === 'local-guide' && guide.year === null && guide.status === 'official_restaurant_listing' && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'tourism introductions are not mistaken for formal awards');
 assert.ok(northeastOraegage.every(item => item.guides.some(guide => guide.provider === 'local-guide' && guide.label.includes('오래가게') && guide.year === 2026 && guide.yearType === 'selection' && guide.sourceUrl === 'https://mediahub.seoul.go.kr/archives/2019458')), 'municipal selection year and official source are preserved');
 assert.ok(northeastSupplement.restaurants.find(item => item.id === 'local-seoul-visitseoul-ddm-yeonghwajang').guides.length === 2, 'Yeonghwajang keeps both verified tourism listing and municipal selection without duplication');
