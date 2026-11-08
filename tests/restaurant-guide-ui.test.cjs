@@ -110,6 +110,10 @@ async function fixture(browser, options = {}) {
         const duplicate = { ...records.restaurants[0], lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ cycle: 1, slot: 71, restaurants: Array(24).fill(duplicate) }) });
       }
+      if (url.pathname.endsWith('/official-jeonnam-slot75.json')) {
+        const duplicate = { ...records.restaurants[0], region: '전남', district: '보성군', lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ cycle: 1, slot: 75, restaurants: Array(34).fill(duplicate), guideEnrichments: [{},{},{},{},{},{},{}] }) });
+      }
       if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
         // Isolate the fixture from new catalog additions, retaining the base count.
         const duplicate = { ...records.restaurants[0], region: '전남', district: '곡성군',

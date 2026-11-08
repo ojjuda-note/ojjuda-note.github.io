@@ -1,0 +1,1103 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 75,
+  "scheduledAtKST": "2026-11-08T21:00:00+09:00",
+  "sourceName": "고흥군 관광 · 보성군·화순군 공식 모범음식점",
+  "sourceUrls": [
+    "https://www.boseong.go.kr/tour/amusement/eatery",
+    "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+    "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+    "https://tour.goheung.go.kr/front/M0000069/region/view.do?tourId=TO000358"
+  ],
+  "listedCountBySource": {
+    "고흥군": "1개 상세 개별 조회",
+    "보성군": 19,
+    "화순군": 25
+  },
+  "completeRegionalCollection": false,
+  "verifiedAt": "2026-11-08",
+  "addedCount": 34,
+  "guideEnrichedCount": 7,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmedCount": 0,
+  "unresolvedAddressConflicts": [
+    {
+      "id": "local-namdo-599297",
+      "name": "색동두부",
+      "existingAddress": "전남 화순군 도곡면 지강로 542",
+      "officialAddress": "화순군 도곡면 지강로 438",
+      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "reason": "기존·공식 주소 충돌. 이전·지점 동일성 미확정"
+    },
+    {
+      "id": "local-namdo-599293",
+      "name": "사평다슬기수제비",
+      "existingAddress": "전남 화순군 화순읍 서양로 29",
+      "officialAddress": "화순군 화순읍 서양로 79",
+      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "reason": "도로명 건물번호 29/79 충돌. 현재 주소 미확정"
+    },
+    {
+      "id": "local-namdo-3678084",
+      "name": "전원",
+      "existingAddress": "전남 화순군 도곡면 지강로 542",
+      "officialAddress": "화순군 능주면 죽수길 4",
+      "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "reason": "지점이나 동일 업소 여부 미확정"
+    }
+  ],
+  "notes": [
+    "보성군 모범음식점 19곳 중 신규15·기존4 선정 이력 보강.",
+    "화순군 25건 중 신규18·기존3 이력 보강. 상호·주소 충돌 3곳과 달맞이흑두부 다른 지점 보류.",
+    "고흥군은 관광 상세 1곳만 대조. 3개군 전수 확인 아님.",
+    "페이지 수정일/출처 확인일은 개별 선정연도가 아님.",
+    "상호·현재 주소와 일치하는 수치좌표 없어서 null; 영업상태·폐업 추정하지 않음.",
+    "회원 추천 자료·사진·위치는 처리하지 않음."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonnam-slot75-boseong-01",
+      "name": "수복식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 보성읍 중앙로 102-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-02",
+      "name": "보성녹차떡갈비원조",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 보성읍 흥성로 2541-4",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-03",
+      "name": "갯마을횟집",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 회천면 우암길 27-12",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-04",
+      "name": "부용산 꼬막식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 벌교읍 벌교천1길 49",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-05",
+      "name": "남태평양식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 회천면 남부관광로 2148",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-06",
+      "name": "다향회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 보성읍 용문길 19",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-07",
+      "name": "만리회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 회천면 우암길 4",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-08",
+      "name": "해돋이",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 회천면 남부관광로 2305",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-09",
+      "name": "고려회관",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 벌교읍 채동선로 294",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-10",
+      "name": "차이나연경",
+      "category": "중식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 보성읍 신일길 3-18",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-11",
+      "name": "향우식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 벌교읍 채동선로 196",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-12",
+      "name": "사계절바다횟집",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 회천면 남부관광로 2175",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-13",
+      "name": "달국자",
+      "category": "기타",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 득량면 예당길 13",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-14",
+      "name": "거시기꼬막식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 벌교읍 계두길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-boseong-15",
+      "name": "보성명가",
+      "category": "한식",
+      "region": "전남",
+      "district": "보성군",
+      "address": "전남광주통합특별시 보성군 보성읍 용문길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "보성군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+          "sourceName": "보성군 문화관광 모범음식점",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-01",
+      "name": "남도명가",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 능주면 능주농공길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생고기",
+        "구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-02",
+      "name": "둥근지붕",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도곡면 지강로 260",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "게장",
+        "조림"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-03",
+      "name": "쭈꾸미사랑",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도곡면 지강로 279",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쭈꾸미볶음"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-04",
+      "name": "시골돼지담양숯불갈비",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도곡면 지강로 431",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-05",
+      "name": "구백가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도곡면 천태로 1020",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-06",
+      "name": "적벽",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 백아면 옥리길 14-21",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-07",
+      "name": "석란",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 교동길 20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-08",
+      "name": "금막동",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 만연로 66-8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-09",
+      "name": "저녁노을",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 안양산로 68",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈치조림"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-10",
+      "name": "금강돈구이",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 칠충로 145",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-11",
+      "name": "다도복집",
+      "category": "일식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 진각로 160",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "복어"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-12",
+      "name": "달가 우리밀팥죽.칼국수",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 진각로 166",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "우리밀칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-13",
+      "name": "백두대간",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 칠충로 13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생고기",
+        "구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-14",
+      "name": "경복궁",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 학포로 2584-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물찜",
+        "아구찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-15",
+      "name": "한산한우식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 학포로 2699",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생고기",
+        "구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-16",
+      "name": "남해바다",
+      "category": "일식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 화순읍 진각로 128",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-17",
+      "name": "은성가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도암면 천태로 996",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발",
+        "청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-hwasun-18",
+      "name": "행복한임금님",
+      "category": "한식",
+      "region": "전남",
+      "district": "화순군",
+      "address": "전남광주통합특별시 화순군 도곡면 지강로 532",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "화순군 모범음식점",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+          "sourceName": "화순군 문화관광 음식점 소개",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot75-goheung-01",
+      "name": "녹동식당",
+      "category": "일식",
+      "region": "전남",
+      "district": "고흥군",
+      "address": "전남광주통합특별시 고흥군 도양읍 녹동남촌1길 2",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "매생이크림우동",
+        "참치회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "고흥군 관광 공식 소개",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.goheung.go.kr/front/M0000069/region/view.do?tourId=TO000358",
+          "sourceName": "고흥군 관광 녹동·거금권역",
+          "verifiedAt": "2026-11-08",
+          "status": "official_listing",
+          "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.goheung.go.kr/front/M0000069/region/view.do?tourId=TO000358",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-namdo-599291",
+      "expectedName": "청광도예원",
+      "expectedAddress": "전라남도 보성군 보성읍 사동길 52-11",
+      "guide": {
+        "provider": "local-guide",
+        "label": "보성군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+        "sourceName": "보성군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599292",
+      "expectedName": "보성녹차떡갈비 보성녹돈 특미관",
+      "expectedAddress": "전라남도 보성군 보성읍 봉화로 53",
+      "guide": {
+        "provider": "local-guide",
+        "label": "보성군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+        "sourceName": "보성군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599282",
+      "expectedName": "다성촌",
+      "expectedAddress": "전라남도 보성군 벌교읍 녹색로 5380",
+      "guide": {
+        "provider": "local-guide",
+        "label": "보성군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+        "sourceName": "보성군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599285",
+      "expectedName": "보성아라낙지",
+      "expectedAddress": "전라남도 보성군 회천면 우암길 27-20",
+      "guide": {
+        "provider": "local-guide",
+        "label": "보성군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.boseong.go.kr/tour/amusement/eatery",
+        "sourceName": "보성군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599290",
+      "expectedName": "달맞이흑두부",
+      "expectedAddress": "전남 화순군 도곡면 지강로 542",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599305",
+      "expectedName": "약산흑염소",
+      "expectedAddress": "전남 화순군 화순읍 상삼2길 13",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    },
+    {
+      "id": "local-namdo-599300",
+      "expectedName": "수림정",
+      "expectedAddress": "전남 화순군 화순읍 진각로 154",
+      "guide": {
+        "provider": "local-guide",
+        "label": "화순군 모범음식점",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
+        "sourceName": "화순군 공식 문화관광 모범음식점",
+        "verifiedAt": "2026-11-08",
+        "status": "official_listing",
+        "selectionCriteria": "지자체 공식 문화관광 음식점·모범음식점 목록 수록 확인. 지정연도 및 현재 영업상태는 따로 확인되지 않으며 정규 블루리본 등급이 아닙니다."
+      }
+    }
+  ]
+}
