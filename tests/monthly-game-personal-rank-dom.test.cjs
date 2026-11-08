@@ -47,7 +47,7 @@ test('rank viewer paints only top ten, highlights me and separates a personal 12
  assert.equal(new URL(window.location.href).searchParams.get('game'),'mines');
 });
 
-test('shared entry/result links cover game variants and new arcade cards without duplicate observers',async t=>{
+test('shared entry/result links remain while extra ranking tiles stay out of the arcade grid',async t=>{
  const dom=new JSDOM('<!doctype html><html><body><section class="game-entry" data-entry-key="screw"></section><a data-v="chacha_rush" href="https://external.example">차차 러시</a></body></html>',
   {url:'https://ojjuda.kr/world.html',runScripts:'outside-only'});
  t.after(()=>dom.window.close());
@@ -57,7 +57,10 @@ test('shared entry/result links cover game variants and new arcade cards without
  const document=window.document;
  assert.deepEqual([...document.querySelectorAll('.game-entry-monthly-link')].map(a=>new URL(a.href).searchParams.get('game')),
   ['screw_box','screw_flat']);
- assert.equal(document.querySelectorAll('.chacha-monthly-rank-link').length,1);
+ assert.equal(document.querySelectorAll('.chacha-monthly-rank-link').length,0,'Chacha Rush must not create a standalone grid tile');
+ const another=document.createElement('a');another.dataset.v='chacha_rush';another.textContent='차차 러시';document.body.append(another);
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(document.querySelectorAll('.chacha-monthly-rank-link').length,0,'rerendering the arcade must not create duplicate ranking tiles');
  const rendered=window.OjjudaGameResults.markup({game:'sacheonseong',outcome:'success'});
  assert.match(rendered,/monthly-ranking\.html\?game=sacheonseong/);
  assert.match(rendered,/game-result-social/);
@@ -78,10 +81,31 @@ test('shared entry/result links cover game variants and new arcade cards without
  assert.equal(card.querySelectorAll('.game-entry-monthly-links').length,1,'rerendered entry receives a replacement link');
 });
 
+test('Chacha Rush keeps one compact rank link inside its game popup',t=>{
+ const dom=new JSDOM('<!doctype html><html><body></body></html>',
+  {url:'https://ojjuda.kr/world.html',runScripts:'outside-only'});
+ t.after(()=>dom.window.close());
+ const {window}=dom;
+ Object.defineProperty(window.crypto,'randomUUID',{value:()=> 'test-nonce'});
+ window.eval(read('shared/games/chacha-rush-portal.js').replace('export function installChachaRushPortal','function installChachaRushPortal'));
+ const portal=window.installChachaRushPortal({currentOwner:()=>null,submitScore:async()=>null});
+ assert.equal(portal.open(),true);
+ const overlay=window.document.querySelector('section[role="dialog"]');
+ const link=overlay.querySelector('a[href*="monthly-ranking.html"]');
+ assert.ok(link,'game popup should keep the monthly ranking link');
+ assert.equal(new URL(link.href).searchParams.get('game'),'chacha_rush');
+ assert.equal(link.target,'_blank');
+ assert.equal(overlay.querySelectorAll('a[href*="monthly-ranking.html"]').length,1);
+ assert.equal(window.document.querySelectorAll('.chacha-monthly-rank-link').length,0);
+});
+
 test('standalone games and shared scripts point to the shipped monthly viewer',()=>{
  const html=['world.html','games/solitaire/index.html','games/sacheonseong/index.html',
   'games/forest-archer/index.html','games/bulssi/index.html'];
- for(const file of html)assert.match(read(file),/monthly-ranking\.html\?game=|game-results\.js\?v=20261108-monthly-personal1/,file);
- assert.match(read('game-release.json'),/20261108-monthly-personal1/);
- assert.match(read('shared/games/world-game-assets.js'),/20261108-monthly-personal1/);
+ for(const file of html)assert.match(read(file),/monthly-ranking\.html\?game=|game-results\.js\?v=20261108-[\w-]+/,file);
+ const revision=JSON.parse(read('game-release.json')).revision;
+ assert.ok(/^20261108-[\w-]+$/.test(revision));
+ assert.ok(read('shared/games/world-game-assets.js').includes("const revision='"+revision+"'"));
+ assert.ok(read('world.html').includes('world-game-assets.js?v='+revision));
+ assert.ok(read('world.html').includes('game-results.js?v='+revision));
 });

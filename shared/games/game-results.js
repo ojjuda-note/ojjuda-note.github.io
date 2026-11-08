@@ -296,17 +296,7 @@
     node.querySelectorAll('[data-game-result-card]').forEach(activate);
     if (node.matches('.game-entry')) entryRanking(node);
     node.querySelectorAll('.game-entry').forEach(entryRanking);
-    if (node.matches('[data-v="chacha_rush"]')) chachaRanking(node);
-    node.querySelectorAll('[data-v="chacha_rush"]').forEach(chachaRanking);
   };
-  function chachaRanking(card) {
-    if (card.nextElementSibling?.classList.contains('chacha-monthly-rank-link')) return;
-    const link = document.createElement('a');link.className = 'chacha-monthly-rank-link';
-    link.href = '/features/arcade/monthly-ranking.html?game=chacha_rush';
-    link.target = '_blank';link.rel = 'noopener noreferrer';
-    link.textContent = '🏆 차차 러시! 이번 달 순위';
-    card.after(link);
-  }
   if (typeof MutationObserver === 'function') new MutationObserver(records => {
     for (const record of records) {
       for (const node of record.addedNodes) scan(node);
@@ -316,7 +306,6 @@
   }).observe(document.documentElement, { childList: true, subtree: true });
   document.querySelectorAll('[data-game-result-card]').forEach(activate);
   document.querySelectorAll('.game-entry').forEach(entryRanking);
-  document.querySelectorAll('[data-v="chacha_rush"]').forEach(chachaRanking);
   const preference = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   preference?.addEventListener?.('change', event => { if (event.matches) for (const card of liveEffects.keys()) stopEffects(card); });
   window.OjjudaGameResults = Object.freeze({ markup, decorate, update, show, close, canPlay, shareData, supportsGame, requestedGame, games: GAMES });

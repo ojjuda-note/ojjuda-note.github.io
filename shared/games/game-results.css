@@ -36,9 +36,6 @@
 .game-entry-monthly-links{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:10px auto 0;width:100%;max-width:430px;justify-content:center}
 .game-entry-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 135px;min-height:44px;padding:10px 13px;border:1px solid #accdb4;border-radius:13px;background:#eaf5e9;color:#285d41;font-size:13px;font-weight:800;text-decoration:none;text-align:center;line-height:1.4}
 .game-entry-monthly-link:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
-.chacha-monthly-rank-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 13px;border:1px solid #b5d5b8;border-radius:13px;background:#eaf5e7;color:#286147;font-size:13px;font-weight:800;text-decoration:none;text-align:center}
-.chacha-monthly-rank-link:hover{background:#daecd9}
-.chacha-monthly-rank-link:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
 .game-result-share svg{width:18px;height:18px;flex-shrink:0}
 .game-result-share:hover{filter:brightness(1.06)}
 .game-result-share:disabled{opacity:.65;cursor:wait}
