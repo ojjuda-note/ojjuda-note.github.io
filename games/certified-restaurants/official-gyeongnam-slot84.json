@@ -1,0 +1,57 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 84,
+  "scheduledAtKST": "2026-11-09T06:00:00+09:00",
+  "sourceCheckedAt": "2026-11-09",
+  "sourceName": "한국관광공사 열린관광 공식 음식점 상세 6곳 · 소상공인 상권정보 공개 위치",
+  "sourceUrls": [
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=c0120e98-fc29-4344-9957-36bcd2f924e4",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=039b0984-15a6-4679-a4a7-e35dda24f145",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=dd07aa64-502a-4d00-9511-a93a7c5b3e94",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=8d46fa4d-8101-478c-b1e5-fed8db22e7d6",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=2dc1ed19-563f-4844-a20b-11bd4be05b5d",
+    "https://access.visitkorea.or.kr/food/detail.do?cotId=41f6f853-7378-425f-b6d6-1a25f0ed7e79",
+    "https://smi.purpleo.kr/article/19132",
+    "https://dining.ayo.pe.kr/restaurant/b137cd87e69f29581499937fab1a5352"
+  ],
+  "sourceScope": "함양·거창·합천 공식 관광 음식점 상세 페이지 6건만 확인. 정규 미쉐린/블루리본 등급·전수명단·현 영업은 검증하지 못함.",
+  "completeRegionalCollection": false,
+  "currentOperatingStatusVerified": false,
+  "exactCoordinatesVerified": 1,
+  "notes": [
+    "관광공사 등록·수정일은 개별 선정 연도가 아니며 최근 영업 확인도 아님.",
+    "좌표는 업소명이 일치하는 상권정보의 공개 수치와 별도 행정 인허가 업소명·주소 교차대조로만 보강, 추정좌표 없음.",
+    "원본·회원 추천 사진·소개글·개인 위치를 복제하지 않음.",
+    "신규 6곳의 원본은 restaurants.json에 통합. 본 공식 출처 파일은 검증 근거·좌표 대조 기록만 유지해 중복 목록 수를 방지함."
+  ],
+  "restaurants": [],
+  "coordinateEnrichments": [
+    {
+      "id": "post-2026-81-0-1",
+      "expectedName": "돌대가리",
+      "expectedAddress": "경상남도 함양군 함양읍 고운로 66",
+      "lat": 35.520588,
+      "lng": 127.728753,
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상가정보 기반 공개 개별 업소 좌표",
+        "url": "https://smi.purpleo.kr/article/19132",
+        "method": "공개 상권정보의 업체명·현 도로명주소·건물번호 일치, 별도 인허가 공개 업소 주소 교차 확인",
+        "checkedAt": "2026-11-09"
+      },
+      "evidenceUrls": [
+        "https://smi.purpleo.kr/article/19132",
+        "https://dining.ayo.pe.kr/restaurant/b137cd87e69f29581499937fab1a5352"
+      ]
+    }
+  ],
+  "canonicalSourceFile": "games/certified-restaurants/restaurants.json",
+  "canonicalRestaurantIds": [
+    "local-gyeongnam-c1s84-kto-01",
+    "local-gyeongnam-c1s84-kto-02",
+    "local-gyeongnam-c1s84-kto-03",
+    "local-gyeongnam-c1s84-kto-04",
+    "local-gyeongnam-c1s84-kto-05",
+    "local-gyeongnam-c1s84-kto-06"
+  ]
+}
