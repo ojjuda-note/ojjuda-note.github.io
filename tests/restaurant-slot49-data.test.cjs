@@ -63,7 +63,7 @@ assert.equal(entry[0].locationHidden, 0);
 assert.equal(entry[0].locationPending, 349);
 assert.equal(entry[0].pendingLocationInventory.length, 349);
 assert.ok(entry[0].pendingLocationInventory.every(item => item.restaurantId && item.name && item.currentAddress && item.region && item.recheckCycle === 2));
-assert.ok(audit.active.slot >= 50, 'later official regional slots preserve slot49 history');
+assert.ok(audit.active.cycle > 1 || (audit.active.cycle === 1 && audit.active.slot >= 50), 'later official regional slots and subsequent 84-slot cycles preserve slot49 history');
 assert.match(release.revision, /^\d{8}-[a-z0-9-]+$/);
 assert.ok(assets.includes("const revision='" + release.revision + "'"));
 assert.match(assets,/restaurants:'\d+\.\d+\.\d+'/);
