@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 81,
-    "scheduledAt": "2026-11-09T03:00:00+09:00",
+    "slot": 83,
+    "scheduledAt": "2026-11-09T05:00:00+09:00",
     "checkedAtKST": "2026-11-09",
-    "source": "예약시각 03:00 기준 h=76, n=80, slot=(80%84)+1=81. 지연실행에도 예약시각 적용."
+    "source": "지연 예약시각 알 수 없어 실행 시각 05:04+09:00을 정각 05:00으로 내림. anchor 이후 h=78, n=82, slot=83, cycle=1."
   },
   "entries": [
     {
@@ -69888,6 +69888,606 @@
         "좌표 보강0·비노출0·배정 4군 재확인 대기27.",
         "원본 restaurants.json 대용량 전송 오류로 직접 동기화 미완료, 공식 보완 자료에서 화면 로딩."
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 83,
+      "scheduledAtKST": "2026-11-09T05:00:00+09:00",
+      "checkedAtKST": "2026-11-09",
+      "status": "partial_kto_5_and_sancheong_official_index_12_added_pending_original_page",
+      "assignedRegions": [
+        "경상남도 남해군",
+        "경상남도 하동군",
+        "경상남도 산청군"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상남도 남해군",
+          "baseListedCount": 6,
+          "actuallyChecked": [
+            "기존 우체국 2026 추천 6곳의 ID·주소·좌표 상태 확인",
+            "한국관광공사 열린관광 식당·카페 3곳 공식 개별 상세의 상호·도로명주소 대조",
+            "군청 자체 개별 맛집 선정 명단·지도좌표 추가 대조 이월"
+          ],
+          "new": 3,
+          "updated": 0,
+          "existingWithMissingCoordinates": 3,
+          "pendingCoordinates": 6,
+          "remainingAreas": [
+            "기존 2026 우체국 추천·공식 관광 업소의 지점·현 영업 상태 별도 확인",
+            "동일 상호·현주소와 직접 일치하는 공개 수치 좌표 검증",
+            "추가 블루리본 공식 등급·가이드 선정 자료 대조",
+            "미열람 공식 자료/행정 명단 추가 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상남도 하동군",
+          "baseListedCount": 4,
+          "actuallyChecked": [
+            "기존 우체국 2026 추천 4곳의 ID·주소·좌표 상태 확인",
+            "한국관광공사 열린관광 식당·카페 2곳 공식 개별 상세의 상호·도로명주소 대조",
+            "군청 지정 명단·지도좌표 추가 대조 이월"
+          ],
+          "new": 2,
+          "updated": 0,
+          "existingWithMissingCoordinates": 1,
+          "pendingCoordinates": 3,
+          "remainingAreas": [
+            "기존 2026 우체국 추천·공식 관광 업소의 지점·현 영업 상태 별도 확인",
+            "동일 상호·현주소와 직접 일치하는 공개 수치 좌표 검증",
+            "추가 블루리본 공식 등급·가이드 선정 자료 대조",
+            "미열람 공식 자료/행정 명단 추가 확인"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상남도 산청군",
+          "baseListedCount": 8,
+          "actuallyChecked": [
+            "기존 우체국 2026 추천 8곳의 ID·주소·좌표 상태 확인",
+            "산청군 문화관광 모범음식점 공식 검색 색인 첫 페이지 12곳 이름·도로명주소 대조; 공식 원문 직접 접근은 시간 초과",
+            "7곳 남은 다음 페이지와 공식 지정·현재 영업·블루리본 리본 수 별도 재확인"
+          ],
+          "new": 12,
+          "updated": 0,
+          "existingWithMissingCoordinates": 3,
+          "pendingCoordinates": 15,
+          "remainingAreas": [
+            "기존 2026 우체국 추천·공식 관광 업소의 지점·현 영업 상태 별도 확인",
+            "동일 상호·현주소와 직접 일치하는 공개 수치 좌표 검증",
+            "추가 블루리본 공식 등급·가이드 선정 자료 대조",
+            "미열람 공식 자료/행정 명단 추가 확인"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "한국관광공사 열린관광 모두의 여행 음식점 개별 공식 상세 5곳(등록·수정일은 선정/영업 연도 아님)",
+        "산청군 문화관광 모범음식점 공식 홈페이지의 공개 검색 색인 첫 페이지 12곳 (원문 직접 접속 타임아웃)",
+        "기존 우체국 2026 발행 추천 원자료 및 기존 ID·주소, 현재 수치 좌표 재확인 검색",
+        "블루리본 공식 지역 개별 검증 가능한 리본 등급은 이번 회차 확보하지 못함"
+      ],
+      "additions": 17,
+      "modifications": 0,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 24,
+      "locationPendingScope": "경남 남해·하동·산청군 기존 누락 7곳 + 신규 공식 명단 17곳, 해당 3군 범위만 계산. 전국 전체 대기 아님.",
+      "addedRestaurantIds": [
+        "local-gyeongnam-c1s83-kto-01",
+        "local-gyeongnam-c1s83-kto-02",
+        "local-gyeongnam-c1s83-kto-03",
+        "local-gyeongnam-c1s83-kto-04",
+        "local-gyeongnam-c1s83-kto-05",
+        "local-gyeongnam-c1s83-sancheong-01",
+        "local-gyeongnam-c1s83-sancheong-02",
+        "local-gyeongnam-c1s83-sancheong-03",
+        "local-gyeongnam-c1s83-sancheong-04",
+        "local-gyeongnam-c1s83-sancheong-05",
+        "local-gyeongnam-c1s83-sancheong-06",
+        "local-gyeongnam-c1s83-sancheong-07",
+        "local-gyeongnam-c1s83-sancheong-08",
+        "local-gyeongnam-c1s83-sancheong-09",
+        "local-gyeongnam-c1s83-sancheong-10",
+        "local-gyeongnam-c1s83-sancheong-11",
+        "local-gyeongnam-c1s83-sancheong-12"
+      ],
+      "modifiedRestaurantIds": [],
+      "evidenceUrls": [
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec",
+        "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed",
+        "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "post-2026-65-0-1",
+          "name": "효준횟집",
+          "currentAddress": "경상남도 남해군 남해읍 화전로 110 나동-22호",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "효준횟집 남해군",
+            "효준횟집 경상남도 남해군 남해읍 화전로 110 나동-22호",
+            "남해군 효준횟집"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-65-1-1",
+          "name": "앵강마켓",
+          "currentAddress": "경상남도 남해군 남면 남서대로 772",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "앵강마켓 남해군",
+            "앵강마켓 경상남도 남해군 남면 남서대로 772",
+            "남해군 앵강마켓"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=65"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-66-0-0",
+          "name": "봉정식당",
+          "currentAddress": "경상남도 남해군 남해읍 화전로110",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "봉정식당 남해군",
+            "봉정식당 경상남도 남해군 남해읍 화전로110",
+            "남해군 봉정식당"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=66"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-71-1-0",
+          "name": "산청엔 흑돼지",
+          "currentAddress": "경상남도 산청군 산청읍 꽃봉산로 115",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "산청엔 흑돼지 산청군",
+            "산청엔 흑돼지 경상남도 산청군 산청읍 꽃봉산로 115",
+            "산청군 산청엔 흑돼지"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=71"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-72-0-0",
+          "name": "원지한우 상차림식당",
+          "currentAddress": "경상남도 산청군 신안면 원지로 70",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "원지한우 상차림식당 산청군",
+            "원지한우 상차림식당 경상남도 산청군 신안면 원지로 70",
+            "산청군 원지한우 상차림식당"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-72-1-1",
+          "name": "대장금약선관 산청",
+          "currentAddress": "경상남도 산청군 금서면 친환경로 2605번길 6-6",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "대장금약선관 산청 산청군",
+            "대장금약선관 산청 경상남도 산청군 금서면 친환경로 2605번길 6-6",
+            "산청군 대장금약선관 산청"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=72"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "post-2026-78-0-0",
+          "name": "카페 스톤브릿지",
+          "currentAddress": "경상남도 하동군 적량면 공설운동장로 215",
+          "region": "경상남도 하동군",
+          "searchAliases": [
+            "카페 스톤브릿지 하동군",
+            "카페 스톤브릿지 경상남도 하동군 적량면 공설운동장로 215",
+            "하동군 카페 스톤브릿지"
+          ],
+          "evidenceUrls": [
+            "https://kphi.koreapost.go.kr/common/proc/678/bbs/98/fileDownLoad/100112599.do#page=78"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-kto-01",
+          "name": "미조식당",
+          "currentAddress": "경상남도 남해군 미조면 미조로 232",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "미조식당 남해군",
+            "미조식당 경상남도 남해군 미조면 미조로 232",
+            "남해군 미조식당"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=8e4475b5-aaa5-44b2-b34f-43e465b6c2b7"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-kto-02",
+          "name": "할로브리즈",
+          "currentAddress": "경상남도 남해군 동부대로1122번길 131-6",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "할로브리즈 남해군",
+            "할로브리즈 경상남도 남해군 동부대로1122번길 131-6",
+            "남해군 할로브리즈"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=fe595731-1de6-43e1-894c-9355b9c5b26b"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-kto-03",
+          "name": "보물섬남해한우프라자",
+          "currentAddress": "경상남도 남해군 남해읍 스포츠로 34",
+          "region": "경상남도 남해군",
+          "searchAliases": [
+            "보물섬남해한우프라자 남해군",
+            "보물섬남해한우프라자 경상남도 남해군 남해읍 스포츠로 34",
+            "남해군 보물섬남해한우프라자"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=f86e39aa-195c-46c0-b24a-d69610cf637d"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-kto-04",
+          "name": "쉬어가기좋은날식당",
+          "currentAddress": "경상남도 하동군 쌍계사길 6",
+          "region": "경상남도 하동군",
+          "searchAliases": [
+            "쉬어가기좋은날식당 하동군",
+            "쉬어가기좋은날식당 경상남도 하동군 쌍계사길 6",
+            "하동군 쉬어가기좋은날식당"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=13acb4bc-b33f-493a-89bd-50db7afc22ec"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-kto-05",
+          "name": "하동야생차치유관 티카페하동",
+          "currentAddress": "경상남도 하동군 화개면 쌍계로 571-27 1층 티카페하동",
+          "region": "경상남도 하동군",
+          "searchAliases": [
+            "하동야생차치유관 티카페하동 하동군",
+            "하동야생차치유관 티카페하동 경상남도 하동군 화개면 쌍계로 571-27 1층 티카페하동",
+            "하동군 하동야생차치유관 티카페하동"
+          ],
+          "evidenceUrls": [
+            "https://access.visitkorea.or.kr/food/detail.do?cotId=9fcff1dc-bfc7-4a2b-83ca-f4d8c0d8d2ed"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-01",
+          "name": "갑을가든",
+          "currentAddress": "경상남도 산청군 삼장면 대원사길 572",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "갑을가든 산청군",
+            "갑을가든 경상남도 산청군 삼장면 대원사길 572",
+            "산청군 갑을가든"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-02",
+          "name": "강변식당",
+          "currentAddress": "경상남도 산청군 산청읍 꽃봉산로 30-5",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "강변식당 산청군",
+            "강변식당 경상남도 산청군 산청읍 꽃봉산로 30-5",
+            "산청군 강변식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-03",
+          "name": "개미정산장식당",
+          "currentAddress": "경상남도 산청군 시천면 지리산대로 1387",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "개미정산장식당 산청군",
+            "개미정산장식당 경상남도 산청군 시천면 지리산대로 1387",
+            "산청군 개미정산장식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-04",
+          "name": "남원식당",
+          "currentAddress": "경상남도 산청군 생초면 산수로 1018",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "남원식당 산청군",
+            "남원식당 경상남도 산청군 생초면 산수로 1018",
+            "산청군 남원식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-05",
+          "name": "동의약선관",
+          "currentAddress": "경상남도 산청군 금서면 동의보감로555번길 150",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "동의약선관 산청군",
+            "동의약선관 경상남도 산청군 금서면 동의보감로555번길 150",
+            "산청군 동의약선관"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-06",
+          "name": "만포정횟집",
+          "currentAddress": "경상남도 산청군 신안면 원지강변로 67-15",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "만포정횟집 산청군",
+            "만포정횟집 경상남도 산청군 신안면 원지강변로 67-15",
+            "산청군 만포정횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-07",
+          "name": "물장구식육식당",
+          "currentAddress": "경상남도 산청군 생비량면 지리산대로 4285",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "물장구식육식당 산청군",
+            "물장구식육식당 경상남도 산청군 생비량면 지리산대로 4285",
+            "산청군 물장구식육식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-08",
+          "name": "보현갈비식육식당",
+          "currentAddress": "경상남도 산청군 시천면 남명로 223",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "보현갈비식육식당 산청군",
+            "보현갈비식육식당 경상남도 산청군 시천면 남명로 223",
+            "산청군 보현갈비식육식당"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-09",
+          "name": "아리산반점",
+          "currentAddress": "경상남도 산청군 산청읍 친환경로 2655",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "아리산반점 산청군",
+            "아리산반점 경상남도 산청군 산청읍 친환경로 2655",
+            "산청군 아리산반점"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-10",
+          "name": "열매랑뿌리랑",
+          "currentAddress": "경상남도 산청군 시천면 남명로 228",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "열매랑뿌리랑 산청군",
+            "열매랑뿌리랑 경상남도 산청군 시천면 남명로 228",
+            "산청군 열매랑뿌리랑"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-11",
+          "name": "영도숯불갈비",
+          "currentAddress": "경상남도 산청군 신안면 원지강변로63번길 6",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "영도숯불갈비 산청군",
+            "영도숯불갈비 경상남도 산청군 신안면 원지강변로63번길 6",
+            "산청군 영도숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        },
+        {
+          "restaurantId": "local-gyeongnam-c1s83-sancheong-12",
+          "name": "영실한우프라자",
+          "currentAddress": "경상남도 산청군 단성면 목화로 912",
+          "region": "경상남도 산청군",
+          "searchAliases": [
+            "영실한우프라자 산청군",
+            "영실한우프라자 경상남도 산청군 단성면 목화로 912",
+            "산청군 영실한우프라자"
+          ],
+          "evidenceUrls": [
+            "https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "기존 공식 추천 출처 또는 신규 공식 관광·모범음식점 검색자료에서 이름·주소 확인. 이번 공개 좌표 검색에서 상호·지점·현주소를 직접 뒷받침할 수치좌표 확보 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 83,
+          "reason": "현재 주소·정확한 업소명과 일치하는 독립 공개 수치좌표 미확인; 추정 좌표 사용 금지."
+        }
+      ],
+      "unresolved": [
+        "산청군 공식 전체 19건 중 이번 검색 색인 첫 페이지 12건만 조사; 군청 원문 직접 접근 시간초과로 최신 목록 상태 확인 필요",
+        "회원 추천맛집과 구분하여 인증맛집에 공식관광 수록 이력만 추가",
+        "이전 1/82회차 운영 기록 부재(미실시 여부 확정 못함): 의령·함안·창녕·고성의 다음 순환 동일 회차 보충",
+        "기존 restaurants.json 대용량 원본 동기화는 이번 변경에서 재시도하지 않음; 별도 공식 보완 데이터 사용",
+        "좌표·이전·폐업 추정 금지. 다른 84회차 지역·과거 이월 상태 보존"
+      ],
+      "followUpCandidates": [
+        "산청군 공식 목록 2쪽 7곳과 1쪽 이름·주소 현재 유효 여부 재확인",
+        "남해·하동 2026 지자체 공식 맛집 지정 목록과 기존 우체국 2026 추천 식당 좌표 재확인",
+        "남해군 효준횟집·앵강마켓·봉정식당, 하동군 카페 스톤브릿지, 산청군 산청엔 흑돼지·원지한우 상차림식당·대장금약선관 산청 공개 좌표 확인",
+        "1/82 미기록 회차 재확인 및 다음 순환 동일 회차 보완",
+        "원본 restaurants.json 통합 동기화 방법 검토"
+      ],
+      "nextSlot": 84,
+      "nextRegions": [
+        "경상남도 함양군",
+        "경상남도 거창군",
+        "경상남도 합천군"
+      ],
+      "notExhaustive": true,
+      "notes": [
+        "수집 및 페이지 반영은 공식 업소 식별 사실과 URL만; 사진·원문 소개·회원 정보·개인 위치 미복제.",
+        "산청군 검색 엔진 색인 내용은 공식 링크로 연결되나 본문 타임아웃으로 최신 상태의 직접 확인은 이월.",
+        "등급/선정/영업 상태와 출처 확인일은 분리, 좌표와 폐업은 명시적 근거 없으므로 수정하지 않음."
+      ]
     }
   ],
   "notes": [
@@ -69926,6 +70526,7 @@
     "2026-11-08 21시 1순환75회차: 고흥1·보성15·화순18 신규, 기존7곳 모범음식점 병합, 위치대기53, 주소충돌3 확인필요, 목록제외0. 다음 장흥·강진·해남군.",
     "2026-11-08 순환1/75 이어하기: 화순 기존3곳 상호·전화·주소 공식 대조 및 보완자료 정정, 회차 누적 새34·수정10·좌표0·비노출0·재확인53.",
     "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존.",
-    "2026-11-09 03시 순환1/81 경북 예천·봉화·울진·울릉: 예천 모범음식점 18 신규·6 선정이력 병합, 좌표0·제외0·위치재확인27, 나머지3군 이월."
+    "2026-11-09 03시 순환1/81 경북 예천·봉화·울진·울릉: 예천 모범음식점 18 신규·6 선정이력 병합, 좌표0·제외0·위치재확인27, 나머지3군 이월.",
+    "2026-11-09 05시 순환1/83 경남 남해·하동·산청: 관광공사 상세5·산청 공식 검색색인12 신규, ID유지·수정0·좌표보강0·비노출0·3군 위치재확인24. 산청 원문 직접 타임아웃/1순환82 기록 누락·원본 restaurants.json 동기화 과제 이월."
   ]
 }

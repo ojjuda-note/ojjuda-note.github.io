@@ -31,7 +31,7 @@
    const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
    const ratingRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261109-restaurants-c1s81-yecheon18&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261109-restaurants-c1s83-gyeongnam17&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();

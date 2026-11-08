@@ -142,6 +142,11 @@ function fixture(options = {}) {
           guides: [{ provider: 'local-guide', year: null, yearType: 'listing', sourceUrl: 'https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/', status: 'official_listing' }] };
         return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 81, restaurants: Array(18).fill(duplicate), guideEnrichments: [{}, {}, {}, {}, {}, {}] }) };
       }
+      if (url.pathname.endsWith('/official-gyeongnam-slot83.json')) {
+        const duplicate = { ...(options.dataset || dataset).restaurants[0], region: '경남', district: '산청군', lat: null, lng: null,
+          guides: [{ provider: 'local-guide', year: null, yearType: 'listing', sourceUrl: 'https://www.sancheong.go.kr/tour/selectTourList.do?clgn=RSTRG02&key=2453' }] };
+        return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 83, restaurants: Array(17).fill(duplicate) }) };
+      }
       if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
         // Keep fixture restaurant IDs and original result counts unchanged.
         const base = (options.dataset || dataset).restaurants[0];
