@@ -1,0 +1,902 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 68,
+  "sourceName": "옥천군 문화관광 · 옥천군 지정 맛집",
+  "sourceAsOf": "2026-03-09",
+  "sourceAsOfType": "page-modified-not-selection-year",
+  "sourceUrls": [
+    "https://www.oc.go.kr/tour/contents.do?key=4087",
+    "https://safe.oc.go.kr/tour/contents.do?key=4087",
+    "https://xju.purpleo.kr/article/41"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 1,
+  "notes": [
+    "공식 옥천군 지정 맛집 30곳 명단과 기본 데이터 상호·도로명 주소를 비교하여 신규 25곳과 기등록 5곳의 별도 지정 이력을 추가합니다.",
+    "자료의 최종 수정일 2026-03-09는 선정연도가 아니며 현 영업 여부는 개별 검증되지 않았습니다.",
+    "한알천의 수치 좌표만 동일 상호·지점·도로명 1217과 일치하는 공개 상권업소 자료에서 확인했습니다. 다른 새 업소는 좌표 미확인으로 null 유지.",
+    "보은·영동·증평은 도 공식 수록 기록과 미등록 위치를 확인했으나 이번 점검에서 새 지정 맛집을 검증하지 못했습니다."
+  ],
+  "restaurants": [
+    {
+      "id": "local-chungbuk-slot68-okcheon-hanalcheon",
+      "name": "한알천",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1217",
+      "lat": 36.3136856150236,
+      "lng": 127.574517979556,
+      "menu": [
+        "메밀막국수",
+        "능이오리백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSource": {
+        "name": "공개 상권업소 정보 · 상호·도로명 일치",
+        "url": "https://xju.purpleo.kr/article/41",
+        "checkedAt": "2026-11-08",
+        "method": "published-business-coordinate"
+      }
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-chamsaem-trout",
+      "name": "참샘송어 직판장",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1236",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "송어회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-daebakjip",
+      "name": "대박집",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1250",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선국수",
+        "도리뱅뱅"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-hanbang-yeomso",
+      "name": "한방염소촌",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1280",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "염소전골",
+        "한방염소탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-eollukbaegi",
+      "name": "얼룩배기 보리밥 식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1309",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보리밥정식",
+        "들깨수제비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-jangin-ureong",
+      "name": "장인우렁쌈밥",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1354",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "수육우렁쌈밥",
+        "생삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-bokgol",
+      "name": "맛있는 복골올갱이",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 성왕로 1441",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "올갱이국밥",
+        "올갱이 부추전"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-ttalbujhae",
+      "name": "딸부자해장국",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 지용로 25",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "은갈치조림",
+        "육개장",
+        "황태해장국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-yuseong-galbi-okcheon",
+      "name": "유성갈비 옥천점",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 지용로 31",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비",
+        "등갈비",
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-munjeong",
+      "name": "문정식당",
+      "category": "중식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수3길 20",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "볶음밥",
+        "짜장",
+        "짬뽕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-imone",
+      "name": "이모네 냄비백반",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수3길 30",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살",
+        "제육볶음",
+        "청국장"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-gwansanseong",
+      "name": "관산성 한우",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수3길 8, 1~2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이",
+        "갈비탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-offlam",
+      "name": "오프램",
+      "category": "양식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수5길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "함박스테이크",
+        "돈가스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-okcheon-mukjip",
+      "name": "옥천묵집",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수7길 8",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "도토리묵밥",
+        "도토리칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-songgoga",
+      "name": "송고가",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수길 100",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "송고정식",
+        "송고버섯요리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-hyangsu-hanwoo",
+      "name": "향수한우소국밥",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 향수길 6, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소머리국밥",
+        "우족탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-janggeumi",
+      "name": "옥천장금이맛집",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 군북면 성왕로 1567",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼백초 오리백숙",
+        "참 옻닭"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-hanwoo-jayul",
+      "name": "한우자율식당",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 가화길 86",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 갈비탕",
+        "불고기",
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-iseok-haemul",
+      "name": "이석해물칼국수, 왕만두",
+      "category": "분식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 옥천로 1559",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해물칼국수",
+        "왕만두"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-gyeongseong-mandu",
+      "name": "경성만두요리전문점",
+      "category": "분식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 옥천로 1644",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "만두전골"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-pungmidang",
+      "name": "풍미당",
+      "category": "분식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 중앙로 23-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "물쫄면",
+        "비빔쫄면",
+        "김밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-jeonwon-garden",
+      "name": "전원가든",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 이원면 이원심천로 24",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "콩국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-tutti-cucina",
+      "name": "뚜띠쿠치나",
+      "category": "양식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 군서면 월전2길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "스테이크",
+        "피자",
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-forefora",
+      "name": "포레포라",
+      "category": "디저트",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 군북면 감로길 24-9",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "브런치",
+        "소금빵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-chungbuk-slot68-okcheon-ocheonnyeon",
+      "name": "오천년코다리",
+      "category": "한식",
+      "region": "충북",
+      "district": "옥천군",
+      "address": "충청북도 옥천군 옥천읍 삼금로1길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "코다리조림",
+        "황태무침"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "옥천군 지정 맛집",
+          "year": null,
+          "yearType": "selection",
+          "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+          "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+          "verifiedAt": "2026-11-08",
+          "sourceAsOf": "2026-03-09",
+          "sourceDateType": "official-page-last-modified",
+          "status": "official_listing",
+          "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-north-c193196a43a34490",
+      "expectedName": "소정마을",
+      "expectedAddress": "충청북도 옥천군 옥천읍 성왕로 1313-1",
+      "guide": {
+        "provider": "local-guide",
+        "label": "옥천군 지정 맛집",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+        "verifiedAt": "2026-11-08",
+        "sourceAsOf": "2026-03-09",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+      }
+    },
+    {
+      "id": "local-north-893f7bcb82688546",
+      "expectedName": "과수원가든",
+      "expectedAddress": "충청북도 옥천군 옥천읍 성왕로 1454",
+      "guide": {
+        "provider": "local-guide",
+        "label": "옥천군 지정 맛집",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+        "verifiedAt": "2026-11-08",
+        "sourceAsOf": "2026-03-09",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+      }
+    },
+    {
+      "id": "local-north-845a3158c3d5a8d9",
+      "expectedName": "구읍할매묵집",
+      "expectedAddress": "충청북도 옥천군 옥천읍 향수길 46",
+      "guide": {
+        "provider": "local-guide",
+        "label": "옥천군 지정 맛집",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+        "verifiedAt": "2026-11-08",
+        "sourceAsOf": "2026-03-09",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+      }
+    },
+    {
+      "id": "local-north-3176c6d451b71e24",
+      "expectedName": "토박이식당",
+      "expectedAddress": "충청북도 옥천군 동이면 옥천동이로 665",
+      "guide": {
+        "provider": "local-guide",
+        "label": "옥천군 지정 맛집",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+        "verifiedAt": "2026-11-08",
+        "sourceAsOf": "2026-03-09",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+      }
+    },
+    {
+      "id": "local-north-197299de2af35076",
+      "expectedName": "배바우손두부",
+      "expectedAddress": "충청북도 옥천군 안남면 연주길 33",
+      "guide": {
+        "provider": "local-guide",
+        "label": "옥천군 지정 맛집",
+        "year": null,
+        "yearType": "selection",
+        "sourceUrl": "https://www.oc.go.kr/tour/contents.do?key=4087",
+        "sourceName": "옥천군 문화관광 · 지정 맛집 30곳",
+        "verifiedAt": "2026-11-08",
+        "sourceAsOf": "2026-03-09",
+        "sourceDateType": "official-page-last-modified",
+        "status": "official_listing",
+        "selectionCriteria": "옥천군이 공표한 지정 맛집 수록 사실. 개별 선정 연도 및 현재 영업 여부는 확인되지 않았으며 정규 미쉐린·블루리본 등급과 무관합니다."
+      }
+    }
+  ]
+}
