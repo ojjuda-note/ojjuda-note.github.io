@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 80,
-    "scheduledAt": "2026-11-09T02:00:00+09:00",
+    "slot": 81,
+    "scheduledAt": "2026-11-09T03:00:00+09:00",
     "checkedAtKST": "2026-11-09",
-    "source": "예약 기준 h=75, n=79, (79%84)+1=80. 실행 지연 시에도 예약시각 02:00 사용."
+    "source": "예약시각 03:00 기준 h=76, n=80, slot=(80%84)+1=81. 지연실행에도 예약시각 적용."
   },
   "entries": [
     {
@@ -69219,6 +69219,675 @@
         "회원 추천 데이터와 개인 위치 미수집·미수정.",
         "원본 restaurants.json 대용량 단일 갱신 전송 실패, 검증된 소형 보충자료를 사용해 화면 반영 예정. 원본 동기화 이월."
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 81,
+      "scheduledAtKST": "2026-11-09T03:00:00+09:00",
+      "checkedAtKST": "2026-11-09",
+      "status": "partial_yecheon_official_list_18_added_6_history_merged",
+      "assignedRegions": [
+        "경상북도 예천군",
+        "경상북도 봉화군",
+        "경상북도 울진군",
+        "경상북도 울릉군"
+      ],
+      "regionAudit": [
+        {
+          "region": "경상북도 예천군",
+          "actuallyChecked": [
+            "예천군 문화관광 모범음식점 공식 명단 1~3페이지 상호·주소 대조",
+            "기존 8개 선정 식당 중 동일 이름·주소 6곳 공식 명단과 이력 병합·ID 유지",
+            "오르비/에밀테라스 시장로112-1과 기존112-2, 황소네집/황소고집 맛고을길55 충돌 보류"
+          ],
+          "new": 18,
+          "updated": 6,
+          "existingWithMissingCoordinates": 8,
+          "pendingCoordinates": 26,
+          "remainingAreas": [
+            "최신 공식 가이드·관광 명단의 누락 발굴",
+            "업소·현재 주소 일치 공개 위경도 자료의 독립 확인",
+            "공식 폐업·이전·휴업 자료 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 봉화군",
+          "actuallyChecked": [
+            "기존 봉화군 1곳 경북 으뜸음식점 출처·위치 누락 확인, 신규 공식 선정 명단 확증 미완료"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 1,
+          "pendingCoordinates": 1,
+          "remainingAreas": [
+            "최신 공식 가이드·관광 명단의 누락 발굴",
+            "업소·현재 주소 일치 공개 위경도 자료의 독립 확인",
+            "공식 폐업·이전·휴업 자료 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 울진군",
+          "actuallyChecked": [
+            "울진군 관광 음식점 자료 검색, 공식 상세 접근 제한으로 개별 확증 미완료"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 0,
+          "pendingCoordinates": 0,
+          "remainingAreas": [
+            "최신 공식 가이드·관광 명단의 누락 발굴",
+            "업소·현재 주소 일치 공개 위경도 자료의 독립 확인",
+            "공식 폐업·이전·휴업 자료 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "경상북도 울릉군",
+          "actuallyChecked": [
+            "기본 DB 울릉군 0곳, 공식 식당 선정 명단·현주소 검증 추가 조사 필요"
+          ],
+          "new": 0,
+          "updated": 0,
+          "existingWithMissingCoordinates": 0,
+          "pendingCoordinates": 0,
+          "remainingAreas": [
+            "최신 공식 가이드·관광 명단의 누락 발굴",
+            "업소·현재 주소 일치 공개 위경도 자료의 독립 확인",
+            "공식 폐업·이전·휴업 자료 대조"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/ — 예천군 문화관광 모범음식점 공개 명단 (화면 최종수정 2024-05-07)",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2 — 예천군 문화관광 모범음식점 공개 명단 (화면 최종수정 2024-05-07)",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3 — 예천군 문화관광 모범음식점 공개 명단 (화면 최종수정 2024-05-07)"
+      ],
+      "additions": 18,
+      "modifications": 6,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 27,
+      "locationPendingScope": "이번 배정 4군 DB 기존 9곳과 예천 신규 18곳 중 좌표 미등록 27곳(전국 대기 건수 아님)",
+      "addedRestaurantIds": [
+        "local-yecheon-model-c1s81-01",
+        "local-yecheon-model-c1s81-02",
+        "local-yecheon-model-c1s81-03",
+        "local-yecheon-model-c1s81-04",
+        "local-yecheon-model-c1s81-05",
+        "local-yecheon-model-c1s81-06",
+        "local-yecheon-model-c1s81-07",
+        "local-yecheon-model-c1s81-08",
+        "local-yecheon-model-c1s81-09",
+        "local-yecheon-model-c1s81-10",
+        "local-yecheon-model-c1s81-11",
+        "local-yecheon-model-c1s81-12",
+        "local-yecheon-model-c1s81-13",
+        "local-yecheon-model-c1s81-14",
+        "local-yecheon-model-c1s81-15",
+        "local-yecheon-model-c1s81-16",
+        "local-yecheon-model-c1s81-17",
+        "local-yecheon-model-c1s81-18"
+      ],
+      "modifiedRestaurantIds": [
+        "local-gb-top-2020-11",
+        "local-gb-top-2024-8",
+        "local-gb-top-2022-14",
+        "local-gb-top-2019-7",
+        "local-gb-top-2025-4",
+        "local-gb-top-2024-10"
+      ],
+      "evidenceUrls": [
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+      ],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-gb-top-2019-7",
+          "name": "언덕숯불",
+          "currentAddress": "경상북도 예천군 예천읍 충효로 512-5",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "언덕숯불 예천군",
+            "언덕숯불 경상북도 예천군 예천읍 충효로 512-5",
+            "예천군 언덕숯불"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2020-11",
+          "name": "제주복집",
+          "currentAddress": "경상북도 예천군 예천읍 이미기길 71",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "제주복집 예천군",
+            "제주복집 경상북도 예천군 예천읍 이미기길 71",
+            "예천군 제주복집"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-14",
+          "name": "한국관복어집",
+          "currentAddress": "경상북도 예천군 예천읍 군청길 42-4",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "한국관복어집 예천군",
+            "한국관복어집 경상북도 예천군 예천읍 군청길 42-4",
+            "예천군 한국관복어집"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-16",
+          "name": "황소네집",
+          "currentAddress": "경상북도 예천군 예천읍 맛고을길 55",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "황소네집 예천군",
+            "황소네집 경상북도 예천군 예천읍 맛고을길 55",
+            "예천군 황소네집"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-8",
+          "name": "백번고기집본점",
+          "currentAddress": "경상북도 예천군 풍양면 상풍로 1445",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "백번고기집본점 예천군",
+            "백번고기집본점 경상북도 예천군 풍양면 상풍로 1445",
+            "예천군 백번고기집본점"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-9",
+          "name": "오르비",
+          "currentAddress": "경상북도 예천군 예천읍 시장로 112-2",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "오르비 예천군",
+            "오르비 경상북도 예천군 예천읍 시장로 112-2",
+            "예천군 오르비"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2024-10",
+          "name": "용궁순대",
+          "currentAddress": "경상북도 예천군 용궁면 용궁로 158",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "용궁순대 예천군",
+            "용궁순대 경상북도 예천군 용궁면 용궁로 158",
+            "예천군 용궁순대"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2025-4",
+          "name": "신라식당",
+          "currentAddress": "경상북도 예천군 예천읍 군청길 37",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "신라식당 예천군",
+            "신라식당 경상북도 예천군 예천읍 군청길 37",
+            "예천군 신라식당"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-gb-top-2022-17",
+          "name": "쉼터민물매운탕",
+          "currentAddress": "경상북도 봉화군 명호면 광석길 28-1",
+          "region": "경상북도 봉화군",
+          "searchAliases": [
+            "쉼터민물매운탕 봉화군",
+            "쉼터민물매운탕 경상북도 봉화군 명호면 광석길 28-1",
+            "봉화군 쉼터민물매운탕"
+          ],
+          "evidenceUrls": [
+            "https://www.gb.go.kr/Main/open_contents/section/invest_eng/page.do?BD_CODE=gbfood_top&B_LEVEL=0&B_NUM=486618001&B_STEP=486618000&Start=0&V_NUM=1&bdName=&cmd=2&dept_code=&dept_name=&key=4&mnu_uid=15572&p1=0&p2=0&tbbscode1=gbfood_top&word="
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-01",
+          "name": "화목식당",
+          "currentAddress": "경상북도 예천군 보문면 산단길 6-9",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "화목식당 예천군",
+            "화목식당 경상북도 예천군 보문면 산단길 6-9",
+            "예천군 화목식당"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-02",
+          "name": "용궁애",
+          "currentAddress": "경상북도 예천군 용궁면 용궁시장앞길 24",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "용궁애 예천군",
+            "용궁애 경상북도 예천군 용궁면 용궁시장앞길 24",
+            "예천군 용궁애"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-03",
+          "name": "단골식당 신관",
+          "currentAddress": "경상북도 예천군 용궁면 용궁로 173",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "단골식당 신관 예천군",
+            "단골식당 신관 경상북도 예천군 용궁면 용궁로 173",
+            "예천군 단골식당 신관"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-04",
+          "name": "정직한육회 도청점",
+          "currentAddress": "경상북도 예천군 호명읍 새움3로 46, 112, 113호",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "정직한육회 도청점 예천군",
+            "정직한육회 도청점 경상북도 예천군 호명읍 새움3로 46, 112, 113호",
+            "예천군 정직한육회 도청점"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-05",
+          "name": "은하수식당",
+          "currentAddress": "경상북도 예천군 호명읍 새움3로 46, 205호",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "은하수식당 예천군",
+            "은하수식당 경상북도 예천군 호명읍 새움3로 46, 205호",
+            "예천군 은하수식당"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-06",
+          "name": "부림해물손수제비칼국수 예천점",
+          "currentAddress": "경상북도 예천군 예천읍 한천길 7",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "부림해물손수제비칼국수 예천점 예천군",
+            "부림해물손수제비칼국수 예천점 경상북도 예천군 예천읍 한천길 7",
+            "예천군 부림해물손수제비칼국수 예천점"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-07",
+          "name": "새대구숯불구이",
+          "currentAddress": "경상북도 예천군 예천읍 시장로 61",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "새대구숯불구이 예천군",
+            "새대구숯불구이 경상북도 예천군 예천읍 시장로 61",
+            "예천군 새대구숯불구이"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-08",
+          "name": "숲속이야기",
+          "currentAddress": "경상북도 예천군 예천읍 대심1길 115",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "숲속이야기 예천군",
+            "숲속이야기 경상북도 예천군 예천읍 대심1길 115",
+            "예천군 숲속이야기"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-09",
+          "name": "가자한우물회",
+          "currentAddress": "경상북도 예천군 예천읍 충효로 390-3",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "가자한우물회 예천군",
+            "가자한우물회 경상북도 예천군 예천읍 충효로 390-3",
+            "예천군 가자한우물회"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-10",
+          "name": "청기와",
+          "currentAddress": "경상북도 예천군 예천읍 군청길 44",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "청기와 예천군",
+            "청기와 경상북도 예천군 예천읍 군청길 44",
+            "예천군 청기와"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-11",
+          "name": "백수식당",
+          "currentAddress": "경상북도 예천군 예천읍 충효로 284",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "백수식당 예천군",
+            "백수식당 경상북도 예천군 예천읍 충효로 284",
+            "예천군 백수식당"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-12",
+          "name": "산호식당",
+          "currentAddress": "경상북도 예천군 예천읍 맛고을길 32",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "산호식당 예천군",
+            "산호식당 경상북도 예천군 예천읍 맛고을길 32",
+            "예천군 산호식당"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-13",
+          "name": "참우촌",
+          "currentAddress": "경상북도 예천군 예천읍 시장로 152",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "참우촌 예천군",
+            "참우촌 경상북도 예천군 예천읍 시장로 152",
+            "예천군 참우촌"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-14",
+          "name": "김서방숯불갈비",
+          "currentAddress": "경상북도 예천군 예천읍 맛고을길 34",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "김서방숯불갈비 예천군",
+            "김서방숯불갈비 경상북도 예천군 예천읍 맛고을길 34",
+            "예천군 김서방숯불갈비"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-15",
+          "name": "흥부네토종한방순대",
+          "currentAddress": "경상북도 예천군 용궁면 용궁로 134",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "흥부네토종한방순대 예천군",
+            "흥부네토종한방순대 경상북도 예천군 용궁면 용궁로 134",
+            "예천군 흥부네토종한방순대"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-16",
+          "name": "송담추어탕",
+          "currentAddress": "경상북도 예천군 예천읍 봉덕로 41",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "송담추어탕 예천군",
+            "송담추어탕 경상북도 예천군 예천읍 봉덕로 41",
+            "예천군 송담추어탕"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-17",
+          "name": "낙천갈비",
+          "currentAddress": "경상북도 예천군 예천읍 맛고을길 50-3",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "낙천갈비 예천군",
+            "낙천갈비 경상북도 예천군 예천읍 맛고을길 50-3",
+            "예천군 낙천갈비"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        },
+        {
+          "restaurantId": "local-yecheon-model-c1s81-18",
+          "name": "청호한우촌",
+          "currentAddress": "경상북도 예천군 지보면 지보로 176-11",
+          "region": "경상북도 예천군",
+          "searchAliases": [
+            "청호한우촌 예천군",
+            "청호한우촌 경상북도 예천군 지보면 지보로 176-11",
+            "예천군 청호한우촌"
+          ],
+          "evidenceUrls": [
+            "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2"
+          ],
+          "checkedAt": "2026-11-09",
+          "checkResult": "상호·주소와 공식 지정·수록 자료 대조 또는 신규 명단 확인. 현재 영업·정확한 수치좌표를 독립 확인하지 못함.",
+          "recheckCycle": 2,
+          "recheckSlot": 81,
+          "reason": "업소 명칭·지점·현 도로명 주소에 직접 귀속된 공개 수치좌표 근거 미확인; 인근 건물·주소 추정 좌표 금지."
+        }
+      ],
+      "unresolved": [
+        "오르비 기존 주소 예천읍 시장로 112-2 / 예천군 관광 공식 페이지 112-1 충돌. 옛 위치 임의 변경 금지",
+        "황소네집과 황소고집 같은 맛고을길55의 별도 업소 여부 독립 증빙 미완료",
+        "울진 관광자료 직접 페이지 접근제한: 검색 실패를 영업 종료로 단정하지 않음",
+        "봉화·울릉 공식 선정 명단과 좌표 대조 이월",
+        "대용량 원본 restaurants.json 전송 오류로 단일 원본 동기화 미완료"
+      ],
+      "followUpCandidates": [
+        "예천군 26곳 현재 업소·주소 일치 공개 좌표 재확인",
+        "예천군 공식 모범음식점 2024.05.07 명단의 2026년 영업·지정 유효성 확인",
+        "봉화 1곳 좌표 및 봉화·울진·울릉 신규 관광·지정 명단 대조",
+        "블루리본 공식 경북 군 지역 선정 여부·등급 확인",
+        "이전 누락 회차는 다음 순환 동일 회차에서 보충"
+      ],
+      "nextSlot": 82,
+      "nextRegions": [
+        "경상남도 의령군",
+        "경상남도 함안군",
+        "경상남도 창녕군",
+        "경상남도 고성군"
+      ],
+      "notExhaustive": true,
+      "notes": [
+        "모범음식점 공식 명단 수록·개별 지정연도·현 영업 상태는 별개.",
+        "사용자 개인 위치와 회원 추천맛집 글·사진·좌표 미수집·미수정.",
+        "좌표 보강0·비노출0·배정 4군 재확인 대기27.",
+        "원본 restaurants.json 대용량 전송 오류로 직접 동기화 미완료, 공식 보완 자료에서 화면 로딩."
+      ]
     }
   ],
   "notes": [
@@ -69256,6 +69925,7 @@
     "2026-11-08 20시 1/74: 곡성10 추가·기존3 별도 지자체 가이드 병합. 14곳 수치좌표 재확인 대기, 담양·구례와 1/67·1/72·1/73 이월.",
     "2026-11-08 21시 1순환75회차: 고흥1·보성15·화순18 신규, 기존7곳 모범음식점 병합, 위치대기53, 주소충돌3 확인필요, 목록제외0. 다음 장흥·강진·해남군.",
     "2026-11-08 순환1/75 이어하기: 화순 기존3곳 상호·전화·주소 공식 대조 및 보완자료 정정, 회차 누적 새34·수정10·좌표0·비노출0·재확인53.",
-    "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존."
+    "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존.",
+    "2026-11-09 03시 순환1/81 경북 예천·봉화·울진·울릉: 예천 모범음식점 18 신규·6 선정이력 병합, 좌표0·제외0·위치재확인27, 나머지3군 이월."
   ]
 }

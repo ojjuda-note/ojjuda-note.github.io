@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3567,
+    "uniqueRestaurants": 3585,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2834,
+      "local-guide": 2852,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2501,
+    "coordinatesMissing": 2519,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1554,14 +1554,14 @@
       "전남": 249,
       "세종": 100,
       "대전": 117,
-      "경북": 199,
+      "경북": 217,
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2171,
+      "한식": 2187,
       "중식": 147,
       "일식": 152,
-      "기타": 593,
+      "기타": 595,
       "양식": 221,
       "분식": 41,
       "디저트": 242
@@ -16122,50 +16122,11 @@
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-09-gyeongbuk-slot80-seongju29",
+    "id": "2026-11-09-gyeongbuk-slot81-yecheon18",
     "cycle": 1,
-    "slot": 80,
+    "slot": 81,
     "checkedAt": "2026-11-09",
     "previousCoverage": {
-      "uniqueRestaurants": 3538,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2805,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2472,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 117,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 249,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2146,
-        "중식": 147,
-        "일식": 150,
-        "기타": 592,
-        "양식": 220,
-        "분식": 41,
-        "디저트": 242
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3567,
       "providerCounts": {
         "michelin": 237,
@@ -16204,54 +16165,89 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 29,
-    "modificationCount": 2,
+    "currentCoverage": {
+      "uniqueRestaurants": 3585,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2852,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2519,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 249,
+        "세종": 100,
+        "대전": 117,
+        "경북": 217,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2187,
+        "중식": 147,
+        "일식": 152,
+        "기타": 595,
+        "양식": 221,
+        "분식": 41,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 18,
+    "modificationCount": 6,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-seongju-model-01",
-      "local-seongju-model-02",
-      "local-seongju-model-03",
-      "local-seongju-model-04",
-      "local-seongju-model-05",
-      "local-seongju-model-06",
-      "local-seongju-model-07",
-      "local-seongju-model-08",
-      "local-seongju-model-09",
-      "local-seongju-model-10",
-      "local-seongju-model-11",
-      "local-seongju-model-12",
-      "local-seongju-model-13",
-      "local-seongju-model-14",
-      "local-seongju-model-15",
-      "local-seongju-model-16",
-      "local-seongju-model-17",
-      "local-seongju-model-19",
-      "local-seongju-model-21",
-      "local-seongju-model-22",
-      "local-seongju-model-23",
-      "local-seongju-model-24",
-      "local-seongju-model-25",
-      "local-seongju-model-26",
-      "local-seongju-model-27",
-      "local-seongju-model-28",
-      "local-seongju-model-29",
-      "local-seongju-model-30",
-      "local-seongju-model-31"
+      "local-yecheon-model-c1s81-01",
+      "local-yecheon-model-c1s81-02",
+      "local-yecheon-model-c1s81-03",
+      "local-yecheon-model-c1s81-04",
+      "local-yecheon-model-c1s81-05",
+      "local-yecheon-model-c1s81-06",
+      "local-yecheon-model-c1s81-07",
+      "local-yecheon-model-c1s81-08",
+      "local-yecheon-model-c1s81-09",
+      "local-yecheon-model-c1s81-10",
+      "local-yecheon-model-c1s81-11",
+      "local-yecheon-model-c1s81-12",
+      "local-yecheon-model-c1s81-13",
+      "local-yecheon-model-c1s81-14",
+      "local-yecheon-model-c1s81-15",
+      "local-yecheon-model-c1s81-16",
+      "local-yecheon-model-c1s81-17",
+      "local-yecheon-model-c1s81-18"
     ],
     "modifiedRestaurantIds": [
-      "local-gb-top-2021-11",
-      "local-gb-top-2022-12"
+      "local-gb-top-2020-11",
+      "local-gb-top-2024-8",
+      "local-gb-top-2022-14",
+      "local-gb-top-2019-7",
+      "local-gb-top-2025-4",
+      "local-gb-top-2024-10"
     ],
     "sourceUrls": [
-      "https://sj.go.kr/tour/page.do?mnu_uid=3924"
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot80.json",
-    "scope": "경북 청도·고령·성주·칠곡 회차 중 성주 모범음식점 공개 명단 31곳 확정; 타 군 전체 대조는 이월",
+    "sourceSupplement": "games/certified-restaurants/official-gyeongbuk-slot81.json",
+    "scope": "경북 예천·봉화·울진·울릉 1/81 회차 중 예천군 공식 모범음식점 3개 페이지 18곳 신규·기존6곳 이력 대조. 다른 3군 미완료.",
     "notes": [
-      "정확 주소·지점 일치 근거 없는 좌표는 null로 보존",
-      "기존 ID 2개 선정이력 병합, 독립된 회원 추천 데이터 미변경",
-      "공식 목록 게시수정일·확인일·개별 지정연도는 다름"
+      "예천군 공식 관광 페이지 최종수정일 2024-05-07은 개별 식당의 지정 연도가 아님.",
+      "정확한 공개 좌표·영업 상태 독립 근거 미확보: 27곳 위치 재확인 대기.",
+      "기존 6개 ID와 저장 이력을 보존, 회원 추천 데이터 미수정.",
+      "오르비/에밀테라스, 황소네집/황소고집 주소 충돌 후보는 추가 수록 보류."
     ]
   },
   "latestMapCoverageAudit": {
@@ -25495,5 +25491,37 @@
     "currentOperatingStatusVerified": false,
     "blueRibbonGradeVerified": false,
     "notes": "2026-08-13은 게시물 갱신일, 2026-11-09는 확인일입니다. 개별 업소의 지정·영업 연도와 혼동하지 않습니다. 위치 좌표는 공개 일치 근거 없어 추가하지 않았습니다."
+  },
+  "gyeongbukSlot81": {
+    "cycle": 1,
+    "slot": 81,
+    "checkedAt": "2026-11-09",
+    "scheduledAtKST": "2026-11-09T03:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-gyeongbuk-slot81.json",
+    "sourceUrls": [
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+      "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+    ],
+    "publisher": "경상북도 예천군 문화관광",
+    "sourcePageModifiedAt": "2024-05-07",
+    "officialPageRows": 27,
+    "addedCount": 18,
+    "modifiedCount": 6,
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "locationPending": 27,
+    "regionAdded": {
+      "예천군": 18,
+      "봉화군": 0,
+      "울진군": 0,
+      "울릉군": 0
+    },
+    "sourceCoverage": "예천군 공식 모범음식점 3페이지, 서로 다른 이름·주소로 확인 가능한 18개 신규 및 기존6개 이력 보강, 주소충돌 3개 미처리. 다른3군 신규 조사 이월.",
+    "completeRegionalCollection": false,
+    "designationYearVerified": false,
+    "currentOperatingStatusVerified": false,
+    "blueRibbonGradeVerified": false,
+    "notes": "모범음식점 공식 수록 여부를 확인하였으나 개별 지정연도 및 현재 영업·위경도는 확인되지 않음. 원본 대용량 restaurants.json 직접 동기화는 대용량 전송 실패로 미완료; 화면은 독립 공식 보완 데이터에서 수록."
   }
 }

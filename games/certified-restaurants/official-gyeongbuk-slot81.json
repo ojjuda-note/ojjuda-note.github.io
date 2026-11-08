@@ -1,0 +1,580 @@
+{
+  "updatedAt": "2026-11-09",
+  "cycle": 1,
+  "slot": 81,
+  "scheduledAtKST": "2026-11-09T03:00:00+09:00",
+  "sourceName": "예천군 문화관광 공식 모범음식점 명단",
+  "sourceUrls": [
+    "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+    "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+    "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3"
+  ],
+  "pageFooterUpdatedAt": "2024-05-07",
+  "sourceCheckedAt": "2026-11-09",
+  "designationYearVerified": false,
+  "currentOperatingStatusVerified": false,
+  "coordinatesVerified": 0,
+  "completeRegionalCollection": false,
+  "notes": [
+    "공식 웹페이지의 최종수정일은 개별 식당 지정연도가 아닙니다.",
+    "현재 영업 여부 및 좌표 불명인 식당은 추정하지 않고 유지합니다.",
+    "예천군 상호·주소가 동일하거나 유사해 중복 위험이 있는 황소고집/황소네집, 오르비/에밀테라스는 신규 추가·주소 수정 보류합니다.",
+    "울진·울릉 공식 명단의 전체 접근·대조, 봉화 신규 발굴은 이월합니다."
+  ],
+  "restaurants": [
+    {
+      "id": "local-yecheon-model-c1s81-01",
+      "name": "화목식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 보문면 산단길 6-9",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-02",
+      "name": "용궁애",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 용궁면 용궁시장앞길 24",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-03",
+      "name": "단골식당 신관",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 용궁면 용궁로 173",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대",
+        "순대국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-04",
+      "name": "정직한육회 도청점",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 호명읍 새움3로 46, 112, 113호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "육회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-05",
+      "name": "은하수식당",
+      "category": "기타",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 호명읍 새움3로 46, 205호",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-06",
+      "name": "부림해물손수제비칼국수 예천점",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 한천길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수",
+        "수제비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-07",
+      "name": "새대구숯불구이",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 시장로 61",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-08",
+      "name": "숲속이야기",
+      "category": "기타",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 대심1길 115",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-09",
+      "name": "가자한우물회",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 충효로 390-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우물회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-10",
+      "name": "청기와",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 군청길 44",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "감자탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-11",
+      "name": "백수식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 충효로 284",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-12",
+      "name": "산호식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 맛고을길 32",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-13",
+      "name": "참우촌",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 시장로 152",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-14",
+      "name": "김서방숯불갈비",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 맛고을길 34",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-15",
+      "name": "흥부네토종한방순대",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 용궁면 용궁로 134",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-16",
+      "name": "송담추어탕",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 봉덕로 41",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-17",
+      "name": "낙천갈비",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 예천읍 맛고을길 50-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    },
+    {
+      "id": "local-yecheon-model-c1s81-18",
+      "name": "청호한우촌",
+      "category": "한식",
+      "region": "경북",
+      "district": "예천군",
+      "address": "경상북도 예천군 지보면 지보로 176-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "예천군 모범음식점 공식 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+          "sourceName": "예천군 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-09",
+          "status": "official_listing",
+          "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+        }
+      ]
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-gb-top-2020-11",
+      "expectedName": "제주복집",
+      "expectedAddress": "경상북도 예천군 예천읍 이미기길 71",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+      }
+    },
+    {
+      "id": "local-gb-top-2024-8",
+      "expectedName": "백번고기집본점",
+      "expectedAddress": "경상북도 예천군 풍양면 상풍로 1445",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=3",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 공식 관광 모범음식점 명단 수록. 개별 선정 연도와 현재 영업 상태는 확인되지 않았습니다."
+      }
+    },
+    {
+      "id": "local-gb-top-2022-14",
+      "expectedName": "한국관복어집",
+      "expectedAddress": "경상북도 예천군 예천읍 군청길 42-4",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 관광 공식 모범음식점 명단 수록. 경북 으뜸음식점 기존 선정 이력과는 별개. 현재 지정 여부·영업 상태 미확인."
+      }
+    },
+    {
+      "id": "local-gb-top-2019-7",
+      "expectedName": "언덕숯불",
+      "expectedAddress": "경상북도 예천군 예천읍 충효로 512-5",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 관광 공식 모범음식점 명단 수록. 경북 으뜸음식점 기존 선정 이력과는 별개. 현재 지정 여부·영업 상태 미확인."
+      }
+    },
+    {
+      "id": "local-gb-top-2025-4",
+      "expectedName": "신라식당",
+      "expectedAddress": "경상북도 예천군 예천읍 군청길 37",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 관광 공식 모범음식점 명단 수록. 경북 으뜸음식점 기존 선정 이력과는 별개. 현재 지정 여부·영업 상태 미확인."
+      }
+    },
+    {
+      "id": "local-gb-top-2024-10",
+      "expectedName": "용궁순대",
+      "expectedAddress": "경상북도 예천군 용궁면 용궁로 158",
+      "guide": {
+        "provider": "local-guide",
+        "label": "예천군 모범음식점 공식 수록",
+        "year": null,
+        "yearType": "listing",
+        "sourceUrl": "https://ycg.kr/open.content/tour/guide/food.lodging/food/fine.restaurant/?page=2",
+        "sourceName": "예천군 문화관광 · 모범음식점",
+        "verifiedAt": "2026-11-09",
+        "status": "official_listing",
+        "selectionCriteria": "예천군 관광 공식 모범음식점 명단 수록. 경북 으뜸음식점 기존 선정 이력과는 별개. 현재 지정 여부·영업 상태 미확인."
+      }
+    }
+  ]
+}
