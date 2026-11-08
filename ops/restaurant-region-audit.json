@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 71,
-    "scheduledAt": "2026-11-08T17:00:00+09:00",
+    "slot": 74,
+    "scheduledAt": "2026-11-08T20:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "예약된 17:00 KST 시각으로 회차 산출: h=66,n=70,slot71,cycle1; 실행 중 실제 확인."
+    "source": "실행 예약시각 자체는 미제공. KST 20:58을 정각 20:00으로 내려 h=69,n=73,slot74,cycle1 계산."
   },
   "entries": [
     {
@@ -65948,6 +65948,384 @@
         "전북특별자치도 장수군"
       ],
       "notExhaustive": true
+    },
+    {
+      "cycle": 1,
+      "slot": 74,
+      "scheduledAtKST": "2026-11-08T20:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_official_gokseong_10_new_3_enriched",
+      "assignedRegions": [
+        "전남광주통합특별시 담양군",
+        "전남광주통합특별시 곡성군",
+        "전남광주통합특별시 구례군"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시 담양군",
+          "actuallyChecked": [
+            "군청 공식 모범음식점 검색"
+          ],
+          "remainingAreas": [
+            "공식 인증명단과 실제 상호·주소·영업·좌표 대조"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 곡성군",
+          "actuallyChecked": [
+            "문화관광 모범음식점 21건 중 첫쪽 12건 및 4개 개별 음식점 상세 대조",
+            "기존 저장 4곳 중 공식 주소 일치 3곳 가이드 병합, 별천지가든 1곳 충돌 보류"
+          ],
+          "remainingAreas": [
+            "명단 나머지와 휴게소 두 지점 확인",
+            "별천지가든 1258/1266 주소 검증",
+            "위치 좌표와 영업 상태 검증"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 구례군",
+          "actuallyChecked": [
+            "군청·관광 공식 모범음식점 검색"
+          ],
+          "remainingAreas": [
+            "공식 지정명단/정확한 주소와 좌표 수집"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "곡성군 문화관광 모범음식점 21건 목록",
+        "곡성군 개별 음식점 상세 4건",
+        "기존 전남 남도음식명가·대물림향토음식점 이력"
+      ],
+      "additions": 10,
+      "modifications": 3,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 14,
+      "locationPendingScope": "곡성 공식 목록 확인 대상 10신규+기존4 좌표 없음. 전국 전체 대기 건수가 아님.",
+      "addedRestaurantIds": [
+        "local-jeonnam-slot74-gokseong-dorim-jangeo",
+        "local-jeonnam-slot74-gokseong-dolsil-sutbul",
+        "local-jeonnam-slot74-gokseong-manri-jangseong",
+        "local-jeonnam-slot74-gokseong-miyeon-bokjip",
+        "local-jeonnam-slot74-gokseong-sagyejeol-hoejip",
+        "local-jeonnam-slot74-gokseong-sandongne-garden",
+        "local-jeonnam-slot74-gokseong-seokgok-sikdang",
+        "local-jeonnam-slot74-gokseong-chowon-galbi",
+        "local-jeonnam-slot74-gokseong-chinjeong-eomma",
+        "local-jeonnam-slot74-gokseong-jeil-sikdang"
+      ],
+      "modifiedRestaurantIds": [
+        "local-namdo-599273",
+        "local-namdo-599255",
+        "local-namdo-607491"
+      ],
+      "evidenceUrls": [
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view",
+        "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1551&mode=view"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-dorim-jangeo",
+          "name": "도림장어",
+          "currentAddress": "전남광주통합특별시 곡성군 석곡면 주석로 623-12",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "도림장어 곡성군",
+            "도림장어 전남광주통합특별시 곡성군 석곡면 주석로 623-12",
+            "전남광주통합특별시 곡성군 도림장어"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-dolsil-sutbul",
+          "name": "돌실숯불회관",
+          "currentAddress": "전남광주통합특별시 곡성군 석곡면 석곡로 52-1",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "돌실숯불회관 곡성군",
+            "돌실숯불회관 전남광주통합특별시 곡성군 석곡면 석곡로 52-1",
+            "전남광주통합특별시 곡성군 돌실숯불회관"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-manri-jangseong",
+          "name": "만리장성",
+          "currentAddress": "전남광주통합특별시 곡성군 석곡면 주석로 620-4",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "만리장성 곡성군",
+            "만리장성 전남광주통합특별시 곡성군 석곡면 주석로 620-4",
+            "전남광주통합특별시 곡성군 만리장성"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-miyeon-bokjip",
+          "name": "미연복집",
+          "currentAddress": "전남광주통합특별시 곡성군 오산면 오산로 968",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "미연복집 곡성군",
+            "미연복집 전남광주통합특별시 곡성군 오산면 오산로 968",
+            "전남광주통합특별시 곡성군 미연복집"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-sagyejeol-hoejip",
+          "name": "사계절횟집",
+          "currentAddress": "전남광주통합특별시 곡성군 오곡면 대황강로 1589",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "사계절횟집 곡성군",
+            "사계절횟집 전남광주통합특별시 곡성군 오곡면 대황강로 1589",
+            "전남광주통합특별시 곡성군 사계절횟집"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-sandongne-garden",
+          "name": "산동네가든",
+          "currentAddress": "전남광주통합특별시 곡성군 석곡면 곡순로 114-30",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "산동네가든 곡성군",
+            "산동네가든 전남광주통합특별시 곡성군 석곡면 곡순로 114-30",
+            "전남광주통합특별시 곡성군 산동네가든"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-seokgok-sikdang",
+          "name": "석곡식당",
+          "currentAddress": "전남광주통합특별시 곡성군 석곡면 석곡로 60",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1163&mode=view"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "석곡식당 곡성군",
+            "석곡식당 전남광주통합특별시 곡성군 석곡면 석곡로 60",
+            "전남광주통합특별시 곡성군 석곡식당"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-chowon-galbi",
+          "name": "초원숯불갈비",
+          "currentAddress": "전남광주통합특별시 곡성군 곡성읍 중앙로 110-1",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1542&mode=view"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "초원숯불갈비 곡성군",
+            "초원숯불갈비 전남광주통합특별시 곡성군 곡성읍 중앙로 110-1",
+            "전남광주통합특별시 곡성군 초원숯불갈비"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-chinjeong-eomma",
+          "name": "친정엄마네",
+          "currentAddress": "전남광주통합특별시 곡성군 곡성읍 곡성로 856",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1543&mode=view"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "친정엄마네 곡성군",
+            "친정엄마네 전남광주통합특별시 곡성군 곡성읍 곡성로 856",
+            "전남광주통합특별시 곡성군 친정엄마네"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot74-gokseong-jeil-sikdang",
+          "name": "제일식당",
+          "currentAddress": "전남광주통합특별시 곡성군 오곡면 기차마을로 143",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best?idx=1551&mode=view"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "제일식당 곡성군",
+            "제일식당 전남광주통합특별시 곡성군 오곡면 기차마을로 143",
+            "전남광주통합특별시 곡성군 제일식당"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599273",
+          "name": "궁전회관",
+          "currentAddress": "전라남도 곡성군 곡성읍 중앙로 54",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "궁전회관 곡성군",
+            "궁전회관 전라남도 곡성군 곡성읍 중앙로 54",
+            "전남광주통합특별시 곡성군 궁전회관"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599255",
+          "name": "삼화관광농원",
+          "currentAddress": "전라남도 곡성군 겸면 입면로 208",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "삼화관광농원 곡성군",
+            "삼화관광농원 전라남도 곡성군 겸면 입면로 208",
+            "전남광주통합특별시 곡성군 삼화관광농원"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607491",
+          "name": "새수궁가든",
+          "currentAddress": "전라남도 곡성군 죽곡면 섬진강로 1015-2",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best"
+          ],
+          "checkResult": "공식 상호·주소 확인. 일치하는 수치좌표 및 현재 영업상태는 확인 안 됨.",
+          "searchAliases": [
+            "새수궁가든 곡성군",
+            "새수궁가든 전라남도 곡성군 죽곡면 섬진강로 1015-2",
+            "전남광주통합특별시 곡성군 새수궁가든"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "현 업소 주소와 일치하는 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599267",
+          "name": "별천지가든",
+          "currentAddress": "전라남도 곡성군 오곡면 섬진강로 1266",
+          "region": "전남광주통합특별시 곡성군",
+          "sourceType": "곡성군 문화관광 공식 모범음식점 / 기존 지정 이력",
+          "evidenceUrls": [
+            "https://tour.gokseong.go.kr/tour/amusement/eatery/best",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkResult": "기존 섬진강로 1266, 군 공식 목록 1258 주소 충돌. 이전·동일 업소 확인 전 변경하지 않음.",
+          "searchAliases": [
+            "별천지가든 곡성군",
+            "별천지가든 전라남도 곡성군 오곡면 섬진강로 1266",
+            "전남광주통합특별시 곡성군 별천지가든"
+          ],
+          "checkedAt": "2026-11-08",
+          "recheckCycle": 2,
+          "recheckSlot": 74,
+          "reason": "기존 및 공식 주소 충돌, 지점·현주소 재확인 대기"
+        }
+      ],
+      "followUpCandidates": [
+        "담양군·구례군 공식 명단/위치 대조",
+        "별천지가든 1258 vs 1266 주소",
+        "곡성 잔여 9곳과 휴게소 지점 확인",
+        "운영기록 미발견 1/67·1/72·1/73은 다음 순환 이월"
+      ],
+      "notes": [
+        "정규 회차 이월 보존. 별도 누락 회차를 74회차로 대체하지 않음.",
+        "공식 선정 여부와 현 영업상태 구별, 출처 게시일과 선정연도 구별.",
+        "회원 추천 정보 불변, 폐업·좌표 추정 및 비노출 처리 없음."
+      ]
     }
   ],
   "notes": [
@@ -65981,6 +66359,7 @@
     "2026-11-08 14시 순환1/68 충북 보은·옥천·영동·증평: 옥천군 지정 명단 새25·기존5 이력 병합, 좌표1(한알천), 비노출0, 재확인 대기41(기본DB 기존17+신규24). 67회차 기록 부재 및 전북 미완료 이월.",
     "2026-11-08 14시 순환1/68 이어하기: 영동군 모범음식점 명단에서 새5곳(모범업소 수록), 좌표3곳, 제외0, 해당 지역 대기43. 기존 옥천25·기존 선정이력5·한알천 좌표1 및 누락 67회차 기록 보존.",
     "2026-11-08 16시 순환1/70: 금산군 모범음식점 신규19·기존1 이력병합, 좌표0·목록제외0·4개군 위치 재확인47. 머들령 주소 이월. 홍성·예산·태안 다음.",
-    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조."
+    "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조.",
+    "2026-11-08 20시 1/74: 곡성10 추가·기존3 별도 지자체 가이드 병합. 14곳 수치좌표 재확인 대기, 담양·구례와 1/67·1/72·1/73 이월."
   ]
 }
