@@ -1,0 +1,110 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 63,
+  "sourceName": "부산관광공사 비짓부산 · 울산광역시 관광 및 업소 본점 공식 안내",
+  "sourceUrls": [
+    "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+    "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+    "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+    "https://www.0522621375.com/",
+    "https://smi.purpleo.kr/article/48644"
+  ],
+  "sourceScope": "기장군·울주군 일부 식당 공식 관광 소개와 특정 업소 정확 좌표 교차 확인. 지역 전체 수록 아님.",
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 1,
+  "notes": [
+    "부산관광공사 외국어 메뉴판 지원 안내는 별도 선정 등급이 아닙니다.",
+    "연화리 기장촌집장어 주소는 과거 다른 음식점 공개 주소와 겹쳐 수치좌표 미기재.",
+    "언양진미불고기는 삼남읍 본점 공식 주소 및 공개 소상공인 데이터의 동일 상호·도로명·지번 좌표를 교차 확인. 업소 전화번호는 관광안내와 상충하므로 기재하지 않음.",
+    "고당운집은 동일 주소 공개 숫자 좌표가 약 40m 서로 달라 미기재.",
+    "현재 영업 여부·정규 블루리본 등급은 검증하지 않음."
+  ],
+  "restaurants": [
+    {
+      "id": "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+      "name": "연화리 기장촌집장어",
+      "category": "한식",
+      "region": "부산",
+      "district": "기장군",
+      "address": "부산광역시 기장군 기장읍 연화1길 167",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "부산관광공사 음식점 소개(외국어 메뉴판 지원)",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+          "sourceName": "부산관광공사 · 비짓부산",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "부산 관광 공식 안내에 상호·주소가 수록됨. 선정 연도·블루리본 정규 등급·현재 영업 여부는 이 자료로 검증되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+      "name": "언양진미불고기",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 삼남읍 중평로 33",
+      "lat": 35.5582137771225,
+      "lng": 129.120057879439,
+      "menu": [
+        "언양불고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산광역시 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+          "sourceName": "울산광역시 · 울산관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "울산광역시 관광 식당 상세와 업소 공식 홈페이지에서 본점 상호·도로명주소가 일치함. 수치좌표는 별도 공개 소상공인 현장 업소자료와 교차 확인했으며 현재 영업·정규 블루리본 등급은 확정하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.0522621375.com/",
+      "addressSourceCheckedAt": "2026-11-08",
+      "coordinateSourceUrl": "https://smi.purpleo.kr/article/48644",
+      "coordinateCrosscheckSourceUrl": "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+      "coordinateBusinessSourceUrl": "https://www.0522621375.com/",
+      "coordinateVerifiedAt": "2026-11-08"
+    },
+    {
+      "id": "local-ulsan-slot63-ulju-godang-unjip",
+      "name": "고당운집",
+      "category": "한식",
+      "region": "울산",
+      "district": "울주군",
+      "address": "울산광역시 울주군 범서읍 새밭등길 36",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "울산광역시 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+          "sourceName": "울산광역시 · 울산관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 울산관광 먹거리 목록에서 상호와 도로명주소 확인. 공개 좌표 근거끼리 충돌해 위치 수치좌표를 미기재; 현재 영업·선정 등급은 검증되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}

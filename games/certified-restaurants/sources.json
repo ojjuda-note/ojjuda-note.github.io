@@ -1529,21 +1529,21 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3331,
+    "uniqueRestaurants": 3334,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2598,
+      "local-guide": 2601,
       "post-office": 240
     },
-    "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2270,
+    "coordinatesAvailable": 1062,
+    "coordinatesMissing": 2272,
     "regionalCounts": {
       "서울": 353,
-      "부산": 385,
+      "부산": 386,
       "충북": 223,
       "충남": 74,
-      "울산": 37,
+      "울산": 39,
       "경남": 325,
       "강원": 66,
       "전북": 215,
@@ -1558,7 +1558,7 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1982,
+      "한식": 1985,
       "중식": 138,
       "일식": 139,
       "기타": 584,
@@ -14537,53 +14537,125 @@
         "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
         "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
       ]
+    },
+    {
+      "id": "2026-11-08-busan-ulju-slot63-three-official-tourism-restaurants",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 63,
+      "previousCoverage": {
+        "uniqueRestaurants": 3331,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2598,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2270,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1982,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3334,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2601,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1062,
+        "coordinatesMissing": 2272,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 386,
+          "충북": 223,
+          "충남": 74,
+          "울산": 39,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1985,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 3,
+      "modificationCount": 0,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+        "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+        "local-ulsan-slot63-ulju-godang-unjip"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+        "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+        "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+        "https://www.0522621375.com/",
+        "https://smi.purpleo.kr/article/48644",
+        "https://findby.co.kr/details/44917-317104319500-st-652b12b18c641f9e388ed5ec",
+        "https://jusoga.com/b/3171025930109450003006068/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C-%EC%9A%B8%EC%A3%BC%EA%B5%B0-%EB%B2%94%EC%84%9C%EC%9D%8D-%EC%83%88%EB%B0%AD%EB%93%B1%EA%B8%B8-36"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+      "scope": "부산 기장군·울산 울주군 공식 관광 음식점 공개 목록 일부와 업소 공식 홈페이지·공개 업소 일치 수치좌표를 대조. 지역 전수 아님.",
+      "notes": [
+        "부산 관광 소개 1곳, 울산시 관광 소개 2곳. 개별 정규 블루리본 등급/미쉐린 지정 및 현재 영업은 별도로 확인되지 않아 부여하지 않음.",
+        "언양진미불고기 한 곳은 업소 본점 공식 주소 및 공개 소상공인 상권정보의 동일 명칭·지번·도로명·숫자좌표를 대조해 신규 등록시 좌표를 함께 수록.",
+        "고당운집의 동일 주소 두 공개 좌표가 약 40m 충돌하여 위경도 null. 연화리 기장촌집장어의 주소에는 과거 다른 업소명 안내가 발견되어 좌표 null.",
+        "기존 인증 ID·회원 추천 게시물·저장 기능 미변경. 기장/울주 기존 좌표 없는 식당 중 공개 주소 일부 확인, 폐업은 단정하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-daegu-slot62-five-official-food-listings",
+    "id": "2026-11-08-busan-ulju-slot63-three-official-tourism-restaurants",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 62,
+    "slot": 63,
     "previousCoverage": {
-      "uniqueRestaurants": 3326,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2593,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2265,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 385,
-        "충북": 223,
-        "충남": 74,
-        "울산": 37,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 345,
-        "제주": 120,
-        "대구": 132,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1977,
-        "중식": 138,
-        "일식": 139,
-        "기타": 584,
-        "양식": 214,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3331,
       "providerCounts": {
         "michelin": 237,
@@ -14622,138 +14694,176 @@
         "디저트": 240
       }
     },
-    "newRestaurantCount": 5,
+    "currentCoverage": {
+      "uniqueRestaurants": 3334,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2601,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1062,
+      "coordinatesMissing": 2272,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 386,
+        "충북": 223,
+        "충남": 74,
+        "울산": 39,
+        "경남": 325,
+        "강원": 66,
+        "전북": 215,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1985,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 3,
     "modificationCount": 0,
-    "coordinateAddedCount": 0,
+    "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-daegu-slot62-dalseong-yeonhwajeong-nongong",
-      "local-daegu-slot62-dalseong-toseokjeong",
-      "local-daegu-slot62-dalseong-daeseong-eel",
-      "local-daegu-slot62-dalseong-dalseong-hoesikdang",
-      "local-daegu-slot62-dalseong-palsu"
+      "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+      "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+      "local-ulsan-slot63-ulju-godang-unjip"
     ],
     "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://www.daegufood.go.kr/kor/food/food.asp?snm=9&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food_10mi.asp?gotoPage=17&idx=1519&snm=19",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=55&snm=9&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=5&idx=768&snm=110&ta=8",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=2&idx=1164&snm=9",
-      "https://www.daegufood.go.kr/kor/food/food.asp?gotoPage=1&idx=1800&snm=9&ta=8"
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+      "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+      "https://www.0522621375.com/",
+      "https://smi.purpleo.kr/article/48644",
+      "https://findby.co.kr/details/44917-317104319500-st-652b12b18c641f9e388ed5ec",
+      "https://jusoga.com/b/3171025930109450003006068/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C-%EC%9A%B8%EC%A3%BC%EA%B5%B0-%EB%B2%94%EC%84%9C%EC%9D%8D-%EC%83%88%EB%B0%AD%EB%93%B1%EA%B8%B8-36"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-daegu-slot62.json",
-    "scope": "달성군·군위군 부분 조사. 대구푸드 공식 상호·도로명주소를 확인해 달성군 5곳만 추가, 군위군 신규 공식 검증 없음. 2025년 대구음식점 가이드북 기존 18개와 비교. 지역 전수조사가 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+    "scope": "부산 기장군·울산 울주군 공식 관광 음식점 공개 목록 일부와 업소 공식 홈페이지·공개 업소 일치 수치좌표를 대조. 지역 전수 아님.",
     "notes": [
-      "본점과 직영점이 주소가 다른 연화정삼계탕의 두 지점을 별도로 유지.",
-      "대구푸드 목록의 개별 인증 종류·지정 연도와 현재 영업 여부는 확인하지 않음.",
-      "좌표 미등록 기존 18곳과 신규 5곳은 상호·현주소에 정확히 맞는 공개 수치좌표가 없으므로 null 유지.",
-      "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
-      "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
-      "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
+      "부산 관광 소개 1곳, 울산시 관광 소개 2곳. 개별 정규 블루리본 등급/미쉐린 지정 및 현재 영업은 별도로 확인되지 않아 부여하지 않음.",
+      "언양진미불고기 한 곳은 업소 본점 공식 주소 및 공개 소상공인 상권정보의 동일 명칭·지번·도로명·숫자좌표를 대조해 신규 등록시 좌표를 함께 수록.",
+      "고당운집의 동일 주소 두 공개 좌표가 약 40m 충돌하여 위경도 null. 연화리 기장촌집장어의 주소에는 과거 다른 업소명 안내가 발견되어 좌표 null.",
+      "기존 인증 ID·회원 추천 게시물·저장 기능 미변경. 기장/울주 기존 좌표 없는 식당 중 공개 주소 일부 확인, 폐업은 단정하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
-    "id": "2026-11-07-jeju-slot48-continuation-jinju-exact-visitjeju",
-    "checkedAt": "2026-11-07",
+    "id": "2026-11-08-ulju-slot63-eonyang-jinmi-public-coordinate",
+    "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 48,
+    "slot": 63,
     "previousCoverage": {
-      "uniqueRestaurants": 3250,
+      "uniqueRestaurants": 3331,
       "providerCounts": {
         "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2519,
+        "blue-ribbon": 530,
+        "local-guide": 2598,
         "post-office": 240
       },
-      "coordinatesAvailable": 1051,
-      "coordinatesMissing": 2199,
+      "coordinatesAvailable": 1061,
+      "coordinatesMissing": 2270,
       "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
+        "서울": 353,
+        "부산": 385,
+        "충북": 223,
+        "충남": 74,
+        "울산": 37,
+        "경남": 325,
+        "강원": 66,
         "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
         "전남": 183,
         "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
       },
       "categoryCounts": {
-        "한식": 1927,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
+        "한식": 1982,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
       }
     },
     "currentCoverage": {
-      "uniqueRestaurants": 3250,
+      "uniqueRestaurants": 3334,
       "providerCounts": {
         "michelin": 237,
-        "blue-ribbon": 528,
-        "local-guide": 2519,
+        "blue-ribbon": 530,
+        "local-guide": 2601,
         "post-office": 240
       },
-      "coordinatesAvailable": 1052,
-      "coordinatesMissing": 2198,
+      "coordinatesAvailable": 1062,
+      "coordinatesMissing": 2272,
       "regionalCounts": {
-        "서울": 351,
-        "부산": 382,
-        "충북": 217,
-        "충남": 64,
-        "울산": 36,
-        "경남": 320,
-        "강원": 61,
+        "서울": 353,
+        "부산": 386,
+        "충북": 223,
+        "충남": 74,
+        "울산": 39,
+        "경남": 325,
+        "강원": 66,
         "전북": 215,
-        "경기": 382,
-        "인천": 341,
-        "제주": 113,
-        "대구": 130,
+        "경기": 402,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
         "전남": 183,
         "세종": 100,
-        "대전": 110,
-        "경북": 169,
-        "광주": 76
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
       },
       "categoryCounts": {
-        "한식": 1927,
-        "중식": 134,
-        "일식": 135,
-        "기타": 581,
-        "양식": 211,
-        "분식": 28,
-        "디저트": 234
+        "한식": 1985,
+        "중식": 138,
+        "일식": 139,
+        "기타": 584,
+        "양식": 214,
+        "분식": 34,
+        "디저트": 240
       }
     },
-    "newRestaurantCount": 0,
-    "modificationCount": 1,
+    "newRestaurantCount": 3,
+    "modificationCount": 0,
     "coordinateAddedCount": 1,
     "locationExcludedCount": 0,
-    "modifiedRestaurantIds": [
-      "local-jeju-57"
+    "modifiedRestaurantIds": [],
+    "addedRestaurantIds": [
+      "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+      "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+      "local-ulsan-slot63-ulju-godang-unjip"
     ],
-    "coordinateSupplement": "games/certified-restaurants/official-jeju-slot48-locations.json",
+    "coordinateSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
     "sourceUrls": [
-      "https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000012724"
+      "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+      "https://www.0522621375.com/",
+      "https://smi.purpleo.kr/article/48644"
     ],
     "notes": [
-      "서귀포시 진주식당 현재 공식 관광 상세의 상호·도로명주소·공개 위경도가 원등록 정보와 정확히 일치함.",
-      "기존 1/48 점검에서 확인한 5곳을 보존하고 같은 회차 이어하기로 1곳을 추가 확인함. 영업 상태와 선정 연도는 별개.",
-      "서귀포 기본 27곳 중 위치 미확인 22곳에서 이번 회차 누적 6곳 보강하여 16곳 이월."
-    ],
-    "scope": "서귀포시 1/48 회차 이어하기: 제주 향토음식점 진주식당 위치 1건",
-    "sourceAuditFile": "games/certified-restaurants/sources.json"
+      "업소 공식 홈페이지의 본점 상호·삼남읍 중평로33 주소와 공개 상권정보의 동일 상호·지번·주소·위경도 대조. 인근 건물 중심점 임의 사용하지 않음.",
+      "기존 미확인 20곳과 신규 미확인 2곳은 좌표 없이 이월. 전체 데이터 총계와 위치 총계는 신규 3곳 포함."
+    ]
   },
   "localGovernment": {
     "checkedAt": "2026-11-06",
@@ -22865,6 +22975,110 @@
       ],
       "scope": "서귀포시 1/48 회차 이어하기: 제주 향토음식점 진주식당 위치 1건",
       "sourceAuditFile": "games/certified-restaurants/sources.json"
+    },
+    {
+      "id": "2026-11-08-ulju-slot63-eonyang-jinmi-public-coordinate",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 63,
+      "previousCoverage": {
+        "uniqueRestaurants": 3331,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2598,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2270,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 385,
+          "충북": 223,
+          "충남": 74,
+          "울산": 37,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1982,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3334,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2601,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1062,
+        "coordinatesMissing": 2272,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 386,
+          "충북": 223,
+          "충남": 74,
+          "울산": 39,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1985,
+          "중식": 138,
+          "일식": 139,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 3,
+      "modificationCount": 0,
+      "coordinateAddedCount": 1,
+      "locationExcludedCount": 0,
+      "modifiedRestaurantIds": [],
+      "addedRestaurantIds": [
+        "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+        "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+        "local-ulsan-slot63-ulju-godang-unjip"
+      ],
+      "coordinateSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+      "sourceUrls": [
+        "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+        "https://www.0522621375.com/",
+        "https://smi.purpleo.kr/article/48644"
+      ],
+      "notes": [
+        "업소 공식 홈페이지의 본점 상호·삼남읍 중평로33 주소와 공개 상권정보의 동일 상호·지번·주소·위경도 대조. 인근 건물 중심점 임의 사용하지 않음.",
+        "기존 미확인 20곳과 신규 미확인 2곳은 좌표 없이 이월. 전체 데이터 총계와 위치 총계는 신규 3곳 포함."
+      ]
     }
   ],
   "busanSlot39": {
@@ -23321,6 +23535,50 @@
       "군위군의 대구푸드 필터가 0건인 것은 해당 공개 자료에만 해당. 다른 지자체/관광 선정 및 영업 부재 뜻 아님.",
       "블루리본 정규 등급 확인 안 되어 블루리본 선정으로 표시하지 않음.",
       "회원 추천 등록 데이터 및 개인정보는 수정하지 않음."
+    ]
+  },
+  "busanUljuSlot63": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 63,
+    "sourceFile": "games/certified-restaurants/official-busan-ulsan-slot63.json",
+    "officialSources": [
+      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
+      "https://www.ulsan.go.kr/tour/kor/unit/food/list.ulsan?mId=001002009000000000",
+      "https://www.ulsan.go.kr/tour/kor/unit/food/view.do?mId=001002009000000000&unqId=485",
+      "https://www.0522621375.com/"
+    ],
+    "additionalCoordinateEvidence": [
+      "https://smi.purpleo.kr/article/48644"
+    ],
+    "coordinateConflictEvidence": [
+      "https://findby.co.kr/details/44917-317104319500-st-652b12b18c641f9e388ed5ec",
+      "https://jusoga.com/b/3171025930109450003006068/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C-%EC%9A%B8%EC%A3%BC%EA%B5%B0-%EB%B2%94%EC%84%9C%EC%9D%8D-%EC%83%88%EB%B0%AD%EB%93%B1%EA%B8%B8-36",
+      "https://qcl.purpleo.kr/article/1899"
+    ],
+    "addedCount": 3,
+    "modifiedCount": 0,
+    "coordinateAdded": 1,
+    "locationExcluded": 0,
+    "pendingLocations": 22,
+    "regionCountsAfter": {
+      "부산광역시 기장군": 25,
+      "울산광역시 울주군": 7
+    },
+    "operatingStatusVerified": 0,
+    "blueRibbonGradeVerified": 0,
+    "completeRegionalCollection": false,
+    "restaurantIds": [
+      "local-busan-slot63-gijang-yeonhwari-chonjip-eel",
+      "local-ulsan-slot63-ulju-eonyang-jinmi-bulgogi",
+      "local-ulsan-slot63-ulju-godang-unjip"
+    ],
+    "notes": [
+      "고당운집 공개 좌표 근거 충돌. 정확한 업체 위치를 특정하지 않고 lat/lng null 유지.",
+      "언양진미불고기 관광사이트의 공개 전화번호는 업소 공식 홈페이지의 번호와 다르므로 전화번호는 등록하지 않음.",
+      "기장촌집장어 안내 주소는 다른 과거 음식점 정보와 동일해 숫자 좌표는 유보.",
+      "지자체 관광 음식점 안내는 정규 리본 선정이나 현재 영업 판정을 뜻하지 않음.",
+      "기존 구군 미확인 개별 보강 22곳은 다음 2/63회차 우선 확인."
     ]
   }
 }
