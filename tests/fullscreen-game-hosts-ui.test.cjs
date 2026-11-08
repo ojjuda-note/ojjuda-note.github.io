@@ -164,6 +164,17 @@ async function resize(page, size, shortened=false) {
       await page.locator('.ge-board-entry').waitFor();await settle(page);
       await fullscreen(page,'.world-board-screen','board entry');
       await safeControl(page,'.world-board-screen .mp-entry-back');
+      const entranceColor=await page.locator('.game-entry.mp-entry').evaluate(card=>{
+        const style=getComputedStyle(card),title=getComputedStyle(card.querySelector('.ge-title'));
+        const toolbar=card.closest('.mp-board-host').querySelector('.mp-entry-bar');
+        return {ink:style.color,title:title.color,backdrop:getComputedStyle(card.closest('.mp-board-host')).backgroundColor,
+          toolbar:getComputedStyle(toolbar).color,accent:style.getPropertyValue('--entry-accent').trim()};
+      });
+      assert.equal(entranceColor.ink,'rgb(34, 58, 48)',kind+' uses the shared game entry ink');
+      assert.equal(entranceColor.title,'rgb(34, 58, 48)',kind+' title matches the Ojjuda palette');
+      assert.equal(entranceColor.backdrop,'rgb(246, 247, 240)',kind+' board entry uses the warm backdrop');
+      assert.equal(entranceColor.toolbar,'rgb(102, 116, 103)',kind+' game toolbar uses the common muted ink');
+      assert.notEqual(entranceColor.accent,'#7560b5',kind+' no longer inherits the purple multiplayer accent');
       const start=page.locator('[data-entry-panel=computer] [data-act=bd-start]');await start.scrollIntoViewIfNeeded();await start.click();
       await page.locator('#bd-root .bd-svg').waitFor();
       const sameBoard=await page.evaluate(()=>{window.savedBoard=fullscreenFixture.boardState();return JSON.stringify(savedBoard.s);});
