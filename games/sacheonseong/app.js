@@ -148,7 +148,7 @@
     $('board-canvas').classList.toggle('layered',state.layerCount>1);
     const grids=layers(),frag=document.createDocumentFragment();
     grids.forEach((grid,index)=>{
-      const layer=document.createElement('div');layer.className='tile-layer';layer.dataset.layer=index;layer.style.zIndex=grids.length-index;layer.setAttribute('role','group');layer.setAttribute('aria-label',`${grids.length-index}층`);
+      const layer=document.createElement('div');layer.className='tile-layer';layer.dataset.layer=index;layer.dataset.floor=grids.length-index;layer.style.zIndex=grids.length-index;layer.setAttribute('role','group');layer.setAttribute('aria-label',`${grids.length-index}층`);
       const tiles=document.createDocumentFragment();
       grid.forEach((row,r)=>row.forEach((value,c)=>{
         const empty=value===E.EMPTY,open=!empty&&E.isExposed(grids,{layer:index,r,c});
