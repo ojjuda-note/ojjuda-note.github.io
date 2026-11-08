@@ -63,6 +63,15 @@ test('a hidden tab makes no periodic room RPCs and refreshes immediately when vi
   assert.equal(f.list().querySelector('.arcade-room-copy h4').textContent, '친구와 체스');
 });
 
+test('a passive lobby reads every six seconds but manual refresh stays immediate', async t => {
+  const f = fixture(t); await f.start(); assert.equal(f.calls.length, 2);
+  await f.advance(4000); assert.equal(f.calls.length, 2, 'a visitor without a room does not poll every four seconds');
+  await f.mount(); assert.equal(f.calls.length, 2, 'redrawing the lobby reuses recent room data');
+  await f.advance(2000); assert.equal(f.calls.length, 4, 'the passive lobby discovers new rooms within six seconds');
+  await f.app.refresh(); assert.equal(f.calls.length, 6, 'manual refresh still reads both sources immediately');
+  await f.advance(4000); assert.equal(f.calls.length, 6);
+});
+
 for (const overlay of ['gaming', 'matgo-open', 'gov', 'matgo-overlay', 'ttang-overlay', 'tour-game-dialog', 'bd-root']) {
   test(overlay + ' pauses lobby polling and closing it immediately updates room cards', async t => {
     const f = fixture(t); await f.start();

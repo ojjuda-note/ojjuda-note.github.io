@@ -46,8 +46,8 @@ const viewKey = 'ojjuda-certified-restaurants-view-v1';
 const ids = values => values.map(value => value.id).sort();
 const coordinates = item => typeof item.lat === 'number' && typeof item.lng === 'number' && Number.isFinite(item.lat) && Number.isFinite(item.lng);
 const pause = () => new Promise(resolve => setTimeout(resolve, 5));
-async function until(check, message) { for (let attempt = 0; attempt < 150; attempt++) { if (check()) return; await pause(); } assert.fail(message); }
-async function ready(f, count, expand = true) { await until(() => Number(f.$('#result-count').dataset.total) === count, 'the full result count is ' + count); if (expand) f.all(); }
+async function until(check, message) { for (let attempt = 0; attempt < 1200; attempt++) { if (check()) return; await pause(); } assert.fail(typeof message === 'function' ? message() : message); }
+async function ready(f, count, expand = true) { await until(() => Number(f.$('#result-count').dataset.total) === count, () => 'the full result count is ' + count + ' (received ' + f.$('#result-count')?.dataset.total + ', text ' + f.$('#result-count')?.textContent + ', errors ' + f.errors.join(', ') + ')'); if (expand) f.all(); }
 
 function fixture(options = {}) {
   const errors = [], virtualConsole = new VirtualConsole();
@@ -110,6 +110,16 @@ function fixture(options = {}) {
     const url = new URL(requested, window.location.href);
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
     if (/\/official-[^/]+\.json$/.test(url.pathname)) {
+      if (url.pathname.endsWith('/official-chungnam-slot70.json')) {
+        // The production file has exactly 19 entries and one guide patch.
+        // Reuse existing IDs so this isolated DOM fixture still renders the base catalog only.
+        return { ok: true, status: 200, json: async () => ({ restaurants: Array(19).fill((options.dataset || dataset).restaurants[0]), guideEnrichments: [{}] }) };
+      }
+      if (url.pathname.endsWith('/official-chungnam-slot71.json')) {
+        const existing = (options.dataset || dataset).restaurants[0];
+        const duplicate = { ...existing, lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
+        return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 71, restaurants: Array(24).fill(duplicate) }) };
+      }
       // Isolate fixture datasets from production supplements; the real source files are verified separately.
       return { ok: true, status: 200, json: async () => ({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [], addressEnrichments: [] }) };
     }

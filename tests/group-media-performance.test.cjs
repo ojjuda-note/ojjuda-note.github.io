@@ -48,7 +48,7 @@ function fixture({media=[],download,upload,autoObserve=true}={}){
 test('private feed loads lightweight preview, reuses original for gallery and reentry, and purges on account switch',async()=>{
  const f=fixture({media:[{path:photo,preview_path:preview,mime:'image/jpeg',size:600000,name:'추억.jpg'}]});
  try{
-  await tick(70);
+  await until(()=>f.w.document.querySelector('.media-slot')?.dataset.loaded==='yes');
   const d=f.w.document,slot=d.querySelector('.media-slot');
   assert.equal(slot?.dataset.loaded,'yes');
   assert.deepEqual(f.downloads,[preview],'list does not fetch the full-resolution original');

@@ -103,6 +103,13 @@ async function fixture(browser, options = {}) {
     if (options.noMap && url.pathname.endsWith('/vendor/leaflet.js')) return route.fulfill({ contentType: 'application/javascript', body: '' });
     if (/\/official-[^/]+\.json$/.test(url.pathname)) {
       // Keep synthetic scenarios scoped to their supplied base catalog.
+      if (url.pathname.endsWith('/official-chungnam-slot70.json')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: Array(19).fill(records.restaurants[0]), guideEnrichments: [{}] }) });
+      }
+      if (url.pathname.endsWith('/official-chungnam-slot71.json')) {
+        const duplicate = { ...records.restaurants[0], lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] };
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ cycle: 1, slot: 71, restaurants: Array(24).fill(duplicate) }) });
+      }
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ restaurants: [], enrichments: [], guideEnrichments: [], locationEnrichments: [], addressEnrichments: [] }) });
     }
     if (url.pathname.endsWith('/restaurants.json')) {

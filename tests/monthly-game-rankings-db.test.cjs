@@ -33,8 +33,10 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const limit=(await db.query("select pg_get_functiondef('ojjuda_guest_internal.score_limit(text)'::regprocedure) value")).rows[0].value;
   await db.exec(limit.replace(/when\s+'mines'/i,"WHEN 'solitaire' THEN 299999999 WHEN 'mines'"));
   const solitaireCatalog=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_solitaire_monthly_catalog.sql'));
+  const chachaCatalog=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_chacha_rush_monthly_catalog.sql'));
   const catalogMeta=async()=>(await db.query("select prosecdef,proconfig,proacl::text from pg_proc where oid='ojjuda_ranking_internal.catalog()'::regprocedure")).rows;
   const beforeCatalog=await catalogMeta();await db.exec(read(solitaireCatalog));await db.exec(read(solitaireCatalog));
+  await db.exec(read(chachaCatalog));await db.exec(read(chachaCatalog));
   assert.deepEqual(await catalogMeta(),beforeCatalog,'catalog update preserves grants and execution settings');
   const updatedFunctions=await db.query(`select pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace
    where n.nspname in('ojjuda_roulette_internal','ojjuda_ranking_internal','ojjuda_arcade_internal','ojjuda_guest_internal','ojjuda_archery_internal')`);
@@ -53,7 +55,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const submit=(token,score,id=randomUUID(),game='runner')=>value('select public.submit_guest_game_score($1,$2,$3,$4) value',[game,score,token,id]);
   const guest=(token,period='month',game='runner')=>value('select ojjuda_guest_internal.ranking($1,$2,$3) value',[game,period,token]);
   const catalog=await value('select ojjuda_ranking_internal.catalog() value');
-  assert.equal(catalog.length,23);assert.equal(new Set(catalog).size,23);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));
+  assert.equal(catalog.length,24);assert.equal(new Set(catalog).size,24);assert.ok(catalog.includes('roulette'));assert.ok(catalog.includes('archery'));assert.ok(catalog.includes('chacha_rush'));
   assert.ok(catalog.includes('screw_box')&&catalog.includes('screw_flat')&&catalog.includes('billiards'));
   assert.ok(!catalog.includes('carom4')&&!catalog.includes('pool8'));
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
@@ -120,7 +122,7 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const round=(id,game,amount,time,opponents=null)=>db.query(`insert into ojjuda_guest_internal.round_records(game,actor_key,user_id,round_id,value,source,achieved_at,opponents)
    values($1,'member:'||$2,$2::uuid,$3,$4,'solo',$5,$6)`,[game,id,randomUUID(),amount,time,opponents]);
   const practice=(id,game,difficulty,outcome,time)=>db.query('insert into ojjuda_game_internal.practice_results values($1,$2,$3,$4,$5,$6)',[id,randomUUID(),game,difficulty,outcome,time]);
-  for(const game of ['mole','runner','stacker','breakout','screw_box','screw_flat','saetbyeol','mines']) {
+  for(const game of ['mole','runner','stacker','breakout','screw_box','screw_flat','saetbyeol','mines','chacha_rush']) {
    await score(a,game,0);await score(b,game,10);await score(banned,game,99);
    await score(a,game,100,'2026-09-30T15:59:59.999999Z');await score(a,game,100,'2026-10-31T16:00:00Z');
   }
@@ -272,6 +274,6 @@ const hash = token => createHash('sha256').update(token).digest('hex');
   const sql=read(migrationName);
   assert.ok(!/insert\s+into\s+ojjuda_rewards_internal|capture_month_end\(|update\s+.*wallets/i.test(sql));
   assert.match(sql,/'0 16 \$ \* \*'/);assert.match(sql,/'5 \* \* \* \*'/);
-  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 23 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
+  console.log('PASS: exact 01:00 KST and year boundaries; unchanged daily/coupon buckets; monthly guest receipts and picture clears; all 24 shipped criteria, Solitaire difficulty/time, archery cleared-stage/score and roulette paid-prize/month-boundary archives, and per-seat takeover exclusions; fixed immutable/empty archives, retries and concurrent requests; current/history parity; access controls and zero financial side effects.');
  } finally {await db.close();}
 })().catch(error=>{console.error(error.message,error.where||'',error.stack);process.exitCode=1;});
