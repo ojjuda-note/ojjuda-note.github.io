@@ -15588,53 +15588,118 @@
         "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
         "회원 추천·기존 저장 ID·아지트 버전 유지."
       ]
+    },
+    {
+      "id": "2026-11-08-jeonbuk-slot73-gochang-official-1",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 73,
+      "previousCoverage": {
+        "uniqueRestaurants": 3472,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2739,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2406,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2092,
+          "중식": 145,
+          "일식": 146,
+          "기타": 588,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3473,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2740,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2407,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 216,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2093,
+          "중식": 145,
+          "일식": 146,
+          "기타": 588,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 1,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-jeonbuk-slot73-gochang-eel-couple"
+      ],
+      "modifiedRestaurantIds": [],
+      "sourceUrls": [
+        "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=837370&menuCd=DOM_000000403001001000&paging=ok&startPage=1",
+        "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&categoryCode1=72118&dataSid=136906&menuCd=DOM_000000108002001000&paging=ok&startPage=1",
+        "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003011000"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-jeonbuk-slot73.json",
+      "scope": "전북 임실·순창·고창·부안 4군 부분 조사, 고창군 모범음식점 1곳 공식 현주소 확인; 다른 지역 목록·좌표 후속",
+      "notes": [
+        "기존 운영 기록 등 이전 기록 보존, 해당 73회차 기록 추가.",
+        "선정/수록 사실과 현재 영업 상태 구분. 등급은 검증된 공식 근거 없이 추정하지 않음.",
+        "위치 보강0·현재 목록 비노출0·해당 4군 기본파일 좌표 미등록 34+신규1=35건 재확인 대기."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-chungnam-slot71-taean12-yesan12",
+    "id": "2026-11-08-jeonbuk-slot73-gochang-official-1",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 71,
+    "slot": 73,
     "previousCoverage": {
-      "uniqueRestaurants": 3448,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2715,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2382,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 93,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2074,
-        "중식": 143,
-        "일식": 146,
-        "기타": 587,
-        "양식": 219,
-        "분식": 38,
-        "디저트": 241
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3472,
       "providerCounts": {
         "michelin": 237,
@@ -15673,48 +15738,64 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 24,
+    "currentCoverage": {
+      "uniqueRestaurants": 3473,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2740,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2407,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 216,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2093,
+        "중식": 145,
+        "일식": 146,
+        "기타": 588,
+        "양식": 219,
+        "분식": 40,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 1,
     "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-chungnam-slot71-taean-01",
-      "local-chungnam-slot71-taean-02",
-      "local-chungnam-slot71-taean-03",
-      "local-chungnam-slot71-taean-04",
-      "local-chungnam-slot71-taean-05",
-      "local-chungnam-slot71-taean-06",
-      "local-chungnam-slot71-taean-07",
-      "local-chungnam-slot71-taean-08",
-      "local-chungnam-slot71-taean-09",
-      "local-chungnam-slot71-taean-10",
-      "local-chungnam-slot71-taean-11",
-      "local-chungnam-slot71-taean-12",
-      "local-chungnam-slot71-yesan-13",
-      "local-chungnam-slot71-yesan-14",
-      "local-chungnam-slot71-yesan-15",
-      "local-chungnam-slot71-yesan-16",
-      "local-chungnam-slot71-yesan-17",
-      "local-chungnam-slot71-yesan-18",
-      "local-chungnam-slot71-yesan-19",
-      "local-chungnam-slot71-yesan-20",
-      "local-chungnam-slot71-yesan-21",
-      "local-chungnam-slot71-yesan-22",
-      "local-chungnam-slot71-yesan-23",
-      "local-chungnam-slot71-yesan-24"
+      "local-jeonbuk-slot73-gochang-eel-couple"
     ],
     "modifiedRestaurantIds": [],
     "sourceUrls": [
-      "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
-      "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+      "https://www.gochang.go.kr/tour/board/view.gochang?boardId=BBS_0000399&dataSid=837370&menuCd=DOM_000000403001001000&paging=ok&startPage=1",
+      "https://www.imsil.go.kr/board/view.imsil?boardId=BBS_0000081&categoryCode1=72118&dataSid=136906&menuCd=DOM_000000108002001000&paging=ok&startPage=1",
+      "https://tour.jb.go.kr/index.do?menuCd=DOM_000000110003011000"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-chungnam-slot71.json",
-    "scope": "태안·예산군 지자체 모범음식점 공개 목록 1쪽씩 12곳 총24곳 등록; 홍성군 공식 개별 근거, 양 군 다른 쪽 73곳, 좌표 미검증은 이월",
+    "sourceSupplement": "games/certified-restaurants/official-jeonbuk-slot73.json",
+    "scope": "전북 임실·순창·고창·부안 4군 부분 조사, 고창군 모범음식점 1곳 공식 현주소 확인; 다른 지역 목록·좌표 후속",
     "notes": [
-      "공식 지자체 지정·선정 이력과 현재 영업 상태 별개 판단.",
-      "정규 블루리본 등급 미검증으로 지자체 모범음식점만 수록.",
-      "좌표 추가 0, 목록 제외 0, 해당지역 위치 재확인 대기 26곳.",
-      "회원 추천·기존 저장 ID·아지트 버전 유지."
+      "기존 운영 기록 등 이전 기록 보존, 해당 73회차 기록 추가.",
+      "선정/수록 사실과 현재 영업 상태 구분. 등급은 검증된 공식 근거 없이 추정하지 않음.",
+      "위치 보강0·현재 목록 비노출0·해당 4군 기본파일 좌표 미등록 34+신규1=35건 재확인 대기."
     ]
   },
   "latestMapCoverageAudit": {
