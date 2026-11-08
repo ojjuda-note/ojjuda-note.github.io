@@ -22,7 +22,7 @@ function fixture() {
   win.eval(`
     var D={online:true,user:{id:'member-a'}},g={},En={},worldBoardScreenStop=null;
     var Xe={chess:{name:'체스',emoji:'♟️',first:'w',second:'b',side:{w:'백',b:'흑'}},janggi:{name:'장기',emoji:'🀄',first:'c',second:'h',side:{c:'초',h:'한'}}};
-    var Rp=[['normal','보통']];
+    var Rp=[['normal','보통']],JG_EXTRA_LEVELS=[['pro','프로'],['master','마스터'],['grandmaster','그랜드마스터']];
     var z=selector=>document.querySelector(selector),Pr=(selector,root)=>[...root.querySelectorAll(selector)],w=value=>String(value);
     function worldGameEntryGate(){return true;} function Sa(){} function Ui(){} function Uo(){} function dn(){} function jgChooser(){return '';}
     ${modalSource}

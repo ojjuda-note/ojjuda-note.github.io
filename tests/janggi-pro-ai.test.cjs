@@ -13,19 +13,20 @@ const api = {
 };
 const plain = value => JSON.parse(JSON.stringify(value));
 
-test('the Janggi menu has four levels, without adding pro to chess', async () => {
+test('the Janggi menu has six levels, without adding advanced levels to chess', async () => {
  vm.runInContext(source.slice(source.indexOf('var Xe='), source.indexOf('function pa(')), rules);
  vm.runInContext(source.slice(source.indexOf('function jgChooser('), source.indexOf('async function vn(')), rules);
  vm.runInContext(source.slice(source.indexOf('var Qp={'), source.indexOf('var to=[]')), rules);
  rules.g = {};
  rules.D = { online: false };
+ rules.JG_EXTRA_LEVELS = [['pro', '프로'], ['master', '마스터'], ['grandmaster', '그랜드마스터']];
  rules.document = { getElementById: () => null };
  rules.ln = async () => '';
  rules.newPracticeStreakRound = () => null;
 
  const janggi = await rules.Hp('janggi');
  const chess = await rules.Hp('chess');
- assert.deepEqual([...janggi.matchAll(/data-act="bd-lv" data-v="([^"]+)"/g)].map(match => match[1]), ['easy', 'normal', 'hard', 'pro']);
+ assert.deepEqual([...janggi.matchAll(/data-act="bd-lv" data-v="([^"]+)"/g)].map(match => match[1]), ['easy', 'normal', 'hard', 'pro', 'master', 'grandmaster']);
  assert.deepEqual([...chess.matchAll(/data-act="bd-lv" data-v="([^"]+)"/g)].map(match => match[1]), ['easy', 'normal', 'hard']);
 
  rules.Qp['bd-lv']({ k: 'janggi', v: 'pro' });
@@ -35,6 +36,13 @@ test('the Janggi menu has four levels, without adding pro to chess', async () =>
  rules.Qp['bd-start']({ k: 'janggi', mode: 'ai' });
  assert.equal(launched.level, 'pro');
  assert.equal(launched.kind, 'janggi');
+ for (const tier of ['master', 'grandmaster']) {
+  rules.Qp['bd-lv']({ k: 'janggi', v: tier });
+  rules.Qp['bd-start']({ k: 'janggi', mode: 'ai' });
+  assert.equal(launched.level, tier);
+ }
+ await rules.Hp('chess');
+ assert.equal(rules.g.bdLevel, 'normal', 'chess never inherits the Janggi-only levels');
 });
 
 test('pro AI chooses only legal moves and never changes the current board', async () => {
@@ -53,12 +61,17 @@ test('starting pro play renders the computer name without throwing', () => {
  const ctx = vm.createContext({
   E: { kind: 'janggi', mode: 'ai', level: 'pro', me: 'c' },
   Rp: [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']],
+  JG_EXTRA_LEVELS: [['pro', '프로'], ['master', '마스터'], ['grandmaster', '그랜드마스터']],
   ze: () => ({ first: 'c', second: 'h', side: { c: '초', h: '한' } }),
   da: side => side === 'c' ? 'h' : 'c'
  });
  vm.runInContext(source.slice(source.indexOf('function Op(){'), source.indexOf('var Lp={')), ctx);
  assert.equal(ctx.Op().h, '컴퓨터 (프로)');
  for (const [level, label] of [['easy', '쉬움'], ['normal', '보통'], ['hard', '어려움']]) {
+  ctx.E.level = level;
+  assert.equal(ctx.Op().h, `컴퓨터 (${label})`);
+ }
+ for (const [level, label] of ctx.JG_EXTRA_LEVELS) {
   ctx.E.level = level;
   assert.equal(ctx.Op().h, `컴퓨터 (${label})`);
  }
@@ -85,18 +98,22 @@ test('pro search can see beyond a tempting shallow move', async () => {
  assert.deepEqual(plain(move), nodes[0][1], 'AI avoids the immediate reward that loses next turn');
 });
 
-test('pro results use the existing hard leaderboard until a separate pro rank exists', async () => {
+test('advanced Janggi results use the existing hard leaderboard', async () => {
  const start = source.indexOf('async function savePracticeStreak(');
  const end = source.indexOf('\n}\n', start) + 2;
  const calls = [];
  const ctx = vm.createContext({
   D: { online: true, user: { id: 'member' } },
+  JG_EXTRA_LEVELS: [['pro', '프로'], ['master', '마스터'], ['grandmaster', '그랜드마스터']],
   S: { rpc: async (_name, data) => { calls.push(data); return { data: { ok: true } }; } },
   notifyStreakSaved: () => {}, console
  });
  vm.runInContext(source.slice(start, end), ctx);
  const round = { id: 'round', owner: 'member', saved: false, pending: false, retry: { remove() {} } };
- await ctx.savePracticeStreak({ kind: 'janggi', mode: 'ai', level: 'pro', me: 'c', owner: 'member', streakRound: round }, 'c');
- assert.equal(calls[0].p_difficulty, 'hard');
- assert.equal(round.saved, true);
+ for (const [index, level] of ['pro', 'master', 'grandmaster'].entries()) {
+  const sessionRound = { ...round, id: `round-${index}`, saved: false, pending: false };
+  await ctx.savePracticeStreak({ kind: 'janggi', mode: 'ai', level, me: 'c', owner: 'member', streakRound: sessionRound }, 'c');
+  assert.equal(calls[index].p_difficulty, 'hard');
+  assert.equal(sessionRound.saved, true);
+ }
 });
