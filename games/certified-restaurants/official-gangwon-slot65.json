@@ -1,0 +1,258 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 65,
+  "sourceName": "한국관광공사 · 영월군 · 평창군 공식 음식점 소개",
+  "sourceUrls": [
+    "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+    "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+    "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+    "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+    "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+    "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery"
+  ],
+  "completeRegionalCollection": false,
+  "operatingStatusConfirmed": false,
+  "coordinatesVerifiedCount": 0,
+  "notes": [
+    "홍천군은 기존 37곳의 좌표 미등록 및 공식 출처 대조를 이어가며 신규를 확인하지 못함.",
+    "영월군 자료 최종수정은 2017-10-24, 평창군 자료 최종수정은 2021-10-27로 현재 영업을 보증하지 않음.",
+    "횡성군 3곳은 한국관광공사 K-로컬 미식여행 관광기사의 정확한 상호·지점·주소를 확인함.",
+    "정규 블루리본 리본 개수, 지정 연도, 현 영업 상태, 공개 수치좌표는 미확인. 추정 좌표와 회원 정보는 미사용."
+  ],
+  "restaurants": [
+    {
+      "id": "local-gangwon-slot65-hoengseong-hanu-plaza-main",
+      "name": "횡성축협 한우프라자 본점",
+      "category": "한식",
+      "region": "강원",
+      "district": "횡성군",
+      "address": "강원특별자치도 횡성군 횡성읍 횡성로 337",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이",
+        "불고기",
+        "한우탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 K-로컬 미식여행 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-hoengseong-samjeong",
+      "name": "삼정",
+      "category": "한식",
+      "region": "강원",
+      "district": "횡성군",
+      "address": "강원특별자치도 횡성군 둔내면 경강로 4536-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 K-로컬 미식여행 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-hoengseong-raonia",
+      "name": "한우 무한리필 라오니아",
+      "category": "한식",
+      "region": "강원",
+      "district": "횡성군",
+      "address": "강원특별자치도 횡성군 둔내면 고원로398번길 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "한국관광공사 K-로컬 미식여행 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+          "sourceName": "한국관광공사 대한민국 구석구석",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-yeongwol-cheongpung",
+      "name": "청풍가든",
+      "category": "기타",
+      "region": "강원",
+      "district": "영월군",
+      "address": "강원특별자치도 영월군 영월읍 단종로 161-14",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영월군 문화관광 모범음식점 과거 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+          "sourceName": "영월군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_official_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음.",
+          "sourceAsOf": "2017-10-24"
+        }
+      ],
+      "addressSourceUrl": "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-yeongwol-mureung-trout",
+      "name": "무릉송어장횟집",
+      "category": "한식",
+      "region": "강원",
+      "district": "영월군",
+      "address": "강원특별자치도 영월군 아래골길 20-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "송어회",
+        "송어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영월군 문화관광 모범음식점 과거 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+          "sourceName": "영월군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_official_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음.",
+          "sourceAsOf": "2017-10-24"
+        }
+      ],
+      "addressSourceUrl": "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-pyeongchang-burim",
+      "name": "부림식당",
+      "category": "한식",
+      "region": "강원",
+      "district": "평창군",
+      "address": "강원특별자치도 평창군 진부면 진부중앙로 70-3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "산채정식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "평창군 문화관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+          "sourceName": "평창군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음.",
+          "sourceAsOf": "2021-10-27"
+        }
+      ],
+      "addressSourceUrl": "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-pyeongchang-memil-house",
+      "name": "메밀하우스",
+      "category": "한식",
+      "region": "강원",
+      "district": "평창군",
+      "address": "강원특별자치도 평창군 진부면 진부시장안길 28",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "메밀전",
+        "감자전",
+        "옹심이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "평창군 문화관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+          "sourceName": "평창군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음.",
+          "sourceAsOf": "2021-10-27"
+        }
+      ],
+      "addressSourceUrl": "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gangwon-slot65-pyeongchang-chowon",
+      "name": "초원갈비",
+      "category": "한식",
+      "region": "강원",
+      "district": "평창군",
+      "address": "강원특별자치도 평창군 평창읍 백오로 124",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우구이",
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "평창군 문화관광 음식점·안심식당 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery",
+          "sourceName": "평창군 문화관광",
+          "verifiedAt": "2026-11-08",
+          "status": "official_restaurant_listing",
+          "selectionCriteria": "공식 관광·행정기관 음식점 자료에 이름과 주소가 수록됨. 수록·페이지 수정일은 가이드 선정연도가 아니며 현재 영업 여부는 별도로 확인되지 않음.",
+          "sourceAsOf": "2021-10-27"
+        }
+      ],
+      "addressSourceUrl": "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ]
+}
