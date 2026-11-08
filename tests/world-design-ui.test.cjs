@@ -22,7 +22,7 @@ world=world.slice(0,boot)+`
  const fits=async(label)=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,label+' fits viewport');
  await page.evaluate(()=>document.documentElement.dataset.worldTheme='classic');await fits('desktop arcade');
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
- const soloGames=['solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
+ const soloGames=['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
  assert.deepEqual(await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),soloGames.map(id=>({id,images:1})),'solo cards retain exactly their intended games and cover images');
  assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi','test'],'test games follow every regular category visible to guests');
  assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'group',images:1},{id:'festival',images:1},{id:'restaurants',images:1},{id:'byeolcheonji',images:1}],'all daily features retain their covers in the current order');

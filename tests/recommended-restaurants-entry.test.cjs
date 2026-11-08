@@ -3,7 +3,11 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
 const { JSDOM, VirtualConsole } = require('jsdom');
 const root = path.join(__dirname, '..'), read = file => fs.readFileSync(path.join(root, file), 'utf8');
 let source = read('world.html').match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-source = source.replaceAll('import.meta.env', '({})').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
+// jsdom evaluates a classic-script excerpt; the real page loads these as ESM.
+// Neither module participates in the restaurant-routing behavior under test.
+source = source.replaceAll('import.meta.env', '({})')
+  .replace(/^import \{ installChachaRushPortal \} from [^\n]+$/m, 'const installChachaRushPortal = () => ({ open() {} });')
+  .replace(/^import \{ chooseJanggiProMove \} from [^\n]+$/m, 'const chooseJanggiProMove = () => null;');
 source = source.slice(0, source.indexOf('j1(()=>H());gm('));
 source += `window.recommendationEntry={auth:D,actions:sr,open:openWorldGameLink,close:El,setupNavigation:gm,
  setClient:client=>S=client,getController:()=>worldRecommendedRestaurants,catalog:()=>_r,

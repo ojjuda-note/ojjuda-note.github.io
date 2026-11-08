@@ -23,7 +23,7 @@ window.fixtureAge=19;window.fixtureClient={auth:{getUser:async()=>({data:{user:{
   await context.route('**/*',r=>{
    const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.fulfill({body:''});
    if(u.pathname==='/fixture')return r.fulfill({contentType:'text/html',body:world});
-   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:u.pathname.endsWith('.js')?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
+   const file=path.join(root,u.pathname);return fs.existsSync(file)&&fs.statSync(file).isFile()?r.fulfill({contentType:/\.m?js$/.test(u.pathname)?'application/javascript':u.pathname.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)}):r.fulfill({status:404,body:''});
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8878/fixture');
   const solo=page.locator('#arcade-test [data-arcade-games="solo"]'),multi=page.locator('#arcade-test [data-arcade-games="multi"]'),adult=page.locator('#arcade-test [data-arcade-games="adult"]');

@@ -41,7 +41,7 @@ world=world.slice(0,boot)+`window.guestFixture={submit:tf,ranking:ef,open:Al,log
   await page.evaluate(()=>guestFixture.finish(20));
   const result=page.locator('#gov .game-result-card[data-result-game="mole"]');
   await result.waitFor();
-  assert.equal(await result.locator('.game-result-metric').innerText(),'20점 · 이번 달 1등과 0점 차이','the real result card uses the confirmed monthly guest ranking');
+  assert.equal(await result.locator('.game-result-metric').innerText(),'3×3 · 20점','the mole result identifies its grid size while the confirmed monthly guest rank remains tracked separately');
   assert.equal(await result.locator('#gres').innerText(),'','a successful guest save leaves no pending or failure message');
   const monthly=await page.evaluate(()=>calls.filter(c=>c.name==='guest_game_ranking'&&c.args.p_game==='mole'&&c.args.p_period==='month'));
   assert.equal(monthly.length,2,'the result compares rankings before and after settlement');assert.ok(monthly.every(c=>c.guest));

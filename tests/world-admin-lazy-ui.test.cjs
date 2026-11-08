@@ -52,8 +52,10 @@ const operations = `
           if (hold) await hold;
           return route.fulfill({contentType:'text/javascript', body:operations});
         }
+        if (pathname === '/shared/games/chacha-rush-portal.js') return route.fulfill({contentType:'text/javascript', body:'export const installChachaRushPortal = () => ({ open() {} });'});
+        if (pathname === '/games/janggi/pro-ai.mjs') return route.fulfill({contentType:'text/javascript', body:'export const chooseJanggiProMove = () => null;'});
         if (pathname.endsWith('.css')) return route.fulfill({contentType:'text/css', body:''});
-        if (pathname.endsWith('.js')) return route.fulfill({contentType:'text/javascript', body:'/* synthetic administrator module */'});
+        if (/\.m?js$/.test(pathname)) return route.fulfill({contentType:'text/javascript', body:'/* synthetic administrator module */'});
         return route.abort();
       });
       const page = await context.newPage();

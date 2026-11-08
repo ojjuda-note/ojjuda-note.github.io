@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');let html=fs.readFileSync(path.join(root,'world.html'),'utf8');
 const boot=html.indexOf('j1(()=>H());gm(');assert(boot>0);
-html=html.slice(0,boot)+`window.entryTest={open:Al,link:openWorldGameLink,rank:openWorldBoardGame,arcade:()=>xf("arcade"),close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,
+html=html.slice(0,boot)+`window.entryTest={open:Al,link:openWorldGameLink,rank:openWorldBoardGame,arcade:()=>xf("arcade"),close:El,board:vn,billiards:xn,closeBoard:dt,current:()=>R,boardMe:()=>E.me,
  friends(){D.online=true;D.user={id:'me'};D.boardReady=true;P.loaded=true;P.at=Date.now();P.friends=[{id:'offline',nickname:'가람'},{id:'online',nickname:'초록친구'},{id:'unsafe',nickname:'<img src=x onerror=alert(1)>'}];Ze={state:'joined',presenceState:()=>({online:[{}]})};Xs=async()=>true;xh=async()=>true;jgOnlineReady=async()=>true;$h=async()=>[];window.OjjudaArcadeRooms=null;S={rpc:async(name,args)=>{window.invited={name,args};return {data:'invite-id',error:null}}};},
  presence(state){Ze.presenceState=()=>state;window.dispatchEvent(new Event('ojjuda:friends-presence'));}
 };g.tab='friends';H();`+html.slice(html.indexOf('</script>',boot));
@@ -62,7 +62,7 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
  await page.locator('[data-entry-panel=computer] [data-act='+(/^(chess|janggi)$/.test(id)?'bd-start':'bl-start')+']').click();
  await page.locator(/^(chess|janggi)$/.test(id)?'#bd-root':'#bl-cv').waitFor();
- if(id==='janggi')assert.equal(await page.evaluate(()=>E.me),'h','red Han choice controls the player side');
+ if(id==='janggi')assert.equal(await page.evaluate(()=>entryTest.boardMe()),'h','red Han choice controls the player side');
  assert.equal(await page.locator('.ge-board-entry').count(),0,id+': starts directly from the entry');
  if(await page.locator('#gov [data-bl=close]').count())await page.locator('#gov [data-bl=close]').click();
  await page.evaluate(()=>entryTest.closeBoard());
