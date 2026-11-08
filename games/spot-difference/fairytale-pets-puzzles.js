@@ -3577,11 +3577,14 @@ window.JJUDA_PUZZLES.push(...[
         "visibility": "zoom",
         "size": "tiny",
         "targetBounds": {
-          "left": 35.7,
-          "top": 47.8,
-          "right": 40,
-          "bottom": 51.6
-        }
+          "left": 37.4,
+          "top": 48,
+          "right": 39.5,
+          "bottom": 50.3
+        },
+        "hitRegions": [
+          { "x": 37.7, "y": 50.2, "rx": 2.8, "ry": 2.5 }
+        ]
       },
       {
         "x": 12.6,

@@ -41,7 +41,8 @@ test('otter scarf missing white dot has a finger-sized target without selecting 
     spots: [{
       x: 38.5, y: 49.1, rx: 1.5, ry: 1.55,
       text: '빨간 목도리 왼쪽 끝의 작은 흰 점이 없어졌어요.',
-      targetBounds: { left: 35.7, top: 47.8, right: 40, bottom: 51.6 },
+      targetBounds: { left: 37.4, top: 48, right: 39.5, bottom: 50.3 },
+      hitRegions: [{ x: 37.7, y: 50.2, rx: 2.8, ry: 2.5 }],
     }],
   };
   const zoomRect = { left: -190, top: -200, width: 850, height: 850 };
@@ -58,7 +59,8 @@ test('authored otter scene keeps the scarf target in the corrected position', t 
   vm.runInNewContext(fs.readFileSync(sourcePath, 'utf8'), context);
   const puzzle = context.window.JJUDA_PUZZLES.find(p => p.id === 96);
   assert.ok(puzzle);
-  assert.equal(puzzle.spots[7].targetBounds.left, 35.7);
-  assert.equal(puzzle.spots[7].targetBounds.bottom, 51.6);
+  assert.equal(puzzle.spots[7].targetBounds.left, 37.4);
+  assert.equal(puzzle.spots[7].targetBounds.bottom, 50.3);
+  assert.equal(puzzle.spots[7].hitRegions[0].x, 37.7);
   assert.equal(core.hitTest(puzzle, 35.8, 49.1, [], { x: 1000 / 850, y: 1000 / 850 })?.index, 7);
 });

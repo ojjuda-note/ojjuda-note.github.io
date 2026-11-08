@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261108-spot-scarf-dot-hit1'
+ const revision='20261108-spot-scarf-hit-region2'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -26,7 +26,7 @@
   runner:'1.4.1',
   stacker:'1.5.1',
   breakout:'1.6.4',
-  spot:'1.11.7',
+  spot:'1.11.8',
   screw:'2.22.2',
   janggi:'1.6.0',
   chess:'1.4.4',
@@ -55,7 +55,7 @@
   mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261106-source-folders1'],
   saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261106-source-folders1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261106-source-folders1'],
-  spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261108-spot-scarf-dot-hit1'],
+  spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261108-spot-scarf-hit-region2'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261106-source-folders1'],
   photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261106-source-folders1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
