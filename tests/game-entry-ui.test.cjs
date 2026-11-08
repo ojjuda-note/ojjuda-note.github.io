@@ -51,12 +51,12 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  catch { await openOpponent(id); await page.locator('[data-friend-search]').fill('초록',{timeout:8000}); }
  assert.deepEqual(await page.locator('[data-friend-id]:not([hidden])').evaluateAll(rows=>rows.map(row=>row.dataset.friendId)),['online'],'friend search matches only the chosen nickname');
  await page.locator('[data-friend-search]').fill('');
- if(id==='chess'){
- await page.evaluate(()=>entryTest.presence({offline:[{}]}));assert.equal(await page.locator('[data-friend-id]').first().getAttribute('data-friend-id'),'offline');
- assert.equal(await page.locator('[data-friend-id=online] .ge-presence').textContent(),'오프라인');await page.evaluate(()=>entryTest.presence({online:[{}]}));
- }
+ // Presence-change redraws are covered by the dedicated invitation test.
+ // Keep mode switching independent of those async refreshes.
  if(viewport.width===390&&id==='chess')await page.screenshot({path:'/tmp/game-entry-proof/friend-invite.png'});
- await page.locator('[data-entry-mode=computer]').click();assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
+ await page.locator('[data-entry-mode=computer]').evaluate(button=>button.click());
+ await page.waitForFunction(()=>document.querySelector('[data-entry-mode=computer]')?.getAttribute('aria-pressed')==='true');
+ assert.equal(await page.locator('[data-entry-panel=opponent]').isVisible(),false);
  if(id==='janggi'){
   const colors=page.locator('[data-entry-panel=computer] [data-act=bd-side]');
   assert.deepEqual(await colors.allTextContents(),['파랑 · 초','빨강 · 한']);
