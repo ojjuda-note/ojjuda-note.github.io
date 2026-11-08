@@ -1,0 +1,708 @@
+{
+  "updatedAt": "2026-11-08",
+  "cycle": 1,
+  "slot": 77,
+  "scheduledAtKST": "2026-11-08T23:00:00+09:00",
+  "verifiedAt": "2026-11-08",
+  "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+  "sourceUrls": [
+    "https://health.muan.go.kr/health/business/food_improve/model_list"
+  ],
+  "officialListCount": 49,
+  "officialDesignationPeriod": "2025-11 ~ 2026-10",
+  "completeRegionalCollection": false,
+  "addedCount": 22,
+  "guideEnrichedCount": 4,
+  "coordinatesVerifiedCount": 0,
+  "operatingStatusConfirmedCount": 0,
+  "notes": [
+    "현재 2026년 11월의 재지정 및 영업 상태 확인 자료가 아니라 2025년 지정 명단의 이력입니다.",
+    "나머지 공식 목록 항목 및 다른 3개 군의 공식 명단은 다음 순환에서 계속 대조합니다.",
+    "동일 업소의 기존 ID·기존 안내 이력을 유지하고 인증맛집과 회원 추천을 분리합니다.",
+    "상호·지점·현주소의 공개 수치좌표가 확보되지 않아 위치를 추정하지 않았습니다."
+  ],
+  "restaurants": [
+    {
+      "id": "local-jeonnam-slot77-muan-01",
+      "name": "(유)아웃백스테이크하우스코리아 목포남악점",
+      "category": "양식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악4로 49",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "스테이크"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-02",
+      "name": "3대나주곰탕원조집 남악점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 오룡2길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "곰탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-03",
+      "name": "GRAND 가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 현경면 현해로 419",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-04",
+      "name": "교촌치킨 무안읍점",
+      "category": "기타",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 무안읍 면성1길 129",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "치킨"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-05",
+      "name": "구풍",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 중등포길 35-37",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "떡갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-07",
+      "name": "나그네식당",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 해제면 만송로 6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-08",
+      "name": "낙지명가",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 무안읍 성남1길 167",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-09",
+      "name": "남도뜨락",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 일로읍 양지길 73-33",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "소고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-10",
+      "name": "남산가든",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 무안읍 성남1길 160",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-11",
+      "name": "남악골 산야초",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 대죽서로15번길 36",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-12",
+      "name": "놀부보쌈족발·부대찌개 남악점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 대죽서로 38",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "부대찌개"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-13",
+      "name": "대가",
+      "category": "일식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 대죽서로15번길 22",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "참치"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-14",
+      "name": "덕본집",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 대죽서로30, 201호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-15",
+      "name": "도담갈비",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 대죽동로16번길 21, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-16",
+      "name": "도청한우(본점)",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 오룡2길 15",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-17",
+      "name": "마왕족발 무안남악점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 41",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "족발"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-18",
+      "name": "메콩강PHO",
+      "category": "기타",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악4로 92, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌀국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-19",
+      "name": "무안갯벌낙지전문점 2호점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 망운면 청운로 869",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "낙지"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-21",
+      "name": "보울레시피 남악점",
+      "category": "기타",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 42",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "포케"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-22",
+      "name": "부산어묵베이커리 목포남악점",
+      "category": "분식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악로 234",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "어묵"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-24",
+      "name": "서울깍두기 전남도청점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 후광대로 292",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "설렁탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-jeonnam-slot77-muan-49",
+      "name": "해든갓지은솥밥 무안남악점",
+      "category": "한식",
+      "region": "전남",
+      "district": "무안군",
+      "address": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "두루치기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+          "year": 2025,
+          "yearType": "selection",
+          "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+          "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+          "verifiedAt": "2026-11-08",
+          "status": "historical_selection",
+          "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+        }
+      ],
+      "addressSourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+      "addressSourceCheckedAt": "2026-11-08"
+    }
+  ],
+  "guideEnrichments": [
+    {
+      "id": "local-namdo-599330",
+      "expectedName": "꽃게랑낙지랑",
+      "expectedAddress": "전라남도 무안군 삼향읍 남악5로 34번길 11-3",
+      "guide": {
+        "provider": "local-guide",
+        "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+        "year": 2025,
+        "yearType": "selection",
+        "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+        "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+        "verifiedAt": "2026-11-08",
+        "status": "historical_selection",
+        "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+      }
+    },
+    {
+      "id": "local-namdo-2217021",
+      "expectedName": "무안명가",
+      "expectedAddress": "전남 무안군 망운면 톱머리길 38",
+      "guide": {
+        "provider": "local-guide",
+        "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+        "year": 2025,
+        "yearType": "selection",
+        "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+        "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+        "verifiedAt": "2026-11-08",
+        "status": "historical_selection",
+        "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+      }
+    },
+    {
+      "id": "local-namdo-2217011",
+      "expectedName": "서당골",
+      "expectedAddress": "전라남도 무안군 현경면 현해로159",
+      "guide": {
+        "provider": "local-guide",
+        "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+        "year": 2025,
+        "yearType": "selection",
+        "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+        "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+        "verifiedAt": "2026-11-08",
+        "status": "historical_selection",
+        "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+      }
+    },
+    {
+      "id": "local-namdo-599365",
+      "expectedName": "승달가든",
+      "expectedAddress": "전라남도 무안군 무안읍 면성2길 27",
+      "guide": {
+        "provider": "local-guide",
+        "label": "무안군 모범음식점 (2025~2026 지정 이력)",
+        "year": 2025,
+        "yearType": "selection",
+        "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+        "sourceName": "무안군 보건소 2025년 모범음식점 지정 현황",
+        "verifiedAt": "2026-11-08",
+        "status": "historical_selection",
+        "selectionCriteria": "2025년 지정 명단(지정기간 2025.11~2026.10)에 수록. 2026.11 현재 재지정·영업 여부는 미확인. 블루리본 정규 등급과 무관."
+      }
+    }
+  ]
+}
