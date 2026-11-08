@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3516,
+    "uniqueRestaurants": 3538,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2783,
+      "local-guide": 2805,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2450,
+    "coordinatesMissing": 2472,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1551,19 +1551,19 @@
       "인천": 345,
       "제주": 120,
       "대구": 137,
-      "전남": 227,
+      "전남": 249,
       "세종": 100,
       "대전": 117,
       "경북": 170,
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2130,
+      "한식": 2146,
       "중식": 147,
-      "일식": 149,
-      "기타": 589,
-      "양식": 219,
-      "분식": 40,
+      "일식": 150,
+      "기타": 592,
+      "양식": 220,
+      "분식": 41,
       "디저트": 242
     }
   },
@@ -15858,53 +15858,142 @@
         "기존 식당 ID와 선정이력, 회원 추천 자료 및 공식 블루리본 전체지도 보존.",
         "동일 1/75 이어하기: 기존 3곳 화순군 공식 명단과 독립 자료로 주소 교정, 기존 ID·가이드 유지, 좌표 추정하지 않음. 운영 이력은 별도 보충 기록 파일 확인."
       ]
+    },
+    {
+      "id": "2026-11-08-jeonnam-slot77-muan22",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 77,
+      "previousCoverage": {
+        "uniqueRestaurants": 3516,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2783,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2450,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 227,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2130,
+          "중식": 147,
+          "일식": 149,
+          "기타": 589,
+          "양식": 219,
+          "분식": 40,
+          "디저트": 242
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3538,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2805,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1066,
+        "coordinatesMissing": 2472,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 270,
+          "충남": 117,
+          "울산": 38,
+          "경남": 325,
+          "강원": 104,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 249,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 2146,
+          "중식": 147,
+          "일식": 150,
+          "기타": 592,
+          "양식": 220,
+          "분식": 41,
+          "디저트": 242
+        }
+      },
+      "newRestaurantCount": 22,
+      "modificationCount": 4,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-jeonnam-slot77-muan-01",
+        "local-jeonnam-slot77-muan-02",
+        "local-jeonnam-slot77-muan-03",
+        "local-jeonnam-slot77-muan-04",
+        "local-jeonnam-slot77-muan-05",
+        "local-jeonnam-slot77-muan-07",
+        "local-jeonnam-slot77-muan-08",
+        "local-jeonnam-slot77-muan-09",
+        "local-jeonnam-slot77-muan-10",
+        "local-jeonnam-slot77-muan-11",
+        "local-jeonnam-slot77-muan-12",
+        "local-jeonnam-slot77-muan-13",
+        "local-jeonnam-slot77-muan-14",
+        "local-jeonnam-slot77-muan-15",
+        "local-jeonnam-slot77-muan-16",
+        "local-jeonnam-slot77-muan-17",
+        "local-jeonnam-slot77-muan-18",
+        "local-jeonnam-slot77-muan-19",
+        "local-jeonnam-slot77-muan-21",
+        "local-jeonnam-slot77-muan-22",
+        "local-jeonnam-slot77-muan-24",
+        "local-jeonnam-slot77-muan-49"
+      ],
+      "modifiedRestaurantIds": [
+        "local-namdo-599330",
+        "local-namdo-2217021",
+        "local-namdo-2217011",
+        "local-namdo-599365"
+      ],
+      "sourceUrls": [
+        "https://health.muan.go.kr/health/business/food_improve/model_list"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot77.json",
+      "scope": "영암·무안·함평·영광 가운데 무안군 보건소의 2025.11~2026.10 모범음식점 49개소 명단 일부 22건 신규, 기존4건 이력 병합. 나머지 23개 공식 명단 항목과 다른 3개 군의 현행 명단 대조 필요.",
+      "notes": [
+        "2025년 지정 자료이며 2026년 11월 현재 지정 여부 및 영업은 미확인.",
+        "지정연도와 출처 확인일·현 영업상태를 분리. 정확 위치 좌표는 미기재.",
+        "기존 ID와 회원 추천, 블루리본 공식 전체 지도 보존."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-jeonnam-slot75-official34",
+    "id": "2026-11-08-jeonnam-slot77-muan22",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 75,
+    "slot": 77,
     "previousCoverage": {
-      "uniqueRestaurants": 3482,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2749,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1066,
-      "coordinatesMissing": 2416,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 387,
-        "충북": 270,
-        "충남": 117,
-        "울산": 38,
-        "경남": 325,
-        "강원": 104,
-        "전북": 215,
-        "경기": 412,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 193,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 2101,
-        "중식": 146,
-        "일식": 146,
-        "기타": 588,
-        "양식": 219,
-        "분식": 40,
-        "디저트": 242
-      }
-    },
-    "currentCoverage": {
       "uniqueRestaurants": 3516,
       "providerCounts": {
         "michelin": 237,
@@ -15943,71 +16032,88 @@
         "디저트": 242
       }
     },
-    "newRestaurantCount": 34,
-    "modificationCount": 10,
+    "currentCoverage": {
+      "uniqueRestaurants": 3538,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2805,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1066,
+      "coordinatesMissing": 2472,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 270,
+        "충남": 117,
+        "울산": 38,
+        "경남": 325,
+        "강원": 104,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 249,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 2146,
+        "중식": 147,
+        "일식": 150,
+        "기타": 592,
+        "양식": 220,
+        "분식": 41,
+        "디저트": 242
+      }
+    },
+    "newRestaurantCount": 22,
+    "modificationCount": 4,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-jeonnam-slot75-boseong-01",
-      "local-jeonnam-slot75-boseong-02",
-      "local-jeonnam-slot75-boseong-03",
-      "local-jeonnam-slot75-boseong-04",
-      "local-jeonnam-slot75-boseong-05",
-      "local-jeonnam-slot75-boseong-06",
-      "local-jeonnam-slot75-boseong-07",
-      "local-jeonnam-slot75-boseong-08",
-      "local-jeonnam-slot75-boseong-09",
-      "local-jeonnam-slot75-boseong-10",
-      "local-jeonnam-slot75-boseong-11",
-      "local-jeonnam-slot75-boseong-12",
-      "local-jeonnam-slot75-boseong-13",
-      "local-jeonnam-slot75-boseong-14",
-      "local-jeonnam-slot75-boseong-15",
-      "local-jeonnam-slot75-hwasun-01",
-      "local-jeonnam-slot75-hwasun-02",
-      "local-jeonnam-slot75-hwasun-03",
-      "local-jeonnam-slot75-hwasun-04",
-      "local-jeonnam-slot75-hwasun-05",
-      "local-jeonnam-slot75-hwasun-06",
-      "local-jeonnam-slot75-hwasun-07",
-      "local-jeonnam-slot75-hwasun-08",
-      "local-jeonnam-slot75-hwasun-09",
-      "local-jeonnam-slot75-hwasun-10",
-      "local-jeonnam-slot75-hwasun-11",
-      "local-jeonnam-slot75-hwasun-12",
-      "local-jeonnam-slot75-hwasun-13",
-      "local-jeonnam-slot75-hwasun-14",
-      "local-jeonnam-slot75-hwasun-15",
-      "local-jeonnam-slot75-hwasun-16",
-      "local-jeonnam-slot75-hwasun-17",
-      "local-jeonnam-slot75-hwasun-18",
-      "local-jeonnam-slot75-goheung-01"
+      "local-jeonnam-slot77-muan-01",
+      "local-jeonnam-slot77-muan-02",
+      "local-jeonnam-slot77-muan-03",
+      "local-jeonnam-slot77-muan-04",
+      "local-jeonnam-slot77-muan-05",
+      "local-jeonnam-slot77-muan-07",
+      "local-jeonnam-slot77-muan-08",
+      "local-jeonnam-slot77-muan-09",
+      "local-jeonnam-slot77-muan-10",
+      "local-jeonnam-slot77-muan-11",
+      "local-jeonnam-slot77-muan-12",
+      "local-jeonnam-slot77-muan-13",
+      "local-jeonnam-slot77-muan-14",
+      "local-jeonnam-slot77-muan-15",
+      "local-jeonnam-slot77-muan-16",
+      "local-jeonnam-slot77-muan-17",
+      "local-jeonnam-slot77-muan-18",
+      "local-jeonnam-slot77-muan-19",
+      "local-jeonnam-slot77-muan-21",
+      "local-jeonnam-slot77-muan-22",
+      "local-jeonnam-slot77-muan-24",
+      "local-jeonnam-slot77-muan-49"
     ],
     "modifiedRestaurantIds": [
-      "local-namdo-599291",
-      "local-namdo-599292",
-      "local-namdo-599282",
-      "local-namdo-599285",
-      "local-namdo-599290",
-      "local-namdo-599305",
-      "local-namdo-599300",
-      "local-namdo-599297",
-      "local-namdo-599293",
-      "local-namdo-3678084"
+      "local-namdo-599330",
+      "local-namdo-2217021",
+      "local-namdo-2217011",
+      "local-namdo-599365"
     ],
     "sourceUrls": [
-      "https://www.boseong.go.kr/tour/amusement/eatery",
-      "https://www.boseong.go.kr/tour/amusement/eatery/model?page=2&search_cate5=03",
-      "https://www.hwasun.go.kr/mayor/contents.do?M=030200000000&S=S05",
-      "https://tour.goheung.go.kr/front/M0000069/region/view.do?tourId=TO000358"
+      "https://health.muan.go.kr/health/business/food_improve/model_list"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot75.json",
-    "scope": "고흥 1곳 공식 관광 소개, 보성 공식 모범음식점 19곳 중 신규15·기존4, 화순 모범음식점 25곳 중 신규18·기존3, 주소 상충3 교차확인 후 보완표에서 정정. 전수 조사 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-jeonnam-slot77.json",
+    "scope": "영암·무안·함평·영광 가운데 무안군 보건소의 2025.11~2026.10 모범음식점 49개소 명단 일부 22건 신규, 기존4건 이력 병합. 나머지 23개 공식 명단 항목과 다른 3개 군의 현행 명단 대조 필요.",
     "notes": [
-      "지정연도와 페이지 최종수정일·출처 확인일 분리.",
-      "동명/상충 주소는 아직 이전 판단하지 않음. 영업상태·좌표 추정하지 않음.",
-      "기존 식당 ID와 선정이력, 회원 추천 자료 및 공식 블루리본 전체지도 보존.",
-      "동일 1/75 이어하기: 기존 3곳 화순군 공식 명단과 독립 자료로 주소 교정, 기존 ID·가이드 유지, 좌표 추정하지 않음. 운영 이력은 별도 보충 기록 파일 확인."
+      "2025년 지정 자료이며 2026년 11월 현재 지정 여부 및 영업은 미확인.",
+      "지정연도와 출처 확인일·현 영업상태를 분리. 정확 위치 좌표는 미기재.",
+      "기존 ID와 회원 추천, 블루리본 공식 전체 지도 보존."
     ]
   },
   "latestMapCoverageAudit": {
@@ -25195,5 +25301,30 @@
         "coordinateStatus": "unverified"
       }
     ]
+  },
+  "jeonnamSlot77": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 77,
+    "scheduledAtKST": "2026-11-08T23:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-jeonnam-slot77.json",
+    "sourceUrl": "https://health.muan.go.kr/health/business/food_improve/model_list",
+    "sourceDesignationPeriod": "2025-11 ~ 2026-10",
+    "officialListedCount": 49,
+    "addedCount": 22,
+    "modifiedCount": 4,
+    "coordinatesVerified": 0,
+    "locationsHidden": 0,
+    "locationPending": 43,
+    "regionAdded": {
+      "무안군": 22,
+      "영암군": 0,
+      "함평군": 0,
+      "영광군": 0
+    },
+    "completeRegionalCollection": false,
+    "currentDesignationStatus": "not_verified_since_period_ended",
+    "currentOperatingStatus": "not_verified",
+    "notes": "무안군 2025년 모범음식점 49개소 명단 중 22곳 신규·기존4건 이력 보강. 회원 추천은 미변경. 2026-10 지정 종료 후 2026-11 재지정 여부는 확인되지 않음."
   }
 }
