@@ -3,7 +3,7 @@
   'use strict';
   if (window.OjjudaGameResults) return;
   const GAMES = Object.freeze({
-    sacheonseong: { name: '사천성' }, mines: { name: '지뢰찾기' }, saetbyeol: { name: '샛별 키우기' },
+    sacheonseong: { name: '사천성' }, solitaire: { name: '솔리테어' }, mines: { name: '지뢰찾기' }, saetbyeol: { name: '샛별 키우기' },
     mole: { name: '두더지 잡기', unit: '점' }, runner: { name: '쭈 달리기', unit: '점' },
     stacker: { name: '탑 쌓기', unit: '층' }, breakout: { name: '벽돌깨기' },
     spot: { name: '틀린그림 찾기' }, screw: { name: '나사 풀기' },
@@ -13,17 +13,37 @@
     billiards: { name: '당구' }, carom4: { name: '당구 · 4구' },
     carom3: { name: '당구 · 3구' }, pool8: { name: '당구 · 8볼' },
     matgo: { name: '맞고' }, poker: { name: '포커' }, roulette: { name: '룰렛' },
-    photo_ttang: { name: '포토 땅따먹기' }, archery: { name: '바람의 궁수' }
+    photo_ttang: { name: '포토 땅따먹기' }, archery: { name: '바람의 궁수' }, chacha_rush: { name: '차차 러시!' }
   });
   const TITLES = Object.freeze({ success: '성공', failure: '실패', draw: '무승부', complete: '게임 종료',
     record: '신기록', score: '도전 완료', 'gold-gain': '골드 획득', 'gold-loss': '골드 손실', 'gold-even': '골드 변동 없음' });
   const POSITIVE = new Set(['success', 'record', 'gold-gain']);
   const SAD = new Set(['failure', 'gold-loss']);
+  const PAGE_GAMES = Object.freeze({
+    '/games/roulette/index.html': 'roulette', '/games/mines/index.html': 'mines',
+    '/games/ojjuda-tour/index.html': 'tour', '/games/tank/index.html': 'tank',
+    '/games/matgo-online.html': 'matgo', '/games/matgo.html': 'matgo',
+    '/games/ttang.html': 'ttang', '/games/photo-ttang.html': 'photo_ttang',
+    '/games/spot-difference/index.html': 'spot', '/games/poker/index.html': 'poker',
+    '/games/bang/index.html': 'bang', '/games/sacheonseong/index.html': 'sacheonseong',
+    '/games/forest-archer/index.html': 'archery'
+  });
   const played = new Map(), liveEffects = new Map(), activated = new WeakMap();
   let sequence = 0, activeDialog = null;
   const own = (object, name) => Object.prototype.hasOwnProperty.call(object, name);
   const supportsGame = game => typeof game === 'string' && own(GAMES, game);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function rankingGames(game) {
+    if (game === 'screw') return ['screw_box', 'screw_flat'];
+    if (['carom4', 'carom3', 'pool8'].includes(game)) return ['billiards'];
+    return supportsGame(game) ? [game] : [];
+  }
+  function rankingLinks(game, className) {
+    return rankingGames(game).map((id, i, all) => '<a class="' + className
+      + '" href="/features/arcade/monthly-ranking.html?game=' + id
+      + '" target="_blank" rel="noopener noreferrer">'
+      + (all.length === 1 ? '이번 달 1~10위 · 내 순위' : (id === 'screw_box' ? '박스형' : '평면형') + ' 월간 순위') + '</a>').join('');
+  }
   const validScore = value => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value <= 1000000;
   const outcomeOf = value => own(TITLES, value) ? value : 'complete';
   const motionReduced = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
@@ -52,7 +72,8 @@
       + '<p class="game-result-encouragement"' + (encouragement ? '' : ' hidden') + '>' + escape(encouragement) + '</p>'
       + '<div class="game-result-actions">' + (typeof options.actions === 'string' ? options.actions : '') + '</div>'
       + '<div class="game-result-extra">' + (typeof options.extra === 'string' ? options.extra : '') + '</div>'
-      + (share ? '<button type="button" class="game-result-share" data-game-result-share><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>공유하기</button>' : '')
+      + '<div class="game-result-social">' + rankingLinks(game, 'game-result-monthly-link')
+      + (share ? '<button type="button" class="game-result-share" data-game-result-share><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>공유하기</button>' : '') + '</div>'
       + '<p class="game-result-share-status" role="status" aria-live="polite"></p>'
       + '<div class="game-result-copy" hidden></div></div></section>';
   }
@@ -251,16 +272,51 @@
     const button = event.target.closest?.('[data-game-result-share]');
     if (button) { event.preventDefault(); void share(button).catch(() => {}); }
   });
+  function entryRanking(card) {
+    if (card.querySelector('.game-entry-monthly-links')) return;
+    const pathname = window.location?.pathname || '';
+    const games = rankingGames(card.dataset.entryKey || PAGE_GAMES[pathname.endsWith('/') ? pathname + 'index.html' : pathname]);
+    if (!games.length) return;
+    const nav = document.createElement('nav');
+    nav.className = 'game-entry-monthly-links';
+    nav.setAttribute('aria-label', '이번 달 게임 순위');
+    for (const game of games) {
+      const link = document.createElement('a');
+      link.className = 'game-entry-monthly-link';
+      link.href = '/features/arcade/monthly-ranking.html?game=' + game;
+      link.target = '_blank';link.rel = 'noopener noreferrer';
+      link.textContent = games.length === 1 ? '🏆 이번 달 1~10위 · 내 순위' : '🏆 ' + (game === 'screw_box' ? '박스형' : '평면형') + ' 월간 순위';
+      nav.append(link);
+    }
+    card.append(nav);
+  }
   const scan = node => {
     if (node.nodeType !== 1) return;
     if (node.matches('[data-game-result-card]')) activate(node);
     node.querySelectorAll('[data-game-result-card]').forEach(activate);
+    if (node.matches('.game-entry')) entryRanking(node);
+    node.querySelectorAll('.game-entry').forEach(entryRanking);
+    if (node.matches('[data-v="chacha_rush"]')) chachaRanking(node);
+    node.querySelectorAll('[data-v="chacha_rush"]').forEach(chachaRanking);
   };
+  function chachaRanking(card) {
+    if (card.nextElementSibling?.classList.contains('chacha-monthly-rank-link')) return;
+    const link = document.createElement('a');link.className = 'chacha-monthly-rank-link';
+    link.href = '/features/arcade/monthly-ranking.html?game=chacha_rush';
+    link.target = '_blank';link.rel = 'noopener noreferrer';
+    link.textContent = '🏆 차차 러시! 이번 달 순위';
+    card.after(link);
+  }
   if (typeof MutationObserver === 'function') new MutationObserver(records => {
-    for (const record of records) for (const node of record.addedNodes) scan(node);
+    for (const record of records) {
+      for (const node of record.addedNodes) scan(node);
+      if (record.target.closest?.('.game-entry')) entryRanking(record.target.closest('.game-entry'));
+    }
     for (const card of liveEffects.keys()) if (!card.isConnected) stopEffects(card);
   }).observe(document.documentElement, { childList: true, subtree: true });
   document.querySelectorAll('[data-game-result-card]').forEach(activate);
+  document.querySelectorAll('.game-entry').forEach(entryRanking);
+  document.querySelectorAll('[data-v="chacha_rush"]').forEach(chachaRanking);
   const preference = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   preference?.addEventListener?.('change', event => { if (event.matches) for (const card of liveEffects.keys()) stopEffects(card); });
   window.OjjudaGameResults = Object.freeze({ markup, decorate, update, show, close, canPlay, shareData, supportsGame, requestedGame, games: GAMES });

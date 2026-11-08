@@ -271,7 +271,7 @@ function win(){
 }
 function showWinResult(){
   notifyArcade('ojjuda-game-finished');
-  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime((completion?.seconds||Math.ceil(elapsed/1000))*1000)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>난이도</small><strong>${state.drawCount===3?'보통':'초보'}</strong></div></div><p id="ranking-status" class="dialog-text"></p><button id="retry-ranking" hidden>순위 저장 다시 시도</button><div class="dialog-buttons"><button data-close>카드 보기</button><button class="primary" id="play-again">다시 시작</button></div>`);
+  openDialog(`<div class="dialog-icon">♛</div><div class="dialog-kicker">BEAUTIFULLY DONE</div><h2 class="dialog-title">멋지게 완성했어요!</h2><p class="dialog-text">52장의 카드가 모두 제자리를 찾았네요.</p><div class="win-stats"><div><small>시간</small><strong>${formatTime((completion?.seconds||Math.ceil(elapsed/1000))*1000)}</strong></div><div><small>이동</small><strong>${state.moves}</strong></div><div><small>난이도</small><strong>${state.drawCount===3?'보통':'초보'}</strong></div></div><a class="dialog-monthly-shortcut" href="/features/arcade/monthly-ranking.html?game=solitaire" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a><p id="ranking-status" class="dialog-text"></p><button id="retry-ranking" hidden>순위 저장 다시 시도</button><div class="dialog-buttons"><button data-close>카드 보기</button><button class="primary" id="play-again">다시 시작</button></div>`);
   updateRankingStatus();
   $('#retry-ranking').onclick=submitCompletion;
   $('#play-again').onclick=()=>startNewGame();

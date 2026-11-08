@@ -29,6 +29,16 @@
 .game-result-card .game-result-extra:empty{display:none}
 .game-result-card .game-result-extra p{margin:5px 0;font:inherit;color:inherit}
 .game-result-card button.game-result-share{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;min-height:46px;margin:12px 0 0;padding:11px 14px;border:0;border-radius:13px;background:var(--result-accent);color:#fff;font:inherit;font-size:15px;font-weight:800;line-height:1.5;cursor:pointer;box-shadow:none;touch-action:manipulation}
+.game-result-social{display:flex;align-items:stretch;justify-content:center;gap:7px;margin-top:12px;flex-wrap:wrap}
+.game-result-card .game-result-social button.game-result-share{flex:1 1 115px;width:auto;margin:0;font-size:14px;padding:10px}
+.game-result-card a.game-result-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 120px;min-height:46px;padding:9px 8px;border:1px solid #b7d1b9;border-radius:13px;background:#e9f5e6;color:#2b6143;font-size:13px;font-weight:850;text-decoration:none;line-height:1.35}
+.game-result-card a.game-result-monthly-link:hover,.game-entry-monthly-link:hover{filter:brightness(.97)}
+.game-entry-monthly-links{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:10px auto 0;width:100%;max-width:430px;justify-content:center}
+.game-entry-monthly-link{display:flex;align-items:center;justify-content:center;flex:1 1 135px;min-height:44px;padding:10px 13px;border:1px solid #accdb4;border-radius:13px;background:#eaf5e9;color:#285d41;font-size:13px;font-weight:800;text-decoration:none;text-align:center;line-height:1.4}
+.game-entry-monthly-link:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
+.chacha-monthly-rank-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 13px;border:1px solid #b5d5b8;border-radius:13px;background:#eaf5e7;color:#286147;font-size:13px;font-weight:800;text-decoration:none;text-align:center}
+.chacha-monthly-rank-link:hover{background:#daecd9}
+.chacha-monthly-rank-link:focus-visible{outline:3px solid #527fdf;outline-offset:3px}
 .game-result-share svg{width:18px;height:18px;flex-shrink:0}
 .game-result-share:hover{filter:brightness(1.06)}
 .game-result-share:disabled{opacity:.65;cursor:wait}
