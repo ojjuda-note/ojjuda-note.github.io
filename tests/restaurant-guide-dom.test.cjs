@@ -109,6 +109,13 @@ function fixture(options = {}) {
   window.fetch = async requested => {
     const url = new URL(requested, window.location.href);
     assert.equal(url.origin, window.location.origin, 'restaurant data requests stay local');
+    if (url.pathname.endsWith('/official-chungnam-slot70.json')) {
+      // Satisfy production cardinality guards without injecting any restaurant into fixture results.
+      return { ok: true, status: 200, json: async () => ({ restaurants: Array.from({ length: 19 }, () => ({ id: '', name: '', address: '' })), guideEnrichments: [{}] }) };
+    }
+    if (url.pathname.endsWith('/official-chungnam-slot71.json')) {
+      return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 71, restaurants: Array.from({ length: 24 }, () => ({ id: '', name: '', address: '', lat: null, lng: null, guides: [{ provider: 'local-guide', status: 'official_listing' }] })) }) };
+    }
     if (url.pathname.endsWith('/official-jeonbuk-slot73.json')) {
       // Simulate an empty current-run supplement; actual slot 73 facts have independent source checks.
       return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 73, restaurants: [] }) };
