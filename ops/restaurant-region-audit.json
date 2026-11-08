@@ -14,10 +14,10 @@
   },
   "active": {
     "cycle": 1,
-    "slot": 75,
-    "scheduledAt": "2026-11-08T21:00:00+09:00",
+    "slot": 77,
+    "scheduledAt": "2026-11-08T23:00:00+09:00",
     "checkedAtKST": "2026-11-08",
-    "source": "정확한 예약시각 정보는 미제공. 현재 KST 2026-11-08 21:26:59를 정각21:00으로 내림. h=70,n=74,slot75,cycle1."
+    "source": "예약된 한국시간 2026-11-08 23:00, 앵커 대비 h=72, n=76, slot77, cycle1"
   },
   "entries": [
     {
@@ -67477,6 +67477,947 @@
         "전수 조사 아님.",
         "동일 회차 이어하기: 기존 ID3곳 공식주소 교정 + 화순 모범음식점 이력 병합. 좌표추가0·노출제외0·재확인53. 전수 조사는 아님."
       ]
+    },
+    {
+      "cycle": 1,
+      "slot": 77,
+      "scheduledAtKST": "2026-11-08T23:00:00+09:00",
+      "checkedAtKST": "2026-11-08",
+      "status": "partial_muan_2025_designation22_new4_enriched",
+      "assignedRegions": [
+        "전남광주통합특별시 영암군",
+        "전남광주통합특별시 무안군",
+        "전남광주통합특별시 함평군",
+        "전남광주통합특별시 영광군"
+      ],
+      "regionAudit": [
+        {
+          "region": "전남광주통합특별시 영암군",
+          "actuallyChecked": [
+            "군청 관광·모범음식점 공식 목록 공개 검색, 기존 선정 이력 6곳 위치 점검"
+          ],
+          "remainingAreas": [
+            "현재 적용 가능한 지자체 지정 명단 확보",
+            "기존 좌표 미등록 6곳 현재 주소·영업·공개 좌표"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 무안군",
+          "actuallyChecked": [
+            "무안군 보건소 2025년 모범음식점 지정 현황 49개소 중 첫 24개 목록과 49번 항목·기존 ID 대조",
+            "신규 22곳 등록, 기존4곳 과거 지정 이력 병합"
+          ],
+          "new": 22,
+          "updated": 4,
+          "remainingAreas": [
+            "공식 명단 23곳의 잔여 확인(기존 4곳 제외)",
+            "2026.10 지정기간 종료 후 2026.11 재지정 여부 확인",
+            "정확 좌표·현재 영업상태"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 함평군",
+          "actuallyChecked": [
+            "함평군 관광안내지도 모범음식점 인덱스와 기존6곳의 상호·주소 비교 시작"
+          ],
+          "remainingAreas": [
+            "관광지도 판본 확인·기존 정경복궁·월야88장어 등 주소차이 독립 재확인",
+            "현행 지정명단·좌표·영업 여부"
+          ],
+          "notExhaustive": true
+        },
+        {
+          "region": "전남광주통합특별시 영광군",
+          "actuallyChecked": [
+            "군청 모범음식점 공식 목록 검색 및 기존 4곳 위치 누락 확인"
+          ],
+          "remainingAreas": [
+            "현행 공식 명단과 주소 및 일치 공개 좌표 확보",
+            "현재 영업 여부"
+          ],
+          "notExhaustive": true
+        }
+      ],
+      "sourcesChecked": [
+        "무안군 보건소 2025년 지정 명단 49개소, 지정기간 2025.11~2026.10",
+        "함평군 관광안내지도 모범음식점 인덱스(지도 화면 확인 불가, 실제 개별 수록 확인 이월)",
+        "영암·영광 군청 지정명단 검색(명단 근거 확인 실패, 변동으로 단정하지 않음)"
+      ],
+      "additions": 22,
+      "modifications": 4,
+      "operatingStatusChanges": 0,
+      "locationCoordinatesAdded": 0,
+      "locationHidden": 0,
+      "locationPending": 43,
+      "locationPendingScope": "이번 배정 4개 군의 기존 원본 21곳 및 신규 무안군 22곳. 전국 대기 건수가 아님.",
+      "addedRestaurantIds": [
+        "local-jeonnam-slot77-muan-01",
+        "local-jeonnam-slot77-muan-02",
+        "local-jeonnam-slot77-muan-03",
+        "local-jeonnam-slot77-muan-04",
+        "local-jeonnam-slot77-muan-05",
+        "local-jeonnam-slot77-muan-07",
+        "local-jeonnam-slot77-muan-08",
+        "local-jeonnam-slot77-muan-09",
+        "local-jeonnam-slot77-muan-10",
+        "local-jeonnam-slot77-muan-11",
+        "local-jeonnam-slot77-muan-12",
+        "local-jeonnam-slot77-muan-13",
+        "local-jeonnam-slot77-muan-14",
+        "local-jeonnam-slot77-muan-15",
+        "local-jeonnam-slot77-muan-16",
+        "local-jeonnam-slot77-muan-17",
+        "local-jeonnam-slot77-muan-18",
+        "local-jeonnam-slot77-muan-19",
+        "local-jeonnam-slot77-muan-21",
+        "local-jeonnam-slot77-muan-22",
+        "local-jeonnam-slot77-muan-24",
+        "local-jeonnam-slot77-muan-49"
+      ],
+      "modifiedRestaurantIds": [
+        "local-namdo-599330",
+        "local-namdo-2217021",
+        "local-namdo-2217011",
+        "local-namdo-599365"
+      ],
+      "evidenceUrls": [
+        "https://health.muan.go.kr/health/business/food_improve/model_list",
+        "https://www.hampyeong.go.kr/upload/file/hp_map_kor.pdf"
+      ],
+      "verifiedLocations": [],
+      "pendingLocationInventory": [
+        {
+          "restaurantId": "local-namdo-599327",
+          "name": "그린식당",
+          "currentAddress": "전라남도 영암군 학산면 독천로 171-1",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "그린식당 영암군",
+            "그린식당 전라남도 영암군 학산면 독천로 171-1",
+            "전남광주통합특별시 영암군 그린식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-3681144",
+          "name": "금송식육식당",
+          "currentAddress": "전남 함평군 함평읍 중앙길 54-11",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "금송식육식당 함평군",
+            "금송식육식당 전남 함평군 함평읍 중앙길 54-11",
+            "전남광주통합특별시 함평군 금송식육식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599330",
+          "name": "꽃게랑낙지랑",
+          "currentAddress": "전라남도 무안군 삼향읍 남악5로 34번길 11-3",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "꽃게랑낙지랑 무안군",
+            "꽃게랑낙지랑 전라남도 무안군 삼향읍 남악5로 34번길 11-3",
+            "전남광주통합특별시 무안군 꽃게랑낙지랑"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599325",
+          "name": "독천식당",
+          "currentAddress": "전라남도 영암군 학산면 독천로 162-1",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "독천식당 영암군",
+            "독천식당 전라남도 영암군 학산면 독천로 162-1",
+            "전남광주통합특별시 영암군 독천식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1",
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599371",
+          "name": "만선횟집",
+          "currentAddress": "전라남도 영광군영광읍 천년로10길 41",
+          "region": "전남광주통합특별시 영광군",
+          "searchAliases": [
+            "만선횟집 영광군",
+            "만선횟집 전라남도 영광군영광읍 천년로10길 41",
+            "전남광주통합특별시 영광군 만선횟집"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599370",
+          "name": "모란정",
+          "currentAddress": "전라남도 함평군 함평읍 중앙길 32-10",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "모란정 함평군",
+            "모란정 전라남도 함평군 함평읍 중앙길 32-10",
+            "전남광주통합특별시 함평군 모란정"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217021",
+          "name": "무안명가",
+          "currentAddress": "전남 무안군 망운면 톱머리길 38",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "무안명가 무안군",
+            "무안명가 전남 무안군 망운면 톱머리길 38",
+            "전남광주통합특별시 무안군 무안명가"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599373",
+          "name": "법성포굴비정식",
+          "currentAddress": "전라남도 영광군 법성면 법성포로 7",
+          "region": "전남광주통합특별시 영광군",
+          "searchAliases": [
+            "법성포굴비정식 영광군",
+            "법성포굴비정식 전라남도 영광군 법성면 법성포로 7",
+            "전남광주통합특별시 영광군 법성포굴비정식"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217011",
+          "name": "서당골",
+          "currentAddress": "전라남도 무안군 현경면 현해로159",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "서당골 무안군",
+            "서당골 전라남도 무안군 현경면 현해로159",
+            "전남광주통합특별시 무안군 서당골"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599365",
+          "name": "승달가든",
+          "currentAddress": "전라남도 무안군 무안읍 면성2길 27",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "승달가든 무안군",
+            "승달가든 전라남도 무안군 무안읍 면성2길 27",
+            "전남광주통합특별시 무안군 승달가든"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599328",
+          "name": "영암매력한우명품관",
+          "currentAddress": "전라남도 영암군 삼호읍 녹색로 592",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "영암매력한우명품관 영암군",
+            "영암매력한우명품관 전라남도 영암군 삼호읍 녹색로 592",
+            "전남광주통합특별시 영암군 영암매력한우명품관"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217031",
+          "name": "월야88장어",
+          "currentAddress": "전남 함평군 월야면 월야월봉길 61-6",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "월야88장어 함평군",
+            "월야88장어 전남 함평군 월야면 월야월봉길 61-6",
+            "전남광주통합특별시 함평군 월야88장어"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599332",
+          "name": "정경복궁",
+          "currentAddress": "전라남도 함평군 함평읍 시장길 78",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "정경복궁 함평군",
+            "정경복궁 전라남도 함평군 함평읍 시장길 78",
+            "전남광주통합특별시 함평군 정경복궁"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-2217041",
+          "name": "천년미가",
+          "currentAddress": "전남 영광군 법성포로 11",
+          "region": "전남광주통합특별시 영광군",
+          "searchAliases": [
+            "천년미가 영광군",
+            "천년미가 전남 영광군 법성포로 11",
+            "전남광주통합특별시 영광군 천년미가"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599331",
+          "name": "청하식당",
+          "currentAddress": "전라남도 영암군 학산면 독천로 170-1",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "청하식당 영암군",
+            "청하식당 전라남도 영암군 학산면 독천로 170-1",
+            "전남광주통합특별시 영암군 청하식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599346",
+          "name": "한우해월다함 본점",
+          "currentAddress": "전라남도 함평군 해보면 해삼로 367",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "한우해월다함 본점 함평군",
+            "한우해월다함 본점 전라남도 함평군 해보면 해삼로 367",
+            "전남광주통합특별시 함평군 한우해월다함 본점"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v8=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599339",
+          "name": "동락",
+          "currentAddress": "전라남도 영암군 영암읍 서문로 10",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "동락 영암군",
+            "동락 전라남도 영암군 영암읍 서문로 10",
+            "전남광주통합특별시 영암군 동락"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607505",
+          "name": "명산장어",
+          "currentAddress": "전라남도 무안군 몽탄면 삼산로 440",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "명산장어 무안군",
+            "명산장어 전라남도 무안군 몽탄면 삼산로 440",
+            "전남광주통합특별시 무안군 명산장어"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-607500",
+          "name": "목포식당",
+          "currentAddress": "전라남도 함평군 함평읍 시장길 32",
+          "region": "전남광주통합특별시 함평군",
+          "searchAliases": [
+            "목포식당 함평군",
+            "목포식당 전라남도 함평군 함평읍 시장길 32",
+            "전남광주통합특별시 함평군 목포식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599382",
+          "name": "백수식당",
+          "currentAddress": "전라남도 영광군 백수읍 천마길 9",
+          "region": "전남광주통합특별시 영광군",
+          "searchAliases": [
+            "백수식당 영광군",
+            "백수식당 전라남도 영광군 백수읍 천마길 9",
+            "전남광주통합특별시 영광군 백수식당"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-namdo-599361",
+          "name": "영빈관",
+          "currentAddress": "전라남도 영암군 영암읍 웃시암길 8",
+          "region": "전남광주통합특별시 영암군",
+          "searchAliases": [
+            "영빈관 영암군",
+            "영빈관 전라남도 영암군 영암읍 웃시암길 8",
+            "전남광주통합특별시 영암군 영빈관"
+          ],
+          "evidenceUrls": [
+            "https://www.xn--o39a81gi2cv0je9ktug.kr/shop_contents/myboard_list.htm?category_idx=131651&myboard_code=st_album&s_v9=1"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "기존 식당의 과거 선정 이력 및 저장 주소 확인. 해당 주소의 최신 영업·일치 수치좌표는 추가 대조 필요.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-01",
+          "name": "(유)아웃백스테이크하우스코리아 목포남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악4로 49",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "(유)아웃백스테이크하우스코리아 목포남악점 무안군",
+            "(유)아웃백스테이크하우스코리아 목포남악점 전남광주통합특별시 무안군 삼향읍 남악4로 49",
+            "전남광주통합특별시 무안군 (유)아웃백스테이크하우스코리아 목포남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-02",
+          "name": "3대나주곰탕원조집 남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 오룡2길 14",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "3대나주곰탕원조집 남악점 무안군",
+            "3대나주곰탕원조집 남악점 전남광주통합특별시 무안군 삼향읍 오룡2길 14",
+            "전남광주통합특별시 무안군 3대나주곰탕원조집 남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-03",
+          "name": "GRAND 가든",
+          "currentAddress": "전남광주통합특별시 무안군 현경면 현해로 419",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "GRAND 가든 무안군",
+            "GRAND 가든 전남광주통합특별시 무안군 현경면 현해로 419",
+            "전남광주통합특별시 무안군 GRAND 가든"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-04",
+          "name": "교촌치킨 무안읍점",
+          "currentAddress": "전남광주통합특별시 무안군 무안읍 면성1길 129",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "교촌치킨 무안읍점 무안군",
+            "교촌치킨 무안읍점 전남광주통합특별시 무안군 무안읍 면성1길 129",
+            "전남광주통합특별시 무안군 교촌치킨 무안읍점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-05",
+          "name": "구풍",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 중등포길 35-37",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "구풍 무안군",
+            "구풍 전남광주통합특별시 무안군 삼향읍 중등포길 35-37",
+            "전남광주통합특별시 무안군 구풍"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-07",
+          "name": "나그네식당",
+          "currentAddress": "전남광주통합특별시 무안군 해제면 만송로 6",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "나그네식당 무안군",
+            "나그네식당 전남광주통합특별시 무안군 해제면 만송로 6",
+            "전남광주통합특별시 무안군 나그네식당"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-08",
+          "name": "낙지명가",
+          "currentAddress": "전남광주통합특별시 무안군 무안읍 성남1길 167",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "낙지명가 무안군",
+            "낙지명가 전남광주통합특별시 무안군 무안읍 성남1길 167",
+            "전남광주통합특별시 무안군 낙지명가"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-09",
+          "name": "남도뜨락",
+          "currentAddress": "전남광주통합특별시 무안군 일로읍 양지길 73-33",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "남도뜨락 무안군",
+            "남도뜨락 전남광주통합특별시 무안군 일로읍 양지길 73-33",
+            "전남광주통합특별시 무안군 남도뜨락"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-10",
+          "name": "남산가든",
+          "currentAddress": "전남광주통합특별시 무안군 무안읍 성남1길 160",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "남산가든 무안군",
+            "남산가든 전남광주통합특별시 무안군 무안읍 성남1길 160",
+            "전남광주통합특별시 무안군 남산가든"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-11",
+          "name": "남악골 산야초",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 대죽서로15번길 36",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "남악골 산야초 무안군",
+            "남악골 산야초 전남광주통합특별시 무안군 삼향읍 대죽서로15번길 36",
+            "전남광주통합특별시 무안군 남악골 산야초"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-12",
+          "name": "놀부보쌈족발·부대찌개 남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 대죽서로 38",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "놀부보쌈족발·부대찌개 남악점 무안군",
+            "놀부보쌈족발·부대찌개 남악점 전남광주통합특별시 무안군 삼향읍 대죽서로 38",
+            "전남광주통합특별시 무안군 놀부보쌈족발·부대찌개 남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-13",
+          "name": "대가",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 대죽서로15번길 22",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "대가 무안군",
+            "대가 전남광주통합특별시 무안군 삼향읍 대죽서로15번길 22",
+            "전남광주통합특별시 무안군 대가"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-14",
+          "name": "덕본집",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 대죽서로30, 201호",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "덕본집 무안군",
+            "덕본집 전남광주통합특별시 무안군 삼향읍 대죽서로30, 201호",
+            "전남광주통합특별시 무안군 덕본집"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-15",
+          "name": "도담갈비",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 대죽동로16번길 21, 2층",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "도담갈비 무안군",
+            "도담갈비 전남광주통합특별시 무안군 삼향읍 대죽동로16번길 21, 2층",
+            "전남광주통합특별시 무안군 도담갈비"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-16",
+          "name": "도청한우(본점)",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 오룡2길 15",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "도청한우(본점) 무안군",
+            "도청한우(본점) 전남광주통합특별시 무안군 삼향읍 오룡2길 15",
+            "전남광주통합특별시 무안군 도청한우(본점)"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-17",
+          "name": "마왕족발 무안남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 41",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "마왕족발 무안남악점 무안군",
+            "마왕족발 무안남악점 전남광주통합특별시 무안군 삼향읍 남악3로82번길 41",
+            "전남광주통합특별시 무안군 마왕족발 무안남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-18",
+          "name": "메콩강PHO",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악4로 92, 2층",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "메콩강PHO 무안군",
+            "메콩강PHO 전남광주통합특별시 무안군 삼향읍 남악4로 92, 2층",
+            "전남광주통합특별시 무안군 메콩강PHO"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-19",
+          "name": "무안갯벌낙지전문점 2호점",
+          "currentAddress": "전남광주통합특별시 무안군 망운면 청운로 869",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "무안갯벌낙지전문점 2호점 무안군",
+            "무안갯벌낙지전문점 2호점 전남광주통합특별시 무안군 망운면 청운로 869",
+            "전남광주통합특별시 무안군 무안갯벌낙지전문점 2호점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-21",
+          "name": "보울레시피 남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 42",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "보울레시피 남악점 무안군",
+            "보울레시피 남악점 전남광주통합특별시 무안군 삼향읍 남악3로82번길 42",
+            "전남광주통합특별시 무안군 보울레시피 남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-22",
+          "name": "부산어묵베이커리 목포남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악로 234",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "부산어묵베이커리 목포남악점 무안군",
+            "부산어묵베이커리 목포남악점 전남광주통합특별시 무안군 삼향읍 남악로 234",
+            "전남광주통합특별시 무안군 부산어묵베이커리 목포남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-24",
+          "name": "서울깍두기 전남도청점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 후광대로 292",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "서울깍두기 전남도청점 무안군",
+            "서울깍두기 전남도청점 전남광주통합특별시 무안군 삼향읍 후광대로 292",
+            "전남광주통합특별시 무안군 서울깍두기 전남도청점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        },
+        {
+          "restaurantId": "local-jeonnam-slot77-muan-49",
+          "name": "해든갓지은솥밥 무안남악점",
+          "currentAddress": "전남광주통합특별시 무안군 삼향읍 남악3로82번길 17",
+          "region": "전남광주통합특별시 무안군",
+          "searchAliases": [
+            "해든갓지은솥밥 무안남악점 무안군",
+            "해든갓지은솥밥 무안남악점 전남광주통합특별시 무안군 삼향읍 남악3로82번길 17",
+            "전남광주통합특별시 무안군 해든갓지은솥밥 무안남악점"
+          ],
+          "evidenceUrls": [
+            "https://health.muan.go.kr/health/business/food_improve/model_list"
+          ],
+          "checkedAt": "2026-11-08",
+          "checkResult": "2025.11~2026.10 지자체 지정 명단에 상호·주소 수록 확인. 2026.11 재지정·현 영업·일치 수치좌표 미확인.",
+          "recheckCycle": 2,
+          "recheckSlot": 77,
+          "reason": "상호·지점·현재 주소까지 대조되는 공식 공개 수치좌표 미확인"
+        }
+      ],
+      "followUpCandidates": [
+        "무안군 49곳 중 이월된 23곳과 2026.11 새 지정 공고",
+        "영암·함평·영광군 현행 선정/수록명단 및 공개 좌표",
+        "함평 정경복궁·월야88장어 기존 주소와 지자체 관광지도 주소 차이 교차 검증",
+        "앞 회차 중 저장 기록 없는 1/67·1/72·1/73·1/76은 다음 순환 해당 회차로 이월"
+      ],
+      "notes": [
+        "2025 지정기간 종료 뒤 재지정/현재 영업 미확인. 폐업·선정 취소로 처리하지 않음.",
+        "블루리본 정규 등급 확인이나 지도 위치 좌표 추정 없음.",
+        "좌표 미확인만으로 삭제·비노출 하지 않고 회원 추천 글과 사진 보존."
+      ]
     }
   ],
   "notes": [
@@ -67513,6 +68454,7 @@
     "2026-11-08 17시 순환1/71: 태안·예산군 공식 모범음식점 1쪽씩 12건 신규(총24), 기존이력/리본등급/좌표 추정없이 처리. 홍성군 공식 개별 선정 근거 보류. 위치재확인 대기26, 비노출0. 추가 73건 공식 명단 후속 대조.",
     "2026-11-08 20시 1/74: 곡성10 추가·기존3 별도 지자체 가이드 병합. 14곳 수치좌표 재확인 대기, 담양·구례와 1/67·1/72·1/73 이월.",
     "2026-11-08 21시 1순환75회차: 고흥1·보성15·화순18 신규, 기존7곳 모범음식점 병합, 위치대기53, 주소충돌3 확인필요, 목록제외0. 다음 장흥·강진·해남군.",
-    "2026-11-08 순환1/75 이어하기: 화순 기존3곳 상호·전화·주소 공식 대조 및 보완자료 정정, 회차 누적 새34·수정10·좌표0·비노출0·재확인53."
+    "2026-11-08 순환1/75 이어하기: 화순 기존3곳 상호·전화·주소 공식 대조 및 보완자료 정정, 회차 누적 새34·수정10·좌표0·비노출0·재확인53.",
+    "2026-11-08 23시 1/77 영암·무안·함평·영광: 무안군 2025년 모범음식점 22 신규·기존4 과거 지정 이력 병합, 좌표0·비노출0·위치재확인43. 2026-11 재지정 및 나머지3군 이월. 회원 추천 보존."
   ]
 }
