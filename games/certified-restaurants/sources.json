@@ -1529,15 +1529,15 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3334,
+    "uniqueRestaurants": 3352,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2601,
+      "local-guide": 2619,
       "post-office": 240
     },
     "coordinatesAvailable": 1061,
-    "coordinatesMissing": 2273,
+    "coordinatesMissing": 2291,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
@@ -1545,9 +1545,9 @@
       "충남": 74,
       "울산": 38,
       "경남": 325,
-      "강원": 66,
+      "강원": 74,
       "전북": 215,
-      "경기": 402,
+      "경기": 412,
       "인천": 345,
       "제주": 120,
       "대구": 137,
@@ -1558,11 +1558,11 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 1984,
-      "중식": 138,
+      "한식": 1997,
+      "중식": 141,
       "일식": 140,
-      "기타": 584,
-      "양식": 214,
+      "기타": 585,
+      "양식": 215,
       "분식": 34,
       "디저트": 240
     }
@@ -14648,62 +14648,238 @@
         "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
         "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
       ]
+    },
+    {
+      "id": "2026-11-08-gyeonggi-slot64-coverage-count-reconciliation",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 64,
+      "previousCoverage": {
+        "uniqueRestaurants": 3334,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2601,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2273,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 402,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1984,
+          "중식": 138,
+          "일식": 140,
+          "기타": 584,
+          "양식": 214,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3344,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2611,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2283,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1990,
+          "중식": 141,
+          "일식": 140,
+          "기타": 584,
+          "양식": 215,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 10,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gyeonggi-slot64-yeoncheon-geumjandi",
+        "local-gyeonggi-slot64-yeoncheon-myeongsin",
+        "local-gyeonggi-slot64-yeoncheon-jungwon",
+        "local-gyeonggi-slot64-gapyeong-cheongpyeong-jjajang",
+        "local-gyeonggi-slot64-gapyeong-cheongdaemun",
+        "local-gyeonggi-slot64-gapyeong-chenou",
+        "local-gyeonggi-slot64-gapyeong-dream-dakgalbi",
+        "local-gyeonggi-slot64-gapyeong-seorak-makguksu",
+        "local-gyeonggi-slot64-yangpyeong-gaegun-sundae",
+        "local-gyeonggi-slot64-yangpyeong-gwangiwon"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gyeonggi-slot64.json",
+      "scope": "기존 반영된 64회차 신규 10곳의 누락 집계만 사후 일치시킴. 식당 재등록 건수로 중복 계산하지 않음."
+    },
+    {
+      "id": "2026-11-08-gangwon-slot65-eight-official-tourism-listings",
+      "checkedAt": "2026-11-08",
+      "cycle": 1,
+      "slot": 65,
+      "previousCoverage": {
+        "uniqueRestaurants": 3344,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2611,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2283,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 66,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1990,
+          "중식": 141,
+          "일식": 140,
+          "기타": 584,
+          "양식": 215,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "currentCoverage": {
+        "uniqueRestaurants": 3352,
+        "providerCounts": {
+          "michelin": 237,
+          "blue-ribbon": 530,
+          "local-guide": 2619,
+          "post-office": 240
+        },
+        "coordinatesAvailable": 1061,
+        "coordinatesMissing": 2291,
+        "regionalCounts": {
+          "서울": 353,
+          "부산": 387,
+          "충북": 223,
+          "충남": 74,
+          "울산": 38,
+          "경남": 325,
+          "강원": 74,
+          "전북": 215,
+          "경기": 412,
+          "인천": 345,
+          "제주": 120,
+          "대구": 137,
+          "전남": 183,
+          "세종": 100,
+          "대전": 117,
+          "경북": 170,
+          "광주": 79
+        },
+        "categoryCounts": {
+          "한식": 1997,
+          "중식": 141,
+          "일식": 140,
+          "기타": 585,
+          "양식": 215,
+          "분식": 34,
+          "디저트": 240
+        }
+      },
+      "newRestaurantCount": 8,
+      "modificationCount": 0,
+      "coordinateAddedCount": 0,
+      "locationExcludedCount": 0,
+      "addedRestaurantIds": [
+        "local-gangwon-slot65-hoengseong-hanu-plaza-main",
+        "local-gangwon-slot65-hoengseong-samjeong",
+        "local-gangwon-slot65-hoengseong-raonia",
+        "local-gangwon-slot65-yeongwol-cheongpung",
+        "local-gangwon-slot65-yeongwol-mureung-trout",
+        "local-gangwon-slot65-pyeongchang-burim",
+        "local-gangwon-slot65-pyeongchang-memil-house",
+        "local-gangwon-slot65-pyeongchang-chowon"
+      ],
+      "sourceUrls": [
+        "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+        "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+        "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+        "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+        "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+        "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery"
+      ],
+      "sourceSupplement": "games/certified-restaurants/official-gangwon-slot65.json",
+      "scope": "홍천·횡성·영월·평창 중 횡성 한국관광공사3·영월 군청 과거 수록2·평창 군청 관광3 부분 검증. 2017·2021 기록을 현재 영업이나 현재 선정으로 표시하지 않음.",
+      "notes": [
+        "4개군 완전 조사 아님; 홍천 기존 미확인 37, 횡성 기존2, 평창 기존1 및 8 신규 위치 수치 확인 필요.",
+        "영월군 공식 자료는 2017-10-24, 평창군 공식 자료는 2021-10-27 최종수정. 좌표 없이 추가, 추정/회원 자료 미사용.",
+        "블루리본 최신판 등급 직접 확인되지 않아 블루리본 기록으로 추가하지 않음."
+      ]
     }
   ],
   "latestCoverageAudit": {
-    "id": "2026-11-08-busan-ulsan-slot63-three-verified-tourism-listings",
+    "id": "2026-11-08-gangwon-slot65-eight-official-tourism-listings",
     "checkedAt": "2026-11-08",
     "cycle": 1,
-    "slot": 63,
+    "slot": 65,
     "previousCoverage": {
-      "uniqueRestaurants": 3331,
+      "uniqueRestaurants": 3344,
       "providerCounts": {
         "michelin": 237,
         "blue-ribbon": 530,
-        "local-guide": 2598,
+        "local-guide": 2611,
         "post-office": 240
       },
       "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2270,
-      "regionalCounts": {
-        "서울": 353,
-        "부산": 385,
-        "충북": 223,
-        "충남": 74,
-        "울산": 37,
-        "경남": 325,
-        "강원": 66,
-        "전북": 215,
-        "경기": 402,
-        "인천": 345,
-        "제주": 120,
-        "대구": 137,
-        "전남": 183,
-        "세종": 100,
-        "대전": 117,
-        "경북": 170,
-        "광주": 79
-      },
-      "categoryCounts": {
-        "한식": 1982,
-        "중식": 138,
-        "일식": 139,
-        "기타": 584,
-        "양식": 214,
-        "분식": 34,
-        "디저트": 240
-      }
-    },
-    "currentCoverage": {
-      "uniqueRestaurants": 3334,
-      "providerCounts": {
-        "michelin": 237,
-        "blue-ribbon": 530,
-        "local-guide": 2601,
-        "post-office": 240
-      },
-      "coordinatesAvailable": 1061,
-      "coordinatesMissing": 2273,
+      "coordinatesMissing": 2283,
       "regionalCounts": {
         "서울": 353,
         "부산": 387,
@@ -14713,7 +14889,7 @@
         "경남": 325,
         "강원": 66,
         "전북": 215,
-        "경기": 402,
+        "경기": 412,
         "인천": 345,
         "제주": 120,
         "대구": 137,
@@ -14724,41 +14900,82 @@
         "광주": 79
       },
       "categoryCounts": {
-        "한식": 1984,
-        "중식": 138,
+        "한식": 1990,
+        "중식": 141,
         "일식": 140,
         "기타": 584,
-        "양식": 214,
+        "양식": 215,
         "분식": 34,
         "디저트": 240
       }
     },
-    "newRestaurantCount": 3,
-    "modificationCount": 1,
+    "currentCoverage": {
+      "uniqueRestaurants": 3352,
+      "providerCounts": {
+        "michelin": 237,
+        "blue-ribbon": 530,
+        "local-guide": 2619,
+        "post-office": 240
+      },
+      "coordinatesAvailable": 1061,
+      "coordinatesMissing": 2291,
+      "regionalCounts": {
+        "서울": 353,
+        "부산": 387,
+        "충북": 223,
+        "충남": 74,
+        "울산": 38,
+        "경남": 325,
+        "강원": 74,
+        "전북": 215,
+        "경기": 412,
+        "인천": 345,
+        "제주": 120,
+        "대구": 137,
+        "전남": 183,
+        "세종": 100,
+        "대전": 117,
+        "경북": 170,
+        "광주": 79
+      },
+      "categoryCounts": {
+        "한식": 1997,
+        "중식": 141,
+        "일식": 140,
+        "기타": 585,
+        "양식": 215,
+        "분식": 34,
+        "디저트": 240
+      }
+    },
+    "newRestaurantCount": 8,
+    "modificationCount": 0,
     "coordinateAddedCount": 0,
     "locationExcludedCount": 0,
     "addedRestaurantIds": [
-      "local-busan-slot63-gijang-cheongpajang-hoe",
-      "local-busan-slot63-gijang-yeonhwari-gijangchon-jangeo",
-      "local-ulsan-slot63-ulju-geumjang-saengbok"
-    ],
-    "modifiedRestaurantIds": [
-      "local-busan-taste-fbd95ea18d3f287c"
+      "local-gangwon-slot65-hoengseong-hanu-plaza-main",
+      "local-gangwon-slot65-hoengseong-samjeong",
+      "local-gangwon-slot65-hoengseong-raonia",
+      "local-gangwon-slot65-yeongwol-cheongpung",
+      "local-gangwon-slot65-yeongwol-mureung-trout",
+      "local-gangwon-slot65-pyeongchang-burim",
+      "local-gangwon-slot65-pyeongchang-memil-house",
+      "local-gangwon-slot65-pyeongchang-chowon"
     ],
     "sourceUrls": [
-      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000&pageNo=113",
-      "https://www.visitbusan.net/index.do?menuCd=DOM_000000201002005000",
-      "https://tour.ulsan.go.kr/tour/korean/unit/accessible/list.ulsan?mId=001004001000000000&searchGubun=food"
+      "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+      "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+      "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+      "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+      "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+      "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery"
     ],
-    "sourceSupplement": "games/certified-restaurants/official-busan-ulsan-slot63.json",
-    "scope": "부산 기장군·울산 울주군 공식 시 관광 음식점 부분 명단 대조. 비짓부산 메뉴판 지원 2건·울산관광 먹거리 1건 신규, 비짓부산 현재 기장 일광읍 도로명주소 1곳의 옛 일광면 표기 수정. 전체 명단 전수 아님.",
+    "sourceSupplement": "games/certified-restaurants/official-gangwon-slot65.json",
+    "scope": "홍천·횡성·영월·평창 중 횡성 한국관광공사3·영월 군청 과거 수록2·평창 군청 관광3 부분 검증. 2017·2021 기록을 현재 영업이나 현재 선정으로 표시하지 않음.",
     "notes": [
-      "공식 관광 소개/메뉴 지원 수록이며 미쉐린·블루리본 정규 등급 또는 현재 영업 검증이 아님.",
-      "상호·주소에 맞는 공개 수치 위경도 근거를 얻지 못해 신규 3곳 lat/lng null.",
-      "기존 일광바다횟집 ID·기존 선정 이력과 lat/lng 보존, 행정 읍면 표기만 수정.",
-      "기장군 기존 17곳·울주군 기본 2곳 및 관광 사이드카 갈비구락부 1곳 좌표 누락 이월.",
-      "회원 추천맛집 글·사진·회원 위치 정보 건드리지 않음.",
-      "전북 53회차 누락 기록 및 이전 회차 미완료는 계속 이월."
+      "기존 홍천37·횡성1 좌표 미등록과 신규 8곳(총 46곳) 위치 수치 확인 필요. 평창 기존 1곳과 횡성 기존 1곳은 이미 좌표가 있어 신규 검증 대상으로 따로 기록.",
+      "영월군 공식 자료는 2017-10-24, 평창군 공식 자료는 2021-10-27 최종수정. 좌표 없이 추가, 추정/회원 자료 미사용.",
+      "블루리본 최신판 등급 직접 확인되지 않아 블루리본 기록으로 추가하지 않음."
     ]
   },
   "latestMapCoverageAudit": {
@@ -23518,6 +23735,60 @@
       "연도·현재 영업 미확인 별도 유지, 양평 개군할머니만 2019 선정.",
       "13곳 공개 정확한 수치 좌표 미확인. 호텔길조와 식당 길조 관계 재확인 필요.",
       "블루리본 정규 등급 확인되지 않음. 회원 추천·사진·개인 위치 정보 불변."
+    ]
+  },
+  "gangwonSlot65": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 65,
+    "sourceFile": "games/certified-restaurants/official-gangwon-slot65.json",
+    "officialSources": [
+      "https://korean.visitkorea.or.kr/detail/rem_detail.do?cotid=0f7c42ff-89ac-42d8-abd0-e7ab4eb66b0a",
+      "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=626",
+      "https://www.yw.go.kr/tour/selectTourCntntsWebView.do?ctgry=23&key=595&pageUnit=9&searchCnd=all&tourNo=609",
+      "https://tour.pc.go.kr/Home/H40000/H40200/placeDetail?order_column=1&page=1&pageSize=12&place_no=114&search_column=2&search_keyword=%EB%A7%9B%EC%A7%91&viewType=gallery",
+      "https://tour.pc.go.kr/Home/H40000/H40100/placeDetail?curationGroup=4&order_column=1&page=1&pageSize=12&place_no=680&place_type=39&search_column=2&search_keyword=%EB%A9%94%EB%B0%80&viewType=gallery",
+      "https://tour.pc.go.kr/Home/H30000/H30200/placeDetail?order_column=1&page=1&pageSize=12&place_no=619&search_column=2&search_keyword=%EC%95%88%EC%B0%BD%EC%82%B4&viewType=gallery"
+    ],
+    "addedCount": 8,
+    "modifiedCount": 0,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "pendingLocations": 46,
+    "regions": [
+      "강원특별자치도 홍천군",
+      "강원특별자치도 횡성군",
+      "강원특별자치도 영월군",
+      "강원특별자치도 평창군"
+    ],
+    "restaurantsByRegion": {
+      "홍천군": 0,
+      "횡성군": 3,
+      "영월군": 2,
+      "평창군": 3
+    },
+    "restaurantIds": [
+      "local-gangwon-slot65-hoengseong-hanu-plaza-main",
+      "local-gangwon-slot65-hoengseong-samjeong",
+      "local-gangwon-slot65-hoengseong-raonia",
+      "local-gangwon-slot65-yeongwol-cheongpung",
+      "local-gangwon-slot65-yeongwol-mureung-trout",
+      "local-gangwon-slot65-pyeongchang-burim",
+      "local-gangwon-slot65-pyeongchang-memil-house",
+      "local-gangwon-slot65-pyeongchang-chowon"
+    ],
+    "operatingStatusVerified": 0,
+    "completeRegionalCollection": false,
+    "sourceRecency": {
+      "yeongwol": "2017-10-24",
+      "pyeongchang": "2021-10-27",
+      "kto": "edition-year-unconfirmed"
+    },
+    "scope": "홍천·횡성·영월·평창 중 횡성 한국관광공사3·영월 군청 과거 수록2·평창 군청 관광3 부분 검증. 2017·2021 기록을 현재 영업이나 현재 선정으로 표시하지 않음.",
+    "notes": [
+      "4개군 완전 조사 아님; 홍천 기존 미확인 37, 횡성 기존2, 평창 기존1 및 8 신규 위치 수치 확인 필요.",
+      "영월군 공식 자료는 2017-10-24, 평창군 공식 자료는 2021-10-27 최종수정. 좌표 없이 추가, 추정/회원 자료 미사용.",
+      "블루리본 최신판 등급 직접 확인되지 않아 블루리본 기록으로 추가하지 않음."
     ]
   }
 }
