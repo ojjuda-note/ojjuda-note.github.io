@@ -132,6 +132,11 @@ function fixture(options = {}) {
           cycle: 1, slot: 77, restaurants: Array(22).fill(duplicate), guideEnrichments: [{}, {}, {}, {}]
         }) };
       }
+      if (url.pathname.endsWith('/official-gyeongbuk-slot80.json')) {
+        const duplicate = { ...(options.dataset || dataset).restaurants[0], region: '경북', district: '성주군', lat: null, lng: null,
+          guides: [{ provider: 'local-guide', sourceUrl: 'https://sj.go.kr/tour/page.do?mnu_uid=3924', status: 'official_listing' }] };
+        return { ok: true, status: 200, json: async () => ({ cycle: 1, slot: 80, restaurants: Array(29).fill(duplicate), guideEnrichments: [{}, {}] }) };
+      }
       if (url.pathname.endsWith('/official-jeonnam-slot74.json')) {
         // Keep fixture restaurant IDs and original result counts unchanged.
         const base = (options.dataset || dataset).restaurants[0];
