@@ -1529,20 +1529,20 @@
     "purpose": "지역 위치 탐색용 개요도. 상세 위치는 가게별 네이버·카카오맵 링크로 확인."
   },
   "coverage": {
-    "uniqueRestaurants": 3448,
+    "uniqueRestaurants": 3472,
     "providerCounts": {
       "michelin": 237,
       "blue-ribbon": 530,
-      "local-guide": 2715,
+      "local-guide": 2739,
       "post-office": 240
     },
     "coordinatesAvailable": 1066,
-    "coordinatesMissing": 2382,
+    "coordinatesMissing": 2406,
     "regionalCounts": {
       "서울": 353,
       "부산": 387,
       "충북": 270,
-      "충남": 93,
+      "충남": 117,
       "울산": 38,
       "경남": 325,
       "강원": 104,
@@ -1558,13 +1558,13 @@
       "광주": 79
     },
     "categoryCounts": {
-      "한식": 2074,
-      "중식": 143,
+      "한식": 2092,
+      "중식": 145,
       "일식": 146,
-      "기타": 587,
+      "기타": 588,
       "양식": 219,
-      "분식": 38,
-      "디저트": 241
+      "분식": 40,
+      "디저트": 242
     }
   },
   "coordinateEnrichment": {
@@ -24621,5 +24621,44 @@
     "operatingStatusConfirmed": 0,
     "blueRibbonGradeVerifiedNew": 0,
     "notes": "금산군 공식 모범음식점 21곳: 신규19, 기존1 가이드 이력 병합, 머들령 주소 보류. 다른 3개군의 추가 공식 명단·영업상태는 미완료. 좌표는 추정하지 않음."
+  },
+  "chungnamSlot71": {
+    "checkedAt": "2026-11-08",
+    "cycle": 1,
+    "slot": 71,
+    "scheduledAtKST": "2026-11-08T17:00:00+09:00",
+    "sourceFile": "games/certified-restaurants/official-chungnam-slot71.json",
+    "publishers": [
+      "태안군 오감관광",
+      "예산군 문화관광"
+    ],
+    "sourceUrls": [
+      "https://www.taean.go.kr/prog/foodData/tour/sub05_04_02/list.do?pageIndex=1",
+      "https://www.yesan.go.kr/prog/rstrt/tour/sub05_01_02/01/list.do?pageIndex=1"
+    ],
+    "listedAtOfficialSources": {
+      "태안군": 57,
+      "예산군": 40
+    },
+    "addedCount": 24,
+    "modifiedCount": 0,
+    "coordinatesAdded": 0,
+    "locationsHidden": 0,
+    "pendingLocations": 26,
+    "pendingLocationScope": "현재 등록 1/71 대상군(홍성·예산·태안) 26곳: 24신규 및 기존 예산 2건; 전국 합계 아님.",
+    "regionAdded": {
+      "홍성군": 0,
+      "예산군": 12,
+      "태안군": 12
+    },
+    "notYetAddedOfficialListings": {
+      "홍성군": "공식 사업과 정확 주소 확인 대기",
+      "예산군": "명단 2~4쪽 28건 비교/위치/중복 재확인 필요",
+      "태안군": "명단 2~5쪽 45건 비교/위치/중복 재확인 필요"
+    },
+    "completeRegionalCollection": false,
+    "operatingStatusConfirmed": 0,
+    "blueRibbonGradeVerifiedNew": 0,
+    "notes": "공식 모범음식점 명단 첫 쪽 12곳씩 확인하여 24곳 추가. 개별 지정·발행연도와 출처 확인일 구분. 기존 예산 소복갈비/공식 소복식당 동일 주소 중복 가능성 보류. 업소 정확 수치좌표와 현재 영업여부 미확인."
   }
 }
