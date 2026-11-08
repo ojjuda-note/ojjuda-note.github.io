@@ -108,5 +108,7 @@ test('advanced tiers preserve their worker while the Janggi UI gets its own rele
  assert.ok(source.includes('master-worker.mjs?v=20261108-janggi-master-ai1'));
  assert.ok(source.includes(`world-game-assets.js?v=${revision}`));
  assert.ok(assets.includes(`const revision='${revision}'`));
- assert.ok(assets.includes("janggi:'1.9.1'"));
+ const version = assets.match(/janggi:'(\d+)\.(\d+)\.(\d+)'/)?.slice(1).map(Number);
+ assert.ok(version && (version[0]>1 || version[0]===1 && (version[1]>9 || version[1]===9 && version[2]>=1)),
+  'the Janggi UI keeps its independent 1.9.1-or-newer release without changing the AI worker');
 });
