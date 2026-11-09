@@ -574,7 +574,7 @@
     });
     else {
       commentsSection.append(el('h3', 'detail-section-label', '댓글 · 사진'));
-      const open = el('a', 'rating-login-link', '오쭈다 아지트에서 이야기 보기');
+      const open = el('a', 'orc-login', '오쭈다 아지트에서 이야기 보기');
       open.href = '/world.html?game=restaurants'; open.target = '_top'; commentsSection.append(open);
     }
     $('close-detail').focus({ preventScroll: true });
