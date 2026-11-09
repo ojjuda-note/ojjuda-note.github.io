@@ -165,7 +165,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   host.querySelector('[data-game=tank] button').click();await tick();assert.deepEqual(opened,['tank']);
   score=10;await w.OjjudaGameRankings.refresh();assert.equal(host.querySelector('[data-game=tank] .board-leader-score').textContent,'10승');
   allowed=false;host.querySelector('[data-game=tank] button').click();await tick();assert.equal(opened.length,1,'stale access cannot launch games');
-  w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 순위'));
+  w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 기록을 저장하고 순위에 도전'));
   w.OjjudaGameRankings.mount(null);
  }finally{dom.window.close();}
  console.log('PASS: three menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');

@@ -114,5 +114,7 @@ test('standalone games and shared scripts point to the shipped monthly viewer',(
  assert.ok(/^\d{8}-[\w-]+$/.test(revision));
  assert.ok(read('shared/games/world-game-assets.js').includes("const revision='"+revision+"'"));
  assert.ok(read('world.html').includes('world-game-assets.js?v='+revision));
- assert.ok(read('world.html').includes('game-results.js?v='+revision));
+ const sharedUiRevision=(read('world.html').match(/\/shared\/games\/game-results\.css\?v=([\w-]+)/)||[])[1];
+ assert.ok(sharedUiRevision,'shared results cache revision exists');
+ assert.ok(read('world.html').includes('game-results.js?v='+sharedUiRevision));
 });
