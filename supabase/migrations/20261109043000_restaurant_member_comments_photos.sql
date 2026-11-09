@@ -15,7 +15,7 @@ create table ojjuda_restaurants_internal.comments (
  check((target_kind='certified' and recommendation_id is null)
    or (target_kind='recommended' and recommendation_id is not null and target_id=recommendation_id::text)),
  check(char_length(btrim(body))<=500 and (char_length(btrim(body))>0 or photo_path is not null)),
- check(photo_path is null or photo_path ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[.]jpg$')
+ check(photo_path is null or ojjuda_restaurants_internal.photo_path_valid(photo_path))
 );
 create index restaurant_comments_target_page on ojjuda_restaurants_internal.comments(target_kind,target_id,created_at desc,id desc);
 create index restaurant_comments_member_recent on ojjuda_restaurants_internal.comments(member_id,created_at desc);
@@ -28,7 +28,7 @@ insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 
 create function ojjuda_restaurants_internal.comment_photo_path_valid(p_path text,p_owner uuid,p_id text)
 returns boolean language sql immutable set search_path=pg_catalog as $$
- select coalesce(p_path ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[.]jpg$'
+ select coalesce(ojjuda_restaurants_internal.photo_path_valid(p_path)
   and split_part(p_path,'/',1)=p_owner::text
   and split_part(p_path,'/',2)=p_id,false);
 $$;
