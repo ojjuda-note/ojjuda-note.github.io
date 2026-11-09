@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-restaurants-c2s18-chuncheon4-wonju1-loc6'
+ const revision='20261110-tank-accuracy40-1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -15,7 +15,7 @@
   roulette:'1.9.3',
   bang:'1.11.2',
   poker:'1.6.4',
-  tank:'1.6.2',
+  tank:'1.6.3',
   solitaire:'1.2.3',
   mines:'1.4.3',
   sacheonseong:'1.16.2',
