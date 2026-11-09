@@ -48,6 +48,8 @@ for(const stage of [1,2,4,6,8,12,18,41,200])for(const initial of sizes.filter(si
   assert(cols<=E.MAX_FLOOR_COLS&&rows<=E.MAX_FLOOR_ROWS&&cols*rows<=E.MAX_FLOOR_CELLS,label+': floor stays within the 216-cell footprint');
   assert.equal(every.length,info.layerCount,label+': actual floor count');
   assert(every.every(floor=>occupied(floor)<=E.MAX_FLOOR_CELLS),label+': every floor stays compact');
+  assert(every.slice(0,-1).every(floor=>occupied(floor)===100),label+': full floors contain exactly 100 cards');
+  assert(occupied(every.at(-1))<=100,label+': final floor contains at most 100 cards');
   assert.equal(initialState.totalTiles,total,label+': tile inventory');
   assert.equal(every.reduce((sum,floor)=>sum+occupied(floor),0),total,label+': pairs across floors');
   assert([...counts.values()].every(n=>n===2||n===4),label+': copy limit');

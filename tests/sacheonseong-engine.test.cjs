@@ -13,6 +13,7 @@ for(const columns of [0,-1,1.5,17,'4',null,NaN,Infinity]){
 assert.equal(E.MAX_FLOOR_COLS,28);
 assert.equal(E.MAX_FLOOR_ROWS,24);
 assert.equal(E.MAX_FLOOR_CELLS,216);
+assert.equal(E.TILES_PER_FLOOR,100);
 assert.equal(E.stackInfo(8,13).cols,13,'The 12×18 reference is not a rigid grid');
 assert(E.stackInfo(8,25).rows*25<=216,'Landscape can use a wider, shorter footprint');
 for(const [stage,columns]of [[8,29],[200,2]]){
@@ -124,6 +125,7 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
  assert(info.cols<=E.MAX_FLOOR_COLS&&info.rows<=E.MAX_FLOOR_ROWS&&info.cols*info.rows<=E.MAX_FLOOR_CELLS,`Stage ${stage}: compact floor footprint`);
  assert.equal(grids.length,E.layerCount(stage),`Stage ${stage}: floor count`);
  assert.equal(all.length,info.total,`Stage ${stage}: total playable tiles`);
+ assert.deepEqual(info.floors.map(f=>f.total),Array.from({length:info.layerCount},(_,i)=>Math.min(100,info.total-100*i)),`Stage ${stage}: full floors contain 100 tiles, last floor the remainder`);
  assert.equal(info.total%2,0);
  assert(info.total<=1200,`Stage ${stage}: capped tile count for performance`);
  assert(info.typeCount<=E.FACE_COUNT,`Stage ${stage}: available pictures`);
@@ -153,7 +155,7 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
  if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);
 }
 assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
-assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(8),3);assert.equal(E.layerCount(12),7);assert.equal(E.layerCount(18),12);assert.equal(E.layerCount(200),14);
+assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(8),3);assert.equal(E.layerCount(12),6);assert.equal(E.layerCount(18),10);assert.equal(E.layerCount(200),12);
 assert(E.layerCount(200)<=100,'No more than 100 floors are needed');
 assert.equal(E.LAYER_OFFSET,.5,'Every second floor is shifted by half a card');
 for(let layer=0;layer<100;layer++)assert.equal(E.layerShift(layer),layer%2?.5:0,'A tall stack never drifts diagonally off-screen');
@@ -198,8 +200,8 @@ const detourTop=Array.from({length:5},()=>Array(5).fill(E.EMPTY));detourTop[2][0
 const detour=E.visiblePath([detourTop,crossingMiddle,crossingBottom],acrossA,acrossB);
 assert(detour&&detour.length>=3,'A clear path around the other floor remains available');
 const floorVariants=Array.from({length:60},(_,i)=>E.stackInfo(i+6).floors.map(f=>f.total));
-assert(floorVariants.some(sizes=>sizes[0]>sizes[1]),'Some stages have more tiles on top');
-assert(floorVariants.some(sizes=>sizes[0]<sizes[1]),'Some stages have more tiles below');
+assert(floorVariants.every(sizes=>sizes.slice(0,-1).every(n=>n===100)),'Every nonfinal floor holds 100 tiles');
+assert(floorVariants.some(sizes=>sizes.at(-1)<100),'A final floor can hold the remaining tiles');
 for(const stage of [6,12,18,40,200]){
  const grids=E.generateStack(stage,random).grids;
  let left=grids.flat(2).filter(v=>v!==E.EMPTY).length,automaticShuffles=0;
