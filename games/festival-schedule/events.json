@@ -18425,6 +18425,70 @@
         "대전"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "gochang-gourmet-culture-2026",
+      "title": "2026 제1회 고창 미식문화축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-06",
+      "end": "2026-11-08",
+      "region": "전북",
+      "city": "고창군",
+      "venue": "고창읍 미식문화축제 행사 거리(공영주차타워~제일반점·원마트~풍년당 일원)",
+      "address": "전북특별자치도 고창군 고창읍 성산5길 일원(공영주차타워 주변)",
+      "lat": 35.43555,
+      "lng": 126.70042,
+      "geoApprox": true,
+      "summary": "고창 지역 먹거리와 미식 문화를 만나는 첫 미식문화축제입니다. 고창군의 개최 및 거리 통제 공고로 일정·주요 구간을 확인했습니다.",
+      "scheduleNote": "2026년 행사는 종료 / 구체적 축제 운영시간은 공식 안내 확인(행정예고에 적힌 차량 통제시간과 구분)",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "도로 일부 차량통제 진행(2026.11.6. 22:00~11.8. 03:00); 통제시간은 축제 관람시간이 아님",
+      "sourceUrl": "https://www.gochang.go.kr/board/view.gochang?boardId=BBS_0000180&dataSid=836679&orderBy=TMP_FIELD4+DESC%2CTMP_FIELD1+DESC&paging=ok&startPage=2",
+      "sourceName": "고창군",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.openstreetmap.org/way/1316852039"
+      ],
+      "tags": [
+        "먹거리",
+        "미식",
+        "지역축제",
+        "고창"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jeonju-jeolla-governor-history-2026",
+      "title": "전라감영 역사테마파크 〈전라관찰사의 탄생〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-10-18",
+      "end": "2026-11-29",
+      "region": "전북",
+      "city": "전주시",
+      "venue": "전라감영",
+      "address": "전북특별자치도 전주시 완산구 전라감영로 55",
+      "lat": 35.8162,
+      "lng": 127.14569,
+      "geoApprox": true,
+      "summary": "조선시대 전라감영을 배경으로 역사 체험을 즐기는 참여형 문화행사입니다. 실제 운영일은 매주 금·토·일요일뿐입니다.",
+      "scheduleNote": "매주 금·토·일요일 12:30~17:30만 운영(월~목에는 진행하지 않음). 표기된 전체 기간에 매일 개최되는 행사가 아님.",
+      "priceNote": "무료",
+      "accessNote": "사전 예약 없이 현장 참여 / 운영 내용은 현장 상황에 따라 변경 가능",
+      "sourceUrl": "https://daum.jeonju.go.kr/main/menu?bwrite_id=VZJptoYHRiTv&do=view&gc=1020SEHK",
+      "sourceName": "전주시 전주다움 문화캘린더",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.openstreetmap.org/way/157646835"
+      ],
+      "tags": [
+        "역사문화",
+        "체험",
+        "전라감영",
+        "전통문화"
+      ],
+      "status": "scheduled"
     }
   ]
 }
