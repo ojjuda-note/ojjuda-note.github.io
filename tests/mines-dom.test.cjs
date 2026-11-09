@@ -102,6 +102,21 @@ try {
   assert.ok(messages.some(m=>m.data.type==='ojjuda-game-exit'));
 } finally {x.dom.window.close();}
 
+// A selection made in the entry screen must survive even without starting a round.
+const selected = game({member:owner});
+let selectedSave;
+try {
+  selected.$('#minesLevel').value = '5';
+  selected.$('#minesLevel').dispatchEvent(new selected.w.Event('change'));
+  selectedSave = JSON.parse(selected.w.localStorage.getItem('ojjuda.mines.save.v1:' + owner));
+  assert.equal(selectedSave.d, 5);
+} finally {selected.dom.window.close();}
+const reopened = game({member:owner,saved:selectedSave});
+try {
+  assert.equal(reopened.$('#minesLevel').value, '5', 'the last difficulty is shown when revisiting');
+  assert.equal(reopened.w.fixture.saved.d, 5);
+} finally {reopened.dom.window.close();}
+
 // Pointer gestures should never accidentally open a cell while marking or panning.
 const touch = game();
 try {

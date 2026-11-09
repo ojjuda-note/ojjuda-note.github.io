@@ -772,7 +772,9 @@ function stepPick(box,o,error=''){ box.innerHTML=`${error?`<p role="alert">${esc
     if(!o.isConnected) return; src.crop=autoCrop(src); stepPreview(box,src,o); }; }
 function previewImage(src){ const st=makeStageCrop(src,src.crop); const pv=document.createElement('canvas'); pv.width=300; pv.height=400; const p=pv.getContext('2d'); p.drawImage(st.canvas,0,0,300,400);
   const id=p.getImageData(0,0,300,400); for(let i=0;i<st.grid.length;i++) if(!st.grid[i]){ id.data[i*4]=id.data[i*4]*.22+20; id.data[i*4+1]=id.data[i*4+1]*.22+14; id.data[i*4+2]=id.data[i*4+2]*.22+45; } p.putImageData(id,0,0); return {st,url:pv.toDataURL('image/jpeg',.85)}; }
+const photoDifficultyKey='ojjuda.photo-ttang.difficulty.v1';
 let pickLv=7, pickVis='friends';
+try{const saved=Number(localStorage.getItem(photoDifficultyKey));if([1,7,14].includes(saved))pickLv=saved;}catch{}
 const VISHINT={public:'모두가 할 수 있어요 · 관리자가 확인한 뒤 올라가요',friends:'친구만 할 수 있어요 · 바로 올라가요',private:'나만 할 수 있어요 · 바로 올라가요'};
 function stepPreview(box,src,o){ const {st,url}=previewImage(src); const ok=st.pct>=SIL_MIN&&st.pct<=SIL_MAX, playable=st.pct>0;
   box.innerHTML=`<p style="margin:0 0 2px">${ok?'이렇게 게임 판이 만들어져요!':st.pct<SIL_MIN?`⚠️ 주인공이 ${st.pct.toFixed(0)}%예요 · ${SIL_MIN}% 이상이어야 해요`:'⚠️ 주인공이 너무 커요'}</p>
@@ -786,7 +788,7 @@ function stepPreview(box,src,o){ const {st,url}=previewImage(src); const ok=st.p
     <label class="agree1"><input type="checkbox" id="ag"> 내 사진(또는 허락받은 사진)이고, 아이·노출 사진이 아니에요</label>
     <button class="big b2" id="send" disabled>등록하기</button>
     <div class="row2 small"><button class="link" id="fix">✏️ 윤곽 고치기</button><button class="link" id="again">📷 다른 사진</button></div>`;
-  box.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{ pickLv=+b.dataset.v; box.querySelectorAll('.lvb').forEach(x=>x.classList.toggle('on',x===b)); });
+  box.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{ pickLv=+b.dataset.v; try{localStorage.setItem(photoDifficultyKey,String(pickLv));}catch{} box.querySelectorAll('.lvb').forEach(x=>x.classList.toggle('on',x===b)); });
   box.querySelector('#fix').onclick=()=>stepFix(box,src,o); box.querySelector('#again').onclick=()=>stepPick(box,o);
   box.querySelector('#swk').onclick=async()=>{ const want=src.kind==='person'?'thing':'person'; box.innerHTML='<div class="spin"></div><p>다시 찾는 중이에요…</p>';
     try{ const r=await withTimeout(grabCutMask(src.canvas,want),25000); r.canvas=src.canvas; r.kind=want; src=r; }catch(e){ src.kind=want; } src.crop=autoCrop(src); stepPreview(box,src,o); };

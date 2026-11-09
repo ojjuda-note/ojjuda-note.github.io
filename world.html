@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
-<script src="/shared/games/world-game-assets.js?v=20261109-restaurants-comments2" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261109-arcade-difficulty-1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
@@ -1019,9 +1019,29 @@ function al(){let t=k.st;if(t.over){void savePracticeStreak(k,t.over.winner);let
  <section data-entry-panel="opponent" hidden>${await ln(Object.keys(Zo),t,t==='pool8'?'브레이크':'흰 공',entry)}<details class="ge-more"><summary>같은 기기에서 둘이 하기</summary><button class="btn ge-secondary" data-act="bl-start" data-mode="local">둘이서 시작하기</button></details></section>
  <details class="ge-more"><summary>게임 방법${t!=='pool8'?' · 목표 점수':''}</summary><p>${r.rules}</p>${t!=='pool8'?`<div class="seg bd-seg">${[3,5,10].map(l=>`<button class="${o===l?'on':''}" data-act="bl-target" data-v="${l}" aria-pressed="${o===l}">${l}점</button>`).join('')}</div>`:''}</details></div>`;
 }
+const arcadeDifficultyPrefix='ojjuda.arcade.difficulty.v1:';
+function arcadeDifficultyKey(game){return arcadeDifficultyPrefix+(D.online&&D.user?.id||'guest')+':'+game;}
+function arcadeDifficultyRead(game,allowed,fallback='normal'){
+ try{const value=localStorage.getItem(arcadeDifficultyKey(game));if(allowed.includes(value))return value;}catch{}
+ return fallback;
+}
+function arcadeDifficultySave(game,value,allowed){
+ if(!allowed.includes(value))return;
+ try{localStorage.setItem(arcadeDifficultyKey(game),value);}catch{}
+}
+const billiardsDifficulties=J0.map(([value])=>value);
+const boardDifficulties=kind=>(kind==='janggi'?[...Rp,...JG_EXTRA_LEVELS]:Rp).map(([value])=>value);
+document.addEventListener('click',event=>{
+ const button=event.target?.closest?.('[data-act]');if(!button)return;
+ const action=button.dataset.act,value=button.dataset.v;
+ if(action==='bl-kind'&&Object.hasOwn(Zo,value))g.blLevel=arcadeDifficultyRead('billiards:'+value,billiardsDifficulties);
+ if(action==='bl-level')arcadeDifficultySave('billiards:'+(g.blKind||'carom4'),value,billiardsDifficulties);
+ if(action==='bd-lv'&&['chess','janggi'].includes(button.dataset.k))arcadeDifficultySave('board:'+button.dataset.k,value,boardDifficulties(button.dataset.k));
+},true);
 async function xn(t){
  if(window.OjjudaGuestAccess?.canPlay()===false)return;
  const exit=worldGameEntryGate(()=>xn(t));if(exit!==true)return exit;k=null;
+ g.blLevel=arcadeDifficultyRead('billiards:'+(t||g.blKind||'carom4'),billiardsDifficulties);
  Ui(["ball","cue","cushion","pocket"]),t&&(g.blKind=t),dn(fn),Uo();
  ct('<div id="bd-menu" data-fresh-entry="1"><div class="mhead"><h3>🎱 당구</h3><button class="btn sm ghost" data-act="close" aria-label="닫기">닫기</button></div><p class="note">불러오는 중이에요…</p></div>',"당구");
  return fn();
@@ -1209,6 +1229,7 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,r.pendingAction=veri
 async function vn(t){
  if(window.OjjudaGuestAccess?.canPlay()===false)return;
  const exit=worldGameEntryGate(()=>vn(t));if(exit!==true)return exit;E=null;
+ g.bdLevel=arcadeDifficultyRead('board:'+t,boardDifficulties(t));
  Ui(["chess","janggi","capture"]),g.bdKind=t,Uo(),dn(k2);
  ct(`<div id="bd-menu" data-fresh-entry="1" data-world-board="${t}"><div class="mhead"><h3>${Xe[t].emoji} ${Xe[t].name}</h3><button class="btn sm ghost" data-act="close" aria-label="닫기">닫기</button></div><p class="note">불러오는 중이에요…</p></div>`,Xe[t].name);
  return renderBoardMenu(document.getElementById("bd-menu"),t);
@@ -1556,6 +1577,7 @@ if(R.id==="mole"&&o==="mole-grid"){
  if(R.running||R.loading||!R.ov.contains(e))return;
  const size=Number(e.dataset.size);if(![3,4,5,6].includes(size))return;
  R.moleGrid=size;
+ arcadeDifficultySave('mole',String(size),['3','4','5','6']);
  R.ov.querySelectorAll('[data-g="mole-grid"]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.size)===size)));
  D2();return;
 }if(R.id==="breakout"&&o==="breakout-stage"){
@@ -1703,7 +1725,7 @@ async function chooseScrewStage(stage){
  }finally{if(R===session)session.stageChanging=false;}
 }
 function B2(){
- const t=_r[R.id];if(R.id==='mole'&&!R.moleGrid)R.moleGrid=3;if(R.id==='breakout'){R.breakoutStage=undefined;R.breakoutBaseStage=undefined;}D2();Ja(0);
+ const t=_r[R.id];if(R.id==='mole'&&!R.moleGrid)R.moleGrid=Number(arcadeDifficultyRead('mole',['3','4','5','6'],'3'));if(R.id==='breakout'){R.breakoutStage=undefined;R.breakoutBaseStage=undefined;}D2();Ja(0);
  if(R.id==='screw'&&window.OjjudaScrewLoader){R.ov.dataset.screwMode='choose';R.ov.querySelector('.gt').textContent='🔩 나사 풀기';R.ov.querySelector('[data-g=screw-stages]').hidden=true;R.screwWasRunning=false;ti(window.OjjudaScrewLoader.menuHTML());return;}
  const hint={mole:'7종 두더지 · 30초 도전',runner:'눌러서 점프 · 두 번 눌러 2단 점프',stacker:'눌러서 블록 멈추기',breakout:'좌우로 움직여 판 조종'};
  const moleChoice=R.id==='mole'?'<div class="mole-grid-picker" role="group" aria-label="두더지 구멍 수 선택"><span class="mole-grid-label">구멍 수 선택</span><div class="mole-grid-choices">'+[3,4,5,6].map(size=>`<button type="button" class="mole-grid-choice" data-g="mole-grid" data-size="${size}" aria-pressed="${(R.moleGrid||3)===size}">${size}×${size}</button>`).join('')+'</div></div>':'';
@@ -2772,7 +2794,7 @@ function worldRankGames(){
 function openWorldBoardGame(id){
  const entry=worldRankGames()[id];if(!entry)return;
  if(id==='chacha_rush')return chachaRushPortal.open();
- if(entry.game){id=entry.game;if(entry.difficulty&&entry.difficulty!=='online'){if(id.startsWith('carom')||id==='pool8')g.blLevel=entry.difficulty;else g.bdLevel=entry.difficulty;}}
+ if(entry.game){id=entry.game;if(entry.difficulty&&entry.difficulty!=='online'){if(id.startsWith('carom')||id==='pool8'){g.blLevel=entry.difficulty;arcadeDifficultySave('billiards:'+id,entry.difficulty,billiardsDifficulties);}else if(['janggi','chess'].includes(id)){g.bdLevel=entry.difficulty;arcadeDifficultySave('board:'+id,entry.difficulty,boardDifficulties(id));}}}
  if(['carom4','carom3','pool8'].includes(id))return xn(id);
  if(['janggi','chess'].includes(id))return vn(id);
  if(id==='matgo')return window.openMatgo?.();

@@ -9,9 +9,10 @@ const modalSource = source.slice(source.indexOf('function ct('), source.indexOf(
 const start = source.indexOf('async function pp(');
 const menuSource = source.slice(start, source.indexOf('var fp=', start));
 
-function fixture() {
-  const dom = new JSDOM('<main id="modal-root"></main>', {runScripts: 'outside-only'});
+function fixture(savedPreferences = {}) {
+  const dom = new JSDOM('<main id="modal-root"></main>', {runScripts: 'outside-only', url:'https://ojjuda.kr/world.html'});
   const win = dom.window, requests = [];
+  for (const [key, value] of Object.entries(savedPreferences)) win.localStorage.setItem(key, value);
   win.console.error = () => {};
   win.ln = (_kinds, kind) => new Promise((resolve, reject) => requests.push({kind, resolve, reject}));
   win.eval(`
@@ -31,6 +32,31 @@ function fixture() {
     close: () => win.close(),
   };
 }
+
+test('each billiards mode restores its selected difficulty after reopening', async () => {
+  const first = fixture();
+  const key = 'ojjuda.arcade.difficulty.v1:member-a:billiards:';
+  let saved;
+  try {
+    const button = first.win.document.createElement('button');
+    button.dataset.act = 'bl-level'; button.dataset.v = 'hard';
+    first.win.document.body.append(button);
+    first.win.g.blKind = 'carom4'; button.click();
+    first.win.g.blKind = 'pool8'; button.dataset.v = 'easy'; button.click();
+    saved = {[key+'carom4']:first.win.localStorage.getItem(key+'carom4'), [key+'pool8']:first.win.localStorage.getItem(key+'pool8')};
+    assert.equal(saved[key+'carom4'], 'hard');
+    assert.equal(saved[key+'pool8'], 'easy');
+  } finally {first.close();}
+  const second = fixture(saved);
+  try {
+    const firstOpen = second.win.xn('carom4'); second.finish(0, 'loaded'); await firstOpen;
+    assert.equal(second.win.g.blLevel, 'hard');
+    second.win.dt();
+    const secondOpen = second.win.xn('pool8'); second.finish(1, 'loaded'); await secondOpen;
+    assert.equal(second.win.g.blLevel, 'easy');
+    assert.equal(second.menu().querySelector('[data-act=bl-level][aria-pressed=true]').dataset.v, 'easy');
+  } finally {second.close();}
+});
 
 for (const [setting, action, first, latest] of [
   ['blKind', 'bl-kind', 'pool8', 'carom3'],

@@ -6,6 +6,8 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'world.html'), 'utf8');
 const modalSource = source.slice(source.indexOf('function ct('), source.indexOf('function Tt('));
+const prefStart = source.indexOf('const arcadeDifficultyPrefix=');
+const preferenceSource = source.slice(prefStart, source.indexOf('async function xn(', prefStart));
 const menuStart = source.indexOf('async function Hp(');
 const menuSource = source.slice(menuStart, source.indexOf('var Qp={', menuStart));
 const boardActionsStart = source.indexOf('"bd-side"(t){');
@@ -13,19 +15,22 @@ const boardActions = source.slice(boardActionsStart, source.indexOf(',"bd-sq"(t)
 const boardSyncStart = source.indexOf('function Tp(t){');
 const boardSync = source.slice(boardSyncStart, source.indexOf('var to=[]', boardSyncStart));
 
-function fixture() {
-  const dom = new JSDOM('<main id="modal-root"></main>', {runScripts: 'outside-only'});
+function fixture(savedPreferences = {}) {
+  const dom = new JSDOM('<main id="modal-root"></main>', {runScripts: 'outside-only', url:'https://ojjuda.kr/world.html'});
   const win = dom.window;
+  for (const [key, value] of Object.entries(savedPreferences)) win.localStorage.setItem(key, value);
   const requests = [];
   win.console.error = () => {};
   win.ln = kinds => new Promise((resolve, reject) => requests.push({kind: kinds[0], resolve, reject}));
   win.eval(`
     var D={online:true,user:{id:'member-a'}},g={},En={},worldBoardScreenStop=null;
     var Xe={chess:{name:'체스',emoji:'♟️',first:'w',second:'b',side:{w:'백',b:'흑'}},janggi:{name:'장기',emoji:'🀄',first:'c',second:'h',side:{c:'초',h:'한'}}};
-    var Rp=[['normal','보통']],JG_EXTRA_LEVELS=[['pro','프로'],['master','마스터'],['grandmaster','그랜드마스터']];
+    var Rp=[['easy','쉬움'],['normal','보통'],['hard','어려움']],JG_EXTRA_LEVELS=[['pro','프로'],['master','마스터'],['grandmaster','그랜드마스터']];
+    var J0=[['easy','쉬움'],['normal','보통'],['hard','어려움']];
     var z=selector=>document.querySelector(selector),Pr=(selector,root)=>[...root.querySelectorAll(selector)],w=value=>String(value);
     function worldGameEntryGate(){return true;} function Sa(){} function Ui(){} function Uo(){} function dn(){} function jgChooser(){return '';}
     ${modalSource}
+    ${preferenceSource}
     ${menuSource}
   `);
   return {
@@ -37,6 +42,30 @@ function fixture() {
     close: () => win.close(),
   };
 }
+
+test('janggi and chess restore their own saved difficulty on a new visit', async () => {
+  const first = fixture();
+  const key = 'ojjuda.arcade.difficulty.v1:member-a:';
+  let saved;
+  try {
+    const button = first.win.document.createElement('button');
+    button.dataset.act = 'bd-lv'; button.dataset.k = 'janggi'; button.dataset.v = 'pro';
+    first.win.document.body.append(button); button.click();
+    button.dataset.k = 'chess'; button.dataset.v = 'hard'; button.click();
+    saved = {[key+'board:janggi']:first.win.localStorage.getItem(key+'board:janggi'), [key+'board:chess']:first.win.localStorage.getItem(key+'board:chess')};
+    assert.equal(saved[key+'board:janggi'], 'pro');
+    assert.equal(saved[key+'board:chess'], 'hard');
+  } finally {first.close();}
+  const second = fixture(saved);
+  try {
+    const janggi = second.win.vn('janggi'); second.finish(0, 'ready'); await janggi;
+    assert.equal(second.win.g.bdLevel, 'pro');
+    second.win.dt();
+    const chess = second.win.vn('chess'); second.finish(1, 'ready'); await chess;
+    assert.equal(second.win.g.bdLevel, 'hard');
+    assert.equal(second.menu().querySelector('[data-act=bd-lv][aria-pressed=true]').dataset.v, 'hard');
+  } finally {second.close();}
+});
 
 test('closing a loading board menu never reopens it after a delayed response', async () => {
   const f = fixture();

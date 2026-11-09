@@ -98,7 +98,15 @@
     connect(controller) {
       game = controller;
       $('#minesLevel').innerHTML = game.levels.map((level, i) => `<option value="${i}">${level.name}</option>`).join('') + '<option value="8">커스텀 · 개인 기록</option>';
-      $('#minesLevel').onchange = () => { if (ready) progress(); };
+      $('#minesLevel').onchange = () => {
+        if (!ready) return;
+        const difficulty = Number($('#minesLevel').value);
+        if (!Number.isInteger(difficulty) || difficulty < 0 || difficulty > 8) return;
+        const state = game.getState();
+        state.d = difficulty;
+        save(state);
+        progress();
+      };
       $('#minesStart').onclick = () => {
         if (!ready) return;
         $('#minesEntry').hidden = true; $('#app').hidden = false;

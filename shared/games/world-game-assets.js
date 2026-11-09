@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261109-restaurants-comments2'
+ const revision='20261109-arcade-difficulty-1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -17,21 +17,21 @@
   poker:'1.6.3',
   tank:'1.6.2',
   solitaire:'1.2.3',
-  mines:'1.4.2',
+  mines:'1.4.3',
   sacheonseong:'1.16.2',
   saetbyeol:'1.3.3',
   tour:'1.5.3',
   ttang:'1.6.2',
-  photo_ttang:'1.4.2',
-  mole:'1.7.1',
+  photo_ttang:'1.4.3',
+  mole:'1.7.2',
   runner:'1.4.2',
   stacker:'1.5.2',
   breakout:'1.6.5',
   spot:'1.11.11',
   screw:'2.22.4',
-  janggi:'1.9.3',
-  chess:'1.4.6',
-  billiards:'1.4.6',
+  janggi:'1.9.4',
+  chess:'1.4.7',
+  billiards:'1.4.7',
   matgo:'1.5.3'
  });
  const controls=['/shared/games/game-controls.css?v=20261109-unified-multiplayer-ui2','/shared/games/game-controls.js?v=20261106-source-folders1'];
@@ -54,12 +54,12 @@
   poker:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.js?v=20261106-poker-red1'],
   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261106-source-folders1'],
   solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261107-solitaire-hold250-1'],
-  mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261106-source-folders1'],
+  mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261109-arcade-difficulty-1'],
   saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261106-source-folders1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261106-source-folders1'],
   spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261108-spot62-hard10'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261108-streak-exit1'],
-  photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261106-source-folders1'],
+  photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261109-arcade-difficulty-1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
   runner:[...controls,'/games/runner/runner-game.css?v=20261106-source-folders1','/games/runner/runner-game.js?v=20261106-source-folders1'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261107-breakout-speed-reset1'],
