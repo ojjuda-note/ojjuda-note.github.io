@@ -15,7 +15,7 @@ const expected=[
 ['local-daejeon-c2s21-donggu-pungmidang','풍미당','동구','한식','선화로196번길 80, 1층',91],
 ['local-daejeon-c2s21-seogu-galma-jjamppong','갈마짬뽕','서구','중식','월평동로 5-11, 1층',113]
 ];
-const all=[...base.restaurants,...fs.readdirSync(dir).filter(n=>/^official-.*\\.json$/.test(n)).flatMap(n=>JSON.parse(fs.readFileSync(path.join(dir,n),'utf8')).restaurants||[])];
+const all=[...base.restaurants,...fs.readdirSync(dir).filter(n=>/^official-.*\.json$/.test(n)).flatMap(n=>JSON.parse(fs.readFileSync(path.join(dir,n),'utf8')).restaurants||[])];
 a.equal(new Set(all.map(x=>x.id)).size,all.length,'저장 식당 ID가 중복되지 않음');
 for(const [id,name,district,category,addressSuffix,page] of expected){
  const x=official.restaurants.find(v=>v.id===id);a.ok(x,id);
