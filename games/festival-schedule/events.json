@@ -18136,6 +18136,70 @@
         "바다"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "waterpolo-national-candidates-selection-2027",
+      "title": "2027년 수영(수구) 국가대표 후보선수 선발대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "수구",
+      "start": "2026-11-21",
+      "end": "2026-11-23",
+      "region": "경북",
+      "city": "김천시",
+      "venue": "김천실내수영장",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "2027년 수구 국가대표 후보선수를 선발하는 별도 대회입니다. 같은 기간 열리는 일반 국가대표 선발대회와 구분해 등록합니다.",
+      "scheduleNote": "11월 21~23일. 경기별 대진·시간은 대한수영연맹 공식 공지 확인",
+      "priceNote": "선수 참가비와 일반 관람료는 주최 측 공식 안내 확인",
+      "accessNote": "공식 참가신청 안내 확인. 선수 참가와 일반 관람·예매 가능 여부는 다르므로 입장 조건은 별도 확인하세요.",
+      "sourceUrl": "https://result.sports.or.kr/SW/INF001.do",
+      "sourceName": "대한수영연맹 수영 대회운영 정보제공",
+      "sourceCheckedAt": "2026-11-09",
+      "verificationSources": [
+        "https://result.sports.or.kr/SW/INF101.do",
+        "https://g1.sports.or.kr/schedule/year.do"
+      ],
+      "tags": [
+        "수구",
+        "국가대표 후보선수",
+        "선발전"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "pohang-guryongpo-gwamegi-2026",
+      "title": "제27회 포항 구룡포 과메기 축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-07",
+      "end": "2026-11-08",
+      "region": "경북",
+      "city": "포항시",
+      "venue": "구룡포 아라광장 일원",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "구룡포의 제철 과메기를 즐기는 지역 먹거리 축제로 콘서트, 플리마켓, 푸드트럭, 지역 공연 등이 마련됐습니다.",
+      "scheduleNote": "11월 7일 11:30~20:30(개막식 17:00), 11월 8일 11:30~17:30(폐막 17:30). 2026년 행사 종료, 현장 사정에 따라 변동 가능",
+      "priceNote": "입장 무료 / 먹거리·상품 구매 별도",
+      "accessNote": "전체 관람가. 행사 전체 방문객 수 공식 확인 전이므로 규모 미확인",
+      "sourceUrl": "https://pohang.go.kr/phtour/wmap/festival/view.do?cm_idx=2112&date_type=2&menu_idx=75&org_code=0001",
+      "sourceName": "포항시 퐝퐝여행 공식 관광축제 상세",
+      "sourceCheckedAt": "2026-11-09",
+      "tags": [
+        "과메기",
+        "먹거리축제",
+        "수산물",
+        "지역축제"
+      ],
+      "status": "scheduled"
     }
   ]
 }
