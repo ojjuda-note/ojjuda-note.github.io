@@ -16,11 +16,16 @@
   const embedded = entryParams.get('embedded') === '1';
   const ratingUI = window.OjjudaRestaurantRatings;
   const memberRatings = !!ratingUI && embedded && entryParams.get('member-ratings') === '1' && window.parent !== window;
+  const commentsUI = window.OjjudaRestaurantComments;
+  const memberComments = !!commentsUI && embedded && entryParams.get('member-comments') === '1' && window.parent !== window;
+  const canComment = memberComments && entryParams.get('can-comment') === '1';
   const memberRecommendations = embedded && entryParams.get('member-recommendations') === '1' && window.parent !== window;
   const recommendationRequests = new Map();
   let recommendationSequence = 0, recommendationLoad = 0;
   const ratingCache = new Map(), ratingRequests = new Map(), ratingVersions = new Map(), ratingLoads = new Map();
   let ratingSequence = 0, ratingEditor = null, ratingEpoch = 0, sortRequest = 0;
+  const commentRequests = new Map();
+  let commentSequence = 0, commentEditor = null;
   const mobile = window.matchMedia('(max-width: 760px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const state = { restaurants: [], certified: [], recommended: [], collections: [], visible: [], renderedCount: 0, mapPage: 0, category: '', guide: '', region: '', query: '', savedOnly: false, saved: new Set(), selected: '', position: null, view: 'map', sort: 'name', sortChosen: false, sortBusy: false, sortError: false, loading: true, loadError: false };
@@ -48,6 +53,24 @@
     const pending = ratingRequests.get(event.data.requestId);
     if (!pending) return;
     ratingRequests.delete(event.data.requestId); clearTimeout(pending.timer);
+    if (event.data.error) pending.reject(new Error(String(event.data.error).slice(0, 160)));
+    else pending.resolve(event.data.data);
+  });
+  function requestComment(action, payload) {
+    if (!memberComments) return Promise.reject(new Error('댓글 연결을 사용할 수 없어요.'));
+    const requestId = 'comment-' + (++commentSequence);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { commentRequests.delete(requestId); reject(new Error('댓글 연결이 지연되고 있어요.')); }, 55000);
+      commentRequests.set(requestId, { resolve, reject, timer });
+      try { window.parent.postMessage({ type: 'ojjuda:restaurants:comments', requestId, action, ...payload }, location.origin); }
+      catch (error) { clearTimeout(timer); commentRequests.delete(requestId); reject(error); }
+    });
+  }
+  window.addEventListener('message', event => {
+    if (!memberComments || event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'ojjuda:restaurants:comment-result') return;
+    const pending = commentRequests.get(event.data.requestId);
+    if (!pending) return;
+    commentRequests.delete(event.data.requestId); clearTimeout(pending.timer);
     if (event.data.error) pending.reject(new Error(String(event.data.error).slice(0, 160)));
     else pending.resolve(event.data.data);
   });
@@ -115,6 +138,7 @@
     document.querySelectorAll('[data-rating-id]').forEach(node => { if (missing.has(node.dataset.ratingId)) ratingUI.renderSummary(node, null); });
   }
   function disposeRatingEditor() { ratingEditor?.dispose(); ratingEditor = null; }
+  function disposeCommentEditor() { commentEditor?.dispose(); commentEditor = null; }
   function safeHttps(value) {
     try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; }
   }
@@ -484,6 +508,7 @@
       return;
     }
     disposeRatingEditor();
+    disposeCommentEditor();
     const content = $('detail-content'); content.replaceChildren();
     const cover = el('div', 'detail-cover'), body = el('div', 'detail-body');
     cover.append(el('p', 'detail-kicker', [item.region, item.district, item.category].filter(Boolean).join(' · ')));
@@ -498,6 +523,8 @@
       const login = el('a', 'rating-login-link', '로그인하고 별점 남기기'); login.href = '/?auth=login&next=world'; login.target = '_top'; ratingSection.append(login);
     }
     body.append(ratingSection);
+    const commentsSection = el('section', 'detail-comments');
+    body.append(commentsSection);
     if (!hasCoordinates(item)) body.append(el('p', 'coord-note', '네이버·카카오맵에서 위치 확인'));
     body.append(el('h3', 'detail-section-label', '선정·추천 정보와 출처'));
     const sources = el('ul', 'source-list');
@@ -538,6 +565,19 @@
       isCurrent: () => $('detail').open && state.selected === item.id && ratingSection.isConnected,
       onChange: summary => { ratingVersions.set(item.id, (ratingVersions.get(item.id) || 0) + 1); updateRating(summary); if (state.sort === 'popular') render(false); }
     });
+    if (memberComments) commentEditor = commentsUI.mountEditor(commentsSection, {
+      name: item.name, canPost: canComment,
+      load: offset => requestComment('list', { id: item.id, offset }),
+      save: (comment, file) => requestComment('save', { id: item.id, body: comment, file }),
+      remove: commentId => requestComment('delete', { id: item.id, commentId }),
+      isCurrent: () => $('detail').open && state.selected === item.id && commentsSection.isConnected
+    });
+    else {
+      commentsSection.append(el('h3', 'detail-section-label', '댓글 · 사진'));
+      const open = el('button', 'orc-login', '오쭈다 아지트에서 이야기 보기');
+      open.type = 'button'; open.addEventListener('click', () => window.top.location.assign('/world.html?game=restaurants'));
+      commentsSection.append(open);
+    }
     $('close-detail').focus({ preventScroll: true });
   }
   function setView(view, persist = false) {
@@ -1007,9 +1047,12 @@
   readSaved(); setView(readView()); syncSortControls();
   $('guide-recommended').hidden = !memberRecommendations;
   if (embedded) $('back-link').hidden = true;
-  $('detail').addEventListener('close', disposeRatingEditor);
+  $('detail').addEventListener('close', () => { disposeRatingEditor(); disposeCommentEditor(); });
   window.addEventListener('pagehide', () => {
     disposeRatingEditor();
+    disposeCommentEditor();
+    commentRequests.forEach(pending => { clearTimeout(pending.timer); pending.reject(new Error('화면을 닫았어요.')); });
+    commentRequests.clear();
     ratingEpoch++; sortRequest++;
     recommendationLoad++; cancelRecommendationRequests();
     state.recommended = []; state.restaurants = state.certified;

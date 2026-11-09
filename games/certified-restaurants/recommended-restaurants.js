@@ -108,6 +108,7 @@
     let mapGeneration = 0;
     const mapReads = new Set(), changeListeners = new Set();
     const ratings = global.OjjudaRestaurantRatings?.create({ client, getUser }) || null;
+    const comments = global.OjjudaRestaurantComments?.create({ client, getUser }) || null;
     const photoUrls = new Map();
     const cleanupQueues = new Map(), cleanupLocks = new Set();
     const cleanupKey = owner => 'ojjuda.restaurant-photo-cleanup.v1.' + owner;
@@ -321,6 +322,7 @@
     function resetView(session, kind, title) {
       session.view += 1; session.screen = kind;
       session.ratingEditor?.dispose(); session.ratingEditor = null;
+      session.commentEditor?.dispose(); session.commentEditor = null;
       for (const request of session.reads) request.abort(); session.reads.clear();
       clearPhotoUrls();
       session.body.replaceChildren(); session.body.scrollTop = 0;
@@ -482,6 +484,17 @@
       const menu = node('section', 'rr-detail-section'); menu.append(node('h3', '', '추천 메뉴'), node('p', '', row.menu));
       const reason = node('section', 'rr-detail-section'); reason.append(node('h3', '', '이래서 추천해요'), node('p', 'rr-reason', row.reason));
       content.append(address, menu, reason);
+      if (comments) {
+        const commentSection = node('section', 'rr-detail-section');
+        content.append(commentSection);
+        session.commentEditor = global.OjjudaRestaurantComments.mountEditor(commentSection, {
+          name: row.name, canPost: !!session.owner,
+          load: offset => comments.list('recommended', row.id, offset),
+          save: (body, file) => comments.save('recommended', row.id, body, file),
+          remove: id => comments.remove(id),
+          isCurrent: () => visible(session, view)
+        });
+      }
       if (own(session, row)) {
         const actions = node('div', 'rr-owner-actions'), edit = button('수정', 'rr-button', 'edit'), remove = button('삭제', 'rr-button rr-danger-text', 'delete');
         edit.onclick = () => { if (own(session, row) && !session.busy) showEditor(session, row); };
@@ -679,6 +692,7 @@
       discardDraftPhotos(session, session.editor);
       session.disposed = true; session.view += 1;
       session.ratingEditor?.dispose(); session.ratingEditor = null;
+      session.commentEditor?.dispose(); session.commentEditor = null;
       clearInterval(session.authTimer); clearTimeout(session.searchTimer);
       session.confirm?.done(false);
       for (const request of session.reads) request.abort(); session.reads.clear();
@@ -953,7 +967,7 @@
       } finally { session.busy = false; }
     }
 
-    return { open, openDetail, getMapPage, cancelMapReads, subscribeChanges(listener) { if (typeof listener !== 'function' || destroyed) return () => {}; changeListeners.add(listener); return () => changeListeners.delete(listener); }, close, ratings, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; cancelMapReads(); changeListeners.clear(); ratings?.destroy(); authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
+    return { open, openDetail, getMapPage, cancelMapReads, subscribeChanges(listener) { if (typeof listener !== 'function' || destroyed) return () => {}; changeListeners.add(listener); return () => changeListeners.delete(listener); }, close, ratings, comments, back() { const session = current; if (!session) return true; if (session.confirm) { session.confirm.done(false); return true; } return session.screen === 'list' ? close() : back(session); }, destroy() { if (destroyed) return; close(true); destroyed = true; cancelMapReads(); changeListeners.clear(); ratings?.destroy(); comments?.destroy(); authSubscription?.unsubscribe?.(); authSubscription = null; clearPhotoUrls(); }, isOpen: () => !!current && !current.disposed };
   }
   global.OjjudaRecommendedRestaurants = { create };
 })(window);
