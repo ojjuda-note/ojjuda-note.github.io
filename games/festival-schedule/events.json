@@ -11915,7 +11915,15 @@
         "고추",
         "먹거리",
         "농산물"
-      ]
+      ],
+      "attendance": {
+        "count": 270000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "괴산군청 2026-06-10 공식 축제 평가(약 27만 명)",
+        "sourceUrl": "https://www.goesan.go.kr/www/selectBbsNttView.do?bbsNo=213&integrDeptCode=&key=136&nttNo=131377&pageIndex=55&pageUnit=9&searchCnd=all&searchCtgry=&searchKrwd=",
+        "sourceCheckedAt": "2026-11-10"
+      }
     },
     {
       "id": "chungju-ureuk-culture-festival-2026",
@@ -18487,6 +18495,38 @@
         "체험",
         "전라감영",
         "전통문화"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "chungbuk-icehockey-u12-provincial-selection-2026",
+      "title": "제108회 전국동계체육대회 아이스하키(12세 이하) 충북 도대표 선발전",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "아이스하키",
+      "start": "2026-11-25",
+      "end": "2026-11-25",
+      "region": "충북",
+      "city": "청주시",
+      "venue": "청주실내빙상장",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "제108회 전국동계체육대회에 출전할 충북 아이스하키 12세 이하 부문 도대표 선발전입니다. 충청북도체육회가 주최·주관합니다.",
+      "scheduleNote": "2026년 11월 25일(수) 오전 7시부터. 세부 대진·종료 시각은 공식 대회요강 확인.",
+      "priceNote": "선수 참가비와 일반 관람료는 각각 공식 안내 확인",
+      "accessNote": "선수 참가신청은 11월 6일~12일 14시 충북체육회 방문·이메일 접수. 일반인 관람 가능 여부나 입장·예매 조건은 공식 발표 확인. 참가 신청과 관람은 별개입니다.",
+      "sourceName": "충청북도체육회(2026-11-02 공식 공지)",
+      "sourceUrl": "https://game.cbsports.or.kr/sub.php?menukey=18&mod=view&no=12282",
+      "sourceCheckedAt": "2026-11-10",
+      "tags": [
+        "아이스하키",
+        "동계체전",
+        "도대표",
+        "선발전",
+        "12세 이하"
       ],
       "status": "scheduled"
     }
