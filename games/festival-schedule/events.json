@@ -18529,6 +18529,50 @@
         "12세 이하"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "hampyeong-winter-light-festival-202627",
+      "title": "2026 함평 겨울빛축제",
+      "category": "local",
+      "section": "festival",
+      "dateStatus": "undecided",
+      "start": null,
+      "end": null,
+      "dateNote": "2026년 11월 말~2027년 1월 초순, 약 50일간 개최 예정(정확한 날짜 공식 발표 전)",
+      "dateEvidence": "함평군 2026년도 주요업무 추진계획의 제6번 사업에 겨울빛축제 개최 및 11월 말~이듬해 1월 초순 예정이 명시돼 있습니다. 날짜 확정 공지는 확인되지 않았습니다.",
+      "region": "전남",
+      "city": "함평군",
+      "venue": "함평엑스포공원·함평읍 시가지 일원(공식 예정 장소)",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "planned",
+      "summary": "함평엑스포공원의 빛 조형물·야간경관과 함평읍 시가지 조명, 크리스마스·연말연시 체험과 특화 공연을 계획한 겨울 빛 축제입니다.",
+      "scheduleNote": "구체적 개막·폐막일, 점등·공연 시간은 공식 발표 확인",
+      "priceNote": "입장료·체험 비용은 이번 회차 공식 발표 확인",
+      "sourceName": "함평군·함평축제관광재단 2026년도 주요업무 추진계획",
+      "sourceUrl": "https://www.hampyeong.go.kr/upload/file/work/2026/22.pdf",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.hpftf.or.kr/boardView.do?boardId=BD0006&movePage=1&pageId=www16&searchCtgry=4&seq=7274660"
+      ],
+      "attendance": {
+        "count": 160000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "함평축제관광재단 2026-01-12 폐막 공식 보도자료(2025~2026 회차 약 16만 명)",
+        "sourceUrl": "https://www.hpftf.or.kr/boardView.do?boardId=BD0006&movePage=1&pageId=www16&searchCtgry=4&seq=7274660",
+        "sourceCheckedAt": "2026-11-10"
+      },
+      "tags": [
+        "겨울축제",
+        "빛축제",
+        "크리스마스",
+        "조명",
+        "야간행사"
+      ],
+      "status": "scheduled"
     }
   ]
 }
