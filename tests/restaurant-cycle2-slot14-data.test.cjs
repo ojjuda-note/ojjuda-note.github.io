@@ -1,0 +1,57 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const base=JSON.parse(read('games/certified-restaurants/restaurants.json'));
+const sources=JSON.parse(read('games/certified-restaurants/sources.json'));
+const audit=JSON.parse(read('ops/restaurant-region-audit.json'));
+const ids=[
+ 'local-kto-c2s14-timeslice','local-kto-c2s14-actioncoffee','local-kto-c2s14-montebianco',
+ 'local-kto-c2s14-americana','local-kto-c2s14-cheongryujae','local-kto-c2s14-eltove','local-kto-c2s14-steavin'
+];
+assert.equal(new Set(ids).size,7);
+const allIds=base.restaurants.map(r=>r.id);
+assert.equal(new Set(allIds).size,allIds.length,'saved restaurant IDs must be unique');
+for (const id of ids){
+ const row=base.restaurants.find(r=>r.id===id);
+ assert.ok(row,id);
+ assert.equal(row.region,'경기');
+ assert.match(row.district,/^(평택시|오산시|안성시)$/);
+ assert.ok(/^경기도 /.test(row.address));
+ assert.equal(row.lat,null);assert.equal(row.lng,null);
+ assert.ok(['한식','중식','일식','양식','분식','디저트','기타'].includes(row.category));
+ assert.equal(row.guides.length,1);
+ const g=row.guides[0];
+ assert.equal(g.provider,'local-guide');assert.equal(g.year,null);
+ assert.equal(g.yearType,'source');assert.equal(g.status,'official_restaurant_listing');
+ assert.equal(g.verifiedAt,'2026-11-09');
+ assert.match(g.sourceUrl,/^https:\/\/access\.visitkorea\.or\.kr\/food\/detail\.do\?cotId=/);
+ assert.ok(row.addressCrosscheckUrl.startsWith('https://'));
+}
+for(const [id,name] of [['local-north-5bbf2cb589c51030','콩마당'],['local-gg-43bdc197164c73','북극해고등어 오산본점']]){
+ const row=base.restaurants.find(r=>r.id===id);
+ assert.equal(row.name,name);assert.equal(row.category,'한식');
+ assert.ok(row.guides.length>=1);assert.equal(row.lat,null);
+ assert.match(row.categoryEvidenceUrl,/^https:\/\/access\.visitkorea\.or\.kr\/food\/detail\.do\?/);
+}
+const report=audit.entries.filter(x=>x.cycle===2&&x.slot===14);
+assert.equal(report.length,1);assert.equal(report[0].additions,7);
+assert.equal(report[0].modifications,2);assert.equal(report[0].coordinateAdded,0);
+assert.equal(report[0].locationHidden,0);assert.equal(report[0].locationPending,32);
+assert.equal(report[0].locationRechecks.length,32);
+assert.deepEqual(report[0].assignedRegions,['경기도 평택시','경기도 오산시','경기도 안성시']);
+const count=sources.coverage;
+assert.equal(count.uniqueRestaurants,3646);
+assert.equal(count.coordinatesAvailable+count.coordinatesMissing,count.uniqueRestaurants);
+assert.equal(Object.values(count.regionalCounts).reduce((a,b)=>a+b,0),count.uniqueRestaurants);
+assert.equal(Object.values(count.categoryCounts).reduce((a,b)=>a+b,0),count.uniqueRestaurants);
+assert.equal(sources.gyeonggiCycle2Slot14.addedCount,7);
+const release=JSON.parse(read('game-release.json')).revision;
+assert.ok(read('shared/games/world-game-assets.js').includes("const revision='"+release+"'"));
+assert.ok(read('world.html').includes('world-game-assets.js?v='+release));
+assert.ok(read('games/certified-restaurants/index.html').includes('app.js?v='+release));
+assert.ok(read('games/certified-restaurants/app.js').includes('restaurants.json?v='+release));
+assert.ok(read('games/certified-restaurants/world-restaurant-guide.js').includes('index.html?v='+release));
+console.log('cycle 2 slot 14 verified KTO restaurants and source counts passed');
