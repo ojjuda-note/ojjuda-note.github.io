@@ -614,7 +614,7 @@
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
       const [response, supplementResponse, seoulResponse, northeastResponse, southwestResponse, southeastResponse, incheonResponse, incheonBResponse, gyeonggiResponse, seongnamResponse, goyangPajuResponse, bucheonGimpoResponse, gyeonggiSlot12Response, gyeonggiSlot13Response, guriSlot15Response, slot17Response, slot18Response, slot19Response, slot20Response, slot21Response, slot23Response, slot25Response, slot26Response, slot27Response, slot28Response, slot30Response, slot32Response, slot33Response, slot34Response, slot36Response, slot37Response, slot38Response, slot39Response, slot41MapResponse, slot44Response, slot45LocationResponse, slot47JejuResponse, slot48SeogwipoResponse, slot49GyeonggiResponse, slot50GangwonResponse, slot51ChungbukResponse, slot52ChungnamResponse, slot55GyeongbukResponse, slot56GyeongnamResponse, slot57JejuResponse, slot59Response, slot61Response, slot62Response, slot63Response, slot64Response, slot65Response, slot66Response, slot68Response, slot69Response, slot70Response, slot71Response, slot74Response, slot75Response, slot77Response, slot80Response, slot81Response, slot83Response] = await Promise.all([
-        fetch('./restaurants.json?v=20261109-restaurants-c2s10-paju-address1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./restaurants.json?v=20261109-restaurants-c2s12-2loc-core8', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261108-restaurants-slot58-seoulblue-2', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-northeast.json?v=20261109-restaurants-c2s02-seoulblue1-loc4', { signal: controller.signal, cache: 'no-cache' }),
@@ -626,7 +626,7 @@
         fetch('./official-seongnam-hipstores-slot09.json?v=20261106-restaurants-seongnam-slot09-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-goyang-paju-slot10.json?v=20261106-restaurants-goyang-paju-slot10-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-bucheon-gimpo-slot11.json?v=20261106-restaurants-slot11-extra1', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-gyeonggi-slot12.json?v=20261106-restaurants-slot12-1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-gyeonggi-slot12.json?v=20261109-restaurants-c2s12-2loc-core8', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeonggi-slot13.json?v=20261106-restaurants-slot13-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-guri-slot15.json?v=20261107-restaurants-slot49-guri26-7', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeonggi-slot17.json?v=20261106-restaurants-slot17-1', { signal: controller.signal, cache: 'no-cache' }),
