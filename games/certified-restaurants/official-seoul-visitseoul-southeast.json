@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05",
+  "updatedAt": "2026-11-09",
   "sourceName": "서울관광재단 Visit Seoul 공식 관광정보",
   "sourceUrl": "https://korean.visitseoul.net/restaurants",
   "completeRegionalCollection": false,
@@ -41,8 +41,8 @@
       "region": "서울",
       "district": "관악구",
       "address": "서울 관악구 남부순환로 1660",
-      "lat": null,
-      "lng": null,
+      "lat": 37.4845613,
+      "lng": 126.9350513,
       "menu": [
         "한우 모둠구이",
         "돼지 양념구이"
@@ -62,7 +62,14 @@
           "selectionCriteria": "서울 공식 관광정보에 소개된 업소입니다. 별도의 지정·심사, 미쉐린·블루리본 현재 등급, 현재 영업 여부를 의미하지 않습니다."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90-KangkangsullaiSillimbondong/KOP002772",
+      "coordinateSource": {
+        "name": "공개 지방행정 인허가 사업장별 주소 기반 게시 숫자좌표",
+        "url": "https://place.clariosync.com/p/863989/%EA%B0%95%EA%B0%95%EC%88%A0%EB%9E%98-%EC%8B%A0%EB%A6%BC%EB%B3%B8%EB%8F%99%EC%A0%90",
+        "method": "published-business-license-coordinate-crosschecked-official-name-branch-address-and-phone",
+        "checkedAt": "2026-11-09",
+        "note": "서울관광재단 같은 이름·지점·남부순환로 1660·전화 02-886-9233 일치. 주소에 대응한 인허가 좌표로 건물 출입구 실측값은 아님. 현재 영업 여부는 별도 검증."
+      }
     },
     {
       "id": "local-seoul-visitseoul-se-gwanak-duremidadm",
@@ -348,6 +355,7 @@
     "관악·서초·강남·송파·강동구 공식 음식점/관광 소개의 일부만 확인했습니다. 전수목록이 아닙니다.",
     "두루의 3리본은 2018년 관광 소개에 언급된 과거 이력이며 2026년 현재 리본 등급·선정연도를 입증하지 않습니다.",
     "가게 이름·지점·주소·메뉴와 출처 링크만 사용. 원문 설명·사진 복제하지 않음.",
-    "현 주소와 연결된 검증 가능한 위경도 증거가 없어 모두 좌표 null. 영업 여부 별도 확인 전 미확정."
+    "현 주소와 연결된 검증 가능한 위경도 증거가 없어 모두 좌표 null. 영업 여부 별도 확인 전 미확정.",
+    "2026-11-09 순환2/5: 강강술래 신림본동점 공식 관광 식당명·지점·주소·전화와 공개 사업장 인허가 기반 업체별 숫자좌표(37.4845613,126.9350513) 일치 확인으로 좌표 1곳만 보강. 다른 10곳은 미확인 유지. 현재 블루리본/미쉐린 등급과 영업 상태는 별개."
   ]
 }
