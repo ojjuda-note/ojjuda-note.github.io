@@ -33,6 +33,7 @@
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
 | 계정 복구 | `shared/auth/` | `member-recovery` |
 | 오류 신고 | `shared/diagnostics/` | `feedback-codex` |
+| 관리자 AI 회의실 | `admin/meeting/`, `features/ai-meeting/` | `ai-meeting` |
 
 ## 유지하는 경계
 
@@ -53,3 +54,4 @@
 - `features/arcade/`의 독립 화면이 게임별 상위 10명과 10위 밖 이용자 본인 기록을 한 번의 RPC로 읽습니다. 게임별 UI에는 이 화면으로 가는 링크만 두어 집계 로직 충돌을 막습니다.
 - 10위 밖 이용자가 없으면 추가 정렬을 하지 않습니다. 자기 기록이 있는 경우에만 앞선 사람 수를 계산합니다.
 - Supabase의 보호된 내부 원본 테이블과 사용 중인 게임·계정·게시판 기능은 검증 없이 삭제하지 않습니다. 비활성 소스 후보는 테스트·운영 참조가 없는 것을 확인한 뒤 별도 작업으로 정리합니다.
+
