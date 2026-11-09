@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-06",
+  "updatedAt": "2026-11-10",
   "sourceName": "춘천시 춘천여행ON · 원주시 원주관광",
   "sourceUrls": [
     "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=84",
@@ -10,10 +10,18 @@
     "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
     "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
     "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
-    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148"
+    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=148",
+    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=145",
+    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=316",
+    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=59",
+    "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=322",
+    "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=6028&sc1=20&sc9=DYNLIST&si1=50&si2=52&tc10=Y",
+    "https://xju.purpleo.kr/article/1864",
+    "https://xju.purpleo.kr/article/1936",
+    "https://82rg.com/nearby/restaurant/364390"
   ],
   "completeRegionalCollection": false,
-  "selectionScope": "춘천 4곳·원주 4곳을 두 지자체 관광 포털 소개로 확인. 선정 연도 및 현재 영업은 미확인. 춘천시 관광 페이지의 식당별 지도 링크 위경도 4곳 및 기존 춘천 블루리본 본점 1곳에만 사용.",
+  "selectionScope": "춘천시 공식 관광 음식점 4곳과 원주시 음식점 1곳 신규 확인. 춘천 4곳 공식 연결 지도 좌표 및 기존 원주 2곳 공개 업소 수치좌표 보강. 가이드 정규 등급·현재 영업상태 및 두 도시 전체 명단은 별도 검증 필요.",
   "restaurants": [
     {
       "id": "local-gangwon-slot18-chuncheon-silbi-makguksu",
@@ -164,8 +172,8 @@
       "region": "강원",
       "district": "원주시",
       "address": "강원특별자치도 원주시 봉바위길 17-1",
-      "lat": null,
-      "lng": null,
+      "lat": 37.3322402853978,
+      "lng": 127.93240048485,
       "menu": [],
       "guides": [
         {
@@ -181,7 +189,17 @@
         }
       ],
       "addressSourceUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y",
-      "addressSourceCheckedAt": "2026-11-06"
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSourceUrl": "https://xju.purpleo.kr/article/1864",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateSource": {
+        "name": "소상공인 업소별 공개 좌표 및 원주시 관광 주소 대조",
+        "url": "https://xju.purpleo.kr/article/1864",
+        "method": "published-business-point-exact-name-branch-address",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=2&key=5477&rcpp=12&resrceNo=4361&sc1=20&si1=62&si2=65&tc10=Y"
+      },
+      "coordinateEvidence": "원주시 관광 식당 현주소·지점명과 공개 소상공인시장진흥공단 상가 업소별 수치좌표 교차 검증"
     },
     {
       "id": "local-gangwon-slot18-wonju-deokcheon-makguksu",
@@ -190,8 +208,8 @@
       "region": "강원",
       "district": "원주시",
       "address": "강원특별자치도 원주시 만대공원길 48-12 1층",
-      "lat": null,
-      "lng": null,
+      "lat": 37.3388013043159,
+      "lng": 127.926444463881,
       "menu": [],
       "guides": [
         {
@@ -207,7 +225,17 @@
         }
       ],
       "addressSourceUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y",
-      "addressSourceCheckedAt": "2026-11-06"
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSourceUrl": "https://xju.purpleo.kr/article/1936",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateSource": {
+        "name": "소상공인 업소별 공개 좌표 및 원주시 관광 주소 대조",
+        "url": "https://xju.purpleo.kr/article/1936",
+        "method": "published-business-point-exact-name-branch-address",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=5&key=5477&rcpp=12&resrceNo=4094&sc1=20&si1=56&tc10=Y"
+      },
+      "coordinateEvidence": "원주시 관광 식당 현주소·지점명과 공개 소상공인시장진흥공단 상가 업소별 수치좌표 교차 검증"
     },
     {
       "id": "local-gangwon-slot18-wonju-mihyang",
@@ -234,6 +262,154 @@
       ],
       "addressSourceUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=4093&sc1=20&si1=50&si2=53&tc10=Y",
       "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-c2s18-chuncheon-todam-charcoal-dakgalbi",
+      "name": "토담숯불닭갈비",
+      "category": "한식",
+      "region": "강원",
+      "district": "춘천시",
+      "address": "강원특별자치도 춘천시 신샘밭로 662",
+      "lat": 37.9296186943565,
+      "lng": 127.782964722947,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "춘천시 관광포털 맛집 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=145",
+          "sourceName": "춘천여행ON · 춘천시 공식 맛집 상세",
+          "verifiedAt": "2026-11-10",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "공식 관광포털 수록 이력이며 정규 가이드 등급·선정연도·현재 영업상태와 별개"
+        }
+      ],
+      "addressSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=145",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=145",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateMapUrl": "https://map.kakao.com/link/map/%ED%86%A0%EB%8B%B4%EC%88%AF%EB%B6%88%EB%8B%AD%EA%B0%88%EB%B9%84%2C37.9296186943565%2C127.782964722947",
+      "coordinateEvidence": "춘천시 공식 식당명과 도로명주소 및 해당 업소 공식 페이지의 카카오지도 연결 수치좌표"
+    },
+    {
+      "id": "local-gangwon-c2s18-chuncheon-gamjabat",
+      "name": "감자밭",
+      "category": "디저트",
+      "region": "강원",
+      "district": "춘천시",
+      "address": "강원특별자치도 춘천시 신북읍 신샘밭로 674",
+      "lat": 37.9295909692917,
+      "lng": 127.78451677742,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "춘천시 관광포털 맛집 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=316",
+          "sourceName": "춘천여행ON · 춘천시 공식 맛집 상세",
+          "verifiedAt": "2026-11-10",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "공식 관광포털 수록 이력이며 정규 가이드 등급·선정연도·현재 영업상태와 별개"
+        }
+      ],
+      "addressSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=316",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=316",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateMapUrl": "https://map.kakao.com/link/map/%EA%B0%90%EC%9E%90%EB%B0%AD%2C37.9295909692917%2C127.78451677742",
+      "coordinateEvidence": "춘천시 공식 식당명과 도로명주소 및 해당 업소 공식 페이지의 카카오지도 연결 수치좌표"
+    },
+    {
+      "id": "local-gangwon-c2s18-chuncheon-byeoldang-makguksu",
+      "name": "별당막국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "춘천시",
+      "address": "강원특별자치도 춘천시 춘천로81번길 15",
+      "lat": 37.8720784028616,
+      "lng": 127.724288384555,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "춘천시 관광포털 맛집 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=59",
+          "sourceName": "춘천여행ON · 춘천시 공식 맛집 상세",
+          "verifiedAt": "2026-11-10",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "공식 관광포털 수록 이력이며 정규 가이드 등급·선정연도·현재 영업상태와 별개"
+        }
+      ],
+      "addressSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=59",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=59",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateMapUrl": "https://map.kakao.com/link/map/%EB%B3%84%EB%8B%B9%EB%A7%89%EA%B5%AD%EC%88%98%2C37.8720784028616%2C127.724288384555",
+      "coordinateEvidence": "춘천시 공식 식당명과 도로명주소 및 해당 업소 공식 페이지의 카카오지도 연결 수치좌표",
+      "addressCrosscheckSourceUrl": "https://82rg.com/nearby/restaurant/364390",
+      "addressCrosscheckNote": "공식 소개의 주소 물음표 오타를 같은 식당명·도로명 건물번호의 공개 업소 주소로 교차 확인."
+    },
+    {
+      "id": "local-gangwon-c2s18-chuncheon-gomhotdog",
+      "name": "박사마을곰핫도그",
+      "category": "분식",
+      "region": "강원",
+      "district": "춘천시",
+      "address": "강원특별자치도 춘천시 서면 금산길 66",
+      "lat": 37.9010318362981,
+      "lng": 127.695487341206,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "춘천시 관광포털 맛집 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=322",
+          "sourceName": "춘천여행ON · 춘천시 공식 맛집 상세",
+          "verifiedAt": "2026-11-10",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "공식 관광포털 수록 이력이며 정규 가이드 등급·선정연도·현재 영업상태와 별개"
+        }
+      ],
+      "addressSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=322",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSourceUrl": "https://www.chuncheon.go.kr/tour/destination/all-tour/detail/?tourId=322",
+      "coordinateSourceCheckedAt": "2026-11-10",
+      "coordinateMapUrl": "https://map.kakao.com/link/map/%EB%B0%95%EC%82%AC%EB%A7%88%EC%9D%84%EA%B3%B0%ED%95%AB%EB%8F%84%EA%B7%B8%2C37.9010318362981%2C127.695487341206",
+      "coordinateEvidence": "춘천시 공식 식당명과 도로명주소 및 해당 업소 공식 페이지의 카카오지도 연결 수치좌표"
+    },
+    {
+      "id": "local-gangwon-c2s18-wonju-sorotgil",
+      "name": "소롯길",
+      "category": "한식",
+      "region": "강원",
+      "district": "원주시",
+      "address": "강원특별자치도 원주시 신림면 성남로 457",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "원주시 공식 관광 음식점 소개",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=6028&sc1=20&sc9=DYNLIST&si1=50&si2=52&tc10=Y",
+          "sourceName": "원주관광 · 원주시 공식 음식점 안내",
+          "verifiedAt": "2026-11-10",
+          "status": "official_tourism_listing",
+          "selectionCriteria": "공식 관광포털 수록 이력이며 정규 가이드 등급·선정연도·현재 영업상태와 별개"
+        }
+      ],
+      "addressSourceUrl": "https://www.wonju.go.kr/tour/viewTnResrceDataT.do?cpn=3&key=5477&rcpp=12&resrceNo=6028&sc1=20&sc9=DYNLIST&si1=50&si2=52&tc10=Y",
+      "addressSourceCheckedAt": "2026-11-10"
     }
   ],
   "locationEnrichments": [
