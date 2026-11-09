@@ -31,7 +31,15 @@
         "겨울축제",
         "가족"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 340000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "공주시 발표(충청뉴스 보도)",
+        "sourceUrl": "https://www.ccnnews.co.kr/news/articleView.html?idxno=400825",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "nowon-moonlight-2026",
@@ -85,7 +93,15 @@
         "가족",
         "체험"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 177000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "함평군 발표(뉴시스 보도)",
+        "sourceUrl": "https://www.newsis.com/view/NISX20251110_0003396272",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "buyeo-chrysanthemum-2026",
@@ -139,7 +155,15 @@
         "바다",
         "무료"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 867000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "창원시 발표(경남신문 보도)",
+        "sourceUrl": "https://www.knnews.co.kr/news/articleView.php?gubun=&idxno=1474691",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "cheongsong-apple-2026",
@@ -166,7 +190,15 @@
         "사과",
         "체험"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 530000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "청송군 발표(헤럴드경제 보도)",
+        "sourceUrl": "https://biz.heraldcorp.com/article/10929879",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "goesan-kimjang-2026",
@@ -350,7 +382,15 @@
       "verificationSources": [
         "https://www.busan.go.kr/nbnews/1761578",
         "https://www.busanfireworks.com/"
-      ]
+      ],
+      "attendance": {
+        "count": 1170000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "행정안전부 부산불꽃축제 관람객 현황",
+        "sourceUrl": "https://www.mois.go.kr/frt/bbs/type010/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000008&nttId=130798",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "yeoju-sanbuk-kimjang-2026",
@@ -438,7 +478,15 @@
         "먹거리",
         "빛정원"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 313980,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "고흥군 발표(더리더 보도)",
+        "sourceUrl": "https://theleader.mt.co.kr/articleView.html?no=2026102917497894681",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "khnp-music-festival-the-theater-2026",
@@ -676,7 +724,15 @@
         "체험",
         "AI"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 115000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "누들대전 주최 측 대전일보",
+        "sourceUrl": "https://v.daum.net/v/20251109192026309",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "mokwon-festival-2026",
@@ -1379,7 +1435,15 @@
         "겨울축제",
         "가족"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 1590000,
+        "kind": "previous",
+        "year": 2026,
+        "sourceName": "화천군·재단법인 나라 발표(뉴스1 보도)",
+        "sourceUrl": "https://www.news1.kr/amp/local/kangwon/6058039",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "start": null,
@@ -2914,7 +2978,15 @@
         "겨울축제",
         "얼음낚시",
         "체험"
-      ]
+      ],
+      "attendance": {
+        "count": 250000,
+        "kind": "previous",
+        "year": 2026,
+        "sourceName": "평창송어축제위원회 발표(연합뉴스 보도)",
+        "sourceUrl": "https://www.yna.co.kr/amp/view/AKR20260211151200062",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "status": "scheduled",
@@ -6984,7 +7056,15 @@
       "status": "scheduled",
       "verificationSources": [
         "https://www.imsilfestival.com/"
-      ]
+      ],
+      "attendance": {
+        "count": 610000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "임실군 발표(서울신문 보도)",
+        "sourceUrl": "https://www.seoul.co.kr/news/society/2025/10/14/20251014500247",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "imsil-pottery-2026",
@@ -7155,7 +7235,15 @@
       "status": "scheduled",
       "verificationSources": [
         "https://www.nonsan.go.kr/nsfestival/"
-      ]
+      ],
+      "attendance": {
+        "count": 670000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "논산시청 보도자료",
+        "sourceUrl": "https://support.nonsan.go.kr/kor/html/sub03/030106.html?mode=V&no=68760478c7d33e0adcc09f923c442394",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "taean-light-festival-2026",
@@ -7434,7 +7522,15 @@
         "먹거리"
       ],
       "status": "scheduled",
-      "locationStatus": "unmapped"
+      "locationStatus": "unmapped",
+      "attendance": {
+        "count": 1167000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "금산군 발표(연합뉴스 보도)",
+        "sourceUrl": "https://www.yna.co.kr/amp/view/AKR20261012036300063",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "cheonan-heungtaryeong-dance-2026",
@@ -7462,7 +7558,15 @@
         "문화"
       ],
       "status": "scheduled",
-      "locationStatus": "unmapped"
+      "locationStatus": "unmapped",
+      "attendance": {
+        "count": 992000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "천안시·천안문화재단 발표(서울신문 보도)",
+        "sourceUrl": "https://m.go.seoul.co.kr/news/society/2026/10/05/20261005500130",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "gyeryong-military-culture-2026",
@@ -7689,7 +7793,15 @@
         "여름축제",
         "체험",
         "해수욕장"
-      ]
+      ],
+      "attendance": {
+        "count": 1626486,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "보령시 발표(연합뉴스 보도)",
+        "sourceUrl": "https://www.yna.co.kr/view/AKR20260813050200063",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "gimje-horizon-2026",
@@ -7719,7 +7831,15 @@
         "전통문화",
         "가족체험",
         "먹거리"
-      ]
+      ],
+      "attendance": {
+        "count": 180000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "김제시 발표(더파워 보도)",
+        "sourceUrl": "https://www.thepowernews.co.kr/view.php?ud=2026020918113989423dfcd109a8_7",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "namwon-chunhyang-2026",
@@ -7751,7 +7871,15 @@
         "전통문화",
         "국악",
         "거리축제"
-      ]
+      ],
+      "attendance": {
+        "count": 1508565,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "남원시·춘향제전위원회 발표(뉴스핌 보도)",
+        "sourceUrl": "https://www.newspim.com/news/view/20260527000619",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "yesan-apple-festival-2026",
@@ -11507,7 +11635,15 @@
         "농산물",
         "먹거리",
         "농촌체험"
-      ]
+      ],
+      "attendance": {
+        "count": 650000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "청원생명축제 공식 홈페이지 역대 실적",
+        "sourceUrl": "https://cw-life-festival.co.kr/109",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "cheongju-chojeong-king-sejong-2026",
@@ -11563,7 +11699,15 @@
         "직지",
         "인쇄문화",
         "역사문화"
-      ]
+      ],
+      "attendance": {
+        "count": 100000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "청주시 발표(뉴스1 보도)",
+        "sourceUrl": "https://www.news1.kr/amp/local/sejong-chungbuk/6281515",
+        "sourceCheckedAt": "2026-11-09"
+      }
     },
     {
       "id": "cheongju-gardening-festival-2026",
