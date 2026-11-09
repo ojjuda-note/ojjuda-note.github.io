@@ -4,6 +4,7 @@
  const MESSAGE='ojjuda:restaurants:recommendations';
  const MAP_MESSAGE='ojjuda:restaurants:recommendation-data',MAP_RESULT='ojjuda:restaurants:recommendation-data-result',MAP_CHANGED='ojjuda:restaurants:recommendations-changed';
  const RATING_MESSAGE='ojjuda:restaurants:ratings',RATING_RESULT='ojjuda:restaurants:rating-result';
+ const COMMENT_MESSAGE='ojjuda:restaurants:comments',COMMENT_RESULT='ojjuda:restaurants:comment-result';
  const validRatingId=id=>typeof id==='string'&&id.length<=80&&/^[a-z0-9가-힣]+(?:-[a-z0-9가-힣]+)*$/.test(id);
  const validRecommendedId=id=>typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
  const validRequestId=id=>typeof id==='string'&&/^[a-zA-Z0-9-]{1,80}$/.test(id);
@@ -29,9 +30,11 @@
    const hasMemberMenu=typeof recommendations?.open==='function';
    const ratings=recommendations?.ratings;
    const hasRatings=!!owner&&typeof ratings?.getSummaries==='function'&&typeof ratings?.setRating==='function';
+   const comments=recommendations?.comments;
+   const hasComments=typeof comments?.list==='function'&&typeof comments?.save==='function'&&typeof comments?.remove==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
-   const ratingRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261109-restaurants-c2s09-locations2&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   const ratingRequests=new Set(),commentRequests=new Set(),mapRequests=new Set();
+   frame.src='/games/certified-restaurants/index.html?v=20261109-restaurants-comments1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasComments?'&member-comments=1':'')+(owner&&hasComments?'&can-comment=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();
@@ -113,10 +116,33 @@
     catch(error){reply({error:error?.message==='recommendation_map_limit'?'추천맛집 수가 지도 조회 범위를 넘었어요. 추천맛집 목록에서 확인해 주세요.':'추천맛집을 불러오지 못했어요. 다시 시도해 주세요.'});}
     finally{mapRequests.delete(requestId);}
    }
+   async function handleComment(message){
+    if(!current()){close(true);return;}
+    if(!hasComments||!validRequestId(message.requestId)||commentRequests.has(message.requestId)||commentRequests.size>=4)return;
+    const requestId=message.requestId,kind=message.kind===undefined?'certified':message.kind;
+    const idValid=kind==='recommended'?validRecommendedId:validRatingId;
+    const validKind=kind==='certified'||kind==='recommended';
+    const action=message.action;
+    const file=message.file;
+    const validFile=file==null||(typeof file.size==='number'&&file.size>0&&file.size<=20*1024*1024&&typeof file.slice==='function'&&typeof file.arrayBuffer==='function'&&['image/jpeg','image/png','image/webp'].includes(file.type));
+    const valid=validKind&&idValid(message.id)&&(action==='list'&&Number.isSafeInteger(message.offset)&&message.offset>=0&&message.offset<=1000
+     ||!!owner&&action==='save'&&typeof message.body==='string'&&message.body.length<=500&&validFile&&(message.body.trim().length>0||file!=null)
+     ||!!owner&&action==='delete'&&validRecommendedId(message.commentId));
+    const reply=payload=>{if(current())frame.contentWindow.postMessage({type:COMMENT_RESULT,requestId,...payload},location.origin);};
+    if(!valid){reply({error:'댓글 요청을 확인해 주세요.'});return;}
+    commentRequests.add(requestId);
+    try{
+     const data=action==='list'?await comments.list(kind,message.id,message.offset):action==='save'?await comments.save(kind,message.id,message.body,file):await comments.remove(message.commentId);
+     reply({data});
+    }catch(error){
+     reply({error:action==='list'?'댓글을 불러오지 못했어요.':/too_fast/.test(String(error?.message))?'댓글은 5초 간격으로 올려 주세요.':action==='delete'?'댓글을 삭제하지 못했어요.':'댓글을 올리지 못했어요. 다시 시도해 주세요.'});
+    }finally{commentRequests.delete(requestId);}
+   }
    function receive(event){
     if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
     if(event.data?.type===MESSAGE)void showRecommendations(event.data.id);
     else if(event.data?.type===RATING_MESSAGE)void handleRating(event.data);
+    else if(event.data?.type===COMMENT_MESSAGE)void handleComment(event.data);
     else if(event.data?.type===MAP_MESSAGE)void handleMapPage(event.data);
    }
    function loaded(){if(!disposed&&!allowed())close(true);}
