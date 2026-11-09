@@ -60,7 +60,7 @@ begin
  )
  select coalesce(jsonb_agg(jsonb_build_object('id',id,'body',body,'photo_path',photo_path,
   'author_name',coalesce(nullif(btrim(nickname),''),'회원'),'created_at',created_at,
-  'mine',member_id=auth.uid()) order by created_at desc,id desc),'[]'::jsonb)
+  'mine',coalesce(member_id=auth.uid(),false)) order by created_at desc,id desc),'[]'::jsonb)
  into result from page;
  return result;
 end;
