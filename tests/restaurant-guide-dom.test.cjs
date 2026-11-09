@@ -52,7 +52,26 @@ assert.ok(northeastOraegage.every(item => item.guides.some(guide => guide.provid
 assert.ok(northeastSupplement.restaurants.find(item => item.id === 'local-seoul-visitseoul-ddm-yeonghwajang').guides.length === 2, 'Yeonghwajang keeps both verified tourism listing and municipal selection without duplication');
 assert.equal(southwestSupplement.restaurants.length, 8, 'eight official southwest Seoul tourist introductions');
 assert.equal(new Set(southwestSupplement.restaurants.map(item => item.id)).size, 8, 'southwest official restaurant IDs remain unique');
-assert.ok(southwestSupplement.restaurants.every(item => item.lat === null && item.lng === null && item.region === '서울' && item.guides.every(guide => guide.status === 'official_restaurant_listing' && guide.year === null && guide.sourceUrl.startsWith('https://korean.visitseoul.net/'))), 'tourism introductions are not misrepresented as new awards or located without proof');
+const southwestVerifiedCoordinateSources = new Map([
+  ['local-seoul-visitseoul-sw-gangseo-lacroute', 'https://place.clariosync.com/p/6742035/%EB%9D%BC%ED%81%AC%EB%A3%A8%EB%9C%A8-%EC%84%9C%EC%9A%B8'],
+  ['local-seoul-visitseoul-sw-geumcheon-dongheunggwan', 'https://place.clariosync.com/p/763442/%EB%8F%99%ED%9D%A5%EA%B4%80'],
+  ['local-seoul-visitseoul-sw-geumcheon-francaise', 'https://place.clariosync.com/p/6986728/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90']
+]);
+for (const item of southwestSupplement.restaurants) {
+  assert.equal(item.region, '서울', item.id + ' keeps its original Seoul region');
+  assert.ok(item.guides.every(guide => guide.status === 'official_restaurant_listing' && guide.year === null && guide.sourceUrl.startsWith('https://korean.visitseoul.net/')), item.id + ' tourism introduction is not an unverified award');
+  const expectedSource = southwestVerifiedCoordinateSources.get(item.id);
+  if (expectedSource) {
+    assert.ok(Number.isFinite(item.lat) && Number.isFinite(item.lng), item.id + ' keeps independently verified business-specific numeric coordinates');
+    assert.ok(item.lat > 37.4 && item.lat < 37.7 && item.lng > 126.7 && item.lng < 127.1, item.id + ' has a Seoul coordinate not a default map point');
+    assert.equal(item.coordinateSource?.url, expectedSource, item.id + ' uses the exact matched public business-license coordinate source');
+    assert.equal(item.coordinateSource?.checkedAt, '2026-11-09', item.id + ' records the actual coordinate verification date');
+  } else {
+    assert.equal(item.lat, null, item.id + ' has no guessed latitude');
+    assert.equal(item.lng, null, item.id + ' has no guessed longitude');
+  }
+}
+assert.equal(southwestSupplement.restaurants.filter(item => Number.isFinite(item.lat) && Number.isFinite(item.lng)).length, 3, 'only the three exactly matched southwest restaurants were located');
 const savedKey = 'ojjuda-certified-restaurants-saved-v1';
 const locationKey = 'ojjuda-certified-restaurants-location-v1';
 const viewKey = 'ojjuda-certified-restaurants-view-v1';
