@@ -143,9 +143,15 @@ function startPopup(content){
 function waitingTable(content){return entryCard(`<div class="mp-waiting">${content}</div>`,{waiting:true});}
 
 const roundKey=()=>game?`${game._roomId}:${game._round}`:null;
+function nextHandButton(extraClass=''){
+ const room=online?.room,waiting=!!room?.ready?.[room.seat],departed=!!room?.departed?.some(Boolean);
+ const disabled=!room||waiting||departed||!wallet||wallet.gold<50;
+ const label=departed?'새 방 필요':waiting?'상대 준비 중':'다음 게임';
+ return `<button type="button" class="poker-next-game${extraClass?' '+extraClass:''}" data-action="online-ready" ${disabled?'disabled':''}>${label}${disabled?'':' →'}</button>`;
+}
 function nextHandPopup(){
- const r=online.room,waiting=r.ready[r.seat],departed=r.departed.some(Boolean),net=game.result.net[0];
- return startPopup(window.OjjudaGameResults.markup({game:'poker',outcome:net>0?'gold-gain':net<0?'gold-loss':'gold-even',key:`poker:${roundKey()}`,metric:`${net>0?'+':''}${fmt(net)} G`,extra:refillButton(),actions:`<button data-action="online-ready" ${waiting||departed||wallet?.gold<50?'disabled':''}>${departed?'새 방 필요':waiting?'상대 준비 중':'다음 판'}</button><button data-action="inspect-result">패 보기</button><button data-action="online-leave">나가기</button>`}));
+ const net=game.result.net[0];
+ return startPopup(window.OjjudaGameResults.markup({game:'poker',outcome:net>0?'gold-gain':net<0?'gold-loss':'gold-even',key:`poker:${roundKey()}`,metric:`${net>0?'+':''}${fmt(net)} G`,extra:refillButton(),actions:`<button data-action="inspect-result">패 보기</button><button data-action="online-leave">나가기</button>${nextHandButton()}`}));
 }
 function refillButton(){
  if(!canRefill())return '';
@@ -256,7 +262,7 @@ function raiseTarget(part){
 }
 function controls(){
   if((game.phase==='discard'||game.phase==='open')&&(mode!=='online'||game.turn===0))return `<button class="primary wide" data-action="select" ${pick<0?'disabled':''}><span>${pick<0?'카드를 선택하세요':game.phase==='discard'?'선택한 카드 버리기':'선택한 카드 공개'}</span><small>${game.phase==='discard'?'한 장 버리기':'공개 후 시작'} →</small></button>`;
-  if(game.phase==='finished'&&mode==='online')return `<button class="primary wide" data-action="show-start">다음 판</button><button class="small-button wide" data-action="online-leave">방 나가기</button>`;
+  if(game.phase==='finished'&&mode==='online')return `<button class="small-button poker-result-exit" data-action="online-leave">방 나가기</button>${nextHandButton('primary')}`;
   if(game.phase!=='betting'||game.turn!==0)return '<div class="waiting" role="status"><span class="thinking"><i></i><i></i><i></i></span>잠시 후 내 차례가 돌아옵니다</div>';
   const l=game.legal(),p=game.players[0];
   const raiseButton=(action,label,part)=>{const to=raiseTarget(part);return `<button class="raise-choice" data-action="${action}" ${!l.mayRaise?'disabled':''}><span>${label}</span><small>+${fmt(to-p.bet)} G</small></button>`;};
@@ -469,7 +475,7 @@ document.addEventListener('click',async event=>{
   if(action==='resume'){resumeOnEntry=false;lobby=false;render({animateDeal:false});void online.read();schedule();return;}
   if(action==='lobby'){lobby=true;render();return;}
   if(action==='start'||action==='next'){await start(b);return;}
-  if(action==='inspect-result'){dismissedStart=roundKey();render({animateDeal:false});app.querySelector('[data-action=show-start]')?.focus({preventScroll:true});return;}
+  if(action==='inspect-result'){dismissedStart=roundKey();render({animateDeal:false});app.querySelector('[data-action=online-ready]')?.focus({preventScroll:true});return;}
   if(action==='show-start'){dismissedStart=null;render({animateDeal:false});app.querySelector('[data-action=online-ready]')?.focus({preventScroll:true});return;}
   if(action==='refill'){
     if(!canRefill())return;

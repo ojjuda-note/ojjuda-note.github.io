@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261109-restaurants-c2s14-kto7-cuisine2'
+ const revision='20261109-poker-nextgame-right1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -14,7 +14,7 @@
   archery:'3.2.4',
   roulette:'1.9.3',
   bang:'1.11.2',
-  poker:'1.6.3',
+  poker:'1.6.4',
   tank:'1.6.2',
   solitaire:'1.2.3',
   mines:'1.4.3',

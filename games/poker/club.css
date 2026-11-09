@@ -459,3 +459,29 @@
 .poker-playing .pot-changed .pot-amount{animation:club-pot .4s ease both}
 @keyframes club-pot{from{opacity:.6;translate:0 3px}to{opacity:1;translate:0 0}}
 @media(prefers-reduced-motion:reduce){.poker-playing .pot-changed .pot-amount{animation:none}}
+
+/* Keep the action for the next game prominent on the right after a hand. */
+.poker-playing .game-result-card .game-result-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.65fr);gap:8px}
+.poker-playing .game-result-card .game-result-actions button.poker-next-game{
+  display:flex;align-items:center;justify-content:center;gap:5px;min-height:60px;padding:10px 6px;
+  border:2px solid #b48b34;border-radius:14px;background:linear-gradient(135deg,#fff0bc,#dfb355);
+  box-shadow:0 4px 0 #94712e,0 8px 18px #99712d44;color:#292919;
+  font-size:16px;font-weight:900;letter-spacing:-.04em
+}
+.poker-playing .game-result-card .game-result-actions button.poker-next-game:hover:not(:disabled){background:#ffdfa0;transform:translateY(-1px)}
+.poker-playing .game-result-card .game-result-actions button.poker-next-game:disabled{opacity:.55;box-shadow:none}
+.poker-playing .actions.finished-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.65fr);gap:10px}
+.poker-playing .actions.finished-actions>.poker-result-exit{grid-column:1;min-height:58px;width:100%;font-size:13px}
+.poker-playing .actions.finished-actions>.poker-next-game{
+  grid-column:2;display:flex;align-items:center;justify-content:center;gap:9px;
+  min-width:0;width:100%;max-width:none;min-height:58px;padding:10px;
+  border:2px solid #e9c975;border-radius:12px;background:linear-gradient(115deg,#fce4a2,#dcb05c);
+  box-shadow:0 4px 0 #8b6627,0 9px 22px #b38b3f3d;color:#272718;font-size:18px;font-weight:900
+}
+.poker-playing .actions.finished-actions>.poker-next-game:hover:not(:disabled){background:#ffe8a9}
+.poker-playing .actions.finished-actions>.poker-next-game:disabled{opacity:.55;box-shadow:none}
+@media(max-width:380px){
+  .poker-playing .game-result-card .game-result-actions{gap:6px}
+  .poker-playing .game-result-card .game-result-actions button.poker-next-game{min-height:54px;font-size:14px}
+  .poker-playing .actions.finished-actions>.poker-next-game{min-height:54px;font-size:15px}
+}
