@@ -11915,7 +11915,15 @@
         "고추",
         "먹거리",
         "농산물"
-      ]
+      ],
+      "attendance": {
+        "count": 270000,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "괴산군청 2026-06-10 공식 축제 평가(약 27만 명)",
+        "sourceUrl": "https://www.goesan.go.kr/www/selectBbsNttView.do?bbsNo=213&integrDeptCode=&key=136&nttNo=131377&pageIndex=55&pageUnit=9&searchCnd=all&searchCtgry=&searchKrwd=",
+        "sourceCheckedAt": "2026-11-10"
+      }
     },
     {
       "id": "chungju-ureuk-culture-festival-2026",
@@ -18487,6 +18495,82 @@
         "체험",
         "전라감영",
         "전통문화"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "chungbuk-icehockey-u12-provincial-selection-2026",
+      "title": "제108회 전국동계체육대회 아이스하키(12세 이하) 충북 도대표 선발전",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "아이스하키",
+      "start": "2026-11-25",
+      "end": "2026-11-25",
+      "region": "충북",
+      "city": "청주시",
+      "venue": "청주실내빙상장",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "제108회 전국동계체육대회에 출전할 충북 아이스하키 12세 이하 부문 도대표 선발전입니다. 충청북도체육회가 주최·주관합니다.",
+      "scheduleNote": "2026년 11월 25일(수) 오전 7시부터. 세부 대진·종료 시각은 공식 대회요강 확인.",
+      "priceNote": "선수 참가비와 일반 관람료는 각각 공식 안내 확인",
+      "accessNote": "선수 참가신청은 11월 6일~12일 14시 충북체육회 방문·이메일 접수. 일반인 관람 가능 여부나 입장·예매 조건은 공식 발표 확인. 참가 신청과 관람은 별개입니다.",
+      "sourceName": "충청북도체육회(2026-11-02 공식 공지)",
+      "sourceUrl": "https://game.cbsports.or.kr/sub.php?menukey=18&mod=view&no=12282",
+      "sourceCheckedAt": "2026-11-10",
+      "tags": [
+        "아이스하키",
+        "동계체전",
+        "도대표",
+        "선발전",
+        "12세 이하"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "hampyeong-winter-light-festival-202627",
+      "title": "2026 함평 겨울빛축제",
+      "category": "local",
+      "section": "festival",
+      "dateStatus": "undecided",
+      "start": null,
+      "end": null,
+      "dateNote": "2026년 11월 말~2027년 1월 초순, 약 50일간 개최 예정(정확한 날짜 공식 발표 전)",
+      "dateEvidence": "함평군 2026년도 주요업무 추진계획의 제6번 사업에 겨울빛축제 개최 및 11월 말~이듬해 1월 초순 예정이 명시돼 있습니다. 날짜 확정 공지는 확인되지 않았습니다.",
+      "region": "전남",
+      "city": "함평군",
+      "venue": "함평엑스포공원·함평읍 시가지 일원(공식 예정 장소)",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "planned",
+      "summary": "함평엑스포공원의 빛 조형물·야간경관과 함평읍 시가지 조명, 크리스마스·연말연시 체험과 특화 공연을 계획한 겨울 빛 축제입니다.",
+      "scheduleNote": "구체적 개막·폐막일, 점등·공연 시간은 공식 발표 확인",
+      "priceNote": "입장료·체험 비용은 이번 회차 공식 발표 확인",
+      "sourceName": "함평군·함평축제관광재단 2026년도 주요업무 추진계획",
+      "sourceUrl": "https://www.hampyeong.go.kr/upload/file/work/2026/22.pdf",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.hpftf.or.kr/boardView.do?boardId=BD0006&movePage=1&pageId=www16&searchCtgry=4&seq=7274660"
+      ],
+      "attendance": {
+        "count": 160000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "함평축제관광재단 2026-01-12 폐막 공식 보도자료(2025~2026 회차 약 16만 명)",
+        "sourceUrl": "https://www.hpftf.or.kr/boardView.do?boardId=BD0006&movePage=1&pageId=www16&searchCtgry=4&seq=7274660",
+        "sourceCheckedAt": "2026-11-10"
+      },
+      "tags": [
+        "겨울축제",
+        "빛축제",
+        "크리스마스",
+        "조명",
+        "야간행사"
       ],
       "status": "scheduled"
     }
