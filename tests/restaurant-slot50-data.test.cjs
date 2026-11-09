@@ -16,13 +16,17 @@ assert.equal(file.restaurants.filter(x=>x.district==='춘천시').length,3);
 assert.equal(file.restaurants.filter(x=>x.district==='고성군').length,2);
 for (const row of file.restaurants) {
  assert.equal(row.region,'강원');assert.ok(row.address.startsWith('강원특별자치도 '+row.district+' '));
- assert.equal(row.lat,null);assert.equal(row.lng,null);
+ if(row.district==='춘천시'){
+  assert.ok(Number.isFinite(row.lat)&&Number.isFinite(row.lng),'official city map coordinates exist: '+row.name);
+  assert.equal(row.coordinateSourceUrl,row.addressSourceUrl);
+  assert.equal(row.coordinateSourceCheckedAt,'2026-11-10');
+ }else{assert.equal(row.lat,null);assert.equal(row.lng,null);}
  assert.equal(row.guides.length,1);assert.equal(row.guides[0].provider,'local-guide');
  assert.equal(row.guides[0].year,null);assert.equal(row.guides[0].status,'official_tourism_listing');
  assert.match(row.guides[0].sourceUrl,/^https:\/\/(www.chuncheon.go.kr|korean.visitkorea.or.kr)\//);
 }
 assert.ok(app.includes('...slot50Gangwon.restaurants'));
-assert.ok(app.includes("official-gangwon-slot50.json?v=20261107-restaurants-slot50-gangwon-5"));
+assert.ok(app.includes('official-gangwon-slot50.json?v='+release.revision));
 const historical = source.coverageAuditHistory.find(x => x.id === '2026-11-07-gangwon-slot50-five-official-tourism-introductions');
 assert.ok(historical, 'the original slot 50 coverage snapshot is preserved');
 assert.equal(historical.currentCoverage.uniqueRestaurants,3275);
