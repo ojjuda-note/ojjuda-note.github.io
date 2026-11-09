@@ -18030,6 +18030,112 @@
         "말문화",
         "무료"
       ]
+    },
+    {
+      "id": "busan-christmas-village-2026",
+      "title": "크리스마스 빌리지 부산 2026",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-26",
+      "end": "2026-12-25",
+      "region": "부산",
+      "city": "해운대구",
+      "venue": "영화의전당 야외광장",
+      "address": "부산 해운대구 수영강변대로 120",
+      "lat": 35.171,
+      "lng": 129.127,
+      "geoApprox": true,
+      "summary": "영화의전당 야외광장에 꾸려지는 겨울 크리스마스 마을 축제입니다. 눈 연출·퍼레이드·성가대 공연, 로컬 먹거리와 선물 가게를 즐길 수 있습니다.",
+      "scheduleNote": "2026년 11월 26일~12월 25일 운영 기간. 기간 중 지정 회차·운영일에만 입장할 수 있으므로 방문 가능한 요일·시간은 공식 예매처에서 확인하세요.",
+      "priceNote": "2026년 유료 티켓제 운영. 방문일·시간대별 금액은 YES24 공식 예매처 확인",
+      "accessNote": "사전 티켓 예매·회차별 입장 안내는 공식 YES24 예매 페이지 확인. 2025년 무료 운영과 다르니 주의",
+      "sourceUrl": "https://marketchango.com/CHRISTMAS_VILLAGE_BUSAN_2026",
+      "sourceName": "푸드트래블·마켓창고(행사 주최)",
+      "sourceCheckedAt": "2026-11-09",
+      "verificationSources": [
+        "https://litt.ly/christmasvillagebusan",
+        "https://ticket.yes24.com/perf/60679",
+        "https://www.busan.go.kr/news/totalnews01/view?curPage=4&dataNo=72230"
+      ],
+      "tags": [
+        "크리스마스",
+        "겨울축제",
+        "먹거리",
+        "마켓",
+        "유료",
+        "사전예매"
+      ],
+      "status": "scheduled",
+      "attendance": {
+        "count": 450000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "부산광역시 부산시보(2025년 누적 관람객)",
+        "sourceUrl": "https://www.busan.go.kr/news/totalnews01/view?curPage=4&dataNo=72230",
+        "sourceCheckedAt": "2026-11-09"
+      }
+    },
+    {
+      "id": "busan-gwangbok-street-festa-20261205",
+      "title": "2026 광복로 스트릿 페스타(12월 5일)",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-12-05",
+      "end": "2026-12-05",
+      "region": "부산",
+      "city": "중구",
+      "venue": "광복로 차 없는 거리",
+      "address": "부산 중구 광복로·창선동1가 일원",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "광복로 차 없는 거리에서 거리공연, 퍼레이드, 스팟 공연, 체험행사, 플리마켓이 펼쳐지는 거리 문화축제입니다. 발코니 뮤직쇼와 별도 운영하는 스트릿 페스타 회차입니다.",
+      "scheduleNote": "2026년 12월 5일(토) 16:00~20:00. 발코니 뮤직쇼의 다른 개최일과 구분합니다.",
+      "priceNote": "공식 안내 확인",
+      "accessNote": "별도 예약·입장 조건은 주최 측의 최신 공지 확인",
+      "sourceUrl": "https://www.visitbusan.net/schedule/view.do?boardId=BBS_0000009&dataSid=6111&menuCd=DOM_000000204012000000",
+      "sourceName": "부산광역시·부산관광공사 비짓부산",
+      "sourceCheckedAt": "2026-11-09",
+      "tags": [
+        "거리축제",
+        "퍼레이드",
+        "공연",
+        "플리마켓",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "busan-haeundae-light-festival-202627",
+      "title": "제13회 해운대빛축제(2026~2027)",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-29",
+      "end": "2027-01-18",
+      "region": "부산",
+      "city": "해운대구",
+      "venue": "구남로 및 해운대해수욕장 일원",
+      "address": "부산 해운대구 구남로 및 해운대해수욕장 일원",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "부산 해운대구가 연간 행사계획에 발표한 제13회 해운대빛축제입니다. 구남로와 해운대해수욕장 일원에서 열리는 겨울 야간 빛 축제입니다.",
+      "scheduleNote": "해운대구청 2026년 연간계획: 2026.11.29~2027.1.18. 점등 시간·세부 프로그램·최종 일정은 후속 공지 확인",
+      "priceNote": "2026년 회차 요금 공식 안내 확인(지난해 무료 여부를 그대로 적용하지 않음)",
+      "accessNote": "연간 개최계획 기준이며 세부 운영·통제 사항은 해운대구청 최신 공지 확인",
+      "sourceUrl": "https://www.haeundae.go.kr/index.do?menuCd=DOM_000000104002004000",
+      "sourceName": "부산광역시 해운대구청(2026년 연간행사안내)",
+      "sourceCheckedAt": "2026-11-09",
+      "tags": [
+        "빛축제",
+        "겨울축제",
+        "야간",
+        "조명",
+        "바다"
+      ],
+      "status": "scheduled"
     }
   ]
 }
