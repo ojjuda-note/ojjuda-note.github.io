@@ -1,0 +1,59 @@
+.work-panel {
+  margin: -2px 0 20px;
+  padding: 21px 24px 15px;
+  border: 1px solid #e5e8f1;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 30px #1d325209;
+}
+.work-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.work-kicker { color: #c63e72; font-weight: 800; font-size: 10px; letter-spacing: .4px; }
+.work-top h2 { font-size: 19px; line-height: 1.3; letter-spacing: -.6px; margin: 4px 0 2px; }
+.work-top p { color: #7b8799; font-size: 11px; margin: 0; }
+.work-current { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.work-state { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.work-state::before { content: ''; height: 7px; width: 7px; border-radius: 50%; background: currentColor; }
+.work-state.is-idle { background: #f0f2f6; color: #617087; }
+.work-state.is-active { background: #e8f8f0; color: #17865a; }
+.work-state.is-active::before { animation: meeting-activity-pulse 1.5s ease-in-out infinite; }
+.work-state.is-error { background: #fff0f2; color: #bb3e5a; }
+.work-clock { font-size: 10px; color: #8995a5; font-variant-numeric: tabular-nums; }
+.work-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 14px; margin-top: 16px; }
+.work-live, .work-recent { min-width: 0; background: #fafbfe; border: 1px solid #edf0f6; border-radius: 13px; padding: 13px 15px; }
+.work-live > strong { display: block; color: #314058; font-size: 12px; margin-bottom: 7px; }
+.work-steps { list-style: none; margin: 0; padding: 0 0 0 4px; max-height: 116px; overflow-y: auto; }
+.work-steps li { display: flex; gap: 12px; align-items: baseline; padding: 5px 0; color: #5a6a82; font-size: 11px; }
+.work-steps li::before { content: ''; align-self: center; width: 5px; height: 5px; background: #c57b99; border-radius: 50%; flex: none; }
+.work-steps li time { flex: none; font-size: 10px; color: #8e9bae; font-variant-numeric: tabular-nums; }
+.work-steps li.work-step-error { color: #bc3b5c; font-weight: 700; }
+.work-steps li.work-step-error::before { background: #bc3b5c; }
+.work-steps li.work-placeholder::before { background: #cbd3df; }
+.work-recent-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.work-recent-title strong { font-size: 12px; color: #314058; }
+.work-recent-title span { white-space: nowrap; color: #9aa5b5; font-size: 9px; }
+.work-history { list-style: none; margin: 7px 0 0; padding: 0; max-height: 116px; overflow-y: auto; }
+.work-history li { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 11px; padding: 5px 0; border-bottom: 1px solid #edf0f6; }
+.work-history li:last-child { border-bottom: 0; }
+.work-history time { color: #77879a; white-space: nowrap; }
+.history-done { color: #20855f; font-weight: 700; }
+.history-unknown { color: #b47d23; font-weight: 700; }
+.work-history li.work-placeholder { color: #94a0af; }
+.work-note { border-top: 1px solid #f0f1f5; margin: 13px 0 0; padding-top: 11px; color: #8490a3; font-size: 10px; line-height: 1.65; }
+.work-note strong { color: #64738a; }
+.work-note a { color: #b6376c; text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
+@keyframes meeting-activity-pulse { 50% { opacity: .4; box-shadow: 0 0 0 5px #30a77523; } }
+@media(max-width:700px) {
+  .work-panel { padding: 16px 14px 12px; margin-bottom: 13px; border-radius: 15px; }
+  .work-top h2 { font-size: 17px; }
+  .work-top p { font-size: 10px; }
+  .work-current { flex-shrink: 0; }
+  .work-state { font-size: 10px; padding: 5px 8px; }
+  .work-clock { font-size: 9px; }
+  .work-grid { grid-template-columns: 1fr; gap: 9px; margin-top: 11px; }
+  .work-live, .work-recent { padding: 10px 12px; }
+}
+@media(max-width:420px) {
+  .work-top { flex-wrap: wrap; }
+  .work-current { flex-direction: row; align-items: center; flex-wrap: wrap; }
+}
+@media(prefers-reduced-motion:reduce) { .work-state.is-active::before { animation: none; } }

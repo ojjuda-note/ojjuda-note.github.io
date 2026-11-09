@@ -11,9 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/features/ai-meeting/style.css?v=20261109-1">
+  <link rel="stylesheet" href="/features/ai-meeting/activity.css?v=20261109-1">
   <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/features/ai-meeting/app.js?v=20261109-1" defer></script>
+  <script src="/features/ai-meeting/app.js?v=20261109-2" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -28,6 +29,17 @@
         <div><span class="eyebrow"><span class="status-dot" aria-hidden="true"></span> 관리자 전용 공간</span><h1>AI 전략 회의실</h1><p>대표와 AI 본부장, 전문 담당 AI가 함께 이야기하는 곳입니다.</p></div>
         <span class="private-badge">비공개 · 관리자만</span>
       </div>
+      <section class="work-panel" aria-labelledby="work-title">
+        <div class="work-top">
+          <div><span class="work-kicker">실제 처리 기록</span><h2 id="work-title">AI 작업 상황판</h2><p>요청을 처리한 단계와 시간을 확인할 수 있습니다.</p></div>
+          <div class="work-current"><span id="work-state" class="work-state" role="status" aria-live="polite">현재 대기</span><span id="work-clock" class="work-clock">실행 중인 요청 없음</span></div>
+        </div>
+        <div class="work-grid">
+          <div class="work-live"><strong id="work-detail">현재 진행 중인 회의 요청이 없습니다.</strong><ol id="work-steps" class="work-steps" aria-label="현재 요청의 실제 처리 단계" aria-live="polite"><li>요청을 보내면 실행 단계와 시간이 여기에 표시됩니다.</li></ol></div>
+          <div class="work-recent"><div class="work-recent-title"><strong>최근 회의 처리 내역</strong><span id="work-updated">확인 전</span></div><ol id="work-history" class="work-history"><li>회의 기록을 확인하는 중입니다.</li></ol></div>
+        </div>
+        <p class="work-note">이 화면은 <strong>회의 요청 처리</strong>만 추적합니다. AI 담당자들은 요청이 없을 때 자동으로 다른 사업을 수행하지 않습니다. 개발·배포 작업은 <a href="https://github.com/ojjuda-note/ojjuda-note.github.io/actions" target="_blank" rel="noopener noreferrer">실제 배포 기록</a>에서 확인할 수 있습니다.</p>
+      </section>
       <div class="layout">
         <aside class="sidebar" aria-label="AI 조직 구성">
           <div class="side-title"><span>AI 조직도</span><span class="member-count">7개 역할</span></div>
@@ -63,3 +75,4 @@
   </main>
 </body>
 </html>
+
