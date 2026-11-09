@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05",
+  "updatedAt": "2026-11-09",
   "sourceName": "서울관광재단 Visit Seoul 공식 식당·카페 소개(서남·서부권 04회차)",
   "sourceUrl": "https://korean.visitseoul.net/",
   "completeRegionalCollection": false,
@@ -39,8 +39,8 @@
       "address": "서울 강서구 공항대로 237 111-112호",
       "menu": [],
       "region": "서울",
-      "lat": null,
-      "lng": null,
+      "lat": 37.5594564,
+      "lng": 126.8338891,
       "guides": [
         {
           "provider": "local-guide",
@@ -54,7 +54,13 @@
           "selectionCriteria": "서울 공식 관광정보의 식당 소개만 확인했습니다. 미쉐린·블루리본 등급이나 별도의 공식 심사·지정·현재 영업 확인을 뜻하지 않습니다."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/la-croute-seoul/KOPsemkjc",
+      "coordinateSource": {
+        "name": "공개 사업장 인허가 업체명·현 주소와 일치하는 수치좌표",
+        "url": "https://place.clariosync.com/p/6742035/%EB%9D%BC%ED%81%AC%EB%A3%A8%EB%9C%A8-%EC%84%9C%EC%9A%B8",
+        "method": "published-business-license-coordinate-cross-checked-official-name-branch-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-visitseoul-sw-geumcheon-dongheunggwan",
@@ -68,8 +74,8 @@
         "탕수육"
       ],
       "region": "서울",
-      "lat": null,
-      "lng": null,
+      "lat": 37.4551653,
+      "lng": 126.8985739,
       "guides": [
         {
           "provider": "local-guide",
@@ -83,7 +89,13 @@
           "selectionCriteria": "서울 공식 관광정보에 '백년가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%EB%8F%99%ED%9D%A5%EA%B4%80/KOP042265",
+      "coordinateSource": {
+        "name": "공개 사업장 인허가 업체명·현 주소와 일치하는 수치좌표",
+        "url": "https://place.clariosync.com/p/763442/%EB%8F%99%ED%9D%A5%EA%B4%80",
+        "method": "published-business-license-coordinate-cross-checked-official-name-branch-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-visitseoul-sw-geumcheon-francaise",
@@ -96,8 +108,8 @@
         "양파빵"
       ],
       "region": "서울",
-      "lat": null,
-      "lng": null,
+      "lat": 37.479856,
+      "lng": 126.9053953,
       "guides": [
         {
           "provider": "local-guide",
@@ -113,7 +125,13 @@
           "selectionCriteria": "서울 공식 관광정보에 '백년가게' 표기가 있으나 해당 사업의 지정·선정 연도 및 현재 유효 여부와 영업 여부는 별도로 검증되지 않았습니다. 미쉐린·블루리본 등급은 확인되지 않았습니다."
         }
       ],
-      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266"
+      "addressSourceUrl": "https://korean.visitseoul.net/restaurants/%EB%B0%B1%EB%85%84%EA%B0%80%EA%B2%8C-%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90/KOP042266",
+      "coordinateSource": {
+        "name": "공개 사업장 인허가 업체명·현 주소와 일치하는 수치좌표",
+        "url": "https://place.clariosync.com/p/6986728/%ED%94%84%EB%9E%91%EC%84%B8%EC%A6%88%EA%B3%BC%EC%9E%90%EC%A0%90",
+        "method": "published-business-license-coordinate-cross-checked-official-name-branch-address",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-seoul-visitseoul-sw-yeongdeungpo-sinheung",
@@ -236,6 +254,7 @@
     "서울 강서구·금천구·영등포구·동작구의 공개 관광 소개에서 식당명·도로명주소를 대조함. 구로구는 이번 범위에서 검증 가능한 등록 대상을 찾지 못함.",
     "백년가게·오래가게 표기는 출처 홈페이지의 표현이므로 공식 선정 연도·정규 등급·현 영업 여부로 확대 해석하지 않음.",
     "상호·주소와 연결된 검증 가능한 위경도가 없어 새 식당 8개 모두 null로 보류. 사진·기사 전문 미복제.",
-    "서울관광재단 공식 페이지를 2026-11-05 확인. 해당 출처의 게시·수정일은 식당 선정연도가 아님."
+    "서울관광재단 공식 페이지를 2026-11-05 확인. 해당 출처의 게시·수정일은 식당 선정연도가 아님.",
+    "2026-11-09 순환2/4: 기존 8곳의 정확한 상호·지점·도로명 주소와 공개 인허가 업체별 수치좌표를 교차 대조해 3곳만 보강. 인근 시설·건물 중심/임의 좌표는 쓰지 않음. 현재 영업 여부와 정규 블루리본 수상 등급은 별도."
   ]
 }
