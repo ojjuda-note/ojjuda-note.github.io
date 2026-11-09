@@ -11,7 +11,7 @@
     "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model"
   ],
   "completeRegionalCollection": false,
-  "selectionScope": "기존 KTO 관광주민증 삼척1·태백4 및 이번 속초시 2026 모범(으뜸) 명단 일부 8·태백시 모범(으뜸) 명단 일부 7건. 현재 영업·개별 선정연도·정규 블루리본/미쉐린 등급은 별도이며 3개 시 전체 전수 미완료.",
+  "selectionScope": "속초시 2026 모범(으뜸) 원문 95개 중 17개·태백시 모범(으뜸) 7개 수록 및 기존 관광주민증 제휴 기록. 전체 수집·개별 선정연도·현재 영업·정규 블루리본 등급 확인 아님.",
   "restaurants": [
     {
       "id": "local-gangwon-slot20-samcheok-nolbu-jokbal",
@@ -605,6 +605,264 @@
         "method": "exact-name-and-road-address-public-poi",
         "checkedAt": "2026-11-10"
       }
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-near-dear-brunch",
+      "name": "니어앤디어브런치카페",
+      "category": "양식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 번영로129번길 5, 4호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "브런치"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-dancheon-myeonok",
+      "name": "단천면옥",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 철새길 33, B동 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "명태회냉면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-dancheon-sikdang",
+      "name": "단천식당",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 아바이마을길 17",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "회냉면",
+        "순대국밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-daeseon-hoejip",
+      "name": "대선회집",
+      "category": "일식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 영랑해안길 12",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모둠회",
+        "대게"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-daepori",
+      "name": "대포리",
+      "category": "일식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 대포항희망길 93-1, 1~2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "모둠회",
+        "대게"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-dillijoy",
+      "name": "딜리조이",
+      "category": "기타",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 번영로129번길 5, 1층 3호",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "쌀국수",
+        "반미"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-wagyu-the-table",
+      "name": "와규더테이블",
+      "category": "양식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 청초호반로 176, 2층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "파스타",
+        "불초밥구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-imgawon",
+      "name": "임가원",
+      "category": "중식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 먹거리1길 35-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-chaikan",
+      "name": "차이칸",
+      "category": "중식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 엑스포로2길 47",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "중국음식"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "2026년 지자체 명단 수록 이력으로 개별 선정연도·리본 등급·현재 영업을 의미하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
     }
   ]
 }

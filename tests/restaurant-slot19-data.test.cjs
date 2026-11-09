@@ -27,9 +27,9 @@ a.equal(gangneung.address, '강원특별자치도 강릉시 강릉대로587번�
 a.ok(Number.isFinite(gangneung.lat) && Number.isFinite(gangneung.lng));
 a.match(gangneung.coordinateSource.url, /^https:\/\/smi\.purpleo\.kr\//);
 const donghae = slot.restaurants.slice(1);
-a.ok(donghae.every(x => x.district === '동해시' && x.lat === null && x.lng === null));
+a.ok(donghae.every(x => x.district === '동해시' && Number.isFinite(x.lat) && Number.isFinite(x.lng) && x.coordinateSource?.url?.startsWith('https://')));
 a.ok(donghae.every(x => x.guides[0].status === 'official_municipal_designation' && x.guides[0].sourceAsOf === '2026-04-30'));
-a.ok(app.includes("fetch('./official-gangwon-slot19.json?v=20261106-restaurants-slot19-1"));
+a.match(app,/official-gangwon-slot19\.json\?v=\d{8}-restaurants-/);
 a.ok(app.includes('...slot19.restaurants'));
 a.ok(sources.coverage.uniqueRestaurants >= 3157);
 a.ok(sources.coverage.coordinatesAvailable >= 1029);
