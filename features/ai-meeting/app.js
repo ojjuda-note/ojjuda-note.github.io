@@ -17,7 +17,7 @@
   };
   const config = window.OJJUDA_CONFIG;
   let client, user, busy = false, loading = false, polling = null, clockTimer = null;
-  let signature = '', retryId = null, activeWork = null, lastWork = null;
+  let signature = null, retryId = null, activeWork = null, lastWork = null;
 
   const tell = message => { ui.feedback.textContent = message || ''; };
   const guard = message => { ui.room.hidden = true; ui.guard.hidden = false; ui.guard.textContent = message; };
