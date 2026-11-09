@@ -50,7 +50,9 @@ for(const name of names){
 }
 a.equal(src.gangwonCycle2Slot20.addedCount,24);
 a.equal(src.gangwonCycle2Slot20.locationPending,25);
-a.equal(src.coverage.uniqueRestaurants,3691);
+a.ok(src.coverage.uniqueRestaurants>=3691,'이후 회차 신규 맛집을 허용');
+a.equal(src.gangwonCycle2Slot20.addedCount,24);
+a.equal(src.coverageAuditHistory.find(x=>x.id==='2026-11-10-gangwon-c2s20-sokcho17-taebaek7-loc4').currentCoverage.uniqueRestaurants,3691,'2순환20회차 당시 집계는 불변');
 a.equal(src.coverage.coordinatesAvailable+src.coverage.coordinatesMissing,src.coverage.uniqueRestaurants);
 a.equal(Object.values(src.coverage.categoryCounts).reduce((v,x)=>v+x,0),src.coverage.uniqueRestaurants);
 a.equal(Object.values(src.coverage.regionalCounts).reduce((v,x)=>v+x,0),src.coverage.uniqueRestaurants);
