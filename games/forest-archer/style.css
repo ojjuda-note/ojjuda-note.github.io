@@ -630,6 +630,8 @@ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 .shop-coin-panel>.coin-exchange-notice{min-height:22px;line-height:1.6;margin:12px 0}
 .shop-coin-save-note{font-size:11px;color:#78876c}
 @media(max-width:380px){.coin-pack-options{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-coin-panel{padding:14px}.shop-layout .shop-tabs button{font-size:12px}}
-.monthly-page-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;margin-left:auto;border:1px solid #afc7ae;border-radius:11px;background:#e7f0e3;color:#2c5b40;text-decoration:none;white-space:nowrap;font-size:12px;font-weight:800}
-.monthly-page-link:hover{background:#dce9d7}.monthly-page-link:focus-visible{outline:3px solid #ccaa5c;outline-offset:3px}
-@media(max-width:480px){.page-heading{display:flex;align-items:center;gap:8px}.monthly-page-link{font-size:11px;padding:8px 9px;min-height:38px}}
+/* The ranking shortcut belongs in the stage header, never beside the playfield.
+   Re-showing .page-heading on narrow screens squeezes the entire range into a strip. */
+.monthly-game-link{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:38px;padding:6px 9px;border:1px solid #afc7ae;border-radius:9px;background:#e7f0e3;color:#2c5b40;text-decoration:none;white-space:nowrap;font-size:11px;font-weight:700}
+.monthly-game-link:hover{background:#dce9d7}.monthly-game-link:focus-visible{outline:3px solid #ccaa5c;outline-offset:2px}
+@media(max-width:380px){.monthly-game-link{padding-inline:6px}.monthly-game-link span{display:none}}

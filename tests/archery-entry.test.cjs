@@ -111,7 +111,11 @@ assert.ok(anatomyRevision);
 assert.equal(read('games/forest-archer/scenery.mjs').match(/from '\.\/animal-zones\.mjs\?v=([^']+)'/)?.[1],anatomyRevision,'painted anatomy and collision shapes load the same release');
 assert.equal(game.match(/from '\.\/scenery\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-bullet-penetration1','unchanged wall colors retain their cache revision');
 assert.equal(game.match(/from '\.\/ammo-client\.mjs\?v=([^']+)'/)?.[1],'20261104-archery-reset5','the client disables retired ammo purchases and keeps record recovery');
-assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261108-monthly-personal1','the entrance uses the updated monthly ranking link styles');
+assert.equal(read('games/forest-archer/index.html').match(/href="style\.css\?v=([^"]+)"/)?.[1],'20261109-archery-mobile-layout1','the mobile game loads the repaired responsive layout');
+const archerPage=read('games/forest-archer/index.html'),archerCss=read('games/forest-archer/style.css');
+assert.ok(!archerPage.includes('class="page-heading"'),'the retired decorative intro cannot become a flex sibling of the full-screen game');
+assert.match(archerPage,/class="round-heading"[^\n]*class="monthly-game-link"[^\n]*monthly-ranking\.html\?game=archery/,'monthly ranking stays accessible from the stage toolbar');
+assert.ok(!archerCss.includes('.page-heading{display:flex;align-items:center;gap:8px}'),'a narrow-screen rule must never squeeze the range into a strip');
 
 const cameraRevision=game.match(/from '\.\/view\.mjs\?v=([^']+)'/)?.[1];
 assert.equal(cameraRevision,'20261104-archery-eagle-dive1','the unchanged camera keeps its cache revision');

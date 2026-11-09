@@ -15,7 +15,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog archery-game-dialog';
    dialog.setAttribute('aria-label','바람의 궁수 · 싱글 게임');
-   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>싱글 게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261106-source-folders1'+(/(?:^|[?&])archery_shop=coin(?:&|$)/.test(location.search||'')?'&shop=coin':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>바람의 궁수 <small>싱글 게임</small></span></header><iframe title="바람의 궁수" src="/games/forest-archer/index.html?v=20261109-archery-mobile-layout1'+(/(?:^|[?&])archery_shop=coin(?:&|$)/.test(location.search||'')?'&shop=coin':'')+'" allow="autoplay; fullscreen; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const sessionId=crypto.randomUUID(),requests=new Map(),deadlines=new Set();
    let inFlight=null,finished=false,accessTimer=null;
