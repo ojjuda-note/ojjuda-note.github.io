@@ -20,7 +20,11 @@ for (const id of ids){
  assert.equal(row.region,'경기');
  assert.match(row.district,/^(평택시|오산시|안성시)$/);
  assert.ok(/^경기도 /.test(row.address));
- assert.equal(row.lat,null);assert.equal(row.lng,null);
+ if(id==='local-kto-c2s14-montebianco'){
+  assert.equal(row.lat,36.957624630523);assert.equal(row.lng,126.848351252943);
+  assert.equal(row.coordinateSource.url,'https://irc.purpleo.kr/article/4571');
+  assert.match(row.coordinateSource.crosscheckUrl,/^https:\/\/access\.visitkorea\.or\.kr\/food\/detail\.do\?/);
+ } else {assert.equal(row.lat,null);assert.equal(row.lng,null); }
  assert.ok(['한식','중식','일식','양식','분식','디저트','기타'].includes(row.category));
  assert.equal(row.guides.length,1);
  const g=row.guides[0];
@@ -38,12 +42,17 @@ for(const [id,name] of [['local-north-5bbf2cb589c51030','콩마당'],['local-gg-
 }
 const report=audit.entries.filter(x=>x.cycle===2&&x.slot===14);
 assert.equal(report.length,1);assert.equal(report[0].additions,7);
-assert.equal(report[0].modifications,2);assert.equal(report[0].coordinateAdded,0);
-assert.equal(report[0].locationHidden,0);assert.equal(report[0].locationPending,32);
+assert.equal(report[0].modifications,3);assert.equal(report[0].coordinateAdded,1);
+assert.equal(report[0].locationHidden,0);assert.equal(report[0].locationPending,31);
 assert.equal(report[0].locationRechecks.length,32);
+assert.equal(report[0].locationRechecks.filter(r=>!r.resolved).length,31);
 assert.deepEqual(report[0].assignedRegions,['경기도 평택시','경기도 오산시','경기도 안성시']);
 const count=sources.coverage;
 assert.equal(count.uniqueRestaurants,3646);
+assert.equal(count.coordinatesAvailable,1088);
+assert.equal(count.coordinatesMissing,2558);
+assert.equal(sources.gyeonggiCycle2Slot14.coordinateAdded,1);
+assert.equal(sources.gyeonggiCycle2Slot14.locationPending,31);
 assert.equal(count.coordinatesAvailable+count.coordinatesMissing,count.uniqueRestaurants);
 assert.equal(Object.values(count.regionalCounts).reduce((a,b)=>a+b,0),count.uniqueRestaurants);
 assert.equal(Object.values(count.categoryCounts).reduce((a,b)=>a+b,0),count.uniqueRestaurants);
