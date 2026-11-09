@@ -45,7 +45,9 @@ for(const stage of [1,2,4,6,8,12,18,41,200])for(const initial of sizes.filter(si
   assert.equal(initialState.unlocked,E.MAX_STAGE,label+': earned levels remain');
   assert.equal(initialState.startedAt,null,label+': reentry resets the clock');
   assert.equal(rows,info.rows,label+': stack dimensions');
+  assert(cols<=E.MAX_FLOOR_COLS&&rows<=E.MAX_FLOOR_ROWS,label+': no floor exceeds 12 columns or 18 rows');
   assert.equal(every.length,info.layerCount,label+': actual floor count');
+  assert(every.every(floor=>occupied(floor)<12*18),label+': every floor contains fewer than 216 cards');
   assert.equal(initialState.totalTiles,total,label+': tile inventory');
   assert.equal(every.reduce((sum,floor)=>sum+occupied(floor),0),total,label+': pairs across floors');
   assert([...counts.values()].every(n=>n===2||n===4),label+': copy limit');

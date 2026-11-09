@@ -1,7 +1,8 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 8, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 9, FACE_COUNT = 350;
+  const MAX_FLOOR_COLS = 12, MAX_FLOOR_ROWS = 18;
   // Alternate half-cell offsets instead of shifting each successive floor
   // farther down and right. Even a 100-floor stack stays inside one footprint.
   const LAYER_OFFSET = .5;
@@ -34,7 +35,9 @@
   };
   const layerCount = stage => {
     const total=stageInfo(stage).total;
-    return stage<=4?1:Math.min(100,Math.ceil(total/42));
+    // A few more shallow floors keep cards legible in landscape even with
+    // the 12-column ceiling. Do not make the board wider to fit more tiles.
+    return stage<=4?1:Math.min(100,Math.ceil(total/32));
   };
   // Reserve an uninterrupted horizontal and vertical passage, each at least
   // one card wide in the projected view. Every alternating floor respects
@@ -58,7 +61,13 @@
   // whenever none of the still-present upper tiles overlaps its face.
   function stackInfo(stage, columns) {
     const base=stageInfo(stage),count=layerCount(stage);
-    if(stage<=2){const info=boardInfo(stage,columns??base.size);return {...info,layerCount:1,floors:[{total:info.total,...mixPlan(info.total)}]};}
+    if(stage<=2){
+      const cols=columns??base.size;
+      if(!Number.isInteger(cols)||cols<1||cols>MAX_FLOOR_COLS)throw new RangeError('A floor may have at most 12 columns');
+      const info=boardInfo(stage,cols);
+      if(info.rows>MAX_FLOOR_ROWS)throw new RangeError('A floor may have at most 18 rows');
+      return {...info,layerCount:1,floors:[{total:info.total,...mixPlan(info.total)}]};
+    }
     // Alternate top-heavy and bottom-heavy stacks, rather than imposing a
     // fixed number of tiles per floor. Each share remains a whole pair.
     const weights=Array.from({length:count},(_,i)=>1+.28*Math.sin(stage*1.7+i*2.6)+.2*Math.cos(stage*.53-i*.83));
@@ -69,9 +78,12 @@
     for(let i=0;i<extraPairs;i++)pairs[order[i].i]++;
     const targets=pairs.map(value=>value*2);
     const biggest=Math.max(...targets),cols=columns??Math.ceil(Math.sqrt(biggest/.66));
-    if(!Number.isInteger(cols)||cols<2||cols>base.total)throw new RangeError('Invalid stack columns');
-    let rows=Math.max(3,Math.ceil(biggest/(cols*.66)));
-    while(targets.some((total,layer)=>walkwayCapacity(rows,cols,count,layer)<total))rows++;
+    if(!Number.isInteger(cols)||cols<2||cols>MAX_FLOOR_COLS)throw new RangeError('A floor needs 2–12 columns');
+    // Use the shortest footprint that still leaves clear crossing lanes.
+    // The old 66% density guess made the limited-width landscape board tiny.
+    let rows=Math.max(3,Math.ceil(biggest/cols));
+    while(rows<=MAX_FLOOR_ROWS&&targets.some((total,layer)=>walkwayCapacity(rows,cols,count,layer)<total))rows++;
+    if(rows>MAX_FLOOR_ROWS)throw new RangeError('A floor may have at most 18 rows');
     if(rows*cols<biggest)throw new RangeError('Stack is too small');
     const floors=targets.map(total=>({total,...mixPlan(total)}));
     const typeCount=floors.reduce((sum,f)=>sum+f.typeCount,0);
@@ -373,7 +385,7 @@
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,layerShift,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,MAX_FLOOR_COLS,MAX_FLOOR_ROWS,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,layerShift,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

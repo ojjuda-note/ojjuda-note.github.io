@@ -84,18 +84,28 @@
     const typical=E.stackInfo(stage),target=Math.max(...typical.floors.map(floor=>floor.total)),span=Math.sqrt(target/.66);
     // Later levels grow downward instead of packing more, smaller columns
     // into the viewport. Keep the column rhythm of stage eight.
-    if(stage>8)return Math.max(3,Math.min(Math.floor(target/2),stageEightReference().cols));
+    if(stage>8){
+      const preferred=Math.max(3,Math.min(E.MAX_FLOOR_COLS,Math.floor(target/2),stageEightReference().cols));
+      for(let cols=preferred;cols<=E.MAX_FLOOR_COLS;cols++){
+        try{E.stackInfo(stage,cols);return cols;}
+        catch(error){if(!(error instanceof RangeError))throw error;}
+      }
+      return typical.cols;
+    }
     if(width<=20||height<=24)return typical.cols;
     const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=typical.layerCount>1?E.LAYER_OFFSET:0;
     const choices=[];
-    for(let cols=Math.max(3,Math.floor(span*.45));cols<=Math.min(Math.ceil(span*2.5),Math.ceil(target/2));cols++){
-      const info=E.stackInfo(stage,cols);
+    for(let cols=Math.max(3,Math.floor(span*.45));cols<=Math.min(E.MAX_FLOOR_COLS,Math.ceil(span*2.5),Math.ceil(target/2));cols++){
+      let info;
+      try{info=E.stackInfo(stage,cols);}
+      catch(error){if(error instanceof RangeError)continue;throw error;}
       const tile=fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount);
       const boardWidth=(cols+extra)*tile+(cols-1+extra)*gap+2*pad;
       const boardHeight=(info.rows+extra)*tile*1.19+(info.rows-1+extra)*gap+2*pad+4;
       const coverage=Math.max(0,boardWidth/width)*Math.max(0,boardHeight/height);
       choices.push({cols,extra:info.rows*cols-target,tile,coverage});
     }
+    if(!choices.length)return typical.cols;
     const largest=Math.max(...choices.map(choice=>choice.tile));
     if(!(largest>0))return typical.cols;
     // Use the largest tile size that keeps every floor inside the screen;
