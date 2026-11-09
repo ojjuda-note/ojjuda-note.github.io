@@ -6,7 +6,12 @@ const slot=read('official-gangwon-slot20.json'),base=read('restaurants.json'),sr
 const audit=JSON.parse(fs.readFileSync(path.join(root,'ops/restaurant-region-audit.json'),'utf8'));
 const all=[...base.restaurants,...fs.readdirSync(dir).filter(n=>/^official-.*\.json$/.test(n)).flatMap(n=>read(n).restaurants||[])];
 a.equal(slot.restaurants.length,5);a.ok(all.length>=3162);
-a.equal(new Set(all.map(x=>x.id)).size,all.length);
+// These eight previously displayed official listings now also live in the core catalog.
+// A repeated ID may occur only between the core catalog and this exact official sidecar.
+const seenIds = new Set(), repeatedIds = [];
+for (const item of all) { if (seenIds.has(item.id)) repeatedIds.push(item.id); seenIds.add(item.id); }
+a.deepEqual(repeatedIds.sort(), read('official-gyeonggi-slot12.json').restaurants.map(item => item.id).sort());
+a.equal(seenIds.size, src.coverage.uniqueRestaurants);
 a.deepEqual(slot.restaurants.map(x=>x.district),['삼척시','태백시','태백시','태백시','태백시']);
 a.deepEqual(slot.restaurants.map(x=>x.category),['한식','한식','한식','디저트','디저트']);
 for(const x of slot.restaurants){
