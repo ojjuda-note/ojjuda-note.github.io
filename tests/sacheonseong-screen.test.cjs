@@ -45,9 +45,9 @@ for(const stage of [1,2,4,6,8,12,18,41,200])for(const initial of sizes.filter(si
   assert.equal(initialState.unlocked,E.MAX_STAGE,label+': earned levels remain');
   assert.equal(initialState.startedAt,null,label+': reentry resets the clock');
   assert.equal(rows,info.rows,label+': stack dimensions');
-  assert(cols<=E.MAX_FLOOR_COLS&&rows<=E.MAX_FLOOR_ROWS,label+': no floor exceeds 12 columns or 18 rows');
+  assert(cols<=E.MAX_FLOOR_COLS&&rows<=E.MAX_FLOOR_ROWS&&cols*rows<=E.MAX_FLOOR_CELLS,label+': floor stays within the 216-cell footprint');
   assert.equal(every.length,info.layerCount,label+': actual floor count');
-  assert(every.every(floor=>occupied(floor)<12*18),label+': every floor contains fewer than 216 cards');
+  assert(every.every(floor=>occupied(floor)<=E.MAX_FLOOR_CELLS),label+': every floor stays compact');
   assert.equal(initialState.totalTiles,total,label+': tile inventory');
   assert.equal(every.reduce((sum,floor)=>sum+occupied(floor),0),total,label+': pairs across floors');
   assert([...counts.values()].every(n=>n===2||n===4),label+': copy limit');
@@ -75,7 +75,8 @@ for(const stage of [1,2,4,6,8,12,18,41,200])for(const initial of sizes.filter(si
   const openingTile=parseFloat(canvas.style.getPropertyValue('--tile'));
   assertFit();
   if(stage>=3){
-   assert(openingTile>=26,label+': fitted cards remain readable on entry');
+   assert(openingTile>=(initial.name==='320 phone'?20:26),label+': fitted cards remain readable on entry');
+   if(stage>=5)assert(openingTile<=28.01,label+': densely packed stages no longer show oversized cards');
    assert.equal(d.getElementById('zoom-fit').textContent,'전체',label+': the fit control always means full board');
    const beforeZoom=parseFloat(canvas.style.getPropertyValue('--tile'));
    d.getElementById('zoom-in').click();

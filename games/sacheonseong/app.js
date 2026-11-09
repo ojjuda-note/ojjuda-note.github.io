@@ -4,7 +4,7 @@
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,panHintDismissed=false;
-  const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14,MIN_PLAY_TILE=48;
+  const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14,MIN_PLAY_TILE=48,OVERVIEW_TILE_MAX=28;
   let stageEightViewport='',stageEightLayout=null;
   let purchaseBusy=false;
   let globalResult=null;
@@ -82,16 +82,6 @@
     const {size}=E.stageInfo(stage),viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight;
     if(stage<=2)return size;
     const typical=E.stackInfo(stage),target=Math.max(...typical.floors.map(floor=>floor.total)),span=Math.sqrt(target/.66);
-    // Later levels grow downward instead of packing more, smaller columns
-    // into the viewport. Keep the column rhythm of stage eight.
-    if(stage>8){
-      const preferred=Math.max(3,Math.min(E.MAX_FLOOR_COLS,Math.floor(target/2),stageEightReference().cols));
-      for(let cols=preferred;cols<=E.MAX_FLOOR_COLS;cols++){
-        try{E.stackInfo(stage,cols);return cols;}
-        catch(error){if(!(error instanceof RangeError))throw error;}
-      }
-      return typical.cols;
-    }
     if(width<=20||height<=24)return typical.cols;
     const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=typical.layerCount>1?E.LAYER_OFFSET:0;
     const choices=[];
@@ -99,7 +89,8 @@
       let info;
       try{info=E.stackInfo(stage,cols);}
       catch(error){if(error instanceof RangeError)continue;throw error;}
-      const tile=fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount);
+      const available=fittingTile(info.rows,cols,width,height,gap,pad,info.layerCount);
+      const tile=stage>=5?Math.min(OVERVIEW_TILE_MAX,available):available;
       const boardWidth=(cols+extra)*tile+(cols-1+extra)*gap+2*pad;
       const boardHeight=(info.rows+extra)*tile*1.19+(info.rows-1+extra)*gap+2*pad+4;
       const coverage=Math.max(0,boardWidth/width)*Math.max(0,boardHeight/height);
@@ -108,8 +99,9 @@
     if(!choices.length)return typical.cols;
     const largest=Math.max(...choices.map(choice=>choice.tile));
     if(!(largest>0))return typical.cols;
-    // Use the largest tile size that keeps every floor inside the screen;
-    // among equally large fits, prefer the board that fills more of it.
+    // More cards share the screen: prefer a readable ~28px card, then use
+    // the board shape that fills the available space best. Landscape may
+    // be wider than 12 columns; portrait may be taller than 18 rows.
     return choices.filter(choice=>choice.tile>=largest*.995).sort((a,b)=>b.coverage-a.coverage||a.extra-b.extra||b.tile-a.tile)[0].cols;
   }
   function sizeBoard(){
@@ -119,7 +111,7 @@
     const gap=n<=4?6:n<=10?3:2,pad=boardPadding(state.layerCount);
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
-    fitSize=fit;
+    fitSize=state.stage>=5?Math.min(OVERVIEW_TILE_MAX,fit):fit;
     // Fit the complete board on entry; zoom remains optional for closer inspection.
     const readable=state.stage>8?stageEightReference().size:Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
     // Stage-eight size is the starting point, not a hard zoom limit.

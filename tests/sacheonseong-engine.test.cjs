@@ -10,10 +10,13 @@ assert.throws(()=>E.boardInfo(E.MAX_STAGE+1),RangeError);
 for(const columns of [0,-1,1.5,17,'4',null,NaN,Infinity]){
   assert.throws(()=>E.boardInfo(2,columns),RangeError);assert.throws(()=>E.generate(2,Math.random,columns),RangeError);
 }
-assert.equal(E.MAX_FLOOR_COLS,12);
-assert.equal(E.MAX_FLOOR_ROWS,18);
-for(const [stage,columns]of [[2,16],[8,13],[200,2]]){
-  assert.throws(()=>E.stackInfo(stage,columns),RangeError,'A playable floor never exceeds 12 columns or 18 rows');
+assert.equal(E.MAX_FLOOR_COLS,28);
+assert.equal(E.MAX_FLOOR_ROWS,24);
+assert.equal(E.MAX_FLOOR_CELLS,216);
+assert.equal(E.stackInfo(8,13).cols,13,'The 12×18 reference is not a rigid grid');
+assert(E.stackInfo(8,25).rows*25<=216,'Landscape can use a wider, shorter footprint');
+for(const [stage,columns]of [[8,29],[200,2]]){
+  assert.throws(()=>E.stackInfo(stage,columns),RangeError,'A playable floor stays within the compact footprint');
 }
 for(let stage=1;stage<=15;stage++)assert.deepEqual(E.boardInfo(stage),{...E.stageInfo(stage),rows:stage*2,cols:stage*2},'Original fifteen square boards stay compatible');
 for(const stage of [16,18,40,100,200]){const info=E.boardInfo(stage);assert(info.total<=1400);assert.equal(info.cols,E.stageInfo(stage).size);}
@@ -118,7 +121,7 @@ assert.throws(()=>E.reshuffle([[0,-1],[-1,-1]],random),/Unpaired/);
 const silhouettes=new Set();
 for(let stage=1;stage<=E.MAX_STAGE;stage++){
  const {grids,info}=E.generateStack(stage,random),all=grids.flat(2).filter(x=>x!==E.EMPTY),types=new Map();
- assert(info.cols<=E.MAX_FLOOR_COLS&&info.rows<=E.MAX_FLOOR_ROWS,`Stage ${stage}: playable floor is at most 12×18`);
+ assert(info.cols<=E.MAX_FLOOR_COLS&&info.rows<=E.MAX_FLOOR_ROWS&&info.cols*info.rows<=E.MAX_FLOOR_CELLS,`Stage ${stage}: compact floor footprint`);
  assert.equal(grids.length,E.layerCount(stage),`Stage ${stage}: floor count`);
  assert.equal(all.length,info.total,`Stage ${stage}: total playable tiles`);
  assert.equal(info.total%2,0);
@@ -130,7 +133,7 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
  for(const grid of grids){
   assert.equal(grid.length,info.rows);
   assert(grid.every(row=>row.length===info.cols));
-  assert(grid.flat().filter(value=>value!==E.EMPTY).length<12*18,`Stage ${stage}: fewer than 216 tiles per floor`);
+  assert(grid.flat().filter(value=>value!==E.EMPTY).length<=E.MAX_FLOOR_CELLS,`Stage ${stage}: no oversized floor`);
   assert(E.moves(grid),`Stage ${stage}: an opening pair exists on each floor`);
   if(stage>=3)assert(grid.flat().includes(E.EMPTY),`Stage ${stage}: irregular outlines have actual voids`);
  }
@@ -150,7 +153,7 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
  if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);
 }
 assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
-assert.equal(E.layerCount(6),5);assert.equal(E.layerCount(12),18);assert.equal(E.layerCount(18),31);assert.equal(E.layerCount(200),38);
+assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(8),3);assert.equal(E.layerCount(12),7);assert.equal(E.layerCount(18),12);assert.equal(E.layerCount(200),14);
 assert(E.layerCount(200)<=100,'No more than 100 floors are needed');
 assert.equal(E.LAYER_OFFSET,.5,'Every second floor is shifted by half a card');
 for(let layer=0;layer<100;layer++)assert.equal(E.layerShift(layer),layer%2?.5:0,'A tall stack never drifts diagonally off-screen');

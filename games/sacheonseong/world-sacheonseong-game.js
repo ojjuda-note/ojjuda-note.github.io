@@ -68,7 +68,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
-   frame.src='/games/sacheonseong/index.html?v=20261109-sacheonseong-floor-cap1';
+   frame.src='/games/sacheonseong/index.html?v=20261109-sacheonseong-density-fit1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();
