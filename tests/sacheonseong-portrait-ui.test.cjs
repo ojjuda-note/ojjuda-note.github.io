@@ -163,6 +163,6 @@ async function screenshot(page,name){
    assert.deepEqual(errors,[],'matching, zoom and rotation cause no errors');
    await page.close();
   }finally{await context.close();}
-  console.log('PASS: denser 1–14 layer boards fit seven viewport sizes on entry; 200 stages, touch selection, zoom and rotation.');
+  console.log('PASS: 100-card 1–12 layer boards fit seven viewport sizes on entry; 200 stages, touch selection, zoom and rotation.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

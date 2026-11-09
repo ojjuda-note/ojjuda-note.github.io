@@ -1,7 +1,8 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 10, FACE_COUNT = 350;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 11, FACE_COUNT = 350;
+  const TILES_PER_FLOOR = 100;
   // 12×18 is a portrait density reference, not a forced shape. Landscape
   // boards can be wider as long as the full footprint stays compact.
   const MAX_FLOOR_COLS = 28, MAX_FLOOR_ROWS = 24, MAX_FLOOR_CELLS = 216;
@@ -37,9 +38,8 @@
   };
   const layerCount = stage => {
     const total=stageInfo(stage).total;
-    // Roughly three times as many pictures per floor as the sparse layout,
-    // without pushing later stages beyond the picture inventory limit.
-    return stage<=4?1:Math.min(100,Math.ceil(total/88));
+    // Full floors contain exactly 100 cards; the final floor holds the rest.
+    return Math.min(100,Math.ceil(total/TILES_PER_FLOOR));
   };
   // Reserve an uninterrupted horizontal and vertical passage, each at least
   // one card wide in the projected view. Every alternating floor respects
@@ -70,15 +70,7 @@
       if(info.rows>MAX_FLOOR_ROWS||info.rows*cols>MAX_FLOOR_CELLS)throw new RangeError('Floor footprint is too large');
       return {...info,layerCount:1,floors:[{total:info.total,...mixPlan(info.total)}]};
     }
-    // Alternate top-heavy and bottom-heavy stacks, rather than imposing a
-    // fixed number of tiles per floor. Each share remains a whole pair.
-    const weights=Array.from({length:count},(_,i)=>1+.28*Math.sin(stage*1.7+i*2.6)+.2*Math.cos(stage*.53-i*.83));
-    const totalWeight=weights.reduce((a,b)=>a+b,0),pairTotal=base.total/2;
-    const shares=weights.map(weight=>pairTotal*weight/totalWeight),pairs=shares.map(Math.floor);
-    const extraPairs=pairTotal-pairs.reduce((a,b)=>a+b,0);
-    const order=shares.map((share,i)=>({i,fraction:share-pairs[i]})).sort((a,b)=>b.fraction-a.fraction||a.i-b.i);
-    for(let i=0;i<extraPairs;i++)pairs[order[i].i]++;
-    const targets=pairs.map(value=>value*2);
+    const targets=Array.from({length:count},(_,i)=>Math.min(TILES_PER_FLOOR,base.total-i*TILES_PER_FLOOR));
     const biggest=Math.max(...targets),cols=columns??Math.min(MAX_FLOOR_COLS,Math.ceil(Math.sqrt(biggest/.66)));
     if(!Number.isInteger(cols)||cols<2||cols>MAX_FLOOR_COLS)throw new RangeError('Invalid stack columns');
     // Use the shortest footprint that still leaves clear crossing lanes.
@@ -361,7 +353,9 @@
        case 6: score=1-Math.abs(x-Math.sin(y*3.2)*.47)*.9-.12*Math.abs(y);break; // winding path
        default:score=1-Math.max(0,Math.abs(x)-(.4+.3*(Math.floor((y+1)*3)%2)))-.2*Math.abs(y); // castle
       }
-      cells.push({r,c,score:score+(random()-.5)*.045});
+      // Stable 100-card floors need a little more edge variation so their
+      // outlines do not all repeat the same eight silhouettes.
+      cells.push({r,c,score:score+(random()-.5)*.18});
     }
     cells.sort((a,b)=>b.score-a.score);
     const grid=Array.from({length:rows},()=>Array(cols).fill(EMPTY));
@@ -387,7 +381,7 @@
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,MAX_FLOOR_COLS,MAX_FLOOR_ROWS,MAX_FLOOR_CELLS,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,layerShift,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,TILES_PER_FLOOR,MAX_FLOOR_COLS,MAX_FLOOR_ROWS,MAX_FLOOR_CELLS,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,layerShift,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
