@@ -1,13 +1,21 @@
 {
-  "updatedAt": "2026-11-06",
-  "sourceName": "한국관광공사 지정 향토음식점·아산시 문화관광 공개 음식점 자료",
+  "updatedAt": "2026-11-10",
+  "sourceName": "한국관광공사 지정 향토음식점 · 아산시 문화관광 · 충청남도 공식 충남관광 음식점·백년가게 목록",
   "sourceUrls": [
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
-    "https://tour.asan.go.kr/tour/develop/m_food/"
+    "https://tour.asan.go.kr/tour/develop/m_food/",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=509",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=476",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=380",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=17",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=333",
+    "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
+    "https://tour.chungnam.go.kr/kor/sub02_01_01.do?category=04",
+    "https://qbh.purpleo.kr/article/230250"
   ],
-  "sourceScope": "한국관광공사 상세소개에서 천안시 향토음식점 지정 이력 1곳, 아산시 문화관광 공개 목록에서 수록된 음식점 4곳의 상호와 공개 주소 확인. 전체 지정/전체 블루리본 명단 확인 아님. 현 영업 상태 별도 미확인.",
-  "verificationLimit": "아산시 공식 사이트 직접 접근은 웹 방화벽으로 제한. 공개 검색에 색인된 공식 아산시 명단만 식당명/주소 교차 확인. 현재 영업·개별 선정연도는 확인되지 않았음. 방문 전 업소 확인 필요.",
-  "coordinatePolicy": "전 항목 위경도 null. 해당 식당·지점·현주소와 공개 좌표를 동일하게 검증하지 못해 추정 위치 금지. 개인 위치 미수집.",
+  "sourceScope": "2026-11-06 기존 천안·아산 5곳 보존. 2026-11-10 충남관광 공식 식당 상세 5곳(천안2·아산3)과 백년가게로 표시된 아산2곳을 추가. 상호·현 게시 주소만 수록. 먹거리순대 1곳은 정확한 상호·주소에 수치좌표가 붙은 공개자료와 공식 관광목록 대조 보강. 이 명단은 충남 전체 명단이나 블루리본 정규 선정 명단이 아님.",
+  "verificationLimit": "공식 음식점 수록은 엄격한 인증/선정과 구분. [백년가게] 표기는 출처의 안내 이력일 뿐 지정연도·현 지정 상태·현재 영업 상태 확인으로 확장하지 않음. 아산시 관광 자체 사이트 직접 접근 제한에 우회 없음. 한국관광공사·블루리본의 신규 정규 등급을 추측하지 않음.",
+  "coordinatePolicy": "먹거리순대 한 곳만 동일 상호·지점·도로명·건물번호를 공공 관광 공개 목록 및 수치좌표 공개자료로 교차 확인해 위치 보강. 나머지 식당은 정확히 일치하는 공개 수치좌표가 없어 null 유지. 좌표를 추정·지오코딩하거나 회원 개인 위치를 조회하지 않음.",
   "completeRegionalCollection": false,
   "restaurants": [
     {
@@ -17,8 +25,8 @@
       "region": "충남",
       "district": "천안시 동남구",
       "address": "충청남도 천안시 동남구 병천면 아우내순대길 27",
-      "lat": null,
-      "lng": null,
+      "lat": 36.760464,
+      "lng": 127.297854,
       "menu": [
         "모둠순대",
         "순대국밥"
@@ -42,7 +50,20 @@
         "https://trip.happynowinfo.com/place/699569/",
         "https://qbh.purpleo.kr/article/230250"
       ],
-      "phoneText": "041-564-2544"
+      "phoneText": "041-564-2544",
+      "coordinateSource": {
+        "name": "한국철도공사 공개장소 기록 수치좌표(공개 재게시) · 한국관광공사·충남관광 현재 공개 주소 교차 확인",
+        "url": "https://qbh.purpleo.kr/article/230250",
+        "method": "상호 먹거리순대·천안 동남구 병천면 아우내순대길27 일치, 명시된 위도/경도 채택. 원 좌표 기준연도 2020, 현 영업 여부 별도 검증 아님.",
+        "checkedAt": "2026-11-10",
+        "addressCrosscheckUrls": [
+          "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+          "https://tour.chungnam.go.kr/kor/sub02_01_01.do?category=04"
+        ]
+      },
+      "coordinateSourceUrl": "https://qbh.purpleo.kr/article/230250",
+      "coordinateSourceName": "철도역 인근 공개장소 원자료 재게시 수치좌표 · 공식 도로명주소 교차 확인",
+      "coordinateRetrievedAt": "2026-11-10"
     },
     {
       "id": "local-chungnam-slot25-asan-gamasot-dubu",
@@ -159,6 +180,217 @@
       "addressSourceUrl": "https://tour.asan.go.kr/tour/develop/m_food/",
       "addressSourceCheckedAt": "2026-11-06",
       "phoneText": "041-541-2545"
+    },
+    {
+      "id": "local-chungnam-c2s25-cheonan-girin-spicy-galbijjim",
+      "name": "기린더매운갈비찜",
+      "category": "한식",
+      "region": "충남",
+      "district": "천안시 서북구",
+      "address": "충청남도 천안시 서북구 불당16길 34-6",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "매운갈비찜"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=509",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 개별 식당 소개",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 음식점 소개에 이름·주소가 수록된 사실. 별도 수상이나 엄격한 선정·현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=509",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-cheonan-aunae-hanbang-sundae",
+      "name": "아우내한방순대",
+      "category": "한식",
+      "region": "충남",
+      "district": "천안시 동남구",
+      "address": "충청남도 천안시 동남구 병천면 아우내순대길 18",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "순대국밥",
+        "모둠순대"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=476",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 개별 식당 소개",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 음식점 소개에 이름·주소가 수록된 사실. 별도 수상이나 엄격한 선정·현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=476",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-asan-mosan-sujebi",
+      "name": "모산수제비",
+      "category": "분식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 모산로 148",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "들깨수제비",
+        "손칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=380",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 개별 식당 소개",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 음식점 소개에 이름·주소가 수록된 사실. 별도 수상이나 엄격한 선정·현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=380",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-asan-ompangjip",
+      "name": "옴팡집",
+      "category": "한식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 온주길16번길 29-4",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "추어탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=17",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 개별 식당 소개",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 음식점 소개에 이름·주소가 수록된 사실. 별도 수상이나 엄격한 선정·현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=17",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-asan-seocheon-oyster-kalguksu",
+      "name": "서천굴칼국수",
+      "category": "분식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 시민로244번길 7-11",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "굴칼국수",
+        "파전"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=333",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 개별 식당 소개",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 음식점 소개에 이름·주소가 수록된 사실. 별도 수상이나 엄격한 선정·현 영업을 뜻하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/view.do?rstNo=333",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-asan-hongkong-banjeom",
+      "name": "홍콩반점",
+      "category": "중식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 온천대로 1507",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 백년가게 표기",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 목록의 [백년가게] 표기. 지정연도·현재 지정 여부·영업 상태는 별도 확인하지 않았고 블루리본/미쉐린 선정은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-chungnam-c2s25-asan-supsok-eel",
+      "name": "숲속장어구이",
+      "category": "한식",
+      "region": "충남",
+      "district": "아산시",
+      "address": "충청남도 아산시 인주면 아산만로 1526",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "충남관광 백년가게 안내",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
+          "sourceName": "충청남도 공식 충남관광 음식점 목록 · 백년가게 표기",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "충남관광 공식 목록의 [백년가게] 표기. 지정연도·현재 지정 여부·영업 상태는 별도 확인하지 않았고 블루리본/미쉐린 선정은 아님."
+        }
+      ],
+      "addressSourceUrl": "https://tour.chungnam.go.kr/prog/rst/kor/sub02_03_02/list.do?pageIndex=43",
+      "addressSourceCheckedAt": "2026-11-10"
+    }
+  ],
+  "coordinateEvidence": [
+    {
+      "id": "local-chungnam-slot25-cheonan-meokgeori-sundae",
+      "name": "먹거리순대",
+      "currentAddress": "충청남도 천안시 동남구 병천면 아우내순대길 27",
+      "lat": 36.760464,
+      "lng": 127.297854,
+      "officialAddressUrl": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ed39ae46-8ed5-4ae1-8d36-8fc2be1adbdc",
+      "coordinateSourceUrl": "https://qbh.purpleo.kr/article/230250",
+      "publicCoordinateDataYear": 2020,
+      "checkedAt": "2026-11-10",
+      "operatingStatusVerified": false
     }
   ]
 }
