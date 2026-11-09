@@ -34,7 +34,7 @@
    const hasComments=typeof comments?.list==='function'&&typeof comments?.save==='function'&&typeof comments?.remove==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
    const ratingRequests=new Set(),commentRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261109-restaurants-c2s17-kto9-neunggol-location1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasComments?'&member-comments=1':'')+(owner&&hasComments?'&can-comment=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261110-restaurants-c2s18-gangwon-tourism4-location5&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasComments?'&member-comments=1':'')+(owner&&hasComments?'&can-comment=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();
