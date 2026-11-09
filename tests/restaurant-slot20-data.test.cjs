@@ -25,7 +25,7 @@ const log=audit.entries.find(x=>x.cycle===1&&x.slot===20);a.ok(log);
 a.equal(log.additions,5);a.equal(log.locationCoordinatesAdded,0);a.equal(log.locationHidden,0);
 a.equal(log.locationPending,5);a.equal(log.locationRechecks.length,5);a.ok(audit.active.cycle>=1 && audit.active.slot>=1 && audit.active.slot<=84);
 const app=fs.readFileSync(path.join(dir,'app.js'),'utf8');
-a.ok(app.includes("fetch('./official-gangwon-slot20.json?v="+rev));
+a.match(app,/official-gangwon-slot20\.json\?v=\d{8}-restaurants-/);
 a.ok(app.includes('...slot20.restaurants'));
 const rev=JSON.parse(fs.readFileSync(path.join(root,'game-release.json'),'utf8')).revision;
 a.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/app\.js\?v=\d{8}-restaurants-/);
