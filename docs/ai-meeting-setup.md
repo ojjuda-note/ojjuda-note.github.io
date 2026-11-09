@@ -12,7 +12,7 @@
 
 ## 운영 적용 전 체크리스트
 
-1. `supabase/migrations/20261109143000_admin_ai_meeting.sql`을 검토하고 기존 프로젝트에 적용한다.
+1. `supabase/migrations/20261109052631_admin_ai_meeting.sql`이 적용됐는지 확인한다.
 2. Supabase의 **Edge Functions → Secrets**에서 `OPENAI_API_KEY`를 설정한다. 키 값은 GitHub·브라우저 코드·대화에 넣지 않는다.
 3. `supabase/functions/ai-meeting/`을 `ai-meeting` Edge Function으로 배포한다. 함수의 JWT 검증을 유지한다.
 4. 정적 사이트에 `admin/meeting/index.html`, `features/ai-meeting/*`, `admin/app.js`를 배포한다.
