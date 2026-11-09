@@ -574,13 +574,13 @@
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
       const [response, supplementResponse, seoulResponse, northeastResponse, southwestResponse, southeastResponse, incheonResponse, incheonBResponse, gyeonggiResponse, seongnamResponse, goyangPajuResponse, bucheonGimpoResponse, gyeonggiSlot12Response, gyeonggiSlot13Response, guriSlot15Response, slot17Response, slot18Response, slot19Response, slot20Response, slot21Response, slot23Response, slot25Response, slot26Response, slot27Response, slot28Response, slot30Response, slot32Response, slot33Response, slot34Response, slot36Response, slot37Response, slot38Response, slot39Response, slot41MapResponse, slot44Response, slot45LocationResponse, slot47JejuResponse, slot48SeogwipoResponse, slot49GyeonggiResponse, slot50GangwonResponse, slot51ChungbukResponse, slot52ChungnamResponse, slot55GyeongbukResponse, slot56GyeongnamResponse, slot57JejuResponse, slot59Response, slot61Response, slot62Response, slot63Response, slot64Response, slot65Response, slot66Response, slot68Response, slot69Response, slot70Response, slot71Response, slot74Response, slot75Response, slot77Response, slot80Response, slot81Response, slot83Response] = await Promise.all([
-        fetch('./restaurants.json?v=20261109-restaurants-c2s03-seoul-oldshops15', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./restaurants.json?v=20261109-restaurants-c2s06-incheon-dedup-loc3', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-ulsan-tourism.json?v=20261105-restaurants-seoul1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-blue-ribbon.json?v=20261108-restaurants-slot58-seoulblue-2', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-northeast.json?v=20261109-restaurants-c2s02-seoulblue1-loc4', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-southwest.json?v=20261109-restaurants-c2s04-seoul-locations3', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seoul-visitseoul-southeast.json?v=20261109-restaurants-c2s05-gwanak-location1', { signal: controller.signal, cache: 'no-cache' }),
-         fetch('./official-incheon-itour-slot06.json?v=20261106-restaurants-incheon-slot06-1', { signal: controller.signal, cache: 'no-cache' }),
+         fetch('./official-incheon-itour-slot06.json?v=20261109-restaurants-c2s06-incheon-dedup-loc3', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-incheon-itour-slot07.json?v=20261106-restaurants-incheon-slot07-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeonggi-oldshops-slot08.json?v=20261106-restaurants-gyeonggi-slot08-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-seongnam-hipstores-slot09.json?v=20261106-restaurants-seongnam-slot09-1', { signal: controller.signal, cache: 'no-cache' }),
