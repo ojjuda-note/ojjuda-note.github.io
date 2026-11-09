@@ -9,7 +9,12 @@ const sidecars=fs.readdirSync(dir).filter(x=>/^official-.*\.json$/.test(x));
 const all=[...base.restaurants,...sidecars.flatMap(x=>file(x).restaurants||[])];
 a.equal(add.restaurants.length,8);
 a.ok(all.length>=3153);
-a.equal(new Set(all.map(x=>x.id)).size,all.length);
+// These eight previously displayed official listings now also live in the core catalog.
+// A repeated ID may occur only between the core catalog and this exact official sidecar.
+const seenIds = new Set(), repeatedIds = [];
+for (const item of all) { if (seenIds.has(item.id)) repeatedIds.push(item.id); seenIds.add(item.id); }
+a.deepEqual(repeatedIds.sort(), file('official-gyeonggi-slot12.json').restaurants.map(item => item.id).sort());
+a.equal(seenIds.size, sources.coverage.uniqueRestaurants);
 a.equal(add.restaurants.filter(x=>x.district==='춘천시').length,4);
 a.equal(add.restaurants.filter(x=>x.district==='원주시').length,4);
 for(const r of add.restaurants){
