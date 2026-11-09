@@ -83,6 +83,7 @@ test('idle is honestly shown when no request has been sent', async () => {
   const { getNode, called } = await harness();
   assert.equal(getNode('work-state').textContent, '현재 대기');
   assert.match(getNode('work-detail').textContent, /진행 중인 회의 요청이 없습니다/);
+  assert.match(getNode('messages').children[0].textContent, /첫 회의를 시작/);
   assert.equal(called.invoke, 0);
 });
 
