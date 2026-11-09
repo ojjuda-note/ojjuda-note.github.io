@@ -11,7 +11,7 @@ a.deepEqual(slot.restaurants.slice(0,5).map(x=>x.district),['삼척시','태백�
 a.deepEqual(slot.restaurants.slice(0,5).map(x=>x.category),['한식','한식','한식','디저트','디저트']);
 for(const x of slot.restaurants.slice(0,5)){
  a.equal(x.region,'강원');a.ok(x.address.startsWith('강원특별자치도 '+x.district+' '));
- a.equal(x.lat,null);a.equal(x.lng,null);a.equal(x.guides.length,1);
+ if(['엄마손태백물닭갈비','서울닭갈비'].includes(x.name)){a.ok(Number.isFinite(x.lat)&&Number.isFinite(x.lng));a.ok(x.coordinateSource?.url?.startsWith('https://'));} else {a.equal(x.lat,null);a.equal(x.lng,null);} a.equal(x.guides.length,1);
  a.equal(x.guides[0].provider,'local-guide');a.equal(x.guides[0].year,null);
  a.equal(x.guides[0].yearType,'listing');a.equal(x.guides[0].status,'official_tourism_partnership');
  a.ok(x.guides[0].sourceUrl.startsWith('https://korean.visitkorea.or.kr/dgtourcard/'));
