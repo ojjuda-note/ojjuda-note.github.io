@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-06",
+  "updatedAt": "2026-11-10",
   "sourceName": "충청북도 공식 밥맛좋은집 홍보자료",
   "sourceUrls": [
     "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
@@ -7,10 +7,11 @@
     "https://www.welfarehello.com/community/hometownNews/7a25c0f4-f035-4d8b-a684-b30c31b50a29"
   ],
   "coordinateEvidenceUrls": [
-    "https://fmr.purpleo.co.kr/view/29170"
+    "https://fmr.purpleo.co.kr/view/29170",
+    "https://hut.purpleo.kr/article/2636"
   ],
   "completeRegionalCollection": false,
-  "selectionScope": "청주시 공식 식당 소개 중 기존 목록에 없는 3곳만 추가. 밥맛좋은집 지정 이력과 현재 영업은 별개. 정규 블루리본 리본 수와 무관. 신규 3곳 중 25시가든 1곳의 주소·상호·공공데이터 원본 좌표를 검증; 다른 2곳은 위치 추정 금지.",
+  "selectionScope": "청주시 공식 홍보 자료에서 추가한 3곳의 선정 이력은 보존. 25시가든·효자촌묵집 2곳은 상호·도로명 일치 숫자좌표가 공개 확인됨. 콩가내의 숫자좌표는 아직 확인되지 않아 null 유지. 현재 영업 여부와 정규 리본 등급은 별도.",
   "restaurants": [
     {
       "id": "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
@@ -19,8 +20,8 @@
       "region": "충북",
       "district": "청주시",
       "address": "충청북도 청주시 상당구 남일면 단재로 469",
-      "lat": null,
-      "lng": null,
+      "lat": 36.589364,
+      "lng": 127.507563,
       "menu": [
         "묵밥",
         "묵정식"
@@ -39,7 +40,14 @@
         }
       ],
       "addressSourceUrl": "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33",
-      "addressSourceCheckedAt": "2026-11-06"
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSource": {
+        "name": "식당명·도로명주소 일치 공개 상가정보 위경도(공공데이터 재게시)",
+        "url": "https://hut.purpleo.kr/article/2636",
+        "method": "공식 선정/수록 자료와 동일 상호·지점·현재 도로명·건물번호, 공개 상가업소 기록의 개별 수치좌표 교차 대조. 인근 임의 위치 또는 사용자 위치 미사용.",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33"
+      }
     },
     {
       "id": "local-chungbuk-slot23-cheongju-kongganae",
@@ -105,5 +113,14 @@
         "checkedAt": "2026-11-06"
       }
     }
-  ]
+  ],
+  "coordinateEnrichment20261110": {
+    "checkedAt": "2026-11-10",
+    "restaurantId": "local-chungbuk-slot23-cheongju-hyojachon-mukjip",
+    "name": "효자촌묵집",
+    "lat": 36.589364,
+    "lng": 127.507563,
+    "coordinateSourceUrl": "https://hut.purpleo.kr/article/2636",
+    "officialSelectionSourceUrl": "https://www.welfarehello.com/community/hometownNews/deac2f04-f330-45ca-84e0-3ba35c00df33"
+  }
 }
