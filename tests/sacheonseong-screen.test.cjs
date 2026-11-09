@@ -14,7 +14,9 @@ const sizes=[
 ];
 const occupied=grid=>grid.flat().filter(value=>value!==E.EMPTY).length;
 let cases=0;
-for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const initial of sizes){
+// Keep full DOM render checks representative; the engine suite covers all 200
+// stages, while high-floor boards multiply browser nodes in each JSDOM case.
+for(const stage of [1,2,4,6,8,12,18,41,200])for(const initial of sizes.filter(size=>size.name!=='open foldable')){
  const dom=new JSDOM(html,{url:'https://example.test/games/sacheonseong/index.html',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,d=w.document,label='stage '+stage+', '+initial.name;
  try{
@@ -62,30 +64,23 @@ for(const stage of [1,2,3,4,5,6,7,10,11,12,15,16,18,26,41,71,111,200])for(const 
   const assertFit=()=>{
    const css=canvas.style,tile=parseFloat(css.getPropertyValue('--tile')),gap=parseFloat(css.getPropertyValue('--gap')),pad=parseFloat(css.getPropertyValue('--pad'));
    assert(tile>0,label+': positive tile size');
-   const extra=(info.layerCount-1)*E.LAYER_OFFSET;
+   const extra=info.layerCount>1?E.LAYER_OFFSET:0;
    assert((cols+extra)*tile+(cols-1+extra)*gap+pad*2<=width+.1,label+': all floors fit width');
    assert((rows+extra)*tile*1.19+(rows-1+extra)*gap+pad*2+4<=height+.1,label+': all floors fit height');
    assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'true');
    assert.equal(d.getElementById('board-pan-tip').hidden,true,label+': no scrolling hint in full-screen view');
   };
   const openingTile=parseFloat(canvas.style.getPropertyValue('--tile'));
-  if(stage>=3){
-   assert(openingTile>=47.99,label+': enlarged cards are readable on entry');
-   d.getElementById('zoom-fit').click();
-  }
   assertFit();
-  if(stage>8&&openingTile>parseFloat(canvas.style.getPropertyValue('--tile'))+.01){
-   assert.equal(d.getElementById('zoom-fit').textContent,'크게',label+': the overview offers a one-tap return to readable cards');
-   d.getElementById('zoom-fit').click();
-   assert.equal(d.getElementById('zoom-fit').getAttribute('aria-pressed'),'false');
-   assert(parseFloat(canvas.style.getPropertyValue('--tile'))>=openingTile-.01,label+': stage-eight tile size is restored');
-   assert.equal(d.getElementById('zoom-out').disabled,false,label+': zoom-out stays usable above stage eight');
+  if(stage>=3){
+   assert(openingTile>=26,label+': fitted cards remain readable on entry');
+   assert.equal(d.getElementById('zoom-fit').textContent,'전체',label+': the fit control always means full board');
    const beforeZoom=parseFloat(canvas.style.getPropertyValue('--tile'));
    d.getElementById('zoom-in').click();
    const enlarged=parseFloat(canvas.style.getPropertyValue('--tile'));
-   assert(enlarged>beforeZoom,label+': plus enlarges advanced-stage cards');
+   assert(enlarged>beforeZoom,label+': plus enlarges cards');
    d.getElementById('zoom-out').click();
-   assert(parseFloat(canvas.style.getPropertyValue('--tile'))<enlarged,label+': minus shrinks advanced-stage cards');
+   assert(parseFloat(canvas.style.getPropertyValue('--tile'))<enlarged,label+': minus shrinks cards');
    d.getElementById('zoom-fit').click();assertFit();
   }
   const move=E.exposedMoves(every);assert(move,label+': has an uncovered legal move');

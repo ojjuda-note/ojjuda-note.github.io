@@ -95,7 +95,7 @@ for(const stage of [2,7])test(`reopening completed stage ${stage} preserves its 
 test('final-stage completion never advances beyond stage 200',()=>{
  let f=fixture({stage:200}),saved,records;try{f.match();f.run(120);f.run(1000);assert.equal(f.state().stage,200);assert.equal(f.sent.length,1);assert.match(f.d.getElementById('win-title').textContent,/모두 완성/);assert.equal(f.d.getElementById('next').disabled,true);f.d.getElementById('next').click();assert.equal(f.state().stage,200);assert.equal(f.d.getElementById('completion').hidden,false);assert.equal(f.d.getElementById('previous-level').disabled,false);assert.equal(f.d.getElementById('current-level').disabled,false);saved=f.state();records=f.records();}finally{f.close();}
  f=fixture({saved,records});try{
-  assert.equal(f.state().stage,200);assert.equal(f.state().totalTiles,1200);assert.equal(f.state().layerCount,8);assert.equal(f.state().upcoming.length,7);
+  assert.equal(f.state().stage,200);assert.equal(f.state().totalTiles,1200);assert.equal(f.state().layerCount,E.layerCount(200));assert.equal(f.state().upcoming.length,E.layerCount(200)-1);
   assert.equal(f.state().grid.flat().filter(v=>v!==E.EMPTY).length+f.state().upcoming.flat(2).filter(v=>v!==E.EMPTY).length,1200);
   assert.ok(f.state().grid.every(row=>row.length===f.state().grid[0].length));
   assert.equal(f.state().startedAt,null);assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);
@@ -115,12 +115,12 @@ test('a layered round allows exposed pairs on any floor and finishes only when a
  };
  try{
   const total=E.stageInfo(7).total;
-  assert.equal(remaining(),total);assert.equal(f.state().layerCount,2);assert.equal(f.state().upcoming.length,1);
+  assert.equal(remaining(),total);assert.equal(f.state().layerCount,E.layerCount(7));assert.equal(f.state().upcoming.length,E.layerCount(7)-1);
   assert.ok(f.state().grid.flat().some(value=>value===E.EMPTY),'irregular floors leave visible gaps');
   assert.equal(f.d.getElementById('remaining').textContent,`${total} / ${total}`);
   assert.equal(f.d.querySelectorAll('.tile:not(.empty)').length,total,'All layers reveal their actual tile faces');
   for(let pair=1;pair<total/2;pair++){matchNext();assert.equal(remaining(),total-2*pair);assert.equal(f.sent.length,0);}
-  assert.equal(f.state().upcoming.length,1,'Lower floors stay in their original offset throughout the round');
+  assert.equal(f.state().upcoming.length,E.layerCount(7)-1,'Lower floors stay in their original offset throughout the round');
   assert.equal(f.state().finishedMs,null);assert.equal(f.d.getElementById('completion').hidden,true);assert.equal(f.d.getElementById('remaining').textContent,`2 / ${total}`);
   matchNext();assert.equal(remaining(),0);assert.equal(f.d.getElementById('remaining').textContent,`0 / ${total}`);assert.equal(f.d.getElementById('completion').hidden,false);
   assert.equal(f.sent.length,1);assert.equal(f.sent[0].stage,7);assert.equal(f.sent[0].rulesVersion,E.RULES_VERSION);assert.equal(f.records()[7].length,2);assert.deepEqual(f.records()[7].find(record=>record.id===previous.id),previous);assert.equal(f.state().unlocked,8);

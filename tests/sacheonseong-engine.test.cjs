@@ -128,11 +128,12 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
   if(stage>=3)assert(grid.flat().includes(E.EMPTY),`Stage ${stage}: irregular outlines have actual voids`);
  }
  if(stage>=3){
-  const midR=Math.floor((info.rows-1+(info.layerCount-1)*E.LAYER_OFFSET)/2);
-  const midC=Math.floor((info.cols-1+(info.layerCount-1)*E.LAYER_OFFSET)/2);
+  const extra=info.layerCount>1?E.LAYER_OFFSET:0;
+  const midR=Math.floor((info.rows-1+extra)/2);
+  const midC=Math.floor((info.cols-1+extra)/2);
   grids.forEach((grid,layer)=>grid.forEach((row,r)=>row.forEach((value,c)=>{
    if(value===E.EMPTY)return;
-   const shift=layer*E.LAYER_OFFSET;
+   const shift=E.layerShift(layer);
    if(info.rows>=4)assert(Math.abs(r+shift-midR)>=1,`Stage ${stage}: horizontal card-width passage stays clear across floors`);
    if(info.cols>=4)assert(Math.abs(c+shift-midC)>=1,`Stage ${stage}: vertical card-width passage stays clear across floors`);
   })));
@@ -142,8 +143,10 @@ for(let stage=1;stage<=E.MAX_STAGE;stage++){
  if([1,5,6,10,11,12,15,16,18,26,41,71,111,200].includes(stage))for(const grid of grids)playToEnd(grid);
 }
 assert(silhouettes.size>150,'Procedural silhouettes create many distinct layouts across 200 stages');
-assert.equal(E.layerCount(6),2);assert.equal(E.layerCount(12),3);assert.equal(E.layerCount(18),4);assert.equal(E.layerCount(200),8);
-assert.equal(E.LAYER_OFFSET,.5,'Each higher tile is centered between four tiles on the floor below');
+assert.equal(E.layerCount(6),4);assert.equal(E.layerCount(12),14);assert.equal(E.layerCount(18),24);assert.equal(E.layerCount(200),29);
+assert(E.layerCount(200)<=100,'No more than 100 floors are needed');
+assert.equal(E.LAYER_OFFSET,.5,'Every second floor is shifted by half a card');
+for(let layer=0;layer<100;layer++)assert.equal(E.layerShift(layer),layer%2?.5:0,'A tall stack never drifts diagonally off-screen');
 const stackedTop=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
 stackedTop[1][1]=9;stackedTop[3][3]=9;
 const stackedBottom=Array.from({length:4},()=>Array(4).fill(E.EMPTY));
@@ -176,9 +179,9 @@ assert.deepEqual(E.exposedMoves(ghostStack)?.a,shirtA,'Hints recognize the open 
 const crossingTop=Array.from({length:5},()=>Array(5).fill(9));
 crossingTop[2]=[7,E.EMPTY,E.EMPTY,E.EMPTY,7];crossingTop[3][2]=crossingTop[3][3]=E.EMPTY;
 const crossingMiddle=Array.from({length:5},()=>Array(5).fill(E.EMPTY));
-const crossingBottom=Array.from({length:5},()=>Array(5).fill(E.EMPTY));crossingBottom[1][1]=8;
+const crossingBottom=Array.from({length:5},()=>Array(5).fill(E.EMPTY));crossingBottom[2][2]=8;
 const crossingStack=[crossingTop,crossingMiddle,crossingBottom],acrossA={layer:0,r:2,c:0},acrossB={layer:0,r:2,c:4};
-assert(E.isExposed(crossingStack,{layer:2,r:1,c:1}),'The aligned tile on another floor is exposed');
+assert(E.isExposed(crossingStack,{layer:2,r:2,c:2}),'The aligned tile on another floor is exposed');
 assert(E.path(crossingTop,acrossA,acrossB),'The old single-floor test missed an overlapping card');
 assert.equal(E.visiblePath(crossingStack,acrossA,acrossB),null,'The actual view blocks that misleading connection');
 const detourTop=Array.from({length:5},()=>Array(5).fill(E.EMPTY));detourTop[2][0]=detourTop[2][4]=7;

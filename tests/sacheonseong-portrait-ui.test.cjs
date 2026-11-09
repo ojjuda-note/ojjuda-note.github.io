@@ -73,7 +73,8 @@ async function screenshot(page,name){
      const {page,errors}=await openPage(context,stage);
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
-      assert(value.tile.width>=47.99,`${label}: large cards are readable on entry`);
+      assertFits(value,`${label}: all cards fit on entry`);
+      assert(value.tile.width>=26,`${label}: cards remain readable on entry`);
       if(stage>8){
        assert.equal(await page.locator('#zoom-out').isEnabled(),true,`${label}: minus is enabled`);
        await page.locator('#zoom-in').click();
@@ -84,13 +85,7 @@ async function screenshot(page,name){
       }
       await page.locator('#zoom-fit').click();
       assertFits(await layout(page),`${label}: whole-board button`);
-      if(stage>8&&value.fit==='false'){
-       assert.equal(await page.locator('#zoom-fit').innerText(),'크게',`${label}: direct return to stage-eight-size cards`);
-       await page.locator('#zoom-fit').click();
-       assert((await layout(page)).tile.width>=value.tile.width-.1,`${label}: large cards return without repeated zoom taps`);
-       await page.locator('#zoom-fit').click();
-       assertFits(await layout(page),`${label}: whole-board view remains available`);
-      }
+      assert.equal(await page.locator('#zoom-fit').innerText(),'전체',`${label}: full-view control is unambiguous`);
       assert.equal(value.state.layerCount,E.layerCount(stage),`${label}: expected floors`);
       assert.equal(value.visibleFloors,E.layerCount(stage),`${label}: all layers show real tile faces`);
       assert.equal(value.buttons,value.rows*value.cols*value.visibleFloors,`${label}: every layer renders its grid`);
@@ -118,8 +113,8 @@ async function screenshot(page,name){
   try{
    await routeFiles(context);const {page,errors}=await openPage(context,7);
    const initial=await layout(page);
-   assert(initial.tile.width>=47.99,'stage 7 starts with large, touchable cards');
-   await page.locator('#zoom-fit').click();assertFits(await layout(page),'stage 7 whole-board view');
+   assertFits(initial,'stage 7 starts fully visible');
+   await page.locator('#zoom-in').click();
    for(let i=0;i<12&&(await layout(page)).tile.width<47.99;i++)await page.locator('#zoom-in').click();
    assert((await layout(page)).tile.width>=47.99,'zoom gives a comfortable touch size when needed');
    assert.equal((await layout(page)).fit,'false','enlarged level can be panned');
@@ -166,6 +161,6 @@ async function screenshot(page,name){
    assert.deepEqual(errors,[],'matching, zoom and rotation cause no errors');
    await page.close();
   }finally{await context.close();}
-  console.log('PASS: irregular 2–8 layer boards fit seven viewport sizes; 200 stages, mixed pairs/quads, touch selection, zoom and rotation.');
+  console.log('PASS: compact 1–29 layer boards fit seven viewport sizes on entry; 200 stages, touch selection, zoom and rotation.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

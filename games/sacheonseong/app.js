@@ -66,10 +66,10 @@
   function clearSelection(){selected=null;hints=[];$('connection').replaceChildren();document.querySelectorAll('.tile.selected,.tile.hinted').forEach(b=>{b.classList.remove('selected','hinted');b.setAttribute('aria-pressed','false');});}
   function cell(p){return document.querySelector(`[data-layer="${p.layer??0}"][data-r="${p.r}"][data-c="${p.c}"]`);}
   function fittingTile(rows,cols,width,height,gap,pad=8,layerCount=1){
-    const extra=(layerCount-1)*E.LAYER_OFFSET;
+    const extra=layerCount>1?E.LAYER_OFFSET:0;
     return Math.min((width-2*pad-(cols-1+extra)*gap)/(cols+extra),(height-2*pad-4-(rows-1+extra)*gap)/((rows+extra)*1.19));
   }
-  const boardPadding=layerCount=>8+2*(layerCount-1);
+  const boardPadding=()=>8;
   function stageEightReference(){
     const viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight,key=`${width}x${height}`;
     if(stageEightLayout&&key===stageEightViewport)return stageEightLayout;
@@ -86,7 +86,7 @@
     // into the viewport. Keep the column rhythm of stage eight.
     if(stage>8)return Math.max(3,Math.min(Math.floor(target/2),stageEightReference().cols));
     if(width<=20||height<=24)return typical.cols;
-    const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=(typical.layerCount-1)*E.LAYER_OFFSET;
+    const gap=size<=10?3:2,pad=boardPadding(typical.layerCount),extra=typical.layerCount>1?E.LAYER_OFFSET:0;
     const choices=[];
     for(let cols=Math.max(3,Math.floor(span*.45));cols<=Math.min(Math.ceil(span*2.5),Math.ceil(target/2));cols++){
       const info=E.stackInfo(stage,cols);
@@ -110,23 +110,21 @@
     // Fit both axes, including the outside connection lane and tile shadows.
     const fit=Math.max(1,Math.floor(fittingTile(rows,cols,available,height,gap,pad,state.layerCount)*100)/100);
     fitSize=fit;
-    // Start with readable cards and card-width walkways. The '전체' control
-    // still fits every floor into one screen when the player wants an overview.
+    // Fit the complete board on entry; zoom remains optional for closer inspection.
     const readable=state.stage>8?stageEightReference().size:Math.min(72,Math.max(MIN_PLAY_TILE,fitSize*1.35));
     // Stage-eight size is the starting point, not a hard zoom limit.
     const size=overview?fitSize:Math.max(fitSize,customSize??readable);
     if(size<=fitSize+.01){overview=true;customSize=null;}
-    const el=$('board-canvas'),extra=(state.layerCount-1)*E.LAYER_OFFSET;
+    const el=$('board-canvas'),extra=state.layerCount>1?E.LAYER_OFFSET:0;
     el.style.setProperty('--tile',`${size}px`);el.style.setProperty('--gap',`${gap}px`);el.style.setProperty('--pad',`${pad}px`);el.style.setProperty('--n',cols);el.style.setProperty('--rows',rows);el.classList.toggle('overview',overview);el.classList.toggle('small-tiles',size<34);
     const board=$('board');board.style.width=`${(cols+extra)*size+(cols-1+extra)*gap}px`;board.style.height=`${(rows+extra)*size*1.19+(rows-1+extra)*gap}px`;
     board.querySelectorAll('.tile-layer').forEach(layer=>{
       const index=Number(layer.dataset.layer);
-      layer.style.left=`${index*E.LAYER_OFFSET*(size+gap)}px`;
-      layer.style.top=`${index*E.LAYER_OFFSET*(size*1.19+gap)}px`;
+      layer.style.left=`${E.layerShift(index)*(size+gap)}px`;
+      layer.style.top=`${E.layerShift(index)*(size*1.19+gap)}px`;
     });
     const fitButton=$('zoom-fit');fitButton.setAttribute('aria-pressed',String(overview));
-    fitButton.textContent=overview&&state.stage>8&&readable>fitSize+.01?'크게':'전체';
-    fitButton.setAttribute('aria-label',fitButton.textContent==='크게'?'8단계 카드 크기로 보기':'게임판 전체 보기');
+    fitButton.textContent='전체';fitButton.setAttribute('aria-label','게임판 전체 보기');
     $('zoom-out').disabled=false;
     $('board-pan-tip').hidden=overview||panHintDismissed;
     $('connection').replaceChildren();
@@ -160,7 +158,7 @@
     });$('board').replaceChildren(frag);sizeBoard();
   }
   function draw(route,soft=false,layer=0){
-    const canvas=$('board-canvas'),style=canvas.style,pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=parseFloat(style.getPropertyValue('--tile')),h=w*1.19,rows=state.grid.length,cols=state.grid[0].length,shift=layer*E.LAYER_OFFSET;
+    const canvas=$('board-canvas'),style=canvas.style,pad=parseFloat(style.getPropertyValue('--pad')),gap=parseFloat(style.getPropertyValue('--gap')),w=parseFloat(style.getPropertyValue('--tile')),h=w*1.19,rows=state.grid.length,cols=state.grid[0].length,shift=E.layerShift(layer);
     const coords=route.map(p=>({x:pad+(p.c+shift)*(w+gap)+w/2,y:pad+(p.r+shift)*(h+gap)+h/2}));
     // The outside lane follows the board's visible padding, independent of tile size.
     coords.forEach((p,i)=>{const r=route[i].r,c=route[i].c;if(r<0)p.y=pad/2+shift*(h+gap);if(c<0)p.x=pad/2+shift*(w+gap);if(r>=rows)p.y=pad+(rows+shift)*h+(rows-1+shift)*gap+pad/2;if(c>=cols)p.x=pad+(cols+shift)*w+(cols-1+shift)*gap+pad/2;});
@@ -187,19 +185,18 @@
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
   function render(){
     window.OjjudaSacheonseongOnline?.stage(state.stage);
-    $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 어긋나 쌓여 있어요. 윗패와 겹치지 않은 같은 그림을 연결하세요. 큰 판은 밀어서 이동할 수 있고 전체 버튼으로 한눈에 볼 수 있어요.`);
+    $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 반 칸씩 번갈아 쌓여 있어요. 모든 패가 한 화면에 맞춰 보이며, 필요하면 확대할 수 있어요.`);
     $('status').textContent=state.layerCount>1?'카드 한 장 너비의 빈 통로를 따라 연결하세요. 큰 판은 밀어서 볼 수 있어요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
     renderBoard();updateStats();restoreHint();syncTools();
   }
   function newStage(stage,pendingPurchase=null){
     globalResult=null;
-    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=stage<=2;panHintDismissed=false;
+    stage=Math.min(E.MAX_STAGE,Math.max(1,stage));cancelRemovals();clearSelection();$('completion').hidden=true;$('next').disabled=true;locked=false;customSize=null;overview=true;panHintDismissed=false;
     // Fix the shape for this attempt; rotation only changes the drawing size.
     const {grids,info}=E.generateStack(stage,Math.random,boardColumns(stage));
     state={runId:newPurchaseId(),rulesVersion:E.RULES_VERSION,stage,grid:grids[0],upcoming:grids.slice(1),floor:0,layerCount:info.layerCount,totalTiles:info.total,unlocked:Math.min(E.MAX_STAGE,Math.max(state?.unlocked||1,stage)),startedAt:null,finishedMs:null,penaltyMs:0,sound:state?.sound||false,hints:0,shuffles:0,lastRecord:null,...(pendingPurchase?{pendingPurchase}:{})};save();render();
-    // With enlarged cards, open near the crossing passage rather than the
-    // empty corner. The whole-board button still returns to the fitted view.
+    // The entire stack is visible immediately; enlargement is a user choice.
     const viewport=$('board-scroll');
     viewport.scrollTop=overview?0:Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
     viewport.scrollLeft=overview?0:Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
@@ -360,7 +357,7 @@
   $('next').onclick=()=>chooseCompletedLevel(1);
   $('all-stages').onclick=openStages;
   $('ranking').onclick=()=>openRanking();
-  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>카드 한 장 너비의 빈 통로와 바깥 여백을 이용하세요. 보이는 다른 패를 가로지를 수는 없어요.</small></li><li>층이 반 칸씩 어긋나 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 윗패와 겹치지 않은 아랫패는 먼저 연결할 수 있고, 윗패를 치우면 가려진 패가 열려요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>큰 패로 시작해요. 판을 손가락으로 밀어 이동하거나 ＋와 두 손가락으로 확대할 수 있어요. 전체를 누르면 모든 패를 한 화면에서 볼 수 있어요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
+  $('help').onclick=()=>{showModal('<div class="eyebrow">사천성</div><h2 id="modal-title">이렇게 연결해요.</h2><ol><li>같은 그림의 패 두 개를 누르세요.<small>같은 그림은 한 판에 최대 4개! 한 번 더 누르면 선택이 풀려요.</small></li><li>가로·세로로, 두 번까지만 꺾어요.<small>카드 한 장 너비의 빈 통로와 바깥 여백을 이용하세요. 보이는 다른 패를 가로지를 수는 없어요.</small></li><li>층이 반 칸씩 번갈아 쌓여요.<small>윗패 한 장이 아래의 네 장을 가릴 수 있어요. 층수가 많아도 카드 크기는 작아지지 않도록 배치해요.</small></li></ol><p>힌트는 한 번에 3쭈, 직접 섞기는 10쭈예요. 연결할 패가 없을 때 자동으로 섞는 것은 무료예요.</p><p>처음에는 모든 패를 한 화면에 맞춰 보여요. ＋와 두 손가락으로 확대하면 판을 밀어서 볼 수 있고, 전체를 누르면 다시 한 화면에 보여요.</p><p>첫 패를 누르면 시간 측정이 시작돼요. 그림이 다르거나 연결할 수 없는 짝을 고를 때마다 경과 시간과 완료 기록에 10초가 더해져요. 오락실 순위는 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 정해요. 힌트·섞기를 누르거나 다른 탭을 보는 동안에도 시간은 흘러요. 마지막으로 하던 레벨은 자동 저장돼요. 게임을 나갔다 다시 열면 그 레벨에서 새 판을 시작해요.</p><button class="next-button" id="help-ok">알겠어요, 연결해볼게요</button>');$('help-ok').onclick=()=>$('modal').close();};
   $('sound').onclick=()=>{state.sound=!state.sound;save();$('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);if(state.sound)sound('tap');};
   $('modal-close').onclick=()=>$('modal').close();$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const rect=$('modal').getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)$('modal').close();}});
   $('options-open').onclick=()=>$('options').showModal();
@@ -431,13 +428,7 @@
     if(!event.ctrlKey||$('modal').open||$('options').open)return;
     event.preventDefault();zoomBoard(tileSize()*Math.exp(-event.deltaY*.01),event.clientX,event.clientY);
   },{passive:false});
-  $('zoom-fit').onclick=()=>{
-    if(overview&&state.stage>8&&stageEightReference().size>fitSize+.01){
-      overview=false;customSize=null;sizeBoard();
-      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
-      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
-    }else{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;}
-  };
+  $('zoom-fit').onclick=()=>{overview=true;customSize=null;sizeBoard();viewport.scrollLeft=0;viewport.scrollTop=0;};
   $('zoom-in').onclick=()=>zoomBoard(tileSize()+Math.max(6,tileSize()*.2));
   $('zoom-out').onclick=()=>zoomBoard(tileSize()-Math.max(6,tileSize()*.2));
   window.addEventListener('resize',sizeBoard);

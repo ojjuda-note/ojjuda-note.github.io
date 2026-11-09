@@ -1,9 +1,11 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 7, FACE_COUNT = 350;
-  // Each upper tile sits across the four tile centers directly below it.
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 8, FACE_COUNT = 350;
+  // Alternate half-cell offsets instead of shifting each successive floor
+  // farther down and right. Even a 100-floor stack stays inside one footprint.
   const LAYER_OFFSET = .5;
+  const layerShift = layer => layer % 2 ? LAYER_OFFSET : 0;
   // Reserve roughly one seventh of all tiles for picture pairs; the rest
   // appear four times. At the inventory ceiling, fall back to four copies.
   function mixPlan(total) {
@@ -31,21 +33,22 @@
     return {stage,size:stage<=15?stage*2:Math.ceil(Math.sqrt(total)),total,typeCount:mixPlan(total).typeCount};
   };
   const layerCount = stage => {
-    stageInfo(stage);
-    return stage<6?1:stage<11?2:stage<16?3:stage<26?4:stage<41?5:stage<71?6:stage<111?7:8;
+    const total=stageInfo(stage).total;
+    return stage<=4?1:Math.min(100,Math.ceil(total/42));
   };
   // Reserve an uninterrupted horizontal and vertical passage, each at least
-  // one card wide in the projected view. Every floor respects the same
-  // physical lanes even though successive floors shift by half a cell.
+  // one card wide in the projected view. Every alternating floor respects
+  // the same physical lanes.
   function walkwayCenter(rows,cols,count){
-    return {r:Math.floor((rows-1+(count-1)*LAYER_OFFSET)/2),c:Math.floor((cols-1+(count-1)*LAYER_OFFSET)/2)};
+    const extra=count>1?LAYER_OFFSET:0;
+    return {r:Math.floor((rows-1+extra)/2),c:Math.floor((cols-1+extra)/2)};
   }
   function walkwayOpen(rows,cols,count,layer,r,c){
-    const mid=walkwayCenter(rows,cols,count),shift=layer*LAYER_OFFSET;
+    const mid=walkwayCenter(rows,cols,count),shift=layerShift(layer);
     return (rows<4||Math.abs(r+shift-mid.r)>=1)&&(cols<4||Math.abs(c+shift-mid.c)>=1);
   }
   function walkwayCapacity(rows,cols,count,layer){
-    const mid=walkwayCenter(rows,cols,count),shift=layer*LAYER_OFFSET;
+    const mid=walkwayCenter(rows,cols,count),shift=layerShift(layer);
     let allowedRows=0,allowedCols=0;
     for(let r=0;r<rows;r++)if(rows<4||Math.abs(r+shift-mid.r)>=1)allowedRows++;
     for(let c=0;c<cols;c++)if(cols<4||Math.abs(c+shift-mid.c)>=1)allowedCols++;
@@ -147,7 +150,7 @@
     const layer=point?.layer, r=point?.r, c=point?.c;
     if(!Number.isInteger(layer)||layer<0||layer>=grids.length||!Number.isInteger(r)||!Number.isInteger(c)||grids[layer]?.[r]?.[c]===undefined||grids[layer][r][c]===EMPTY)return false;
     for(let above=0;above<layer;above++){
-      const grid=grids[above],shift=(layer-above)*LAYER_OFFSET;
+      const grid=grids[above],shift=layerShift(layer)-layerShift(above);
       const centerR=r+shift,centerC=c+shift;
       for(let ar=Math.floor(centerR);ar<=Math.ceil(centerR);ar++){
         for(let ac=Math.floor(centerC);ac<=Math.ceil(centerC);ac++){
@@ -165,7 +168,7 @@
     const obstacles=[];
     const masks=grids.map((grid,layer)=>grid.map((row,r)=>row.map((value,c)=>{
       if(value===EMPTY||!isExposed(grids,{layer,r,c}))return EMPTY;
-      const shift=layer*LAYER_OFFSET;
+      const shift=layerShift(layer);
       obstacles.push({layer,r,c,x:c+shift,y:r+shift});
       return value;
     })));
@@ -174,7 +177,7 @@
   function routeAvoidsTiles(route,layer,obstacles,a,b) {
     // Half-offset floors leave a thin green seam at +/-0.5 of a cell.
     // Treat that seam as open, but never cross another tile's interior.
-    const shift=layer*LAYER_OFFSET,margin=.498;
+    const shift=layerShift(layer),margin=.498;
     const points=route.map(p=>({x:p.c+shift,y:p.r+shift}));
     for(const tile of obstacles){
       if(tile.layer===layer&&(same(tile,a)||same(tile,b)))continue;
@@ -298,6 +301,31 @@
         return result;
       }
     }
+    // A tall stack can occasionally leave isolated faces on each floor with
+    // no geometrically connectable pair, even after shuffling pictures. Move
+    // one existing pair into neighboring free cells of the highest occupied
+    // floor. This rare emergency repair preserves every face and floor count.
+    const original=copy(result[top]),groups=new Map();
+    for(let r=0;r<original.length;r++)for(let c=0;c<original[r].length;c++){
+      const face=original[r][c];if(face===EMPTY)continue;
+      if(!groups.has(face))groups.set(face,[]);
+      groups.get(face).push({r,c});
+    }
+    for(const [face,donors] of groups){
+      if(donors.length<2)continue;
+      const [first,second]=donors;
+      const movable=(r,c)=>original[r]?.[c]===EMPTY||(r===first.r&&c===first.c)||(r===second.r&&c===second.c);
+      for(let r=0;r<original.length;r++)for(let c=0;c<original[r].length;c++){
+        if(!movable(r,c))continue;
+        for(const [dr,dc] of [[0,1],[1,0]]){
+          const nr=r+dr,nc=c+dc;if(!movable(nr,nc))continue;
+          result[top]=copy(original);
+          result[top][first.r][first.c]=result[top][second.r][second.c]=EMPTY;
+          result[top][r][c]=result[top][nr][nc]=face;
+          if(visiblePath(result,{layer:top,r,c},{layer:top,r:nr,c:nc}))return result;
+        }
+      }
+    }
     throw new Error('No connectable visible positions');
   }
   const SHAPES=['hourglass','cross','ring','steps','islands','diamond','zigzag','castle'];
@@ -345,7 +373,7 @@
     for(const value of grid.flat())if(value!==EMPTY){counts.set(value,(counts.get(value)||0)+1);if(counts.get(value)>MAX_COPIES)return false;}
     return [...counts.values()].every(n=>n%2===0);
   }
-  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
+  const api={EMPTY,MAX_STAGE,MAX_COPIES,RULES_VERSION,FACE_COUNT,LAYER_OFFSET,layerShift,SHAPES,stageInfo,layerCount,stackInfo,boardInfo,withinCopyLimit,path,visiblePath,moves,isExposed,exposedMoves,generate,generateStack,reshuffle,recoverVisibleStack,copy};
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
   else root.TileGarden=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
