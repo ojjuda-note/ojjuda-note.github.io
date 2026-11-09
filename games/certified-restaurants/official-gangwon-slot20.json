@@ -1,15 +1,17 @@
 {
-  "updatedAt": "2026-11-06",
-  "sourceName": "한국관광공사 대한민국 구석구석 · 디지털 관광주민증",
+  "updatedAt": "2026-11-10",
+  "sourceName": "한국관광공사 대한민국 구석구석·디지털 관광주민증 / 속초시·태백시 관광 공식 명단",
   "sourceUrls": [
     "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=9445e758-ea11-4189-b860-a413cd1db036",
     "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
     "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
     "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7929f684-180c-11ef-b16c-0242ac130002",
-    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002"
+    "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
+    "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+    "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model"
   ],
   "completeRegionalCollection": false,
-  "selectionScope": "삼척 1곳·태백 4곳 KTO 관광주민증 식음료 제휴 확인. 속초 공식 자료 조회 실패로 신규 미확정. 정규 가이드 선정·현재 영업 미확인. 공개 좌표 근거 없음.",
+  "selectionScope": "기존 KTO 관광주민증 삼척1·태백4 및 이번 속초시 2026 모범(으뜸) 명단 일부 8·태백시 모범(으뜸) 명단 일부 7건. 현재 영업·개별 선정연도·정규 블루리본/미쉐린 등급은 별도이며 3개 시 전체 전수 미완료.",
   "restaurants": [
     {
       "id": "local-gangwon-slot20-samcheok-nolbu-jokbal",
@@ -47,8 +49,8 @@
       "region": "강원",
       "district": "태백시",
       "address": "강원특별자치도 태백시 황지연못길 9",
-      "lat": null,
-      "lng": null,
+      "lat": 37.1724007602283,
+      "lng": 128.990099204734,
       "menu": [
         "물닭갈비"
       ],
@@ -66,7 +68,13 @@
         }
       ],
       "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7968bcd9-180c-11ef-b16c-0242ac130002",
-      "addressSourceCheckedAt": "2026-11-06"
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSource": {
+        "name": "공개 사업장별 좌표 · 동일 상호와 현재 도로명주소 교차 확인",
+        "url": "https://tkw.purpleo.kr/article/486",
+        "method": "exact-name-and-road-address-public-poi",
+        "checkedAt": "2026-11-10"
+      }
     },
     {
       "id": "local-gangwon-slot20-taebaek-seoul-dakgalbi",
@@ -75,8 +83,8 @@
       "region": "강원",
       "district": "태백시",
       "address": "강원특별자치도 태백시 장성1길 190",
-      "lat": null,
-      "lng": null,
+      "lat": 37.1006814645582,
+      "lng": 129.009714763844,
       "menu": [
         "물닭갈비"
       ],
@@ -94,7 +102,13 @@
         }
       ],
       "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=796037ca-180c-11ef-b16c-0242ac130002",
-      "addressSourceCheckedAt": "2026-11-06"
+      "addressSourceCheckedAt": "2026-11-06",
+      "coordinateSource": {
+        "name": "공개 사업장별 좌표 · 동일 상호와 현재 도로명주소 교차 확인",
+        "url": "https://tkw.purpleo.kr/article/665",
+        "method": "exact-name-and-road-address-public-poi",
+        "checkedAt": "2026-11-10"
+      }
     },
     {
       "id": "local-gangwon-slot20-taebaek-greenhorn",
@@ -151,6 +165,446 @@
       ],
       "addressSourceUrl": "https://korean.visitkorea.or.kr/dgtourcard/biz/mbrb/mbrbPtcl.do?mbrbId=7922bfe6-180c-11ef-b16c-0242ac130002",
       "addressSourceCheckedAt": "2026-11-06"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-gamja-ongsimi",
+      "name": "감자옹심이",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 번영로105번길 30-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "감자옹심이",
+        "감자전"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-gobau-salt-grill",
+      "name": "고바우왕소금생구이",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 엑스포로 37",
+      "lat": 38.191032,
+      "lng": 128.587092,
+      "menu": [
+        "왕소금생구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSource": {
+        "name": "공개 사업장별 좌표 · 동일 상호와 현재 도로명주소 교차 확인",
+        "url": "https://smi.purpleo.kr/article/3666",
+        "method": "exact-name-and-road-address-public-poi",
+        "checkedAt": "2026-11-10"
+      }
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-gulhyang",
+      "name": "굴향",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 먹거리4길 5",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "굴국밥",
+        "굴보쌈"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-gubtak",
+      "name": "굽탁",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 엑스포로1길 35",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-palace-seafood",
+      "name": "궁중해물",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 먹거리6길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생선찜",
+        "해물탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-palace-haejangguk",
+      "name": "궁중해장국",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 관광로 447",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "해장국"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-grieoon-boribap",
+      "name": "그리운보리밥",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 법대로 34",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보리비빔밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-sokcho-geumine-goat",
+      "name": "금이네염소탕",
+      "category": "한식",
+      "region": "강원",
+      "district": "속초시",
+      "address": "강원특별자치도 속초시 선사로5길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "염소탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "속초시 2026 모범(으뜸)음식점 공식 명단",
+          "year": 2026,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+          "sourceName": "속초시청 · 속초관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://www.sokcho.go.kr/ct/tour/pleasure/restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-tofu-myeongga",
+      "name": "태백두부명가",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 태백산로 4859",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "두부전골",
+        "순두부"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-obok-samgyetang",
+      "name": "오복누룽지삼계탕",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 대학길 72 A동",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼계탕",
+        "백숙"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-gangsan-makguksu",
+      "name": "강산막국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 소도길 39-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "막국수",
+        "수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-hyundai-silbi",
+      "name": "현대실비",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 시장남1길 7-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우 등심",
+        "육회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-mizzi",
+      "name": "미찌",
+      "category": "양식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 서학로 1111",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "돈가스"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-miju-kalguksu",
+      "name": "미주칼국수",
+      "category": "한식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 먹거리1길 17-1",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gangwon-c2s20-taebaek-italian-house",
+      "name": "이태리집",
+      "category": "양식",
+      "region": "강원",
+      "district": "태백시",
+      "address": "강원특별자치도 태백시 번영로 262",
+      "lat": 37.1663637852091,
+      "lng": 128.986394818086,
+      "menu": [
+        "피자",
+        "파스타"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "태백시 모범(으뜸)음식점 공식 명단",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+          "sourceName": "태백시청 · 태백관광 공식 음식점 명단",
+          "verifiedAt": "2026-11-10",
+          "status": "official_listing",
+          "selectionCriteria": "해당 지자체의 모범(으뜸)음식점 명단 수록 사실로, 개별 선정연도·미쉐린 또는 블루리본 정규 등급·현재 영업 상태를 뜻하지 않습니다."
+        }
+      ],
+      "addressSourceUrl": "https://tour.taebaek.go.kr/tour/story/taste/happy_etc_restaurant/model",
+      "addressSourceCheckedAt": "2026-11-10",
+      "coordinateSource": {
+        "name": "공개 사업장별 좌표 · 동일 상호와 현재 도로명주소 교차 확인",
+        "url": "https://irc.purpleo.kr/article/1075",
+        "method": "exact-name-and-road-address-public-poi",
+        "checkedAt": "2026-11-10"
+      }
     }
   ]
 }
