@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-11-08",
+  "updatedAt": "2026-11-10",
   "sourceName": "대전광역시 대전의 맛 3대·30년 인증 전통업소",
   "sourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=165",
   "completeRegionalCollection": false,
-  "selectionScope": "시청 공식 인증업소 6곳(웹페이지 진로집 중복 노출 제외) 중 기존 성심당의 이력을 병합하고 누락 5곳만 신규. 정규 블루리본/미쉐린 등급 아님. 선정 연도 및 현 영업 미확인. 공개 일치 좌표 2곳만 반영.",
+  "selectionScope": "시청 공식 인증업소 6곳(웹페이지 진로집 중복 노출 제외) 중 기존 성심당의 이력을 병합하고 누락 5곳만 신규. 정규 블루리본/미쉐린 등급 아님. 선정 연도 및 현 영업 미확인. 공개 일치 좌표 2곳만 반영. 2순환21회차: 대전시 2026년10월 공식 시민추천 맛집 책자 수록 6곳(대덕3·동1·서1·유성1)을 별도 기록, 정규 리본·미쉐린 수상과 구분. 업소별 수치좌표·현 영업 미확정, 전체 수록 완결 아님.",
   "restaurants": [
     {
       "id": "local-daejeon-traditional-jinrojip",
@@ -384,6 +384,189 @@
       "addressSourceUrl": "https://www.daejeon.go.kr/fod/fodTraditionList.do?menuSeq=161&pt=tradition&searchAdG=ADG05",
       "addressSourceCheckedAt": "2026-11-08",
       "phoneText": "042-226-8686"
+    },
+    {
+      "id": "local-daejeon-c2s21-daedeok-hongguli",
+      "name": "홍굴이부추손칼국수",
+      "category": "한식",
+      "region": "대전",
+      "district": "대덕구",
+      "address": "대전광역시 대덕구 선비마을로5번길 3",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "홍굴이부추칼국수",
+        "쭈꾸미덮밥",
+        "콩국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page93.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page93.html",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-daejeon-c2s21-daedeok-hwanggeum",
+      "name": "황금칼국수",
+      "category": "한식",
+      "region": "대전",
+      "district": "대덕구",
+      "address": "대전광역시 대덕구 대전로 1357",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짬뽕칼국수",
+        "짬뽕수제비",
+        "바지락칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page94.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page94.html",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-daejeon-c2s21-daedeok-piljjamppong",
+      "name": "필짬뽕",
+      "category": "중식",
+      "region": "대전",
+      "district": "대덕구",
+      "address": "대전광역시 대덕구 한남로137번길 43",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짬뽕",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page121.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page121.html",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-daejeon-c2s21-yuseong-solbatmuk",
+      "name": "솔밭묵집",
+      "category": "한식",
+      "region": "대전",
+      "district": "유성구",
+      "address": "대전광역시 유성구 관평로 43, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "채묵",
+        "보리밥",
+        "묵무침"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page99.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page99.html",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-daejeon-c2s21-donggu-pungmidang",
+      "name": "풍미당",
+      "category": "한식",
+      "region": "대전",
+      "district": "동구",
+      "address": "대전광역시 동구 선화로196번길 80, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "얼큰민물새우칼국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page91.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page91.html",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-daejeon-c2s21-seogu-galma-jjamppong",
+      "name": "갈마짬뽕",
+      "category": "중식",
+      "region": "대전",
+      "district": "서구",
+      "address": "대전광역시 서구 월평동로 5-11, 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "갈마짬뽕",
+        "삼선짬뽕",
+        "탕수육"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "2026 대전시 시민추천 맛집 책자 수록",
+          "year": 2026,
+          "yearType": "publication",
+          "sourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page113.html",
+          "sourceName": "대전광역시 식의약안전과 · 오늘도 대전에서 잘 먹었습니다(2026년 10월)",
+          "sourceAsOf": "2026-10",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "대전시 2026년10월 발행 시민추천 음식점 책자 수록 이력. 정규 미쉐린·블루리본 선정 또는 현재 영업 증명 아님."
+        }
+      ],
+      "addressSourceUrl": "https://ebook.ebooknara.com/2026/1008/files/basic-html/page113.html",
+      "addressSourceCheckedAt": "2026-11-10"
     }
   ],
   "guideEnrichments": [
@@ -431,5 +614,50 @@
       "https://findby.co.kr/details/34973-301403165035-st-652b3a518c641f9e389bf1b0"
     ],
     "operatingStatusNotVerified": true
+  },
+  "sourceUrls": [
+    "https://www.daejeon.go.kr/fod/index.do",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/index.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page93.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page94.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page121.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page99.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page91.html",
+    "https://ebook.ebooknara.com/2026/1008/files/basic-html/page113.html"
+  ],
+  "cycle2Slot21Supplement": {
+    "cycle": 2,
+    "slot": 21,
+    "checkedAt": "2026-11-10",
+    "publicationAsOf": "2026-10",
+    "publisher": "대전광역시 식의약안전과",
+    "sourceUrl": "https://www.daejeon.go.kr/fod/index.do",
+    "addedCount": 6,
+    "updatedCount": 0,
+    "coordinateAdded": 0,
+    "locationsExcluded": 0,
+    "coordinatesPending": 6,
+    "restaurantIds": [
+      "local-daejeon-c2s21-daedeok-hongguli",
+      "local-daejeon-c2s21-daedeok-hwanggeum",
+      "local-daejeon-c2s21-daedeok-piljjamppong",
+      "local-daejeon-c2s21-yuseong-solbatmuk",
+      "local-daejeon-c2s21-donggu-pungmidang",
+      "local-daejeon-c2s21-seogu-galma-jjamppong"
+    ],
+    "sourceUrls": [
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page93.html",
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page94.html",
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page121.html",
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page99.html",
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page91.html",
+      "https://ebook.ebooknara.com/2026/1008/files/basic-html/page113.html"
+    ],
+    "completeRegionalCollection": false,
+    "operatingStatusVerified": 0,
+    "blueRibbonGradeVerified": 0,
+    "conflictsDeferred": [
+      "숯골원조냉면식당: 시청 책자 신성로121과 기존 전통업소 명단 신성로122 주소 다름. 정확 주소 판정 보류."
+    ]
   }
 }
