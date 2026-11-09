@@ -1,13 +1,13 @@
 (function (root) {
   'use strict';
   const EMPTY = -1;
-  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 11, FACE_COUNT = 350;
-  const TILES_PER_FLOOR = 100;
+  const MAX_STAGE = 200, MAX_COPIES = 4, RULES_VERSION = 12, FACE_COUNT = 350;
+  const TILES_PER_FLOOR = 150;
   // 12×18 is a portrait density reference, not a forced shape. Landscape
   // boards can be wider as long as the full footprint stays compact.
   const MAX_FLOOR_COLS = 28, MAX_FLOOR_ROWS = 24, MAX_FLOOR_CELLS = 216;
   // Alternate half-cell offsets instead of shifting each successive floor
-  // farther down and right. Even a 100-floor stack stays inside one footprint.
+  // farther down and right. Even a tall stack stays inside one footprint.
   const LAYER_OFFSET = .5;
   const layerShift = layer => layer % 2 ? LAYER_OFFSET : 0;
   // Reserve roughly one seventh of all tiles for picture pairs; the rest
@@ -38,7 +38,7 @@
   };
   const layerCount = stage => {
     const total=stageInfo(stage).total;
-    // Full floors contain exactly 100 cards; the final floor holds the rest.
+    // Full floors contain exactly 150 cards; the final floor holds the rest.
     return Math.min(100,Math.ceil(total/TILES_PER_FLOOR));
   };
   // Reserve an uninterrupted horizontal and vertical passage, each at least
@@ -353,7 +353,7 @@
        case 6: score=1-Math.abs(x-Math.sin(y*3.2)*.47)*.9-.12*Math.abs(y);break; // winding path
        default:score=1-Math.max(0,Math.abs(x)-(.4+.3*(Math.floor((y+1)*3)%2)))-.2*Math.abs(y); // castle
       }
-      // Stable 100-card floors need a little more edge variation so their
+      // Stable 150-card floors need a little more edge variation so their
       // outlines do not all repeat the same eight silhouettes.
       cells.push({r,c,score:score+(random()-.5)*.18});
     }

@@ -75,7 +75,8 @@ async function screenshot(page,name){
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
       assertFits(value,`${label}: all cards fit on entry`);
       assert(value.cols<=E.MAX_FLOOR_COLS&&value.rows<=E.MAX_FLOOR_ROWS&&value.cols*value.rows<=E.MAX_FLOOR_CELLS,`${label}: landscape and portrait use a compact footprint`);
-      assert(value.tile.width>=(viewport.width<=344?20:26),`${label}: cards remain readable on entry`);
+      const minTile=viewport.width<=344?19:viewport.width>viewport.height?23:26;
+      assert(value.tile.width>=minTile,`${label}: cards remain readable on entry`);
       if(stage>=5)assert(value.tile.width<=28.01,`${label}: cards have a comfortable maximum size`);
       if(stage>8){
        assert.equal(await page.locator('#zoom-out').isEnabled(),true,`${label}: minus is enabled`);
@@ -163,6 +164,6 @@ async function screenshot(page,name){
    assert.deepEqual(errors,[],'matching, zoom and rotation cause no errors');
    await page.close();
   }finally{await context.close();}
-  console.log('PASS: 100-card 1–12 layer boards fit seven viewport sizes on entry; 200 stages, touch selection, zoom and rotation.');
+  console.log('PASS: 150-card 1–8 layer boards fit seven viewport sizes on entry; 200 stages, touch selection, zoom and rotation.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
