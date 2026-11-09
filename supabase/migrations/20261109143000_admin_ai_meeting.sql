@@ -78,3 +78,26 @@ create policy ai_meeting_files_owner_cleanup on storage.objects
     and (select public.is_admin())
     and split_part(name, '/', 1) = (select auth.uid())::text
   );
+
+-- Existing Ojjuda storage policies contain permissive cross-bucket rules.
+-- These RESTRICTIVE guards prevent any such policy from exposing this bucket.
+-- Conditions for all other buckets remain unchanged.
+create policy ai_meeting_files_read_isolation on storage.objects
+  as restrictive for select to public
+  using (bucket_id <> 'ai-meeting-files' or (select public.is_admin()));
+create policy ai_meeting_files_upload_isolation on storage.objects
+  as restrictive for insert to public
+  with check (
+    bucket_id <> 'ai-meeting-files'
+    or ((select public.is_admin()) and split_part(name, '/', 1) = (select auth.uid())::text)
+  );
+create policy ai_meeting_files_delete_isolation on storage.objects
+  as restrictive for delete to public
+  using (
+    bucket_id <> 'ai-meeting-files'
+    or ((select public.is_admin()) and split_part(name, '/', 1) = (select auth.uid())::text)
+  );
+create policy ai_meeting_files_update_isolation on storage.objects
+  as restrictive for update to public
+  using (bucket_id <> 'ai-meeting-files')
+  with check (bucket_id <> 'ai-meeting-files');
