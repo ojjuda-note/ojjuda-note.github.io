@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-06",
+  "updatedAt": "2026-11-09",
   "sourceUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
   "sourceName": "경기관광공사 경기노포 57선 공식 선정",
   "completeRegionalCollection": false,
@@ -40,8 +40,8 @@
       "region": "경기",
       "district": "수원시",
       "address": "경기도 수원시 팔달구 팔달문로3번길 37",
-      "lat": null,
-      "lng": null,
+      "lat": 37.279319,
+      "lng": 127.017635,
       "menu": [
         "곱창구이"
       ],
@@ -59,7 +59,13 @@
           "selectionCriteria": "경기관광공사 공식 57선에 2024년 선정으로 기재. 현 영업과 재지정 여부는 따로 확인이 필요합니다."
         }
       ],
-      "addressSourceUrl": "https://www.koobig.com/93794"
+      "addressSourceUrl": "https://www.koobig.com/93794",
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상가정보 공개 업소 위치",
+        "url": "https://smi.purpleo.kr/article/7750",
+        "method": "named-business-coordinate-address-crosscheck",
+        "checkedAt": "2026-11-09"
+      }
     },
     {
       "id": "local-ggtour-oldshops2024-suwon-song-otdak",
@@ -68,8 +74,8 @@
       "region": "경기",
       "district": "수원시",
       "address": "경기도 수원시 권선구 정조로 423",
-      "lat": null,
-      "lng": null,
+      "lat": 37.247188,
+      "lng": 127.013277,
       "menu": [
         "옻닭"
       ],
@@ -87,7 +93,13 @@
           "selectionCriteria": "경기관광공사 공식 57선에 2024년 선정으로 기재. 현 영업과 재지정 여부는 따로 확인이 필요합니다."
         }
       ],
-      "addressSourceUrl": "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629"
+      "addressSourceUrl": "https://www.tabling.co.kr/place/677cc9eb66de5f06987a2629",
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상가정보 공개 업소 위치",
+        "url": "https://smi.purpleo.kr/article/5878",
+        "method": "named-business-coordinate-address-crosscheck",
+        "checkedAt": "2026-11-09"
+      }
     }
   ],
   "notes": [
@@ -95,5 +107,45 @@
     "수원 영화루는 공식 선정 자체는 확인되나 현재 주소가 서로 달라 추가 보류.",
     "화성시 모범음식점 명단만으로 미식 선정이라고 간주하지 않음.",
     "검증된 업소별 위경도는 확보하지 못해 좌표 null."
-  ]
+  ],
+  "coordinateVerifiedCount": 2,
+  "cycle2Slot8": {
+    "cycle": 2,
+    "slot": 8,
+    "checkedAt": "2026-11-09",
+    "locationEnrichmentCount": 2,
+    "verifiedLocations": [
+      {
+        "id": "local-ggtour-oldshops2024-suwon-ipjujip",
+        "name": "입주집",
+        "currentAddress": "경기도 수원시 팔달구 팔달문로3번길 37",
+        "region": "경기도 수원시",
+        "lat": 37.279319,
+        "lng": 127.017635,
+        "publicNamedBusinessCoordinateUrl": "https://smi.purpleo.kr/article/7750",
+        "officialGuideUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "officialAddressCrosscheckUrl": null,
+        "checkedAt": "2026-11-09",
+        "result": "상호·지점·도로명 주소가 일치하는 공개 상가업소 좌표 확인. 영업 여부는 미확인."
+      },
+      {
+        "id": "local-ggtour-oldshops2024-suwon-song-otdak",
+        "name": "송할머니 옻닭집",
+        "currentAddress": "경기도 수원시 권선구 정조로 423",
+        "region": "경기도 수원시",
+        "lat": 37.247188,
+        "lng": 127.013277,
+        "publicNamedBusinessCoordinateUrl": "https://smi.purpleo.kr/article/5878",
+        "officialGuideUrl": "https://ggtour.or.kr/gto/notice/notice/7795d5b3-bcdc-4180-8e59-26fab6f82329?page=0&type=NOTI_NOTICE",
+        "officialAddressCrosscheckUrl": null,
+        "checkedAt": "2026-11-09",
+        "result": "상호·지점·도로명 주소가 일치하는 공개 상가업소 좌표 확인. 영업 여부는 미확인."
+      }
+    ],
+    "unresolved": [
+      "호남순대 지동시장 A동 5호는 건물 중심점만 확인되어 좌표 미등록 유지",
+      "영화루 주소 충돌로 신규 등록 보류"
+    ],
+    "note": "2023·2024 과거 선정 이력, 상호·주소·ID 유지. 현 영업 확인 아님."
+  }
 }
