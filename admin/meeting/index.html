@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="robots" content="noindex,nofollow">
+  <title>AI 전략 회의실 | 오쭈다 관리자</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/features/ai-meeting/style.css?v=20261109-1">
+  <script src="/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/features/ai-meeting/app.js?v=20261109-1" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="오쭈다 홈"><span class="brand-symbol">✦</span>오쭈다 <span>ADMIN</span></a>
+    <nav aria-label="관리 메뉴"><a href="/admin/?admin=overview">관리자 대시보드</a><a href="/">홈으로</a></nav>
+  </header>
+  <main id="main" class="container">
+    <div id="guard" class="guard" role="status" aria-live="polite">관리자 권한을 확인하고 있어요…</div>
+    <div id="room" hidden>
+      <div class="page-heading">
+        <div><span class="eyebrow"><span class="status-dot" aria-hidden="true"></span> 관리자 전용 공간</span><h1>AI 전략 회의실</h1><p>대표와 AI 본부장, 전문 담당 AI가 함께 이야기하는 곳입니다.</p></div>
+        <span class="private-badge">비공개 · 관리자만</span>
+      </div>
+      <div class="layout">
+        <aside class="sidebar" aria-label="AI 조직 구성">
+          <div class="side-title"><span>AI 조직도</span><span class="member-count">7개 역할</span></div>
+          <div class="lead-person"><span class="avatar director">본</span><div><strong>AI 총괄본부장</strong><small>전체 사업·프로젝트 지휘</small></div><span class="lead-tag">총괄</span></div>
+          <div class="side-section-label">전문 담당팀</div>
+          <ul class="roster">
+            <li><span class="avatar growth">성</span><span><strong>회원성장 AI</strong><small>회원 유치·가입·재방문</small></span></li>
+            <li class="nested"><span class="avatar marketing">마</span><span><strong>마케팅 AI</strong><small>성장팀 소속 · 홍보·콘텐츠</small></span></li>
+            <li><span class="avatar quality">품</span><span><strong>품질안정 AI</strong><small>오류·충돌·테스트</small></span></li>
+            <li><span class="avatar ux">U</span><span><strong>UX AI</strong><small>직관적인 사용 흐름</small></span></li>
+            <li><span class="avatar platform">플</span><span><strong>플랫폼운영 AI</strong><small>서버·API·트래픽</small></span></li>
+            <li><span class="avatar design">디</span><span><strong>디자인 AI</strong><small>전문적인 시각 디자인</small></span></li>
+          </ul>
+          <div class="side-notice"><strong>회의 운영 원칙</strong><p>AI 답변은 역할별 의견·제안입니다. 실제 배포, 광고비 지출, 외부 연락은 대표 승인과 별도 실행이 필요합니다.</p></div>
+        </aside>
+
+        <section class="chat-card" aria-labelledby="chat-title">
+          <div class="chat-header"><div><h2 id="chat-title">전체 회의실</h2><p>AI 본부장이 회의를 조율합니다</p></div><button id="refresh" type="button" class="subtle-button" aria-label="대화 새로고침">새로고침</button></div>
+          <div class="messages" id="messages" role="log" aria-label="회의 대화 기록" aria-live="off"><div class="empty">대화를 불러오는 중입니다…</div></div>
+          <div class="composer">
+            <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+            <div id="retry-box" class="retry-box" hidden><span>AI 답변을 받지 못했어요.</span><button id="retry" type="button">다시 요청</button></div>
+            <div id="file-preview" class="file-preview" hidden></div>
+            <div class="compose-top"><label for="target">응답 요청</label><select id="target" aria-label="응답할 AI 선택"><option value="all">전체 회의 · 본부장과 관련 팀</option><option value="director">AI 총괄본부장</option><option value="growth">회원성장 AI</option><option value="marketing">마케팅 AI</option><option value="quality">품질안정 AI</option><option value="ux">UX AI</option><option value="platform">플랫폼운영 AI</option><option value="design">디자인 AI</option></select></div>
+            <label for="message" class="sr-only">회의 메시지 입력</label>
+            <textarea id="message" maxlength="4000" rows="3" placeholder="예: 이번 주 회원을 늘리기 위한 우선 과제를 정해줘."></textarea>
+            <div class="compose-bottom"><div class="attachment"><label for="file" class="attach-button">파일 첨부</label><input id="file" type="file" accept=".pdf,.txt,.png,.jpg,.jpeg,application/pdf,text/plain,image/png,image/jpeg"><span class="file-hint">PDF·TXT·이미지 / 최대 8MB</span></div><button id="send" type="button" class="send-button">회의에 보내기 <span aria-hidden="true">↗</span></button></div>
+            <p class="compose-footnote">대화 내용은 AI 답변을 위해 OpenAI API로 전송됩니다. 첨부파일은 관리자끼리 공유되며 AI가 파일 내용까지 자동으로 읽지는 않습니다.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
