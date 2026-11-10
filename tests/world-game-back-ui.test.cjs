@@ -153,16 +153,19 @@ window.childReady=true;
       await arcade();
 
       // A shared game URL returns to Arcade and loses its game-only query after exit.
-      await page.goto(origin+'/world.html?game=stacker&challenge=1&score=100&keep=yes');
-      await page.waitForFunction(()=>window.backFixture&&history.state?.ojjudaWorld==='menu');
-      await page.evaluate(()=>backFixture.open('stacker'));
-      assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
-      await back();
-      await arcade();
-      const returned=new URL(page.url());
+      const shared=await context.newPage();
+      await shared.goto(origin+'/world.html?game=stacker&challenge=1&score=100&keep=yes');
+      await shared.waitForFunction(()=>window.backFixture&&history.state?.ojjudaWorld==='menu');
+      await shared.evaluate(()=>backFixture.open('stacker'));
+      assert.equal(new URL(shared.url()).searchParams.get('game'),'stacker');
+      if(native){await shared.waitForFunction(()=>typeof window.nativeBack==='function');await shared.evaluate(()=>backFixture.nativeBack());}
+      else await shared.goBack();
+      await shared.waitForFunction(()=>history.state?.ojjudaWorld==='menu'&&!!document.querySelector('.arcade-home')&&!document.querySelector('#gov'));
+      const returned=new URL(shared.url());
       assert.equal(returned.searchParams.get('tab'),'arcade');
       assert.equal(returned.searchParams.get('keep'),'yes');
       for(const key of ['game','challenge','score'])assert.equal(returned.searchParams.has(key),false);
+      await shared.close();
       await page.locator('.bottomnav [data-tab="hub"]').click();
       await main();
 
