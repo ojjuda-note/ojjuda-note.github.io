@@ -1,43 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 84" fill="none" role="img" aria-label="쭈달리기 해마 캐릭터">
-  <defs>
-    <linearGradient id="sea" x1="8" y1="0" x2="100" y2="83" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#E1FAFF"/>
-      <stop offset="1" stop-color="#86D1DF"/>
-    </linearGradient>
-    <linearGradient id="pony" x1="34" y1="16" x2="78" y2="74" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF1B9"/>
-      <stop offset=".52" stop-color="#FFC278"/>
-      <stop offset="1" stop-color="#EB8777"/>
-    </linearGradient>
-    <linearGradient id="pearl" x1="90" y1="15" x2="110" y2="36" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF7FA"/>
-      <stop offset=".6" stop-color="#FFB8E3"/>
-      <stop offset="1" stop-color="#B569D4"/>
-    </linearGradient>
-  </defs>
-  <path d="M8 12C28 0 65 4 88 14s24 35 24 61H8Z" fill="url(#sea)" opacity=".54"/>
-  <path d="M7 73h106" stroke="#56CDB5" stroke-width="4" stroke-linecap="round"/>
-  <path d="M15 72c-6-8-5-16 2-23m-1 25c5-10 11-11 14-19m81 19c-6-11-4-17 1-22" stroke="#6DB8AC" stroke-opacity=".54" stroke-width="3.5" stroke-linecap="round"/>
-  <circle cx="22" cy="22" r="5" stroke="#FFFCF2" stroke-opacity=".8" fill="#FFF" fill-opacity=".18"/>
-  <circle cx="106" cy="48" r="3" fill="#FFF" fill-opacity=".3" stroke="#FFF" stroke-opacity=".6"/>
-  <circle cx="100" cy="26" r="12" fill="#6B569A" fill-opacity=".3"/>
-  <circle cx="99" cy="24" r="10" fill="url(#pearl)" stroke="#754C8C" stroke-width="2"/>
-  <ellipse cx="95.5" cy="20" rx="3" ry="2" fill="#FFF"/>
-  <path d="m86 14 2-6m-3 3 6 2" stroke="#FFF4C8" stroke-width="2" stroke-linecap="round"/>
-  <path d="M48 55c-13 3-18 17-7 20 9 3 14-8 5-9" stroke="#293E56" stroke-width="10" stroke-linecap="round"/>
-  <path d="M48 55c-13 3-18 17-7 20 9 3 14-8 5-9" stroke="#F6A16D" stroke-width="6" stroke-linecap="round"/>
-  <path d="m43 24-1-15 8 7 6-10 6 17Z" fill="#ED9279" stroke="#293E56" stroke-width="2.7" stroke-linejoin="round"/>
-  <path d="M43 45 24 40l5 15 16 3Z" fill="#75D8C1" stroke="#294459" stroke-width="2.7" stroke-linejoin="round"/>
-  <path d="M48 21c7-8 19-1 20 8l14 1q10 1 6 7l-17 1c-4 5 1 11 1 17 2 14-8 20-21 17-19-5-20-21-11-33-9-11-2-20 8-18Z" fill="url(#pony)" stroke="#293E56" stroke-width="3" stroke-linejoin="round"/>
-  <ellipse cx="59" cy="55" rx="9" ry="15" fill="#FFE8B5"/>
-  <ellipse cx="61" cy="54" rx="6" ry="11" fill="#FFF7D9" fill-opacity=".7"/>
-  <path d="m43 48 2 3m-3 5 3 2m0 5 2 2" stroke="#D2797A" stroke-width="2.8" stroke-linecap="round"/>
-  <circle cx="65" cy="28" r="5.6" fill="#FFFDF7"/>
-  <circle cx="67" cy="28" r="3" fill="#263D56"/>
-  <circle cx="68" cy="26.6" r="1" fill="#FFF"/>
-  <ellipse cx="72" cy="37" rx="3" ry="2" fill="#E27C84"/>
-  <path d="m80 39 5 1" stroke="#855875" stroke-width="2" stroke-linecap="round"/>
-  <path d="m48 70-5 6m18-5 4 5" stroke="#264158" stroke-width="6" stroke-linecap="round"/>
-  <path d="M37 77h14m7 0h14" stroke="#FFF2D8" stroke-width="5" stroke-linecap="round"/>
+  <!-- Match the arcade's flat sage, cream and sand-gold icon palette. -->
+  <ellipse cx="59" cy="73" rx="39" ry="3.5" fill="#243C3012"/>
+  <path d="M21 70c-4-6-4-13 0-19m5 19c-1-7 2-12 7-16" stroke="#A7BDA2" stroke-width="3" stroke-linecap="round"/>
+  <path d="M88 70c2-7 7-12 12-14m-7 14c-2-5-1-9 1-12" stroke="#A7BDA2" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="100" cy="25" r="9.5" fill="#F6F0DC" stroke="#527864" stroke-width="2"/>
+  <circle cx="97" cy="22" r="2.7" fill="#FFFFFF" fill-opacity=".9"/>
+  <path d="m88 15 2-5m-5 3 5 2" stroke="#D6AD6A" stroke-width="2.3" stroke-linecap="round"/>
+  <circle cx="18" cy="30" r="3.5" stroke="#A7BDA2" stroke-width="1.7"/>
+  <circle cx="107" cy="43" r="2.5" fill="#A7BDA2" fill-opacity=".5"/>
+  <path d="M50 55c-11 3-17 13-10 17 7 5 16-3 9-10" stroke="#527864" stroke-width="8" stroke-linecap="round"/>
+  <path d="M50 55c-11 3-17 13-10 17 7 5 16-3 9-10" stroke="#D6AD6A" stroke-width="5" stroke-linecap="round"/>
+  <path d="m46 27-3-10 8 5 5-12 6 15Z" fill="#D6AD6A" stroke="#527864" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M44 43 29 38l5 15 13 4Z" fill="#A7BDA2" stroke="#527864" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M49 23c8-8 18-2 20 7l14 1c9 0 11 7 4 10l-17 1c-3 4 2 9 2 15 1 12-8 17-20 14-16-4-19-18-11-30-7-8-3-17 8-18Z" fill="#D6AD6A" stroke="#527864" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M58 44c-6 5-10 15-5 23 8 5 16-2 16-11 0-4-2-8-4-12Z" fill="#F6F0DC"/>
+  <path d="m47 48 3 2m-4 5 3 2m-1 5 3 2" stroke="#A48158" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="64.5" cy="29" r="5.5" fill="#FDFBF1"/>
+  <circle cx="66.5" cy="29" r="2.8" fill="#244B3A"/>
+  <circle cx="67.3" cy="27.9" r="1" fill="#FFFFFF"/>
+  <circle cx="75" cy="38" r="2.2" fill="#E69D83"/>
+  <path d="m79 42 5 1" stroke="#A48158" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M57 65q4 3 8 0" stroke="#A48158" stroke-width="1.4" stroke-linecap="round"/>
 </svg>
-
