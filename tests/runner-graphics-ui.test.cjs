@@ -51,9 +51,11 @@ g.tab='friends'; H();
     assert.equal(await page.evaluate(() => OjjudaGameAssets.ready('runner')), true);
     assert.equal(typeof (await page.evaluate(() => OjjudaRunnerGame.ready)), 'boolean');
     const obstacleTypes = await page.evaluate(() => OjjudaRunnerGame.obstacleTypes);
-    assert.equal(obstacleTypes.length, 10, 'obstacle roster contains ten distinct hazards');
-    assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 10);
+    assert.equal(obstacleTypes.length, 11, 'obstacle roster contains eleven distinct hazards');
+    assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 11);
     assert.ok(obstacleTypes.filter(x => x.lane === 'air').length >= 3);
+    assert.equal(obstacleTypes.filter(x => x.lane === 'high').length, 1,
+      'the fast shark has a separate double-jump altitude');
     const mascotIcon = await page.evaluate(async () =>
       (await fetch('/assets/design/games/runner.svg')).text());
     assert.ok(mascotIcon.includes('해마 캐릭터') && !mascotIcon.includes('쭈꾸미'),
