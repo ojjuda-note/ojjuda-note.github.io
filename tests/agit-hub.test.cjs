@@ -168,7 +168,7 @@ test('Agit markup contains one five-mission panel and Daily fan content',()=>{
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-progress-save1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261111-agit-audit11'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 
@@ -202,12 +202,12 @@ test('themed hero uses narrow inline white highlights without masking the artwor
   const js=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.js'),'utf8');
   const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
   assert.doesNotMatch(css,/\.agit-hero-story::before\{/);
-  assert.match(css,/\.agit-hero-highlight\{[^}]*padding:\.012em \.10em \.025em/);
+  assert.match(css,/\.agit-hero-story \.agit-hero-highlight\{[^}]*padding:0 \.04em/);
   assert.match(css,/box-decoration-break:clone/);
   assert.match(js,/class="agit-hero-highlight"/);
   assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
-  assert.match(world,/agit-hub\.css\?v=20261110-stamp-week1/);
-  assert.match(world,/agit-hub\.js\?v=20261110-progress-save1/);
+  assert.match(world,/agit-hub\.css\?v=20261111-agit-audit11/);
+  assert.match(world,/agit-hub\.js\?v=20261111-agit-audit11/);
   assert.match(world,/updateAgitProgress\(hub\.complete\(\$\.settings,id==='baseball'\?'baseball':'quiz'\)\|\|id==='baseball'\)/,'baseball wins also trigger an immediate save');
 });
 

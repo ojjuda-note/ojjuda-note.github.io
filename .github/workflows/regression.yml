@@ -52,6 +52,7 @@ jobs:
       - run: node tests/agit-security-baseline.test.cjs
       - run: node tests/account-recovery-edge.test.cjs
       - run: node tests/admin-ban-edge.test.cjs
+      - run: node --test tests/agit-hub.test.cjs tests/agit-load-reliability.test.cjs
 
   private_groups:
     name: Private group membership, media and schedules

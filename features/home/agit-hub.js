@@ -231,7 +231,7 @@
             <div class="agit-pick-top">오늘의 추천게임 <span>매일 바뀌어요</span></div>
             ${game ? `<div class="agit-pick-body"><div class="agit-pick-art"><img src="/assets/design/games/${game.id}.svg" alt="" width="62" height="62" loading="lazy"></div><div class="agit-pick-foot"><strong>${escapeHtml(game.name)}</strong><button type="button" class="agit-play-button" data-act="agit-play" data-v="${game.id}" aria-label="${escapeHtml(game.name)} 게임 시작">한 판 놀기 <span aria-hidden="true">↗</span></button></div></div>` : '<p>추천게임을 준비하고 있어요.</p>'}
           </section>
-        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async"></div>
+        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async" loading="eager" fetchpriority="high"></div>
       </header>
       <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
         <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 이번 주 ${stampedCount}/7</small></div></div>

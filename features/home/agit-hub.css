@@ -28,7 +28,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-hero-halo{position:absolute;inset:12% 6% 0;border-radius:50%;background:#fff6e65c;filter:blur(16px)}
 .agit-hero-pick{grid-area:pick;position:relative;z-index:3;display:grid;gap:7px;align-self:end;min-width:0;margin:10px 0 38px 43px;padding:13px 15px;border:1px solid #fffdf5e6;border-radius:19px;background:#fffaf4e8;box-shadow:0 9px 25px #9463691c;backdrop-filter:blur(10px)}
 .agit-pick-top{display:flex;align-items:center;gap:10px;color:#9b5a66;font-size:11px;font-weight:800}
-.agit-pick-top span{font-size:10px;font-weight:600;color:#9e8b88}
+.agit-pick-top span{font-size:11px;font-weight:600;color:#74636b}
 .agit-pick-body{display:flex;align-items:center;gap:11px;min-width:0}
 .agit-pick-art{display:grid;place-items:center;flex:none;width:50px;height:50px;border-radius:14px;background:#f5e8ea}
 .agit-pick-art img{display:block;width:46px;height:46px;object-fit:contain}
@@ -44,13 +44,13 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-checkin-symbol{display:grid;place-items:center;flex:none;width:47px;height:47px;border-radius:16px;background:#fff0df;color:#cb7773;font-size:25px}
 .agit-checkin-label>div{display:grid;gap:3px;min-width:0}
 .agit-checkin-label h2{margin:0;color:var(--agit-ink);font-size:18px;font-weight:800;letter-spacing:-.045em;line-height:1.3;white-space:nowrap}
-.agit-checkin-label small{color:#99818b;font-size:11px;font-weight:550;line-height:1.3}
+.agit-checkin-label small{color:#705e69;font-size:12px;font-weight:550;line-height:1.3}
 .agit-checkin-label small span{margin:0 3px;color:#c2acb3}
 .agit-stamp-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-.agit-stamp-day{display:grid;justify-items:center;gap:5px;min-width:0;color:#a6999b}
-.agit-stamp-day>span,.agit-stamp-day small{font-size:10px;font-weight:650;line-height:1}
+.agit-stamp-day{display:grid;justify-items:center;gap:5px;min-width:0;color:#786a73}
+.agit-stamp-day>span,.agit-stamp-day small{font-size:11px;font-weight:650;line-height:1}
 .agit-stamp-day strong{display:grid;place-items:center;width:min(38px,100%);aspect-ratio:1;border:1px dashed #eadcdd;border-radius:12px;background:#fff8f5;color:#dbc8c8;font-size:19px;line-height:1}
-.agit-stamp-day.is-upcoming{opacity:.55}
+.agit-stamp-day.is-upcoming{opacity:.78}
 .agit-stamp-day.is-upcoming strong{background:#faf8f8}
 .agit-stamp-day.is-today{color:#a24d6a}
 .agit-stamp-day.is-today strong{border:2px solid #d17b93;background:#fff0f3;color:#d58a9b}
@@ -64,12 +64,12 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 /* All five daily missions in one compact, readable panel. */
 .agit-quests,.agit-life{margin-top:34px}
 .agit-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 3px 16px}
-.agit-section-kicker{display:block;margin-bottom:3px;color:#b47989;font-size:12px;font-weight:650}
+.agit-section-kicker{display:block;margin-bottom:3px;color:#885766;font-size:12px;font-weight:650}
 .agit-section-head h2{margin:0;color:var(--agit-ink);font-size:27px;font-weight:850;letter-spacing:-.065em;line-height:1.28}
 .agit-quest-summary{display:flex;align-items:center;gap:13px}
 .agit-quest-tally{display:flex;align-items:baseline;gap:4px;white-space:nowrap}
 .agit-quest-tally b{color:#a84f70;font-size:29px;font-weight:850;line-height:1}
-.agit-quest-tally small{color:#ab9aa3;font-size:13px;font-weight:750}
+.agit-quest-tally small{color:#746470;font-size:13px;font-weight:750}
 .agit-quest-meter{display:flex;align-items:center;gap:4px}
 .agit-quest-meter span{width:19px;height:7px;border-radius:9px;background:#ecdee3}
 .agit-quest-meter span.is-on{background:#c86d92}
@@ -102,8 +102,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-life-tile:hover img{transform:scale(1.055)}
 .agit-life-title{display:grid;gap:4px;padding:0 3px 2px}
 .agit-life-title strong{font-size:18px;font-weight:850;letter-spacing:-.055em;line-height:1.3;word-break:keep-all}
-.agit-life-title small{color:#95818c;font-size:11px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid #e9dfe2;color:#a09198;font-size:12px}
+.agit-life-title small{color:#73646f;font-size:12px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agit-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:29px;padding:17px 3px 0;border-top:1px solid #e9dfe2;color:#786b73;font-size:12px}
 .agit-footer button{display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 10px;border:0;background:transparent;color:#97546c;font-size:12px;font-weight:700}
 .agit-footer button span{font-size:16px}
 
@@ -171,7 +171,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-checkin{gap:12px;margin-top:12px;padding:15px;border-radius:20px}
  .agit-checkin-symbol{width:38px;height:38px;border-radius:13px;font-size:21px}
  .agit-checkin-label h2{font-size:16px}
- .agit-checkin-label small{font-size:10px}
+ .agit-checkin-label small{font-size:11px}
  .agit-stamp-button{min-width:118px;min-height:40px;font-size:11px;padding:8px}
  .agit-stamp-days{gap:4px}
  .agit-stamp-day strong{width:min(35px,100%);border-radius:10px}
@@ -189,7 +189,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-life-art img{height:88px;width:min(100%,110px)}
  .agit-life-top{top:13px;right:13px}
  .agit-life-title strong{font-size:16px}
- .agit-life-title small{font-size:10px}
+ .agit-life-title small{font-size:11px}
 }
 @media(max-width:390px){
  .agit-hero{grid-template-columns:minmax(0,1fr) minmax(110px,.65fr)}
@@ -274,3 +274,9 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 @media(min-width:900px){
  .agit-hub{grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr)}
 }
+
+/* Brief feedback while a completed Agit visit is saved before leaving. */
+.agit-navigation-loading{position:fixed;z-index:9999;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgb(43 31 39 / .22);backdrop-filter:blur(3px);color:#423640;text-align:center;font:600 14px/1.5 "Noto Sans KR",system-ui,sans-serif}
+.agit-navigation-loading strong{max-width:90vw;padding:16px 22px;border-radius:18px;background:#fffcfa;box-shadow:0 8px 30px rgb(46 28 41 / .12);word-break:keep-all}
+.agit-navigation-spinner{display:block;width:32px;height:32px;border:4px solid #f8e8ec;border-top-color:#a45a79;border-radius:50%;animation:world-boot-spin .85s linear infinite}
+@media(prefers-reduced-motion:reduce){.agit-navigation-spinner{animation:none}}

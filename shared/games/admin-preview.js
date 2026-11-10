@@ -63,7 +63,15 @@
     if (state.authorized && event.key === prefix + state.owner)
       publish({...state, enabled:read(state.owner)});
   });
-  const config = window.OJJUDA_CONFIG;
-  if (config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient)
-    configure(window.supabase.createClient(config.supabaseUrl, config.supabaseKey));
+  // World passes its existing client from the main module before DOMContentLoaded.
+  // Standalone pages still create a fallback client if none was supplied.
+  function configureFallback() {
+    if (client) return;
+    const config = window.OJJUDA_CONFIG;
+    if (config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient)
+      configure(window.supabase.createClient(config.supabaseUrl, config.supabaseKey));
+  }
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', configureFallback, {once:true});
+  else queueMicrotask(configureFallback);
 })();
