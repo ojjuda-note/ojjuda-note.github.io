@@ -18838,6 +18838,71 @@
         "고유진",
         "KCM"
       ]
+    },
+    {
+      "id": "wonju-picturebook-festival-2026",
+      "title": "2026 원주 그림책페스티벌",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-06",
+      "end": "2026-11-29",
+      "region": "강원",
+      "city": "원주시",
+      "venue": "원주남산골문화센터",
+      "address": "강원특별자치도 원주시 향교길 77",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "원주시와 사회적협동조합 그림책도시가 여는 그림책 문화 축제로, 원주남산골문화센터에서 진행됩니다.",
+      "scheduleNote": "11월 6~29일 매일 10:00~18:00(휴관일 없음)",
+      "priceNote": "무료",
+      "accessNote": "전체 관람 가능. 프로그램별 참가 방식은 공식 안내 확인.",
+      "sourceUrl": "https://www.wonju.go.kr/www/ctyhllCldrView.do?ctyhllCldrNo=3503&from=list&key=213&pageIndex=1&searchCnd=all&searchD=&searchKrwd=&searchLgd=&searchM=&searchY=",
+      "sourceName": "원주시청 문화행사 공식 달력",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.wonju.go.kr/www/selectCtyhllCldrListCal.do?bgnde=2026-01-01&endde=2026-12-31&key=213&pageIndex=1&pageUnit=9&searchCnd=all"
+      ],
+      "tags": [
+        "그림책",
+        "문화축제",
+        "전시",
+        "무료"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "wonju-symphony-bohemian-soul-206-2026",
+      "title": "원주시립교향악단 제206회 정기연주회 〈보헤미안의 영혼〉",
+      "category": "local",
+      "section": "performance",
+      "start": "2026-11-12",
+      "end": "2026-11-12",
+      "region": "강원",
+      "city": "원주시",
+      "venue": "원주백운아트홀",
+      "address": "강원특별자치도 원주시 시청로 1",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "원주시립교향악단 정주영 지휘, 김응수 바이올린 협연으로 드보르자크의 바이올린 협주곡과 교향곡 7번을 연주합니다.",
+      "scheduleNote": "11월 12일(목) 19:30, 약 100분",
+      "priceNote": "일반 10,000원 / 학생 5,000원",
+      "accessNote": "8세 이상 관람. 원주시 통합예약플랫폼에서 예매 가능하며, 잔여 좌석은 공식 안내 확인.",
+      "sourceUrl": "https://www.wonju.go.kr/baekunart/ctyhllCldrView.do?ctyhllCldrNo=3498&from=cal&key=627&searchCnd=all&searchD=05&searchKrwd=&searchLgd=7&searchM=11&searchY=2026",
+      "sourceName": "원주백운아트홀 공식 공연일정",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.wonju.go.kr/www/selectBbsNttView.do?bbsNo=145&integrDeptCode=&key=222&nttNo=495068&pageIndex=1&searchCnd=all&searchCtgry=&searchKrwd="
+      ],
+      "tags": [
+        "클래식",
+        "시립교향악단",
+        "정기연주회"
+      ],
+      "status": "scheduled"
     }
   ]
 }
