@@ -38,6 +38,9 @@ function fixture({ initial = 'A', delayedSession = false, query = '' } = {}) {
     xd() {}, yc() { screens.push('loading'); }, $d(callback) { context.saveCallback = callback; },
     clearWorldAdminView() {}, worldResumePresence() { screens.push('resume-presence'); },
     refreshWorldMatgoAccess() {},
+    // The full page defines this separately from the extracted auth functions.
+    // Hub local-storage merging is outside this account-race fixture.
+    restoreAgitProgress() {},
     enterWorldGuest(start) { context.D.online = false; context.D.user = null; context.D.parkGuest = true; screens.push('guest'); start(); },
     nr(mode) { screens.push('auth:' + mode); }, tm(error) { screens.push('error:' + error.message); },
     Ao() { return { me: { nick: 'default' } }; }, zi() { return null; },
