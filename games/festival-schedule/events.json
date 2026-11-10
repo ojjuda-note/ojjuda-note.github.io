@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-10",
+  "updatedAt": "2026-11-11",
   "events": [
     {
       "id": "gongju-gunbam-2026",
@@ -699,7 +699,15 @@
         "체험",
         "겨울준비"
       ],
-      "status": "scheduled"
+      "status": "scheduled",
+      "attendance": {
+        "count": 60000,
+        "kind": "previous",
+        "year": 2025,
+        "sourceName": "평창고랭지김장축제위원회 공식 폐막 보도자료",
+        "sourceUrl": "https://www.newswire.co.kr/newsRead.php?no=1023313",
+        "sourceCheckedAt": "2026-11-11"
+      }
     },
     {
       "id": "noodle-daejeon-2026",
@@ -19561,6 +19569,206 @@
         "카운트다운",
         "드론",
         "겨울"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-iris-jiujitsu-championship-20261122",
+      "title": "IRIS CHAMPIONSHIP IN 광주",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "주짓수",
+      "start": "2026-11-22",
+      "end": "2026-11-22",
+      "region": "광주",
+      "city": "북구",
+      "venue": "동림다목적체육관",
+      "address": "광주광역시 북구 북문대로 200",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "광주 북구에서 열리는 IRIS 주짓수 챔피언십입니다. 선수 종목·대진은 주최 측 공식 접수·경기표에서 확인하세요.",
+      "scheduleNote": "2026년 11월 22일(일), 계체 09:00~10:00(이후 상시 계체), 룰미팅 09:50, 경기 시작 10:00",
+      "priceNote": "선수 참가비: 일반 접수 한 종목 50,000원·추가 종목 30,000원(11월 15일 마감) / 관람료 미공개",
+      "accessNote": "선수 등록 마감 11월 15일 23:59. 관람객 입장 가능 여부와 관람료는 공식 안내 미확인; 참가비를 관람료로 오인하지 마세요.",
+      "sourceUrl": "https://www.flowcomp.co.kr/championship/98",
+      "sourceName": "FLOWCOMP 공식 대회·접수 안내",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://www.flowcomp.co.kr/jiujitsu/upcoming",
+        "https://www.flowcomp.co.kr/championship/98/register"
+      ],
+      "tags": [
+        "주짓수",
+        "아마추어 스포츠",
+        "선수 접수"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "daejeon-iris-jiujitsu-championship-20261114",
+      "title": "IRIS CHAMPIONSHIP IN 천하제일대전",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "주짓수",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "대전",
+      "city": "서구",
+      "venue": "도솔다목적체육관 2층",
+      "address": "대전광역시 서구 배재로197번길 41",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "대전 서구에서 열리는 IRIS 주짓수 챔피언십입니다. 선수별 경기·대진표는 공식 운영 안내를 확인하세요.",
+      "scheduleNote": "2026년 11월 14일(토), 계체 09:00~10:00(이후 상시 계체), 경기 시작 10:00",
+      "priceNote": "선수 참가비: 정규 접수 한 종목 50,000원·추가 종목 30,000원(11월 8일 접수 마감) / 관람료 미공개",
+      "accessNote": "일반 선수 접수는 11월 8일 마감. 현장 앱솔루트 종목 별도 접수 조건은 공식 안내 확인. 일반 관람 가능 여부는 확인되지 않았습니다.",
+      "sourceUrl": "https://www.flowcomp.co.kr/championship/84",
+      "sourceName": "FLOWCOMP 공식 대회·접수 안내",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://www.flowcomp.co.kr/jiujitsu/upcoming"
+      ],
+      "tags": [
+        "주짓수",
+        "아마추어 스포츠",
+        "대전"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-international-street-arts-2026",
+      "title": "2026 광주국제거리예술축제",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-13",
+      "end": "2026-11-15",
+      "region": "광주",
+      "city": "동구",
+      "venue": "5·18민주광장 일원",
+      "address": "광주광역시 동구 5·18민주광장 일원",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "5·18민주광장 일원에서 국내외 거리예술을 만나는 광주문화재단 주관 축제입니다.",
+      "scheduleNote": "2026년 11월 13일(금)~15일(일), 개별 거리 공연 시간은 공식 프로그램 확인",
+      "priceNote": "무료",
+      "accessNote": "거리 공연별 세부 운영·현장 안전 안내 확인",
+      "sourceUrl": "https://www.gjcf.or.kr/cf/cultureart/list/calendar/21842/view.do",
+      "sourceName": "광주문화재단 공식 문화예술달력(2026-11-10 게시)",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://www.gjcf.or.kr/cf/index.do"
+      ],
+      "tags": [
+        "거리예술",
+        "지역축제",
+        "무료",
+        "광주"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-co-show-2026",
+      "title": "2026 CO-SHOW 첨단분야 교육·경진·체험 전시",
+      "category": "expo",
+      "section": "performance",
+      "start": "2026-11-18",
+      "end": "2026-11-21",
+      "region": "광주",
+      "city": "서구",
+      "venue": "김대중컨벤션센터 전시장·다목적홀",
+      "address": "광주광역시 서구 상무누리로 30",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "전국 18개 첨단분야 컨소시엄과 67개 대학이 참여하는 대학생 경진대회·첨단교육 체험 및 성과 전시입니다.",
+      "scheduleNote": "11월 18일(수)~20일(금) 10:00~18:00, 21일(토) 10:00~17:00",
+      "priceNote": "입장료 공식 안내 확인",
+      "accessNote": "사전등록은 COSSNET 홈페이지에서 진행. 체험교육 일부 사전예약은 11월 13일까지, 일부 프로그램 현장 참여 가능.",
+      "sourceUrl": "https://kdjcenter.gjto.or.kr/events/40702/view",
+      "sourceName": "김대중컨벤션센터 공식 행사일정(광주관광공사)",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://kdjcenter.gjto.or.kr/events/gallery"
+      ],
+      "tags": [
+        "과학기술",
+        "첨단교육",
+        "대학",
+        "전시",
+        "체험"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-kyunghyang-housing-fair-2026",
+      "title": "2026 광주경향하우징페어",
+      "category": "expo",
+      "section": "performance",
+      "start": "2026-11-26",
+      "end": "2026-11-29",
+      "region": "광주",
+      "city": "서구",
+      "venue": "김대중컨벤션센터 전시장 A·B·C",
+      "address": "광주광역시 서구 상무누리로 30",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "호남권 건축·인테리어·전원주택·건설자재 관련 업체와 제품을 살펴보는 전문 박람회입니다.",
+      "scheduleNote": "11월 26~28일 10:00~18:00(입장마감 17:30), 29일 10:00~17:00(입장마감 16:30)",
+      "priceNote": "현장 입장 10,000원 / 11월 25일까지 사전등록 시 무료 / 중고생 5,000원",
+      "accessNote": "무료 사전등록은 방문자마다 개별 신청해야 합니다. 초청장 소지자·13세 이하·65세 이상 등 공식 무료 대상은 주최 측 안내 확인.",
+      "sourceUrl": "https://khfair.com/gwangju/visitors/visitor-guide/",
+      "sourceName": "광주경향하우징페어 공식 관람·요금 안내",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://kdjcenter.gjto.or.kr/events/40865/view"
+      ],
+      "tags": [
+        "박람회",
+        "건축",
+        "인테리어",
+        "사전등록"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "gwangju-next-up-startup-expo-2026",
+      "title": "NEXT-UP 2026 제1회 전남광주 창업혁신 EXPO",
+      "category": "expo",
+      "section": "performance",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "광주",
+      "city": "서구",
+      "venue": "김대중컨벤션센터 전시홀 C",
+      "address": "광주광역시 서구 상무누리로 30",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "전남광주 지역 창업과 혁신을 소개하는 NEXT-UP 2026 창업혁신 박람회입니다.",
+      "scheduleNote": "2026년 11월 14일(토) 09:00~17:00",
+      "priceNote": "입장료 공식 안내 확인",
+      "accessNote": "일반 관람과 참가·사전 신청 조건은 주최 측 최신 안내 확인",
+      "sourceUrl": "https://kdjcenter.gjto.or.kr/events/44379/view",
+      "sourceName": "김대중컨벤션센터 공식 행사일정(광주관광공사)",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://kdjcenter.gjto.or.kr/events/gallery"
+      ],
+      "tags": [
+        "창업",
+        "혁신",
+        "박람회",
+        "광주"
       ],
       "status": "scheduled"
     }
