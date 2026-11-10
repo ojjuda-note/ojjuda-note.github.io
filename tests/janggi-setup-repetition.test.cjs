@@ -86,6 +86,10 @@ test('the visible pre-game chooser selects actual starting pieces and reopens fo
   let started,menuKind;w.zp=(kind,mode,options)=>{started=w.jp(kind,mode,options);w.E=started;};w.vn=kind=>{menuKind=kind;};
   const menu=w.document.getElementById('bd-menu');menu.innerHTML=await w.Hp('janggi');
   assert.equal(menu.querySelectorAll('.bd-layout').length,1);
+  assert.equal(menu.querySelectorAll('.jg-layout-sides .bd-layout-row').length,2,'both arrangement sections stay visible');
+  assert.equal(menu.querySelectorAll('.jg-entry-settings .jg-entry-difficulty [data-act="bd-lv"]').length,6,'all difficulties share a compact group');
+  assert.equal(menu.querySelectorAll('.jg-entry-settings .ge-janggi-colors [data-act="bd-side"]').length,2,'color selection stays alongside difficulty');
+  assert(menu.querySelector('[data-entry-panel="computer"] [data-act="bd-start"]'),'start button stays in the computer panel');
   for(const button of menu.querySelectorAll('[data-act="bd-layout"]'))assert.equal(button.closest('details,[hidden]'),null);
   for(const side of ['c','h'])for(const code of ['eheh','ehhe','heeh','hehe']){
    const button=menu.querySelector(`[data-side="${side}"][data-v="${code}"]`);

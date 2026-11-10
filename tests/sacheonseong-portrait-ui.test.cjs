@@ -140,7 +140,13 @@ async function screenshot(page,name){
    for(let cleared=0;cleared<E.TILES_PER_FLOOR/2;cleared++){
     const setup=await page.evaluate(()=>{
      const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')),grids=[state.grid,...state.upcoming];
-     const exposed=grids[1]?.some((row,r)=>row.some((value,c)=>value!==-1&&window.TileGarden.isExposed(grids,{layer:1,r,c})));
+     // The first uncovered lower tile may sit outside the upper grid bounds.
+     // Wait for one inside the bounds, where transparent hit testing matters.
+     const top=document.querySelector('.tile-layer[data-layer="0"]')?.getBoundingClientRect();
+     const exposed=[...document.querySelectorAll('.tile[data-layer="1"]:not(:disabled)')].some(tile=>{
+      const rect=tile.getBoundingClientRect(),x=rect.left+rect.width/2,y=rect.top+rect.height/2;
+      return !!top&&x>=top.left&&x<=top.right&&y>=top.top&&y<=top.bottom;
+     });
      return {exposed,move:window.TileGarden.exposedMoves(grids),total:grids.flat(2).filter(v=>v!==-1).length};
     });
     if(setup.exposed)break;
