@@ -22,7 +22,7 @@
 <meta name="twitter:image" content="https://ojjuda.kr/brand/og-agit-20261022.png">
 <meta name="twitter:image:alt" content="오쭈다 아지트 · 웃는 노트 로고">
 <link rel="stylesheet" href="/shared/games/game-entry.css?v=20261109-unified-multiplayer-ui2">
-<link rel="stylesheet" href="./entry.css?v=20261013-booster1">
+<link rel="stylesheet" href="./entry.css?v=20261110-chapters1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
@@ -115,10 +115,11 @@ body[data-mode="hub"] #panel{display:block}
     <p class="ge-copy">작은 불씨에서 시작해<br>차원 너머의 첫 생명까지 키워요.</p>
     <p id="starProgress" class="star-progress">작은 별을 깨울 준비를 하고 있어요.</p>
     <button id="starStart" class="ge-primary" type="button" disabled>시작하기</button>
+    <button id="starChapters" class="ge-secondary" type="button" disabled>챕터 선택</button>
     <button id="starGrowth" class="ge-secondary" type="button" disabled>성장 · 강화</button>
     <button id="starExit" class="ge-secondary" type="button">게임 목록으로</button>
     <span id="starEntryHint" class="ge-hint" role="status">게임을 연결하고 있어요…</span>
-    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 기존 별 성장 200개를 완료한 뒤 차원문을 통해 생명 성장 1,000개가 더 열려요. 같은 게임의 성장 기록과 저장 공간을 사용하며 총 1,200개 노드를 키울 수 있어요.</p><p>기존 천체 50종과 새 차원 천체 50종을 만날 수 있어요. 생명 단계에서는 수집한 생명력으로 강화하고, 배양실에서 빛·물·바람을 선택하면 귀여운 생명체의 진화가 결정돼요.</p><p>오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>기존 샛별 성장 점수의 순위 기준은 유지해요. 새 차원의 생명 성장은 이어서 저장되며 기존 월간 순위에는 더하지 않아요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
+    <details class="ge-more"><summary>게임 방법 · 순위 기준</summary><p>화면을 손가락으로 끌거나 마우스를 움직여 천체를 태워요. 모은 빛과 금속으로 별자리의 가지를 강화해요. 현재 단계의 다섯 영역 강화를 모두 마치면 보스 도전이 열리고, 보스를 잡으면 다음 별로 진화해요.</p><p>열·화력·범위·수확·특수를 골고루 키워요. 1챕터 엔딩을 보면 2챕터가 열리고, 각 챕터 보스를 이겨야 다음 챕터를 선택할 수 있어요. 원래 성장 200개와 새 생명 성장 1,000개가 같은 저장 기록으로 이어져요.</p><p>생명 챕터에서는 빛·물·바람으로 세포를 키우고, 그림자 악당이 나타나면 직접 터치해 터뜨려요. 챕터별 성장 20개 전에는 아주 드물게, 200개를 키우면 2초마다 나타나요. 악당의 공격을 피하고 생명력도 모아 보세요.</p><p>1챕터의 오른쪽 위 부스터는 3ZU를 사용해 시간을 5초 늘리고 그 판의 운석과 별을 2배로 늘려요. 다시 쓰면 시간은 5초 더 늘며 천체 수는 2배로 유지돼요. 시간 결정의 8초 한도와는 별도예요.</p><p>기존 샛별 성장 점수의 순위 기준은 유지해요. 새 차원의 생명 성장은 이어서 저장되며 기존 월간 순위에는 더하지 않아요. <span id="starDemoNotice" hidden>관리자용 풀 업그레이드 체험은 순위에 기록되지 않아요.</span></p></details>
     <details id="starRankingDetails" class="ge-more"><summary>오늘의 순위</summary><ol id="starRanking" class="star-ranking"></ol></details>
   </section>
 </main>
@@ -127,9 +128,10 @@ body[data-mode="hub"] #panel{display:block}
 <span id="boostHelp" class="sr-only">3ZU를 사용해 남은 시간을 5초 늘리고 이번 판의 운석과 별을 2배로 늘려요. 다시 사용하면 시간이 5초 더 늘어나고 천체 수는 2배로 유지돼요.</span>
 <div id="heatWrap"><div class="barRow"><span>남은 시간</span><div class="bar"><div id="heat"></div></div><span id="heatTxt">0</span></div></div>
 <div id="bossWrap"><div class="barRow"><span id="bossName" class="serif"></span><div class="bar"><div id="bossFill"></div></div></div></div>
-<div id="runInfo"><span id="targetName"></span><span id="timeBonus">연장 0.0 / 8초</span></div>
+<div id="runInfo"><span id="targetName"></span><span id="shadowCount" aria-label="그림자 악당" hidden></span><span id="timeBonus">연장 0.0 / 8초</span></div>
 <div id="treeTools" aria-label="성장 트리 보기"><span id="treeCount">성장 0 / 200</span><button id="treeOut" aria-label="성장 트리 축소">−</button><button id="treeFit">전체</button><button id="treeIn" aria-label="성장 트리 확대">+</button><button id="treeFocus">선택</button></div>
 <div id="panel"><div id="panelIn">
+  <div id="chapterShortcut"><span id="chapterCurrent">1챕터 · 샛별의 탄생</span><button id="chapterBtn" type="button">챕터 선택</button></div>
   <section id="growth" aria-label="다섯 영역 균형 성장"><strong id="growthTitle"></strong><span id="growthHelp"></span><div id="growthBranches"></div></section>
   <section id="lifeLab" aria-label="생명 배양" hidden><div id="lifeTop"><div id="lifeStatus"></div><button id="lifeJournal" type="button">📖 생명 일지</button></div><div id="lifeQuote" class="serif"></div><div id="lifeProgress" role="progressbar" aria-label="현재 생명 단계의 성장" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><div id="geneActions" hidden><button type="button" data-gene="light">☀️ 빛</button><button type="button" data-gene="water">💧 물</button><button type="button" data-gene="wind">🌬️ 바람</button></div></section>
   <div id="info"><div id="uName" class="serif"></div><div id="uDesc"></div><div id="uLock" role="status" hidden></div><div id="uRow"><span id="uLv"></span><button id="buy" aria-describedby="uLock"></button></div></div>
@@ -139,13 +141,21 @@ body[data-mode="hub"] #panel{display:block}
 </div></div>
 <div id="toast" class="serif" role="status"></div>
 <div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
+<section id="chapterSelect" role="dialog" aria-modal="true" aria-labelledby="chapterTitle" hidden>
+  <div class="chapter-shell">
+    <header class="chapter-heading"><div><span class="chapter-kicker">샛별키우기 · 우주의 여정</span><h2 id="chapterTitle" class="serif">어느 별로 떠날까요?</h2><p>이전 챕터의 엔딩을 보면 다음 별이 열려요.</p></div><button id="chapterClose" type="button" aria-label="챕터 선택 닫기">닫기</button></header>
+    <div id="chapterGrid" class="chapter-grid" aria-label="여섯 개의 챕터"></div>
+    <p id="chapterHint" class="chapter-hint" role="status"></p>
+  </div>
+</section>
 <div id="overlay" role="dialog" aria-live="polite"><div id="ovText"></div><div id="ovBtns"></div><a class="monthly-bulssi-link monthly-bulssi-overlay" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 순위 · 내 기록</a><div id="ovHint">눌러서 계속</div></div>
-<script src="./entry.js?v=20261110-bulssi-life1"></script>
+<script src="./entry.js?v=20261110-chapters1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-bulssi-life1"></script>
 <script src="./tree-controls.js?v=20261013-sky2001"></script>
 <script src="./life-expansion.js?v=20261110-bulssi-life2"></script>
+<script src="./shadow-enemies.js?v=20261110-chapters1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -154,6 +164,7 @@ const TAU=Math.PI*2;
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let W=0,H=0,U=1,T=0;
 const LIFE=window.OjjudaSaetbyeolLife;
+const SHADOWS=window.OjjudaSaetbyeolShadows;
 
 const STAGES=[
   {name:'잿불',pal:['255,138,61','255,205,90','255,84,84','255,140,180','255,236,190'],color:'#ff8a3d',ink:'#1a0d05',rgb:'255,138,61',bg:['#1a0c16','#06081a'],rock:'#8c8496',boss:'하얀 꼬리',bossObj:'하얀 꼬리를'},
@@ -162,6 +173,14 @@ const STAGES=[
   {name:'적색거성',pal:['255,77,94','255,150,70','255,95,190','110,165,255','255,215,150'],color:'#ff4d5e',ink:'#22040a',rgb:'255,77,94',bg:['#240810','#08061a'],rock:'#5d86b8',boss:'푸른 행성의 잔해',bossObj:'푸른 행성의 잔해를'},
   {name:'블랙홀',pal:['180,140,255','85,205,255','255,105,200','255,215,140','140,255,220'],color:'#b48cff',ink:'#150a2a',rgb:'180,140,255',bg:['#140a26','#030308'],rock:'#7b7690',boss:'은하 핵',bossObj:'은하 핵을'}
 ].concat(LIFE.chapters);
+const CHAPTERS=[
+  {name:'샛별의 탄생',detail:'잿불에서 블랙홀까지 · 성장 200',stage:4},
+  {name:'차원의 씨앗',detail:'차원문 너머의 첫 세포 · 성장 200',stage:5},
+  {name:'루미별의 바다',detail:'작은 생명이 만나는 첫 바다 · 성장 200',stage:6},
+  {name:'수정의 숲',detail:'빛나는 숲의 다정한 발견 · 성장 200',stage:7},
+  {name:'진화의 하늘',detail:'나만의 모습으로 날아오르기 · 성장 200',stage:8},
+  {name:'생명의 별',detail:'서로 다른 생명들의 새로운 집 · 성장 200',stage:9}
+];
 const BR=['열','화력','범위','수확','특수'];
 const CUR={light:'빛',metal:'금속',mass:'질량',life:'생명력'};
 const UP=window.OjjudaSaetbyeolBranches.extend([
@@ -236,7 +255,7 @@ const ENCOUNTERS=window.OjjudaSaetbyeolEncounters;
 const TYPES=ENCOUNTERS.types;
 
 // ---------- save ----------
-const fresh=()=>({stage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeEnded:false,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
+const fresh=()=>({stage:0,maxStage:0,cur:{light:0,metal:0,mass:0,life:0},lv:{},mem:Array(10).fill(0),intro:false,tut:false,sound:true,buys:0,sel:null,ended:false,legacyEnding:null,lifeStarted:false,lifeEnded:false,genes:{light:0,water:0,wind:0},geneType:null,geneLast:'light'});
 let S=fresh(),DEMO=null,demoAllowed=false;
 const save=()=>{if(!DEMO)window.OjjudaSaetbyeolEntry.save(S)};
 function loadProgress(raw){
@@ -244,18 +263,21 @@ function loadProgress(raw){
   if(raw&&typeof raw==='object'){
     const integer=(value,max)=>Math.min(max,Math.max(0,Math.floor(Number(value)||0)));
     S.stage=integer(raw.stage,9);
+    // Old saves have no maxStage. Preserve every unlocked chapter when replaying an earlier one.
+    S.maxStage=Math.max(S.stage,integer(raw.maxStage??raw.stage,9),raw.ended===true&&S.stage===4?5:0);
     for(const key of ['light','metal','mass','life'])S.cur[key]=integer(raw.cur?.[key],1e15);
-    for(const u of UP)S.lv[u.id]=integer(raw.lv?.[u.id],u.r<=S.stage?u.mx:0);
-    S.mem=S.mem.map((_,i)=>integer(raw.mem?.[i],i<=S.stage?3:0));
+    for(const u of UP)S.lv[u.id]=integer(raw.lv?.[u.id],u.r<=S.maxStage?u.mx:0);
+    S.mem=S.mem.map((_,i)=>integer(raw.mem?.[i],i<=S.maxStage?3:0));
     S.intro=raw.intro===true;S.tut=raw.tut===true;S.sound=raw.sound!==false;
-    S.ended=raw.ended===true&&S.stage>=4;
+    S.ended=raw.ended===true&&S.maxStage>=4;
     S.legacyEnding=['아침의 별','삼킨 별'].includes(raw.legacyEnding)?raw.legacyEnding:null;
-    S.lifeEnded=raw.lifeEnded===true&&S.stage===9;
+    S.lifeStarted=raw.lifeStarted===true||S.stage>=5;
+    S.lifeEnded=raw.lifeEnded===true&&S.maxStage===9;
     for(const key of LIFE.keys)S.genes[key]=integer(raw.genes?.[key],12);
     S.geneLast=LIFE.keys.includes(raw.geneLast)?raw.geneLast:'light';
     const geneTotal=Object.values(S.genes).reduce((sum,n)=>sum+n,0);
-    S.geneType=S.stage>=5&&geneTotal>=12&&Object.hasOwn(LIFE.kinds,raw.geneType)?raw.geneType:null;
-    if(S.stage>=5&&geneTotal>=12&&!S.geneType)S.geneType=LIFE.choose(S.genes,S.geneLast);
+    S.geneType=S.maxStage>=5&&geneTotal>=12&&Object.hasOwn(LIFE.kinds,raw.geneType)?raw.geneType:null;
+    if(S.maxStage>=5&&geneTotal>=12&&!S.geneType)S.geneType=LIFE.choose(S.genes,S.geneLast);
     S.buys=integer(raw.buys,10000);
     S.sel=UP.some(u=>u.id===raw.sel)?raw.sel:null;
   }
@@ -300,12 +322,51 @@ const P={x:0,y:0,has:false};
 const treeView={zoom:1,x:0,y:0};let treeControls=null;
 function setP(e){P.x=e.clientX;P.y=e.clientY;P.has=true;P.touch=e.pointerType!=='mouse'}
 cv.addEventListener('pointermove',setP);
-cv.addEventListener('pointerdown',e=>{setP(e);ensureAudio()});
+cv.addEventListener('pointerdown',e=>{setP(e);ensureAudio();if(mode==='run')tapShadow(e.clientX,e.clientY)});
 
 // ---------- UI ----------
 let mode='entry',R=null,st=stats();
 function setMode(m){mode=m;document.body.dataset.mode=m;document.body.classList.toggle('boss',!!(R&&R.boss&&m==='run'));applyTheme();refresh()}
 function applyTheme(){const c=col();document.documentElement.style.setProperty('--flame',c.color);document.documentElement.style.setProperty('--flame-ink',c.ink)}
+const chapterNumber=()=>S.stage<5?1:S.stage-3;
+const chapterUnlocked=number=>Number.isInteger(number)&&number>=1&&number<=CHAPTERS.length&&(number===1||S.maxStage>=CHAPTERS[number-1].stage);
+const chapterComplete=number=>number===1?S.ended||S.maxStage>=5:number===6?S.lifeEnded:S.maxStage>CHAPTERS[number-1].stage;
+function renderChapters(){
+  const current=chapterNumber();
+  $('#chapterGrid').innerHTML=CHAPTERS.map((chapter,index)=>{
+    const number=index+1,unlocked=chapterUnlocked(number),done=chapterComplete(number),active=current===number;
+    const status=!unlocked?`${number-1}챕터 엔딩 후 열림`:active?'선택 중':done?'다시 방문 가능':'입장 가능';
+    const grown=UP.filter(upgrade=>(number===1?upgrade.r<5:upgrade.r===chapter.stage)&&lv(upgrade.id)>0).length;
+    return `<button type="button" class="chapter-card${active?' active':''}${unlocked?'':' locked'}" data-chapter="${number}" style="--chapter-color:${STAGES[chapter.stage].color}" ${unlocked?'':'disabled'} aria-label="${number}챕터 ${chapter.name}, 성장 ${grown}/200, ${status}"><span class="chapter-card-num">CHAPTER ${String(number).padStart(2,'0')} ${unlocked?'✦':'🔒'}</span><span class="chapter-card-title serif">${chapter.name}</span><span class="chapter-card-desc">${chapter.detail}</span><span class="chapter-card-progress">성장 ${grown} / 200</span><span class="chapter-meter" aria-hidden="true"><i style="width:${Math.round(grown/200*100)}%"></i></span><span class="chapter-card-state">${done&&unlocked?'✓ 엔딩 완료 · ':''}${status}</span></button>`;
+  }).join('');
+  $('#chapterHint').textContent=S.lifeEnded?'모든 챕터의 엔딩을 봤어요. 좋아하는 별에 언제든 돌아갈 수 있어요.':`${current}챕터에서 이어갈 수 있어요. 이전 챕터 엔딩을 봐야 다음 챕터가 열려요.`;
+}
+function openChapters(){
+  if(mode!=='hub'||R?.boostPending)return;
+  $('#settings').classList.remove('on');renderChapters();$('#chapterSelect').hidden=false;$('#chapterClose').focus();
+}
+function closeChapters(){$('#chapterSelect').hidden=true;$('#chapterBtn').focus({preventScroll:true})}
+function chooseChapter(number){
+  if(mode!=='hub'||!chapterUnlocked(number)||R?.boostPending)return;
+  closeChapters();
+  if(number===2&&S.ended&&!S.lifeStarted){S.stage=4;enterLife();return;}
+  S.stage=number===1?Math.min(4,S.maxStage):CHAPTERS[number-1].stage;
+  S.sel=null;R=null;treeControls?.reset();camK=0;drawHub.init=false;
+  st=stats();applyTheme();selectDefault();save();setMode('hub');
+  toast(`${number}챕터 · ${CHAPTERS[number-1].name}에 도착했어요`,2600);
+}
+$('#chapterBtn').onclick=openChapters;
+$('#chapterClose').onclick=closeChapters;
+$('#chapterGrid').onclick=event=>{const button=event.target.closest('button[data-chapter]');if(button&&!button.disabled)chooseChapter(Number(button.dataset.chapter))};
+$('#chapterSelect').addEventListener('keydown',event=>{
+  if($('#chapterSelect').hidden)return;
+  if(event.key==='Escape'){event.preventDefault();closeChapters();return;}
+  if(event.key!=='Tab')return;
+  const buttons=[...$('#chapterSelect').querySelectorAll('button:not([disabled])')];
+  const first=buttons[0],last=buttons.at(-1);
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+});
 function curHTML(){const c=col();if(S.stage>=5)return `<span><i style="background:#b9f3d7"></i>생명력 ${fmt(S.cur.life)}</span>`;
   let h=`<span><i style="background:${c.color}"></i>빛 ${fmt(S.cur.light)}</span>`;if(S.stage>=1||S.cur.metal)h+=`<span><i style="background:#9aa0b4;border-radius:2px"></i>금속 ${fmt(S.cur.metal)}</span>`;if(S.stage>=4||S.cur.mass)h+=`<span><i style="background:#b48cff"></i>질량 ${fmt(S.cur.mass)}</span>`;return h}
 let lastCur='';
@@ -394,6 +455,7 @@ function refresh(){
   $('#sndBtn').textContent=S.sound?'소리 끄기':'소리 켜기';$('#demoBtn').textContent=DEMO?'체험 끝내기':'풀 업그레이드 체험';
   $('#catalogBtn').textContent=`천체 도감 · ${S.stage>=5?ENCOUNTERS.catalog.length:50}종`;
   if(mode!=='hub')return;
+  $('#chapterCurrent').textContent=`${chapterNumber()}챕터 · ${CHAPTERS[chapterNumber()-1].name}`;
   const gate=GROWTH.state(S.lv);refreshGrowth(gate);refreshLifeLab();
   const u=UP.find(x=>x.id===S.sel);
   const buy=$('#buy');
@@ -406,13 +468,14 @@ function refresh(){
   }else{$('#uName').textContent=col().name;$('#uDesc').textContent='가지 끝의 별을 눌러 업그레이드를 고르세요.';$('#uLv').textContent='';$('#uLock').hidden=true;$('#uLock').textContent='';buy.style.display='none'}
   const bossReady=canChallengeBoss(gate),remaining=UP.filter(u=>u.r<=S.stage).reduce((sum,u)=>sum+u.mx-lv(u.id),0);
   const portalReady=S.stage===4&&S.ended;
-  $('#bossBtn').textContent=portalReady?'차원의 문을 넘어서':S.lifeEnded?'생명의 별 다시 보기':S.stage===6&&bossReady===false&&gate.stage>S.stage?'생명 진화 먼저 결정':bossReady?(S.stage>=5?`${col().boss} 만나기`:`${col().boss}에 도전`):'강화 완료 후 도전';
-  $('#bossBtn').disabled=!portalReady&&!S.lifeEnded&&!bossReady;
+  const finaleReady=S.stage===9&&S.lifeEnded;
+  $('#bossBtn').textContent=portalReady?'차원의 문을 넘어서':finaleReady?'생명의 별 다시 보기':S.stage===6&&bossReady===false&&gate.stage>S.stage?'생명 진화 먼저 결정':bossReady?(S.stage>=5?`${col().boss} 만나기`:`${col().boss}에 도전`):'강화 완료 후 도전';
+  $('#bossBtn').disabled=!portalReady&&!finaleReady&&!bossReady;
   const visibleCount=UP.filter(u=>u.r<=(S.stage<5?4:9)&&lv(u.id)>0).length;
   $('#treeCount').textContent=`성장 ${visibleCount} / ${S.stage<5?200:1200}`;
   const m=S.mem[S.stage];$('#memLine').textContent=`이 단계의 기억 ${m} / 3`+(!bossReady?` · 보스 도전까지 강화 ${remaining}회`:(S.stage<4?'. 보스를 넘으면 다음 별로 진화해요':''));
 }
-function selectDefault(){const gate=GROWTH.state(S.lv),avail=UP.filter(u=>lv(u.id)<u.mx&&!upgradeLock(u,gate));const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP[0]).id}
+function selectDefault(){const gate=GROWTH.state(S.lv),avail=UP.filter(u=>lv(u.id)<u.mx&&!upgradeLock(u,gate));const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP.find(u=>u.r===S.stage)||UP[0]).id}
 $('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||upgradeLock(u))return;const c=cost(u);if(lv(u.id)>=u.mx||S.cur[u.k]<c)return;
   const before=S.stage>=5?Math.min(9,Math.floor(st.bloom*10)):0;
   S.cur[u.k]-=c;S.lv[u.id]=lv(u.id)+1;S.buys++;ensureAudio();tone(note(S.buys),.5,.05,'triangle');pulse={id:u.id,t:0};save();st=stats();refresh();
@@ -420,7 +483,7 @@ $('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||upgradeLock(u))re
   if(after>before){tone(note(12+after),1,.025);toast(`📖 새로운 기록 · ${LIFE.journal[S.stage-5][after][0]}`,3300)}
 };
 $('#go').onclick=()=>startRun(false);
-$('#bossBtn').onclick=()=>{if(S.stage===4&&S.ended)enterLife();else if(S.lifeEnded)showLifeFinale();else startRun(true)};
+$('#bossBtn').onclick=()=>{if(S.stage===4&&S.ended)enterLife();else if(S.stage===9&&S.lifeEnded)showLifeFinale();else startRun(true)};
 $('#setBtn').onclick=e=>{e.stopPropagation();if(!R?.boostPending)$('#settings').classList.toggle('on')};
 $('#catalogBtn').onclick=()=>{
   const previous=mode;if(!['hub','run'].includes(previous))return;
@@ -431,7 +494,7 @@ $('#catalogBtn').onclick=()=>{
   $('#overlay').classList.add('catalog');
 };
 $('#sndBtn').onclick=()=>{S.sound=!S.sound;save();refresh()};
-function startDemo(){if(!demoAllowed||R?.boostPending)return;DEMO=JSON.parse(JSON.stringify(S));const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;S.tut=true;S.stage=4;for(const u of UP)if(u.r<=4)S.lv[u.id]=u.mx;for(let i=0;i<5;i++)S.mem[i]=3;S.cur={light:1e12,metal:1e6,mass:1e4,life:0};S.sel=UP[0].id;st=stats();R=null;applyTheme();closeOv();setMode('hub');toast('풀 업그레이드 체험 중이에요. 원래 진행은 그대로 보관돼요',3600)}
+function startDemo(){if(!demoAllowed||R?.boostPending)return;DEMO=JSON.parse(JSON.stringify(S));const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;S.tut=true;S.stage=S.maxStage=4;for(const u of UP)if(u.r<=4)S.lv[u.id]=u.mx;for(let i=0;i<5;i++)S.mem[i]=3;S.cur={light:1e12,metal:1e6,mass:1e4,life:0};S.sel=UP[0].id;st=stats();R=null;applyTheme();closeOv();setMode('hub');toast('풀 업그레이드 체험 중이에요. 원래 진행은 그대로 보관돼요',3600)}
 function endDemo(){S=DEMO;DEMO=null;st=stats();R=null;applyTheme();closeOv();if(!S.sel)selectDefault();setMode('hub');toast('원래 진행으로 돌아왔어요',2600)}
 $('#demoBtn').onclick=()=>{if(!demoAllowed)return;$('#settings').classList.remove('on');if(DEMO)endDemo();else startDemo()};
 let resetArm=false;
@@ -459,14 +522,17 @@ function startRun(withBoss){
   if(R?.boostPending)return;
   if(withBoss&&!canChallengeBoss()){toast('현재 단계의 다섯 영역 강화를 모두 마치면 보스에 도전할 수 있어요.');return;}
   ensureAudio();st=stats();
-  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
+  const shadowSteps=S.stage>=5&&!withBoss?SHADOWS.count(UP,S.lv,S.stage):0;
+  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],shadows:[],shadowShots:[],shadowSteps,shadowClock:shadowSteps?SHADOWS.firstDelay(shadowSteps):Infinity,shadowTotal:0,shadowPops:0,shadowHitT:0,combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
   refreshBooster();refreshTime();
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
-  setMode('run');
+  setMode('run');refreshShadowHUD();
   if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
+  else if(shadowSteps&&!withBoss)toast('👾 그림자 악당은 톡 눌러 터뜨려요!',2400);
 }
 function refreshBooster(){
   const button=$('#boostBtn'),pending=!!R?.boostPending;
+  button.hidden=S.stage>=5; // The paid booster receipt currently supports original stages only.
   button.disabled=pending;button.textContent=pending?'확인 중…':'부스터 -3ZU';
   button.classList.toggle('active',R?.density===2);button.setAttribute('aria-busy',String(pending));
   button.title=R?.density===2?'3ZU 사용 · 시간 +5초 · 운석과 별 2배 유지':'3ZU 사용 · 시간 +5초 · 이번 판 운석과 별 2배';
@@ -512,6 +578,62 @@ function spawn(t,instant){
   else{x=30+Math.random()*(W-60);y=topY()+Math.random()*(botY()-topY());const a=Math.random()*TAU,sp=(4+Math.random()*10)*U;vx=Math.cos(a)*sp;vy=Math.sin(a)*sp}
   vx*=ty.speed;vy*=ty.speed;
   R.nodes.push({t,x,y,vx,vy,hp,max:hp,age:0,r:ty.r*U,seed:Math.random()*1000,rot:Math.random()*TAU,spin:(Math.random()-.5)*1.2,born:instant?1:0,hit:0});
+}
+function refreshShadowHUD(){
+  const el=$('#shadowCount');el.hidden=!R||S.stage<5||!!R.boss||R.shadowSteps===0;
+  if(!el.hidden)el.textContent=`👾 ${R.shadows.length}`;
+}
+function spawnShadow(){
+  if(!R||R.boss||S.stage<5||R.shadowSteps===0||R.shadows.length>=SHADOWS.maxAlive(R.shadowSteps)||(R.shadowSteps<20&&R.shadowTotal>=1))return false;
+  const cur=cursor();let x=0,y=0;
+  for(let attempt=0;attempt<8;attempt++){
+    x=32+Math.random()*Math.max(1,W-64);
+    y=topY()+30+Math.random()*Math.max(1,botY()-topY()-60);
+    if(Math.hypot(x-cur.x,y-cur.y)>110*U)break;
+  }
+  const r=(18+(S.stage-5)*2+Math.min(6,R.shadowSteps*.03))*U;
+  R.shadows.push({x,y,r,age:0,life:12,fire:2.8+Math.random()*2,seed:Math.random()*100});
+  R.shadowTotal++;refreshShadowHUD();return true;
+}
+function tapShadow(x,y){
+  if(mode!=='run'||!R||S.stage<5||R.boostPending)return false;
+  let target=null,distance=Infinity;
+  for(const enemy of R.shadows){const d=Math.hypot(enemy.x-x,enemy.y-y);if(d<=enemy.r+16*U&&d<distance){target=enemy;distance=d;}}
+  if(!target)return false;
+  R.shadows.splice(R.shadows.indexOf(target),1);R.shadowPops++;
+  const bonus=Math.max(1,Math.ceil((5+R.shadowSteps*.18)*Math.pow(6,S.stage-5)*st.life));
+  S.cur.life+=bonus;R.gain.life+=bonus;rewardPopup(target,[{kind:'life',amount:bonus}]);
+  burst(target.x,target.y,'#ffe3fb',reduce?10:24,2.3);ring(target.x,target.y,target.r*3,.55,'255,210,248',3);
+  tone(note(11+R.shadowPops),.24,.04,'triangle');save();refreshShadowHUD();
+  if(R.shadowPops===1)toast('악당을 터뜨리고 생명력을 얻었어요!',1800);
+  return true;
+}
+function updateShadows(dt,cur){
+  if(!R||!R.shadowSteps||R.boss||S.stage<5)return;
+  R.shadowClock-=dt;
+  if(R.shadowClock<=0){spawnShadow();R.shadowClock+=SHADOWS.interval(R.shadowSteps);}
+  R.shadowHitT=Math.max(0,R.shadowHitT-dt);
+  for(const enemy of R.shadows){
+    enemy.age+=dt;enemy.life-=dt;enemy.fire-=dt;
+    enemy.x=Math.max(enemy.r,Math.min(W-enemy.r,enemy.x+Math.sin(enemy.age*1.6+enemy.seed)*12*U*dt));
+    enemy.y=Math.max(topY()+enemy.r,Math.min(botY()-enemy.r,enemy.y+Math.cos(enemy.age*1.2+enemy.seed)*8*U*dt));
+    if(enemy.fire<=0&&enemy.age>=1){
+      const dx=cur.x-enemy.x,dy=cur.y-enemy.y,d=Math.hypot(dx,dy)||1,speed=(95+12*(S.stage-5))*U;
+      R.shadowShots.push({x:enemy.x,y:enemy.y,vx:dx/d*speed,vy:dy/d*speed,r:5*U,life:4,chapter:S.stage-5});
+      if(R.shadowShots.length>36)R.shadowShots.shift();
+      enemy.fire=Math.max(2.8,4.8-R.shadowSteps/130);
+    }
+  }
+  const before=R.shadows.length;R.shadows=R.shadows.filter(enemy=>enemy.life>0);
+  if(R.shadows.length!==before)refreshShadowHUD();
+  for(const shot of R.shadowShots){
+    shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;
+    if(shot.life>0&&P.has&&Math.hypot(shot.x-cur.x,shot.y-cur.y)<shot.r+14*U){
+      shot.life=0;
+      if(R.shadowHitT<=0){R.heat=Math.max(0,R.heat-.28*st.decay);R.shadowHitT=.75;R.flash=Math.max(R.flash,.12);burst(shot.x,shot.y,'#d8a5ff',reduce?3:8,.8);tone(160,.12,.022,'sine');}
+    }
+  }
+  R.shadowShots=R.shadowShots.filter(shot=>shot.life>0&&shot.x>-30&&shot.x<W+30&&shot.y>-30&&shot.y<H+30);
 }
 function makeBoss(){
   const s=S.stage;
@@ -651,6 +773,7 @@ function updateRun(dt){
     if(TYPES[n.t].fast){if(n.x<-60||n.x>W+60)n.dead=true}
     else{if(n.x<n.r){n.x=n.r;n.vx=Math.abs(n.vx)}if(n.x>W-n.r){n.x=W-n.r;n.vx=-Math.abs(n.vx)}if(n.y<topY()){n.y=topY();n.vy=Math.abs(n.vy)}if(n.y>botY()){n.y=botY();n.vy=-Math.abs(n.vy)}}
   }
+  updateShadows(dt,cur);
   R.satA+=dt*2.4;
   R.tick+=dt;
   while(R.tick>=.1){R.tick-=.1;damageTick(cur,rad)}
@@ -710,7 +833,7 @@ function winBoss(){
   const s=S.stage;
   setTimeout(()=>{
     if(R!==wonRun||S!==wonProgress||mode!=='end'||S.stage!==s)return;
-    if(s<4||s>=5&&s<9){S.stage=s+1;save();st=stats();applyTheme();story(EVO[s],()=>{selectDefault();setMode('hub');toast(`${STAGES[S.stage].name}의 별자리가 열렸다`,3000)})}
+    if(s<4||s>=5&&s<9){S.stage=s+1;S.maxStage=Math.max(S.maxStage,S.stage);save();st=stats();applyTheme();story(EVO[s],()=>{selectDefault();setMode('hub');toast(`${STAGES[S.stage].name}의 별자리가 열렸다`,3000)})}
     else if(s===4){save();ending()}
     else{S.lifeEnded=true;save();showLifeFinale()}
   },900);
@@ -722,10 +845,10 @@ function ending(){
     ['되돌려준다',()=>story(['나는 힘을 내려놓았다.','흩어진 파편들이 천천히 모여 푸른 세계가 되었다.','그 곁에서, 작은 별 하나가 다시 아침을 연다.'],()=>finale('아침의 별'))]
   ]});
 }
-function finale(t){S.ended=true;S.legacyEnding=t;save();overlay(`<h2>${t}</h2><p>별의 끝에서 새로운 차원문이 열렸어요.</p>`,{buttons:[['차원문으로',enterLife,'primary'],['별자리 보기',()=>{closeOv();setMode('hub')}]]})}
+function finale(t){S.ended=true;S.maxStage=Math.max(S.maxStage,5);S.legacyEnding=t;save();overlay(`<h2>${t}</h2><p>별의 끝에서 새로운 차원문이 열렸어요.</p>`,{buttons:[['차원문으로',enterLife,'primary'],['별자리 보기',()=>{closeOv();setMode('hub')}]]})}
 function enterLife(){
   if(S.stage!==4||!S.ended||R?.boostPending)return;
-  S.stage=5;S.lifeStarted=true;R=null;save();st=stats();applyTheme();closeOv();selectDefault();setMode('hub');
+  S.stage=5;S.maxStage=Math.max(S.maxStage,5);S.lifeStarted=true;R=null;save();st=stats();applyTheme();closeOv();selectDefault();setMode('hub');
   const prelude=S.legacyEnding==='아침의 별'?LIFE.portalReturned:S.legacyEnding==='삼킨 별'?LIFE.portalConsumed:[];
   story([...prelude,...LIFE.portal],()=>{selectDefault();setMode('hub');toast('첫 생명의 씨앗을 발견했어요!',3500)});
 }
@@ -1001,6 +1124,8 @@ function drawRun(){
   ctx.save();
   if(R.shake>0)ctx.translate((Math.random()-.5)*R.shake,(Math.random()-.5)*R.shake);
   for(const n of R.nodes)drawNode(n);
+  for(const enemy of R.shadows)SHADOWS.drawEnemy(ctx,enemy,S.stage,T,reduce);
+  for(const shot of R.shadowShots)SHADOWS.drawShot(ctx,shot,T);
   if(R.boss&&R.boss.hp>0)drawBoss(R.boss);
   ctx.globalCompositeOperation='lighter';
   for(const p of R.parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,TAU);ctx.fill()}
@@ -1033,11 +1158,11 @@ treeControls=window.OjjudaSaetbyeolTreeControls.install({canvas:cv,active:()=>mo
 $('#treeFocus').onclick=()=>{if(S.sel)treeControls.focus(TREE[S.sel]);};
 applyTheme();
 window.OjjudaSaetbyeolEntry.connect({
-  upgrades:UP,getState:()=>S,isDemo:()=>!!DEMO,isRunning:()=>mode==='run',loadState:loadProgress,notice:toast,
+  upgrades:UP,getState:()=>S,isDemo:()=>!!DEMO,isRunning:()=>mode==='run',loadState:loadProgress,notice:toast,openChapters,
   allowDemo(allowed){demoAllowed=allowed===true;$('#demoBtn').hidden=!demoAllowed;$('#demoBtn').disabled=!demoAllowed;$('#starDemoNotice').hidden=!demoAllowed;},
   start(growth=false){
     S.intro=true;save();selectDefault();closeOv();
-    if(!growth&&S.stage===4&&S.ended){enterLife();return;}
+    if(!growth&&S.stage===4&&S.ended&&!S.lifeStarted){enterLife();return;}
     if(growth||S.lifeEnded){ensureAudio();setMode('hub');}else startRun(false);
   }
 });

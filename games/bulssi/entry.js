@@ -20,14 +20,14 @@
   }
   function buyBooster(runId, requestId) {
     if (!ready || owner === 'guest') return Promise.resolve({ok:false, reason:'sign_in'});
-    if (game.isDemo() || !game.isRunning() || boost) return Promise.resolve({ok:false, reason:'unavailable'});
+    if (game.isDemo() || !game.isRunning() || game.getState().stage > 4 || boost) return Promise.resolve({ok:false, reason:'unavailable'});
     return new Promise(resolve => {
       boost = {runId, requestId, stage:game.getState().stage, resolve};
       sendBoost();
     });
   }
   function score(state) {
-    const stage = Math.min(4, Math.max(0, Math.floor(Number(state.stage) || 0)));
+    const stage = Math.min(4, Math.max(0, Math.floor(Number(state.stage) || 0), Math.floor(Number(state.maxStage) || 0)));
     // Existing monthly rankings must keep their original score scale.
     const levels = game.upgrades.filter(u => u.r < 5).reduce((sum, u) => sum + Math.min(u.mx, Math.max(0, Math.floor(Number(state.lv?.[u.id]) || 0))), 0);
     const memories = (state.mem || []).slice(0, 5).reduce((sum, n) => sum + Math.min(3, Math.max(0, Math.floor(Number(n) || 0))), 0);
@@ -41,9 +41,10 @@
     const state = game.getState();
     const points = score(state);
     const growth=game.upgrades.filter(u=>Number(state.lv?.[u.id])>0).length;
-    $('#starProgress').textContent=state.stage>=5?`${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${Math.floor(Number(state.cur?.life)||0).toLocaleString('ko-KR')}`:
-      `${names[state.stage] || names[0]} · 성장 점수 ${points.toLocaleString('ko-KR')}점`;
-    $('#starStart').textContent=state.stage===4&&state.ended?'차원문 열기':state.intro?'이어서 키우기':'시작하기';
+    const chapter=state.stage>=5?state.stage-3:1;
+    $('#starProgress').textContent=state.stage>=5?`${chapter}챕터 · ${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${Math.floor(Number(state.cur?.life)||0).toLocaleString('ko-KR')}`:
+      `1챕터 · ${names[state.stage] || names[0]} · 성장 점수 ${points.toLocaleString('ko-KR')}점`;
+    $('#starStart').textContent=state.stage===4&&state.ended&&!state.lifeStarted?'차원문 열기':state.intro?'이어서 키우기':'시작하기';
   }
   function flush() {
     clearTimeout(timer);
@@ -79,7 +80,7 @@
     game.loadState(raw);
     game.allowDemo(admin === true && id !== 'guest');
     ready = true;
-    $('#starStart').disabled = $('#starGrowth').disabled = false;
+    $('#starStart').disabled = $('#starGrowth').disabled = $('#starChapters').disabled = false;
     $('#starEntryHint').textContent = '진행 상황은 이 기기에 자동 저장돼요.';
     refresh();
   }
@@ -131,12 +132,13 @@
     ended(runId) { if (ready && !game.isDemo()) post({type:'ojjuda-game-finished', runId, demo:false}); },
     connect(controller) {
       game = controller;
-      const enter = (growth=false) => {
+      const enter = (growth=false,chapters=false) => {
         if (!ready || !canPlay()) return;
         started = true; $('#starEntry').hidden = true;
-        game.start(growth); save(game.getState());
+        game.start(growth);if(chapters)game.openChapters();save(game.getState());
       };
       $('#starStart').onclick = () => enter();
+      $('#starChapters').onclick = () => enter(true,true);
       $('#starGrowth').onclick = () => enter(true);
       $('#starExit').onclick = () => post({type:'ojjuda-game-exit'});
       $('#starRetry').onclick = flush;
