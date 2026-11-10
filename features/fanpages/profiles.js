@@ -264,10 +264,11 @@ const supplementaryProfiles = {
   illit: {
     sources: [
       { label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/illit/' },
-      { label: '아일릿 MBTI 변경 참고', href: 'https://kprofiles.com/illit-members-profile/' }
+      { label: '아일릿 MBTI 변경 참고', href: 'https://kprofiles.com/illit-members-profile/' },
+      { label: '민주 MBTI 변경 인터뷰', href: 'https://magazine.weverse.io/article/view/2003' }
     ],
     members: {
-      '윤아': { bloodType: 'A', mbti: 'ENFP' }, '민주': { bloodType: 'O', mbti: 'ISTP' },
+      '윤아': { bloodType: 'A', mbti: 'ENFP' }, '민주': { bloodType: 'O', mbti: 'ISTJ' },
       '모카': { bloodType: 'B', mbti: 'ISFP' }, '원희': { bloodType: 'A', mbti: 'ISFP' },
       '이로하': { bloodType: 'A', mbti: 'INFJ' }
     }
