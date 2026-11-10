@@ -29,7 +29,11 @@ try{fs.mkdirSync('/tmp/game-entry-proof',{recursive:true});
  for(const id of ['mole','runner','stacker','breakout']){
  await page.evaluate(id=>entryTest.open(id),id);await page.locator('#gov .game-entry').waitFor();
  const metrics=await page.locator('#gov .game-entry').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,radius:getComputedStyle(el).borderRadius,title:getComputedStyle(el.querySelector('.ge-title')).fontSize,width:Math.round(el.getBoundingClientRect().width)}));
- expected??=metrics;assert.deepEqual(metrics,expected,id+': same entry design');
+ if(id==='runner'){
+  assert.equal(metrics.bg,'rgba(239, 255, 243, 0.93)','runner retains its ocean-themed entry');
+  assert.equal(metrics.radius,'20px');assert.equal(metrics.title,'24px');
+  assert.ok(metrics.width>0&&metrics.width<=335,'runner entry remains within its dedicated stage');
+ }else{expected??=metrics;assert.deepEqual(metrics,expected,id+': same shared entry design');}
  const card=page.locator('#gov .game-entry');assert.ok(await card.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
  if(viewport.width===390)await page.screenshot({path:'/tmp/game-entry-proof/'+id+'.png'});
  await page.locator('[data-g=start]').click();await page.waitForFunction(()=>entryTest.current()?.running);assert.equal(await page.locator('#gov .game-entry').count(),0);

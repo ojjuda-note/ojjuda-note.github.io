@@ -8,7 +8,7 @@ assert.equal(noteLinks?.length,2,'both real Note minihome shortcuts are covered'
 let world=fs.readFileSync(path.join(root,'world.html'),'utf8')
  .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'')
  .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-const nav=fs.readFileSync(path.join(root,'app/world/world-navigation.js'),'utf8');
+const nav=fs.readFileSync(path.join(root,'features/home/agit-hub.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'app/world/world-navigation.js'),'utf8');
 world=world.replace('<script type="module">',`<script>${nav}</script><script type="module">`);
 const boot=world.indexOf('j1(()=>H());gm(');
 assert.ok(boot>0);
@@ -18,9 +18,9 @@ U.cleanupMedia=async()=>({});U.overview=async()=>({});U.contentFeed=async()=>[];
 window.OjjudaNoteAdmin={getTabs:()=>[{id:'cards',label:'카드'},{id:'risk',label:'위험 신호'}],
  mount:(el,options)=>{window.noteOptions=options;el.textContent=options.initialTab},unmount(){},
  selectTab:id=>noteOptions.onTabChange(id)};
-gm(()=>{g.tab='friends';H()});
+gm(()=>worldTest.actions.tab({tab:'hub'}));
 // Match boot order: initial rendering happens before the server role check.
-H();D.online=true;D.user={id:sessionStorage.getItem('fixture-user')||'admin-a'};
+my();D.online=true;D.user={id:sessionStorage.getItem('fixture-user')||'admin-a'};
 D.isAdmin=sessionStorage.getItem('fixture-role')!=='member';
 restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
 `+world.slice(world.indexOf('</script>',boot));
@@ -45,7 +45,7 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   for(const width of [320,390,412,768,899]){
    await page.setViewportSize({width,height:844});
    const layout=await page.locator('.bottomnav').evaluate(el=>({width:el.clientWidth,left:parseFloat(getComputedStyle(el).paddingLeft),right:parseFloat(getComputedStyle(el).paddingRight),gap:parseFloat(getComputedStyle(el).columnGap)||0,buttons:[...el.children].map(b=>({x:b.offsetLeft,width:b.offsetWidth}))}));
-   assert.equal(layout.buttons.length,3);
+   assert.equal(layout.buttons.length,4);
    const expected=(layout.width-layout.left-layout.right-layout.gap*(layout.buttons.length-1))/layout.buttons.length;
    layout.buttons.forEach((b,i)=>{assert.ok(Math.abs(b.width-expected)<=1);assert.ok(Math.abs(b.x-(layout.left+i*(expected+layout.gap)))<=1)});
   }
@@ -70,14 +70,15 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
    await page.waitForURL('https://fixture.test/world.html?place=park');
    assert.ok(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),'Note retains the previous admin session, reproducing the reported route');
    await page.locator('.world-link').nth(index).click();await loaded();
-   assert.equal((await current()).tab,'place','a Note minihome click opens the normal World main screen');
+   assert.equal((await current()).tab,'hub','a Note minihome click opens the normal World main screen');
+   assert.equal(await page.locator('#agit-hub-view').isVisible(),true);
    assert.equal(await page.locator('.adm-header').count(),0,'the ordinary minihome shortcut never opens the administrator screen');
    assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null,'ordinary entry clears stale administrator navigation');
-   await reload();assert.equal((await current()).tab,'place','refresh after an ordinary entry stays out of administrator mode');
+   await reload();assert.equal((await current()).tab,'hub','refresh after an ordinary entry stays out of administrator mode');
   }
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
   await page.goto('https://fixture.test/world.html');await loaded();
-  assert.equal((await current()).tab,'place','direct ordinary World entry does not restore an earlier administrator screen');
+  assert.equal((await current()).tab,'hub','direct ordinary World entry does not restore an earlier administrator screen');
   await page.evaluate(()=>worldTest.actions.tab({tab:'admin'}));
   await page.evaluate(()=>worldTest.actions.tab({tab:'my'}));
   await reload();assert.notEqual((await current()).tab,'admin','leaving admin clears restoration');
@@ -97,6 +98,6 @@ restoreWorldAdminView(new URL(location.href).searchParams.get('admin'));H();
   await page.evaluate(()=>worldTest.clear());
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ojjuda.world.admin-view')),null);
   assert.deepEqual(errors,[]);
-  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 3 equal-width menus at 5 mobile/tablet widths.');
+  console.log('PASS: real reload preserves admin submenus; both Note minihome links and direct entry open World normally; explicit admin links retain role checks; exit, account changes and corrupt storage are safe; 4 equal-width menus at 5 mobile/tablet widths.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

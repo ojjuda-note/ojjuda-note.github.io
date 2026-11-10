@@ -77,7 +77,7 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&
 
 {
   const source=fs.readFileSync(path.join(root,'app/world/world-themes.js'),'utf8');
-  let now=Date.parse('2026-11-05T03:00:00Z');
+  let now=Date.parse('2026-11-03T03:00:00Z');
   const changes=[],greeting={textContent:''};
   class Clock extends Date {
     constructor(...args){super(...(args.length?args:[now]));}
@@ -89,9 +89,12 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&
   context.addEventListener=()=>{};context.dispatchEvent=e=>changes.push(e.type);
   vm.runInNewContext(source,context);
   assert.equal(context.OjjudaThemes.getCurrent(),'autumn');
-  assert.equal(greeting.textContent,'차 한 잔 같은 여유.');
+  assert.equal(greeting.textContent,'오쭈다에서 가을빛 안부를 천천히 나눠요.');
+  now=Date.parse('2026-11-04T03:00:00Z');context.OjjudaThemes.sync();
+  assert.equal(context.OjjudaThemes.getCurrent(),'pepero');
+  assert.equal(changes.length,2,'the script announces the one-week-early event change');
   now=Date.parse('2026-11-11T03:00:00Z');context.OjjudaThemes.sync();
   assert.equal(context.OjjudaThemes.getCurrent(),'pepero');
-  assert.equal(changes.length,2,'the script announces actual theme changes');
+  assert.equal(changes.length,2,'the event day does not repeat an unchanged theme notification');
   console.log('PASS: Korean seasonal/event themes change the greeting and emit the ticker update event');
 }

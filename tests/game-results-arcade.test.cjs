@@ -217,7 +217,7 @@ test('flat screw move exhaustion pauses for a result and preserves the existing 
  for(let n=0;n<50;n++)game.update(.05);assert.equal(game.stage,1);assert.equal(game.continueStage(2),true);assert.equal(game.stage,2);game.destroy();
 });
 for(const [kind,outcomes]of [['chess',['w','b','draw']],['janggi',['c','h','draw']],['carom4',['p1','p2']],['carom3',['p1','p2']],['pool8',['p1','p2']]])for(const mode of ['ai','local'])test(kind+' '+mode+': every guest outcome reaches the shared one-round login flow',async()=>{
- const finished=[],c=vm.createContext({window:{OjjudaGuestAccess:{finished:(...args)=>finished.push(args)}},D:{online:false},console});vm.runInContext(practiceSource,c);
+ const finished=[],c=vm.createContext({adminGamePreviewActive:()=>false,window:{OjjudaGuestAccess:{finished:(...args)=>finished.push(args)}},D:{online:false},console});vm.runInContext(practiceSource,c);
  const session={kind,mode,owner:null};
  await c.savePracticeStreak(session,null);assert.equal(finished.length,0,'opening or closing an unfinished game is not a result');
  for(const winner of outcomes)await c.savePracticeStreak(session,winner);
@@ -235,7 +235,7 @@ for(const kind of ['chess','janggi','carom4','carom3','pool8'])test(kind+': dire
 for(const kind of ['chess','carom4'])test(kind+': failed streak settlement exposes retry inside the result and duplicate retry clicks still save once',async t=>{
  const {JSDOM}=require('jsdom'),dom=new JSDOM(kind==='chess'?'<div id="bd-root"><div class="game-result-extra"></div></div>':'<div id="gov"><div class="bl-ctrl"></div><div class="world-billiards-result"><div class="game-result-extra"></div></div></div>');t.after(()=>dom.window.close());
  let calls=0;const notifications=[],session={kind,mode:'ai',owner:'member',me:'p1',level:'normal',ov:dom.window.document.querySelector('#gov'),streakRound:{id:'round',owner:'member',pending:false,saved:false}};
- const c=vm.createContext({window:{OjjudaGuestAccess:{finished(){}}},document:dom.window.document,D:{online:true,user:{id:'member'}},S:{rpc:async()=>++calls===1?{error:new Error('temporary offline')}:{data:{ok:true}}},k:kind==='chess'?null:session,E:kind==='chess'?session:null,notifyStreakSaved:owner=>notifications.push(owner),M(){},console:{error(){}}});
+ const c=vm.createContext({adminGamePreviewActive:()=>false,window:{OjjudaGuestAccess:{finished(){}}},document:dom.window.document,D:{online:true,user:{id:'member'}},S:{rpc:async()=>++calls===1?{error:new Error('temporary offline')}:{data:{ok:true}}},k:kind==='chess'?null:session,E:kind==='chess'?session:null,notifyStreakSaved:owner=>notifications.push(owner),M(){},console:{error(){}}});
  vm.runInContext(practiceSource,c);await c.savePracticeStreak(session,'p1');
  const retry=dom.window.document.querySelector('.game-result-extra button');assert.ok(retry,'retry is in the visible result, not behind the game overlay');assert.equal(calls,1);
  retry.onclick();retry.onclick();await new Promise(resolve=>setImmediate(resolve));

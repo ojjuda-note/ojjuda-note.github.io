@@ -28,8 +28,8 @@ function fixture(t,stored,{admin=false,storageBlocked=false,buy}={}){
   load();return {w,d,$,state,current,round,load,select,tap,solve,advance,charges,records,tools};
 }
 
-test('only the first picture is selectable; a native select change, automation tool and stale Next cannot skip',t=>{
-  const f=fixture(t,null,{admin:true}),first=order[0];
+test('for ordinary members only the first picture is selectable; a native select change, automation tool and stale Next cannot skip',t=>{
+  const f=fixture(t),first=order[0];
   assert.equal(f.current(),first);
   assert.deepEqual(Array.from(f.$('stage-picker').options,o=>[Number(o.value),o.disabled]),order.map(i=>[i,i!==first]));
   for(const index of order.slice(1)){
@@ -38,7 +38,22 @@ test('only the first picture is selectable; a native select change, automation t
   }
   for(const id of ['next','continue','celebration-next','retry-next'])f.$(id).onclick();
   assert.equal(f.current(),first);assert.deepEqual(f.records,[]);assert.deepEqual(f.charges,[]);
-  assert.equal(f.$('reveal-answers').hidden,false,'answer-view privilege does not unlock stages');
+  assert.equal(f.$('reveal-answers').hidden,true,'ordinary members cannot view administrator answers');
+});
+
+test('administrator preview can select every picture without changing real progress or charging',async t=>{
+  const stored={version:2,current:order[0],completed:[]};
+  const f=fixture(t,stored,{admin:true});
+  assert.deepEqual(Array.from(f.$('stage-picker').options,o=>o.disabled),order.map(()=>false));
+  assert.equal(f.$('reveal-answers').hidden,false);
+  for(const index of order){f.select(index);assert.equal(f.current(),index);}
+  await f.$('hint').onclick();await f.$('extend').onclick();
+  f.$('close-answers').click();f.$('start').click();
+  for(const spot of spots)f.tap(spot.x,spot.y);await flush();
+  assert.equal(f.$('celebration').open,true,'the preview can complete a previously locked picture');
+  assert.deepEqual(f.state(),stored,'preview does not write real progression');
+  assert.deepEqual(f.records,[],'preview does not submit rankings');
+  assert.deepEqual(f.charges,[],'preview does not spend ZU');
 });
 
 test('partial answers, time expiry and failed retry keep the next picture locked',t=>{

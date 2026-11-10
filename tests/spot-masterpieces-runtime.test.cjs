@@ -44,14 +44,14 @@ function checkProgressNormalization(){
  assert.equal(legacy.pending,null,'legacy stages still reject a seventh hint index');assert.equal(legacy.status,'ready');
 }
 
-function domFixture(stored){
+function domFixture(stored,{admin=false}={}){
  const dom=new JSDOM(read('index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,''),{url:'https://fixture.test/games/spot-difference/',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,$=id=>w.document.getElementById(id),scores=[],requests=[],registered=[];
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  w.scrollTo=()=>{};w.confirm=()=>true;
  w.document.modelContext={registerTool:tool=>registered.push(tool)};
- const account={ready:true,userId,coins:100,canViewAnswers:true};
+ const account={ready:true,userId,coins:100,canViewAnswers:admin};
  w.JjudaWallet={getState:()=>account,subscribe:fn=>fn(account),refresh:async()=>{},recordClear:async(owner,stage)=>{scores.push({owner,stage});return {ok:true};},buy:async(request,stage)=>{requests.push({...request,stage});return {ok:true,kind:request.kind,stage,spot:request.spot,price:1};}};
  w.JJUDA_PUZZLES=JSON.parse(JSON.stringify(fixtures));
  w.eval(read('game-core.js'));
@@ -109,12 +109,18 @@ async function checkRuntime(){
   f.w.JJUDA_PUZZLES[1].artwork.sourceUrl='javascript:alert(1)';f.select(1);
   assert.equal(f.$('artwork-credit').querySelector('a'),null,'non-HTTPS source URLs never become links');
  }finally{f.w.close();}
- const review=domFixture();try{
-  review.$('start').click();review.$('reveal-answers').click();
+ const review=domFixture(undefined,{admin:true});try{
+  const before=review.state();
+  assert.equal(review.$('start').disabled,true,'administrator preview opens the answers without starting a scored round');
   assert.equal(review.$('answer-count').textContent,'다른 곳 10개');assert.equal(review.$('review-answers').children.length,10);
-  assert.equal(review.w.document.querySelectorAll('.answer-mark').length,40);assert.equal(review.round().status,'ready');assert.equal(review.round().deadline,null);
+  assert.equal(review.w.document.querySelectorAll('.answer-mark').length,40);
+  assert.equal(review.registered.find(t=>t.name==='read_game_progress').execute().status,'ready');
   assert.match(review.$('message').textContent,/정답 10곳/);assert.deepEqual(review.scores,[]);assert.deepEqual(review.requests,[]);
-  review.$('close-answers').click();assert.equal(review.round().status,'playing');
+  review.$('close-answers').click();assert.equal(review.$('start').disabled,false);
+  review.$('start').click();
+  for(let i=0;i<10;i++)review.tap(i);await flush();
+  assert.deepEqual(review.scores,[],'administrator preview never records a clear');
+  assert.deepEqual(review.state(),before,'administrator preview preserves saved progress');
  }finally{review.w.close();}
  const pending={kind:'hint',spot:9,requestId,userId};
  const recovery=domFixture({version:2,current:1,found:{82:[...Array(9).keys()]},rounds:{82:{...core.freshRound(),status:'payment',hearts:1,remainingMs:1000,totalMs:120000,paid:[0,8],hintIndex:8,timeBought:true,assisted:true,rankOwner:userId,pending}}});

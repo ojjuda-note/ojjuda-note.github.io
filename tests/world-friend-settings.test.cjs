@@ -54,7 +54,7 @@ async function until(condition) { for (let i=0; i<50; i++) { if(condition())retu
   assert.equal(group().open,true);
   assert.ok(group().textContent.includes('친구 1명'));
   assert.equal(group().querySelector('[data-act="visit"]'),null);
-  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['오락실','공원','설정']);
+  assert.deepEqual([...doc.querySelectorAll('.bottomnav [data-tab]')].map(item=>item.textContent.trim()),['아지트','오락실','공원','설정']);
 
   const search=doc.querySelector('#fr-q');search.value='새 친구';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   doc.querySelector('#fr-search-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));

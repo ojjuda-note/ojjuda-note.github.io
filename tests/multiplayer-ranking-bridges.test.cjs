@@ -43,7 +43,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   const app=read('games/spot-difference/app.js'),finish=app.slice(app.indexOf('  function finish(reason){'),app.indexOf('  function tick(){'));
   for(const [stage,total] of [[17,6],[82,10],[83,10],[152,10]]){
    const messages=[],r0={status:'playing',rankOwner:'a',assisted:true,paid:[0],timeBought:true},p={id:stage,spots:Array.from({length:total},()=>({}))};
-   const context={state:{completed:[1]},round:()=>r0,core:{timeLeft:()=>12000},zoomDialog:{open:false},hideHint(){},refresh(){},speak(){},celebrate(){},showFailure(){},$:()=>({focus(){}}),
+   const context={previewSession:false,state:{completed:[1]},round:()=>r0,core:{timeLeft:()=>12000},zoomDialog:{open:false},hideHint(){},refresh(){},speak(){},celebrate(){},showFailure(){},$:()=>({focus(){}}),
     found:()=>Array.from({length:total},(_,i)=>i),puzzle:()=>p,targetCount:()=>p.spots.length,window:{scrollTo(){},location:{origin:'https://fixture.test'},parent:{postMessage:m=>messages.push(m)}},wallet:{}};
    vm.runInNewContext(finish+'finish("won");',context);
    assert.deepEqual(messages.filter(m=>m.type==='ojjuda:spot-clear').map(m=>[m.stage,m.owner]),[[stage,'a']],'paid completion records the actual picture ID and owner');

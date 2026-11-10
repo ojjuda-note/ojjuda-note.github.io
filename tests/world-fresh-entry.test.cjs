@@ -18,6 +18,7 @@ function fixture(t) {
   w.eval(`
     var D={online:true,user:{id:'member-a'}},S={rpc:(...args)=>window.rpc(...args)},g={tab:'arcade',place:'arcade'};
     var E=null,k=null,R=null,worldGameAssetRequest=0,worldRecommendedRestaurants=null;
+    function adminGamePreviewActive(){return false;}
     function dt(){document.getElementById('modal-root').replaceChildren();}
     function Uo(){} function mn(){document.getElementById('gov')?.remove();}
     function notifyStreakSaved(owner){window.saved(owner);} function M(message){window.notice(message);}

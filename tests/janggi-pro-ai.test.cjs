@@ -109,6 +109,7 @@ test('advanced Janggi results use the existing hard leaderboard', async () => {
  const end = source.indexOf('\n}\n', start) + 2;
  const calls = [];
  const ctx = vm.createContext({
+  adminGamePreviewActive: () => false,
   D: { online: true, user: { id: 'member' } },
   JG_EXTRA_LEVELS: [['pro', '프로'], ['master', '마스터'], ['grandmaster', '그랜드마스터']],
   S: { rpc: async (_name, data) => { calls.push(data); return { data: { ok: true } }; } },
@@ -122,4 +123,22 @@ test('advanced Janggi results use the existing hard leaderboard', async () => {
   assert.equal(calls[index].p_difficulty, 'hard');
   assert.equal(sessionRound.saved, true);
  }
+});
+
+test('administrator preview never submits a practice result',async()=>{
+ const start=source.indexOf('async function savePracticeStreak(');
+ const end=source.indexOf('\n}\n',start)+2;
+ let calls=0,guestFinishes=0;
+ const ctx=vm.createContext({
+  adminGamePreviewActive:()=>true,
+  window:{OjjudaGuestAccess:{finished(){guestFinishes++;}}},
+  D:{online:true,user:{id:'member'}},
+  S:{rpc:async()=>{calls++;return {data:{ok:true}};}}
+ });
+ vm.runInContext(source.slice(start,end),ctx);
+ const round={id:'preview',owner:'member',saved:false,pending:false};
+ await ctx.savePracticeStreak({kind:'janggi',mode:'ai',level:'pro',owner:'member',streakRound:round},'c');
+ await ctx.savePracticeStreak({kind:'janggi',mode:'ai'},'c');
+ assert.equal(calls,0);assert.equal(guestFinishes,0);
+ assert.equal(round.saved,false);assert.equal(round.pending,false);
 });
