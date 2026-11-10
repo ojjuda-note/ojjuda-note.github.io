@@ -74,6 +74,10 @@ async function screenshot(page,name){
      try{
       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
       assertFits(value,`${label}: all cards fit on entry`);
+      if(viewport.width===844&&viewport.height===390){
+       assert(value.viewport.height>=268,`${label}: compact toolbar preserves readable board height`);
+       for(const box of value.controls.slice(3))assert(box.height>=42,`${label}: action targets stay usable`);
+      }
       assert(value.cols<=E.MAX_FLOOR_COLS&&value.rows<=E.MAX_FLOOR_ROWS&&value.cols*value.rows<=E.MAX_FLOOR_CELLS,`${label}: landscape and portrait use a compact footprint`);
       const minTile=viewport.width<=344?19:viewport.width>viewport.height?23:26;
       assert(value.tile.width>=minTile,`${label}: cards remain readable on entry`);
@@ -130,6 +134,23 @@ async function screenshot(page,name){
    await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'true','a readable enlarged tile responds to touch');
    await zoomedTile.tap();assert.equal(await zoomedTile.getAttribute('aria-pressed'),'false','an enlarged tile can be deselected');
    await page.locator('#zoom-fit').click();assertFits(await layout(page),'return to all tiles');
+   // A 150-card upper floor can cover every lower card on a fresh stage 7.
+   // Reveal a lower card through legal matches instead of assuming a hole in
+   // the generated opening. Keep the real hit-testing assertion below intact.
+   for(let cleared=0;cleared<E.TILES_PER_FLOOR/2;cleared++){
+    const setup=await page.evaluate(()=>{
+     const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')),grids=[state.grid,...state.upcoming];
+     const exposed=grids[1]?.some((row,r)=>row.some((value,c)=>value!==-1&&window.TileGarden.isExposed(grids,{layer:1,r,c})));
+     return {exposed,move:window.TileGarden.exposedMoves(grids),total:grids.flat(2).filter(v=>v!==-1).length};
+    });
+    if(setup.exposed)break;
+    assert(setup.move,'legal upper matches can reveal a lower tile');
+    await page.locator(tileSelector(setup.move.a)).tap();await page.locator(tileSelector(setup.move.b)).tap();
+    await page.waitForFunction(total=>{
+     const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));
+     return [state.grid,...state.upcoming].flat(2).filter(v=>v!==-1).length===total-2;
+    },setup.total);
+   }
    // Transparent areas of an upper floor must not swallow taps on uncovered
    // tiles below. A layer is a full rectangular grid despite its empty cells.
    const lower=await page.evaluate(()=>{
@@ -148,9 +169,9 @@ async function screenshot(page,name){
    await lowerTile.tap();assert.equal(await lowerTile.getAttribute('aria-pressed'),'true','tapping a lower tile selects it');
    await lowerTile.tap();assert.equal(await lowerTile.getAttribute('aria-pressed'),'false','tapping the lower tile again deselects it');
    const move=await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return window.TileGarden.exposedMoves([state.grid,...state.upcoming]);});
-   const before=await snapshot(page);await page.locator(tileSelector(move.a)).tap();await page.locator(tileSelector(move.b)).tap();
-   await page.waitForFunction(before=>JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')).grid.flat().filter(v=>v!==-1).length===before-2,before.state.grid.flat().filter(v=>v!==-1).length);
-   assert.equal((await layout(page)).total,E.stageInfo(7).total-2,'touch removes one pair across a layered stage');
+   const beforeTotal=(await layout(page)).total;await page.locator(tileSelector(move.a)).tap();await page.locator(tileSelector(move.b)).tap();
+   await page.waitForFunction(total=>{const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return [state.grid,...state.upcoming].flat(2).filter(v=>v!==-1).length===total-2;},beforeTotal);
+   assert.equal((await layout(page)).total,beforeTotal-2,'touch removes one pair across a layered stage');
    const progress=await snapshot(page),tileSize=(await layout(page)).tile.width;
    for(let i=0;i<4;i++)await page.locator('#zoom-in').click();
    assert((await layout(page)).tile.width>tileSize*1.5,'zoom enlarges tiny tiles');
