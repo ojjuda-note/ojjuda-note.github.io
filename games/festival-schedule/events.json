@@ -20104,6 +20104,76 @@
         "교류공연",
         "무료"
       ]
+    },
+    {
+      "id": "naju-geumseongsan-mediofondo-20261114",
+      "title": "2026 나주 금성산 메디오폰도",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "사이클링",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "전남",
+      "city": "나주시",
+      "venue": "나주시 영산강 둔치체육공원",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "나주시사이클연맹 주관의 83.8km 메디오폰도 사이클 대회입니다. 로드사이클·MTB 부문 선수들이 금성산 일대를 달립니다.",
+      "scheduleNote": "11월 14일 06:00~08:00 준비·배번호 수령, 07:50 개회식, 08:00 출발, 13:00 이후 시상·폐회 예정(공식 주관·접수 대행 안내).",
+      "priceNote": "선수 참가비 44,000원 / 일반 관람료 공식 안내 확인",
+      "accessNote": "선수는 만 19세 이상 신청 대상입니다. 공식 접수 페이지에 재고 부족으로 구매 불가 표시. 일반 관람 허용 구역·예매 여부는 공식 안내 확인.",
+      "sourceUrl": "https://soomagency.kr/shop/item.php?it_id=1792321545",
+      "sourceName": "나주시사이클연맹 위탁 대회 접수처 숨에이전시",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://soomagency.kr/data/editor/2610/2af797bd19bc78fa53a230ab46d198d0_1792324021_7814.png"
+      ],
+      "tags": [
+        "사이클링",
+        "메디오폰도",
+        "로드자전거",
+        "MTB",
+        "생활체육"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "naju-yeongsangang-riding-festival-20261114",
+      "title": "2026 나주시 영산강 라이딩 페스티벌",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "사이클링",
+      "start": "2026-11-14",
+      "end": "2026-11-14",
+      "region": "전남",
+      "city": "나주시",
+      "venue": "나주시 영산강 둔치체육공원",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "나주시사이클연맹이 주관하는 영산강 자전거길 21km 라이딩 행사입니다. 나주시민과 자전거 동호인 대상이며 메디오폰도 신청자 우선 선발입니다.",
+      "scheduleNote": "11월 14일 12:00~14:00 준비·배번호 수령, 13:50 개회식, 14:00 출발, 15:00 기념품·간식 배부, 15:30 경품 추첨·폐회 예정.",
+      "priceNote": "선수 참가비 무료(공식 접수 0원) / 일반 관람료 공식 안내 확인",
+      "accessNote": "메디오폰도 신청자 우선 참가 선정, 일반 신청자는 잔여 인원에 따라 선정. 11월 10일 최종 참가 확정 문자 발송 안내. 공식 접수 페이지 구매 불가 표시. 일반 관람 허용 여부 공식 안내 확인.",
+      "sourceUrl": "https://soomagency.kr/shop/item.php?it_id=1793327760",
+      "sourceName": "나주시사이클연맹 위탁 대회 접수처 숨에이전시",
+      "sourceCheckedAt": "2026-11-11",
+      "verificationSources": [
+        "https://soomagency.kr/data/editor/2610/2c58dd59b99ab65e40f20af8b0e905d4_1793327845_0792.png"
+      ],
+      "tags": [
+        "영산강",
+        "자전거",
+        "라이딩",
+        "생활체육",
+        "동호인"
+      ],
+      "status": "scheduled"
     }
   ]
 }
