@@ -85,12 +85,17 @@ g.tab='friends'; H();
         'rotated portrait mode keeps original canvas proportions');
       assert.ok(Math.abs(ratio - 16 / 9) < .008,
         'character proportions stay consistent with the landscape reference');
-      const mapped = await page.evaluate(() => {
-        const b = document.querySelector('#gcv').getBoundingClientRect();
-        return Cl({ clientX: b.left + b.width / 2, clientY: b.top + b.height / 4 })[0];
-      });
-      assert.ok(Math.abs(mapped - (phoneTurned ? 90 : 180)) < 1,
-        'canvas taps map correctly even when the phone stage is rotated');
+      const directTap = await page.evaluate(turned => {
+        const cv = document.querySelector('#gcv'), b = cv.getBoundingClientRect();
+        cv.dispatchEvent(new PointerEvent('pointerdown', {
+          bubbles: true, cancelable: true, pointerId: 23,
+          clientX: b.left + b.width * (turned ? .3 : .8),
+          clientY: b.top + b.height * (turned ? .8 : .3)
+        }));
+        return runnerTest.current.game.state.sliding;
+      }, phoneTurned);
+      assert.equal(directTap, true,
+        'right-side stage tap slides immediately even in rotated phone mode');
       assert.ok(await page.evaluate(() => runnerTest.current.game.state.speed >= 450),
         'action begins at high speed without a slow introduction');
       assert.ok(await page.locator('.jju-controls [data-g="key:ArrowUp"]').isVisible());
