@@ -39,7 +39,7 @@
 <script src="/shared/games/game-results.js?v=20261109-unified-multiplayer-ui2" defer></script>
 <script src="/app/world/world-navigation.js?v=20261106-source-folders1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-themes3">
+<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-hero-mist1">
 <script src="/features/home/agit-hub.js?v=20261110-admin-record-free1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
@@ -1465,7 +1465,7 @@ vl=async function(name,args,request){
  return originalWorldGameRpc(name,args,request);
 };
 function Al(t,options={}){
- if(adminGamePreviewActive()&&['roulette','poker','bang'].includes(t)){
+ if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive()&&['roulette','poker','bang'].includes(t)){
   M('관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
  }
  if(t==="group"){
