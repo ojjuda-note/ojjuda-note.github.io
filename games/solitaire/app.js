@@ -228,8 +228,36 @@ async function finish(){
   locked=winPlaying;updateStats();
 }
 const dialog=$('#dialog');
+const entryDialog=$('#entry-dialog');
+let entryDraw=state.drawCount;
+function chooseEntryDraw(value){
+  entryDraw=value===3?3:1;
+  entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>{
+    button.setAttribute('aria-pressed',String(Number(button.dataset.entryDraw)===entryDraw));
+  });
+}
+function showEntry(){
+  const resumable=(started||state.moves>0)&&!isWon(state);
+  chooseEntryDraw(state.drawCount);
+  $('#entry-continue').hidden=!resumable;
+  const start=$('#entry-start');
+  start.classList.toggle('entry-primary',!resumable);
+  start.classList.toggle('entry-secondary',resumable);
+  start.querySelector('.entry-start-label').textContent=resumable?'새 게임 시작':'게임 시작';
+  $('#entry-note').textContent=resumable?'새 게임을 시작하면 진행 중인 카드 배치는 바뀌어요.':'난이도를 고른 뒤 시작하세요.';
+  lastTick=Date.now();
+  entryDialog.showModal();
+  (resumable?$('#entry-continue'):start).focus({preventScroll:true});
+}
+entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>button.onclick=()=>chooseEntryDraw(Number(button.dataset.entryDraw)));
+$('#entry-continue').onclick=()=>{entryDialog.close();lastTick=Date.now();$('#stock')?.focus({preventScroll:true});};
+$('#entry-start').onclick=()=>{entryDialog.close();startNewGame(entryDraw);$('#stock')?.focus({preventScroll:true});};
+$('#entry-help').onclick=()=>help();
+$('#entry-exit').onclick=()=>requestExit();
+entryDialog.addEventListener('cancel',event=>event.preventDefault());
+entryDialog.addEventListener('close',()=>{lastTick=Date.now();});
 function openDialog(html){
-  const now=Date.now();if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
+  const now=Date.now();if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
   $('#dialog-content').innerHTML=html;lastTick=now;if(!dialog.open)dialog.showModal();
   $('#dialog-content').querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>dialog.close());
 }
@@ -257,7 +285,7 @@ function help(){
 function pause(){if(locked||isWon(state))return;openDialog('<div class="dialog-icon">Ⅱ</div><div class="dialog-kicker">TAKE YOUR TIME</div><h2 class="dialog-title">잠깐 쉬어 가요</h2><p class="dialog-text">카드도 시간도 잠시 멈췄어요.<br>준비되면 이어서 즐겨 주세요.</p><div class="dialog-buttons"><button class="primary" data-close>게임 계속하기</button></div>');save();}
 function win(){
   const now=Date.now();
-  if(started&&!document.hidden&&!dialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
+  if(started&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
   lastTick=now;
   if(!completion){
     const seconds=Math.max(1,Math.ceil(elapsed/1000));
@@ -278,17 +306,17 @@ function showWinResult(){
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){for(let i=0;i<45;i++){const p=document.createElement('span');p.className='confetti-piece';p.style.left=`${Math.random()*100}%`;p.style.animationDelay=`${Math.random()*.6}s`;p.style.animationDuration=`${2+Math.random()*2}s`;$('#confetti').append(p);}setTimeout(()=>$('#confetti').replaceChildren(),5000);}
 }
 $('#new-game').onclick=newGameDialog;$('#settings').onclick=newGameDialog;$('#help').onclick=help;$('#pause').onclick=pause;$('#undo').onclick=undo;$('#hint').onclick=hint;$('#auto').onclick=finish;
-document.addEventListener('keydown',e=>{if(dialog.open||locked)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();}else if(e.key.toLowerCase()==='h'){hint();}else if(e.key==='Escape'){e.preventDefault();requestExit();}else if(e.code==='Space'&&e.target===document.body){e.preventDefault();commit(()=>draw(state));}});
+document.addEventListener('keydown',e=>{if(dialog.open||entryDialog.open||locked)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();}else if(e.key.toLowerCase()==='h'){hint();}else if(e.key==='Escape'){e.preventDefault();requestExit();}else if(e.code==='Space'&&e.target===document.body){e.preventDefault();commit(()=>draw(state));}});
 document.addEventListener('visibilitychange',()=>{lastTick=Date.now();save();});window.addEventListener('pagehide',save);window.addEventListener('resize',layout);
 let timerTicks=0;
-setInterval(()=>{const now=Date.now();if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!externalPaused){elapsed+=Math.max(0,now-lastTick);$('#time').textContent=formatTime(elapsed);}lastTick=now;if(++timerTicks%5===0)save();},1000);
+setInterval(()=>{const now=Date.now();if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused){elapsed+=Math.max(0,now-lastTick);$('#time').textContent=formatTime(elapsed);}lastTick=now;if(++timerTicks%5===0)save();},1000);
 const view=createViewport({
   cancelDrag:()=>{if(pointer)endDrag({pointerId:pointer.id},true);selected=null;lastTap=null;document.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));},
   suppressClick:()=>{ignoreClickUntil=Date.now()+450;},
-  canInteract:()=>!locked&&!dialog.open,
+  canInteract:()=>!locked&&!dialog.open&&!entryDialog.open,
   relayout:layout
 });
-render();save();
+render();save();showEntry();
 
 function notifyArcade(type,data={}){if(window.parent!==window)window.parent.postMessage({source:'ojjuda-solitaire',type,...data},location.origin);}
 function requestExit(){
@@ -300,7 +328,7 @@ function requestExit(){
 $('#game-home').onclick=requestExit;
 window.OjjudaSolitaireControls={save,pause(){
   const now=Date.now();
-  if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
+  if(started&&!isWon(state)&&!document.hidden&&!dialog.open&&!entryDialog.open&&!externalPaused)elapsed+=Math.max(0,now-lastTick);
   externalPaused=true;lastTick=now;
   if(pointer)endDrag({pointerId:pointer.id},true);
   save();
