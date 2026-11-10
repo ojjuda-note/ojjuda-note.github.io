@@ -70,7 +70,8 @@ assert.match(assets,/restaurants:'\d+\.\d+\.\d+'/);
 assert.ok(world.includes('world-game-assets.js?v=' + release.revision));
 const restaurantRevision = index.match(/app\.js\?v=(\d{8}-restaurants-[a-z0-9-]+)/)?.[1];
 assert.ok(restaurantRevision,'restaurant-specific app cache revision must survive other game releases');
-assert.ok(frame.includes('index.html?v=' + restaurantRevision));
+const guideRevision = assets.match(/world-restaurant-guide\.js\?v=([\w-]+)/)?.[1];
+assert.ok(guideRevision && frame.includes('index.html?v=' + guideRevision),'embedded guide keeps its own cache revision');
 console.log('Restaurant slot49 official source, history, ID, location safety and deployment revision checks passed');
 
 const guri = file("games/certified-restaurants/official-guri-slot15.json");

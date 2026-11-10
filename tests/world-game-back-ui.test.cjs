@@ -200,7 +200,7 @@ window.childReady=true;
         await page.evaluate(() => backFixture.open('stacker'));
         await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
         await page.locator('#gov .ghead [data-g="close"]').click();
-        await page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true}).getByRole('button',{name:'오락실로 나가기',exact:true}).click();
+        // An unstarted game closes directly; running games ask for confirmation.
         await arcade();
       }
       assert.equal(await page.evaluate(() => history.length), historySize, 'reopening does not grow duplicate return entries');
