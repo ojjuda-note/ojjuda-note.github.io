@@ -31,6 +31,9 @@ assert.equal(new Set(artists.map((artist) => artist.id)).size, artists.length, '
 assert.equal(new Set(popularity.rankedIds).size, popularity.rankedIds.length, 'Duplicate popularity id');
 assert.ok(popularity.source.startsWith('https://'), 'Popularity ranking needs an attribution URL');
 assert.match(popularity.asOf, /^\d{4}-\d{2}-\d{2}$/, 'Popularity ranking needs a reference date');
+assert.match(popularity.weekStart, /^\d{4}-\d{2}-\d{2}$/, 'Weekly ranking needs a week start');
+assert.equal((Date.parse(popularity.asOf) - Date.parse(popularity.weekStart)) / 86400000, 6, 'Weekly ranking must span seven days');
+assert.ok(popularity.rankedIds.length >= 10, 'Weekly ranking must contain multiple verified groups');
 for (const id of popularity.rankedIds) assert.ok(artists.some((artist) => artist.id === id), `Unknown popularity id: ${id}`);
 for (const page of ['index.html', 'artist.html']) {
   const html = read(page);

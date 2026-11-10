@@ -14,8 +14,8 @@
   <script src="./photo-manifest.js?v=20261110-mirror1" defer></script>
   <script src="./artists.js?v=20261111-lineup21" defer></script>
   <script src="./artists-extra.js?v=20261111-lineup21" defer></script>
-  <script src="./popularity.js?v=20261111-popularity1" defer></script>
-  <script src="./fan.js?v=20261111-popularity1" defer></script>
+  <script src="./popularity.js?v=20261111-weekly1" defer></script>
+  <script src="./fan.js?v=20261111-weekly1" defer></script>
 <script src="/shared/navigation/section-back.js?v=20261110-navigation-return1" data-return-to="hub" defer></script></head>
 <body data-page="hub">
   <header class="site-topbar">
@@ -49,7 +49,7 @@
 
     <section class="wrap hub-list-section" id="artists">
       <div class="section-line"><div><span class="section-overline">YOUR IDOL, YOUR SCENE</span><h2>아티스트 <span id="artist-total">30</span></h2></div><label class="search-control"><span aria-hidden="true">⌕</span><input id="artist-search" type="search" placeholder="아이돌 검색" aria-label="아이돌 검색"></label></div>
-      <div class="filter-line"><div class="filter-pills" role="group" aria-label="아티스트 분류"><button class="filter-pill is-active" type="button" data-category="all" aria-pressed="true">전체</button><button class="filter-pill" type="button" data-category="girl" aria-pressed="false">여돌</button><button class="filter-pill" type="button" data-category="boy" aria-pressed="false">남돌</button><button class="filter-pill" type="button" data-category="saved" aria-pressed="false">♡ 관심</button></div><div class="filter-meta"><a class="sort-source" href="https://m.anewsa.com/article_sub3.php?number=3207794" target="_blank" rel="noopener noreferrer" title="2026년 10월 통합 아이돌그룹 브랜드평판 상위권 기준 · 순위 밖 그룹은 가나다순">인기순 <span>· 10월 평판 참고 ↗</span></a><span class="filter-count" id="filter-count"></span></div></div>
+      <div class="filter-line"><div class="filter-pills" role="group" aria-label="아티스트 분류"><button class="filter-pill is-active" type="button" data-category="all" aria-pressed="true">전체</button><button class="filter-pill" type="button" data-category="girl" aria-pressed="false">여돌</button><button class="filter-pill" type="button" data-category="boy" aria-pressed="false">남돌</button><button class="filter-pill" type="button" data-category="saved" aria-pressed="false">♡ 관심</button></div><div class="filter-meta"><a class="sort-source" id="popularity-source" href="https://k-popit.com/board/rankings/weekly?mode=global" target="_blank" rel="noopener noreferrer" title="최근 주간 글로벌 인기순위 상위 30 기준 · 순위 밖 그룹은 가나다순">인기순 <span>· 주간 순위 ↗</span></a><span class="filter-count" id="filter-count"></span></div></div>
       <div class="artist-grid" id="artist-grid"><noscript>JavaScript를 켜면 아티스트를 볼 수 있어요.</noscript></div>
       <div class="empty-content" id="empty-content" hidden>검색 결과가 없어요.</div>
     </section>

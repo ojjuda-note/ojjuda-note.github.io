@@ -1,16 +1,17 @@
-/* 2026-10-14: Combined idol-group brand-reputation top 30 published by
-   Korea Corporate Reputation Research Institute, limited to groups here.
-   Unranked groups follow in Korean name order; NCT's parent-group rank is
-   not applied to the DREAM or WISH units. */
+/* K-POPIT BOARD weekly global PWR top 30, limited to registered groups.
+   The week covers Monday–Sunday (KST). Solo artists and unlisted groups
+   are excluded; registered groups outside the chart follow 가나다순. */
 (() => {
   'use strict';
   window.OJJUDA_FAN_POPULARITY = Object.freeze({
-    asOf: '2026-10-14',
-    source: 'https://m.anewsa.com/article_sub3.php?number=3207794',
+    weekStart: '2026-11-02',
+    asOf: '2026-11-08',
+    source: 'https://k-popit.com/board/rankings/weekly?mode=global',
     rankedIds: Object.freeze([
-      'rescene', 'bts', 'ateez', 'ive', 'blackpink', 'seventeen',
-      'aespa', 'twice', 'kiiikiii', 'enhypen', 'lesserafim', 'illit',
-      'idle', 'straykids', 'stayc', 'hearts2hearts'
+      'rescene', 'illit', 'treasure', 'ateez', 'a2olite',
+      'enhypen', 'bts', 'blackpink', 'ive', 'riize', 'twice',
+      'nmixx', 'tws', 'babymonster', 'boynextdoor',
+      'nctdream', 'aespa'
     ])
   });
 })();

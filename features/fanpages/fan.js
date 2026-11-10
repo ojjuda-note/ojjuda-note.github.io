@@ -193,6 +193,14 @@
   }
 
   function initHub() {
+    const rankSource = $('#popularity-source');
+    if (rankSource && popularity.weekStart && popularity.asOf && popularity.source) {
+      const from = popularity.weekStart.slice(5).replace('-', '.');
+      const to = popularity.asOf.slice(5).replace('-', '.');
+      rankSource.href = popularity.source;
+      rankSource.title = `${popularity.weekStart} ~ ${popularity.asOf} 주간 글로벌 인기순위 상위 30 기준 · 순위 밖 그룹은 가나다순`;
+      rankSource.querySelector('span').textContent = `· ${from}~${to} 기준 ↗`;
+    }
     initFeatured();
     initShareButton($('#hub-share'), new URL('./index.html', location.href).href, '오쭈다 아이돌 팬페이지');
     const grid = $('#artist-grid');
