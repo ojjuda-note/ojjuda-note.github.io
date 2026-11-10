@@ -221,6 +221,19 @@
   #gov[data-game="runner"] .btn.pri { min-height: 36px; }
 }
 @media (orientation: portrait) and (max-width: 540px) {
+  /* Use the full phone screen sideways without stretching any character. */
+  #gov[data-game="runner"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #gov[data-game="runner"] .gbox {
+    flex: none;
+    width: min(calc(100dvh - 12px), calc(177.777dvw - 14px));
+    max-width: none;
+    max-height: none;
+    transform: rotate(90deg);
+  }
   #gov[data-game="runner"] .jju-mini { font-size: 9px; height: 23px; padding: 0 5px; }
   #gov[data-game="runner"] .jju-mini.pause { right: 68px; }
   #gov[data-game="runner"] .jju-mini.music { right: 137px; }
