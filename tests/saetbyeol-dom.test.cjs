@@ -155,9 +155,9 @@ for (const reverse of [false, true]) {
       }
     }
     assert.equal(rounds.size, 25, 'all five checkpoints in all five stages were exercised');
-    assert.equal(purchases, f.upgrades.reduce((total, u) => total + u.mx, 0));
-    assert.equal(f.growth.state(f.state.lv).complete, true);
-    assert.match($('#growthTitle').textContent, /다섯 영역 성장 완료/);
+    assert.equal(purchases, f.upgrades.filter(u=>u.r<5).reduce((total, u) => total + u.mx, 0));
+    assert.equal(f.growth.state(f.state.lv).stage,5,'old completion now unlocks the life growth tier');
+    assert.match($('#growthTitle').textContent, /블랙홀 성장 완료/);
   } finally { progression.dom.window.close(); }
 }
 

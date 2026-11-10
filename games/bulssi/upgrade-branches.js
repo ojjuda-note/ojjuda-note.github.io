@@ -88,6 +88,20 @@
         });
       }
     }
+    // The five life chapters reuse this constellation screen, but each has
+    // its own 200-node tree. Earlier saved node positions never change.
+    const lifeLanes=[-22,-11,0,11,22];
+    for(let stage=5;stage<10;stage++)for(let branch=0;branch<5;branch++){
+      const nodes=upgrades.filter(item=>item.b===branch&&item.r===stage);
+      if(nodes.length!==40)throw Error('Each life chapter needs forty nodes per branch');
+      nodes.forEach((node,index)=>{
+        const lane=index%5,layer=Math.floor(index/5),depth=1.35+layer*1.05;
+        const offset=lifeLanes[lane]+(layer%2?2:-2);
+        const angle=-Math.PI/2+branch*Math.PI*2/5+offset*Math.PI/180;
+        parents[node.id]=index<5?null:nodes[index-5].id;
+        positions[node.id]={x:Math.cos(angle)*depth,y:Math.sin(angle)*depth,a:angle,depth,bend:offset/90};
+      });
+    }
     return {parents,positions};
   }
   window.OjjudaSaetbyeolBranches=Object.freeze({extend,tree});

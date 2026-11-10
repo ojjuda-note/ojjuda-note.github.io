@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = selector => document.querySelector(selector);
-  const names = ['잿불','원시별','주계열성','적색거성','블랙홀'];
+  const names = ['잿불','원시별','주계열성','적색거성','블랙홀','차원의 씨앗','루미별의 바다','수정의 숲','진화의 하늘','생명의 별'];
   const prefix = 'ojjuda.saetbyeol.save.v1:';
   let game, owner, ready = false, started = false, sent = 0, queued = null, flight = null, timer, timeout;
   let boost = null, boostTimer;
@@ -28,7 +28,8 @@
   }
   function score(state) {
     const stage = Math.min(4, Math.max(0, Math.floor(Number(state.stage) || 0)));
-    const levels = game.upgrades.reduce((sum, u) => sum + Math.min(u.mx, Math.max(0, Math.floor(Number(state.lv?.[u.id]) || 0))), 0);
+    // Existing monthly rankings must keep their original score scale.
+    const levels = game.upgrades.filter(u => u.r < 5).reduce((sum, u) => sum + Math.min(u.mx, Math.max(0, Math.floor(Number(state.lv?.[u.id]) || 0))), 0);
     const memories = (state.mem || []).slice(0, 5).reduce((sum, n) => sum + Math.min(3, Math.max(0, Math.floor(Number(n) || 0))), 0);
     return stage * 10000 + levels * 10 + memories * 100 + (state.ended && stage === 4 ? 10000 : 0);
   }
@@ -39,8 +40,10 @@
   function refresh() {
     const state = game.getState();
     const points = score(state);
-    $('#starProgress').textContent = `${names[state.stage] || names[0]} · 성장 점수 ${points.toLocaleString('ko-KR')}점`;
-    $('#starStart').textContent = state.intro ? '이어서 키우기' : '시작하기';
+    const growth=game.upgrades.filter(u=>Number(state.lv?.[u.id])>0).length;
+    $('#starProgress').textContent=state.stage>=5?`${names[state.stage]} · 성장 ${growth} / 1,200 · 생명력 ${Math.floor(Number(state.cur?.life)||0).toLocaleString('ko-KR')}`:
+      `${names[state.stage] || names[0]} · 성장 점수 ${points.toLocaleString('ko-KR')}점`;
+    $('#starStart').textContent=state.stage===4&&state.ended?'차원문 열기':state.intro?'이어서 키우기':'시작하기';
   }
   function flush() {
     clearTimeout(timer);

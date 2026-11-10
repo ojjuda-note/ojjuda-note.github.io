@@ -1,4 +1,4 @@
-/* Fifty targets, unlocked ten at a time. Family weights keep rare recovery
+/* One hundred targets, unlocked ten at a time. Family weights keep rare recovery
    crystals rare even as more crystal variants become available. */
 (() => {
   'use strict';
@@ -70,7 +70,62 @@
     define('binary_star','쌍성','star',4,125,16,12,'#ffc4d8',{mass:2,rays:4,mark:'twin',motion:'orbit'}),
     define('variable_star','맥동별','star',4,80,14,8,'#ffe18a',{mass:1.5,rays:5,mark:'pulse',motion:'pulse'}),
     define('neutron_star','중성자별','star',4,140,9,15,'#b8abff',{mass:2.5,armor:.5,rays:8,mark:'orbit',speed:.5}),
-    define('pulsar','펄서','star',4,170,15,18,'#a3f3ee',{mass:3,rays:6,mark:'beam',motion:'pulse'})
+    define('pulsar','펄서','star',4,170,15,18,'#a3f3ee',{mass:3,rays:6,mark:'beam',motion:'pulse'}),
+    // 차원의 씨앗: 새로운 생명력은 여기서부터만 모을 수 있다.
+    define('portal_dust','차원 먼지','rock',5,75,10,12,'#d8b6ef',{life:2,mark:'dust',weight:4}),
+    define('seed_rock','씨앗 운석','rock',5,105,13,16,'#d0a68e',{life:3,mark:'core',weight:3}),
+    define('portal_prism','차원 프리즘','ice',5,32,11,8,'#b3f6ff',{life:2,mark:'facets'}),
+    define('seed_iron','태초의 금속','iron',5,160,14,8,'#b9b1d2',{life:3,metal:3,mark:'plates',weight:3}),
+    define('birth_cloud','탄생 성운','gas',5,80,18,14,'#ffbcd3',{life:3,gas:1.2,mark:'pulse',weight:3}),
+    define('heart_mist','심장 안개','gas',5,68,16,12,'#bde7ff',{life:2,mark:'orbit'}),
+    define('dimensional_comet','차원 혜성','comet',5,125,12,50,'#f5ccff',{life:4,tail:2,weight:3}),
+    define('tender_comet','새싹 혜성','comet',5,92,10,45,'#b9f3d7',{life:3,mark:'core'}),
+    define('baby_star','아기별','star',5,170,14,20,'#ffecad',{life:5,rays:5,weight:3}),
+    define('seed_star','씨앗별','star',5,220,15,24,'#ffcaa5',{life:5,rays:6,mark:'pulse'}),
+    // 루미별의 바다
+    define('water_pebble','물결 조약돌','rock',6,110,12,20,'#7ad3df',{life:3,mark:'bands',weight:3}),
+    define('pearl_stone','진주 운석','rock',6,130,11,23,'#f9dfef',{life:4,mark:'core'}),
+    define('tidal_crystal','조수 결정','ice',6,45,12,12,'#84e6fb',{life:3,mark:'snow',weight:2}),
+    define('deep_iron','심해 금속','iron',6,175,14,10,'#6f91ab',{life:4,metal:4,mark:'plates'}),
+    define('ocean_cloud','바다 성운','gas',6,95,19,17,'#8fdefc',{life:4,gas:1.3,mark:'wave',weight:3}),
+    define('bubble_nebula','거품 성운','gas',6,88,18,15,'#b7b1ff',{life:3,lobes:5,mark:'cluster'}),
+    define('current_comet','해류 혜성','comet',6,145,13,58,'#9ee7ed',{life:4,tail:3}),
+    define('pearl_comet','진주 혜성','comet',6,110,11,51,'#f8d1ea',{life:4,mark:'twin'}),
+    define('coral_star','산호별','star',6,210,15,27,'#ffb7af',{life:6,rays:6,weight:3}),
+    define('tide_star','물결별','star',6,230,16,30,'#8edaff',{life:5,mark:'ring'}),
+    // 수정의 숲
+    define('moss_rock','이끼 운석','rock',7,125,13,24,'#86c69a',{life:4,mark:'bands',weight:3}),
+    define('leaf_rock','잎새 운석','rock',7,140,12,26,'#b2e99c',{life:4,mark:'core'}),
+    define('forest_crystal','숲의 결정','ice',7,53,13,14,'#b1f9ce',{life:4,mark:'facets'}),
+    define('root_iron','뿌리 금속','iron',7,210,14,12,'#a7a68a',{life:5,metal:5,mark:'bands'}),
+    define('pollen_cloud','꽃가루 성운','gas',7,118,18,20,'#ffe3a2',{life:5,lobes:5,mark:'dust',weight:3}),
+    define('spore_cloud','포자 성운','gas',7,105,18,21,'#e9b3e8',{life:4,gas:1.5,mark:'pulse'}),
+    define('leaf_comet','잎새 혜성','comet',7,170,12,60,'#b7eca2',{life:5,tail:2}),
+    define('bloom_comet','꽃송이 혜성','comet',7,160,13,64,'#ffd3e9',{life:5,mark:'cluster'}),
+    define('forest_star','숲의 별','star',7,260,17,34,'#d6ffaa',{life:7,rays:7,weight:3}),
+    define('flower_star','꽃의 별','star',7,240,15,33,'#ffe6b2',{life:6,mark:'spokes'}),
+    // 진화의 하늘
+    define('cloud_rock','구름 운석','rock',8,155,13,29,'#c4c9e9',{life:5,mark:'bands',weight:3}),
+    define('wing_rock','날개 운석','rock',8,145,13,30,'#ffd0ee',{life:6,mark:'twin'}),
+    define('sky_crystal','하늘 결정','ice',8,65,13,18,'#a7e3ff',{life:5,mark:'snow'}),
+    define('storm_iron','폭풍 금속','iron',8,240,15,14,'#8d97c8',{life:6,metal:6,mark:'crack'}),
+    define('wind_nebula','바람 성운','gas',8,130,20,24,'#bfc7ff',{life:6,mark:'orbit',weight:3}),
+    define('rainbow_cloud','무지개 성운','gas',8,135,19,25,'#ffbfec',{life:6,lobes:6,mark:'pulse'}),
+    define('sky_comet','하늘 혜성','comet',8,185,13,72,'#b8d5ff',{life:7,tail:3}),
+    define('whirl_comet','회오리 혜성','comet',8,200,12,75,'#b7fff3',{life:7,motion:'wave'}),
+    define('feather_star','깃털별','star',8,285,18,38,'#eee1ff',{life:8,rays:8,weight:3}),
+    define('aurora_star','오로라별','star',8,290,17,40,'#b0ffee',{life:8,mark:'beam'}),
+    // 생명의 별
+    define('life_rock','생명의 운석','rock',9,185,14,35,'#d4e4b1',{life:7,mark:'core',weight:3}),
+    define('memory_stone','기억 운석','rock',9,210,14,37,'#e0c9ff',{life:7,mark:'orbit'}),
+    define('soul_crystal','영혼 결정','ice',9,75,13,22,'#cdfdf9',{life:7,mark:'clock'}),
+    define('heart_iron','심장 금속','iron',9,290,15,18,'#c4a2d9',{life:9,metal:8,mark:'core'}),
+    define('living_nebula','생명의 성운','gas',9,160,21,31,'#fbc3d0',{life:9,gas:1.7,mark:'pulse',weight:3}),
+    define('rainbow_mist','무지개 안개','gas',9,145,20,29,'#b3ecfb',{life:8,lobes:6,mark:'orbit'}),
+    define('heart_comet','심장 혜성','comet',9,235,14,88,'#ffddbd',{life:10,tail:3}),
+    define('destiny_comet','운명의 혜성','comet',9,250,15,90,'#d6b8ff',{life:10,mark:'twin'}),
+    define('life_star','생명의 별','star',9,330,19,50,'#f9e8af',{life:12,rays:8,weight:3}),
+    define('eternal_star','영원의 별','star',9,380,20,56,'#dcffec',{life:12,rays:9,mark:'beam'})
   ];
   const types=Object.freeze(Object.fromEntries(catalog.map(type=>[type.id,type])));
   const pools=[
@@ -78,10 +133,15 @@
     {rock:54,ice:4,iron:22,gas:16,comet:4},
     {rock:42,ice:3,iron:25,gas:24,comet:6},
     {rock:36,ice:3,iron:25,gas:28,comet:8},
-    {star:30,rock:23,ice:3,iron:18,gas:18,comet:8}
+    {star:30,rock:23,ice:3,iron:18,gas:18,comet:8},
+    {star:18,rock:28,ice:4,iron:16,gas:25,comet:9},
+    {star:15,rock:24,ice:5,iron:15,gas:32,comet:9},
+    {star:14,rock:26,ice:4,iron:14,gas:33,comet:9},
+    {star:16,rock:20,ice:4,iron:13,gas:35,comet:12},
+    {star:22,rock:18,ice:4,iron:13,gas:29,comet:14}
   ];
   const unlocked=pools.map((_,stage)=>Object.fromEntries(Object.keys(families).map(kind=>[
-    kind,catalog.filter(type=>type.kind===kind&&type.stage<=stage)
+    kind,catalog.filter(type=>type.kind===kind&&type.stage<=stage&&(stage<5||type.stage>=stage-1))
   ])));
   const limits=Object.freeze({firstHeatAt:4,heatSpawnGap:12,heatBonusSeconds:8,maxPickupSeconds:1});
   function weighted(entries,random){
