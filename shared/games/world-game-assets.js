@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-admin-record-free1'
+ const revision='20261110-saetbyeol-worlds1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -19,7 +19,7 @@
   solitaire:'1.4.1',
   mines:'1.4.4',
   sacheonseong:'1.17.1',
-  saetbyeol:'1.6.1',
+  saetbyeol:'1.7.0',
   tour:'1.5.4',
   ttang:'1.6.3',
   photo_ttang:'1.5.1',
@@ -55,7 +55,7 @@
   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261110-admin-record-free1'],
   solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261110-admin-record-free1'],
   mines:['/shared/games/world-tour-game.css?v=20261106-source-folders1',minesRules,'/games/mines/world-mines-game.js?v=20261110-admin-record-free1'],
-  saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261110-saetbyeol-hazards1'],
+  saetbyeol:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/saetbyeol/world-saetbyeol-game.js?v=20261110-saetbyeol-worlds1'],
   tour:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/ojjuda-tour/world-tour-game.js?v=20261110-admin-record-free1'],
   spot:['/games/spot-difference/world-spot-game.css?v=20261106-source-folders1','/games/spot-difference/world-spot-game.js?v=20261110-admin-record-free1'],
   ttang:['/games/ttang/ttang-bridge.js?v=20261110-admin-record-free1'],
