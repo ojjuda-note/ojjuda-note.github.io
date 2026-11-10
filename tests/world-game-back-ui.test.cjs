@@ -105,7 +105,7 @@ window.childReady=true;
         await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
         for (const frame of page.frames().slice(1)) await frame.waitForFunction(() => window.childReady);
         await back();
-        if(game==='billiards')await page.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
+        if(game==='billiards')await page.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
         await main();
       }
 
@@ -135,9 +135,9 @@ window.childReady=true;
         body.innerHTML='<main id="minesEntry" hidden></main><button id="face2">목록</button>';
         body.querySelector('button').onclick=()=>body.dataset.prematureExit='true';
       });
-      for(const choice of ['게임 계속하기','아지트로 나가기']){
+      for(const choice of ['게임 계속하기','오락실로 나가기']){
         await mines.locator('#face2').click();
-        const question=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+        const question=page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true});
         assert.equal(await mines.locator('body').getAttribute('data-premature-exit'),null);
         await question.getByRole('button',{name:choice,exact:true}).click();
         if(choice==='게임 계속하기')assert.ok(await mines.locator('#face2').isVisible());
@@ -153,20 +153,23 @@ window.childReady=true;
       await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
       assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
       assert.equal(new URL(page.url()).searchParams.has('v'),false);
-      await back();await main();
+      await back();
+      await page.waitForFunction(()=>document.querySelector('.arcade-home')&&!document.querySelector('#gov'));
       const returned=new URL(page.url());
-      assert.equal(returned.searchParams.get('tab'),'hub');
+      assert.equal(returned.searchParams.get('tab'),'arcade');
       assert.equal(returned.searchParams.get('keep'),'yes');
       for(const key of ['game','challenge','score'])assert.equal(returned.searchParams.has(key),false);
+      await page.locator('.bottomnav [data-tab="hub"]').click();
+      await main();
 
       async function chooseExit(selector){
         const original=await page.locator(selector).elementHandle();
         await back();
-        const prompt=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+        const prompt=page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true});
         await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).click();
         assert.equal(await original.evaluate(node=>node.isConnected),true,'continuing retains the same game');
         await back();
-        await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
+        await prompt.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
         await main();
       }
       await page.evaluate(() => backFixture.open('stacker'));

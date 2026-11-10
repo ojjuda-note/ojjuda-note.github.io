@@ -80,14 +80,18 @@ test('every standalone return link points to its intended section', () => {
   const hubPages=[
     'features/arcade/monthly-ranking.html','groups/index.html',
     'features/fanpages/index.html','features/fanpages/artist.html',
-    'games/sacheonseong/index.html','games/certified-restaurants/index.html',
-    'games/spot-difference/index.html','byeolcheonji/index.html','star/index.html'
+    'games/certified-restaurants/index.html',
+    'byeolcheonji/index.html','star/index.html'
   ];
   for (const file of hubPages) {
     const html=read(file);
     assert.match(html,/href="\/world\.html\?tab=hub"/,file);
     assert.doesNotMatch(html,/href="\/world\.html\?tab=arcade"/,file);
   }
+  for (const file of ['games/sacheonseong/index.html','games/spot-difference/index.html','games/ojjuda-tour/index.html']) {
+    assert.match(read(file),/href="\/world\.html\?tab=arcade"/,file);
+  }
+  assert.match(read('games/solitaire/app.js'),/location\.assign\('\/world\.html\?tab=arcade'\)/);
   assert.match(read('gift.html'),/href="\/world\.html\?tab=my"/);
   assert.match(read('delete-account.html'),/href="\/world\.html\?tab=my"/);
   for (const file of ['terms.html','privacy.html']) {
@@ -99,10 +103,13 @@ test('every standalone return link points to its intended section', () => {
   assert.match(read('admin/rewards.html'),/href="\/world\.html\?admin=overview"/);
 });
 
-test('hub is a valid navigation tab and direct games return there', () => {
+test('hub is a valid navigation tab, while direct games return to the arcade', () => {
   const world=read('world.html');
   assert.match(world,/\["hub","arcade","park","my","admin"\]\.includes\(t\.tab\)/);
   assert.match(world,/url\.searchParams\.set\('tab','hub'\)/);
+  assert.match(world,/function worldGameCloseUrl\(\)/);
+  assert.match(world,/url\.searchParams\.set\('tab','arcade'\)/);
+  assert.match(world,/sr\.tab\(\{tab:'arcade'\}\);\s*Al\(game\.id\)/);
   assert.match(world,/isSectionRoot:\(\)=>\["park","my"\]\.includes\(worldMainTab\(\)\)/);
   assert.match(read('index.html'),/url\.searchParams\.set\('tab', 'hub'\)/);
   assert.match(read('guide.html'),/header-back/);

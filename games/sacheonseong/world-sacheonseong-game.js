@@ -9,7 +9,7 @@
   const previous=document.activeElement,dialog=document.createElement('dialog');
   dialog.className='tour-game-dialog sacheonseong-game-dialog arcade-game-view';
   dialog.setAttribute('aria-label','사천성');
-  dialog.innerHTML=`<div class="tour-game-header sacheonseong-game-header"><strong>사천성</strong><button type="button" class="sacheonseong-back">← 아지트</button></div>
+  dialog.innerHTML=`<div class="tour-game-header sacheonseong-game-header"><strong>사천성</strong><button type="button" class="sacheonseong-back">← 오락실</button></div>
    <div class="sacheonseong-entry-wrap"><section class="game-entry" data-entry-key="sacheonseong">
     <div class="ge-icon" aria-hidden="true">🀄</div><span class="ge-kicker">오쭈다 오락실 · 싱글 게임</span>
     <h2 class="ge-title">사천성</h2><p class="ge-copy">같은 그림을 잇는 작은 즐거움.<br>200단계, 여러 모양과 층으로 도전해요!</p>
@@ -68,7 +68,7 @@
   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
    if(frame)return;
    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
-   frame.src='/games/sacheonseong/index.html?v=20261110-navigation-return1';
+   frame.src='/games/sacheonseong/index.html?v=20261110-game-back-arcade1';
    frame.addEventListener('load',initialize);
    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
    dialog.classList.add('sacheonseong-playing');frame.focus();

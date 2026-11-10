@@ -33,7 +33,8 @@ function fixture({tab='hub', gameUrl=null}={}) {
     isMain: () => tab==='hub', hasOverlay: () => overlay,
     isSectionRoot: () => ['park','my'].includes(tab),
     arcadeReturnUrl: () => gameUrl && 'https://world.test/world.html?tab=hub',
-    closeOverlay() { closeCalls++; overlay = false; return true; },
+    gameCloseUrl: () => gameUrl && 'https://world.test/world.html?tab=arcade',
+    closeOverlay() { closeCalls++; const wasOpen=overlay; overlay=false; return wasOpen; },
     canLeave: () => true, toMain() { mainCalls++; tab='hub'; },
     tabs: ['hub','arcade','park','my'], currentTab: () => tab
   });
@@ -85,9 +86,17 @@ test('departure during an unfinished return cannot leave restored navigation stu
   assert.equal(f.backCalls, 2, 'a later game can close after an interrupted return');
 });
 
-test('closing an arcade game with its own exit button returns to the Agit hub', () => {
+test('closing an arcade game with its own exit button stays in the arcade', () => {
   const f = fixture({tab:'arcade'});
   f.showGame(); f.closeGame();
+  assert.equal(f.tab,'arcade');
+  assert.equal(f.mainCalls,0);
+  assert.equal(f.history.state.ojjudaWorld,'menu');
+});
+
+test('Back from the arcade menu itself returns to the Agit hub', () => {
+  const f=fixture({tab:'arcade'});
+  f.emit('popstate');
   assert.equal(f.tab,'hub');
   assert.equal(f.mainCalls,1);
 });
@@ -105,4 +114,7 @@ test('park and settings Back stay in their own main sections', () => {
 test('a direct game link creates a hub return history entry', () => {
   const f = fixture({tab:'arcade',gameUrl:'mines'});
   assert.equal(f.history.replacements.at(-1),'https://world.test/world.html?tab=hub');
+  f.showGame();f.closeGame();
+  assert.equal(f.history.replacements.at(-1),'https://world.test/world.html?tab=arcade');
+  assert.equal(f.tab,'arcade');
 });

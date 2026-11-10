@@ -14,7 +14,7 @@
         history.pushState(state('menu'), '', href);
       };
       const needsEntry = () => !options.isMain() || !!options.hasOverlay?.();
-      let exitChoice = null, exitingGame = null, pendingArcadeReturn = null;
+      let exitChoice = null, exitingGame = null;
       function requestGameExit() {
         if (exitChoice) return true;
         const game = options.playingGame?.();
@@ -22,7 +22,7 @@
         const dialog = document.createElement('dialog');
         dialog.className = 'arcade-exit-choice';
         dialog.setAttribute('aria-labelledby', 'arcade-exit-title');
-        dialog.innerHTML = '<h2 id="arcade-exit-title">아지트로 갈까요?</h2><div><button type="button" data-exit-stay autofocus>게임 계속하기</button><button type="button" data-exit-leave>아지트로 나가기</button></div>';
+        dialog.innerHTML = '<h2 id="arcade-exit-title">오락실로 갈까요?</h2><div><button type="button" data-exit-stay autofocus>게임 계속하기</button><button type="button" data-exit-leave>오락실로 나가기</button></div>';
         const resume = options.pauseGame?.(game);
         function finish(leave = false) {
           if (exitChoice?.dialog !== dialog) return;
@@ -31,11 +31,8 @@
           dialog.remove();
           if (leave && game.isConnected) {
             exitingGame = game;
-            if (!options.isMain()) pendingArcadeReturn = {game, tab:options.currentTab()};
-            try {
-              const result = options.exitGame(game);
-              if (result === false && pendingArcadeReturn?.game === game) pendingArcadeReturn = null;
-            } finally { exitingGame = null; }
+            try { options.exitGame(game); }
+            finally { exitingGame = null; }
           } else resume?.();
         }
         exitChoice = {game, dialog, finish};
@@ -85,21 +82,21 @@
       window.addEventListener('pagehide', () => { departing = true; returning = false; reset(); }, { capture: true });
       window.addEventListener('pageshow', () => { departing = false; returning = false; });
       // Games mount independently of the menu renderer, including iframe games.
-      // Keep one return entry while an overlay is open, and consume it when the
-      // game closes by its own button. A cancelled exit keeps the same guard.
+      // Closing a game stays in the arcade. A direct game link sheds its game
+      // query so refreshing after exit shows the arcade rather than restarting.
       let overlayActive = !!options.hasOverlay?.();
       let gamingActive = document.body.classList?.contains('gaming') === true;
       new MutationObserver(() => {
         if (exitChoice && !exitChoice.game.isConnected) exitChoice.finish();
-        if (pendingArcadeReturn && !pendingArcadeReturn.game.isConnected) {
-          const {tab} = pendingArcadeReturn;
-          pendingArcadeReturn = null;
-          if (!departing && options.currentTab() === tab && !options.isMain() && options.canLeave()) options.toMain();
-        }
         const wasGaming = gamingActive;
         gamingActive = document.body.classList?.contains('gaming') === true;
-        if (wasGaming && !gamingActive && !departing && options.currentTab() === 'arcade'
-          && options.canLeave()) options.toMain();
+        if (wasGaming && !gamingActive && !departing && options.currentTab() === 'arcade') {
+          const arcadeUrl = options.gameCloseUrl?.();
+          if (arcadeUrl && history.state?.ojjudaWorld === 'menu') {
+            history.replaceState(state('menu'), '', arcadeUrl);
+            menuHref = arcadeUrl;
+          }
+        }
         const active = !!options.hasOverlay?.();
         if (active === overlayActive) return;
         overlayActive = active;
