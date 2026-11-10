@@ -177,9 +177,10 @@
   }
   function markup(settings, games, date = kstDate()) {
     const state = safeState(settings), game = recommended(games, date), theme = themeFor(date);
-    const lastDays = Array.from({length:7}, (_, i) => addDays(date, i - 6));
+    const weekStart = addDays(date, -((new Date(date+'T00:00:00Z').getUTCDay()+6)%7));
+    const weekDays = Array.from({length:7}, (_, i) => addDays(weekStart, i));
     const stamped = state.stamps.includes(date);
-    const stampedCount = lastDays.filter(d => state.stamps.includes(d)).length;
+    const stampedCount = weekDays.filter(d => state.stamps.includes(d)).length;
     const streak = visitStreak(settings, date);
     const [, month, day] = date.split('-');
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
@@ -199,10 +200,10 @@
         <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async"></div>
       </header>
       <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
-        <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 최근 7일 ${stampedCount}/7</small></div></div>
-        <div class="agit-stamp-days">${lastDays.map(d => {
-          const name=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00Z').getUTCDay()],on=state.stamps.includes(d);
-          return `<div class="agit-stamp-day${on?' is-stamped':''}${d===date?' is-today':''}" aria-label="${d} ${on?'방문 완료':'미방문'}"><span>${name}</span><strong aria-hidden="true">${on?'✓':'·'}</strong><small>${Number(d.slice(-2))}</small></div>`;
+        <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 이번 주 ${stampedCount}/7</small></div></div>
+        <div class="agit-stamp-days">${weekDays.map(d => {
+          const name=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00Z').getUTCDay()],on=state.stamps.includes(d),upcoming=d>date;
+          return `<div class="agit-stamp-day${on?' is-stamped':''}${d===date?' is-today':''}${upcoming?' is-upcoming':''}" aria-label="${d} ${on?'방문 완료':upcoming?'방문 예정':'미방문'}"><span>${name}</span><strong aria-hidden="true">${on?'✓':'·'}</strong><small>${Number(d.slice(-2))}</small></div>`;
         }).join('')}</div>
         <button type="button" class="agit-stamp-button" data-act="agit-stamp"${stamped?' disabled':''}>${stamped?'오늘 도장 완료 ✓':'도장 콕 찍기 ✦'}</button>
       </section>

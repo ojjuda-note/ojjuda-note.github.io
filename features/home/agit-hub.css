@@ -50,6 +50,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-stamp-day{display:grid;justify-items:center;gap:5px;min-width:0;color:#a6999b}
 .agit-stamp-day>span,.agit-stamp-day small{font-size:10px;font-weight:650;line-height:1}
 .agit-stamp-day strong{display:grid;place-items:center;width:min(38px,100%);aspect-ratio:1;border:1px dashed #eadcdd;border-radius:12px;background:#fff8f5;color:#dbc8c8;font-size:19px;line-height:1}
+.agit-stamp-day.is-upcoming{opacity:.55}
+.agit-stamp-day.is-upcoming strong{background:#faf8f8}
 .agit-stamp-day.is-today{color:#a24d6a}
 .agit-stamp-day.is-today strong{border:2px solid #d17b93;background:#fff0f3;color:#d58a9b}
 .agit-stamp-day.is-stamped strong{border:2px solid #b85d80;background:#fbe4ed;color:#9a4767;font-weight:850}

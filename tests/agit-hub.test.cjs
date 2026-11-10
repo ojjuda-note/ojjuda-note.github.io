@@ -36,6 +36,22 @@ test('stamp records at most once a day and saves mission progress separately by 
   assert.equal(settings.agitHub.stamps.length,2);
 });
 
+test('visit stamps display the current Monday-to-Sunday week',()=>{
+  const settings={agitHub:{stamps:['2026-11-08','2026-11-09']}};
+  const html=hub.markup(settings,{},'2026-11-10');
+  const labels=[...html.matchAll(/class="agit-stamp-day[^"]*" aria-label="([^"]+)"/g)].map(match=>match[1]);
+  assert.equal(labels.length,7);
+  assert.match(labels[0],/^2026-11-09 방문 완료$/);
+  assert.match(labels[1],/^2026-11-10 미방문$/);
+  assert.match(labels[6],/^2026-11-15 방문 예정$/);
+  assert.match(html,/이번 주 1\/7/,'a prior Sunday does not count toward this week');
+  assert.equal((html.match(/is-upcoming/g)||[]).length,5);
+  const nextWeek=hub.markup(settings,{},'2026-11-16');
+  assert.match(nextWeek,/2026-11-16 미방문/);
+  assert.match(nextWeek,/2026-11-22 방문 예정/);
+  assert.match(nextWeek,/이번 주 0\/7/);
+});
+
 test('number baseball validates guesses and records strikes and balls',()=>{
   const settings={};
   let day=date;
@@ -101,7 +117,7 @@ test('Agit markup contains one five-mission panel and Daily fan content',()=>{
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-quests-panel1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-stamp-week1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 
@@ -139,8 +155,8 @@ test('themed hero uses narrow inline white highlights without masking the artwor
   assert.match(css,/box-decoration-break:clone/);
   assert.match(js,/class="agit-hero-highlight"/);
   assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
-  assert.match(world,/agit-hub\.css\?v=20261110-quests-panel1/);
-  assert.match(world,/agit-hub\.js\?v=20261110-quests-panel1/);
+  assert.match(world,/agit-hub\.css\?v=20261110-stamp-week1/);
+  assert.match(world,/agit-hub\.js\?v=20261110-stamp-week1/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{
