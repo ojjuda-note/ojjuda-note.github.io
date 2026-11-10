@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-game-back-arcade1'
+ const revision='20261110-runner-vortex-v3-3-0'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -24,7 +24,7 @@
   ttang:'1.6.5',
   photo_ttang:'1.5.3',
   mole:'1.7.3',
-  runner:'3.2.1',
+  runner:'3.3.0',
   stacker:'1.5.3',
   breakout:'1.7.1',
   spot:'1.12.3',
@@ -61,7 +61,7 @@
   ttang:['/games/ttang/ttang-bridge.js?v=20261110-game-back-arcade1'],
   photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261110-admin-record-free1','/games/photo-ttang/photo-ttang-bridge.js?v=20261110-game-back-arcade1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
-  runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261110-runner-speed1000-v3-2-1'],
+  runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-seahorse-v3-1','/games/runner/runner-game.js?v=20261110-runner-vortex-v3-3-0'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
   screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261110-admin-record-free1'],
   stacker:controls
