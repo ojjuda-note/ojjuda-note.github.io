@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-restaurants-c2s26-gongju2-nonsan1-gyeryong1'
+ const revision='20261110-restaurants-c2s26-gyeryong-walk1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,7 +9,7 @@
   chacha_rush:'1.0.4',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
-  restaurants:'1.12.16',
+  restaurants:'1.12.17',
   recommendations:'1.7.0',
   archery:'3.2.4',
   roulette:'1.9.3',
@@ -45,7 +45,7 @@
   group:[],
   byeolcheonji:[],
   festival:['/games/festival-schedule/world-festival-schedule.css?v=20261107-festival-location2','/games/festival-schedule/world-festival-schedule.js?v=20261107-festival-location2'],
-  restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261110-restaurants-c2s26-gongju2-nonsan1-gyeryong1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261109-restaurants-comments1'],
+  restaurants:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/world-restaurant-guide.css?v=20261106-source-folders1','/games/certified-restaurants/world-restaurant-guide.js?v=20261110-restaurants-c2s26-gyeryong-walk1','/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261109-restaurants-comments1'],
   recommendations:[...restaurantRatings,...restaurantComments,...restaurantLocation,'/games/certified-restaurants/recommended-restaurants.css?v=20261106-source-folders1','/games/certified-restaurants/recommended-restaurants.js?v=20261109-restaurants-comments1'],
   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261109-archery-mobile-layout1'],
   roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261106-source-folders1'],
