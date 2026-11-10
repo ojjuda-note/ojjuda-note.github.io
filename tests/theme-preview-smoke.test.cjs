@@ -41,3 +41,19 @@ test('existing seasonal and holiday themes begin seven Korean calendar days earl
   for (const [day, expected] of cases) assert.equal(at(day), expected, day);
   assert.equal(themes.eventsOn('2026-11-10T03:00:00Z').length, 0, 'previews do not change the holiday date itself');
 });
+
+test('each of 19 themes has its own short Ojjuda-style headline and copy', () => {
+  const {order, catalog} = browser.OjjudaThemes;
+  const headlines = new Set();
+  for(const key of order){
+    const item=catalog[key];
+    assert.equal(item.headline?.length,2,key+' headline has two parts');
+    assert.ok(item.headline.every(s=>s.length>0&&s.length<=8),key+' headline is compact');
+    assert.ok(item.copy.includes('오쭈다'),key+' copy belongs to Ojjuda');
+    assert.ok(item.copy.length<=36,key+' copy stays brief');
+    headlines.add(item.headline.join(' '));
+  }
+  assert.equal(headlines.size,order.length,'each theme has its own headline');
+  assert.deepEqual(Array.from(catalog.pepero.headline),['달콤한','안부 하나.']);
+  assert.match(catalog.pepero.copy,/빼빼로.*오쭈다/);
+});

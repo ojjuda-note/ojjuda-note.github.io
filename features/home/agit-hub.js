@@ -72,7 +72,8 @@
     const season = calendar?.seasonFor?.(instant) || (month >= 3 && month <= 5 ? 'spring' : month >= 6 && month <= 8 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter');
     const key = calendar?.resolve(instant) || season;
     const names = {spring:'봄', summer:'여름', autumn:'가을', winter:'겨울'};
-    return {key, season, name:calendar?.catalog?.[key]?.name || names[key] || '오늘', copy:calendar?.catalog?.[key]?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
+    const entry = calendar?.catalog?.[key];
+    return {key, season, name:entry?.name || names[key] || '오늘', headline:entry?.headline || ['오늘도','잘 왔어!'], copy:entry?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
   }
   function safeState(settings) {
     const raw = settings && typeof settings.agitHub === 'object' && settings.agitHub || {};
@@ -184,7 +185,7 @@
       <header class="agit-hero" aria-label="아지트">
         <div class="agit-hero-story">
           <span class="agit-hero-eyebrow"><span aria-hidden="true">✦</span> ${Number(month)}월 ${Number(day)}일 ${weekday}요일 <strong>${escapeHtml(theme.name)} 테마</strong></span>
-          <h1>오늘도 <em>잘 왔어!</em></h1>
+          <h1>${escapeHtml(theme.headline[0])} <em>${escapeHtml(theme.headline[1])}</em></h1>
           <p>${escapeHtml(theme.copy)}</p>
         </div>
         <section class="agit-hero-pick" id="agit-recommend" aria-label="오늘의 추천게임">

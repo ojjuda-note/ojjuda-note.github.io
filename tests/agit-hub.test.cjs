@@ -106,8 +106,26 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes3'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-theme-copy1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
+});
+
+test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
+  const previous=global.OjjudaThemes;
+  try{
+    global.OjjudaThemes={
+      seasonFor:()=> 'autumn',resolve:()=> 'pepero',
+      catalog:{pepero:{name:'빼빼로데이',headline:['달콤한','안부 하나.'],copy:'빼빼로 하나, 마음 한 조각. 오쭈다에서 나눠요.'}}
+    };
+    const html=hub.markup({}, {}, '2026-11-10');
+    assert.match(html,/<h1>달콤한 <em>안부 하나\.<\/em><\/h1>/);
+    assert.match(html,/빼빼로 하나, 마음 한 조각\. 오쭈다에서 나눠요\./);
+    assert.match(html,/data-agit-theme="pepero"/);
+    assert.doesNotMatch(html,/오늘도 <em>잘 왔어!<\/em>/);
+  }finally{
+    if(previous)global.OjjudaThemes=previous;
+    else delete global.OjjudaThemes;
+  }
 });
 
 test('mobile mission cards stay in one horizontal row',()=>{
