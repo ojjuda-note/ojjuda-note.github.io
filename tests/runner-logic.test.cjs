@@ -23,6 +23,12 @@ const sandbox = {
 };
 vm.runInNewContext(source, sandbox);
 assert.equal(typeof sandbox.window.OjjudaRunnerGame.create, 'function');
+const obstacleTypes = sandbox.window.OjjudaRunnerGame.obstacleTypes;
+assert.equal(obstacleTypes.length, 10, 'ten distinct original hazards are available');
+assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 10);
+assert.equal(obstacleTypes.filter(x => x.lane === 'air').length, 3,
+  'floating hazards require a slide, ground hazards a jump');
+assert.ok(obstacleTypes.some(x => x.kind === 'eel') && obstacleTypes.some(x => x.kind === 'crab'));
 sandbox.window.OjjudaRunnerGame.drawPreview(context);
 assert.equal(canvas.width, 960, 'landscape game backing uses 960px logical width');
 assert.equal(canvas.height, 540, 'landscape game backing uses 540px logical height');
@@ -67,3 +73,4 @@ assert.equal(sliding.state.sliding, false);
 sliding.draw(context);
 sliding.destroy();
 console.log('Runner physics, pause, slide, rendering and score callback passed.');
+
