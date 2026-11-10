@@ -9,8 +9,10 @@ vm.runInNewContext(read('artists.js'), context);
 vm.runInNewContext(read('artists-extra.js'), context);
 vm.runInNewContext(read('profiles.js'), context);
 vm.runInNewContext(read('profiles-extra.js'), context);
+vm.runInNewContext(read('popularity.js'), context);
 const artists = context.window.OJJUDA_FAN_ARTISTS;
 const profiles = context.window.OJJUDA_FAN_PROFILES;
+const popularity = context.window.OJJUDA_FAN_POPULARITY;
 const dateRegex = /^\d{4}\.\d{2}\.\d{2}$/;
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const bloodTypes = new Set(['A', 'B', 'AB', 'O']);
@@ -26,6 +28,14 @@ function validDate(value, regex, label) {
 assert.equal(Object.keys(profiles).length, artists.length, 'Every artist needs a profile');
 assert.equal(artists.length, 30, 'Expected 9 existing and 21 additional artists');
 assert.equal(new Set(artists.map((artist) => artist.id)).size, artists.length, 'Duplicate artist id');
+assert.equal(new Set(popularity.rankedIds).size, popularity.rankedIds.length, 'Duplicate popularity id');
+assert.ok(popularity.source.startsWith('https://'), 'Popularity ranking needs an attribution URL');
+assert.match(popularity.asOf, /^\d{4}-\d{2}-\d{2}$/, 'Popularity ranking needs a reference date');
+for (const id of popularity.rankedIds) assert.ok(artists.some((artist) => artist.id === id), `Unknown popularity id: ${id}`);
+for (const page of ['index.html', 'artist.html']) {
+  const html = read(page);
+  assert.ok(html.indexOf('popularity.js') !== -1 && html.indexOf('popularity.js') < html.indexOf('fan.js'), `${page}: popularity data must load before fan.js`);
+}
 for (const artist of artists) {
   const profile = profiles[artist.id];
   assert.ok(profile, `${artist.id}: missing profile`);
