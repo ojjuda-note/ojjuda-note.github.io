@@ -76,7 +76,7 @@ async function screenshot(page,name){
       assertFits(value,`${label}: all cards fit on entry`);
       assert(value.cols<=E.MAX_FLOOR_COLS&&value.rows<=E.MAX_FLOOR_ROWS&&value.cols*value.rows<=E.MAX_FLOOR_CELLS,`${label}: landscape and portrait use a compact footprint`);
       const minTile=viewport.width<=344?19:viewport.width>viewport.height?23:26;
-      assert(value.tile.width>=minTile,`${label}: cards remain readable on entry`);
+      assert(value.tile.width>=minTile,`${label}: cards remain readable on entry (${value.tile.width.toFixed(2)}px, minimum ${minTile}px, viewport ${value.viewport.width.toFixed(0)}x${value.viewport.height.toFixed(0)})`);
       if(stage>=5)assert(value.tile.width<=28.01,`${label}: cards have a comfortable maximum size`);
       if(stage>8){
        assert.equal(await page.locator('#zoom-out').isEnabled(),true,`${label}: minus is enabled`);

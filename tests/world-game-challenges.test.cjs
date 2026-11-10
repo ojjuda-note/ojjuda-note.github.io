@@ -13,6 +13,7 @@ const routing = world.slice(world.indexOf('var bm=null;var worldEntryRouted=fals
 const entrance = world.slice(world.indexOf('function Al('), world.indexOf('// User-requested exits'));
 const controls = world.slice(world.indexOf('function M2('), world.indexOf('function D2('));
 const preview = world.slice(world.indexOf('function D2('), world.indexOf('async function nf('));
+const difficultyHelpers = world.slice(world.indexOf('function arcadeDifficultyKey('), world.indexOf('const billiardsDifficulties='));
 
 function fixture(id = 'stacker', options = {}) {
   const events = [], records = [], screens = [], completions = [];
@@ -208,7 +209,7 @@ function overlayFixture(t, { shareModule = false } = {}) {
     function worldRewardOwner(){return null;} function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
     async function tf(game,score){return {ok:true,best:score,guest:true};}
     ${world.slice(world.indexOf('function installWorldGameScreen('),world.indexOf('var worldBoardScreenStop='))}
-    ${entrance}\n${controls}\n${preview}\n${rounds}\n${close}
+    ${difficultyHelpers}\n${entrance}\n${controls}\n${preview}\n${rounds}\n${close}
   `);
   w.eval(guestSource); w.OjjudaGuestAccess.configure(() => true);
   if (shareModule) {

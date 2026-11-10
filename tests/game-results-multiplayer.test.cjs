@@ -73,6 +73,7 @@ test('poker uses settled net gold even when a hand received a positive gross pay
  const online={room:{id:'private-room',seat:0,ready:[false,false],departed:[false,false]}},wallet={gold:500};
  let game={_roomId:'private-room',_round:1,result:{net:[-75],payouts:[125]}};
  const fmt=n=>n.toLocaleString('ko-KR'),roundKey=()=>game._roomId+':'+game._round,refillButton=()=>'',startPopup=html=>html;
+ ${section('games/poker/app.mjs','function nextHandButton(','\nfunction nextHandPopup()')}
  ${section('games/poker/app.mjs','function nextHandPopup(){','\nfunction refillButton()')}
  window.renderResult=net=>{game.result.net[0]=net;document.body.innerHTML=nextHandPopup();};
  window.setReady=(ready,departed)=>{online.room.ready[0]=ready;online.room.departed[1]=departed;};

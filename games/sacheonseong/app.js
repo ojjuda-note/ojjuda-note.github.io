@@ -69,7 +69,12 @@
     const extra=layerCount>1?E.LAYER_OFFSET:0;
     return Math.min((width-2*pad-(cols-1+extra)*gap)/(cols+extra),(height-2*pad-4-(rows-1+extra)*gap)/((rows+extra)*1.19));
   }
-  const boardPadding=()=>8;
+  // Short landscape screens need the space for playable cards, not a wide
+  // decorative perimeter. Four pixels still cover the tile edge shadows.
+  const boardPadding=()=>{
+    const viewport=$('board-scroll');
+    return viewport&&viewport.clientWidth>viewport.clientHeight&&viewport.clientHeight<=280?4:8;
+  };
   function stageEightReference(){
     const viewport=$('board-scroll'),width=viewport.clientWidth,height=viewport.clientHeight,key=`${width}x${height}`;
     if(stageEightLayout&&key===stageEightViewport)return stageEightLayout;
