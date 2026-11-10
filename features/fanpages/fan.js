@@ -187,6 +187,7 @@
     }
     const index = artists.indexOf(artist);
     const saved = getSaved().includes(artist.id);
+    document.body.dataset.artist = artist.id;
     document.documentElement.style.setProperty('--group-accent', artist.accent);
     document.documentElement.style.setProperty('--group-light', artist.light);
     document.documentElement.style.setProperty('--group-dark', artist.dark);
@@ -207,10 +208,10 @@
       </section>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
       <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#photos"><span>01</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>02</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>03</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>04</span><strong>소식</strong><b>↗</b></a></nav>
-      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>✳</em></h2></div>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div><div class="detail-photo-grid">${gallery}${extraMedia}</div><p class="photo-disclaimer">사진 제공·저작권: 각 출처. 사진을 누르면 원본으로 이동합니다.</p></section>
-      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>02 / COLLECTION</span><h2>굿즈 <em>✳</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
-      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>03 / CALENDAR</span><h2>일정 <em>✳</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
-      <section id="news" class="detail-section"><div class="detail-heading"><div><span>04 / UPDATES</span><h2>소식 <em>✳</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
+      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div><div class="detail-photo-grid">${gallery}${extraMedia}</div><p class="photo-disclaimer">사진 제공·저작권: 각 출처. 사진을 누르면 원본으로 이동합니다.</p></section>
+      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>02 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
+      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>03 / CALENDAR</span><h2>일정 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
+      <section id="news" class="detail-section"><div class="detail-heading"><div><span>04 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
       <div class="detail-source-note">비공식 팬페이지 · 2026.11.10 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
