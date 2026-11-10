@@ -850,7 +850,7 @@
         if (!dt) return;
         time += dt;
         fever = Math.max(0, fever - dt);
-        speed = Math.min(850, 455 + time * 11.2 + (fever > 0 ? 135 : 0));
+        speed = Math.min(1000, 455 + time * 11.2 + (fever > 0 ? 135 : 0));
         distance += speed * dt;
         stage = Math.floor(distance / 3300) % ZONES.length;
         slide = Math.max(0, slide - dt);
