@@ -1,14 +1,16 @@
 {
-  "updatedAt": "2026-11-07",
+  "updatedAt": "2026-11-10",
   "sourceName": "안동관광 공식 대표 먹거리·한국관광공사 대한민국 구석구석",
   "sourceUrls": [
     "https://www.tourandong.com/public/sub3/sub1.cshtml",
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
-    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053"
+    "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
+    "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd=",
+    "https://82rg.com/nearby/restaurant/477609"
   ],
-  "sourceScope": "1순환 37회차 안동시(8곳), 문경시(2곳) 공식 관광 음식점 공개 목록 일부를 기존 등록 3011곳 및 지역별 보충자료 대상과 이름·주소 대조. 영주시 공식 관광 기존 등록 40곳 유지.",
-  "verificationLimit": "신규 선정/리본 등급이 아니라 공식 관광 안내에 실린 식당 이력. 현재 영업/별도 지정/발행년도 미검증. 문경시 도로명 주소는 2026 TourAPI 공용 재게시 주소와 공식 관광공사 업소 상세 내용을 대조했으며, 공식 상세에서 도로명 주소의 직접 표시는 확인하지 못함.",
-  "coordinatePolicy": "상호·지점·현주소와 일치하는 공개 좌표를 확인하지 못하여 신규 10곳 lat/lng null. 사용자 위치 또는 임의 좌표를 사용하지 않음.",
+  "sourceScope": "1순환 37회차 안동시(8곳), 문경시(2곳) 공식 관광 음식점 공개 목록 일부를 기존 등록 3011곳 및 지역별 보충자료 대상과 이름·주소 대조. 영주시 공식 관광 기존 등록 40곳 유지. 2순환 37회차 공식 시 관광·모범음식점 3곳(안동2·영주1) 보강. 기존 안동8·문경2와 영주40곳을 보존하며 전수조사는 아님.",
+  "verificationLimit": "신규 선정/리본 등급이 아니라 공식 관광 안내에 실린 식당 이력. 현재 영업/별도 지정/발행년도 미검증. 문경시 도로명 주소는 2026 TourAPI 공용 재게시 주소와 공식 관광공사 업소 상세 내용을 대조했으며, 공식 상세에서 도로명 주소의 직접 표시는 확인하지 못함. 신규3곳 중 안동 골목안손국수 공개 인허가 좌표 1곳만 상호·주소 일치 확인 후 기록. 나머지 정확 좌표, 현재 영업, 다른 가이드 등급은 미확인.",
+  "coordinatePolicy": "2순환 37회차 골목안손국수는 안동관광 공개 상호·주소와 행정안전부 인허가 좌표 재게시의 상호·도로명·건물번호가 동일해 좌표 1개를 기록. 그 밖의 위치 미확인 레코드는 null 유지. 사용자 위치·추정 위치 미사용.",
   "completeRegionalCollection": false,
   "restaurants": [
     {
@@ -270,6 +272,114 @@
       ],
       "addressSourceUrl": "https://www.ktravelmate.com/ko/mungyeong-city/restaurant/2841330",
       "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-andong-c2s37-bomun",
+      "name": "보문식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 대안로 135",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "보리밥"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 지자체 관광 안내의 수록·지정 정보. 블루리본 정규 리본 등급이나 현재 영업 상태 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-10",
+      "addressCrosscheckUrl": "https://www.tabling.co.kr/place/677cd6ed66de5f069891dc0f"
+    },
+    {
+      "id": "local-andong-c2s37-golmokan",
+      "name": "골목안손국수",
+      "category": "한식",
+      "region": "경북",
+      "district": "안동시",
+      "address": "경상북도 안동시 남문로 2",
+      "lat": 36.5634848,
+      "lng": 128.7294694,
+      "menu": [
+        "손국수"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "안동관광 대표 먹거리 안내 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+          "sourceName": "안동관광 · 대표 먹거리",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 지자체 관광 안내의 수록·지정 정보. 블루리본 정규 리본 등급이나 현재 영업 상태 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "addressSourceCheckedAt": "2026-11-10",
+      "addressCrosscheckUrl": "https://82rg.com/nearby/restaurant/477609",
+      "coordinateSource": {
+        "name": "행정안전부 공공 인허가 음식점 공개 좌표 재게시·상호와 도로명주소 교차확인",
+        "url": "https://82rg.com/nearby/restaurant/477609",
+        "method": "public-license-location-exact-name-address-crosscheck",
+        "checkedAt": "2026-11-10"
+      }
+    },
+    {
+      "id": "local-yeongju-c2s37-baekjeongga-lc",
+      "name": "백정가LC 영주점",
+      "category": "한식",
+      "region": "경북",
+      "district": "영주시",
+      "address": "경상북도 영주시 반지미로 315-13",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "삼겹살"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "영주시 모범음식점",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd=",
+          "sourceName": "영주시 문화관광 · 모범음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 지자체 관광 안내의 수록·지정 정보. 블루리본 정규 리본 등급이나 현재 영업 상태 확인과는 별개."
+        }
+      ],
+      "addressSourceUrl": "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-10",
+      "addressCrosscheckUrl": "https://www.daangn.com/kr/local-profile/%EB%B0%B1%EC%A0%95%EA%B0%80lc%EC%98%81%EC%A3%BC%EC%A0%90-tbzuyf7vaf8d/"
     }
-  ]
+  ],
+  "cycle2Slot37": {
+    "checkedAt": "2026-11-10",
+    "newRestaurantCount": 3,
+    "locationCoordinateCount": 1,
+    "officialSources": [
+      "https://www.tourandong.com/public/sub3/sub1.cshtml",
+      "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd="
+    ],
+    "crosschecks": [
+      "https://82rg.com/nearby/restaurant/477609",
+      "https://www.tabling.co.kr/place/677cd6ed66de5f069891dc0f",
+      "https://www.daangn.com/kr/local-profile/%EB%B0%B1%EC%A0%95%EA%B0%80lc%EC%98%81%EC%A3%BC%EC%A0%90-tbzuyf7vaf8d/"
+    ],
+    "notes": "관광 수록·지자체 모범음식점 분리. 현재 영업 상태는 확정하지 않음."
+  }
 }

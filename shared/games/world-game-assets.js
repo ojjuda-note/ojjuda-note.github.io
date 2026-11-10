@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-runner-landscape-v3-fix1'
+ const revision='20261110-restaurants-c2s37-andong2-yeongju1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,7 +9,7 @@
   chacha_rush:'1.0.4',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
-  restaurants:'1.12.26',
+  restaurants:'1.12.27',
   recommendations:'1.7.0',
   archery:'3.3.0',
   roulette:'1.9.3',
