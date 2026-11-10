@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: isolated-regression-patch-validation
+  group: isolated-regression-patch-validation-${{ github.sha }}
   cancel-in-progress: false
 jobs:
   validate:
@@ -33,7 +33,7 @@ jobs:
           set -euo pipefail
           git merge-base --is-ancestor ae8180dc3f47d7a0c52dd9afe4c40570a52ca749 HEAD
           test -z "$(git diff --name-only ae8180dc3f47d7a0c52dd9afe4c40570a52ca749 HEAD -- . ':!tests/validation/ojjuda-regression-fix.patch' ':!.github/workflows/isolated-regression-validation.yml')"
-          echo 'bd764853e7ef60da785469d73511d95635dafe8004ab8aae840fbb8b6f428aea  tests/validation/ojjuda-regression-fix.patch' | sha256sum -c -
+          echo '7c93fd351284eb16c09e25a5903f1a449febd292558e85d076f459e2f150f49c  tests/validation/ojjuda-regression-fix.patch' | sha256sum -c -
           git apply --check tests/validation/ojjuda-regression-fix.patch
           git apply tests/validation/ojjuda-regression-fix.patch
           git diff --check
