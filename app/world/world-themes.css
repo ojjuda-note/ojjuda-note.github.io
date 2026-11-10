@@ -16,7 +16,7 @@
 :root[data-world-theme="chuseok"]{--bg:#faf8f2;--accent:#746536;--accent-ink:#746536;--accent-soft:#f1ecd9;--hero-bg:#f2e8cb;--hero-art:url("/assets/design/themes/chuseok.svg");}
 :root[data-world-theme="hangeul"]{--bg:#f8f9fb;--accent:#506780;--accent-ink:#506780;--accent-soft:#e7ecf3;--hero-bg:#e8edf1;--hero-art:url("/assets/design/themes/hangeul.svg");}
 :root[data-world-theme="halloween"]{--bg:#faf8f5;--accent:#735578;--accent-ink:#735578;--accent-soft:#ede7ef;--hero-bg:#ede3d5;--hero-art:url("/assets/design/themes/halloween.svg");}
-:root[data-world-theme="pepero"]{--bg:#faf7f2;--accent:#7b5847;--accent-ink:#7b5847;--accent-soft:#f1e7df;--hero-bg:#eee2d4;--hero-art:url("/assets/design/themes/pepero.svg");}
+:root[data-world-theme="pepero"]{--bg:#faf7f2;--accent:#7b5847;--accent-ink:#7b5847;--accent-soft:#f1e7df;--hero-bg:#eee2d4;--hero-art:url("/assets/design/themes/pepero.svg?v=20261110-pepero-clean1");}
 :root[data-world-theme="christmas"]{--bg:#f7f9f5;--accent:#35624a;--accent-ink:#35624a;--accent-soft:#e4ece3;--hero-bg:#e7ece1;--hero-art:url("/assets/design/themes/christmas.svg");}
 
 :root[data-theme=dark][data-world-theme]{--bg:#19241f;--surface:#24322b;--surface-2:#2c3c33;--ink:#eef2e9;--ink-2:#b5c2b7;--line:#435248;--accent:#b4c9ac;--accent-ink:#c7dcbc;--accent-soft:#354b3e;--on-accent:#203125;--hero-bg:#34483b}

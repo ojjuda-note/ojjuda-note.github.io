@@ -102,10 +102,11 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.equal((html.match(/class="agit-quest-card /g)||[]).length,3);
   assert.ok(html.includes('agit-quest-label-short'));
   for(const section of ['agit-hero','agit-checkin','agit-quest-grid','agit-life-grid','agit-footer'])assert.ok(html.includes(section),section);
-  for(const season of ['spring','summer','autumn','winter'])assert.ok(fs.existsSync(path.join(__dirname,'../features/home/theme-scenes',season+'.webp')),season+' illustrated hero exists');
-  assert.match(html,/theme-scenes\/autumn\.webp/);
+  for(const theme of ['classic','spring','summer','autumn','winter','newyear','seollal','valentine','white','children','parents','teachers','buddha','liberation','chuseok','hangeul','halloween','pepero','christmas'])assert.ok(fs.existsSync(path.join(__dirname,'../features/home/theme-illustrations',theme+'.webp')),theme+' illustrated hero exists');
+  assert.match(html,/theme-illustrations\/autumn\.webp/);
+  assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes2'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes3'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 

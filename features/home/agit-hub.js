@@ -72,7 +72,7 @@
     const season = calendar?.seasonFor?.(instant) || (month >= 3 && month <= 5 ? 'spring' : month >= 6 && month <= 8 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter');
     const key = calendar?.resolve(instant) || season;
     const names = {spring:'봄', summer:'여름', autumn:'가을', winter:'겨울'};
-    return {key, season, isEvent:key !== season, name:calendar?.catalog?.[key]?.name || names[key] || '오늘', copy:calendar?.catalog?.[key]?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
+    return {key, season, name:calendar?.catalog?.[key]?.name || names[key] || '오늘', copy:calendar?.catalog?.[key]?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
   }
   function safeState(settings) {
     const raw = settings && typeof settings.agitHub === 'object' && settings.agitHub || {};
@@ -191,7 +191,7 @@
             <div class="agit-pick-top">오늘의 추천게임 <span>매일 바뀌어요</span></div>
             ${game ? `<div class="agit-pick-body"><div class="agit-pick-art"><img src="/assets/design/games/${game.id}.svg" alt="" width="62" height="62" loading="lazy"></div><div class="agit-pick-foot"><strong>${escapeHtml(game.name)}</strong><button type="button" class="agit-play-button" data-act="agit-play" data-v="${game.id}" aria-label="${escapeHtml(game.name)} 게임 시작">한 판 놀기 <span aria-hidden="true">↗</span></button></div></div>` : '<p>추천게임을 준비하고 있어요.</p>'}
           </section>
-        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-season-art" src="/features/home/theme-scenes/${theme.season}.webp?v=20261110-themes1" alt="" width="768" height="512" decoding="async">${theme.isEvent?'<span class="agit-hero-event-art"></span>':''}<span class="agit-hero-sparkle">✳</span></div>
+        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-theme-art" src="/features/home/theme-illustrations/${theme.key}.webp?v=20261110-themes3" alt="" width="960" height="640" decoding="async"></div>
       </header>
       <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
         <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 최근 7일 ${stampedCount}/7</small></div></div>
