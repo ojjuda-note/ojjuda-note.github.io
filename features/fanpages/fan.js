@@ -202,10 +202,18 @@
 
     root.innerHTML = `
       <nav class="breadcrumb" aria-label="위치"><a href="./index.html">← 전체 팬페이지</a><span>/</span><span>${artist.korean}</span></nav>
-      <section class="detail-hero">
+      <section class="detail-hero stage-hero">
+        <div class="stage-energy" aria-hidden="true">
+          <span class="stage-orb stage-orb-a"></span><span class="stage-orb stage-orb-b"></span><span class="stage-orb stage-orb-c"></span>
+          <span class="stage-ring stage-ring-a"></span><span class="stage-ring stage-ring-b"></span>
+          <span class="stage-beam stage-beam-a"></span><span class="stage-beam stage-beam-b"></span>
+          <span class="stage-glyph stage-glyph-a">${artist.shape}</span><span class="stage-glyph stage-glyph-b">${artist.shape}</span><span class="stage-glyph stage-glyph-c">${artist.shape}</span>
+          <span class="stage-ghost-number">${String(index + 1).padStart(2, '0')}</span>
+        </div>
         <div class="detail-hero-copy"><span class="detail-overline">OJJUDA FAN SPACE / ${String(index + 1).padStart(2, '0')}</span><div class="detail-hero-main"><div class="detail-heart">${artist.shape}</div><h1>${artist.name}</h1><p>${artist.korean} <span>·</span> ${artist.fan}</p></div><div class="detail-hero-actions"><a href="#photos" class="detail-primary">사진 보기 ↗</a><button class="detail-save ${saved ? 'is-saved' : ''}" type="button" id="detail-save" aria-pressed="${saved}">${saved ? '♥ 관심 등록됨' : '♡ 관심 등록'}</button></div><span class="agency-label">${artist.agency} · FAN MADE</span></div>
-        <div class="detail-hero-visual">${imageHtml(artist.image, `${artist.korean} 그룹 사진`, 'detail-hero-image')}<span class="hero-vertical">${artist.status}</span><span class="hero-image-credit">${artist.imageCredit} ↗</span></div>
+        <div class="detail-hero-visual">${imageHtml(artist.image, `${artist.korean} 그룹 사진`, 'detail-hero-image')}<span class="hero-vertical">${artist.status}</span><span class="stage-visual-tag" aria-hidden="true">${artist.fan}</span><span class="hero-image-credit">${artist.imageCredit} ↗</span></div>
       </section>
+      <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
       <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#photos"><span>01</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>02</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>03</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>04</span><strong>소식</strong><b>↗</b></a></nav>
       <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div><div class="detail-photo-grid">${gallery}${extraMedia}</div><p class="photo-disclaimer">사진 제공·저작권: 각 출처. 사진을 누르면 원본으로 이동합니다.</p></section>
@@ -223,6 +231,17 @@
       saveButton.setAttribute('aria-pressed', String(active));
     });
     attachImageFallback(root);
+    if ('IntersectionObserver' in window && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-revealed');
+        observer.unobserve(entry.target);
+      }), { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+      root.querySelectorAll('.detail-section, .channels-section, .other-section').forEach((section) => {
+        section.classList.add('will-reveal');
+        observer.observe(section);
+      });
+    }
   }
 
   if (page === 'hub') initHub();
