@@ -10,7 +10,7 @@
       const accountKeys = ['auth', 'next', 'reset', 'code', 'token', 'token_hash', 'type', 'access_token', 'refresh_token', 'error', 'error_code', 'error_description'];
       if (accountKeys.some(key => url.searchParams.has(key) || hash.has(key))) return;
       url.pathname = '/world.html';
-      if (!url.searchParams.has('tab')) url.searchParams.set('tab', 'arcade');
+      if (!url.searchParams.has('tab')) url.searchParams.set('tab', 'hub');
       location.replace(url.pathname + url.search + url.hash);
     })();
   </script>

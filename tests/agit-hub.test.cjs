@@ -86,5 +86,15 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.equal((html.match(/class="agit-quest-card /g)||[]).length,3);
   for(const section of ['agit-hero','agit-checkin','agit-quest-grid','agit-life-grid','agit-footer'])assert.ok(html.includes(section),section);
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-agit-tidy3'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-agit-warm4'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
+});
+
+test('visit streak continues through yesterday but resets after a missed day',()=>{
+  const yesterday=plus(date,-1),twoDaysAgo=plus(date,-2);
+  const settings={agitHub:{stamps:[twoDaysAgo,yesterday]}};
+  assert.equal(hub.visitStreak(settings,date),2);
+  hub.stamp(settings,date);
+  assert.equal(hub.visitStreak(settings,date),3);
+  assert.equal(hub.visitStreak(settings,plus(date,2)),0);
 });
