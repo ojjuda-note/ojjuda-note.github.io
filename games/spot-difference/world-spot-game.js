@@ -7,7 +7,7 @@
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog arcade-game-view';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261110-admin-game-preview1" allow="fullscreen; web-share"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261110-admin-record-free1" allow="fullscreen; web-share"></iframe>';
       const frame=dialog.querySelector('iframe');
       let scoreQueue=Promise.resolve(),guestFinished=false;
       const current=()=>active===dialog&&authorized();
@@ -15,12 +15,14 @@
         if(event.origin!==window.location.origin||event.source!==frame.contentWindow||!current())return;
         if(event.data?.type==='ojjuda:spot-home'){close();return;}
         if(event.data?.type==='ojjuda:spot-finished'){
+          if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
           if(!owner&&!guestFinished){guestFinished=true;window.OjjudaGuestAccess?.finished();}
           return;
         }
         if(event.data?.type==='ojjuda:spot-clear'&&Number.isInteger(event.data.stage)&&event.data.stage>=1&&event.data.stage<=152&&(typeof event.data.owner==='string'||event.data.owner===null)){
+          if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
           const {stage,owner}=event.data;
-          const save=()=>Promise.resolve(onClear?.(stage,owner)).catch(error=>{
+          const save=()=>window.OjjudaAdminPreview?.isEnabled?.()===true?Promise.resolve():Promise.resolve(onClear?.(stage,owner)).catch(error=>{
             console.warn('게임 기록 저장 실패',error);
             if(active!==dialog)return;
             const retry=document.createElement('button');retry.type='button';retry.textContent='완료 기록 다시 저장';retry.onclick=()=>{retry.remove();scoreQueue=scoreQueue.then(save)};dialog.querySelector('.spot-game-header').append(retry);

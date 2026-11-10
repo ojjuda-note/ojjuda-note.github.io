@@ -2,6 +2,7 @@
 (()=>{
  'use strict';
  let overlay=null,frame=null,session=null,previousFocus=null,watcher=null;
+ const adminPreview=()=>window.OjjudaAdminPreview?.isEnabled?.()===true;
  const retired=new Set();
  const bridge={client:null,open,close,createPublicRoom};window.OjjudaTtangBridge=bridge;
  function close(){
@@ -32,6 +33,7 @@
  }
  async function finishRetired(){for(const previous of retired)await leavePublicRoom(previous);}
  async function createPublicRoom(){
+  if(adminPreview())throw Error('admin_preview');
   const current=session,client=bridge.client,game=frame?.contentWindow?.OjjudaTtang;
   if(!current?.owner||!current.authorized()||!client?.rpc||!game)throw Error('not_signed_in');
   if(current.creating||current.arcadeRoom)return false;
@@ -56,6 +58,7 @@
   finally{current.creating=false;current.createRpc=null;}
  }
  function open({client,owner,authorized=()=>true,onResult=async()=>({ok:false}),joinCode,hostCode,arcadeRoom}={}){
+  if(adminPreview()){joinCode=null;hostCode=null;arcadeRoom=null;}
   if(overlay||!authorized())return;
   previousFocus=document.activeElement;session={owner,authorized,onResult,client,round:null,mode:null,guestFinished:false,submitted:new Set(),excluded:new Set(),outcomes:new Map(),arcadeRoom,hostCode,nextHeartbeat:0,heartbeatBusy:false,hosting:false};bridge.client=client;
   overlay=document.createElement('section');overlay.id='ttang-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','월드땅따먹기');
@@ -84,6 +87,11 @@
   }catch{current.nextHeartbeat=Date.now()+5000;}finally{current.heartbeatBusy=false;}
  }
  async function saveResult(current,won,round){
+  if(adminPreview()){
+   current.submitted.add(round);
+   if(session===current)statusMessage('관리자 체험 · 승패 기록은 저장하지 않아요');
+   return;
+  }
   if(!current.authorized()||current.excluded.has(round)||current.submitted.has(round))return;
   current.outcomes.set(round,won);current.submitted.add(round);
   if(session===current)statusMessage('승패 기록을 저장하고 있어요…');

@@ -2,6 +2,7 @@
   'use strict';
   const $ = selector => document.querySelector(selector);
   const prefix = 'ojjuda.mines.save.v1:';
+  const adminPreview = () => parent!==window&&parent.OjjudaAdminPreview?.isEnabled?.()===true;
   const rules = window.OjjudaMinesRules;
   let game, owner, ready = false, pending = null, flight = null, timeout;
   const comparisons=new Map();
@@ -16,10 +17,14 @@
     $('#minesProgress').textContent = `${level.c}×${level.r} · 지뢰 ${level.m}개 · 개인 최고 ${best ? best + '초' : '기록 없음'}`;
   }
   function save(state) {
-    if (!ready) return;
+    if (!ready || adminPreview()) return;
     try { localStorage.setItem(prefix + owner, JSON.stringify(state)); } catch {}
   }
   function flush() {
+    if(adminPreview()){
+      pending=null;flight=null;clearTimeout(timeout);
+      status('관리자 체험 · 완료 기록은 저장하지 않아요');return;
+    }
     if (!ready || !pending || flight) return;
     flight = pending; pending = null;
     status(`${game.levels[flight.difficulty].name} · ${flight.seconds.toLocaleString('ko-KR')}초 · 순위 등록 중…`);
@@ -31,6 +36,7 @@
     }, 15000);
   }
   function completed(difficulty, seconds, runId) {
+    if(adminPreview()){status('관리자 체험 · 완료 기록은 저장하지 않아요');return;}
     const score = rules.score(difficulty, seconds);
     if (score === null) {
       if (!pending && !flight) status('커스텀은 개인 최고 기록만 남겨요.');

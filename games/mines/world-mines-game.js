@@ -10,7 +10,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog mines-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '지뢰찾기 · 전체이용');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261109-arcade-difficulty-1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>지뢰찾기 · 전체이용</span></header><iframe title="지뢰찾기" src="/games/mines/index.html?v=20261110-admin-record-free1" allow="autoplay; fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const records = new Map(), baselines = new Map();
       let leaderFlight = null;
@@ -39,6 +39,7 @@
         return leaderFlight;
       }
       function startComparison(runId,difficulty) {
+        if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
         if(!validRun(runId)||!Number.isInteger(difficulty)||difficulty<0||difficulty>7)return;
         if(!baselines.has(runId))baselines.set(runId,{difficulty,leader:readLeader()});
         if(baselines.size>40)baselines.delete(baselines.keys().next().value);
@@ -54,6 +55,9 @@
         return null;
       }
       async function record(message) {
+        if(window.OjjudaAdminPreview?.isEnabled?.()===true){
+          send({type:'ojjuda-mines-record',runId:message.runId,ok:false,preview:true});return;
+        }
         const {runId, difficulty, seconds, completed} = message;
         const score = window.OjjudaMinesRules.score(difficulty, seconds);
         if (completed !== true || score === null || message.score !== score ||

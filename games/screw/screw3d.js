@@ -1275,6 +1275,7 @@ function screw3d(api,startStage) {
     return empty;
   }
   function savePurchases() {
+    if(adminPreview())return true;
     const key = purchaseKey(st.L);
     if (!key) return false;
     try { localStorage.setItem(key, JSON.stringify(st.purchases)); return true; } catch (_) { return false; }

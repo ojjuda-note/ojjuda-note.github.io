@@ -6,12 +6,14 @@
   const pending=new Set(),failed=new Set();
   const show=(text,retry=false)=>{if(disposed||!status)return;status.textContent=text;status.disabled=!retry;};
   async function save(stage){
+   if(window.OjjudaAdminPreview?.isEnabled?.()===true){show('관리자 체험 · 완료 기록은 저장하지 않아요');return;}
    if(pending.has(stage)||!authorized())return;
    pending.add(stage);failed.delete(stage);
    show('완료 기록 저장 중…');
    try{
     const session=await client.auth.getUser();
     if(session.error||session.data?.user?.id!==owner)throw Error('account_changed');
+    if(window.OjjudaAdminPreview?.isEnabled?.()===true){show('관리자 체험 · 완료 기록은 저장하지 않아요');return;}
     const result=await client.rpc('photo_game_clear',{p_stage:stage});
     if(result.error||result.data?.ok!==true)throw Error('save_failed');
     show('이번 달 '+result.data.score+'장 완료');

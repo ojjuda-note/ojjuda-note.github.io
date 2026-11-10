@@ -92,6 +92,7 @@
     return count;
   }
   function save(settings, state, date) {
+    if(root.OjjudaAdminPreview?.isEnabled?.()===true)return false;
     if (!settings || typeof settings !== 'object') return false;
     state.stamps = state.stamps.filter(d => d <= date).slice(-120);
     state.completed = Object.fromEntries(Object.entries(state.completed).filter(([d]) => d >= addDays(date, -35) && d <= date));

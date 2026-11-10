@@ -31,16 +31,16 @@
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
 <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
-<script src="/shared/games/world-game-assets.js?v=20261110-runner-seahorse-v3-1" defer></script>
+<script src="/shared/games/world-game-assets.js?v=20261110-admin-record-free1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
-<script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
+<script src="/shared/games/game-challenges.js?v=20261110-admin-record-free1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
 <script src="/shared/games/game-results.js?v=20261109-unified-multiplayer-ui2" defer></script>
 <script src="/app/world/world-navigation.js?v=20261106-source-folders1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-themes3">
-<script src="/features/home/agit-hub.js?v=20261110-theme-copy1" defer></script>
+<script src="/features/home/agit-hub.js?v=20261110-admin-record-free1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -64,7 +64,7 @@
 <script src="/shared/games/admin-preview.js?v=20261110-admin-preview1" defer></script>
 <script src="/shared/auth/guest-access.js?v=20261106-source-folders1" defer></script>
 <script src="/shared/auth/guest-visits.js?v=20261106-source-folders1" defer></script>
-<script src="/shared/games/guest-game-scores.js?v=20261108-sacheonseong-200-stacks1" defer></script>
+<script src="/shared/games/guest-game-scores.js?v=20261110-admin-record-free1" defer></script>
 
 <link rel="stylesheet" href="note/notifications.css?v=20261108-daily-sections1">
 <link rel="stylesheet" href="note/support.css?v=20261004-design1">
@@ -177,7 +177,7 @@
 
 
 
-<script src="/games/matgo/matgo-bridge.js?v=20261107-game-launch1" defer></script>
+<script src="/games/matgo/matgo-bridge.js?v=20261110-admin-record-free1" defer></script>
 <link rel="stylesheet" href="/features/arcade/arcade-rooms.css?v=20261106-source-folders1">
 <script src="/features/arcade/arcade-rooms.js?v=20261108-idle-poll1" defer></script>
 <link rel="stylesheet" href="/shared/viewport/mobile-viewport.css?v=20261106-source-folders1">
@@ -1168,6 +1168,7 @@ function jgRecentReplays(){
  }catch{return[]}
 }
 function jgArchiveCurrent(){
+ if(adminGamePreviewActive())return;
  if(!E||E.kind!=='janggi'||!E.over||E.reviewArchive||E.replayArchived)return;
  const record={at:Date.now(),mode:E.mode,me:E.me,level:E.level,layout:E.layout,
   moves:E.moves.slice(),over:{...E.over},names:Op()};
@@ -1361,6 +1362,7 @@ async function renderBoardMenu(menu,kind){
  }
 }
 var Qp={"bd-open"(t){vn(t.v)},"bd-lv"(t){g.bdLevel=t.v,Tp(t.k)},"bd-side"(t){g.bdSide=t.v,Tp(t.k)},"bd-layout"(t){t.side==="c"?g.bdLayoutC=jgLayout(t.v,"c"):g.bdLayoutH=jgLayout(t.v,"h"),Tp(t.k)},"bd-start"(t){let e=Xe[t.k],o=t.k==="janggi"?{layout:{c:jgLayout(g.bdLayoutC,"c"),h:jgLayout(g.bdLayoutH,"h")}}:{};zp(t.k,t.mode,{...o,...t.mode==="ai"?{level:g.bdLevel||"normal",me:(g.bdSide||"first")==="first"?e.first:e.second}:{}})},"bd-sq"(t){g2(+t.i)},"bd-sound"(t,e){Vi(),e&&(e.textContent=Wr())},"bd-promo"(t){if(!E||!E.promo)return;let e=(E.st.moves||ze().moves(E.s)).find(o=>o.f===E.promo.f&&o.t===E.promo.t&&o.p===t.p);if(!e){M("승진할 말을 다시 골라 주세요");return}E.promo=null,Ka(e)},"bd-undo"(){if(!vU())return;if(E.mode==="online"){wU("game_undo_request",{p_id:E.online.id});return}if(E.mode==="local"){E.undoPending={by:da(E.s.t),ply:E.moves.length},Je();return}let t=E.mode==="ai"&&E.s.t===E.me?2:1;t=Math.min(t,E.hist.length);let e=null;for(let o=0;o<t;o++)e=E.hist.pop();E.s=e.s,E.last=e.last,E.moves=e.moves,E.undoUsed[E.me]=(E.undoUsed[E.me]||0)+1,E.sel=-1,E.targets=[],E.over=null,E.anim=null,pa(),Je()},"bd-undo-answer"(t){if(!E||E.undoBusy)return;let e=t.accept==="1";if(E.mode==="online"){let o=E.online.undoRequestedBy;if(!o||e&&o===D.user?.id)return;wU("game_undo_answer",{p_id:E.online.id,p_accept:e});return}let o=E.undoPending;if(E.mode!=="local"||!o)return;if(o.ply!==E.moves.length){E.undoPending=null,Je();return}if(e){let r=E.hist.pop();if(!r){E.undoPending=null,Je();return}E.s=r.s,E.last=r.last,E.moves=r.moves,E.undoUsed[o.by]=(E.undoUsed[o.by]||0)+1,E.sel=-1,E.targets=[],E.over=null,E.anim=null,pa()}E.undoPending=null,Je(),M(e?"무르기를 승인했어요":"무르기를 거부했어요. 대국을 계속해 주세요")},"bd-pass"(){!E||E.kind!=="janggi"||!$l()||!Za(E.s)||Ka({pass:1})},"bd-resign"(){if(!E||E.over)return;let t=E,e=E.mode==="local"?E.s.t:E.me;Tt("정말 기권할까요?","기권",()=>{E=t,E.over={over:!0,result:da(e),reason:"resign"},E.mode==="local"||da(e)===E.me?gt.win():gt.lose(),E.mode==="online"&&S.rpc("game_resign",{p_id:E.online.id}).then(({error})=>{if(error)M('기권 결과를 저장하지 못했어요. 다시 확인해 주세요.');else notifyStreakSaved(t.owner)},()=>M('기권 결과를 저장하지 못했어요.')),Je()})},"bd-again"(){if(E){if(window.OjjudaGuestAccess?.canPlay()===false)return;if(E.mode==="online"){Uo(),vn(E.kind);return}E.kind==="janggi"?vn(E.kind):zp(E.kind,E.mode,{level:E.level,me:E.me,layout:E.layout})}}};function Tp(t){let e=document.getElementById("bd-menu");e&&(e.querySelectorAll('[data-act="bd-lv"]').forEach(o=>{let r=o.dataset.v===(g.bdLevel||"normal");o.classList.toggle("on",r),o.setAttribute("aria-pressed",r)}),e.querySelectorAll('[data-act="bd-side"]').forEach(o=>{let r=o.dataset.v===(g.bdSide||"first");o.classList.toggle("on",r),o.setAttribute("aria-pressed",r)}),e.querySelectorAll('[data-act="bd-layout"]').forEach(o=>{let r=o.dataset.v===jgLayout(o.dataset.side==="c"?g.bdLayoutC:g.bdLayoutH,o.dataset.side);o.classList.toggle("on",r),o.setAttribute("aria-pressed",r)}))}var to=[],Gp=t=>String(t||"").toLowerCase().replace(/[\s\p{P}]/gu,""),Vp=t=>String(t).replace(/(.)\1{10,}/gu,(e,o)=>o.repeat(10));function Wp(){let t=(e,o)=>{let r=Number(wt[e]);return Number.isFinite(r)&&r>0?r:o};return{l10:t("chat_limit_10s",5),l60:t("chat_limit_60s",15),dup:t("chat_dup_60s",2)}}function Up(t){let e=Date.now();for(;to.length&&e-to[0].t>6e4;)to.shift();let{l10:o,l60:r,dup:a}=Wp(),i=to[to.length-1];if(i&&e-i.t<1e3)return{ok:!1,wait:1,why:"fast"};let l=to.filter(c=>e-c.t<1e4);if(l.length>=o)return{ok:!1,wait:Math.max(1,Math.ceil((l[0].t+1e4-e)/1e3)),why:"rate"};if(to.length>=r)return{ok:!1,wait:Math.max(1,Math.ceil((to[0].t+6e4-e)/1e3)),why:"rate"};let s=Gp(t);if(s){let c=to.filter(d=>d.n===s);if(c.length>=a)return{ok:!1,wait:Math.max(1,Math.ceil((c[0].t+6e4-e)/1e3)),why:"dup"}}return{ok:!0}}var Yp=t=>{to.push({t:Date.now(),n:Gp(t)})},Zp=()=>{to.pop()};function Kp(t){let e=String(t||"").match(/(slow_down|dup_msg):(\d+)/);return e?{wait:+e[2],why:e[1]==="dup_msg"?"dup":"rate"}:/too_fast/.test(String(t||""))?{wait:1,why:"fast"}:null}var wl=t=>t.why==="dup"?`같은 말은 1분에 ${Wp().dup}번까지 보낼 수 있어요. ${t.wait}초 뒤에 다시 보내 주세요`:t.why==="fast"?"조금 천천히 보내 주세요":`잠깐만요! 너무 빨리 보내고 있어요. ${t.wait}초 뒤에 보낼 수 있어요`;var Xp=()=>new Date(Date.now()+9*36e5).toISOString().slice(0,10),Cn=()=>D.online&&D.walletReady;function Mn(){let t=$.games||($.games={});return t.day!==Xp()&&(t.day=Xp(),t.got=0,t.best={}),t}async function vl(t,e,request=worldRewardRequest()){if(!request.owner||!worldRewardCurrent(request))return{ok:false,reason:"wallet_unavailable"};let{data:o,error:r}=await S.rpc(t,e);if(r)throw r;return Ia(o||{},request)}async function tf(t,e,request=worldRewardRequest()){
+ if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:false,reason:'admin_preview',preview:true};
  e=Math.max(0,Math.round(e));
  const owner=request.owner;
  if(owner){
@@ -1451,7 +1453,21 @@ function worldScrewAdminTestEnabled(){
  const query=new URLSearchParams(location.search);
  return D.online&&!!D.user?.id&&D.isAdmin===true;
 }
+function adminGamePreviewActive(){return window.OjjudaAdminPreview?.isEnabled?.()===true;}
+const originalWorldGameRpc=vl;
+const adminPreviewBlockedGameRpcs=new Set([
+ 'submit_score','submit_screw_box_score','record_marble_result',
+ 'saetbyeol_booster_buy','sacheonseong_tool_buy','bang_hint_buy',
+ 'screw_upgrade_buy_v3','archery_single_action','archery_single_receipt','archery_coin_exchange_v5'
+]);
+vl=async function(name,args,request){
+ if(adminGamePreviewActive()&&adminPreviewBlockedGameRpcs.has(name))return {ok:false,reason:'admin_preview',preview:true};
+ return originalWorldGameRpc(name,args,request);
+};
 function Al(t,options={}){
+ if(adminGamePreviewActive()&&['roulette','poker','bang'].includes(t)){
+  M('관리자 체험 중에는 온라인 대전 기록이 남는 게임을 시작할 수 없어요.');return;
+ }
  if(t==="group"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
   const returnUrl=worldArcadeReturnUrl();if(returnUrl)history.replaceState(history.state,'',returnUrl);
@@ -1945,6 +1961,7 @@ function createScrewScoreRecorder(game){
 }
 var screwScoreRecoveries=new Set();
 function resumeScrewScores(){
+ if(adminGamePreviewActive())return;
  if(!S||R?.running)return;
  const owner=worldRewardOwner();if(owner===''||owner===null&&!window.OjjudaGuestScores)return;
  const box=screwBoxScoreState(owner);
@@ -2043,7 +2060,7 @@ async function S2(score,detail={}){
   if(id!=='mole')return result;
   return {...result,metric:`${moleGrid}×${moleGrid} · ${score}점`+(result.outcome==='record'?' · 이번 달 1등':''),encouragement:result.outcome==='record'?result.encouragement:'더 높은 점수에 도전해요!'};
  };
- try{if(['mole','stacker'].includes(id))window.OjjudaGameChallenges?.complete?.(id,score);}catch{}
+ try{if(!adminGamePreviewActive()&&['mole','stacker'].includes(id))window.OjjudaGameChallenges?.complete?.(id,score);}catch{}
  const stageActions=id==='breakout'?breakoutStagePicker(game.stage):id==='screw'&&Number.isInteger(game.stage)?screwStagePicker():'';
  const actions=stageActions+'<button class="btn" data-g="close">닫기</button>'+(!stageActions?'<button class="btn pri" data-g="start">다시 하기</button>':'');
  const base={game:recordKey,outcome:scoreOnly?'score':detail.outcome||(id==='breakout'&&(game.stageCleared||game.resultTitle)?'success':'failure'),metric:id==='mole'?`${moleGrid}×${moleGrid} · ${score}점`:game.stage?`${game.stage}단계 · ${score}${unit}`:`${score}${unit}`,score,actions};
@@ -2054,7 +2071,9 @@ async function S2(score,detail={}){
   if(card&&window.OjjudaGameResults?.update){window.OjjudaGameResults.update(card,options);const saved=card.querySelector('#gres');if(saved)saved.textContent=status;return;}
   ti(worldGameResultMarkup({...options,extra:`<p id="gres" role="status">${w(status)}</p>`}));
  };
- render(null,'기록 확인 중…');if(id==='breakout')focusBreakoutChoice();else(R.ov.querySelector('[data-g="start"]')||R.ov.querySelector('.game-result-share'))?.focus?.({preventScroll:true});
+ const adminPreview=adminGamePreviewActive();
+ render(null,adminPreview?'관리자 체험 · 기록은 저장하지 않아요.':'기록 확인 중…');if(id==='breakout')focusBreakoutChoice();else(R.ov.querySelector('[data-g="start"]')||R.ov.querySelector('.game-result-share'))?.focus?.({preventScroll:true});
+ if(adminPreview)return;
  const before=scoreOnly?await arcadeScoreLeader(recordKey):null;
  if(!worldRewardCurrent(request))return;
  try{
@@ -2882,9 +2901,10 @@ function my(){py();if(!worldEntryRouted){worldEntryRouted=true;const url=new URL
  }else openWorldGameLink(entry,gameOptions);
 }}else if(g.tab==="place"&&D.online&&!g.place?.live)xf(g.place.id,undefined,true);else H();void resolveWorldProfilePhoto(),worldParkNotes?.route(),!bm&&(bm=true,D.online&&(Promise.all([ke(),Ji(),Gc(),Ls().catch(()=>!1),Jd().catch(()=>!1)]).then(t=>{let e=new URL(location.href),o=e.searchParams.get("admin");const notice=e.searchParams.get("notice"),target=e.searchParams.get("target");if(["guestbook","friends","media","message"].includes(notice)&&target&&target.length<=512){e.searchParams.delete("notice");e.searchParams.delete("target");history.replaceState(null,"",e.pathname+e.search+e.hash);void openWorldNotification(notice,target)}if(e.searchParams.get("tab")==="shop"){g.tab="shop";e.searchParams.delete("tab");history.replaceState(null,"",e.pathname+e.search+e.hash);H()}if(restoreWorldAdminView(o)){e.searchParams.delete("admin");try{history.replaceState(null,"",e.pathname+e.search+e.hash)}catch{}H()}else if(g.tab==="arcade")H();else wc()&&H()}).catch(t=>console.error(t)),on({onLobby:jf}),Qs(),fy(),setInterval(kc,9e4),setTimeout(qs,8e3),setTimeout(()=>Q0().catch(t=>console.error(t)),3e3),document.addEventListener("visibilitychange",()=>{document.hidden||(kc(),qs(),worldResumePresence())})))}// Member rooms use their own account; creation is available only in administrator mode.
 var worldHouseClose=null,worldHouseOpening=false,worldHouseOwner=null,worldHouseViewer=null,worldHouseRequest=0;
-function notifyStreakSaved(owner){if(owner&&D.online&&D.user?.id===owner)window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner}}));}
-function newPracticeStreakRound(mode){return mode==='ai'&&D.online&&D.user?.id?{id:crypto.randomUUID(),owner:D.user.id,saved:false,pending:false}:null;}
+function notifyStreakSaved(owner){if(!adminGamePreviewActive()&&owner&&D.online&&D.user?.id===owner)window.dispatchEvent(new CustomEvent('ojjuda:game-record-saved',{detail:{owner}}));}
+function newPracticeStreakRound(mode){return !adminGamePreviewActive()&&mode==='ai'&&D.online&&D.user?.id?{id:crypto.randomUUID(),owner:D.user.id,saved:false,pending:false}:null;}
 async function savePracticeStreak(session,winner){
+ if(adminGamePreviewActive())return;
  if(winner&&session&&!session.owner)window.OjjudaGuestAccess?.finished();
  const round=session?.streakRound;
  if(!round||round.saved||round.pending||!D.online||D.user?.id!==round.owner)return;
@@ -3063,11 +3083,12 @@ var worldArcadeRooms=null,worldArcadeMatch=null;
 function worldArcadeCaption(id){return id&&worldArcadeMatch?.match_id===id?`<span class="arcade-match-caption">방 #${worldArcadeMatch.room_no} · ${w(worldArcadeMatch.title)}</span>`:""}
 function syncWorldArcadeRooms(){
  if(!worldArcadeRooms&&window.OjjudaArcadeRooms&&S)worldArcadeRooms=window.OjjudaArcadeRooms.create({
-  client:S,getUserId:()=>D.online?D.user?.id:null,matgoAllowed:()=>window.OjjudaMatgoAccess?.visible()===true,
+  client:S,getUserId:()=>adminGamePreviewActive()?null:D.online?D.user?.id:null,matgoAllowed:()=>!adminGamePreviewActive()&&window.OjjudaMatgoAccess?.visible()===true,
   notify:M,renderModal:ct,closeModal:dt,
   goArcade:()=>{if(g.tab!=="place"||g.place?.id!=="arcade")xf("arcade")},
   extraRooms:async()=>{const {data,error}=await S.rpc('arcade_extra_rooms');if(error)throw error;return data?.rooms||[];},
   onCreateNative:async(kind,params)=>{
+   if(adminGamePreviewActive())throw Error('admin_preview');
    const owner=D.user?.id;if(!D.online||!owner)throw Error('not_signed_in');
    if(kind==='roulette'){
     const client=S,{data,error}=await client.rpc('roulette_action',{p_action:'create',p_payload:{mode:'online',title:params.title,capacity:params.capacity,request_id:params.request_id}});
@@ -3101,6 +3122,7 @@ function syncWorldArcadeRooms(){
   },
   canOpen:()=>!document.getElementById("gov")&&!document.getElementById("matgo-overlay")&&!document.getElementById("ttang-overlay")&&!document.querySelector(".tour-game-dialog,.roulette-game-dialog, #modal-root .modal"),
   onFreshGame:async(room,owner)=>{
+   if(adminGamePreviewActive())throw Error('admin_preview');
    if(!D.online||D.user?.id!==owner)throw Error('not_signed_in');
    const request=++worldGameAssetRequest,client=S,tab=g.tab,place=g.place;
    const current=()=>D.online&&D.user?.id===owner&&S===client&&request===worldGameAssetRequest&&g.tab===tab&&g.place===place;
@@ -3112,6 +3134,7 @@ function syncWorldArcadeRooms(){
    if(['carom4','carom3','pool8'].includes(room.kind))await xn(room.kind);else await vn(room.kind);
   },
   onOpen:async(room,owner)=>{
+   if(adminGamePreviewActive())throw Error('admin_preview');
    if(!D.online||D.user?.id!==owner)throw Error("not_signed_in");
    if(room.native){
     dt();

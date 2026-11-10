@@ -46,8 +46,10 @@
     subscribe(fn){listeners.add(fn);fn({...state});return()=>listeners.delete(fn);},
     refresh,
     async recordClear(owner,stage){
+      if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:true,preview:true};
       if(!Number.isInteger(stage)||stage<1||stage>152)throw new Error('잘못된 그림 번호예요.');
       for(let attempt=0;attempt<2;attempt++){
+        if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:true,preview:true};
         if(!client||!owner||state.userId!==owner)throw new Error('게임을 시작한 계정으로 로그인해 주세요.');
         const {data,error}=await client.rpc('record_spot_clear',{p_stage:stage}).abortSignal(AbortSignal.timeout(12000));
         if(error)throw error;
@@ -68,6 +70,7 @@
       await sync(null);
     },
     async buy(request,stage){
+      if(window.OjjudaAdminPreview?.isEnabled?.()===true)return {ok:false,reason:'admin_preview',preview:true};
       if(!client||!state.userId||state.userId!==request.userId)throw new Error('구매를 시작한 계정으로 로그인해 주세요.');
       const buyer=state.userId;
       const {data,error}=await client.rpc('spot_game_buy_v2',{

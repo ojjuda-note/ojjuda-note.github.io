@@ -87,6 +87,11 @@
   }
   async function openMatgo(options = {}) {
     if (options.signal?.aborted) return false;
+    if(window.OjjudaAdminPreview?.isEnabled?.()===true){
+      const message='관리자 체험 중에는 승패가 저장되는 맞고를 시작할 수 없어요.';
+      if(options.propagateError)throw new Error(message);
+      showMessage(message);return false;
+    }
     if (opening || overlay) {
       if (options.propagateError) throw new Error('맞고를 준비 중이에요. 잠시 후 다시 시도해 주세요.');
       return false;

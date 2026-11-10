@@ -11,6 +11,7 @@
    function dispose(){if(active?.dialog!==dialog)return;active=null;invitation.abort();window.removeEventListener('message',receive);clearInterval(authTimer);dialog.close();dialog.remove();if(!wasGaming)document.body.classList.remove('gaming');if(previous?.isConnected)previous.focus({preventScroll:true});}
    function close(){invitation.abort();const result=session.close();if(result?.then)result.then(closed=>{if(!closed&&active?.dialog===dialog)invitation=new AbortController();});return result;}
    async function invoke(body){
+    if(window.OjjudaAdminPreview?.isEnabled?.()===true&&!['read','list','mine'].includes(body.action))return {error:'admin_preview'};
     const {data,error}=await client.functions.invoke('tank',{body});let result;
     if(error){try{result=await error.context.json();}catch{result={error:'unavailable'};}}else result=data||{error:'unavailable'};
     if(active?.dialog===dialog&&authorized()){

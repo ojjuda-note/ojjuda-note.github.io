@@ -90,3 +90,88 @@ test('administrator star preview also supports the six new chapters without savi
   assert.ok(read('shared/games/world-game-assets.js').includes(`const revision='${revision}'`));
   assert.ok(read('world.html').includes(`world-game-assets.js?v=${revision}`));
 });
+
+test('admin preview never submits member or guest scores, and normal mode still saves',async()=>{
+  const source=read('world.html');
+  const start=source.indexOf('async function tf('),end=source.indexOf('}async function ef(',start);
+  assert.ok(start>0&&end>start);
+  let preview=true;const calls=[],events=[];
+  const context={window:{OjjudaAdminPreview:{isEnabled:()=>preview},dispatchEvent:event=>events.push(event),
+    OjjudaGuestScores:{submit:async(...args)=>{calls.push(['guest',...args]);return {ok:true};}}},
+    CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}},
+    worldRewardRequest:()=>({owner:'member'}),worldRewardCurrent:()=>true,
+    vl:async(...args)=>{calls.push(['member',...args]);return {ok:true};},
+    crypto:{randomUUID:()=> 'request-id'}};
+  vm.runInNewContext(source.slice(start,end+1),context);
+  assert.equal((await context.tf('mole',42,{owner:'member'})).reason,'admin_preview');
+  assert.equal((await context.tf('runner',17,{owner:null})).reason,'admin_preview');
+  assert.equal(calls.length,0);
+  assert.equal(events.length,0);
+  preview=false;
+  assert.equal((await context.tf('mole',42,{owner:'member'})).ok,true);
+  assert.equal((await context.tf('runner',17,{owner:null})).ok,true);
+  assert.equal(calls.length,2);
+  assert.equal(events.length,1);
+});
+
+test('game RPC purchases and rewards are blocked only in admin preview',async()=>{
+  const source=read('world.html');
+  const start=source.indexOf('function adminGamePreviewActive()'),end=source.indexOf('function Al(',start);
+  assert.ok(start>0&&end>start);
+  let preview=true;const calls=[];
+  const context={window:{OjjudaAdminPreview:{isEnabled:()=>preview}},
+    vl:async(...args)=>{calls.push(args);return {ok:true};}};
+  vm.runInNewContext(source.slice(start,end),context);
+  for(const name of ['submit_score','submit_screw_box_score','record_marble_result','screw_upgrade_buy_v3','sacheonseong_tool_buy','archery_single_action']){
+    assert.equal((await context.vl(name,{},{})).reason,'admin_preview');
+  }
+  assert.equal(calls.length,0);
+  preview=false;
+  assert.equal((await context.vl('submit_score',{p_game:'mole'},{})).ok,true);
+  assert.equal(calls.length,1);
+});
+
+test('guest score and game-result endpoints are not called in admin preview',async()=>{
+  let preview=true;const requests=[],events=[];
+  const client={rpc:(name,args)=>{requests.push({name,args});return {abortSignal:async()=>({data:{ok:true},error:null})};}};
+  const window={OjjudaAdminPreview:{isEnabled:()=>preview},OJJUDA_CONFIG:{supabaseUrl:'https://example.test',supabaseKey:'test'},
+    supabase:{createClient:()=>client},dispatchEvent:event=>events.push(event)};
+  vm.runInNewContext(read('shared/games/guest-game-scores.js'),{
+    window,localStorage:{getItem:()=>null,setItem(){}},
+    crypto:{randomUUID:()=> 'request-id',getRandomValues:array=>array},
+    AbortSignal:{timeout:()=>({})},CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}}
+  });
+  const api=window.OjjudaGuestScores;
+  for(const request of [api.submit('mole',99),api.submitScrewBox(99,'id'),api.spot(3),api.territory('id',true),api.marble('id',false)]){
+    assert.equal((await request).reason,'admin_preview');
+  }
+  assert.equal(requests.length,0);
+  assert.equal(events.length,0);
+  preview=false;
+  assert.equal((await api.submit('mole',99)).ok,true);
+  assert.equal(requests[0].name,'submit_guest_game_score');
+  assert.equal(events.length,1);
+});
+
+test('individual game progress and replay saves are isolated from admin preview',()=>{
+  const source=read('world.html');
+  assert.ok(source.includes('if(adminGamePreviewActive())return;\n if(!E||E.kind'));
+  assert.ok(source.includes('if(adminGamePreviewActive())return;\n if(!S||R?.running)return;'));
+  assert.ok(source.includes("render(null,adminPreview?'관리자 체험 · 기록은 저장하지 않아요.'"));
+  const guarded=[
+    ['games/spot-difference/wallet.js','async recordClear(owner,stage){'],
+    ['games/spot-difference/world-spot-game.js',"if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;"],
+    ['games/solitaire/app.js','if(adminPreview())return;'],
+    ['games/mines/entry.js',"if (!ready || adminPreview()) return;"],
+    ['games/screw/screw-flat.js','if(adminPreview())return true;'],
+    ['games/screw/screw3d.js','if(adminPreview())return true;'],
+    ['games/photo-ttang/photo-ttang-ranking.js','async function save(stage){'],
+    ['games/ojjuda-tour/world-tour-game.js','if(adminPreview()){'],
+    ['games/ttang/ttang-bridge.js','if(adminPreview()){'],
+    ['games/tank/world-tank-game.js','admin_preview'],
+    ['games/matgo/matgo-bridge.js','관리자 체험 중에는 승패가 저장되는 맞고'],
+    ['features/home/agit-hub.js','if(root.OjjudaAdminPreview?.isEnabled?.()===true)return false;'],
+    ['shared/games/game-challenges.js','if (adminPreview() || !supported(game)']
+  ];
+  for(const [file,guard] of guarded)assert.ok(read(file).includes(guard),file+' has a preview guard');
+});

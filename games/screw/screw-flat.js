@@ -120,7 +120,7 @@
     const movesLeft=()=>Math.max(0,st.moveLimit+st.extraMoves-st.moves);
     const canTransfer=screw=>canUnscrew(st.level,screw)&&st.level.holes.some(h=>h!==screw.hole&&canSeatScrew(st.level,h,screw));
     function pendingPurchase(L,kind){try{const id=localStorage.getItem(purchaseKey(L,kind));return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id||'')?id:null;}catch(_){return null;}}
-    function savePurchase(L,kind,id){try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
+    function savePurchase(L,kind,id){if(adminPreview())return true;try{if(id)localStorage.setItem(purchaseKey(L,kind),id);else localStorage.removeItem(purchaseKey(L,kind));return true;}catch(_){return false;}}
     function addHoles(count){
       if(count<=st.extraHoles)return;
       while(st.extraHoles<count){st.level.holes.push({id:st.level.holes.length,x:0,y:100,owner:null,screw:null,extra:true});st.extraHoles++;}

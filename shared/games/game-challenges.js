@@ -18,8 +18,9 @@
   })();
   let client, notify = () => {}, flushing = false, retryTimer, retryAfter = 0, clockOffset = 0;
   const pending = new Map(), active = new Set();
+  const adminPreview = () => window.OjjudaAdminPreview?.isEnabled?.() === true;
   const source = game => incoming?.game === game && incoming.challenge ? 'challenge' : 'direct';
-  const allowed = () => client && HOSTS.has(location.hostname) && !document.hidden
+  const allowed = () => !adminPreview() && client && HOSTS.has(location.hostname) && !document.hidden
     && navigator.doNotTrack !== '1' && !navigator.globalPrivacyControl;
   const today = offset => new Date(Date.now() + offset + 9 * 3600000).toISOString().slice(0, 10);
   function dailyRecord() {
@@ -80,7 +81,7 @@
     } catch {} finally { flushing = false; }
   }
   function track(game, event) {
-    if (!supported(game) || navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
+    if (adminPreview() || !supported(game) || navigator.doNotTrack === '1' || navigator.globalPrivacyControl) return;
     const origin = source(game), key = game + ':' + origin + ':' + event;
     const queueKey = today(clockOffset) + ':' + key;
     if (!pending.has(queueKey)) pending.set(queueKey, { key, game, source: origin, event, at: Date.now() });
@@ -98,7 +99,7 @@
   }
   function onOpen(game) { if (supported(game)) track(game, 'visit'); }
   function complete(game, score) {
-    if (!supported(game) || !count(score)) return null;
+    if (adminPreview() || !supported(game) || !count(score)) return null;
     if (active.delete(game)) track(game, 'complete');
     const target = incoming?.game === game && incoming.challenge ? incoming.score : null;
     return { target, unit: GAMES[game].unit };

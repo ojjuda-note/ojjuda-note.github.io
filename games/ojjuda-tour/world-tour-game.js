@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   let active = null;
+  const adminPreview=()=>window.OjjudaAdminPreview?.isEnabled?.()===true;
   window.OjjudaTourGame = {
     open({nickname = '', owner = null, client = null, joinCode = '', onScore = null, authorized = () => true} = {}) {
       if (active) { active.dialog.focus(); return; }
@@ -10,7 +11,7 @@
       const dialog = document.createElement('dialog');
       dialog.className = 'tour-game-dialog arcade-game-view';
       dialog.setAttribute('aria-label', '마블');
-      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261106-source-folders1" allow="fullscreen; web-share; clipboard-write"></iframe>';
+      dialog.innerHTML = '<header class="tour-game-header"><button type="button" aria-label="게임 목록으로 돌아가기">← 게임 목록</button><span>마블</span></header><iframe title="마블 · 온라인 또는 같은 기기에서 2~8명" src="/games/ojjuda-tour/index.html?v=20261110-admin-record-free1" allow="fullscreen; web-share; clipboard-write"></iframe>';
       const frame = dialog.querySelector('iframe');
       const results = new Map();
       let invitation = new AbortController();
@@ -21,6 +22,7 @@
         guestFinished = true; window.OjjudaGuestAccess?.finished();
       }
       async function invoke(body) {
+        if(adminPreview()&&!['read','mine'].includes(body.action))return {error:'admin_preview'};
         const {data,error} = await client.functions.invoke('marble', {body});
         if (error) { try { return await error.context.json(); } catch { return {error:'unavailable'}; } }
         if(active?.dialog!==dialog||!authorized())return data||{error:'unavailable'};
@@ -56,7 +58,8 @@
         onlineRequests++;
         let result = {error:'not_signed_in'};
         try {
-          if (client?.functions && owner && authorized()) {
+          if(adminPreview()&&message.body.action==='invite')result={error:'admin_preview'};
+          else if (client?.functions && owner && authorized()) {
             result = message.body.action === 'invite' ? await invite(message.body) : await invoke(message.body);
           }
         } catch { result = {error:'unavailable'}; }
@@ -76,6 +79,10 @@
         if (!me || me.human !== true || !Number.isSafeInteger(me.assets) || me.assets < 0 ||
             me.assets > 1000000 || typeof me.bankrupt !== 'boolean' || (me.bankrupt && me.assets !== 0)) return;
         if (!authorized()) return;
+        if(adminPreview()){
+          frame.contentWindow.postMessage({source:'ojjuda-world',type:'ojjuda-tour-record',runId,ok:true,preview:true},location.origin);
+          return;
+        }
         finishGuestRound();
         let pending = results.get(runId);
         if (!pending) {

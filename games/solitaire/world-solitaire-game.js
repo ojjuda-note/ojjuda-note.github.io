@@ -12,12 +12,13 @@
       dialog.setAttribute('aria-label', '솔리테어');
       const frame = document.createElement('iframe');
       frame.title = '솔리테어';
-      frame.src = '/games/solitaire/index.html?v=20261110-solitaire-unified1&owner=' + encodeURIComponent(owner || 'guest');
+      frame.src = '/games/solitaire/index.html?v=20261110-admin-record-free1&owner=' + encodeURIComponent(owner || 'guest');
       frame.allow = 'autoplay; fullscreen';
       dialog.append(frame);
       let guestFinished = false;
       const records = new Map();
       async function record(message) {
+        if(window.OjjudaAdminPreview?.isEnabled?.()===true)return;
         const {runId, drawCount, seconds, score} = message;
         if (message.completed !== true || typeof runId !== 'string' ||
             !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(runId) ||

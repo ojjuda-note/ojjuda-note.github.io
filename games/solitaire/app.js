@@ -10,6 +10,7 @@ const SYMBOLS={spades:'♠',hearts:'♥',clubs:'♣',diamonds:'♦'};
 const SUIT_NAMES={spades:'스페이드',hearts:'하트',clubs:'클로버',diamonds:'다이아몬드'};
 const cardElements=new Map();
 const KEY='ojjuda-solitaire-v1:'+ (new URLSearchParams(location.search).get('owner')||'guest');
+const adminPreview=()=>window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
 let externalPaused=false, runId=crypto.randomUUID(), completion=null, stopWinAnimation=null;
 let state=createGame(), history=[], elapsed=0, started=false, selected=null, locked=false, winPlaying=false, lastTick=Date.now(), ignoreClickUntil=0, lastTap=null, pointer=null, toastTimer, saveWorking=true;
 try {
@@ -26,6 +27,7 @@ try {
 restoreWastePackets([...history,state]);
 
 function save(){
+  if(adminPreview())return;
   try {localStorage.setItem(KEY,JSON.stringify({version:1,state,history,elapsed,started,runId,completion}));saveWorking=true;}
   catch {saveWorking=false;}
   if(!saveWorking)$('#new-game').title='이 브라우저에서는 저장할 수 없어요';
@@ -338,6 +340,7 @@ window.OjjudaSolitaireControls={save,pause(){
 }};
 
 function submitCompletion(){
+  if(adminPreview()){updateRankingStatus();return;}
   if(!completion||completion.saved||window.parent===window||completion.score==null)return;
   completion.failed=false;updateRankingStatus();
   notifyArcade('ojjuda-game-result',{...completion,completed:true});
@@ -345,6 +348,7 @@ function submitCompletion(){
 function updateRankingStatus(){
   const line=$('#ranking-status'),retry=$('#retry-ranking');
   if(!line||!completion||window.parent===window)return;
+  if(adminPreview()){line.textContent='관리자 체험 · 기록은 저장하지 않아요';if(retry)retry.hidden=true;return;}
   line.textContent=completion.saved?'순위에 기록했어요.':completion.failed?'연결을 확인하고 다시 저장해 주세요.':'순위 기록을 저장하고 있어요…';
   if(retry)retry.hidden=!completion.failed;
 }

@@ -571,8 +571,8 @@ const ga=(p,o)=>avatar(p.m,o);
 const lvOf=i=>G.level[i]||0;
 const festOf=i=>G.fest[i]||0;
 
-function save(){if(window.MarbleOnline?.active())return;try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
-function clearSave(){if(window.MarbleOnline?.active())return;try{localStorage.removeItem(KEY)}catch(e){}}
+function save(){if((window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true)||window.MarbleOnline?.active())return;try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}}
+function clearSave(){if((window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true)||window.MarbleOnline?.active())return;try{localStorage.removeItem(KEY)}catch(e){}}
 function loadSave(){try{const s=localStorage.getItem(KEY);if(!s)return null;const g=JSON.parse(s);if(!g||g.over||!Array.isArray(g.players)||g.players.length<2||g.players.length>8)return null;g.players.forEach((p,i)=>p.name=cleanName(p.name)||M[i].name);return g}catch(e){return null}}
 
 /* ================= setup ================= */
