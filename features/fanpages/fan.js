@@ -262,7 +262,7 @@
       </article>`;
     }).join('');
     return `<section id="profile" class="detail-section profile-section" aria-labelledby="profile-heading">
-      <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED 2026.11.10</span></div>
+      <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED ${profile.checkedAt}</span></div>
       <div class="profile-overview">
         <div class="profile-identity"><div class="profile-identity-shape" aria-hidden="true">${artist.shape}</div><span class="profile-kicker">${artist.name} / THE STORY</span><strong class="profile-debut"><small>DEBUT</small><time datetime="${profile.debut.replaceAll('.', '-')}">${profile.debut}</time></strong><p>${profile.concept}</p><div class="profile-facts">${dossier('데뷔곡·음반', profile.debutWork)}${dossier('기획사', profile.agency)}${dossier('팬덤', artist.fan)}</div></div>
         <div class="profile-history">${history(profile.awards, '수상', '✦')}${history(profile.records, '기록', '↗')}</div>
@@ -325,7 +325,7 @@
       <section id="news" class="detail-section"><div class="detail-heading"><div><span>05 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
-      <div class="detail-source-note">비공식 팬페이지 · 2026.11.10 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
+      <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
     const saveButton = $('#detail-save', root);
     saveButton.addEventListener('click', () => {
       const active = toggleSaved(artist.id);
