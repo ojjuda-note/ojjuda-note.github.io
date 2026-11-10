@@ -2060,7 +2060,7 @@ async function S2(score,detail={}){
   if(id!=='mole')return result;
   return {...result,metric:`${moleGrid}×${moleGrid} · ${score}점`+(result.outcome==='record'?' · 이번 달 1등':''),encouragement:result.outcome==='record'?result.encouragement:'더 높은 점수에 도전해요!'};
  };
- try{if(!adminGamePreviewActive()&&['mole','stacker'].includes(id))window.OjjudaGameChallenges?.complete?.(id,score);}catch{}
+ try{if(!(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive())&&['mole','stacker'].includes(id))window.OjjudaGameChallenges?.complete?.(id,score);}catch{}
  const stageActions=id==='breakout'?breakoutStagePicker(game.stage):id==='screw'&&Number.isInteger(game.stage)?screwStagePicker():'';
  const actions=stageActions+'<button class="btn" data-g="close">닫기</button>'+(!stageActions?'<button class="btn pri" data-g="start">다시 하기</button>':'');
  const base={game:recordKey,outcome:scoreOnly?'score':detail.outcome||(id==='breakout'&&(game.stageCleared||game.resultTitle)?'success':'failure'),metric:id==='mole'?`${moleGrid}×${moleGrid} · ${score}점`:game.stage?`${game.stage}단계 · ${score}${unit}`:`${score}${unit}`,score,actions};
@@ -2071,7 +2071,7 @@ async function S2(score,detail={}){
   if(card&&window.OjjudaGameResults?.update){window.OjjudaGameResults.update(card,options);const saved=card.querySelector('#gres');if(saved)saved.textContent=status;return;}
   ti(worldGameResultMarkup({...options,extra:`<p id="gres" role="status">${w(status)}</p>`}));
  };
- const adminPreview=adminGamePreviewActive();
+ const adminPreview=typeof adminGamePreviewActive==='function'&&adminGamePreviewActive();
  render(null,adminPreview?'관리자 체험 · 기록은 저장하지 않아요.':'기록 확인 중…');if(id==='breakout')focusBreakoutChoice();else(R.ov.querySelector('[data-g="start"]')||R.ov.querySelector('.game-result-share'))?.focus?.({preventScroll:true});
  if(adminPreview)return;
  const before=scoreOnly?await arcadeScoreLeader(recordKey):null;
