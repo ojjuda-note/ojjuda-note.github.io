@@ -51,6 +51,11 @@ button:disabled{opacity:.4;cursor:default;border-color:var(--line)}
 #heatWrap{top:calc(env(safe-area-inset-top,0px) + 62px)}
 body[data-mode="run"] #stageName{display:none}
 body[data-mode="hub"] #toast{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 96px)}
+#biomeMeter{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:5;pointer-events:none;display:flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid rgba(235,245,255,.29);border-radius:999px;background:linear-gradient(115deg,rgba(7,23,43,.84),rgba(29,37,63,.7));box-shadow:0 8px 28px rgba(4,6,20,.26),inset 0 1px rgba(255,255,255,.09);backdrop-filter:blur(12px);font-size:12px;color:#e8f9f4;letter-spacing:.01em}
+#biomeMeter[hidden]{display:none}
+#biomeIcon{font-size:18px;filter:drop-shadow(0 0 5px rgba(210,245,247,.7))}
+#biomeTrack{width:48px;height:3px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.17)}
+#biomeFill{display:block;height:100%;width:0;background:linear-gradient(90deg,#81e7ee,#e2ffe4,#ffe0a9);transition:width .2s ease}
 #bossWrap{top:calc(env(safe-area-inset-top,0px) + 80px)}
 .bar{height:4px;background:rgba(236,230,214,.1);border-radius:4px;overflow:hidden;flex:1}
 .bar div{height:100%;background:var(--flame);width:100%}
@@ -72,6 +77,17 @@ body[data-mode="hub"] #panel{display:block}
 #geneActions{display:flex;gap:6px;margin-top:8px}
 #geneActions button{flex:1;padding:7px 5px;font-size:12px;border-color:rgba(184,245,221,.3)}
 #geneActions button:disabled{opacity:.35}
+/* The continuation uses a different interface palette in every living world. */
+body[data-world="life1"]{--biome-panel:rgba(31,20,59,.97);--biome-edge:rgba(207,167,255,.42);--biome-glow:rgba(170,117,233,.2)}
+body[data-world="life2"]{--biome-panel:rgba(8,43,64,.97);--biome-edge:rgba(139,233,255,.43);--biome-glow:rgba(77,204,225,.21)}
+body[data-world="life3"]{--biome-panel:rgba(11,50,41,.97);--biome-edge:rgba(150,246,177,.42);--biome-glow:rgba(89,202,128,.19)}
+body[data-world="life4"]{--biome-panel:rgba(36,37,85,.97);--biome-edge:rgba(201,200,255,.43);--biome-glow:rgba(168,154,255,.22)}
+body[data-world="life5"]{--biome-panel:rgba(54,34,64,.97);--biome-edge:rgba(255,204,185,.43);--biome-glow:rgba(246,166,186,.2)}
+body[data-world^="life"] #panel{background:linear-gradient(to top,var(--biome-panel) 64%,var(--biome-panel) 80%,transparent);border-top:1px solid var(--biome-edge)}
+body[data-world^="life"] #lifeLab{border-color:var(--biome-edge);background:linear-gradient(130deg,var(--biome-glow),rgba(255,255,255,.035));box-shadow:0 4px 20px var(--biome-glow),inset 0 1px rgba(255,255,255,.11)}
+body[data-world^="life"] #chapterShortcut{border-color:var(--biome-edge);background:linear-gradient(115deg,var(--biome-glow),rgba(255,255,255,.035))}
+body[data-world^="life"][data-mode="run"] #top{padding-bottom:9px;background:linear-gradient(to bottom,var(--biome-panel),transparent)}
+body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0 8px 25px rgba(0,0,0,.22),0 0 23px var(--biome-glow)}
 #info{min-height:92px}
 #uName{font-size:20px;margin-bottom:2px}
 #uDesc{color:var(--dim);font-size:14px;margin-bottom:10px}
@@ -132,6 +148,7 @@ body[data-mode="hub"] #panel{display:block}
 <div id="heatWrap"><div class="barRow"><span>남은 시간</span><div class="bar"><div id="heat"></div></div><span id="heatTxt">0</span></div></div>
 <div id="bossWrap"><div class="barRow"><span id="bossName" class="serif"></span><div class="bar"><div id="bossFill"></div></div></div></div>
 <div id="runInfo"><span id="targetName"></span><span id="shadowCount" aria-label="그림자 악당" hidden></span><span id="timeBonus">연장 0.0 / 8초</span></div>
+<div id="biomeMeter" role="progressbar" aria-label="세계의 선물" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span id="biomeIcon" aria-hidden="true">🫧</span><span id="biomeText">세포 분열</span><span id="biomeTrack" aria-hidden="true"><i id="biomeFill"></i></span></div>
 <div id="treeTools" aria-label="성장 트리 보기"><span id="treeCount">성장 0 / 200</span><button id="treeOut" aria-label="성장 트리 축소">−</button><button id="treeFit">전체</button><button id="treeIn" aria-label="성장 트리 확대">+</button><button id="treeFocus">선택</button></div>
 <div id="panel"><div id="panelIn">
   <div id="chapterShortcut"><span id="chapterCurrent">1챕터 · 샛별의 탄생</span><button id="chapterBtn" type="button">챕터 선택</button></div>
@@ -155,9 +172,9 @@ body[data-mode="hub"] #panel{display:block}
 <script src="./entry.js?v=20261110-chapters1"></script>
 <script src="./growth.js?v=20261013-sky2001"></script>
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
-<script src="./encounters.js?v=20261110-bulssi-life1"></script>
+<script src="./encounters.js?v=20261110-saetbyeol-worlds1"></script>
 <script src="./tree-controls.js?v=20261013-sky2001"></script>
-<script src="./life-expansion.js?v=20261110-saetbyeol-hazards1"></script>
+<script src="./life-expansion.js?v=20261110-saetbyeol-worlds1"></script>
 <script src="./shadow-enemies.js?v=20261110-saetbyeol-hazards1"></script>
 <script>
 (()=>{
@@ -168,6 +185,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let W=0,H=0,U=1,T=0;
 const LIFE=window.OjjudaSaetbyeolLife;
 const SHADOWS=window.OjjudaSaetbyeolShadows;
+const BIOMES=[{icon:'🧬',name:'세포 분열',every:7},{icon:'🌊',name:'해류 공명',every:8},{icon:'🌸',name:'꽃가루 연쇄',every:9},{icon:'🪶',name:'상승 기류',every:10},{icon:'💗',name:'생명의 합창',every:12}];
 
 const STAGES=[
   {name:'잿불',pal:['255,138,61','255,205,90','255,84,84','255,140,180','255,236,190'],color:'#ff8a3d',ink:'#1a0d05',rgb:'255,138,61',bg:['#1a0c16','#06081a'],rock:'#8c8496',boss:'하얀 꼬리',bossObj:'하얀 꼬리를'},
@@ -329,8 +347,8 @@ cv.addEventListener('pointerdown',e=>{setP(e);ensureAudio();if(mode==='run')tapS
 
 // ---------- UI ----------
 let mode='entry',R=null,st=stats();
-function setMode(m){mode=m;document.body.dataset.mode=m;document.body.classList.toggle('boss',!!(R&&R.boss&&m==='run'));applyTheme();refresh()}
-function applyTheme(){const c=col();document.documentElement.style.setProperty('--flame',c.color);document.documentElement.style.setProperty('--flame-ink',c.ink)}
+function setMode(m){mode=m;document.body.dataset.mode=m;document.body.classList.toggle('boss',!!(R&&R.boss&&m==='run'));applyTheme();refresh();refreshBiomeMeter()}
+function applyTheme(){const c=col();document.documentElement.style.setProperty('--flame',c.color);document.documentElement.style.setProperty('--flame-ink',c.ink);document.body.dataset.world=S.stage>=5?`life${S.stage-4}`:'star'}
 const chapterNumber=()=>S.stage<5?1:S.stage-3;
 const chapterUnlocked=number=>Number.isInteger(number)&&number>=1&&number<=CHAPTERS.length&&(number===1||S.maxStage>=CHAPTERS[number-1].stage);
 const chapterComplete=number=>number===1?S.ended||S.maxStage>=5:number===6?S.lifeEnded:S.maxStage>CHAPTERS[number-1].stage;
@@ -457,7 +475,7 @@ function refresh(){
   refreshCur();$('#stageName').textContent=col().name+(DEMO?' 체험':'');
   $('#go').textContent=S.stage>=5?'생명빛 모으기':'타오르기';
   $('#sndBtn').textContent=S.sound?'소리 끄기':'소리 켜기';$('#demoBtn').textContent=DEMO?'체험 끝내기':'풀 업그레이드 체험';
-  $('#catalogBtn').textContent=`천체 도감 · ${S.stage>=5?ENCOUNTERS.catalog.length:50}종`;
+  $('#catalogBtn').textContent=S.stage>=5?`생명 도감 · ${(S.stage-4)*10}종`:'천체 도감 · 50종';
   if(mode!=='hub')return;
   $('#chapterCurrent').textContent=`${chapterNumber()}챕터 · ${CHAPTERS[chapterNumber()-1].name}`;
   const gate=GROWTH.state(S.lv);refreshGrowth(gate);refreshLifeLab();
@@ -479,6 +497,15 @@ function refresh(){
   $('#treeCount').textContent=`성장 ${visibleCount} / ${S.stage<5?200:1200}`;
   const m=S.mem[S.stage];$('#memLine').textContent=`이 단계의 기억 ${m} / 3`+(!bossReady?` · 보스 도전까지 강화 ${remaining}회`:(S.stage<4?'. 보스를 넘으면 다음 별로 진화해요':''));
 }
+function refreshBiomeMeter(){
+  const meter=$('#biomeMeter'),show=mode==='run'&&S.stage>=5&&!R?.boss;
+  meter.hidden=!show;if(!show)return;
+  const biome=BIOMES[S.stage-5],collected=R.fed%biome.every;
+  $('#biomeIcon').textContent=biome.icon;$('#biomeText').textContent=biome.name;
+  $('#biomeFill').style.width=collected/biome.every*100+'%';
+  meter.setAttribute('aria-valuenow',String(Math.round(collected/biome.every*100)));
+  meter.setAttribute('aria-label',`${biome.name} ${collected}/${biome.every}`);
+}
 function selectDefault(){const gate=GROWTH.state(S.lv),avail=UP.filter(u=>lv(u.id)<u.mx&&!upgradeLock(u,gate));const aff=avail.find(u=>S.cur[u.k]>=cost(u));S.sel=(aff||avail[0]||UP.find(u=>u.r===S.stage)||UP[0]).id}
 $('#buy').onclick=()=>{const u=UP.find(x=>x.id===S.sel);if(!u||upgradeLock(u))return;const c=cost(u);if(lv(u.id)>=u.mx||S.cur[u.k]<c)return;
   const before=S.stage>=5?Math.min(9,Math.floor(st.bloom*10)):0;
@@ -493,8 +520,14 @@ $('#catalogBtn').onclick=()=>{
   const previous=mode;if(!['hub','run'].includes(previous))return;
   $('#settings').classList.remove('on');setMode('catalog');
   const symbols={rock:'●',ice:'✧',iron:'⬡',gas:'☁',comet:'☄',star:'✦',mem:'◉'};
-  const rows=STAGES.slice(0,S.stage>=5?10:5).map((stage,index)=>`<section class="catalog-group${index>S.stage?' catalog-locked':''}"><h3>${stage.name} · 10종${index>S.stage?' · 진화 후 등장':''}</h3><ul class="catalog-list">${ENCOUNTERS.catalog.filter(type=>type.stage===index).map(type=>`<li><span class="catalog-symbol" style="--target-color:${type.color}" aria-hidden="true">${symbols[type.kind]}</span><b>${type.name}</b><small>${type.detail}</small></li>`).join('')}</ul></section>`).join('');
-  overlay(`<h2>천체 도감 · ${S.stage>=5?100:50}종</h2><p>진화할 때마다 10종씩 새로 만나요. 빛깔·모양·움직임·내구도·보상이 서로 달라요.</p><p>시간 결정: 1개당 최대 1초, 한 판 최대 8초 연장.</p>${rows}`,{buttons:[['돌아가기',()=>{closeOv();setMode(previous)},'primary']]});
+  const lifeSymbols={cell:'🫧',spore:'✨',droplet:'💧',helix:'🧬',microbe:'🦠',egg:'🥚',fish:'🐠',pearl:'🫧',shell:'🐚',seahorse:'🐟',jelly:'🪼',bubble:'🫧',coral:'🪸',leaf:'🍃',berry:'🫐',acorn:'🌰',pollen:'🌼',mushroom:'🍄',butterfly:'🦋',firefly:'✨',flower:'🌸',cloud:'☁️',bird:'🐦',wind:'🌀',feather:'🪶',sprite:'🌱',sprout:'🌿',heart:'💗'};
+  const firstStage=S.stage>=5?5:0,lastStage=S.stage>=5?S.stage:4;
+  const rows=STAGES.slice(firstStage,lastStage+1).map((stage,index)=>{
+    const number=firstStage+index;
+    return `<section class="catalog-group"><h3>${stage.name} · 10종</h3><ul class="catalog-list">${ENCOUNTERS.catalog.filter(type=>type.stage===number).map(type=>`<li><span class="catalog-symbol" style="--target-color:${type.color}" aria-hidden="true">${S.stage>=5?lifeSymbols[type.form]:symbols[type.kind]}</span><b>${type.name}</b><small>${type.detail}</small></li>`).join('')}</ul></section>`;
+  }).join('');
+  const total=(lastStage-firstStage+1)*10;
+  overlay(`<h2>${S.stage>=5?'생명 도감':'천체 도감'} · ${total}종</h2><p>${S.stage>=5?'각 별에는 서로 다른 생명이 살고 있어요.':'진화할 때마다 10종씩 새로 만나요.'} 작은 친구를 만나고 빛을 모아 보세요.</p><p>시간 결정: 1개당 최대 1초, 한 판 최대 8초 연장.</p>${rows}`,{buttons:[['돌아가기',()=>{closeOv();setMode(previous)},'primary']]});
   $('#overlay').classList.add('catalog');
 };
 $('#sndBtn').onclick=()=>{S.sound=!S.sound;save();refresh()};
@@ -542,12 +575,12 @@ function startRun(withBoss){
   if(withBoss&&!canChallengeBoss()){toast('현재 단계의 다섯 영역 강화를 모두 마치면 보스에 도전할 수 있어요.');return;}
   ensureAudio();st=stats();
   const shadowSteps=S.stage>=5&&!withBoss?SHADOWS.count(UP,S.lv,S.stage):0;
-  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],shadows:[],shadowShots:[],hazardVeil:0,shadowSteps,shadowClock:shadowSteps?SHADOWS.firstDelay(shadowSteps):Infinity,shadowTotal:0,shadowPops:0,shadowHitT:0,combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
+  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],shadows:[],shadowShots:[],hazardVeil:0,shadowSteps,shadowClock:shadowSteps?SHADOWS.firstDelay(shadowSteps):Infinity,shadowTotal:0,shadowPops:0,shadowHitT:0,combo:0,comboT:0,fed:0,biomePower:0,biomeBonus:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
   refreshBooster();refreshTime();
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
   setMode('run');refreshShadowHUD();
   if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
-  else if(shadowSteps&&!withBoss)toast('✨ 방해물은 톡 눌러 정화해요!',2400);
+  else if(S.stage>=5&&!withBoss)toast(`${BIOMES[S.stage-5].icon} ${BIOMES[S.stage-5].name} · 먹이를 모아 특별한 힘을 깨워요`,2400);
 }
 function refreshBooster(){
   const button=$('#boostBtn'),pending=!!R?.boostPending;
@@ -596,6 +629,13 @@ function spawn(t,instant){
   if(ty.fast){const left=Math.random()<.5;x=left?-20:W+20;y=topY()+Math.random()*(botY()-topY());vx=(left?1:-1)*(140+Math.random()*60)*U;vy=(Math.random()-.5)*30*U}
   else{x=30+Math.random()*(W-60);y=topY()+Math.random()*(botY()-topY());const a=Math.random()*TAU,sp=(4+Math.random()*10)*U;vx=Math.cos(a)*sp;vy=Math.sin(a)*sp}
   vx*=ty.speed;vy*=ty.speed;
+  if(S.stage>=5&&!ty.fast){
+    // The surroundings move their inhabitants: swimming, drifting and soaring.
+    if(ty.motion==='swim')vx+=(Math.random()<.5?-1:1)*13*U;
+    else if(ty.motion==='updraft')vy-=14*U;
+    else if(ty.motion==='float')vy-=5*U;
+    else if(ty.motion==='flutter')vy-=3*U;
+  }
   R.nodes.push({t,x,y,vx,vy,hp,max:hp,age:0,r:ty.r*U,seed:Math.random()*1000,rot:Math.random()*TAU,spin:(Math.random()-.5)*1.2,born:instant?1:0,hit:0});
 }
 function refreshShadowHUD(){
@@ -695,9 +735,9 @@ function kill(n){
   if(n.dead)return;
   n.dead=true;const ty=TYPES[n.t],dm=Math.pow(6,S.stage),c=col(),rewards=[];
   const award=(kind,amount)=>{S.cur[kind]+=amount;R.gain[kind]+=amount;rewards.push({kind,amount})};
-  if(ty.light)award('light',ty.light*dm*st.light*(st[ty.kind+'Light']||1));
-  if(ty.metal&&S.stage>=1)award('metal',ty.metal*st.metal*S.stage);
-  if(ty.mass)award('mass',ty.mass*st.mass);
+  if(ty.light&&S.stage<5)award('light',ty.light*dm*st.light*(st[ty.kind+'Light']||1));
+  if(ty.metal&&S.stage>=1&&S.stage<5)award('metal',ty.metal*st.metal*S.stage);
+  if(ty.mass&&S.stage<5)award('mass',ty.mass*st.mass);
   if(S.stage>=5)award('life',Math.ceil((ty.life||1)*Math.pow(6,S.stage-5)*st.life));
   if(ty.ice){const seconds=ENCOUNTERS.recoverHeat(R,st,ty);if(seconds>0)rewards.push({kind:'seconds',amount:seconds})}
   if(ty.mem){const i=S.mem[S.stage];if(i<3){toast(MEM[S.stage][i],4200);S.mem[S.stage]=i+1;rewards.push({kind:'memory',amount:1});save();tone(note(12),1.2,.05,'triangle')}}
@@ -706,7 +746,30 @@ function kill(n){
   R.combo++;R.comboT=1.3;if(R.combo%50===0){const cc=cursor();ring(cc.x,cc.y,Math.min(W,H)*.6,.6,c.rgb,4);tone(note(15),.6,.04,'triangle')}
   if(pw>.65&&R.combo%10===0){const cc=cursor();for(let i=0;i<(reduce?1:3);i++)ring(cc.x,cc.y,Math.min(W,H)*(.35+i*.16),.8+i*.15,c.pal[(i+R.combo/10)%5],2);burst(n.x,n.y,'#fff4cf',reduce?5:24,2.5);}
   if(ty.gas){burst(n.x,n.y,'#e59bd0',12+Math.round(st.pw*20),1.8);ring(n.x,n.y,70*U*st.blastRadius*Math.sqrt(ty.gas),.5,'229,155,208',2+st.pw*2);const rr=70*U*st.blastRadius*Math.sqrt(ty.gas);for(const o of R.nodes)if(!o.dead&&Math.hypot(o.x-n.x,o.y-n.y)<rr+o.r)hurt(o,st.dmg*.8*st.chain*ty.gas)}
+  if(S.stage>=5&&!R.boss)feedBiome(n);
   const now=performance.now();if(now-lastKill>45){lastKill=now;tone(note(5+Math.floor(Math.random()*8)),.12,.025)}
+}
+function feedBiome(node){
+  R.fed++;const chapter=S.stage-5,biome=BIOMES[chapter];refreshBiomeMeter();
+  if(R.fed%biome.every!==0)return;
+  const rgb=col().rgb;
+  ring(node.x,node.y,(70+chapter*16)*U,.85,rgb,3+chapter*.6);
+  burst(node.x,node.y,col().color,reduce?7:18+chapter*8,1.5+chapter*.25);
+  tone(note(12+chapter),.4,.04,'triangle');
+  if(chapter===0){
+    const bonus=Math.ceil(4*st.life);S.cur.life+=bonus;R.gain.life+=bonus;
+    rewardPopup(node,[{kind:'life',amount:bonus}]);
+  }else if(chapter===1){
+    R.biomePower=Math.max(R.biomePower,4.5); // The ocean's current gathers food.
+  }else if(chapter===2){
+    const targets=R.nodes.filter(n=>!n.dead&&n!==node).sort((a,b)=>Math.hypot(a.x-node.x,a.y-node.y)-Math.hypot(b.x-node.x,b.y-node.y)).slice(0,3);
+    for(const target of targets)hurt(target,st.dmg*.23); // Pollination spreads light without buying power.
+  }else if(chapter===3){
+    R.biomePower=Math.max(R.biomePower,5);R.spawnAcc+=1; // A breeze brings more food.
+  }else if(R.biomeBonus<3){
+    const seconds=Math.min(.35,3-R.biomeBonus,(st.maxHeat-R.heat)/st.decay);
+    if(seconds>0){R.biomeBonus+=seconds;R.heat+=seconds*st.decay;refreshTime();}
+  }
 }
 function hurtBoss(amt){
   const b=R.boss;if(!b||b.hp<=0)return;
@@ -717,7 +780,7 @@ function hurtBoss(amt){
   if(b.k===3){for(let i=b.said;i<REMNANT.length;i++){if(b.hp/b.max<REMNANT[i][0]){toast(REMNANT[i][1],3600);b.said=i+1}}}
   if(b.hp<=0){b.hp=0;winBoss()}
 }
-function burst(x,y,c,n,sp){for(let i=0;i<n;i++){const a=Math.random()*TAU,v=(40+Math.random()*120)*sp*U;R.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.5+Math.random()*.4,max:.9,c:c||`rgb(${pc()})`,s:(1+Math.random()*2)*U})}}
+function burst(x,y,c,n,sp){for(let i=0;i<n;i++){const a=Math.random()*TAU,v=(40+Math.random()*120)*sp*U;R.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.5+Math.random()*.4,max:.9,c:c||`rgb(${pc()})`,s:(1+Math.random()*2)*U,motif:S.stage>=5?S.stage-5:-1,spin:(Math.random()-.5)*4})}}
 function ring(x,y,max,life,c,w){R.rings.push({x,y,max,life,L:life,c,w})}
 function emitSpark(cur,rad){const c=col(),a=Math.random()*TAU;if(S.stage===4){const d=rad*(1.2+Math.random()*1.3);R.parts.push({x:cur.x+Math.cos(a)*d,y:cur.y+Math.sin(a)*d,vx:-Math.sin(a)*160*U-Math.cos(a)*60*U,vy:Math.cos(a)*160*U-Math.sin(a)*60*U,life:.7,max:.7,c:Math.random()<.3?'#fff6e8':`rgb(${pc()})`,s:(1+Math.random()*1.5)*U,swirl:1})}else{const v=(30+Math.random()*90*(1+st.pw))*U;R.parts.push({x:cur.x+Math.cos(a)*rad,y:cur.y+Math.sin(a)*rad,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20*U,life:.4+Math.random()*.4,max:.8,c:Math.random()<.3?'#fff6e8':`rgb(${pc()})`,s:(.8+Math.random()*1.4)*U})}}
 function drawFx(){
@@ -786,9 +849,10 @@ function updateRun(dt){
   if(R.boostPending)return;
   updateRewards(dt);
   R.time+=dt;R.heat-=dt*st.decay;
+  R.biomePower=Math.max(0,R.biomePower-dt);
   if(R.heat<=0){R.heat=0;$('#heat').style.width='0%';$('#heatTxt').textContent='0.0초';endRun();return;}
   const cur=cursor(),rad=radPx();
-  R.spawnAcc+=dt*2*st.spawn*(R.boss?.6:1)*R.density;
+  R.spawnAcc+=dt*(2*st.spawn*(R.boss ? .6 : 1)*R.density+(S.stage===8&&R.biomePower>0 ? .7 : 0));
   const maxN=Math.min(48,Math.round(26*st.spawn))*R.density;
   while(R.spawnAcc>=1){R.spawnAcc--;if(R.nodes.filter(n=>!n.dead).length<maxN)spawnRandom(false)}
   for(const n of R.nodes){
@@ -797,10 +861,18 @@ function updateRun(dt){
     const ty=TYPES[n.t];
     if(!ty.fast){
       const phase=n.age*2+n.seed;
-      if(ty.motion==='wave')n.vx+=Math.sin(phase)*8*U*dt;
-      if(ty.motion==='orbit'){n.vx+=Math.cos(phase)*14*U*dt;n.vy+=Math.sin(phase)*14*U*dt;}
-      if(ty.motion==='zigzag')n.vx+=Math.sin(phase*2)*18*U*dt;
+      if(ty.motion==='wave'||ty.motion==='swim')n.vx+=Math.sin(phase)*8*U*dt;
+      if(ty.motion==='orbit'||ty.motion==='swirl') {n.vx+=Math.cos(phase)*14*U*dt;n.vy+=Math.sin(phase)*14*U*dt;}
+      if(ty.motion==='zigzag'||ty.motion==='flutter'){n.vx+=Math.sin(phase*2)*18*U*dt;n.vy+=Math.cos(phase*2)*10*U*dt;}
+      if(ty.motion==='float')n.vy-=5*U*dt;
+      if(ty.motion==='updraft')n.vy-=13*U*dt;
+      if(ty.motion==='sway')n.vx+=Math.sin(phase*.7)*6*U*dt;
+      if(S.stage===9&&ty.form&&P.has){
+        const dx=cur.x-n.x,dy=cur.y-n.y,d=Math.hypot(dx,dy);
+        if(d<rad*2.2&&d>8){n.vx+=dx/d*17*U*dt;n.vy+=dy/d*17*U*dt;}
+      }
       if(st.pull){const dx=cur.x-n.x,dy=cur.y-n.y,d=Math.hypot(dx,dy);if(d<rad*3*st.pullReach&&d>4){n.vx+=dx/d*st.pull*70*U*dt;n.vy+=dy/d*st.pull*70*U*dt}}
+      if(S.stage===6&&R.biomePower>0){const dx=cur.x-n.x,dy=cur.y-n.y,d=Math.hypot(dx,dy);if(d<rad*3&&d>8){n.vx+=dx/d*120*U*dt;n.vy+=dy/d*120*U*dt}}
       const sp=Math.hypot(n.vx,n.vy),cap=60*U;if(sp>cap){n.vx*=cap/sp;n.vy*=cap/sp}
       n.vx*=1-dt*.3;n.vy*=1-dt*.3;
       if(Math.hypot(n.vx,n.vy)<3*U){const a=Math.random()*TAU;n.vx+=Math.cos(a)*6*U;n.vy+=Math.sin(a)*6*U}
@@ -880,7 +952,7 @@ function updateBoss(dt,cur,rad){
   R.shards=R.shards.filter(s=>s.life>0&&s.x>-20&&s.x<W+20&&s.y>-20&&s.y<H+20);
 }
 function endRun(){
-  mode='end';save();window.OjjudaSaetbyeolEntry.ended(R.id);const g=R.gain;
+  mode='end';refreshBiomeMeter();save();window.OjjudaSaetbyeolEntry.ended(R.id);const g=R.gain;
   let html=S.stage>=5?`<h2>오늘도 잘 자랐어</h2><p>${R.boss?'아직 준비가 되지 않았다면 잠시 쉬었다 다시 만나면 돼.':'작은 생명이 오늘도 조금 더 따뜻해졌어.'}</p><p class="num">이번에 모은 생명력 ${fmt(g.life)} · ${R.time.toFixed(1)}초의 여행</p>`:
     `<h2>식었다</h2><p>${R.boss?`아직 ${col().bossObj} 넘지 못했다.`:'불씨가 잠시 숨을 고른다.'}</p><p class="num">이번에 모은 빛 ${fmt(g.light)}`+(g.metal?`<br>금속 ${fmt(g.metal)}`:'')+(g.mass?`<br>질량 ${fmt(g.mass)}`:'')+`<br>${R.time.toFixed(1)}초 동안 타올랐다</p>`;
   overlay(html,{buttons:[['별자리로 돌아가기',()=>{closeOv();selectDefault();setMode('hub')},'primary'],[S.stage>=5?'한 번 더 빛 모으기':'바로 다시 타오르기',()=>{closeOv();startRun(!!R.boss)}]]});
@@ -889,7 +961,7 @@ function winBoss(){
   const wonRun=R,wonProgress=S;
   if(mode!=='run'||!wonRun?.boss||wonRun.boss.hp>0)return false;
   window.OjjudaSaetbyeolEntry.ended(R.id);
-  mode='end';R.flash=1;burst(R.boss.x,R.boss.y,col().color,60,3);ring(R.boss.x,R.boss.y,Math.hypot(W,H),1.2,col().rgb,8);ring(R.boss.x,R.boss.y,Math.hypot(W,H)*.5,.9,'255,246,232',4);tone(note(10),1.5,.06,'triangle');tone(note(14),1.5,.04,'triangle');
+  mode='end';refreshBiomeMeter();R.flash=1;burst(R.boss.x,R.boss.y,col().color,60,3);ring(R.boss.x,R.boss.y,Math.hypot(W,H),1.2,col().rgb,8);ring(R.boss.x,R.boss.y,Math.hypot(W,H)*.5,.9,'255,246,232',4);tone(note(10),1.5,.06,'triangle');tone(note(14),1.5,.04,'triangle');
   const s=S.stage;
   setTimeout(()=>{
     if(R!==wonRun||S!==wonProgress||mode!=='end'||S.stage!==s)return;
@@ -993,8 +1065,13 @@ let bgC=null,bgKey='',vigC=null;
 function buildBg(){
   const c=col(),m=40,dpr=Math.min(2,window.devicePixelRatio||1),w=W+m*2,h=H+m*2;
   bgC=document.createElement('canvas');bgC.width=Math.round(w*dpr);bgC.height=Math.round(h*dpr);const b=bgC.getContext('2d');b.scale(dpr,dpr);
+  let seed=S.stage*977+31;const rn=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  if(S.stage>=5){
+    // Life worlds are full scenes; the original galaxy must not shine through.
+    LIFE.drawWorld(b,w,h,S.stage,rn);
+  }else{
   const gr=b.createRadialGradient(w/2,h*.45,0,w/2,h*.45,Math.max(w,h)*.8);gr.addColorStop(0,c.bg[0]);gr.addColorStop(1,c.bg[1]);b.fillStyle=gr;b.fillRect(0,0,w,h);
-  const M=Math.max(w,h);let seed=S.stage*977+31;const rn=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const M=Math.max(w,h);
   b.globalCompositeOperation='lighter';
   for(let i=0;i<14;i++){const x=rn()*w,y=rn()*h,r=(.12+rn()*.32)*M,k=c.pal[i%5],g=b.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${k},${.06+rn()*.07})`);g.addColorStop(.5,`rgba(${k},${.02+rn()*.03})`);g.addColorStop(1,`rgba(${k},0)`);b.fillStyle=g;b.fillRect(x-r,y-r,r*2,r*2)}
   {const gx=w*(.2+rn()*.6),gy=h*(.12+rn()*.22),gs=Math.min(w,h)*.24,tilt=rn()*Math.PI;b.save();b.translate(gx,gy);b.rotate(tilt);b.scale(1,.42);
@@ -1002,9 +1079,9 @@ function buildBg(){
    for(let i=0;i<1100;i++){const arm=i%2,t=rn()*3.2,ang=t*1.9+arm*Math.PI,rr=gs*(.08+t/3.2*.92),sc=gs*.07*(1+t*.3);const x=Math.cos(ang)*rr+(rn()-.5)*sc,y=Math.sin(ang)*rr+(rn()-.5)*sc;b.fillStyle=`rgba(${c.pal[(i>>3)%5]},${.08+rn()*.28})`;b.fillRect(x,y,1.3,1.3)}
    b.restore()}
   b.globalCompositeOperation='source-over';
-  if(S.stage>=5)LIFE.drawWorld(b,w,h,S.stage,rn);
   for(let i=0;i<5;i++){const x=rn()*w,y=rn()*h,r=(.15+rn()*.2)*M,g=b.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(2,2,8,.35)');g.addColorStop(1,'rgba(2,2,8,0)');b.fillStyle=g;b.fillRect(x-r,y-r,r*2,r*2)}
   const n=Math.round(w*h/1700);for(let i=0;i<n;i++){const x=rn()*w,y=rn()*h,s=rn()<.9?rn()*.9+.3:rn()*1.3+.9,tint=rn()<.25?c.pal[Math.floor(rn()*5)]:'236,232,220';b.fillStyle=`rgba(${tint},${.25+rn()*.6})`;b.beginPath();b.arc(x,y,s*.6,0,TAU);b.fill()}
+  }
   vigC=document.createElement('canvas');vigC.width=Math.round(W*dpr);vigC.height=Math.round(H*dpr);const v=vigC.getContext('2d');v.scale(dpr,dpr);const vg=v.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.hypot(W,H)*.6);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,6,.55)');v.fillStyle=vg;v.fillRect(0,0,W,H);
   bgKey=`${S.stage}|${W}|${H}`;
 }
@@ -1015,11 +1092,14 @@ function drawBg(){
   if(bgKey!==`${S.stage}|${W}|${H}`)buildBg();
   const cur=mode==='run'&&P.has?{x:P.x,y:P.y}:{x:W/2,y:H/2},px=(W/2-cur.x),py=(H/2-cur.y);
   ctx.drawImage(bgC,-40+px*.02,-40+py*.02,W+80,H+80);
+  if(S.stage>=5){LIFE.drawAtmosphere(ctx,stars,W,H,S.stage,T,px,py,reduce,st.bloom);return;}
   for(const s of stars){const a=.3+.6*Math.max(0,Math.sin(T*1.1+s.p)),x=s.x+px*.04,y=s.y+py*.04;ctx.fillStyle=`rgba(255,250,240,${a})`;ctx.beginPath();ctx.arc(x,y,s.s*.8,0,TAU);ctx.fill();if(s.s>1.2){const L=s.s*6*a;ctx.fillStyle=`rgba(255,250,240,${a*.45})`;ctx.fillRect(x-L,y-.4,L*2,.8);ctx.fillRect(x-.4,y-L,.8,L*2)}}
 }
 function poly(x,y,r,n,seed,rot,j){ctx.beginPath();for(let i=0;i<n;i++){const a=i/n*TAU+rot,rr=r*(1-j+j*rnd(seed,i));const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath()}
 function drawNode(n){
-  const ty=TYPES[n.t],rgb=hexRGB(ty.color).join(','),c=col(),pulse=ty.motion==='pulse'?1+Math.sin(T*2+n.seed)*.08:1;
+  const ty=TYPES[n.t];
+  if(S.stage>=5&&LIFE.drawFood(ctx,n,ty,reduce?0:T,reduce,st.bloom,S.stage))return;
+  const rgb=hexRGB(ty.color).join(','),c=col(),pulse=ty.motion==='pulse'?1+Math.sin(T*2+n.seed)*.08:1;
   const r=n.r*(.3+.7*n.born)*pulse,{lx,ly}=nodeLight(n),x=n.x,y=n.y;
   ctx.save();ctx.globalAlpha=n.born;
   switch(ty.kind){
@@ -1164,10 +1244,36 @@ function drawCursor(){
   ctx.globalCompositeOperation='lighter';
   ctx.lineWidth=1.5;ctx.strokeStyle=`rgba(${c.rgb},.8)`;ctx.beginPath();ctx.arc(x,y,rad,0,TAU);ctx.stroke();
   ctx.setLineDash([2,10]);ctx.lineDashOffset=-T*30;ctx.strokeStyle=`rgba(${c.pal[1]},.6)`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,rad+5,0,TAU);ctx.stroke();ctx.setLineDash([]);
-  const n=8+Math.round(pw*22),dir=S.stage===4?-1:1;ctx.lineCap='round';
-  for(let i=0;i<n;i++){const a=i/n*TAU+T*(S.stage===4?-1.5:.8),fl=(.08+.3*pw)*rad*(S.stage===4?.45:1)*(.5+.5*Math.sin(T*9+i*1.7));ctx.strokeStyle=`rgba(${c.pal[i%5]},${.35+.45*pw})`;ctx.lineWidth=1.5+pw*2.5;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*rad,y+Math.sin(a)*rad);ctx.quadraticCurveTo(x+Math.cos(a+.08)*(rad+fl*.6*dir),y+Math.sin(a+.08)*(rad+fl*.6*dir),x+Math.cos(a+.15)*(rad+fl*dir),y+Math.sin(a+.15)*(rad+fl*dir));ctx.stroke()}
+  ctx.lineCap='round';
+  if(S.stage>=5){
+    const chapter=S.stage-5,count=9+chapter*3+Math.round(st.bloom*8);
+    for(let i=0;i<count;i++){
+      const a=i/count*TAU+T*(chapter%2?-.3:.3),extent=rad*(.1+.07*st.bloom);
+      const xx=x+Math.cos(a)*rad,yy=y+Math.sin(a)*rad;
+      ctx.save();ctx.translate(xx,yy);ctx.rotate(a+Math.PI/2);
+      ctx.fillStyle=`rgba(${c.pal[i%5]},${.22+.16*pw})`;
+      ctx.beginPath();
+      if(chapter===1){ctx.arc(0,0,2.3*U+(i%3)*U,0,TAU);ctx.strokeStyle=`rgba(${c.pal[i%5]},.65)`;ctx.lineWidth=1.3;ctx.stroke();}
+      else if(chapter===3){ctx.ellipse(0,-extent*.36,2.2*U,extent*.42,.3,0,TAU);ctx.fill();}
+      else{ctx.ellipse(0,-extent*.4,(2.5+chapter*.36)*U,extent*.52,.2,0,TAU);ctx.fill();}
+      ctx.restore();
+    }
+  }else{
+    const n=8+Math.round(pw*22),dir=S.stage===4?-1:1;
+    for(let i=0;i<n;i++){const a=i/n*TAU+T*(S.stage===4?-1.5:.8),fl=(.08+.3*pw)*rad*(S.stage===4?.45:1)*(.5+.5*Math.sin(T*9+i*1.7));ctx.strokeStyle=`rgba(${c.pal[i%5]},${.35+.45*pw})`;ctx.lineWidth=1.5+pw*2.5;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*rad,y+Math.sin(a)*rad);ctx.quadraticCurveTo(x+Math.cos(a+.08)*(rad+fl*.6*dir),y+Math.sin(a+.08)*(rad+fl*.6*dir),x+Math.cos(a+.15)*(rad+fl*dir),y+Math.sin(a+.15)*(rad+fl*dir));ctx.stroke()}
+  }
   const cr=(10+8*pw+S.stage*2)*U;
-  if(S.stage===4){
+  if(S.stage>=5){
+    const bloom=1+st.bloom*.22,glow=ctx.createRadialGradient(x-cr*.3,y-cr*.2,0,x,y,cr*2);
+    glow.addColorStop(0,'rgba(255,255,248,.85)');glow.addColorStop(.32,`rgba(${c.rgb},.6)`);glow.addColorStop(1,`rgba(${c.rgb},0)`);
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y,cr*2,0,TAU);ctx.fill();
+    ctx.strokeStyle=`rgba(${c.pal[1]},.78)`;ctx.lineWidth=1.5+st.bloom;
+    for(let i=0;i<2+Math.floor(st.bloom*3);i++){ctx.beginPath();ctx.ellipse(x,y,cr*(1.1+i*.21),cr*(.54+i*.1),T*.21+i*.9,0,TAU);ctx.stroke();}
+    const seed=ctx.createRadialGradient(x-cr*.3,y-cr*.4,cr*.06,x,y,cr*bloom);
+    seed.addColorStop(0,'#fffdf6');seed.addColorStop(.5,c.color);seed.addColorStop(1,'rgba(102,92,166,.55)');
+    ctx.fillStyle=seed;ctx.beginPath();ctx.ellipse(x,y,cr*.55*bloom,cr*.67*bloom,0,0,TAU);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.ellipse(x-cr*.16,y-cr*.22,cr*.13,cr*.18,-.5,0,TAU);ctx.fill();
+  }else if(S.stage===4){
     for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(${c.pal[i]},${.6-i*.1})`;ctx.lineWidth=(4-i)*U;ctx.beginPath();ctx.ellipse(x,y,cr*(1.6+i*.35),cr*(.5+i*.1),-.35,T*2+i,T*2+i+Math.PI*1.6);ctx.stroke()}
     aura(x,y,cr*2,'230,200,255',.5);
     ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.beginPath();ctx.arc(x,y,cr*.7,0,TAU);ctx.fill();ctx.strokeStyle='rgba(255,245,230,.95)';ctx.lineWidth=1.2;ctx.stroke();
@@ -1192,7 +1298,19 @@ function drawRun(){
   for(const shot of R.shadowShots)SHADOWS.drawShot(ctx,shot,T);
   if(R.boss&&R.boss.hp>0)drawBoss(R.boss);
   ctx.globalCompositeOperation='lighter';
-  for(const p of R.parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,TAU);ctx.fill()}
+  for(const p of R.parts){
+    ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.c;
+    if(p.motif>=0&&!reduce){
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate((p.spin||0)*T);
+      ctx.beginPath();
+      if(p.motif===0){ctx.moveTo(0,-p.s*2);ctx.lineTo(p.s*1.2,0);ctx.lineTo(0,p.s*2);ctx.lineTo(-p.s*1.2,0);ctx.closePath();}
+      else if(p.motif===1){ctx.arc(0,0,p.s*1.6,0,TAU);ctx.strokeStyle=p.c;ctx.lineWidth=.8;ctx.stroke();}
+      else if(p.motif===2){ctx.ellipse(0,0,p.s*1.7,p.s*.7,.55,0,TAU);}
+      else if(p.motif===3){ctx.moveTo(-p.s*2,p.s);ctx.quadraticCurveTo(0,-p.s*2,p.s*2,-p.s);ctx.strokeStyle=p.c;ctx.lineWidth=p.s*.75;ctx.stroke();}
+      else {ctx.ellipse(0,0,p.s*1.45,p.s*.7,.8,0,TAU);}
+      if(p.motif!==1&&p.motif!==3)ctx.fill();ctx.restore();
+    }else{ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,TAU);ctx.fill();}
+  }
   ctx.globalAlpha=1;
   drawFx();
   SHADOWS.drawVeil(ctx,R.hazardVeil,S.stage,W,H);
