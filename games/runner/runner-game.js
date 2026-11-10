@@ -9,6 +9,10 @@
   const W = 960;
   const H = 540;
   const GROUND = 465;
+  const FLOOR_2 = GROUND - 122;
+  const FLOOR_3 = GROUND - 234;
+  const SPEED_GATE = 1300;
+  const VORTEX_SECONDS = 1.65;
   const HERO_X = 246;
   const HERO_SCALE = 1.35;
   const TAU = Math.PI * 2;
@@ -246,9 +250,10 @@
     if (stage === 2) for (let i = 0; i < 8; i++)
       sparkle(c, 22 + i * 119, 62 + i % 4 * 43, 2 + i % 2, '#ecedff9c', time * .2 + i);
   }
-  function foreground(c, dist, time, view, reduced) {
+  function foreground(c, dist, time, view, reduced, gaps = []) {
     for (let i = 0; i < 20; i++) {
       const x = ((i * 69 - dist * 1.15) % 1380 + 1380) % 1380 - 55;
+      if (gaps.some(g => x >= g.x - 18 && x <= g.x + g.w + 18)) continue;
       kelp(c, x, view.ground + 27, 21 + i % 3 * 9,
         reduced ? i : time * 2 + i, i % 2 ? '#2b987f' : '#197e79');
       if (i % 2 === 0) {
@@ -256,6 +261,26 @@
         sparkle(c, x + 24, view.ground + 1, 2.4, '#fff6cb');
       }
     }
+  }
+  function drawGap(c, gap, time) {
+    if (gap.x >= W + 28 || gap.x + gap.w <= -28) return;
+    c.save();
+    c.fillStyle = gradient(c, 0, GROUND - 5, 0, H,
+      [[0, '#174766'], [.45, '#0f3555'], [1, '#051e3d']]);
+    c.fillRect(gap.x, GROUND - 5, gap.w, H - GROUND + 5);
+    c.fillStyle = '#78ece36e';
+    for (let i = 0; i < 6; i++) {
+      const xx = gap.x + 32 + i * 105;
+      if (xx > gap.x + gap.w - 12) continue;
+      bubble(c, xx, GROUND + 36 + Math.sin(time * 2 + i) * 5, 4 + i % 3 * 3, .3);
+    }
+    for (const edge of [gap.x, gap.x + gap.w]) {
+      c.strokeStyle = '#0b4b6e'; c.lineWidth = 7;
+      stroke(c, [[edge, GROUND - 7], [edge, H]], '#0a4765', 7);
+      stroke(c, [[edge - 11, GROUND - 3], [edge + 11, GROUND - 3]], '#84ffdc', 5);
+      sparkle(c, edge, GROUND - 10, 7, '#fff4af');
+    }
+    c.restore();
   }
   function pearl(c, x, y, time, size = 14) {
     const pulse = 1 + Math.sin(time * 6 + x * .02) * .08;
@@ -535,6 +560,12 @@
     const top = p.y, seg = 54;
     // Chunky sea-glass bridge, with a real landing surface for the runner.
     c.save();
+    if (p.floor >= 2) {
+      c.shadowColor = p.floor === 3 ? '#8f79f7aa' : '#71e9e2b3';
+      c.shadowBlur = 16;
+      rounded(c, p.x, top + 7, p.w, 40, 11, p.floor === 3 ? '#7864ac' : '#51a5bd');
+      c.shadowBlur = 0;
+    }
     for (const sx of [p.x + 31, p.x + p.w - 40]) {
       if (sx > W + 80 || sx < -90) continue;
       rounded(c, sx - 22, top + 35, 44, GROUND - top - 12, 13, '#2d5d8f');
@@ -557,6 +588,12 @@
       c.lineWidth = 3; c.strokeStyle = '#22665f'; c.fillStyle = '#74d0a3'; c.fill(); c.stroke();
       ellipse(c, x + 10, top + 1, 7, 2.2, '#d9ffbf');
       if (i % 2 === 0) sparkle(c, x + w * .6, top + 24, 3, '#dff9f4a3');
+    }
+    if (p.floor >= 2 && p.x < W && p.x + p.w > 0) {
+      rounded(c, p.x + 9, top - 23, 55, 24, 10, p.floor === 3 ? '#433e86d9' : '#166477d9');
+      c.fillStyle = '#fff5d3'; c.textAlign = 'center'; c.font = `bold 17px ${FONT}`;
+      c.fillText(`${p.floor}F`, p.x + 36, top - 5);
+      c.textAlign = 'left';
     }
     c.restore();
   }
@@ -651,9 +688,11 @@
     c.fillText(String(game.pearls), 276, 55);
     rounded(c, 358, 18, 195, 55, 16, '#134b70a8');
     c.font = `14px ${FONT}`; c.fillStyle = '#d4fff0';
-    c.fillText('STAGE  ' + String(game.stage + 1), 374, 40);
+    c.fillText(game.chapter >= 2 ? `심해 ${game.chapter}막 · LV.${game.difficulty}` :
+      'STAGE  ' + String(game.stage + 1), 374, 40);
     c.font = `17px ${FONT}`; c.fillStyle = '#fffce9';
-    c.fillText(ZONES[game.stage].name, 374, 63);
+    c.fillText(game.chapter >= 2 ? `속도 ${Math.floor(game.speed)} · 고난도` :
+      ZONES[game.stage].name, 374, 63);
     rounded(c, 571, 18, 171, 55, 16, '#134b70b9');
     c.fillStyle = '#ffc1c7'; c.font = `29px ${FONT}`;
     c.fillText('♥'.repeat(game.hearts) + '♡'.repeat(3 - game.hearts), 586, 55);
@@ -683,6 +722,68 @@
     c.font = `18px ${FONT}`; c.fillStyle = '#457c8d';
     c.fillText(description, W / 2, view.h * .32 + 112); c.textAlign = 'left';
   }
+  function drawVortex(c, remaining, time, nextChapter) {
+    const progress = Math.min(1, Math.max(0, 1 - remaining / VORTEX_SECONDS));
+    const ease = progress * progress * (3 - 2 * progress);
+    c.save();
+    c.fillStyle = '#11375b9c'; c.fillRect(0, 0, W, H);
+    c.translate(W / 2, H / 2);
+    const glow = c.createRadialGradient(0, 0, 5, 0, 0, 330);
+    glow.addColorStop(0, '#e3fff7e8'); glow.addColorStop(.22, '#62e9d6b4');
+    glow.addColorStop(.52, '#536ec182'); glow.addColorStop(1, '#0c355000');
+    c.fillStyle = glow; c.fillRect(-350, -350, 700, 700);
+    c.lineCap = 'round';
+    for (let i = 0; i < 11; i++) {
+      const radius = 34 + i * 23, angle = time * (2.8 + i * .035) + i * .53;
+      c.beginPath();
+      c.ellipse(0, 0, radius, radius * .64, angle, .25, Math.PI * 1.72);
+      c.strokeStyle = i % 2 ? '#ccfff4c7' : '#94baffb3';
+      c.lineWidth = 3.8 + i % 3; c.stroke();
+    }
+    for (let i = 0; i < 19; i++) {
+      const angle = time * 2.5 + i * TAU / 19;
+      const radius = 52 + i * 11;
+      sparkle(c, Math.cos(angle) * radius, Math.sin(angle) * radius * .65,
+        3 + i % 3, '#fff2b9a8', angle);
+    }
+    c.restore();
+    c.save();
+    c.translate(HERO_X + (W / 2 - HERO_X) * ease,
+      GROUND + (H / 2 + 42 - GROUND) * ease);
+    c.rotate(ease * 5); c.scale(1 - ease * .75, 1 - ease * .75);
+    hero(c, 0, 0, time, true, false, false, false, true);
+    c.restore();
+    c.save(); c.textAlign = 'center'; c.lineJoin = 'round';
+    c.lineWidth = 7; c.strokeStyle = '#20405ca8';
+    c.font = `bold 38px ${FONT}`;
+    c.strokeText(`${nextChapter}막 · 심해 회오리!`, W / 2, 106);
+    c.fillStyle = '#fff4c2'; c.fillText(`${nextChapter}막 · 심해 회오리!`, W / 2, 106);
+    c.font = `21px ${FONT}`; c.fillStyle = '#e4fff6';
+    c.fillText('회오리를 지나면 끊긴 길과 2층·3층 코스가 시작돼요', W / 2, 136);
+    c.restore();
+  }
+  function drawInk(c, remaining, time) {
+    if (remaining <= 0) return;
+    const fade = Math.min(1, remaining / .17, (1 - remaining) / .14 + .18);
+    c.save(); c.globalAlpha = Math.max(0, .36 * fade);
+    const blobs = [[485, 288, 128, 88], [397, 236, 77, 62],
+      [584, 328, 103, 74], [518, 205, 65, 48]];
+    for (const [x, y, rx, ry] of blobs) {
+      const wave = Math.sin(time * 5 + x) * 5;
+      ellipse(c, x + wave, y, rx, ry, '#22264c');
+    }
+    c.globalAlpha = Math.max(0, .7 * fade);
+    c.translate(819 + Math.sin(time * 5) * 9, 190 + Math.sin(time * 4) * 6);
+    // Original cartoon squid antagonist; the player remains the seahorse.
+    for (let i = -2; i <= 2; i++)
+      stroke(c, [[i * 8, 13], [i * 13, 33 + Math.sin(time * 8 + i) * 6]], '#8b4caa', 5);
+    c.beginPath(); c.moveTo(-27, 5); c.quadraticCurveTo(-30, -23, 0, -38);
+    c.quadraticCurveTo(30, -23, 27, 5); c.quadraticCurveTo(0, 21, -27, 5);
+    c.fillStyle = '#bc80de'; c.fill(); c.lineWidth = 4; c.strokeStyle = '#34294e'; c.stroke();
+    ellipse(c, -9, 0, 4.5, 6, '#fffaf0'); ellipse(c, 9, 0, 4.5, 6, '#fffaf0');
+    ellipse(c, -8, 1, 2, 3, '#352944'); ellipse(c, 10, 1, 2, 3, '#352944');
+    c.restore();
+  }
   function rushLines(c, distance, speed, time, reduced) {
     if (reduced) return;
     const intensity = Math.min(.65, .16 + Math.max(0, speed - 455) / 900);
@@ -699,10 +800,14 @@
   function create(api) {
     const reduced = reducedMotion();
     let time = 0, distance = 0, speed = 455, offset = 0, vy = 0;
-    let jumps = 0, slide = 0, hearts = 3, invulnerable = 0, shielded = false;
+    let peakSpeed = 455, chapter = 1, nextVortexAt = SPEED_GATE;
+    let vortexRemaining = 0, vortexTarget = 2;
+    let jumps = 0, slide = 0, dropFromY = null;
+    let hearts = 3, invulnerable = 0, shielded = false;
     let hazardIn = 1.2, pearlIn = .55, shieldIn = 15, platformIn = 8.8;
     let sharkIn = 6.2 + Math.random() * 5.8;
-    let hazards = [], pickups = [], effects = [];
+    let courseIn = 0, inkIn = 12, inkRemaining = 0;
+    let hazards = [], pickups = [], effects = [], gaps = [];
     let platforms = [{ x: W + 45, y: GROUND - 125, w: 370 }];
     for (let i = 0; i < 6; i++)
       pickups.push({ x: W + 86 + i * 55, y: GROUND - 173 - Math.sin(i * .58) * 14, kind: 'pearl' });
@@ -714,6 +819,8 @@
     let musicOn = safeGet('ojjuda:runner:music') !== 'off';
     let audio = null;
     const score = () => Math.floor(distance / 7) + pearls * 25 + Math.floor(combo * 10);
+    const difficulty = () => chapter <= 1 ? 0 :
+      1 + Math.floor(Math.max(0, peakSpeed - SPEED_GATE) / 300);
     const globalSoundOn = () => typeof api.soundEnabled !== 'function' || !!api.soundEnabled();
     function ensureAudio() {
       if (!musicOn || !globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
@@ -759,14 +866,21 @@
       }
     }
     function jump() {
-      if (paused || ended || jumps >= 2) return;
-      ensureAudio(); slide = 0; vy = jumps === 0 ? -840 : -775; jumps++;
+      if (paused || ended || vortexRemaining > 0 || jumps >= 2) return;
+      ensureAudio(); slide = 0; dropFromY = null;
+      vy = jumps === 0 ? -840 : -775; jumps++;
       particle(HERO_X, GROUND + offset - 5, 'foam', 12); sound('jump');
     }
     function crouch() {
-      if (paused || ended) return;
+      if (paused || ended || vortexRemaining > 0) return;
       ensureAudio();
-      if (offset < -6 && vy < 820) vy = 820; // Immediate dive after a jump.
+      if (offset < -6 && vy < 820) {
+        // Sliding on an upper floor drops through it onto the floor below.
+        const feet = GROUND + offset;
+        if (platforms.some(p => Math.abs(p.y - feet) < 8 &&
+            HERO_X + 18 > p.x && HERO_X - 18 < p.x + p.w)) dropFromY = feet;
+        vy = 820;
+      }
       slide = Math.max(slide, .76);
       particle(HERO_X - 23, GROUND + offset - 10, 'foam', 11); sound('slide');
     }
@@ -781,6 +895,22 @@
       if (musicOn) ensureAudio();
       const button = document.querySelector('#gov [data-g="key:m"]');
       if (button) { button.textContent = musicOn ? '♫ 음악 켜짐' : '♪ 음악 꺼짐'; button.setAttribute('aria-pressed', String(musicOn)); }
+    }
+    function beginVortex() {
+      vortexRemaining = VORTEX_SECONDS; vortexTarget = chapter + 1;
+      bonus = '심해로 이동!'; bonusLife = 2;
+      tone(280, .35, .03, 'triangle');
+    }
+    function finishVortex() {
+      chapter = vortexTarget;
+      nextVortexAt = SPEED_GATE * chapter;
+      hazards = []; pickups = []; platforms = []; gaps = []; effects = [];
+      offset = 0; vy = 0; jumps = 0; slide = 0; dropFromY = null;
+      invulnerable = Math.max(invulnerable, 1.35);
+      hazardIn = 1.35; sharkIn = 5 + Math.random() * 4;
+      courseIn = 3.4; inkRemaining = 0; inkIn = 5.5 + Math.random() * 5;
+      spawnAdvancedCourse();
+      bonus = `${chapter}막 시작!`; bonusLife = 2;
     }
     function spawnHazard() {
       const available = time < 4.5 ? REGULAR_OBSTACLES.slice(0, 5) : REGULAR_OBSTACLES;
@@ -814,6 +944,56 @@
       platforms.push({ x, y, w });
       for (let i = 0; i < 5; i++)
         pickups.push({ x: x + 35 + i * ((w - 70) / 4), y: y - 43, kind: 'pearl' });
+    }
+    function spawnAdvancedCourse() {
+      const tier = difficulty();
+      const stretch = 1 + Math.min(1.2, Math.max(0, speed - SPEED_GATE) / 1800);
+      // The entrance stays roughly three-quarters of a second ahead, even at high speed.
+      const x = Math.max(W + 92, HERO_X + speed * .75);
+      const entry = { x: x - 36 * stretch, y: FLOOR_2,
+        w: 700 * stretch, floor: 2 };
+      const upper = { x: x + 310 * stretch, y: FLOOR_3,
+        w: 550 * stretch, floor: 3 };
+      const exit = { x: x + (725 + tier * 8) * stretch, y: FLOOR_2,
+        w: 710 * stretch, floor: 2 };
+      platforms.push(entry, upper, exit);
+      gaps.push({ x: x + 150 * stretch,
+        w: (930 + Math.min(390, tier * 62)) * stretch });
+      for (const p of [entry, upper, exit])
+        for (let i = 0; i < 4; i++)
+          pickups.push({ x: p.x + (95 + i * 110) * stretch,
+            y: p.y - 43, kind: 'pearl' });
+      hazards.push({ x: upper.x + 370 * stretch, y: upper.y - 69,
+        w: 68, h: 69, kind: 'star' });
+      if (tier >= 2) hazards.push({ x: exit.x + 420 * stretch, y: exit.y - 60,
+        w: 82, h: 60, kind: 'crab' });
+      if (tier >= 3) {
+        const high = { x: x + 1410 * stretch, y: FLOOR_3,
+          w: 580 * stretch, floor: 3 };
+        const last = { x: x + 1840 * stretch, y: FLOOR_2,
+          w: 720 * stretch, floor: 2 };
+        platforms.push(high, last);
+        gaps.push({ x: x + 1640 * stretch,
+          w: (540 + Math.min(450, tier * 43)) * stretch });
+        hazards.push({ x: high.x + 330 * stretch, y: high.y - 82,
+          w: 77, h: 82, kind: 'rock' });
+        for (let i = 0; i < 5; i++)
+          pickups.push({ x: last.x + (110 + i * 110) * stretch,
+            y: last.y - 44, kind: 'pearl' });
+      }
+      if (tier >= 5) hazards.push({ x: entry.x + 485 * stretch,
+        y: entry.y - 48, w: 47, h: 48, kind: 'urchin' });
+      // Every further tier adds danger to alternating bridges, even after spawn
+      // intervals reach their minimum. Positions stay spaced for maneuvering.
+      for (let i = 0; i < Math.min(5, Math.floor(tier / 4)); i++) {
+        const target = i % 2 === 0 ? entry : exit;
+        const kind = i % 3 === 0 ? 'mine' : i % 3 === 1 ? 'star' : 'urchin';
+        const w = kind === 'mine' ? 73 : kind === 'star' ? 68 : 47;
+        const h = kind === 'mine' ? 73 : kind === 'star' ? 69 : 48;
+        hazards.push({ x: target.x + (165 + i * 91) * stretch,
+          y: target.y - h - (kind === 'mine' ? 58 : 0), w, h, kind });
+      }
+      courseIn = Math.max(1.7, 4.1 - tier * .23) + Math.random() * .75;
     }
     function hit() {
       if (invulnerable > 0 || ended) return;
@@ -850,7 +1030,15 @@
         if (!dt) return;
         time += dt;
         fever = Math.max(0, fever - dt);
-        speed = Math.min(1000, 455 + time * 11.2 + (fever > 0 ? 135 : 0));
+        // No speed ceiling: every additional 300px/s past 1300 raises difficulty.
+        speed = 455 + time * 11.2 + (fever > 0 ? 135 : 0);
+        peakSpeed = Math.max(peakSpeed, speed);
+        if (vortexRemaining > 0) {
+          vortexRemaining = Math.max(0, vortexRemaining - dt);
+          if (vortexRemaining === 0) finishVortex();
+          return;
+        }
+        if (speed >= nextVortexAt) { beginVortex(); return; }
         distance += speed * dt;
         stage = Math.floor(distance / 3300) % ZONES.length;
         slide = Math.max(0, slide - dt);
@@ -862,45 +1050,78 @@
         const previousFeet = GROUND + offset;
         vy += 2300 * dt; offset += vy * dt;
         const feet = GROUND + offset;
+        const openGround = chapter >= 2 && gaps.some(g =>
+          HERO_X >= g.x + 12 && HERO_X <= g.x + g.w - 12);
         const landing = vy >= 0 && platforms.find(p =>
           HERO_X + 18 > p.x && HERO_X - 18 < p.x + p.w &&
+          (dropFromY === null || Math.abs(p.y - dropFromY) > 8) &&
           previousFeet <= p.y + 5 && feet >= p.y);
         if (landing) {
           offset = landing.y - GROUND; vy = 0; jumps = 0;
+          dropFromY = null;
           if (previousFeet < landing.y - 5) particle(HERO_X, landing.y - 2, 'foam', 8);
-        } else if (offset >= 0) {
+        } else if (offset >= 0 && !openGround && previousFeet <= GROUND + 8) {
           offset = 0; vy = 0; jumps = 0;
+          dropFromY = null;
           if (previousFeet < GROUND - 5) particle(HERO_X, GROUND - 3, 'foam', 10);
+        }
+        if (offset > 125) {
+          hit();
+          if (!ended) {
+            // A missed bridge costs a heart, then launches a short recovery hop.
+            offset = -160; vy = -680; jumps = 1; slide = 0; dropFromY = null;
+            invulnerable = Math.max(invulnerable, .9);
+          }
         }
         hazardIn -= dt;
         if (hazardIn <= 0) {
           spawnHazard();
-          hazardIn = Math.max(.68, 1.26 - time * .011) + Math.random() * .32;
+          hazardIn = chapter >= 2 ?
+            Math.max(.32, .75 - difficulty() * .065) + Math.random() * .19 :
+            Math.max(.68, 1.26 - time * .011) + Math.random() * .32;
         }
         sharkIn -= dt;
         if (sharkIn <= 0) {
           spawnShark();
-          sharkIn = 9 + Math.random() * 11.5;
+          sharkIn = chapter >= 2 ?
+            Math.max(3.2, 8 - difficulty() * .48) + Math.random() * 6 :
+            9 + Math.random() * 11.5;
         }
         pearlIn -= dt;
         if (pearlIn <= 0) { spawnPearls(); pearlIn = 1.08 + Math.random() * .42; }
         platformIn -= dt;
-        if (platformIn <= 0) { spawnPlatform(); platformIn = 8.5 + Math.random() * 2.8; }
+        if (platformIn <= 0) {
+          if (chapter === 1) spawnPlatform();
+          platformIn = 8.5 + Math.random() * 2.8;
+        }
+        if (chapter >= 2) {
+          courseIn -= dt;
+          if (courseIn <= 0) spawnAdvancedCourse();
+          inkRemaining = Math.max(0, inkRemaining - dt);
+          inkIn -= dt;
+          if (inkIn <= 0 && inkRemaining === 0) {
+            inkRemaining = 1;
+            inkIn = Math.max(5, 13 - difficulty() * .55) + Math.random() * 4;
+          }
+        }
         shieldIn -= dt;
         if (shieldIn <= 0) {
           pickups.push({ x: W + 34, y: GROUND - 91, kind: 'shield' });
           shieldIn = 18 + Math.random() * 9;
         }
         for (const item of hazards) {
+          item.prevX = item.x;
           const velocity = item.kind === 'shark' ? sharkSpeed(item, speed, time) : speed;
           item.x -= velocity * dt;
           if (item.kind === 'shark') item.currentSpeed = velocity;
         }
-        for (const item of pickups) item.x -= speed * dt;
+        for (const item of pickups) { item.prevX = item.x; item.x -= speed * dt; }
         for (const item of platforms) item.x -= speed * dt;
+        for (const gap of gaps) gap.x -= speed * dt;
         hazards = hazards.filter(item => item.x + item.w > -70);
         pickups = pickups.filter(item => item.x > -48 && !item.got);
         platforms = platforms.filter(item => item.x + item.w > -80);
+        gaps = gaps.filter(gap => gap.x + gap.w > -80);
         for (const p of effects) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 80 * dt; p.life -= dt; }
         effects = effects.filter(p => p.life > 0);
         dustIn -= dt;
@@ -914,13 +1135,13 @@
           : { l: HERO_X - 31, r: HERO_X + 31, t: foot - 91, b: foot - 4 };
         for (const item of hazards) {
           const inset = item.kind === 'urchin' ? 6 : item.kind === 'shark' ? 17 : 8;
-          if (item.x + item.w - inset > box.l && item.x + inset < box.r &&
+          if ((item.prevX ?? item.x) + item.w - inset > box.l && item.x + inset < box.r &&
               item.y + item.h - inset > box.t && item.y + inset < box.b) {
             hit(); if (ended) break;
           }
         }
         for (const item of pickups) {
-          if (Math.abs(item.x - (box.l + box.r) / 2) < 31 &&
+          if (item.x < box.r + 31 && (item.prevX ?? item.x) > box.l - 31 &&
               item.y > box.t - 20 && item.y < box.b + 20) {
             item.got = true;
             if (item.kind === 'shield') { shielded = true; sound('shield'); particle(item.x, item.y, 'shield', 13); }
@@ -946,6 +1167,16 @@
         const dx = !reduced && shake ? Math.sin(time * 44) * shake * .5 : 0;
         c.save(); c.translate(dx, 0);
         sea(c, distance, time, view, stage, reduced);
+        if (chapter >= 2) {
+          c.fillStyle = '#234f8918'; c.fillRect(0, 0, W, GROUND);
+          for (const gap of gaps) drawGap(c, gap, time);
+        }
+        if (vortexRemaining > 0) {
+          drawVortex(c, vortexRemaining, time, vortexTarget);
+          hud(c, { hearts, pearls, combo, stage, shielded, fever,
+            chapter, difficulty: difficulty(), speed }, view, score());
+          c.restore(); return;
+        }
         rushLines(c, distance, speed, time, reduced);
         c.save(); c.translate(0, view.ground - GROUND);
         for (const item of platforms) platform(c, item);
@@ -969,9 +1200,11 @@
             p.kind === 'pearl' ? '#fffece' : p.kind === 'hit' ? '#ffb4ab' : '#d5fff9');
         }
         c.globalAlpha = 1; c.restore();
-        foreground(c, distance, time, view, reduced);
+        foreground(c, distance, time, view, reduced, gaps);
+        drawInk(c, inkRemaining, time);
         if (flash > 0) { c.fillStyle = `rgba(255,190,187,${Math.min(.33, flash)})`; c.fillRect(0, 0, W, view.h); }
-        hud(c, { hearts, pearls, combo, stage, shielded, fever }, view, score());
+        hud(c, { hearts, pearls, combo, stage, shielded, fever,
+          chapter, difficulty: difficulty(), speed }, view, score());
         if (sharkIn < .85 && sharkIn > 0) {
           rounded(c, 754, 120, 180, 35, 16, '#17395ed9');
           c.textAlign = 'center'; c.font = `bold 18px ${FONT}`;
@@ -1008,13 +1241,16 @@
         return false;
       },
       get state() { return { hearts, pearls, combo, distance, jumps, sliding: slide > 0,
-        paused, ended, stage, shielded, score: score(), speed, fever,
-        platforms: platforms.length, hazards: hazards.map(h => h.kind), sharkIn,
+        paused, ended, stage, chapter, difficulty: difficulty(), shielded,
+        score: score(), speed, peakSpeed, fever, vortexRemaining, nextVortexAt,
+        platforms: platforms.length, platformFloors: platforms.map(p => p.floor || 1),
+        gaps: gaps.map(g => ({ x: g.x, w: g.w })), inkRemaining,
+        hazards: hazards.map(h => h.kind), sharkIn,
         sharks: hazards.filter(h => h.kind === 'shark').map(h =>
           ({ x: h.x, y: h.y, speed: h.currentSpeed })) }; },
       destroy() {
         document.removeEventListener?.('pointerdown', handleButtonPointer);
-        ended = true; hazards = []; pickups = []; effects = []; platforms = [];
+        ended = true; hazards = []; pickups = []; effects = []; platforms = []; gaps = [];
         if (audio) { void audio.close().catch(() => {}); audio = null; }
       }
     };
@@ -1054,4 +1290,3 @@
     obstacleTypes: OBSTACLES.map(({ kind, name, lane }) => ({ kind, name, lane })),
     get ready() { return Promise.resolve(true); } };
 })();
-
