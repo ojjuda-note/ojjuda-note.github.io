@@ -334,7 +334,7 @@ test('real asset loader executes the recommendation factory once across both ent
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
       if (url.origin !== origin) return route.abort();
-      if (url.pathname === '/loader-fixture') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body><script src="/shared/games/world-game-assets.js"></script></body></html>' });
+      if (url.pathname === '/loader-fixture') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><meta charset="utf-8"></head><body><script src="/shared/games/world-game-assets.js"></script></body></html>' });
       if (!url.pathname.startsWith('/games/certified-restaurants/') && url.pathname !== '/shared/games/world-game-assets.js') return route.abort();
       if (url.pathname.endsWith('/recommended-restaurants.js')) {
         requests.push(url.href);
