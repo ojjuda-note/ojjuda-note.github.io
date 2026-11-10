@@ -242,7 +242,7 @@
       const photo = artist.photos[active];
       number.textContent = `${String(active + 1).padStart(2, '0')} / ${String(artist.photos.length).padStart(2, '0')}`;
       title.textContent = photo.label;
-      credit.textContent = `${photo.meta} · ${photo.credit}`;
+      credit.textContent = `${photo.meta} · ${photo.credit}${photo.optimized ? ' · 크기 조정 WebP' : ''}`;
       source.href = photo.href;
       license.hidden = !photo.licenseUrl;
       if (photo.licenseUrl) {

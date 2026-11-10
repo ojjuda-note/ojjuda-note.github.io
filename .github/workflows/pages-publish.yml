@@ -66,6 +66,24 @@ jobs:
           echo 'Public site size and file count:'
           du -sh "$site"
           find "$site" -type f | wc -l
+      - name: Restore freely licensed fan photos
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ojjuda-fan-photo-cache
+          key: fan-commons-webp-v1-${{ hashFiles('features/fanpages/artists.js') }}
+          restore-keys: fan-commons-webp-v1-
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Stage authorized Wikimedia photos as local WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet --disable-pip-version-check 'Pillow==11.3.0'
+          python scripts/mirror-fanpage-commons.py \
+            --source features/fanpages/artists.js \
+            --cache "$RUNNER_TEMP/ojjuda-fan-photo-cache" \
+            --output "$RUNNER_TEMP/ojjuda-public/features/fanpages"
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4
