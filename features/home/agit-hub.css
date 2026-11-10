@@ -21,8 +21,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-hero-story h1 em{color:color-mix(in srgb,var(--accent-ink,#c25567) 55%,#c25567);font-style:normal;white-space:nowrap}
 .agit-hero-story p{margin:0;color:#765a67;font-size:15px;font-weight:550;letter-spacing:-.025em}
 /* Thin white marker strokes hug each wrapped text line. */
-.agit-hero-story .agit-hero-highlight{padding:0 .04em;border-radius:.04em;background:linear-gradient(180deg,transparent 40%,rgba(255,253,249,.90) 40%,rgba(255,253,249,.90) 86%,transparent 86%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.agit-hero-story .agit-hero-highlight--copy{padding:0 .055em;background:linear-gradient(180deg,transparent 44%,rgba(255,253,249,.93) 44%,rgba(255,253,249,.93) 87%,transparent 87%)}
+.agit-hero-story .agit-hero-highlight{padding:0 .04em;border-radius:.04em;background:linear-gradient(180deg,transparent 54%,rgba(255,253,249,.92) 54%,rgba(255,253,249,.92) 86%,transparent 86%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.agit-hero-story .agit-hero-highlight--copy{padding:0 .055em;background:linear-gradient(180deg,transparent 56%,rgba(255,253,249,.93) 56%,rgba(255,253,249,.93) 85%,transparent 85%)}
 .agit-hero-visual{grid-area:visual;position:relative;display:grid;align-items:end;justify-items:center;min-width:0;min-height:0;pointer-events:none}
 .agit-hero-visual img{position:relative;z-index:1;display:block;width:min(118%,660px);max-width:none;max-height:390px;height:auto;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 20px 18px #7d4a5a16);transform:translate(4px,12px)}
 .agit-hero-halo{position:absolute;inset:12% 6% 0;border-radius:50%;background:#fff6e65c;filter:blur(16px)}
@@ -161,7 +161,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-hero-story h1 em{white-space:normal}
  .agit-hero-story p{font-size:12px;line-height:1.4}
  .agit-hero-visual{align-self:center;height:170px;max-height:none}
- .agit-hero-visual img{width:155%;max-height:200px;transform:translate(-15px,5px)}
+ .agit-hero-visual img{width:105%;max-height:200px;transform:translate(2px,5px)}
  .agit-hero-pick{gap:6px;margin:3px 14px 16px;padding:11px 12px;border-radius:16px}
  .agit-pick-body{gap:9px}
  .agit-pick-art{width:43px;height:43px;border-radius:12px}
@@ -216,8 +216,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
   .agit-hero-story h1{margin:12px 0 9px;font-size:clamp(28px,8.2vw,36px);letter-spacing:-.065em;line-height:1.2;word-break:keep-all}
   .agit-hero-story h1 em{white-space:nowrap}
   .agit-hero-story p{font-size:13px;line-height:1.5;letter-spacing:-.015em;word-break:keep-all}
-  .agit-hero-story .agit-hero-highlight{padding:0 .035em;background:linear-gradient(180deg,transparent 43%,rgba(255,255,255,.88) 43%,rgba(255,255,255,.88) 87%,transparent 87%)}
-  .agit-hero-story .agit-hero-highlight--copy{padding:0 .045em;background:linear-gradient(180deg,transparent 46%,rgba(255,255,255,.9) 46%,rgba(255,255,255,.9) 88%,transparent 88%)}
+  .agit-hero-story .agit-hero-highlight{padding:0 .035em;background:linear-gradient(180deg,transparent 56%,rgba(255,255,255,.92) 56%,rgba(255,255,255,.92) 86%,transparent 86%)}
+  .agit-hero-story .agit-hero-highlight--copy{padding:0 .045em;background:linear-gradient(180deg,transparent 58%,rgba(255,255,255,.93) 58%,rgba(255,255,255,.93) 86%,transparent 86%)}
   .agit-hero-visual{align-self:stretch;justify-items:end;align-items:end;max-height:none;height:132px;padding-right:8px}
   .agit-hero-visual img{width:auto;max-width:70%;height:130px;max-height:130px;object-fit:contain;transform:none}
   .agit-hero-pick{margin:0 12px 16px}
@@ -227,3 +227,4 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
   .agit-hero-story{padding:19px 15px 0}
   .agit-hero-visual img{max-width:76%}
 }
+@media(max-width:740px){.agit-hero-story h1,.agit-hero-story p{-webkit-text-stroke:0}}
