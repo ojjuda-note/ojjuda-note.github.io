@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-runner-vortex-v3-3-0'
+ const revision='20261110-runner-card-v3-3-1'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -24,7 +24,7 @@
   ttang:'1.6.5',
   photo_ttang:'1.5.3',
   mole:'1.7.3',
-  runner:'3.3.0',
+  runner:'3.3.1',
   stacker:'1.5.3',
   breakout:'1.7.1',
   spot:'1.12.3',
