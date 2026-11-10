@@ -95,6 +95,30 @@
     ellipse(c, size * .48, -size * .12, 1.25, 1.25, '#ffffffb0');
     c.restore();
   }
+  function reefGlider(c, x, y, size, time, warm) {
+    c.save(); c.translate(x, y + Math.sin(time * 2 + x * .01) * 5);
+    c.rotate(Math.sin(time * 1.1) * .08);
+    c.beginPath(); c.moveTo(-size * .52, 0);
+    c.lineTo(-size * 1.25, -size * .63);
+    c.quadraticCurveTo(-size * 1.4, 0, -size * 1.25, size * .63);
+    c.closePath(); c.fillStyle = warm ? '#ffb778' : '#83efd6'; c.fill();
+    c.lineWidth = 3.8; c.strokeStyle = '#315171'; c.stroke();
+    c.beginPath(); c.moveTo(-size * .71, 0);
+    c.bezierCurveTo(-size * .25, -size * .9, size * .77, -size * .68, size, 0);
+    c.bezierCurveTo(size * .68, size * .66, -size * .31, size * .88, -size * .71, 0);
+    c.closePath(); c.fillStyle = gradient(c, -size, -size, size, size,
+      warm ? [[0, '#fff2a1'], [.55, '#ffad98'], [1, '#f080aa']] :
+        [[0, '#f9ffbf'], [.52, '#8aeb9b'], [1, '#3abaad']]);
+    c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(-size * .36, -size * .5);
+    c.lineTo(-size * .16, -size * .81); c.lineTo(size * .17, -size * .61);
+    c.fillStyle = warm ? '#f285a5' : '#51c6bf'; c.fill(); c.stroke();
+    ellipse(c, size * .42, -size * .15, size * .11, size * .13, '#30425c');
+    ellipse(c, size * .44, -size * .2, size * .035, size * .04, '#fff');
+    stroke(c, [[size * .49, size * .21], [size * .64, size * .24]], '#59607a', 1.6);
+    ellipse(c, -size * .38, size * .06, size * .08, size * .1, '#fff2df9a');
+    c.restore();
+  }
   function seaFan(c, x, bottom, height, phase, color) {
     c.save(); c.translate(x, bottom);
     for (let i = -2; i <= 2; i++) {
@@ -166,6 +190,11 @@
       const x = ((i * 113 - dist * (i % 2 ? .28 : .14)) % 2260 + 2260) % 2260 - 120;
       const y = 95 + i % 6 * 50 + (reduced ? 0 : Math.sin(time * 1.2 + i) * 8);
       fish(c, x, y, 5 + i % 3 * 3, i % 2 ? '#ffeaa3b5' : '#e9fff2bf');
+    }
+    for (let i = 0; i < 6; i++) {
+      const x = ((i * 287 - dist * .24) % 1722 + 1722) % 1722 - 100;
+      const y = 157 + i % 3 * 83;
+      reefGlider(c, x, y, 19 + i % 3 * 5, reduced ? 0 : time + i, i % 3 === 1);
     }
     for (let i = 0; i < 44; i++) {
       const x = ((i * 127 - dist * (.17 + i % 4 * .04)) % 5588 + 5588) % 5588 - 60;
@@ -441,7 +470,10 @@
     let time = 0, distance = 0, speed = 455, offset = 0, vy = 0;
     let jumps = 0, slide = 0, hearts = 3, invulnerable = 0, shielded = false;
     let hazardIn = 1.2, pearlIn = .55, shieldIn = 15, platformIn = 8.8;
-    let hazards = [], pickups = [], effects = [], platforms = [];
+    let hazards = [], pickups = [], effects = [];
+    let platforms = [{ x: W + 45, y: GROUND - 125, w: 370 }];
+    for (let i = 0; i < 6; i++)
+      pickups.push({ x: W + 86 + i * 55, y: GROUND - 173 - Math.sin(i * .58) * 14, kind: 'pearl' });
     let pearls = 0, combo = 0, lastScore = -1, ended = false, paused = false;
     let stage = 0, shake = 0, flash = 0, dustIn = 0, musicTick = .16, note = 0;
     let fever = 0, scoreSync = 0, bonus = '', bonusLife = 0;
