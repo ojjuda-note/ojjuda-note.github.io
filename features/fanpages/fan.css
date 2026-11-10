@@ -103,3 +103,122 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .channel-links{grid-template-columns:minmax(0,1fr)}
   .footer-inner{align-items:flex-start}
 }
+
+/* Each tile uses the artist's own color palette. */
+.feature-group[style] .feature-portrait {
+  background:linear-gradient(140deg,var(--artist-accent),var(--artist-light));
+}
+.feature-group[style]:before {
+  background:var(--artist-light);
+}
+.artist-tile .tile-bottom {
+  background:linear-gradient(145deg,var(--artist-light),#fff 85%);
+}
+.artist-tile .tile-bottom strong { color:var(--artist-dark,var(--ink)); }
+.artist-tile.is-night { border-color:var(--artist-accent); }
+.artist-tile.is-night .tile-bottom {
+  background:linear-gradient(130deg,var(--artist-light),#1a141d);
+}
+.artist-tile.is-night .tile-bottom span { color:#e6cddc; }
+.artist-tile.is-night .tile-save {
+  background:#3e2635;
+  border-color:#80506a;
+  color:#ff9cc4;
+}
+.artist-tile.is-night .image-surface {
+  background:linear-gradient(130deg,var(--artist-light),#1a141d);
+}
+
+/* The new groups launch with sourced group introductions and a photo,
+   without inventing individual heights, schools or personal details. */
+.basic-profile-card {
+  display:grid;
+  grid-template-columns:1.05fr 1fr;
+  gap:16px;
+}
+.basic-profile-story,.basic-profile-members {
+  border:1px solid var(--theme-line,var(--line));
+  border-radius:20px;
+  background:var(--theme-card,#fff);
+  color:var(--theme-ink,var(--ink));
+  padding:30px;
+}
+.basic-profile-story>span,.basic-profile-members>div>span {
+  display:block;
+  color:var(--group-accent);
+  font:900 10px/1.5 Arial,sans-serif;
+  letter-spacing:1.6px;
+}
+.basic-profile-story>strong {
+  display:block;
+  margin:29px 0 23px;
+  font-size:clamp(22px,2.6vw,34px);
+  line-height:1.35;
+  letter-spacing:-1.4px;
+}
+.basic-profile-story p {
+  font-size:12px;
+  color:var(--theme-muted,#807789);
+  font-weight:700;
+}
+.basic-profile-story a {
+  display:inline-block;
+  margin-top:20px;
+  padding:11px 15px;
+  border-radius:10px;
+  background:var(--group-accent);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+body[data-theme="night"] .basic-profile-story a { color:#211826; }
+.basic-profile-members>div {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.basic-profile-members>div>strong {
+  color:var(--theme-muted,#807789);
+  font:900 11px Arial,sans-serif;
+}
+.basic-profile-members ul {
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  list-style:none;
+  margin:23px 0 20px;
+  padding:0;
+}
+.basic-profile-members li {
+  padding:10px 13px;
+  border:1px solid var(--theme-line,var(--line));
+  background:var(--theme-chip,#f2e9f7);
+  color:var(--theme-ink,var(--ink));
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+.basic-profile-members>small {
+  color:var(--theme-muted,#807789);
+  font-size:11px;
+}
+.fan-video-empty {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:140px;
+  border:1px dashed var(--theme-line,var(--line));
+  border-radius:16px;
+  color:var(--group-accent);
+  background:var(--theme-card,#fff);
+  font-size:13px;
+  font-weight:900;
+  text-align:center;
+  padding:20px;
+}
+.photo-viewer-arrow[hidden] { display:none; }
+@media(max-width:740px) {
+  .basic-profile-card { grid-template-columns:1fr; }
+  .basic-profile-story,.basic-profile-members { padding:23px; }
+}
