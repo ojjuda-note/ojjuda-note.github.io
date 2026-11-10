@@ -108,3 +108,21 @@ test('World reuses an already-started standalone auth client', async () => {
   assert.equal(context.Oc('https://fixture.example','public-key'),existing);
   assert.equal(creations,1,'World must never construct another auth client');
 });
+
+test('an early Matgo age check shares its auth client with World', () => {
+  const world=read('world.html'),matgo=read('games/matgo/matgo-access.js');
+  let creations=0;
+  const instance={auth:{onAuthStateChange() {return {data:{subscription:{unsubscribe() {}}}};}}};
+  const window={OJJUDA_CONFIG:{supabaseUrl:'https://fixture.example',supabaseKey:'public-key'},
+    supabase:{createClient() {creations++;return instance;}}};
+  window.parent=window;
+  vm.runInNewContext(matgo,{window,setTimeout,clearTimeout,Set,Error});
+  assert.equal(window.OjjudaMatgoAccess.getClient(),instance);
+  assert.equal(window.ojjudaSupabase,instance);
+  const start=world.indexOf('function Oc('),end=world.indexOf('var Hc=',start);
+  assert.ok(start>=0&&end>start);
+  const context={window};
+  vm.runInNewContext(world.slice(start,end),context);
+  assert.equal(context.Oc('https://fixture.example','public-key'),instance);
+  assert.equal(creations,1,'age checks and World must use the same auth session');
+});

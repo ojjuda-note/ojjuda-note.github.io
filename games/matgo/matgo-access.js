@@ -58,11 +58,13 @@
   function getClient() {
     if (client) return client;
     const shared = root.ojjudaSupabase || root.supabaseClient || root.sb;
-    if (shared) configure(shared);
+    if (shared) {root.ojjudaSupabase = shared;configure(shared);}
     else {
       const config = root.OJJUDA_CONFIG;
       if (!config?.supabaseUrl || !config.supabaseKey || !root.supabase?.createClient) throw reject('unavailable');
-      configure(root.supabase.createClient(config.supabaseUrl, config.supabaseKey));
+      // An early age check may run before World's module; make its auth client reusable.
+      root.ojjudaSupabase = root.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+      configure(root.ojjudaSupabase);
     }
     return client;
   }
