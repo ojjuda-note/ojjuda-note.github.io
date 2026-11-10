@@ -13,7 +13,7 @@
   const missionLabels = {
     park: ['공원에 글 남기기', '🌷'],
     baseball: ['숫자야구', '⚾'],
-    quiz: ['초성·상식 퀴즈', '🧩'],
+    quiz: ['오늘의 퀴즈', '🧩'],
     recommend: ['추천게임 시작하기', '🎮'],
     visit: ['아지트 페이지 들어가기', '🚪']
   };
@@ -59,6 +59,9 @@
     // Start with festivals on 2026-11-10, then rotate one destination per KST day.
     const offset = dayNumber(date) - dayNumber('2026-11-10');
     return visitPages[((offset % visitPages.length) + visitPages.length) % visitPages.length];
+  }
+  function quizMode(date = kstDate()) {
+    return dayNumber(date) % 2 === 0 ? 'chosung' : 'trivia';
   }
   function recommended(games, date = kstDate()) {
     const list = gameIds.filter(id => games && games[id] && !(games[id].age >= 19));
@@ -165,7 +168,8 @@
       <header class="agit-section-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
       <div class="agit-quest-grid">${today.map((id,i) => {
         const target=id==='visit'?visitTarget(date):null;
-        const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:missionLabels[id];
+        const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:
+          id==='quiz'?(quizMode(date)==='chosung'?['초성 퀴즈','🔤']:['상식 퀴즈','💡']):missionLabels[id];
         const finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
           <span class="agit-quest-number">0${i+1}</span>
@@ -246,7 +250,7 @@
     }
     return '';
   }
-  const api = {kstDate, missions, visitTarget, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
+  const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

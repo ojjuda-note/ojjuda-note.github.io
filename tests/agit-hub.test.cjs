@@ -18,6 +18,8 @@ test('all five daily missions stay together; the page target rotates in order',(
     const day=plus(date,offset);
     assert.deepEqual(hub.missions(day),missionIds);
     assert.equal(hub.visitTarget(day).id,['festival','restaurants','fanpages','group'][offset%4]);
+    assert.ok(['chosung','trivia'].includes(hub.quizMode(day)));
+    if(offset)assert.notEqual(hub.quizMode(day),hub.quizMode(plus(day,-1)));
   }
 });
 
@@ -117,7 +119,7 @@ test('Agit markup contains one five-mission panel and Daily fan content',()=>{
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-stamp-week1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-one-quiz1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 
@@ -156,7 +158,7 @@ test('themed hero uses narrow inline white highlights without masking the artwor
   assert.match(js,/class="agit-hero-highlight"/);
   assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
   assert.match(world,/agit-hub\.css\?v=20261110-stamp-week1/);
-  assert.match(world,/agit-hub\.js\?v=20261110-stamp-week1/);
+  assert.match(world,/agit-hub\.js\?v=20261110-one-quiz1/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{

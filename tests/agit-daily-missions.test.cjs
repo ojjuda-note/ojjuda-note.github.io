@@ -23,6 +23,8 @@ assert.match(html, /오늘의 미션/);
 assert.match(html, /aria-valuemax="5" aria-valuenow="0"/);
 assert.equal((html.match(/data-act="agit-task"/g) || []).length, 5);
 assert.match(html, /축제 페이지 들어가기/);
+assert.match(html, hub.quizMode(day)==='chosung'?/초성 퀴즈/:/상식 퀴즈/);
+assert.doesNotMatch(html, hub.quizMode(day)==='chosung'?/상식 퀴즈/:/초성 퀴즈/);
 const missionView = new JSDOM(html).window.document;
 assert.equal(missionView.querySelectorAll('.agit-quest-grid').length, 1, 'all missions share one box');
 assert.equal(missionView.querySelectorAll('.agit-quest-grid > button').length, 5);
@@ -69,4 +71,7 @@ try {
 const writer = fs.readFileSync(path.join(root, 'note/preview.js'), 'utf8');
 assert.match(writer, /if \(!editId && publishKind === 'memo'\)\s*\{\s*document\.dispatchEvent/,
   'only genuinely published new Park cards report completion');
+const world = fs.readFileSync(path.join(root, 'world.html'), 'utf8');
+assert.match(world,/if\(id==='quiz'\)return openAgitPuzzle\(hub\.quizMode\(\)\)/);
+assert.doesNotMatch(world,/openAgitQuizPicker|agit-quiz-mode/,'quiz opens one question without a mode picker');
 console.log('PASS: five missions, KST rotation, daily reset, and authenticated Park-post bridge');
