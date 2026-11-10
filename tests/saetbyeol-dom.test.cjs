@@ -45,13 +45,20 @@ const a = game({admin:true, member:owner, saved:{stage:2,cur:{light:100},lv:{h0a
 try {
   const {w,$,messages,tick} = a;
   assert.equal($('#demoBtn').hidden, false); assert.equal($('#demoBtn').disabled, false);
-  $('#starGrowth').click(); w.fixture.save(); tick(600);
+  $('#starGrowth').click();
+  assert.ok(w.fixture.demo, 'administrator entry now opens the full-growth preview');
+  assert.equal(w.fixture.state.stage, 9, 'the preview opens on the final life chapter');
+  w.fixture.save(); tick(600);
   const before = w.localStorage.getItem('ojjuda.saetbyeol.save.v1:' + owner);
   const count = messages.filter(m => m.data.type === 'ojjuda-game-result').length;
-  $('#demoBtn').click(); assert.ok(w.fixture.demo); assert.equal(w.fixture.state.stage, 4);
+  $('#demoStageSelect').value = '4';
+  $('#demoStageSelect').dispatchEvent(new w.Event('change'));
+  assert.ok(w.fixture.demo); assert.equal(w.fixture.state.stage, 4);
   w.fixture.save(); tick(600);
   assert.equal(messages.filter(m => m.data.type === 'ojjuda-game-result').length, count);
   assert.equal(w.localStorage.getItem('ojjuda.saetbyeol.save.v1:' + owner), before);
+  $('#demoBtn').click(); assert.equal(w.fixture.demo, null); assert.equal(w.fixture.state.stage, 2);
+  $('#demoBtn').click(); assert.ok(w.fixture.demo);
   w.fixture.resetGame(); assert.equal(w.fixture.demo, null); assert.equal(w.fixture.state.stage, 2);
   assert.equal(w.localStorage.getItem('ojjuda.saetbyeol.save.v1:guest'), null);
 } finally { a.dom.window.close(); }
@@ -207,13 +214,14 @@ console.log('PASS: Saetbyeol entry, growth scoring, retries, account isolation, 
   }};
   const settle = () => new Promise(resolve => setImmediate(resolve));
   try {
+    w.OjjudaAdminPreview = {isEnabled:() => true};
     w.eval(read('games/saetbyeol/world-saetbyeol-game.js'));
     w.OjjudaSaetbyeolGame.open({owner,client,authorized:()=>authorized,onScore:async (...args) => { scores.push(args); return {ok:true}; }});
     const frame = w.document.querySelector('iframe');
     frame.contentWindow.postMessage = data => sent.push(data);
     const receive = (data, origin = w.location.origin, sender = frame.contentWindow) => w.dispatchEvent(new w.MessageEvent('message',{origin,source:sender,data:{source:'ojjuda-saetbyeol',...data}}));
     receive({type:'ojjuda-game-ready'}); await settle();
-    assert.equal(sent[0].admin, true, 'admin flag comes from the protected server table');
+    assert.equal(sent[0].admin, true, 'admin preview requires the protected server role and preview mode');
     const result = {type:'ojjuda-game-result',runId:'11111111-1111-4111-8111-111111111111',score:11000,demo:false};
     receive(result,'https://evil.test'); receive(result,w.location.origin,w);
     receive({...result,demo:true}); receive({...result,score:60001});
