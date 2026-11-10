@@ -83,6 +83,8 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.ok(!html.includes('세븐포커'),'adult games stay out of Daily');
   assert.ok(html.includes('data-act="agit-stamp"'));
   assert.ok(html.includes('data-act="agit-play"'));
-  assert.equal((html.match(/class="agit-mission(?:\s|"|$)/g)||[]).length,3);
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-agit-hub1'));
+  assert.equal((html.match(/class="agit-quest-card /g)||[]).length,3);
+  for(const section of ['agit-hero','agit-checkin','agit-quest-grid','agit-life-grid','agit-footer'])assert.ok(html.includes(section),section);
+  assert.ok(html.includes('data-act="feedback-open"'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-agit-redesign2'));
 });

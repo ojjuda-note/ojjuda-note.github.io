@@ -71,7 +71,9 @@ test('the daily section leaves the arcade for the Agit tab',()=>{
   assert.ok(result.includes('혼자 게임'));
   assert.ok(!result.includes('일상 게임'));
   assert.ok(!result.includes('data-arcade-test-heading'));
-  assert.ok(source.includes('ys.splice(1,0,{id:"hub",label:"아지트",ic:"home"})'));
+  assert.ok(source.includes('ys.unshift({id:"hub",label:"아지트",ic:"home"})'));
+  assert.ok(source.includes('data-tab="hub" aria-label="오쭈다 아지트로 가기"'));
+  assert.ok(source.includes('gm(()=>sr.tab({tab:"hub"}))'));
 });
 
 test('administrator star preview also supports the six new chapters without saving progress',()=>{

@@ -128,10 +128,16 @@
   }
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
-    return `<section class="agit-panel agit-missions" id="agit-missions" aria-label="오늘의 미션"><div class="agit-panel-head"><h2>오늘의 미션</h2><span class="agit-mission-count">${done} / 3</span></div><div class="agit-mission-progress" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${done}" aria-label="미션 완료"><span style="width:${done / 3 * 100}%"></span></div><div class="agit-mission-list">${today.map(id => {
-      const [label, action, emoji] = missionLabels[id], finished = isComplete(settings, id, date);
-      return `<button type="button" class="agit-mission${finished ? ' is-done' : ''}" data-act="agit-task" data-v="${id}" ${finished ? 'aria-label="완료한 미션: '+label+'"' : ''}><span class="agit-mission-icon" aria-hidden="true">${finished ? '✓' : emoji}</span><span class="agit-mission-title">${label}</span><span class="agit-mission-action">${finished ? '완료' : action}</span></button>`;
-    }).join('')}</div></section>`;
+    return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
+      <header class="agit-section-head"><div><span class="agit-section-kicker">02 / TODAY'S QUEST</span><h2>오늘의 미션</h2></div><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ 3</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${done}" aria-label="미션 완료">${[0,1,2].map(i=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
+      <div class="agit-quest-grid">${today.map((id,i) => {
+        const [label,action,emoji]=missionLabels[id],finished=isComplete(settings,id,date);
+        return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
+          <span class="agit-quest-upper"><span class="agit-quest-number">0${i+1}</span><span class="agit-quest-state">${finished?'✓ 완료':'오늘 도전'}</span></span>
+          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong>${label}</strong></span>
+          <span class="agit-quest-bottom"><span>${finished?'CLEAR':action}</span><span class="agit-quest-arrow" aria-hidden="true">↗</span></span>
+        </button>`;
+      }).join('')}</div></section>`;
   }
   function markup(settings, games, date = kstDate()) {
     const state = safeState(settings), game = recommended(games, date);
@@ -139,18 +145,44 @@
     const stamped = state.stamps.includes(date);
     const stampedCount = lastDays.filter(d => state.stamps.includes(d)).length;
     const [year, month, day] = date.split('-');
+    const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
+    const done = missions(date).filter(id => isComplete(settings,id,date)).length;
     const daily = Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19));
-    return `<div class="agit-hub" id="agit-hub-view" data-agit-hub><header class="agit-heading"><div><span class="world-eyebrow">OJjUDA AGIT · ${month}.${day}</span><h1>아지트</h1></div><span class="agit-date">${year}.${month}.${day}</span></header>
-    <div class="agit-feature-grid"><section class="agit-panel agit-pick" id="agit-recommend" aria-label="오늘의 추천게임"><div class="agit-panel-head"><h2>오늘의 추천게임</h2><span class="agit-tag">TODAY</span></div>${game ? `<div class="agit-pick-body"><div class="agit-pick-copy"><strong>${escapeHtml(game.name)}</strong><button type="button" class="agit-primary" data-act="agit-play" data-v="${game.id}">게임 시작 <span aria-hidden="true">→</span></button></div><img src="/assets/design/games/${game.id}.svg" alt="" width="180" height="138" loading="lazy"></div>` : '<p>추천게임을 준비하고 있어요.</p>'}</section>
-    <section class="agit-panel agit-stamps" id="agit-stamp" aria-label="방문 도장"><div class="agit-panel-head"><h2>방문 도장</h2><span class="agit-tag">최근 7일 ${stampedCount}/7</span></div><div class="agit-stamp-grid">${lastDays.map(d => {
-      const dayName = ['일', '월', '화', '수', '목', '금', '토'][new Date(d + 'T00:00:00Z').getUTCDay()], on = state.stamps.includes(d);
-      return `<div class="agit-stamp-day${on ? ' is-stamped' : ''}${d === date ? ' is-today' : ''}" aria-label="${d} ${on ? '방문 완료' : '미방문'}"><span>${dayName}</span><strong aria-hidden="true">${on ? '✓' : '·'}</strong></div>`;
-    }).join('')}</div><button type="button" class="agit-stamp-button" data-act="agit-stamp"${stamped ? ' disabled' : ''}>${stamped ? '오늘 도장 완료 ✓' : '오늘 도장 찍기'}</button></section></div>
-    ${missionMarkup(settings, date)}
-    <section class="agit-panel agit-daily" id="agit-daily" aria-label="일상"><div class="agit-panel-head"><h2>일상</h2><span class="agit-tag">DAILY</span></div><div class="gbtns agit-daily-grid">${daily.map(([id, item]) => {
-      if (!/^[a-z0-9_]+$/.test(id)) return '';
-      return `<button type="button" class="gbtn" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly ? ' · 회원 전용' : ''}"><span class="ge" aria-hidden="true"><img src="/assets/design/games/${id}.svg" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">${escapeHtml(item.name)}${item.memberOnly ? '<small class="game-test-badge">회원 전용</small>' : ''}</span></button>`;
-    }).join('')}<a class="gbtn" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="ge" aria-hidden="true"><img src="/features/fanpages/fan-tile.svg?v=20261110-fanpages1" alt="" width="120" height="84" loading="lazy"></span><span class="game-name">팬페이지<small class="game-test-badge">일상</small></span></a></div></section></div>`;
+    return `<div class="agit-hub" id="agit-hub-view" data-agit-hub>
+      <header class="agit-hero" aria-label="아지트">
+        <div class="agit-hero-story">
+          <span class="agit-hero-eyebrow"><i aria-hidden="true"></i> OJJUDA · DAILY SPACE</span>
+          <h1>놀고, 쉬고,<br><em>아지트.</em></h1>
+          <p>오늘도 여기서 만나요.</p>
+          <div class="agit-hero-pills"><span>${Number(month)}월 ${Number(day)}일 ${weekday}요일</span><span>미션 ${done}/3</span></div>
+        </div>
+        <section class="agit-hero-pick" id="agit-recommend" aria-label="오늘의 추천게임">
+          <div class="agit-pick-top"><span class="agit-pick-burst" aria-hidden="true">✳</span><span>TODAY'S PICK</span></div>
+          ${game ? `<div class="agit-pick-art"><img src="/assets/design/games/${game.id}.svg" alt="" width="210" height="155" loading="lazy"></div><div class="agit-pick-foot"><div><span>오늘의 추천게임</span><strong>${escapeHtml(game.name)}</strong></div><button type="button" class="agit-play-button" data-act="agit-play" data-v="${game.id}" aria-label="${escapeHtml(game.name)} 게임 시작"><span aria-hidden="true">→</span></button></div>` : '<p>추천게임을 준비하고 있어요.</p>'}
+        </section>
+        <span class="agit-hero-orbit" aria-hidden="true"></span>
+      </header>
+      <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
+        <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✦</span><div><span>01 / VISIT STAMP</span><h2>방문 도장</h2></div><small>최근 7일 ${stampedCount}/7</small></div>
+        <div class="agit-stamp-days">${lastDays.map(d => {
+          const name=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00Z').getUTCDay()],on=state.stamps.includes(d);
+          return `<div class="agit-stamp-day${on?' is-stamped':''}${d===date?' is-today':''}" aria-label="${d} ${on?'방문 완료':'미방문'}"><span>${name}</span><strong aria-hidden="true">${on?'✓':'·'}</strong><small>${Number(d.slice(-2))}</small></div>`;
+        }).join('')}</div>
+        <button type="button" class="agit-stamp-button" data-act="agit-stamp"${stamped?' disabled':''}>${stamped?'오늘 완료 ✓':'도장 찍기'}<span aria-hidden="true">${stamped?'':'↗'}</span></button>
+      </section>
+      ${missionMarkup(settings,date)}
+      <section class="agit-life" id="agit-daily" aria-label="일상"><header class="agit-section-head"><div><span class="agit-section-kicker">03 / THE LITTLE THINGS</span><h2>일상</h2></div><span class="agit-life-badge">쉬어가는 공간 <span aria-hidden="true">✺</span></span></header>
+        <div class="agit-life-grid">${daily.map(([id,item],i) => {
+          if(!/^[a-z0-9_]+$/.test(id))return '';
+          return `<button type="button" class="agit-life-tile agit-life-tile--${i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
+            <span class="agit-life-top"><span>0${i+1} / DAILY</span><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span>
+            <span class="agit-life-art"><img src="/assets/design/games/${id}.svg" alt="" width="160" height="112" loading="lazy"></span>
+            <span class="agit-life-title"><strong>${escapeHtml(item.name)}</strong>${item.memberOnly?'<small>회원 전용</small>':''}</span>
+          </button>`;
+        }).join('')}<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span>0${daily.length+1} / DAILY</span><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span><span class="agit-life-art"><img src="/features/fanpages/fan-tile.svg?v=20261110-fanpages1" alt="" width="160" height="112" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>일상</small></span></a></div>
+      </section>
+      <footer class="agit-footer"><span>OJJUDA AGIT <span aria-hidden="true">✳</span></span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">↗</span></button></footer>
+    </div>`;
   }
   function puzzleMarkup(settings, id, date = kstDate()) {
     if (id === 'trivia') {
