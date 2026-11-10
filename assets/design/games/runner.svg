@@ -1,37 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 84" fill="none" role="img" aria-label="쭈달리기 바닷속 쭈 캐릭터">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 84" fill="none" role="img" aria-label="쭈달리기 해마 캐릭터">
   <defs>
-    <linearGradient id="sea" x1="14" y1="4" x2="110" y2="80" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7DE4DB"/>
-      <stop offset="1" stop-color="#1B88B0"/>
+    <linearGradient id="sea" x1="8" y1="0" x2="100" y2="83" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E1FAFF"/>
+      <stop offset="1" stop-color="#86D1DF"/>
     </linearGradient>
-    <linearGradient id="jju" x1="44" y1="23" x2="76" y2="67" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE1C8"/>
-      <stop offset=".52" stop-color="#FFA2AD"/>
-      <stop offset="1" stop-color="#E16B91"/>
+    <linearGradient id="pony" x1="34" y1="16" x2="78" y2="74" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1B9"/>
+      <stop offset=".52" stop-color="#FFC278"/>
+      <stop offset="1" stop-color="#EB8777"/>
     </linearGradient>
-    <linearGradient id="pearl" x1="89" y1="16" x2="104" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF"/>
-      <stop offset="1" stop-color="#BFC4F7"/>
+    <linearGradient id="pearl" x1="90" y1="15" x2="110" y2="36" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7FA"/>
+      <stop offset=".6" stop-color="#FFB8E3"/>
+      <stop offset="1" stop-color="#B569D4"/>
     </linearGradient>
   </defs>
-  <path d="M9 70c17-10 37-4 54-10s32-13 48-4v16H9Z" fill="url(#sea)" opacity=".28"/>
-  <path d="M9 72h102" stroke="#96CDB6" stroke-width="2" stroke-linecap="round"/>
-  <path d="M13 71c-6-10-2-20 2-24M17 73c9-9 5-17 2-20M106 71c-7-11-4-20 0-25" stroke="#48A8A6" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="24" cy="19" r="5" fill="#E8FFFC" fill-opacity=".26" stroke="#DFFEF9" stroke-opacity=".8"/>
-  <circle cx="108" cy="40" r="3" fill="#DFFEF9" fill-opacity=".35" stroke="#DFFEF9"/>
-  <path d="M89 21v-5m-2.5 2.5h5" stroke="#F7E4B8" stroke-width="1.5" stroke-linecap="round"/>
-  <circle cx="97" cy="26" r="10" fill="#8F82CC" opacity=".7"/>
-  <circle cx="96" cy="24" r="9" fill="url(#pearl)"/>
-  <ellipse cx="92" cy="20.5" rx="2.4" ry="1.5" fill="#FFF"/>
-  <path d="m51 56-8 12m17-12-3 13m12-15 4 13m-30-12-12 7" stroke="#E77E98" stroke-width="7" stroke-linecap="round"/>
-  <path d="M39 72h14m3 1h12m4-2h12" stroke="#FFF7E8" stroke-width="5" stroke-linecap="round"/>
-  <path d="M43 46c-5-18 6-29 17-29 13 0 23 12 18 29 2 14-9 22-19 22-11 0-20-10-16-22Z" fill="url(#jju)"/>
-  <path d="M43 39c13-5 22-5 35 0" stroke="#64CDB7" stroke-width="5" stroke-linecap="round"/>
-  <path d="m75 40 11 2-4 5" stroke="#8CF3D8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m54 36 2-4 2 4 4 2-4 2-2 4-2-4-4-2Z" fill="#FFF2BD"/>
-  <circle cx="53" cy="49" r="2.5" fill="#36516E"/>
-  <circle cx="69" cy="49" r="2.5" fill="#36516E"/>
-  <path d="M57 56c3 4 7 4 10 0" stroke="#925B73" stroke-width="2" stroke-linecap="round"/>
-  <ellipse cx="47" cy="55" rx="4" ry="2.5" fill="#FFB8B4"/>
-  <ellipse cx="76" cy="55" rx="4" ry="2.5" fill="#FFB8B4"/>
+  <path d="M8 12C28 0 65 4 88 14s24 35 24 61H8Z" fill="url(#sea)" opacity=".54"/>
+  <path d="M7 73h106" stroke="#56CDB5" stroke-width="4" stroke-linecap="round"/>
+  <path d="M15 72c-6-8-5-16 2-23m-1 25c5-10 11-11 14-19m81 19c-6-11-4-17 1-22" stroke="#6DB8AC" stroke-opacity=".54" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="22" cy="22" r="5" stroke="#FFFCF2" stroke-opacity=".8" fill="#FFF" fill-opacity=".18"/>
+  <circle cx="106" cy="48" r="3" fill="#FFF" fill-opacity=".3" stroke="#FFF" stroke-opacity=".6"/>
+  <circle cx="100" cy="26" r="12" fill="#6B569A" fill-opacity=".3"/>
+  <circle cx="99" cy="24" r="10" fill="url(#pearl)" stroke="#754C8C" stroke-width="2"/>
+  <ellipse cx="95.5" cy="20" rx="3" ry="2" fill="#FFF"/>
+  <path d="m86 14 2-6m-3 3 6 2" stroke="#FFF4C8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M48 55c-13 3-18 17-7 20 9 3 14-8 5-9" stroke="#293E56" stroke-width="10" stroke-linecap="round"/>
+  <path d="M48 55c-13 3-18 17-7 20 9 3 14-8 5-9" stroke="#F6A16D" stroke-width="6" stroke-linecap="round"/>
+  <path d="m43 24-1-15 8 7 6-10 6 17Z" fill="#ED9279" stroke="#293E56" stroke-width="2.7" stroke-linejoin="round"/>
+  <path d="M43 45 24 40l5 15 16 3Z" fill="#75D8C1" stroke="#294459" stroke-width="2.7" stroke-linejoin="round"/>
+  <path d="M48 21c7-8 19-1 20 8l14 1q10 1 6 7l-17 1c-4 5 1 11 1 17 2 14-8 20-21 17-19-5-20-21-11-33-9-11-2-20 8-18Z" fill="url(#pony)" stroke="#293E56" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse cx="59" cy="55" rx="9" ry="15" fill="#FFE8B5"/>
+  <ellipse cx="61" cy="54" rx="6" ry="11" fill="#FFF7D9" fill-opacity=".7"/>
+  <path d="m43 48 2 3m-3 5 3 2m0 5 2 2" stroke="#D2797A" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="65" cy="28" r="5.6" fill="#FFFDF7"/>
+  <circle cx="67" cy="28" r="3" fill="#263D56"/>
+  <circle cx="68" cy="26.6" r="1" fill="#FFF"/>
+  <ellipse cx="72" cy="37" rx="3" ry="2" fill="#E27C84"/>
+  <path d="m80 39 5 1" stroke="#855875" stroke-width="2" stroke-linecap="round"/>
+  <path d="m48 70-5 6m18-5 4 5" stroke="#264158" stroke-width="6" stroke-linecap="round"/>
+  <path d="M37 77h14m7 0h14" stroke="#FFF2D8" stroke-width="5" stroke-linecap="round"/>
 </svg>
+

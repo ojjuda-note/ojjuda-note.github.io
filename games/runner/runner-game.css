@@ -1,6 +1,6 @@
 /* 쭈달리기 3 · 16:9 original ocean arcade */
 #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) {
-  background: radial-gradient(ellipse at 36% 16%, #59ddec, #166a9c 61%, #062f60);
+  background: radial-gradient(ellipse at 36% 16%, #e1fbff, #85d0e4 61%, #2c86ae);
   padding: 6px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -30,7 +30,7 @@
   margin: 0;
   aspect-ratio: 16 / 9;
   border-radius: 20px;
-  background: #36bfdc;
+  background: #a5e5ef;
   box-shadow: inset 0 0 0 2px #eafff3, 0 15px 40px #073c6a8a;
   overflow: hidden;
 }
@@ -270,3 +270,4 @@
 @media (prefers-reduced-motion: reduce) {
   #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key { transition: none; }
 }
+

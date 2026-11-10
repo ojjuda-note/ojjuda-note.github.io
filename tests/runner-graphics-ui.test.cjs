@@ -50,6 +50,14 @@ g.tab='friends'; H();
     await page.evaluate(() => OjjudaGameAssets.load('runner'));
     assert.equal(await page.evaluate(() => OjjudaGameAssets.ready('runner')), true);
     assert.equal(typeof (await page.evaluate(() => OjjudaRunnerGame.ready)), 'boolean');
+    const obstacleTypes = await page.evaluate(() => OjjudaRunnerGame.obstacleTypes);
+    assert.equal(obstacleTypes.length, 10, 'obstacle roster contains ten distinct hazards');
+    assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 10);
+    assert.ok(obstacleTypes.filter(x => x.lane === 'air').length >= 3);
+    const mascotIcon = await page.evaluate(async () =>
+      (await fetch('/assets/design/games/runner.svg')).text());
+    assert.ok(mascotIcon.includes('해마 캐릭터') && !mascotIcon.includes('쭈꾸미'),
+      'arcade artwork uses the original seahorse mascot');
     assert.deepEqual(oldArtRequests, [], 'original vector art needs no raster sprite downloads');
     const open = async () => {
       await page.evaluate(() => runnerTest.open('runner'));
@@ -160,3 +168,4 @@ g.tab='friends'; H();
     await browser.close();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
