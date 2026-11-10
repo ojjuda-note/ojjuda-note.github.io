@@ -343,7 +343,7 @@
     let musicOn = safeGet('ojjuda:runner:music') !== 'off';
     let audio = null;
     const score = () => Math.floor(distance / 9) + pearls * 25 + Math.floor(combo * 8);
-    const globalSoundOn = () => typeof window.Wr !== 'function' || window.Wr() !== '🔇';
+    const globalSoundOn = () => typeof api.soundEnabled !== 'function' || !!api.soundEnabled();
     function ensureAudio() {
       if (!musicOn || !globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
       try {
