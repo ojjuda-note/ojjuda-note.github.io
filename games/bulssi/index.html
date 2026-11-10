@@ -157,8 +157,8 @@ body[data-mode="hub"] #panel{display:block}
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-bulssi-life1"></script>
 <script src="./tree-controls.js?v=20261013-sky2001"></script>
-<script src="./life-expansion.js?v=20261110-bulssi-life2"></script>
-<script src="./shadow-enemies.js?v=20261110-chapters1"></script>
+<script src="./life-expansion.js?v=20261110-saetbyeol-hazards1"></script>
+<script src="./shadow-enemies.js?v=20261110-saetbyeol-hazards1"></script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -542,12 +542,12 @@ function startRun(withBoss){
   if(withBoss&&!canChallengeBoss()){toast('현재 단계의 다섯 영역 강화를 모두 마치면 보스에 도전할 수 있어요.');return;}
   ensureAudio();st=stats();
   const shadowSteps=S.stage>=5&&!withBoss?SHADOWS.count(UP,S.lv,S.stage):0;
-  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],shadows:[],shadowShots:[],shadowSteps,shadowClock:shadowSteps?SHADOWS.firstDelay(shadowSteps):Infinity,shadowTotal:0,shadowPops:0,shadowHitT:0,combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
+  R={id:crypto.randomUUID(),boostPending:false,paidSeconds:0,density:1,heat:st.maxHeat,time:0,bonusSeconds:0,nextHeatAt:ENCOUNTERS.limits.firstHeatAt,nodes:[],parts:[],rewards:[],shards:[],rings:[],beams:[],trail:[],shadows:[],shadowShots:[],hazardVeil:0,shadowSteps,shadowClock:shadowSteps?SHADOWS.firstDelay(shadowSteps):Infinity,shadowTotal:0,shadowPops:0,shadowHitT:0,combo:0,comboT:0,sparkAcc:0,spawnAcc:0,tick:0,flareT:0,satA:0,hitT:0,gain:{light:0,metal:0,mass:0,life:0},boss:withBoss?makeBoss():null,shake:0,flash:0};
   refreshBooster();refreshTime();
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
   setMode('run');refreshShadowHUD();
   if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
-  else if(shadowSteps&&!withBoss)toast('👾 그림자 악당은 톡 눌러 터뜨려요!',2400);
+  else if(shadowSteps&&!withBoss)toast('✨ 방해물은 톡 눌러 정화해요!',2400);
 }
 function refreshBooster(){
   const button=$('#boostBtn'),pending=!!R?.boostPending;
@@ -600,7 +600,7 @@ function spawn(t,instant){
 }
 function refreshShadowHUD(){
   const el=$('#shadowCount');el.hidden=!R||S.stage<5||!!R.boss||R.shadowSteps===0;
-  if(!el.hidden)el.textContent=`👾 ${R.shadows.length}`;
+  if(!el.hidden){el.textContent=`${['👾','🪼','💎','☁️','🌌'][S.stage-5]} ${R.shadows.length}`;el.setAttribute('aria-label',`방해물 ${R.shadows.length}개`);}
 }
 function spawnShadow(){
   if(!R||R.boss||S.stage<5||R.shadowSteps===0||R.shadows.length>=SHADOWS.maxAlive(R.shadowSteps)||(R.shadowSteps<20&&R.shadowTotal>=1))return false;
@@ -611,7 +611,8 @@ function spawnShadow(){
     if(Math.hypot(x-cur.x,y-cur.y)>110*U)break;
   }
   const r=(18+(S.stage-5)*2+Math.min(6,R.shadowSteps*.03))*U;
-  R.shadows.push({x,y,r,age:0,life:12,fire:2.8+Math.random()*2,seed:Math.random()*100});
+  const kind=SHADOWS.choose(S.stage,R.shadowSteps),hp=SHADOWS.info(kind).hp;
+  R.shadows.push({x,y,r,kind,hp,maxHp:hp,grown:R.shadowSteps,age:0,life:12,fire:2.8+Math.random()*2,seed:Math.random()*100});
   R.shadowTotal++;refreshShadowHUD();return true;
 }
 function tapShadow(x,y){
@@ -619,16 +620,25 @@ function tapShadow(x,y){
   let target=null,distance=Infinity;
   for(const enemy of R.shadows){const d=Math.hypot(enemy.x-x,enemy.y-y);if(d<=enemy.r+16*U&&d<distance){target=enemy;distance=d;}}
   if(!target)return false;
+  target.hp=(target.hp||1)-1;
+  if(target.hp>0){
+    burst(target.x,target.y,col().color,reduce?3:9,1.1);
+    ring(target.x,target.y,target.r*1.9,.32,col().rgb,2);
+    tone(note(9),.12,.027,'triangle');return true;
+  }
   R.shadows.splice(R.shadows.indexOf(target),1);R.shadowPops++;
   const bonus=Math.max(1,Math.ceil((5+R.shadowSteps*.18)*Math.pow(6,S.stage-5)*st.life));
   S.cur.life+=bonus;R.gain.life+=bonus;rewardPopup(target,[{kind:'life',amount:bonus}]);
-  burst(target.x,target.y,'#ffe3fb',reduce?10:24,2.3);ring(target.x,target.y,target.r*3,.55,'255,210,248',3);
+  const glow=col().color,power=Math.min(4,S.stage-4+Math.floor(R.shadowSteps/80));
+  burst(target.x,target.y,glow,reduce?10:18+power*6,2+power*.28);
+  for(let i=0;i<(reduce?1:Math.min(4,1+Math.floor(power/2)));i++)ring(target.x,target.y,target.r*(2.3+i*.8),.5+i*.13,col().pal[i%5],2+i*.4);
   tone(note(11+R.shadowPops),.24,.04,'triangle');save();refreshShadowHUD();
   if(R.shadowPops===1)toast('악당을 터뜨리고 생명력을 얻었어요!',1800);
   return true;
 }
 function updateShadows(dt,cur){
   if(!R||!R.shadowSteps||R.boss||S.stage<5)return;
+  R.hazardVeil=Math.max(0,R.hazardVeil-dt);
   R.shadowClock-=dt;
   if(R.shadowClock<=0){spawnShadow();R.shadowClock+=SHADOWS.interval(R.shadowSteps);}
   R.shadowHitT=Math.max(0,R.shadowHitT-dt);
@@ -637,9 +647,13 @@ function updateShadows(dt,cur){
     enemy.x=Math.max(enemy.r,Math.min(W-enemy.r,enemy.x+Math.sin(enemy.age*1.6+enemy.seed)*12*U*dt));
     enemy.y=Math.max(topY()+enemy.r,Math.min(botY()-enemy.r,enemy.y+Math.cos(enemy.age*1.2+enemy.seed)*8*U*dt));
     if(enemy.fire<=0&&enemy.age>=1){
-      const dx=cur.x-enemy.x,dy=cur.y-enemy.y,d=Math.hypot(dx,dy)||1,speed=(95+12*(S.stage-5))*U;
-      R.shadowShots.push({x:enemy.x,y:enemy.y,vx:dx/d*speed,vy:dy/d*speed,r:5*U,life:4,chapter:S.stage-5});
-      if(R.shadowShots.length>36)R.shadowShots.shift();
+      const attack=SHADOWS.info(enemy.kind),dx=cur.x-enemy.x,dy=cur.y-enemy.y;
+      const angle=Math.atan2(dy,dx),speed=(attack.speed+4*(S.stage-5))*U;
+      for(let i=0;i<attack.volleys;i++){
+        const a=angle+(i-(attack.volleys-1)/2)*.22;
+        R.shadowShots.push({x:enemy.x,y:enemy.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:5*U,life:4,chapter:S.stage-5,kind:enemy.kind});
+      }
+      if(R.shadowShots.length>36)R.shadowShots.splice(0,R.shadowShots.length-36);
       enemy.fire=Math.max(2.8,4.8-R.shadowSteps/130);
     }
   }
@@ -649,7 +663,12 @@ function updateShadows(dt,cur){
     shot.x+=shot.vx*dt;shot.y+=shot.vy*dt;shot.life-=dt;
     if(shot.life>0&&P.has&&Math.hypot(shot.x-cur.x,shot.y-cur.y)<shot.r+14*U){
       shot.life=0;
-      if(R.shadowHitT<=0){R.heat=Math.max(0,R.heat-.28*st.decay);R.shadowHitT=.75;R.flash=Math.max(R.flash,.12);burst(shot.x,shot.y,'#d8a5ff',reduce?3:8,.8);tone(160,.12,.022,'sine');}
+      if(R.shadowHitT<=0){
+        const attack=SHADOWS.info(shot.kind);
+        R.heat=Math.max(0,R.heat-attack.heat*st.decay);R.shadowHitT=.75;
+        if(attack.veil)R.hazardVeil=Math.max(R.hazardVeil,attack.veil);
+        R.flash=Math.max(R.flash,.12);burst(shot.x,shot.y,col().color,reduce?3:8,.8);tone(160,.12,.022,'sine');
+      }
     }
   }
   R.shadowShots=R.shadowShots.filter(shot=>shot.life>0&&shot.x>-30&&shot.x<W+30&&shot.y>-30&&shot.y<H+30);
@@ -833,9 +852,31 @@ function updateBoss(dt,cur,rad){
   else if(b.k===1){b.x=W/2+Math.sin(b.t*.3)*W*.2;b.y=H*.45+Math.cos(b.t*.4)*H*.1;b.shield=(b.t%4)>2.5}
   else if(b.k===2){b.x=W/2+Math.sin(b.t*.25)*W*.15;b.y=H*.45;for(const m of b.moons){m.a+=dt*.9;m.x=b.x+Math.cos(m.a)*b.r*2;m.y=b.y+Math.sin(m.a)*b.r*2;m.hit=Math.max(0,m.hit-dt)}if(b.moons.every(m=>m.hp<=0)){b.moonT+=dt;if(b.moonT>6){b.moonT=0;spawnMoons(b)}}}
   else if(b.k===3){b.x=W/2+Math.sin(b.t*.15)*W*.2;b.y=H*.48+Math.cos(b.t*.2)*H*.08}
+  else if(b.k>=6){
+    const chapter=b.k-6,tempo=[.32,.25,.43,.18][chapter];
+    b.x=W/2+Math.sin(b.t*tempo)*W*(.18+.018*chapter);
+    b.y=H*.43+Math.cos(b.t*(tempo+.14))*H*(.07+.008*chapter);
+    b.fire+=dt;
+    if(b.fire>=[4.8,4.4,4,3.6][chapter]){
+      b.fire=0;
+      const count=[3,4,5,6][chapter],base=Math.atan2(cur.y-b.y,cur.x-b.x),speed=(72+chapter*13)*U;
+      for(let i=0;i<count;i++){
+        const angle=base+(i-(count-1)/2)*(.26+chapter*.04);
+        R.shards.push({x:b.x+Math.cos(angle)*b.r,y:b.y+Math.sin(angle)*b.r,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:(4+chapter*.5)*U,life:4,chapter:b.k-5,kind:['jelly','crystal','cloud','seed'][chapter]});
+      }
+      if(R.shards.length>24)R.shards.splice(0,R.shards.length-24);
+      ring(b.x,b.y,b.r*(2+chapter*.4),.65,col().rgb,2+chapter);
+    }
+  }
   else{b.fire+=dt;if(b.fire>5){b.fire=0;R.flash=.5;tone(70,.8,.06,'sine');for(const n of R.nodes){const dx=n.x-b.x,dy=n.y-b.y,d=Math.hypot(dx,dy)||1;n.vx+=dx/d*260*U;n.vy+=dy/d*260*U}b.x=W*.2+Math.random()*W*.6;b.y=topY()+60+Math.random()*(botY()-topY()-120)}}
   // A volley cannot consume the whole timer when several shards overlap.
-  for(const s of R.shards){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;if(s.life>0&&Math.hypot(s.x-cur.x,s.y-cur.y)<rad*.45){s.life=0;if(R.hitT<=0){R.heat=Math.max(0,R.heat-.6*st.decay);R.hitT=.75;R.shake=reduce?0:6;burst(s.x,s.y,'#cfefff',6,1);tone(180,.2,.04,'square')}}}
+  for(const s of R.shards){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+    const hitRadius=b.k>=6?(s.r||5*U)+14*U:rad*.45;
+    if(s.life>0&&P.has&&Math.hypot(s.x-cur.x,s.y-cur.y)<hitRadius){
+      s.life=0;
+      if(R.hitT<=0){R.heat=Math.max(0,R.heat-(b.k>=6?.22:.6)*st.decay);R.hitT=.75;R.shake=reduce?0:4;burst(s.x,s.y,col().color,reduce?3:9,1);tone(180,.2,.04,'square')}
+    }
+  }
   R.shards=R.shards.filter(s=>s.life>0&&s.x>-20&&s.x<W+20&&s.y>-20&&s.y<H+20);
 }
 function endRun(){
@@ -1057,7 +1098,11 @@ function drawNode(n){
 function drawBoss(b){
   const c=col(),cur=cursor();let lx=cur.x-b.x,ly=cur.y-b.y;const d=Math.hypot(lx,ly)||1;lx/=d;ly/=d;
   ctx.save();
-  if(b.k>=5){LIFE.drawBoss(ctx,b,b.k-5,T);ctx.restore();return;}
+  if(b.k>=5){
+    LIFE.drawBoss(ctx,b,b.k-5,reduce?0:T);
+    for(const s of R.shards)SHADOWS.drawShot(ctx,s,T);
+    ctx.restore();return;
+  }
   if(b.k===0){
     const ang=Math.atan2(Math.cos(b.t*.5)*.09*H,-Math.sin(b.t*.35)*.105*W),tx=-Math.cos(ang),ty=-Math.sin(ang),L=b.r*6;
     ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
@@ -1150,6 +1195,7 @@ function drawRun(){
   for(const p of R.parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,TAU);ctx.fill()}
   ctx.globalAlpha=1;
   drawFx();
+  SHADOWS.drawVeil(ctx,R.hazardVeil,S.stage,W,H);
   ctx.globalCompositeOperation='source-over';
   drawCursor();
   ctx.restore();

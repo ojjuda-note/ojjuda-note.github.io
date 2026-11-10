@@ -4,10 +4,10 @@
   'use strict';
   const chapters = [
     {name:'차원의 씨앗',pal:['255,213,155','146,224,255','236,172,255','139,235,197','250,239,186'],color:'#ffd59b',ink:'#261304',rgb:'255,213,155',bg:['#23142f','#080b23'],rock:'#ad91b5',boss:'차원문 수호자',bossObj:'차원문 수호자를'},
-    {name:'루미별의 바다',pal:['120,226,239','120,165,255','162,246,221','255,175,217','224,249,255'],color:'#78e2ef',ink:'#05232b',rgb:'120,226,239',bg:['#092f45','#061322'],rock:'#75bdc3',boss:'심해의 파동',bossObj:'심해의 파동을'},
-    {name:'수정의 숲',pal:['157,235,176','227,210,121','184,156,255','132,229,212','255,201,212'],color:'#9debb0',ink:'#0a2412',rgb:'157,235,176',bg:['#102d25','#08131d'],rock:'#79b59d',boss:'태고의 뿌리',bossObj:'태고의 뿌리를'},
-    {name:'진화의 하늘',pal:['192,180,255','146,220,255','255,182,218','180,245,231','255,221,174'],color:'#c0b4ff',ink:'#1b1431',rgb:'192,180,255',bg:['#241d4e','#080e2a'],rock:'#a09ccf',boss:'폭풍의 날개',bossObj:'폭풍의 날개를'},
-    {name:'생명의 별',pal:['255,210,135','255,157,193','143,231,233','194,247,175','238,185,255'],color:'#ffd287',ink:'#301809',rgb:'255,210,135',bg:['#321b36','#090a20'],rock:'#c4a2b7',boss:'생명의 심장',bossObj:'생명의 심장을'}
+    {name:'루미별의 바다',pal:['120,226,239','120,165,255','162,246,221','255,175,217','224,249,255'],color:'#78e2ef',ink:'#05232b',rgb:'120,226,239',bg:['#092f45','#061322'],rock:'#75bdc3',boss:'심해 그림자 고래',bossObj:'심해 그림자 고래를'},
+    {name:'수정의 숲',pal:['157,235,176','227,210,121','184,156,255','132,229,212','255,201,212'],color:'#9debb0',ink:'#0a2412',rgb:'157,235,176',bg:['#102d25','#08131d'],rock:'#79b59d',boss:'수정 골렘',bossObj:'수정 골렘을'},
+    {name:'진화의 하늘',pal:['192,180,255','146,220,255','255,182,218','180,245,231','255,221,174'],color:'#c0b4ff',ink:'#1b1431',rgb:'192,180,255',bg:['#241d4e','#080e2a'],rock:'#a09ccf',boss:'폭풍의 천공 드래곤',bossObj:'폭풍의 천공 드래곤을'},
+    {name:'생명의 별',pal:['255,210,135','255,157,193','143,231,233','194,247,175','238,185,255'],color:'#ffd287',ink:'#301809',rgb:'255,210,135',bg:['#321b36','#090a20'],rock:'#c4a2b7',boss:'우주의 공허한 심장',bossObj:'우주의 공허한 심장을'}
   ];
   const memories = [
     ['끝이라고 생각했던 곳에 문이 있었다.','그 문 너머에서는 아주 작은 빛이 떨고 있었다.','이제는 삼키는 대신, 지켜 보자.'],
@@ -275,18 +275,83 @@
     ctx.restore();
   }
   function drawBoss(ctx,b,chapter,time){
-    const colors=chapters[chapter].pal,phase=time*.45;
-    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.sin(phase)*.12);
-    for(let i=0;i<8;i++){
-      const a=i*Math.PI/4+phase,rr=b.r*(1.15+.12*Math.sin(time+i));
-      ctx.strokeStyle=`rgba(${colors[i%5]},.65)`;ctx.lineWidth=4;
-      ctx.beginPath();ctx.moveTo(Math.cos(a)*b.r*.7,Math.sin(a)*b.r*.7);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);ctx.stroke();
+    const colors=chapters[chapter].pal,phase=time*.45,r=b.r;
+    const strong=1+Math.min(.65,1-Math.max(0,b.hp)/Math.max(1,b.max));
+    const TAU=Math.PI*2;
+    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.sin(phase)*.075);
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<3+chapter*2;i++){
+      const a=i*2.39996+phase*(i%2?-1:1),rr=r*(1.5+.16*chapter+.13*(i%3));
+      ctx.strokeStyle=`rgba(${colors[i%5]},${.15+.04*strong})`;ctx.lineWidth=1.4+(i%3)*.5;
+      ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,r*(.075+.02*chapter),0,TAU);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(Math.cos(a)*rr-r*.1,Math.sin(a)*rr);ctx.lineTo(Math.cos(a)*rr+r*.1,Math.sin(a)*rr);ctx.stroke();
     }
-    const glow=ctx.createRadialGradient(-b.r*.25,-b.r*.3,4,0,0,b.r);
-    glow.addColorStop(0,'#ffffff');glow.addColorStop(.35,chapters[chapter].color);glow.addColorStop(1,'#1b1c45');
-    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,b.r*.8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#1e2340';for(const side of [-1,1]){ctx.beginPath();ctx.ellipse(side*b.r*.22,-b.r*.06,b.r*.09,b.r*.13,0,0,Math.PI*2);ctx.fill();}
-    ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,b.r*.19,b.r*.18,.1,Math.PI-.1);ctx.stroke();
+    for(let i=0;i<2+chapter;i++){
+      ctx.save();ctx.rotate(phase*(i%2?-.7:.85)+i*.9);
+      ctx.strokeStyle=`rgba(${colors[(i+1)%5]},${.19+.035*chapter})`;ctx.lineWidth=1+i*.34;
+      ctx.beginPath();ctx.ellipse(0,0,r*(1.26+i*.22),r*(.39+i*.12),.3,0,Math.PI*1.82);ctx.stroke();ctx.restore();
+    }
+    const aura=ctx.createRadialGradient(0,0,0,0,0,r*2.3);
+    aura.addColorStop(0,`rgba(${colors[0]},.46)`);aura.addColorStop(1,`rgba(${colors[1]},0)`);
+    ctx.fillStyle=aura;ctx.beginPath();ctx.arc(0,0,r*2.3,0,TAU);ctx.fill();
+    ctx.globalCompositeOperation='source-over';ctx.lineJoin='round';ctx.lineCap='round';ctx.lineWidth=Math.max(2,r*.055);
+    const soft=ctx.createLinearGradient(-r,-r,r,r);
+    soft.addColorStop(0,'#ffffff');soft.addColorStop(.36,chapters[chapter].color);soft.addColorStop(1,'#2b2351');
+    ctx.fillStyle=soft;ctx.strokeStyle=chapters[chapter].color;
+    if(chapter===1){ // The deep-sea shadow whale, with bioluminescent fins and tail.
+      ctx.beginPath();ctx.moveTo(-r*.75,-r*.14);ctx.quadraticCurveTo(-r*1.42,-r*1.23,-r*1.54,-r*.9);
+      ctx.lineTo(-r*1.42,r*.08);ctx.lineTo(-r*1.62,r*.95);ctx.quadraticCurveTo(-r*.98,r*.64,-r*.75,r*.32);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*.5,-r*.4);ctx.quadraticCurveTo(-r*.12,-r*1.25,r*.34,-r*.94);
+      ctx.quadraticCurveTo(r*1.36,-r*.85,r*1.2,r*.17);ctx.quadraticCurveTo(r*.98,r*.83,-r*.06,r*.75);
+      ctx.quadraticCurveTo(-r*.82,r*.6,-r*.5,-r*.4);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='rgba(220,251,255,.72)';ctx.beginPath();ctx.moveTo(-r*.16,r*.54);ctx.quadraticCurveTo(r*.25,r*1.46,r*.47,r*.77);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#17334e';ctx.beginPath();ctx.arc(r*.63,-r*.2,r*.11,0,TAU);ctx.fill();
+      ctx.strokeStyle='#f0ffff';ctx.beginPath();ctx.arc(r*.74,r*.1,r*.19,.1,Math.PI*.78);ctx.stroke();
+      ctx.fillStyle='#d8fcff';for(let i=0;i<7;i++){ctx.beginPath();ctx.arc(-r*.37+i*r*.16,-r*(.42+.13*Math.sin(i)),r*.045,0,TAU);ctx.fill();}
+    }else if(chapter===2){ // Faceted crystal golem with glowing gem joints.
+      const gem=points=>{ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x*r,y*r):ctx.moveTo(x*r,y*r));ctx.closePath();ctx.fill();ctx.stroke();};
+      ctx.fillStyle='#659d9e';gem([[-1.38,-.16],[-.97,-.65],[-.55,-.35],[-.6,.53],[-1.19,.8]]);
+      gem([[.6,-.35],[1.04,-.67],[1.38,-.12],[1.2,.82],[.64,.52]]);
+      ctx.fillStyle=soft;gem([[-.72,-.71],[0,-1.24],[.75,-.68],[.82,.42],[0,.98],[-.8,.44]]);
+      ctx.fillStyle='#f3f9df';gem([[-.4,-.75],[0,-1.03],[.42,-.73],[.35,-.21],[0,.05],[-.39,-.23]]);
+      ctx.strokeStyle='rgba(255,255,255,.68)';ctx.beginPath();ctx.moveTo(0,-r*1.03);ctx.lineTo(0,r*.93);ctx.moveTo(0,r*.05);ctx.lineTo(r*.77,r*.42);ctx.moveTo(0,r*.05);ctx.lineTo(-r*.7,r*.39);ctx.stroke();
+      ctx.fillStyle='#244a56';for(const side of [-1,1]){ctx.beginPath();ctx.arc(side*r*.31,-r*.17,r*.075,0,TAU);ctx.fill();}
+    }else if(chapter===3){ // Sky dragon, cloud-wings and winding body.
+      ctx.fillStyle='rgba(208,190,255,.82)';
+      for(const side of [-1,1]){
+        ctx.save();ctx.scale(side,1);ctx.beginPath();ctx.moveTo(r*.14,-r*.19);
+        ctx.bezierCurveTo(r*.81,-r*1.32,r*1.43,-r*.68,r*1.69,-r*1.02);
+        ctx.quadraticCurveTo(r*1.21,r*.36,r*.5,r*.47);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+      }
+      ctx.fillStyle=soft;ctx.beginPath();ctx.moveTo(-r*.83,r*.78);ctx.bezierCurveTo(-r*1.23,-r*.57,-r*.3,-r*1.04,r*.44,-r*.58);
+      ctx.bezierCurveTo(r*1.03,-r*.2,r*.72,r*.48,r*.26,r*.54);ctx.quadraticCurveTo(-r*.2,r*.72,-r*.43,r*1.03);
+      ctx.quadraticCurveTo(-r*1.02,r*1.12,-r*.83,r*.78);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(r*.35,-r*.65);ctx.lineTo(r*.47,-r*1.12);ctx.lineTo(r*.78,-r*.67);
+      ctx.moveTo(-r*.05,-r*.79);ctx.lineTo(-r*.2,-r*1.22);ctx.lineTo(r*.18,-r*.85);ctx.stroke();
+      ctx.fillStyle='#302c62';ctx.beginPath();ctx.arc(r*.55,-r*.36,r*.095,0,TAU);ctx.fill();
+      ctx.strokeStyle='#fff8d7';ctx.beginPath();ctx.arc(r*.58,-r*.09,r*.17,.1,2.4);ctx.stroke();
+    }else if(chapter===4){ // The void heart cracks into warm life-light.
+      ctx.fillStyle='#4b315d';ctx.beginPath();ctx.moveTo(0,r*1.12);
+      ctx.bezierCurveTo(-r*1.48,r*.28,-r*1.12,-r*1.07,-r*.32,-r*.94);
+      ctx.bezierCurveTo(0,-r*.83,0,-r*.55,0,-r*.55);
+      ctx.bezierCurveTo(0,-r*.55,r*.2,-r*1.12,r*.72,-r*.98);
+      ctx.bezierCurveTo(r*1.6,-r*.6,r*1.11,r*.42,0,r*1.12);ctx.closePath();ctx.fill();ctx.stroke();
+      const core=ctx.createRadialGradient(0,-r*.1,0,0,0,r*.82);
+      core.addColorStop(0,'#fffbe1');core.addColorStop(.45,'#ffbfa6');core.addColorStop(1,'rgba(249,133,222,0)');
+      ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,r*.82,0,TAU);ctx.fill();
+      ctx.strokeStyle='#fff5c8';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-r*.2,-r*.66);ctx.lineTo(r*.14,-r*.18);ctx.lineTo(-r*.12,r*.12);ctx.lineTo(r*.2,r*.6);ctx.stroke();
+      ctx.fillStyle='#211634';for(const side of [-1,1]){ctx.beginPath();ctx.arc(side*r*.48,-r*.3,r*.08,0,TAU);ctx.fill();}
+    }else{ // Chapter 2's original small, gentle rift guardian.
+      for(let i=0;i<8;i++){
+        const a=i*TAU/8+phase,rr=r*(1.15+.12*Math.sin(time+i));
+        ctx.beginPath();ctx.moveTo(Math.cos(a)*r*.7,Math.sin(a)*r*.7);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);ctx.stroke();
+      }
+      ctx.beginPath();ctx.arc(0,0,r*.8,0,TAU);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#1e2340';for(const side of [-1,1]){ctx.beginPath();ctx.ellipse(side*r*.22,-r*.06,r*.09,r*.13,0,0,TAU);ctx.fill();}
+      ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.arc(0,r*.19,r*.18,.1,Math.PI-.1);ctx.stroke();
+    }
+    if(b.hit>0){ctx.globalCompositeOperation='lighter';ctx.fillStyle=`rgba(255,255,255,${Math.min(.65,b.hit*4)})`;ctx.beginPath();ctx.arc(0,0,r*.65,0,TAU);ctx.fill();}
     ctx.restore();
   }
   window.OjjudaSaetbyeolLife=Object.freeze({chapters,memories,transitions,journal,kinds,keys,choose,upgrades,drawWorld,drawMagic,drawCreature,drawBoss,
