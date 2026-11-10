@@ -132,7 +132,7 @@ async function screenshot(page,name){
    await page.locator('#zoom-fit').click();assertFits(await layout(page),'return to all tiles');
    // Transparent areas of an upper floor must not swallow taps on uncovered
    // tiles below. A layer is a full rectangular grid despite its empty cells.
-   const lower=await page.evaluate(()=>{
+   const exposedLower=()=>page.evaluate(()=>{
     const top=document.querySelector('.tile-layer[data-layer="0"]')?.getBoundingClientRect();
     for(const tile of document.querySelectorAll('.tile[data-layer="1"]:not(:disabled)')){
      const rect=tile.getBoundingClientRect(),x=rect.left+rect.width/2,y=rect.top+rect.height/2;
@@ -142,7 +142,18 @@ async function screenshot(page,name){
     }
     return null;
    });
-   assert(lower,'stage 7 has an exposed lower tile beneath the upper grid bounds');
+   // A randomly dealt full upper floor can cover every lower tile initially.
+   // Uncover real legal pairs until this particular deal exposes one.
+   let lower=await exposedLower();
+   for(let i=0;!lower&&i<70;i++){
+    const before=(await layout(page)).total;
+    const pair=await page.evaluate(()=>{const saved=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return window.TileGarden.exposedMoves([saved.grid,...saved.upcoming]);});
+    assert(pair,'stage 7 offers another legal pair while uncovering its lower floor');
+    await page.locator(tileSelector(pair.a)).tap();await page.locator(tileSelector(pair.b)).tap();
+    await page.waitForFunction(total=>{const saved=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return [saved.grid,...saved.upcoming].flat(2).filter(value=>value!==-1).length===total-2;},before);
+    lower=await exposedLower();
+   }
+   assert(lower,'stage 7 exposes a lower tile beneath the upper grid after legal pairs are removed');
    assert(lower.receivesTap,'an uncovered lower tile receives taps through the upper layer');
    const lowerTile=page.locator(tileSelector(lower));
    await lowerTile.tap();assert.equal(await lowerTile.getAttribute('aria-pressed'),'true','tapping a lower tile selects it');
@@ -150,7 +161,8 @@ async function screenshot(page,name){
    const move=await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1'));return window.TileGarden.exposedMoves([state.grid,...state.upcoming]);});
    const before=await snapshot(page);await page.locator(tileSelector(move.a)).tap();await page.locator(tileSelector(move.b)).tap();
    await page.waitForFunction(before=>JSON.parse(localStorage.getItem('ojjuda-sacheonseong-v1')).grid.flat().filter(v=>v!==-1).length===before-2,before.state.grid.flat().filter(v=>v!==-1).length);
-   assert.equal((await layout(page)).total,E.stageInfo(7).total-2,'touch removes one pair across a layered stage');
+   const beforeTotal=[before.state.grid,...before.state.upcoming].flat(2).filter(value=>value!==-1).length;
+   assert.equal((await layout(page)).total,beforeTotal-2,'touch removes one pair across a layered stage');
    const progress=await snapshot(page),tileSize=(await layout(page)).tile.width;
    for(let i=0;i<4;i++)await page.locator('#zoom-in').click();
    assert((await layout(page)).tile.width>tileSize*1.5,'zoom enlarges tiny tiles');
