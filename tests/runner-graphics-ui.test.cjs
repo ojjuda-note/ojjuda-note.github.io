@@ -47,6 +47,15 @@ g.tab='friends'; H();
     });
     await page.goto('https://fixture.test/world.html');
     await page.waitForFunction(() => window.runnerTest);
+    // Exercise sub-5px final platform insets against real Canvas, not a no-op mock.
+    const runnerSource = fs.readFileSync(path.join(root, 'games/runner/runner-game.js'), 'utf8');
+    const roundedSource = runnerSource.slice(runnerSource.indexOf('function rounded('), runnerSource.indexOf('  function gradient('));
+    await page.evaluate(roundedSource => {
+      const rounded = (0, eval)('(' + roundedSource + ')');
+      const c = document.createElement('canvas').getContext('2d');
+      for (const segmentWidth of [.01, 1, 3.142518, 4.99, 5, 5.01, 48])
+        rounded(c, 3, 5, segmentWidth - 5, 38, 9, '#fff');
+    }, roundedSource);
     await page.evaluate(() => OjjudaGameAssets.load('runner'));
     assert.equal(await page.evaluate(() => OjjudaGameAssets.ready('runner')), true);
     assert.equal(typeof (await page.evaluate(() => OjjudaRunnerGame.ready)), 'boolean');
