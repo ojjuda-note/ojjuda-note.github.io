@@ -5,21 +5,23 @@ try{
   const {w,$}=x,f=w.fixture,e=f.encounters;
   let gameSeed=184;w.Math.random=()=>{gameSeed=(Math.imul(gameSeed,1664525)+1013904223)>>>0;return gameSeed/2**32;};
   $('#starStart').click();
-  assert.equal(e.catalog.length,50);
-  assert.equal(new Set(e.catalog.map(t=>t.id)).size,50);
-  assert.equal(new Set(e.catalog.map(t=>t.name)).size,50);
-  assert.equal(f.upgrades.length,200);
-  assert.equal(new Set(f.upgrades.map(u=>u.id)).size,200);
-  assert.equal(f.upgrades.reduce((sum,u)=>sum+u.mx,0),618);
-  f.loadProgress({stage:4,lv:Object.fromEntries(f.upgrades.map(u=>[u.id,u.mx])),mem:[3,3,3,3,3],ended:true,intro:true,tut:true,sound:false});
+  assert.equal(e.catalog.length,100);
+  assert.equal(new Set(e.catalog.map(t=>t.id)).size,100);
+  assert.equal(new Set(e.catalog.map(t=>t.name)).size,100);
+  assert.equal(f.upgrades.length,1200);
+  assert.equal(new Set(f.upgrades.map(u=>u.id)).size,1200);
+  assert.equal(f.upgrades.filter(u=>u.r<5).reduce((sum,u)=>sum+u.mx,0),618);
+  assert.equal(f.upgrades.filter(u=>u.r>=5).reduce((sum,u)=>sum+u.mx,0),3000);
+  f.loadProgress({stage:4,lv:Object.fromEntries(f.upgrades.filter(u=>u.r<5).map(u=>[u.id,u.mx])),mem:[3,3,3,3,3],ended:true,intro:true,tut:true,sound:false});
   f.save();x.tick(600);
   const finalRecord=x.messages.find(message=>message.data.type==='ojjuda-game-result');
   assert.equal(finalRecord.data.score,57680,'all 200 completed upgrades are included in the submitted score');
   assert.ok(finalRecord.data.score<=60000,'fully grown scores remain inside the ranking limit');
-  assert.equal(Object.values(f.parents).filter(p=>p===null).length,5);
+  assert.equal(Object.values(f.parents).filter(p=>p===null).length,130);
   for(let branch=0;branch<5;branch++){
-    assert.equal(f.upgrades.filter(u=>u.b===branch).length,40);
+    assert.equal(f.upgrades.filter(u=>u.b===branch).length,240);
     for(let stage=0;stage<5;stage++)assert.equal(f.upgrades.filter(u=>u.b===branch&&u.r===stage).length,8);
+    for(let stage=5;stage<10;stage++)assert.equal(f.upgrades.filter(u=>u.b===branch&&u.r===stage).length,40);
   }
   for(const u of f.upgrades){
     const visited=new Set();let id=u.id;
