@@ -11,6 +11,7 @@ const artists = context.window.OJJUDA_FAN_ARTISTS;
 const profiles = context.window.OJJUDA_FAN_PROFILES;
 const dateRegex = /^\d{4}\.\d{2}\.\d{2}$/;
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+const bloodTypes = new Set(['A', 'B', 'AB', 'O']);
 
 function validDate(value, regex, label) {
   assert.match(value, regex, `${label}: invalid date format`);
@@ -49,6 +50,8 @@ for (const artist of artists) {
       assert.ok(heights.length === 1 || heights[0] <= heights[1], `${member.name}: reversed height range`);
     }
     if (member.heightSource) assert.ok(member.heightSource.startsWith('https://'), `${member.name}: insecure height reference`);
+    if (member.bloodType !== undefined) assert.ok(bloodTypes.has(member.bloodType), `${member.name}: invalid blood type`);
+    if (member.mbti !== undefined) assert.match(member.mbti, /^[EI][SN][TF][JP](?:-[AT])?$/, `${member.name}: invalid MBTI`);
     if (!artist.id.startsWith('a2o')) assert.ok(member.hometown, `${artist.id}/${member.name}: missing publicly grounded hometown or broad origin`);
     if (member.source) assert.ok(member.source.startsWith('https://'), `${member.name}: insecure source`);
   }
@@ -77,4 +80,5 @@ for (const artist of artists) {
   }
 }
 
-console.log(`PASS: ${artists.length} artist dossiers, ${artists.reduce((sum, artist) => sum + profiles[artist.id].members.length, 0)} members, ${artists.reduce((sum, artist) => sum + artist.music.length, 0)} music releases, ${artists.reduce((sum, artist) => sum + artist.appearances.length, 0)} verified events`);
+const members = artists.flatMap((artist) => profiles[artist.id].members);
+console.log(`PASS: ${artists.length} artist dossiers, ${members.length} members (${members.filter((member) => member.bloodType).length} blood types, ${members.filter((member) => member.mbti).length} MBTI profiles), ${artists.reduce((sum, artist) => sum + artist.music.length, 0)} music releases, ${artists.reduce((sum, artist) => sum + artist.appearances.length, 0)} verified events`);
