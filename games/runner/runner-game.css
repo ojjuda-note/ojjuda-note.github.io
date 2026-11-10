@@ -157,8 +157,8 @@
   font-size: clamp(10px, 1.4vw, 15px);
   backdrop-filter: blur(7px);
 }
-#gov[data-game="runner"] .jju-mini.pause { right: clamp(44px, 5.2vw, 58px); }
-#gov[data-game="runner"] .jju-mini.music { right: clamp(132px, 15.2vw, 180px); }
+#gov[data-game="runner"] .jju-mini.pause { right: clamp(78px, 9vw, 120px); }
+#gov[data-game="runner"] .jju-mini.music { right: clamp(156px, 18vw, 225px); }
 #gov[data-game="runner"] .jju-mini[aria-pressed="true"] { background: #7855a2d6; }
 #gov[data-game="runner"] .gscreen {
   z-index: 6;
@@ -222,8 +222,8 @@
 }
 @media (orientation: portrait) and (max-width: 540px) {
   #gov[data-game="runner"] .jju-mini { font-size: 9px; height: 23px; padding: 0 5px; }
-  #gov[data-game="runner"] .jju-mini.pause { right: 38px; }
-  #gov[data-game="runner"] .jju-mini.music { right: 108px; }
+  #gov[data-game="runner"] .jju-mini.pause { right: 68px; }
+  #gov[data-game="runner"] .jju-mini.music { right: 137px; }
   #gov[data-game="runner"] .jju-key small { display: none; }
   #gov[data-game="runner"] .gcard { max-width: 270px; padding: 8px; }
   #gov[data-game="runner"] .gcard p { font-size: 11px; }
