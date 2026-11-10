@@ -24,6 +24,8 @@ const sandbox = {
 vm.runInNewContext(source, sandbox);
 assert.equal(typeof sandbox.window.OjjudaRunnerGame.create, 'function');
 sandbox.window.OjjudaRunnerGame.drawPreview(context);
+assert.equal(canvas.width, 960, 'landscape game backing uses 960px logical width');
+assert.equal(canvas.height, 540, 'landscape game backing uses 540px logical height');
 
 let points = [], ended = [];
 const make = () => sandbox.window.OjjudaRunnerGame.create({
@@ -33,7 +35,10 @@ const make = () => sandbox.window.OjjudaRunnerGame.create({
 });
 const game = make();
 assert.equal(game.state.hearts, 3);
+assert.ok(game.state.speed >= 450, 'runner starts at an exciting pace');
 assert.ok(game.controls.includes('ArrowDown'));
+assert.ok(game.controls.includes('JUMP') && game.controls.includes('SLIDE'),
+  'on-stage arcade controls use round gamepad labels');
 game.onKey('ArrowUp');
 assert.equal(game.state.jumps, 1);
 game.update(1 / 60);

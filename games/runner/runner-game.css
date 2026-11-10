@@ -1,73 +1,190 @@
+/* 쭈달리기 3 · 16:9 original ocean arcade */
 #gov[data-game="runner"] {
-  background: radial-gradient(ellipse at 22% 5%, #35a2b3, #0b4a72 65%, #062e52);
-  padding: max(8px, env(safe-area-inset-top, 0px)) 8px max(8px, env(safe-area-inset-bottom, 0px));
+  background: radial-gradient(ellipse at 36% 16%, #59ddec, #166a9c 61%, #062f60);
+  padding: 6px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 #gov[data-game="runner"] .gbox {
-  width: min(100%, 490px);
-  height: 100%;
-  padding: 2px;
-  gap: 7px;
-  background: transparent;
+  position: relative;
+  display: block;
+  width: min(100%, calc(177.777dvh - 18px), 1480px);
+  height: auto;
+  max-height: 100%;
+  padding: 0;
+  margin: auto;
   border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 20px;
+  background: transparent;
+  box-shadow: 0 24px 74px #063a5999, 0 0 0 2px #c9fff2bd;
+  overflow: visible;
 }
-#gov[data-game="runner"] .ghead {
-  flex: none;
-  padding: 4px 5px;
-  min-height: 42px;
-}
-#gov[data-game="runner"] .gt {
-  margin-right: auto;
-  color: #eafff5;
-  font-size: 17px;
-  text-shadow: 0 2px 7px #043653;
-}
-#gov[data-game="runner"] .gt svg { vertical-align: -4px; margin-right: 4px; }
-#gov[data-game="runner"] .gsc { display: none; }
-#gov[data-game="runner"] .gx {
-  background: #e5fff5;
-  color: #17657b;
-  border: 1px solid #aee6df;
-  flex: none;
-}
-#gov[data-game="runner"] .gx svg { vertical-align: middle; }
 #gov[data-game="runner"] .gcan {
   position: relative;
-  flex: 1 1 0;
+  display: block;
+  flex: none;
   width: 100%;
-  min-height: 0;
+  height: auto;
   max-height: none;
-  aspect-ratio: auto;
-  border-radius: 22px;
-  box-shadow: 0 16px 35px -18px #06243abf, 0 0 0 1px #cefff377;
-  background: #105478;
+  min-height: 0;
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  background: #36bfdc;
+  box-shadow: inset 0 0 0 2px #eafff3, 0 15px 40px #073c6a8a;
+  overflow: hidden;
 }
-#gov[data-game="runner"] .gcan canvas { position: absolute; inset: 0; }
+#gov[data-game="runner"] .gcan canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+#gov[data-game="runner"] .ghead {
+  position: absolute;
+  z-index: 9;
+  top: clamp(5px, 1.2vw, 12px);
+  right: clamp(6px, 1.2vw, 14px);
+  display: flex;
+  justify-content: flex-end;
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+}
+#gov[data-game="runner"] .gt,
+#gov[data-game="runner"] .gsc { display: none; }
+#gov[data-game="runner"] .gx {
+  display: grid;
+  place-items: center;
+  width: clamp(28px, 3.9vw, 40px);
+  height: clamp(28px, 3.9vw, 40px);
+  border: 2px solid #eafff4;
+  border-radius: 50%;
+  color: #fff;
+  background: #124968a9;
+  box-shadow: 0 2px 9px #16465c80;
+  backdrop-filter: blur(7px);
+}
+#gov[data-game="runner"] .gx svg { vertical-align: middle; }
+#gov[data-game="runner"] .gctrl {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  pointer-events: none;
+}
+#gov[data-game="runner"] .gctrl:empty { display: none; }
+#gov[data-game="runner"] .jju-controls {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#gov[data-game="runner"] .jju-controls button {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  font-family: "Jua", "Gowun Dodum", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#gov[data-game="runner"] .jju-key {
+  position: absolute;
+  bottom: 2.2%;
+  left: 1.4%;
+  width: 18.6%;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: clamp(2px, .37vw, 5px) solid #e5ffffc9;
+  border-radius: 50%;
+  background: radial-gradient(circle at 31% 19%, #ffffffbf 0%, #b7eafa67 35%, #507cbd42 78%, #326d9c70 100%);
+  box-shadow: 0 0 0 clamp(2px, .42vw, 6px) #265e85a3, inset 0 0 20px #fff7e3a3, 0 10px 26px #07375ca0;
+  color: #fffdf1;
+  font-size: clamp(18px, 3.5vw, 51px);
+  font-weight: 900;
+  letter-spacing: -.02em;
+  line-height: 1.13;
+  -webkit-text-stroke: clamp(.6px, .14vw, 2px) #36516d;
+  text-shadow: 0 2px 0 #36516d, 0 4px 9px #183b65a8;
+  transition: transform 70ms ease, filter 70ms ease;
+}
+#gov[data-game="runner"] .jju-key.slide {
+  left: auto;
+  right: 1.4%;
+  background: radial-gradient(circle at 31% 19%, #ffffffbf 0%, #d8d4ff72 35%, #9b66c452 78%, #5774a78c 100%);
+}
+#gov[data-game="runner"] .jju-key small {
+  color: #fff;
+  font-size: clamp(9px, 1.2vw, 16px);
+  -webkit-text-stroke: 0;
+  text-shadow: 0 2px 4px #245071ad;
+  white-space: nowrap;
+  font-weight: 700;
+}
+#gov[data-game="runner"] .jju-key:active { transform: scale(.94); filter: brightness(1.18); }
+#gov[data-game="runner"] .jju-controls button:focus-visible {
+  outline: 4px solid #fff5b2;
+  outline-offset: 4px;
+}
+#gov[data-game="runner"] .jju-mini {
+  position: absolute;
+  top: 15%;
+  height: clamp(27px, 3.7vw, 38px);
+  border: 1px solid #ddfff0be;
+  border-radius: 999px;
+  padding: 0 clamp(5px, 1vw, 12px);
+  background: #155978bd;
+  color: #f8fff9;
+  box-shadow: 0 3px 8px #06415b63;
+  font-size: clamp(10px, 1.4vw, 15px);
+  backdrop-filter: blur(7px);
+}
+#gov[data-game="runner"] .jju-mini.pause { right: clamp(78px, 9vw, 120px); }
+#gov[data-game="runner"] .jju-mini.music { right: clamp(156px, 18vw, 225px); }
+#gov[data-game="runner"] .jju-mini[aria-pressed="true"] { background: #7855a2d6; }
 #gov[data-game="runner"] .gscreen {
+  z-index: 6;
   align-items: flex-end;
-  padding: 16px;
-  background: linear-gradient(180deg, #0b587100 28%, #032c59aa 100%);
+  padding: clamp(8px, 1.4vw, 20px);
+  background: linear-gradient(180deg, #1b8cb100 20%, #053c6b22 65%, #0324509c 100%);
 }
 #gov[data-game="runner"] .gcard {
-  background: #f1fff8f5;
-  color: #25617a;
-  border: 1px solid #dcfff6;
-  border-radius: 23px;
-  box-shadow: 0 18px 38px -16px #052c4f;
-  max-width: 330px;
-  max-height: 100%;
-  padding: 18px;
+  width: min(100%, 335px);
+  max-width: 335px;
+  max-height: 88%;
   overflow: auto;
   overscroll-behavior: contain;
+  padding: clamp(9px, 1.4vw, 18px);
+  border: 2px solid #fffef4;
+  border-radius: 20px;
+  background: #effff3ed;
+  color: #185b7a;
+  box-shadow: 0 12px 30px #07345da6;
+  backdrop-filter: blur(12px);
 }
 #gov[data-game="runner"] .gcard h3 {
   font-family: "Jua", "Gowun Dodum", sans-serif;
   font-weight: 400;
-  font-size: 25px;
-  color: #146b80;
+  font-size: 24px;
+  color: #0d6080;
 }
 #gov[data-game="runner"] .runner-card h3 {
   position: absolute;
@@ -77,90 +194,53 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-#gov[data-game="runner"] .gcard p { color: #538496; font-size: 12px; }
+#gov[data-game="runner"] .gcard p { color: #466f88; font-size: 13px; }
 #gov[data-game="runner"] .btn.pri {
-  min-height: 47px;
-  background: linear-gradient(180deg, #ffad91, #ef7f8f);
-  color: #fffef4;
-  border: 1px solid #e0767c;
-  border-radius: 15px;
-  box-shadow: 0 4px 0 #c76277, 0 9px 20px -8px #db7b93;
+  min-height: 44px;
+  border: 1px solid #d66e84;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffbc95, #f27693);
+  color: #fff;
   font-size: 17px;
+  box-shadow: 0 4px 0 #c85c7b;
 }
 #gov[data-game="runner"] .runner-start { width: 100%; }
 #gov[data-game="runner"] .btn:not(.pri) {
-  background: #e5f6f0;
+  background: #e8faf2;
   color: #377a86;
   border-color: #b9e0d7;
 }
-#gov[data-game="runner"] .gctrl { width: 100%; flex: none; }
-#gov[data-game="runner"] .gctrl:empty { display: none; }
-#gov[data-game="runner"] .jju-controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 7px;
-  width: 100%;
-  touch-action: manipulation;
-}
-#gov[data-game="runner"] .jju-controls button {
-  font-family: "Jua", "Gowun Dodum", sans-serif;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-#gov[data-game="runner"] .jju-key {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 7px;
-  min-height: 49px;
-  padding: 7px 9px;
-  border: 1px solid #cafff7;
-  border-radius: 15px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #0e5673;
-  background: linear-gradient(180deg, #d7fff6, #9ce2d7);
-  box-shadow: 0 3px 0 #3d9a9a;
-}
-#gov[data-game="runner"] .jju-key.slide {
-  color: #5f477f;
-  background: linear-gradient(180deg, #f6e5ff, #dabaf4);
-  border-color: #fff2ff;
-  box-shadow: 0 3px 0 #856ea5;
-}
-#gov[data-game="runner"] .jju-key small {
-  font-size: 10px;
-  font-weight: 400;
-  opacity: .75;
-}
-#gov[data-game="runner"] .jju-controls button:active { transform: translateY(2px); box-shadow: none; }
-#gov[data-game="runner"] .jju-controls button:focus-visible { outline: 3px solid #ffdc8d; outline-offset: 2px; }
-#gov[data-game="runner"] .jju-mini {
-  min-height: 30px;
-  padding: 4px 8px;
-  border: 1px solid #6db3c1;
-  border-radius: 11px;
-  background: #0f6384;
-  color: #e5fff7;
-  font-size: 12px;
-}
-#gov[data-game="runner"] .jju-mini[aria-pressed="true"] { background: #1c8293; }
-#gov[data-game="runner"] .grank { max-height: 100px; overflow: auto; font-size: 11px; }
+#gov[data-game="runner"] .grank { max-height: 88px; overflow: auto; font-size: 11px; }
 #gov[data-game="runner"] .grank:empty { display: none; }
-@media (max-height: 620px) {
-  #gov[data-game="runner"] .gbox { gap: 4px; }
-  #gov[data-game="runner"] .ghead { min-height: 35px; }
-  #gov[data-game="runner"] .jju-key { min-height: 37px; padding: 3px 6px; }
-  #gov[data-game="runner"] .jju-mini { min-height: 25px; padding: 2px 5px; }
-  #gov[data-game="runner"] .gscreen { padding: 8px; }
-  #gov[data-game="runner"] .gcard { padding: 12px; }
+@media (max-height: 480px) and (orientation: landscape) {
+  #gov[data-game="runner"] { padding: 3px; }
+  #gov[data-game="runner"] .gbox { width: min(100%, calc(177.777dvh - 8px)); }
+  #gov[data-game="runner"] .gcard { max-width: 290px; padding: 8px; }
+  #gov[data-game="runner"] .gcard p { font-size: 11px; }
+  #gov[data-game="runner"] .gcard h3 { font-size: 19px; }
+  #gov[data-game="runner"] .btn.pri { min-height: 36px; }
 }
-@media (max-width: 360px) {
+@media (orientation: portrait) and (max-width: 540px) {
+  /* Use the full phone screen sideways without stretching any character. */
+  #gov[data-game="runner"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #gov[data-game="runner"] .gbox {
+    flex: none;
+    width: min(calc(100dvh - 12px), calc(177.777dvw - 14px));
+    max-width: none;
+    max-height: none;
+    transform: rotate(90deg);
+  }
+  #gov[data-game="runner"] .jju-mini { font-size: 9px; height: 23px; padding: 0 5px; }
+  #gov[data-game="runner"] .jju-mini.pause { right: 68px; }
+  #gov[data-game="runner"] .jju-mini.music { right: 137px; }
   #gov[data-game="runner"] .jju-key small { display: none; }
-  #gov[data-game="runner"] .jju-key { font-size: 15px; }
+  #gov[data-game="runner"] .gcard { max-width: 270px; padding: 8px; }
+  #gov[data-game="runner"] .gcard p { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #gov[data-game="runner"] .jju-controls button:active { transform: none; }
+  #gov[data-game="runner"] .jju-key { transition: none; }
 }

@@ -70,15 +70,44 @@ g.tab='friends'; H();
         await page.evaluate(() => runnerTest.step(142));
         await page.screenshot({ path: process.env.RUNNER_ACTIVE_PROOF });
       }
+      if (process.env.RUNNER_LANDSCAPE_PROOF && width === 844) {
+        await page.evaluate(() => runnerTest.step(85));
+        await page.screenshot({ path: process.env.RUNNER_LANDSCAPE_PROOF });
+      }
       const box = await page.locator('#gov .gbox').boundingBox();
       const visible = await page.locator('#gcv').boundingBox();
       const pixels = await page.locator('#gcv').evaluate(c => ({ width: c.width, height: c.height }));
       assert.ok(box.x >= -.5 && box.y >= -.5 && box.x + box.width <= width + .5 &&
         box.y + box.height <= height + .5, 'game and controls fit every viewport');
-      assert.ok(Math.abs(visible.width / visible.height - pixels.width / pixels.height) < .005,
-        'canvas matches CSS ratio without distorted shapes');
+      const phoneTurned = height > width && width <= 540;
+      const ratio = phoneTurned ? visible.height / visible.width : visible.width / visible.height;
+      assert.ok(Math.abs(ratio - pixels.width / pixels.height) < .005,
+        'rotated portrait mode keeps original canvas proportions');
+      assert.ok(Math.abs(ratio - 16 / 9) < .008,
+        'character proportions stay consistent with the landscape reference');
+      const directTap = await page.evaluate(turned => {
+        const cv = document.querySelector('#gcv'), b = cv.getBoundingClientRect();
+        cv.dispatchEvent(new PointerEvent('pointerdown', {
+          bubbles: true, cancelable: true, pointerId: 23,
+          clientX: b.left + b.width * (turned ? .3 : .8),
+          clientY: b.top + b.height * (turned ? .8 : .3)
+        }));
+        return runnerTest.current.game.state.sliding;
+      }, phoneTurned);
+      assert.equal(directTap, true,
+        'right-side stage tap slides immediately even in rotated phone mode');
+      assert.ok(await page.evaluate(() => runnerTest.current.game.state.speed >= 450),
+        'action begins at high speed without a slow introduction');
       assert.ok(await page.locator('.jju-controls [data-g="key:ArrowUp"]').isVisible());
       assert.ok(await page.locator('.jju-controls [data-g="key:ArrowDown"]').isVisible());
+      for (const key of ['ArrowUp', 'ArrowDown']) {
+        const b = await page.locator('.jju-controls [data-g="key:' + key + '"]').boundingBox();
+        assert.ok(b.x >= visible.x && b.y >= visible.y &&
+          b.x + b.width <= visible.x + visible.width + 1 &&
+          b.y + b.height <= visible.y + visible.height + 1,
+        'large round ' + key + ' control overlays the game stage');
+        assert.ok(Math.abs(b.width - b.height) < 2, key + ' control is circular');
+      }
       await page.locator('.jju-controls [data-g="key:ArrowDown"]').click();
       assert.equal(await page.evaluate(() => runnerTest.current.game.state.sliding), true);
       await page.locator('.jju-controls [data-g="key:ArrowUp"]').click();
