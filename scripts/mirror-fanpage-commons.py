@@ -18,8 +18,8 @@ import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
 from pathlib import Path
+from threading import Lock
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
@@ -31,13 +31,14 @@ MAX_DOWNLOAD = 26 * 1024 * 1024
 VALID_LICENSE = re.compile(r"^CC BY(?:-SA)? (?:[1-4](?:\.\d)?)$|^CC0 1\.0$", re.I)
 FILE_PATTERN = re.compile(r"commonsPhoto\('([^']+)'\s*,")
 CACHE_LIFETIME = 30 * 24 * 3600
+API_LOCK = Lock()
 
 
 def request_bytes(url: str, *, limit: int) -> bytes:
     request = Request(url, headers={"User-Agent": AGENT, "Accept": "application/json,image/*"})
     with urlopen(request, timeout=40) as response:
         host = urlparse(response.geturl()).hostname or ""
-        if host not in {"commons.wikimedia.org", "upload.wikimedia.org"}:
+        if host not in {"commons.wikimedia.org", "upload.wikimedia.org", "thumb.wikimedia.org"}:
             raise ValueError(f"Unexpected Wikimedia redirect destination: {host}")
         content = response.read(limit + 1)
     if len(content) > limit:
@@ -55,7 +56,11 @@ def commons_info(filename: str) -> tuple[str, str, str]:
         "iiurlwidth": 1800,
         "titles": f"File:{filename}",
     })
-    raw = request_bytes(f"https://commons.wikimedia.org/w/api.php?{params}", limit=512_000)
+    # Wikimedia asks automated clients to avoid bursts. Serialize metadata
+    # requests and give the service breathing room between each file.
+    with API_LOCK:
+        time.sleep(1.1)
+        raw = request_bytes(f"https://commons.wikimedia.org/w/api.php?{params}", limit=512_000)
     payload = json.loads(raw)
     pages = payload.get("query", {}).get("pages", [])
     info = (pages[0].get("imageinfo") or [{}])[0] if pages else {}
@@ -69,7 +74,7 @@ def commons_info(filename: str) -> tuple[str, str, str]:
     if not license_url.startswith("https://creativecommons.org/"):
         raise ValueError("No verified Creative Commons license link")
     image_url = info.get("thumburl") or info.get("url") or ""
-    if urlparse(image_url).hostname != "upload.wikimedia.org":
+    if urlparse(image_url).hostname not in {"upload.wikimedia.org", "thumb.wikimedia.org"}:
         raise ValueError("Invalid Commons image URL")
     return image_url, license_name, license_url
 
@@ -156,7 +161,7 @@ def main() -> int:
 
     results: dict[str, dict] = {}
     failed: list[str] = []
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         tasks = {executor.submit(photo_record, filename, args.cache, offline=args.offline): filename for filename in filenames}
         for task in as_completed(tasks):
             name = tasks[task]
