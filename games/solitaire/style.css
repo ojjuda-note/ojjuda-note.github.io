@@ -23,33 +23,24 @@ dialog{border:1px solid #cabb8f55;border-radius:16px;background:#f8f4e8;color:#2
 .dialog-monthly-shortcut:hover{background:#dcead5}.dialog-monthly-shortcut:focus-visible{outline:3px solid #527fdf;outline-offset:2px}
 
 /* Solitaire entrance: keep the current hand behind the start screen. */
-.solitaire-entry{color-scheme:light;width:min(468px,calc(100vw - 28px));max-height:calc(100dvh - 20px);margin:auto;padding:0;border:1px solid #f2dba7;border-radius:25px;background:radial-gradient(ellipse at 50% 2%,#fffdf4,#f5eddb 68%,#ebe1cb);color:#203e31;box-shadow:0 24px 85px #061b1599;overflow:auto}
-.solitaire-entry::backdrop{background:#071d17d9;backdrop-filter:blur(6px)}
-.solitaire-entry .entry-inner{padding:25px 30px 20px;text-align:center}
-.solitaire-entry .entry-eyebrow{margin:0;color:#9b7a43;font-size:10px;font-weight:800;letter-spacing:.19em}
-.solitaire-entry .entry-deck{position:relative;height:157px;margin:12px auto 0}
-.solitaire-entry .entry-card{position:absolute;top:50%;left:50%;width:87px;height:121px;border:5px solid white;border-radius:10px;background:#fffefb;box-shadow:0 8px 24px #183b2d38,inset 0 0 0 1px #d4d6cf;color:#173e34}
-.solitaire-entry .entry-card b{position:absolute;top:8px;left:9px;font:800 20px Georgia,serif}
-.solitaire-entry .entry-card em{position:absolute;top:42px;left:0;width:100%;font:normal 46px Georgia,serif}
-.solitaire-entry .entry-card-left{z-index:1;color:#b94a56;transform:translate(-103px,-45%) rotate(-17deg)}
-.solitaire-entry .entry-card-center{z-index:3;transform:translate(-50%,-50%) rotate(-2deg)}
-.solitaire-entry .entry-card-right{z-index:2;transform:translate(20px,-44%) rotate(15deg)}
-.solitaire-entry h1{margin:0;color:#193e31;font:700 clamp(37px,7vw,47px) Georgia,'Malgun Gothic',serif;letter-spacing:-.06em}
-.solitaire-entry .entry-description{margin:11px 0 18px;color:#667468;font-size:13px;line-height:1.75}
-.solitaire-entry .entry-draw{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
-.solitaire-entry .entry-draw button{min-height:67px;padding:9px;border:1px solid #cbd4c4;border-radius:12px;background:#f8f7ee;color:#294b3d}
-.solitaire-entry .entry-draw button[aria-pressed=true]{border:2px solid #2d6b51;background:#e4eee2;box-shadow:0 0 0 2px #b8d2ba}
+
+/* The arcade's shared game-entry style is the source of truth for the opening screen. */
+.solitaire-entry{color-scheme:light;box-sizing:border-box;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:0;border:0;border-radius:24px;background:#fff;color:#223a30;box-shadow:0 18px 55px #071b1566;overflow:auto;overscroll-behavior:contain}
+.solitaire-entry::backdrop{background:#14291fa8;backdrop-filter:blur(3px)}
+.solitaire-entry .entry-inner.game-entry{width:100%;max-width:none;margin:0;padding:30px 24px 24px;border:0;box-shadow:none}
+.solitaire-entry .ge-icon{font-size:34px}
+.solitaire-entry .ge-copy{margin-bottom:14px}
+.solitaire-entry .entry-draw{margin:6px 0 14px}
+.solitaire-entry .entry-draw button{min-height:52px;line-height:1.4}
 .solitaire-entry .entry-draw strong,.solitaire-entry .entry-draw small{display:block}
-.solitaire-entry .entry-draw strong{font-size:15px}.solitaire-entry .entry-draw small{margin-top:4px;font-size:11px;color:#728072}
-.solitaire-entry :is(.entry-primary,.entry-secondary){display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:56px;margin:8px 0 0;border-radius:12px;font-size:17px;font-weight:800}
-.solitaire-entry .entry-primary{background:linear-gradient(120deg,#28634b,#153d31);color:#fff9e7;box-shadow:0 5px 0 #0e2c22}
-.solitaire-entry .entry-primary:hover{background:#2d7054}
-.solitaire-entry .entry-secondary{min-height:48px;border:1px solid #bbcaad;background:#e8ece0;color:#315744;font-size:14px}
-.solitaire-entry :is(.entry-primary,.entry-secondary) b{font-size:21px}
-.solitaire-entry .entry-note{min-height:15px;margin:13px 0 7px;color:#7f8b7a;font-size:11px;line-height:1.5}
-.solitaire-entry .entry-footer{display:flex;justify-content:center;gap:16px;border-top:1px solid #d7d6c6;padding-top:13px}
-.solitaire-entry .entry-footer button{padding:7px 9px;border-radius:8px;background:transparent;color:#5e745e;font-size:12px;font-weight:650}
-.solitaire-entry .entry-footer button:hover{background:#e8e9db}
-.solitaire-entry button:focus-visible{outline:3px solid #cc9c47;outline-offset:2px}
-@media(max-height:660px){.solitaire-entry .entry-inner{padding-top:15px;padding-bottom:14px}.solitaire-entry .entry-deck{height:111px;margin-top:4px;transform:scale(.78)}.solitaire-entry .entry-description{margin:8px 0 12px}.solitaire-entry .entry-draw button{min-height:54px}}
-@media(max-width:370px){.solitaire-entry .entry-inner{padding-left:17px;padding-right:17px}.solitaire-entry .entry-card{width:78px;height:109px}.solitaire-entry .entry-deck{height:138px}.solitaire-entry h1{font-size:36px}.solitaire-entry .entry-description{font-size:12px}}
+.solitaire-entry .entry-draw strong{font-size:13px;font-weight:700}
+.solitaire-entry .entry-draw small{margin-top:2px;color:var(--entry-muted);font-size:11px;font-weight:400}
+.solitaire-entry .entry-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.solitaire-entry .entry-actions .ge-secondary{min-height:44px;margin:0;padding:10px 6px;font-size:13px}
+.solitaire-entry .entry-ranking{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:10px;padding:9px 4px;border-top:1px solid var(--entry-line);color:var(--entry-accent);font-size:12px;font-weight:700;line-height:1.5;text-decoration:none}
+.solitaire-entry .entry-ranking:hover{background:var(--entry-soft)}
+.solitaire-entry .entry-ranking:focus-visible{outline:3px solid var(--entry-accent);outline-offset:-3px}
+.solitaire-entry .ge-more{margin-top:14px}
+.solitaire-entry .ge-more p{word-break:keep-all}
+@media(max-height:690px){.solitaire-entry .entry-inner.game-entry{padding:18px 20px}.solitaire-entry .ge-icon{width:52px;height:52px;margin-bottom:10px}.solitaire-entry .ge-copy{margin:7px 0 12px}.solitaire-entry .ge-label{margin-top:12px}.solitaire-entry .entry-draw{margin-bottom:10px}}
+@media(max-width:370px){.solitaire-entry .entry-inner.game-entry{padding-left:18px;padding-right:18px}.solitaire-entry .entry-actions .ge-secondary{font-size:12px}}

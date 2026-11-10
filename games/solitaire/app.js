@@ -233,7 +233,9 @@ let entryDraw=state.drawCount;
 function chooseEntryDraw(value){
   entryDraw=value===3?3:1;
   entryDialog.querySelectorAll('[data-entry-draw]').forEach(button=>{
-    button.setAttribute('aria-pressed',String(Number(button.dataset.entryDraw)===entryDraw));
+    const active=Number(button.dataset.entryDraw)===entryDraw;
+    button.setAttribute('aria-pressed',String(active));
+    button.classList.toggle('on',active);
   });
 }
 function showEntry(){
@@ -241,8 +243,8 @@ function showEntry(){
   chooseEntryDraw(state.drawCount);
   $('#entry-continue').hidden=!resumable;
   const start=$('#entry-start');
-  start.classList.toggle('entry-primary',!resumable);
-  start.classList.toggle('entry-secondary',resumable);
+  start.classList.toggle('ge-primary',!resumable);
+  start.classList.toggle('ge-secondary',resumable);
   start.querySelector('.entry-start-label').textContent=resumable?'새 게임 시작':'게임 시작';
   $('#entry-note').textContent=resumable?'새 게임을 시작하면 진행 중인 카드 배치는 바뀌어요.':'난이도를 고른 뒤 시작하세요.';
   lastTick=Date.now();
@@ -322,7 +324,7 @@ function notifyArcade(type,data={}){if(window.parent!==window)window.parent.post
 function requestExit(){
   save();
   if(window.parent!==window){notifyArcade('ojjuda-game-exit-request');return;}
-  openDialog('<h2 class="dialog-title">아지트로 갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">아지트로 나가기</button></div>');
+  openDialog('<h2 class="dialog-title">오락실로 돌아갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">게임 목록으로</button></div>');
   $('#leave-arcade').onclick=()=>location.assign('/world.html?tab=arcade');
 }
 $('#game-home').onclick=requestExit;
