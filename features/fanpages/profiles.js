@@ -3,6 +3,7 @@
    Leave uncertain biographical details unfilled until a reliable source is found. */
 window.OJJUDA_FAN_PROFILES = {
   rescene: {
+    checkedAt: '2026.11.10',
     debut: '2024.03.26', debutWork: 'Re:Scene · UhUh',
     agency: 'THE MUZE Entertainment',
     concept: '향기로 다시 떠오르는 장면, RESCENE.',
@@ -28,6 +29,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   ive: {
+    checkedAt: '2026.11.10',
     debut: '2021.12.01', debutWork: 'ELEVEN',
     agency: 'STARSHIP Entertainment',
     concept: 'I HAVE, 그리고 당당한 IVE의 순간.',
@@ -51,6 +53,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   aespa: {
+    checkedAt: '2026.11.10',
     debut: '2020.11.17', debutWork: 'Black Mamba',
     agency: 'SM Entertainment',
     concept: '현실과 가상 세계를 잇는 aespa.',
@@ -74,6 +77,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   lesserafim: {
+    checkedAt: '2026.11.10',
     debut: '2022.05.02', debutWork: 'FEARLESS',
     agency: 'SOURCE MUSIC · HYBE',
     concept: 'IM FEARLESS, 두려움 없이 나아가는 다섯 멤버.',
@@ -97,6 +101,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   twice: {
+    checkedAt: '2026.11.10',
     debut: '2015.10.20', debutWork: 'The Story Begins · OOH-AHH하게',
     agency: 'JYP Entertainment',
     concept: 'SIXTEEN에서 출발한 아홉 멤버의 이야기.',

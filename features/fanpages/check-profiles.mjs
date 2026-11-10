@@ -16,6 +16,7 @@ for (const artist of artists) {
   const profile = profiles[artist.id];
   assert.ok(profile, `${artist.id}: missing profile`);
   assert.match(profile.debut, dateRegex, `${artist.id}: invalid debut date`);
+  assert.match(profile.checkedAt, dateRegex, `${artist.id}: missing last-checked date`);
   assert.ok(profile.agency && profile.debutWork, `${artist.id}: incomplete core facts`);
   assert.ok(profile.awards.length && profile.records.length, `${artist.id}: award or record missing`);
   assert.equal(profile.members.length, artist.members.length, `${artist.id}: member count mismatch`);
