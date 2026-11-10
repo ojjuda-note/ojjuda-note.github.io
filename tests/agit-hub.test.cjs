@@ -134,12 +134,12 @@ test('mobile mission cards stay in one horizontal row',()=>{
   assert.match(mobile,/\.agit-quest-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
-test('themed hero copy has a soft frosted background on desktop and mobile',()=>{
+test('themed hero copy has a subtle outline without fogging the artwork',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
-  assert.match(css,/\.agit-hero-story::before\{[^}]*backdrop-filter:blur\(8px\)/);
-  assert.match(css,/\.agit-hub\[data-agit-season="winter"\]\{--agit-mist-rgb:/);
-  assert.match(css.slice(css.indexOf('@media(max-width:740px)')),/\.agit-hero-story::before\{[^}]*backdrop-filter:blur\(10px\)/);
-  assert.match(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8'),/agit-hub\.css\?v=20261110-hero-mist1/);
+  assert.doesNotMatch(css,/\.agit-hero-story::before\{/);
+  assert.match(css,/\.agit-hero-story h1\{[^}]*-webkit-text-stroke:\.8px/);
+  assert.match(css,/\.agit-hero-story p\{[^}]*-webkit-text-stroke:\.45px/);
+  assert.match(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8'),/agit-hub\.css\?v=20261110-hero-outline1/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{
