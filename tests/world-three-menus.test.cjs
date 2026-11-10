@@ -30,14 +30,15 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const assertTestGamesLast=()=>{
    const grids=[...w.document.querySelectorAll('[data-arcade-games]')];
    assert.equal(grids.at(-1).dataset.arcadeGames,'test','test games follow every regular game category');
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['group','festival','restaurants','byeolcheonji']);
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['group','festival','restaurants']);
+   assert.equal(w.document.querySelector('[data-v=byeolcheonji]'),null,'the retired vacancy alert has no menu entry');
    assert.equal(w.document.querySelector('[data-v=star]'),null,'the retired reservation helper has no menu entry');
    assert.equal(w.document.querySelector('[data-arcade-games] [data-v=recommendations]'),null,'member recommendations belong inside the certified directory');
    assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'released archery appears exactly once');
    assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'일상');
    assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'),null);
    assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=archery]'));
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용','회원 전용'],'only the two member-only tools carry badges');
+   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용'],'only the group tool carries a member-only badge');
   };
   assert.equal(active(),'arcade','the initial page opens the arcade');
   for(const selector of ['.bottomnav','.sidenav']){
@@ -66,7 +67,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
    solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
    adult:['matgo','poker','roulette','photo_ttang'],
-   test:['group','festival','restaurants','byeolcheonji']
+   test:['group','festival','restaurants']
   };
   assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'test games follow solo, multiplayer and adult games');
   assertTestGamesLast();

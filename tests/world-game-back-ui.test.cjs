@@ -25,7 +25,6 @@ window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture',age:25
 window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
 D.online=false;D.isAdmin=false;const settled=async()=>({data:{ok:true,room:null},error:null});S={functions:{invoke:settled},rpc:settled};g.tab='arcade';
 gm(()=>sr.tab({tab:'arcade'}));H();
-if(new URL(location.href).searchParams.get('game')==='byeolcheonji')backFixture.link('byeolcheonji');
 ` + world.slice(world.indexOf('</script>', boot));
 
 const child = `<!doctype html><p>Game transport fixture</p><script>
@@ -64,8 +63,6 @@ window.childReady=true;
         if (url.origin !== origin) return route.abort();
         if (url.pathname === '/world.html') return route.fulfill({contentType:'text/html',body:world});
         if (url.pathname.startsWith('/games/')) return route.fulfill({contentType:'text/html',body:child});
-        if (url.pathname === '/star') return route.fulfill({contentType:'text/html',body:read('star/index.html')});
-        if (url.pathname === '/byeolcheonji/') return route.fulfill({contentType:'text/html',body:'<h1>별천지 빈방</h1>'});
         if (url.pathname === '/outside.html') return route.fulfill({contentType:'text/html',body:'<h1>Previous page</h1>'});
         return route.abort();
       });
@@ -206,11 +203,11 @@ window.childReady=true;
         await page.evaluate(() => backFixture.nativeBack());
         assert.equal(await page.evaluate(() => backFixture.exits), 1, 'only Back from the main screen may exit');
       }
-      const vacancy=await context.newPage();
-      await vacancy.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
-      await vacancy.waitForURL(origin+'/byeolcheonji/');
-      await vacancy.goBack();await vacancy.locator('.arcade-home').waitFor();
-      assert.equal(new URL(vacancy.url()).searchParams.get('game'),null,'a direct vacancy link cannot reopen itself on Back');
+      const retired=await context.newPage();
+      await retired.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
+      await retired.locator('.arcade-home').waitFor();
+      assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Arcade');
+      assert.equal(await retired.locator('[data-v=byeolcheonji]').count(),0,'retired vacancy alert has no game card');
       await context.close();
       console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Arcade, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
     }

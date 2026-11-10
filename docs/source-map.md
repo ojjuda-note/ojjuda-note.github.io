@@ -27,7 +27,7 @@
 | 축제·스포츠·공연 | `games/festival-schedule/` | `정적 자료 / DB RPC` |
 | 맛집·추천 | `games/certified-restaurants/` | `DB RPC` |
 | 그룹 | `groups/` | `group_board / group_invitation / group_home RPC` |
-| 별천지 | `byeolcheonji/` | `byeolcheonji` |
+| 별천지 빈방 (2026-11-10 운영 종료) | `byeolcheonji/`, `star/` 종료 안내 화면 | `byeolcheonji` 서버·기록은 보관, 정기 작업은 중단 |
 | 공통 게임 월간 순위 화면 | `features/arcade/monthly-ranking.html`, `.css`, `.js` | `community_game_monthly_personal` RPC |
 | 공통 게임 입장·결과 순위 링크 | `shared/games/game-results.js`, `.css` | 게임별 최고 기록은 기존 RPC 유지 |
 | 회원 정지·영구정지 | `admin/` | `admin-ban` |
