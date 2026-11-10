@@ -64,7 +64,7 @@ async function until(test, message, timeout = 2600) {
     const buttonId = button => button.dataset.act === 'matgo-open' ? 'matgo' : button.dataset.v;
     const headings = host => [...host.querySelectorAll('h2')].map(heading => heading.textContent.trim());
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
-    const testIds = ['group','festival','restaurants'];
+    const testIds = ['group','restaurants','festival'];
     assert.deepEqual([...testIds].sort(), Object.entries(w._r).filter(([, game]) => game.test).map(([id]) => id).sort(), 'daily cards remain the complete registered set');
     const assertDailyInHub = host => {
       assert.equal(host.querySelector('[data-arcade-games=test]'), null, 'daily tools no longer appear in Arcade');
