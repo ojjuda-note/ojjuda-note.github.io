@@ -2,6 +2,7 @@
   'use strict';
   const artists = window.OJJUDA_FAN_ARTISTS || [];
   const profiles = window.OJJUDA_FAN_PROFILES || {};
+  const videoLibrary = window.OJJUDA_FAN_VIDEOS || {};
   const savedKey = 'ojjuda-fanpages-saved-v1';
   const $ = (selector, base = document) => base.querySelector(selector);
   const page = document.body.dataset.page;
@@ -290,6 +291,46 @@
     }, { passive: true });
   }
 
+  function initVideoViewer(root, videos) {
+    const dialog = $('#video-viewer', root);
+    if (!dialog || !videos.length) return;
+    const player = $('#video-viewer-player', dialog);
+    const title = $('#video-viewer-title', dialog);
+    const source = $('#video-viewer-source', dialog);
+    const original = $('#video-viewer-original', dialog);
+    const close = $('.video-viewer-close', dialog);
+    let trigger = null;
+
+    root.querySelectorAll('[data-video-index]').forEach((button) => button.addEventListener('click', () => {
+      const video = videos[Number(button.dataset.videoIndex)];
+      if (!video || !/^[a-zA-Z0-9_-]{11}$/.test(video.id)) return;
+      const url = `https://www.youtube.com/watch?v=${video.id}`;
+      if (typeof dialog.showModal !== 'function') {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      trigger = button;
+      title.textContent = video.title;
+      source.textContent = `${video.kind} · ${video.source}`;
+      original.href = url;
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
+      iframe.title = `${video.title} 영상 재생`;
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      player.replaceChildren(iframe);
+      dialog.showModal();
+      close.focus();
+    }));
+    close.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => {
+      player.replaceChildren(); // Release the player and stop playback immediately.
+      trigger?.focus();
+    });
+  }
+
   function artistProfileHtml(artist, profile) {
     if (!profile) return '';
     const profileSources = [
@@ -359,6 +400,11 @@
       ${imageHtml(photo.image, `${artist.korean} ${photo.label} 사진`, `detail-photo-image image-${i}`)}
       <div class="detail-photo-caption"><div><small>${photo.meta}</small><strong>${photo.label}</strong><span>${photo.credit}</span></div><span class="out-arrow" aria-hidden="true">⤢</span></div>
     </button>`).join('');
+    const videos = videoLibrary[artist.id] || [];
+    const videoCards = videos.map((video, i) => `<button type="button" class="video-card" data-video-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${video.title} ${video.kind} 재생">
+      <span class="video-card-visual"><img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="video-card-play" aria-hidden="true">▶</span><span class="video-card-kind">${video.kind}</span></span>
+      <span class="video-card-info"><strong>${video.title}</strong><small>${video.source}</small></span>
+    </button>`).join('');
     const resources = (entries, kind) => entries.map((entry, i) => `<a class="resource-item" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="resource-icon">${kind === 'merch' ? '◈' : '▦'}</span><div><small>${entry.sub}</small><strong>${entry.title}</strong></div><span class="resource-arrow">↗</span></a>`).join('');
     const reveal = (target, closedLabel, openLabel) => `<button type="button" class="content-reveal" data-reveal-target="${target}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${target}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
     const albums = artist.music || [];
@@ -393,7 +439,7 @@
       </section>
       <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
-      <nav class="detail-shortcuts ${campaigns.length ? 'has-campaigns' : ''}" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#music"><span>03</span><strong>음악</strong><b>↗</b></a><a href="#goods"><span>04</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>05</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>06</span><strong>소식</strong><b>↗</b></a>${campaigns.length ? '<a href="#collabs"><span>07</span><strong>콜라보</strong><b>↗</b></a>' : ''}</nav>
+      <nav class="detail-shortcuts ${campaigns.length ? 'has-campaigns' : ''}" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#videos"><span>03</span><strong>영상</strong><b>↗</b></a><a href="#music"><span>04</span><strong>음악</strong><b>↗</b></a><a href="#goods"><span>05</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>06</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>07</span><strong>소식</strong><b>↗</b></a>${campaigns.length ? '<a href="#collabs"><span>08</span><strong>콜라보</strong><b>↗</b></a>' : ''}</nav>
       ${artistProfileHtml(artist, profile)}
       <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid ${artist.photos.length > 3 ? 'is-preview' : ''}" id="artist-photo-grid">${gallery}</div>${artist.photos.length > 3 ? `<button type="button" class="content-reveal" data-reveal-target="artist-photo-grid" data-label-closed="사진 ${artist.photos.length}장 모두 보기" data-label-open="사진 간단히 보기" aria-controls="artist-photo-grid" aria-expanded="false"><span class="content-reveal-text">사진 ${artist.photos.length}장 모두 보기</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>` : ''}<p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
       <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
@@ -401,11 +447,13 @@
         <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
         <div class="photo-viewer-bottom"><div><h3 id="photo-viewer-title"></h3><p id="photo-viewer-credit"></p></div><div class="photo-viewer-actions"><a id="photo-viewer-license" href="#" target="_blank" rel="noopener noreferrer" hidden>이용 조건</a><a id="photo-viewer-source" href="#" target="_blank" rel="noopener noreferrer">원본·출처 ↗</a></div></div>
       </div></dialog>
-      <section id="music" class="detail-section music-section"><div class="detail-heading"><div><span>03 / DISCOGRAPHY</span><h2>앨범·노래 <em>${artist.shape}</em></h2></div><span class="section-count">${albums.length} RELEASES</span></div><div class="album-grid ${albums.length > 2 ? 'is-preview' : ''}" id="artist-albums">${albumCards}</div>${albums.length > 2 ? reveal('artist-albums', `앨범 ${albums.length}개 모두 보기`, '앨범 간단히 보기') : ''}</section>
-      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>04 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
-      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>05 / UPCOMING</span><h2>출연 예정 <em>${artist.shape}</em></h2></div><span class="section-count">${events.length} EVENTS</span></div><div class="event-list ${events.length > 2 ? 'is-preview' : ''}" id="artist-events">${events.length ? eventCards : '<div class="event-empty">확인된 예정 행사 없음</div>'}</div>${events.length > 2 ? reveal('artist-events', `행사 ${events.length}개 모두 보기`, '행사 간단히 보기') : ''}<div class="resource-subhead">공식 일정 확인</div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
-      <section id="news" class="detail-section"><div class="detail-heading"><div><span>06 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
-      ${campaigns.length ? `<section id="collabs" class="detail-section campaign-section"><div class="detail-heading"><div><span>07 / PARTNERSHIPS</span><h2>콜라보·광고 <em>${artist.shape}</em></h2></div><span class="section-count">${campaigns.length} STORIES</span></div><div class="campaign-list ${campaigns.length > 3 ? 'is-preview' : ''}" id="artist-campaigns">${campaignCards}</div>${campaigns.length > 3 ? reveal('artist-campaigns', `${campaigns.length}건 모두 보기`, '간단히 보기') : ''}</section>` : ''}
+      <section id="videos" class="detail-section video-section"><div class="detail-heading"><div><span>03 / VIDEO ARCHIVE</span><h2>영상 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${videos.length} VIDEOS</span>${openLink(artist.links.find((item) => item.label === 'YouTube')?.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(artist.name)}`, '공식 영상 더 보기', 'section-more')}</div></div><div class="video-grid ${videos.length > 3 ? 'is-preview' : ''}" id="artist-video-grid">${videoCards}</div>${videos.length > 3 ? reveal('artist-video-grid', `영상 ${videos.length}개 모두 보기`, '영상 간단히 보기') : ''}</section>
+      <dialog class="video-viewer" id="video-viewer" aria-labelledby="video-viewer-title"><div class="video-viewer-top"><span>OJJUDA VIDEO ARCHIVE</span><button type="button" class="video-viewer-close" aria-label="영상 닫기">✕</button></div><div class="video-viewer-player" id="video-viewer-player"></div><div class="video-viewer-bottom"><div><h3 id="video-viewer-title"></h3><p id="video-viewer-source"></p></div><a id="video-viewer-original" href="#" target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a></div></dialog>
+      <section id="music" class="detail-section music-section"><div class="detail-heading"><div><span>04 / DISCOGRAPHY</span><h2>앨범·노래 <em>${artist.shape}</em></h2></div><span class="section-count">${albums.length} RELEASES</span></div><div class="album-grid ${albums.length > 2 ? 'is-preview' : ''}" id="artist-albums">${albumCards}</div>${albums.length > 2 ? reveal('artist-albums', `앨범 ${albums.length}개 모두 보기`, '앨범 간단히 보기') : ''}</section>
+      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>05 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
+      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>06 / UPCOMING</span><h2>출연 예정 <em>${artist.shape}</em></h2></div><span class="section-count">${events.length} EVENTS</span></div><div class="event-list ${events.length > 2 ? 'is-preview' : ''}" id="artist-events">${events.length ? eventCards : '<div class="event-empty">확인된 예정 행사 없음</div>'}</div>${events.length > 2 ? reveal('artist-events', `행사 ${events.length}개 모두 보기`, '행사 간단히 보기') : ''}<div class="resource-subhead">공식 일정 확인</div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
+      <section id="news" class="detail-section"><div class="detail-heading"><div><span>07 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
+      ${campaigns.length ? `<section id="collabs" class="detail-section campaign-section"><div class="detail-heading"><div><span>08 / PARTNERSHIPS</span><h2>콜라보·광고 <em>${artist.shape}</em></h2></div><span class="section-count">${campaigns.length} STORIES</span></div><div class="campaign-list ${campaigns.length > 3 ? 'is-preview' : ''}" id="artist-campaigns">${campaignCards}</div>${campaigns.length > 3 ? reveal('artist-campaigns', `${campaigns.length}건 모두 보기`, '간단히 보기') : ''}</section>` : ''}
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
       <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
@@ -420,6 +468,7 @@
     attachImageFallback(root);
     initProgressiveReveal(root);
     initPhotoViewer(root, artist);
+    initVideoViewer(root, videos);
     if ('IntersectionObserver' in window && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
         if (!entry.isIntersecting) return;

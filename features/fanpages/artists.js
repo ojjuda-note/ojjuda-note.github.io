@@ -40,7 +40,8 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Minami of RESCENE at Incheon Airport, 12 August 2026.png', '미나미 · 공항', '2026', 'K-POPIT 케이팝잇'),
       commonsPhoto('May of RESCENE at Incheon Airport, 12 August 2026.png', '메이 · 공항', '2026', 'K-POPIT 케이팝잇'),
       commonsPhoto('Zena of RESCENE at Incheon Airport, 12 August 2026.png', '제나 · 공항', '2026', 'K-POPIT 케이팝잇'),
-      commonsPhoto('Rescene 250205.jpg', '2025 · 단체', '2025', '티비텐 TV10', 'CC BY 3.0')
+      commonsPhoto('Rescene 250205.jpg', '2025 · 단체', '2025', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('240329 Rescene.jpg', '2024 · 데뷔 무대', '2024', '티비텐 TV10', 'CC BY 3.0')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/rescene_official/" },
@@ -93,7 +94,9 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Ive at the 40th Golden Disc Awards, January 10, 2026 (2).png', '골든디스크 · 레드카펫', '2026', 'K-POPIT 케이팝잇'),
       commonsPhoto('Ive at the 2024 Melon Music Awards.png', '멜론뮤직어워드', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
       commonsPhoto('IVE 2024 MMA 1.jpg', 'IVE · 2024 MMA', '2024', '10Asia', 'CC BY 3.0'),
-      commonsPhoto('An Yu-jin of Ive, April 19, 2025.png', '안유진 · 포토월', '2025', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+      commonsPhoto('An Yu-jin of Ive, April 19, 2025.png', '안유진 · 포토월', '2025', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+      commonsPhoto('아이브(IVE) Gaeul Wonyoung Yujin at the 40th Golden Disc Awards.png', '가을·원영·유진', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('아이브(IVE) 골든디스크어워즈 The 40th Golden Disc Awards.png', '골든디스크 · 2026', '2026', 'K-POPIT 케이팝잇')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/ivestarship/" },
@@ -135,7 +138,9 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (3).png', '미장센 · 포토월 03', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (4).png', '미장센 · 포토월 04', '2026', '티비텐 TV10'),
       commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (5).png', '미장센 · 포토월 05', '2026', '티비텐 TV10'),
-      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10')
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (6).png', '미장센 · 포토월 06', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (8).png', '미장센 · 포토월 08', '2026', '티비텐 TV10')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/aespa_official/" },
@@ -176,7 +181,11 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963372).jpg', '시애틀 투어 03', '2025', 'David Lee'),
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963817).jpg', '시애틀 투어 04', '2025', 'David Lee'),
       commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963857).jpg', '시애틀 투어 05', '2025', 'David Lee'),
-      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54796820611).jpg', '시애틀 투어 06', '2025', 'David Lee')
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54796820611).jpg', '시애틀 투어 06', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963252).jpg', '시애틀 투어 07', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963297).jpg', '시애틀 투어 08', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963477).jpg', '시애틀 투어 09', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963727).jpg', '시애틀 투어 10', '2025', 'David Lee')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/le_sserafim/" },
@@ -217,7 +226,12 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 2.jpg', 'LA 투어 · 03', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
       commonsPhoto('Twice in Seattle 2026 - TWICE (55044093832).jpg', '시애틀 투어 01', '2026', 'David Lee'),
       commonsPhoto('Twice in Seattle 2026 - TWICE (55044985796).jpg', '시애틀 투어 02', '2026', 'David Lee'),
-      commonsPhoto('Twice in Seattle 2026 - TWICE (55044987391).jpg', '시애틀 투어 03', '2026', 'David Lee')
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55044987391).jpg', '시애틀 투어 03', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55045170513).jpg', '시애틀 투어 04', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55045249274).jpg', '시애틀 투어 05', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55045326100).jpg', '시애틀 투어 06', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle.jpg', '시애틀 공연 · 2026', '2026', 'David Lee'),
+      commonsPhoto('Twice This Is For World Tour in Vancouver, post-finale send off, January 9, 2026.jpg', '밴쿠버 투어 · 피날레', '2026', 'Yue')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/twicetagram/" },
@@ -260,7 +274,13 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('ILLIT Minju at Canada Goose Photo Call.png', '민주 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
       commonsPhoto('ILLIT Moka at Canada Goose Photo Call.png', '모카 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
       commonsPhoto('ILLIT Wonhee at Canada Goose Photo Call.png', '원희 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
-      commonsPhoto('ILLIT Iroha at Canada Goose Photo Call.png', '이로하 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0')
+      commonsPhoto('ILLIT Iroha at Canada Goose Photo Call.png', '이로하 · 포토콜', '2024', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('241120 ILLIT.jpg', '아일릿 · 2024 단체', '2024', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('250221 ILLIT.png', '아일릿 · 2025 단체', '2025', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('아일릿 (ILLIT) 가요광장 출근길 (1).jpg', '가요광장 · 출근길 01', '2024', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('아일릿 (ILLIT) 가요광장 출근길 (2).jpg', '가요광장 · 출근길 02', '2024', '티비텐 TV10', 'CC BY 3.0'),
+      commonsPhoto('07072026 ILLIT MINJU Kerastase PhotoCall 5.png', '민주 · 케라스타즈', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('2605206 ILLIT WONHEE CHANEL Photo Call 7.jpg', '원희 · 샤넬 포토콜', '2026', 'K-POPIT 케이팝잇')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/illit_official/" },
@@ -341,7 +361,11 @@ window.OJJUDA_FAN_ARTISTS = [
       commonsPhoto('A2O LITE - AIJING 0903.jpg', 'AIJING · 포토', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - RADA 0893.jpg', 'RADA · 포토', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
       commonsPhoto('A2O LITE - VORA 0892.jpg', 'VORA · 포토', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
-      creditedPhoto("https://cdnimg.melon.co.kr/cm2/artistcrop/images/052/17/450/5217450_20261012172332_500.jpg", "NEON · 단체", "2026", "A2O Entertainment · Melon", "https://www.melon.com/artist/detail.htm?artistId=5217450")
+      creditedPhoto("https://cdnimg.melon.co.kr/cm2/artistcrop/images/052/17/450/5217450_20261012172332_500.jpg", "NEON · 단체", "2026", "A2O Entertainment · Melon", "https://www.melon.com/artist/detail.htm?artistId=5217450"),
+      commonsPhoto('A2O LITE - OA 0900.jpg', 'OA · 포토 02', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('A2O LITE - RADA 0894.jpg', 'RADA · 포토 02', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
+      commonsPhoto('A2O LITE - RADA 0896.jpg', 'RADA · 포토 03', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0'),
+      commonsPhoto('A2O LITE - VORA 0895.jpg', 'VORA · 포토 02', '2026', 'K-POPIT 케이팝잇', 'CC BY-SA 4.0')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/a2o.lite/" },
