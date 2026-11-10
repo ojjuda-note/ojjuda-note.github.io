@@ -95,11 +95,51 @@ for (let i = 0; i < 1500; i++) {
 }
 assert.ok(sharkSeen, 'a shark is spawned during an extended game');
 assert.ok(varyingSpeed, 'the shark changes speed during its pass');
-for (let i = 0; i < 3000; i++) patrol.update(1 / 60);
-assert.equal(patrol.state.speed, 1000, 'runner reaches the new 1000px/s maximum');
-for (let i = 0; i < 600; i++) patrol.update(1 / 60);
-assert.equal(patrol.state.speed, 1000, 'runner never exceeds its 1000px/s maximum');
+let vortexCount = 0, hadVortex = false;
+let sawGap = false, sawThreeFloors = false, sawInk = false;
+let highestDifficulty = 0, highestSpeed = 0;
+for (let i = 0; i < 13000; i++) {
+  patrol.update(1 / 60);
+  const s = patrol.state;
+  if (s.vortexRemaining > 0 && !hadVortex) vortexCount++;
+  hadVortex = s.vortexRemaining > 0;
+  sawGap ||= s.gaps.length > 0;
+  sawThreeFloors ||= s.platformFloors.includes(2) && s.platformFloors.includes(3);
+  sawInk ||= s.inkRemaining > 0;
+  assert.ok(s.inkRemaining <= 1, 'ink never obscures the game longer than one second');
+  highestDifficulty = Math.max(highestDifficulty, s.difficulty);
+  highestSpeed = Math.max(highestSpeed, s.speed);
+}
+assert.ok(highestSpeed > 3000, 'running speed has no 1000px/s ceiling');
+assert.ok(vortexCount >= 2, 'new chapters begin at 1300 and 2600px/s');
+assert.ok(patrol.state.chapter >= 3, 'the runner continues into later chapters');
+assert.ok(highestDifficulty >= 5, 'challenge levels rise again every additional 300px/s');
+assert.ok(sawGap && sawThreeFloors, 'hard-mode courses have gaps and second/third floors');
+assert.ok(sawInk, 'an enemy squid obscures part of the screen for one second');
+patrol.draw(context);
 patrol.destroy();
+
+const courseSource = source.replace('const game = {',
+  'window.__courseProbe = { gap() { chapter = 2; peakSpeed = 1300; gaps = [{ x: HERO_X - 300, w: 600 }]; offset = 125; vy = 300; }, platform() { chapter = 2; gaps = []; platforms = [{ x: HERO_X - 110, w: 650, y: FLOOR_3, floor: 3 }, { x: HERO_X - 110, w: 650, y: FLOOR_2, floor: 2 }]; offset = FLOOR_3 - GROUND - 5; vy = 320; }, feet() { return GROUND + offset; } }; const game = {');
+assert.notEqual(courseSource, source, 'course fixture can simulate a missing floor');
+const courseSandbox = { ...sandbox,
+  window: { devicePixelRatio: 1, matchMedia: () => ({ matches: true }) } };
+vm.runInNewContext(courseSource, courseSandbox);
+const courseGame = courseSandbox.window.OjjudaRunnerGame.create({
+  setScore: noop, end: noop, sound: { tap: noop, hit: noop, bad: noop }
+});
+courseSandbox.window.__courseProbe.gap();
+courseGame.update(1 / 60);
+assert.equal(courseGame.state.hearts, 2, 'falling through a gap costs one heart');
+courseSandbox.window.__courseProbe.platform();
+courseGame.update(1 / 60);
+assert.equal(courseSandbox.window.__courseProbe.feet(), 231,
+  'the seahorse can land on a third-floor bridge');
+courseGame.onKey('ArrowDown');
+for (let i = 0; i < 18; i++) courseGame.update(1 / 60);
+assert.equal(courseSandbox.window.__courseProbe.feet(), 343,
+  'sliding drops from the third-floor bridge onto the second floor');
+courseGame.destroy();
 
 const collisionSource = source.replace('const game = {',
   'window.__sharkProbe = { put() { hazards.push({ kind: "shark", x: HERO_X - 80, y: 114, w: 162, h: 83, pace: 1.35, phase: 0 }); }, altitude(v) { offset = v; vy = 0; } }; const game = {');
@@ -129,5 +169,4 @@ sliding.onKey('ArrowUp');
 assert.equal(sliding.state.sliding, false);
 sliding.draw(context);
 sliding.destroy();
-console.log('Runner physics, random shark pace, pause, slide, rendering and score callback passed.');
-
+console.log('Runner vortex chapters, unlimited speed, multilevel gaps, squid ink, shark and controls passed.');

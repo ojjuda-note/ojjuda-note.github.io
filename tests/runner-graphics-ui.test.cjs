@@ -162,12 +162,55 @@ g.tab='friends'; H();
     assert.equal(scored.callbacks, 1, 'end callback fires once');
     assert.equal(scored.stopped, true, 'game over stops scoring');
     assert.ok(scored.score > 0);
+
+    // Browser-render the actual generated vortex, multilayer bridge course,
+    // and one-second squid ink. A safe fixture only disables damage for travel.
+    const safeRunnerSource = fs.readFileSync(path.join(root, 'games/runner/runner-game.js'), 'utf8')
+      .replace('function hit() {', 'function hit() { return;');
+    const vortex = await page.evaluate(source => {
+      window.__originalRunner = OjjudaRunnerGame;
+      new Function(source)();
+      window.__hardRunner = OjjudaRunnerGame.create({ setScore: () => {}, end: () => {} });
+      for (let i = 0; i < 6500 && !__hardRunner.state.vortexRemaining; i++)
+        __hardRunner.update(1 / 60);
+      __hardRunner.draw(document.querySelector('#gcv').getContext('2d'));
+      return __hardRunner.state;
+    }, safeRunnerSource);
+    assert.ok(vortex.vortexRemaining > 0, '1300px/s displays the center-screen vortex');
+    if (process.env.RUNNER_VORTEX_PROOF)
+      await page.screenshot({ path: process.env.RUNNER_VORTEX_PROOF });
+    const hard = await page.evaluate(() => {
+      for (let i = 0; i < 400 && (__hardRunner.state.chapter < 2 ||
+           !__hardRunner.state.gaps.some(g => g.x < 350 && g.x + g.w > 700)); i++)
+        __hardRunner.update(1 / 60);
+      __hardRunner.draw(document.querySelector('#gcv').getContext('2d'));
+      return __hardRunner.state;
+    });
+    assert.equal(hard.chapter, 2, 'vortex launches a distinct hard-mode chapter');
+    assert.ok(hard.platformFloors.includes(2) && hard.platformFloors.includes(3),
+      'two and three-floor courses are visible in a browser');
+    assert.ok(hard.gaps.length > 0, 'hard-mode floor contains a real gap');
+    if (process.env.RUNNER_HARD_PROOF)
+      await page.screenshot({ path: process.env.RUNNER_HARD_PROOF });
+    const ink = await page.evaluate(() => {
+      for (let i = 0; i < 900 && __hardRunner.state.inkRemaining < .6; i++)
+        __hardRunner.update(1 / 60);
+      __hardRunner.draw(document.querySelector('#gcv').getContext('2d'));
+      return __hardRunner.state;
+    });
+    assert.ok(ink.inkRemaining > .6 && ink.inkRemaining <= 1,
+      'one-second squid-ink overlay renders above the stage');
+    if (process.env.RUNNER_INK_PROOF)
+      await page.screenshot({ path: process.env.RUNNER_INK_PROOF });
+    await page.evaluate(() => {
+      __hardRunner.destroy(); OjjudaRunnerGame = __originalRunner;
+      delete window.__hardRunner; delete window.__originalRunner;
+    });
     await page.evaluate(() => runnerTest.close());
     assert.deepEqual(errors, []);
     await context.close();
-    console.log('PASS: responsive ocean runner, jump, double jump, slide, pause, music, three-heart result, no old sprite dependencies');
+    console.log('PASS: responsive runner, 1300 vortex, 2F/3F gaps, squid ink, jumps, pause, music, three-heart result');
   } finally {
     await browser.close();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
-
