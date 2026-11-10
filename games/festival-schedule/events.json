@@ -225,12 +225,12 @@
       "sourceName": "한국관광공사 대한민국 구석구석",
       "sourceCheckedAt": "2026-11-03",
       "attendance": {
-        "count": 123000,
-        "kind": "previous",
-        "year": 2025,
-        "sourceName": "괴산군청 2026년 대표축제 일정 보도자료",
-        "sourceUrl": "https://www.goesan.go.kr/www/selectBbsNttView.do?bbsNo=213&integrDeptCode=&key=136&nttNo=128463&pageIndex=77&pageUnit=9&searchCnd=all&searchCtgry=&searchKrwd=",
-        "sourceCheckedAt": "2026-11-06"
+        "count": 165534,
+        "kind": "actual",
+        "year": 2026,
+        "sourceName": "괴산군 공식 집계 발표(뉴스1 2026-11-09 보도)",
+        "sourceUrl": "https://www.news1.kr/local/sejong-chungbuk/6347166",
+        "sourceCheckedAt": "2026-11-10"
       },
       "tags": [
         "김장",
@@ -18571,6 +18571,74 @@
         "크리스마스",
         "조명",
         "야간행사"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jecheon-cheongpungho-3cushion-2026",
+      "title": "제2회 제천시 청풍호배 전국3쿠션당구대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "당구(3쿠션)",
+      "start": "2026-12-16",
+      "end": "2026-12-20",
+      "region": "충북",
+      "city": "제천시",
+      "venue": "제천어울림체육센터",
+      "address": "충청북도 제천시 관전로 70(신백동)",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "unmapped",
+      "summary": "대한당구연맹이 주최하는 전국 3쿠션 당구대회입니다. 전문체육·생활체육 선수가 참가합니다.",
+      "scheduleNote": "2026년 12월 16~20일(5일간). 경기별 시작 시간·세부 대진은 공식 안내 확인.",
+      "priceNote": "선수 참가비와 일반 관람료는 각각 주최 측 공식 안내 확인.",
+      "accessNote": "전문체육 및 생활체육 등록 선수 참가 대상. 연맹 공지상 참가 신청 마감은 11월 27일(금) 12:00. 일반 관람 가능 여부와 예매·입장 조건은 별도 공지 확인.",
+      "sourceUrl": "https://gbpa.or.kr/club/competition_view.php?bc_id=427&cb_id=cb_yongin",
+      "sourceName": "경기도당구연맹 공식 대회공고(대한당구연맹 주최)",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://gbpa.or.kr/club/competition_list.php?cb_id=cb_yangju"
+      ],
+      "tags": [
+        "당구",
+        "3쿠션",
+        "전국대회",
+        "생활체육"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "jecheon-national-table-tennis-80th-2026",
+      "title": "제80회 전국남녀종합탁구선수권대회",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "탁구",
+      "start": "2026-12-23",
+      "end": "2026-12-29",
+      "region": "충북",
+      "city": "제천시",
+      "venue": "장소 미정",
+      "address": "",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "locationStatus": "undecided",
+      "summary": "충북 제천시에서 개최 예정인 제80회 전국남녀종합탁구선수권대회입니다. 정확한 경기장·경기별 일정은 후속 공지 확인이 필요합니다.",
+      "scheduleNote": "2026년 12월 23~29일. 경기별 시작 시간 및 대진은 공식 발표 확인.",
+      "priceNote": "선수 참가비와 일반 관람료는 각각 공식 안내 확인.",
+      "accessNote": "선수 참가 신청과 일반 관람·예매 가능 여부는 별개입니다. 일반 관람 조건은 별도 공지 확인.",
+      "sourceUrl": "https://g1.sports.or.kr/schedule/month.do?searchMonth=12&searchYear=2026",
+      "sourceName": "대한체육회 스포츠지원포털 공식 2026년 12월 일정",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://g1.sports.or.kr/schedule/year.do"
+      ],
+      "tags": [
+        "탁구",
+        "남녀",
+        "전국선수권대회",
+        "제천"
       ],
       "status": "scheduled"
     }
