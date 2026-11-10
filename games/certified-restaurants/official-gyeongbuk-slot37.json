@@ -6,11 +6,13 @@
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=96bdc789-7231-4387-a853-2b69258694c2",
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=30089998-79aa-4d5e-9c81-d0f69ac78053",
     "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd=",
-    "https://82rg.com/nearby/restaurant/477609"
+    "https://82rg.com/nearby/restaurant/477609",
+    "https://82rg.com/nearby/restaurant/477159",
+    "https://findby.co.kr/details/36706-471703018013-st-652c081df27008be2c49a711"
   ],
   "sourceScope": "1순환 37회차 안동시(8곳), 문경시(2곳) 공식 관광 음식점 공개 목록 일부를 기존 등록 3011곳 및 지역별 보충자료 대상과 이름·주소 대조. 영주시 공식 관광 기존 등록 40곳 유지. 2순환 37회차 공식 시 관광·모범음식점 3곳(안동2·영주1) 보강. 기존 안동8·문경2와 영주40곳을 보존하며 전수조사는 아님.",
-  "verificationLimit": "신규 선정/리본 등급이 아니라 공식 관광 안내에 실린 식당 이력. 현재 영업/별도 지정/발행년도 미검증. 문경시 도로명 주소는 2026 TourAPI 공용 재게시 주소와 공식 관광공사 업소 상세 내용을 대조했으며, 공식 상세에서 도로명 주소의 직접 표시는 확인하지 못함. 신규3곳 중 안동 골목안손국수 공개 인허가 좌표 1곳만 상호·주소 일치 확인 후 기록. 나머지 정확 좌표, 현재 영업, 다른 가이드 등급은 미확인.",
-  "coordinatePolicy": "2순환 37회차 골목안손국수는 안동관광 공개 상호·주소와 행정안전부 인허가 좌표 재게시의 상호·도로명·건물번호가 동일해 좌표 1개를 기록. 그 밖의 위치 미확인 레코드는 null 유지. 사용자 위치·추정 위치 미사용.",
+  "verificationLimit": "신규 선정/리본 등급이 아니라 공식 관광 안내에 실린 식당 이력. 현재 영업/별도 지정/발행년도 미검증. 문경시 도로명 주소는 2026 TourAPI 공용 재게시 주소와 공식 관광공사 업소 상세 내용을 대조했으며, 공식 상세에서 도로명 주소의 직접 표시는 확인하지 못함. 신규3곳 중 안동 골목안손국수 공개 인허가 좌표 1곳만 상호·주소 일치 확인 후 기록. 나머지 정확 좌표, 현재 영업, 다른 가이드 등급은 미확인. 이어하기에서 기존2곳 좌표만 보강했으며 영업상태는 미확정.",
+  "coordinatePolicy": "2순환 37회차 골목안손국수는 안동관광 공개 상호·주소와 행정안전부 인허가 좌표 재게시의 상호·도로명·건물번호가 동일해 좌표 1개를 기록. 그 밖의 위치 미확인 레코드는 null 유지. 사용자 위치·추정 위치 미사용. 2순환37회차 이어하기에서 일직식당·새재할매집 상호 및 현주소 일치 좌표2곳을 인허가 업소 공개정보와 독립 공개정보로 교차확인.",
   "completeRegionalCollection": false,
   "restaurants": [
     {
@@ -20,8 +22,8 @@
       "region": "경북",
       "district": "안동시",
       "address": "경상북도 안동시 경동로 676",
-      "lat": null,
-      "lng": null,
+      "lat": 36.5629753,
+      "lng": 128.7319119,
       "menu": [],
       "guides": [
         {
@@ -37,7 +39,16 @@
         }
       ],
       "addressSourceUrl": "https://www.tourandong.com/public/sub3/sub1.cshtml",
-      "addressSourceCheckedAt": "2026-11-07"
+      "addressSourceCheckedAt": "2026-11-07",
+      "coordinateSource": {
+        "name": "행정안전부 공공 인허가 식당 공개 좌표 재게시·상호/도로명주소 일치",
+        "url": "https://82rg.com/nearby/restaurant/477159",
+        "method": "public-license-exact-name-and-road-address",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://findby.co.kr/details/36706-471703018013-st-652c081df27008be2c49a711",
+        "note": "독립 위치정보와 약 5m 이내 교차대조. 영업 현황 확정 아님."
+      },
+      "addressCrosscheckUrl": "https://findby.co.kr/details/36706-471703018013-st-652c081df27008be2c49a711"
     },
     {
       "id": "local-andong-slot37-kkachigumeong",
@@ -370,7 +381,7 @@
   "cycle2Slot37": {
     "checkedAt": "2026-11-10",
     "newRestaurantCount": 3,
-    "locationCoordinateCount": 1,
+    "locationCoordinateCount": 2,
     "officialSources": [
       "https://www.tourandong.com/public/sub3/sub1.cshtml",
       "https://www.yeongju.go.kr/open_content/tour/page.do?cmd=2&code_uid=221&con_uid=3783&mnu_uid=10771&pageNo=1&srchCode=0&srchKwd="
@@ -380,6 +391,22 @@
       "https://www.tabling.co.kr/place/677cd6ed66de5f069891dc0f",
       "https://www.daangn.com/kr/local-profile/%EB%B0%B1%EC%A0%95%EA%B0%80lc%EC%98%81%EC%A3%BC%EC%A0%90-tbzuyf7vaf8d/"
     ],
-    "notes": "관광 수록·지자체 모범음식점 분리. 현재 영업 상태는 확정하지 않음."
+    "notes": "관광 수록·지자체 모범음식점 분리. 현재 영업 상태는 확정하지 않음.",
+    "locationContinuation": {
+      "checkedAt": "2026-11-10",
+      "verifiedLocations": [
+        "local-andong-slot37-iljik",
+        "local-gb-top-2021-6"
+      ],
+      "coordinateEvidence": [
+        "https://82rg.com/nearby/restaurant/477159",
+        "https://findby.co.kr/details/36706-471703018013-st-652c081df27008be2c49a711",
+        "https://82rg.com/nearby/restaurant/490752",
+        "https://hut.purpleo.kr/article/71826"
+      ],
+      "previousCoordinateCount": 1,
+      "additionalCoordinatesInSidecar": 1,
+      "additionalCoordinatesInPrimary": 1
+    }
   }
 }
