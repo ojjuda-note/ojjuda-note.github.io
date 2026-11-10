@@ -258,16 +258,17 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-quests{grid-column:1}
  .agit-life{grid-column:2}
  .agit-quests,.agit-life{min-width:0;margin-top:clamp(26px,3vw,36px)}
- .agit-quests .agit-section-head,.agit-life .agit-section-head{min-height:53px}
+ .agit-quests .agit-section-head,.agit-life .agit-section-head{min-height:60px}
  .agit-quest-summary{gap:8px}
  .agit-life-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .agit-footer{margin-top:27px}
 }
 @media(min-width:640px) and (max-width:740px){
  .agit-quest-meter span{width:14px}
+ .agit-quest-card{min-height:73px}
 }
 @media(min-width:741px){
- .agit-quest-card{min-height:86px}
+ .agit-quest-card{min-height:95px}
  .agit-life-tile{min-height:220px}
 }
 @media(min-width:900px){
