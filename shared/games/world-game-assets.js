@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-restaurants-c2s35-gimcheon-kto3'
+ const revision='20261110-runner-ocean-v2'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -24,7 +24,7 @@
   ttang:'1.6.2',
   photo_ttang:'1.5.0',
   mole:'1.7.2',
-  runner:'1.4.2',
+  runner:'2.0.0',
   stacker:'1.5.2',
   breakout:'1.7.0',
   spot:'1.12.0',
@@ -61,7 +61,7 @@
   ttang:['/games/ttang/ttang-bridge.js?v=20261108-streak-exit1'],
   photo_ttang:['/games/photo-ttang/photo-ttang-access.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-ranking.js?v=20261106-source-folders1','/games/photo-ttang/photo-ttang-bridge.js?v=20261110-admin-game-preview1'],
   mole:[...controls,'/games/mole/mole-game.css?v=20261108-mole-grids1','/games/mole/mole-game.js?v=20261108-mole-seven1'],
-  runner:[...controls,'/games/runner/runner-game.css?v=20261106-source-folders1','/games/runner/runner-game.js?v=20261106-source-folders1'],
+  runner:[...controls,'/games/runner/runner-game.css?v=20261110-runner-ocean-v2','/games/runner/runner-game.js?v=20261110-runner-ocean-v2'],
   breakout:[...controls,'/games/breakout/breakout-game.css?v=20261106-source-folders1','/games/breakout/breakout-game.js?v=20261110-admin-game-preview1'],
   screw:[...controls,'/games/screw/screw-games.css?v=20261106-source-folders1','/games/screw/screw-loader.js?v=20261110-admin-game-preview1'],
   stacker:controls
