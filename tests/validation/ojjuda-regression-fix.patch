@@ -1,0 +1,150 @@
+diff --git a/game-release.json b/game-release.json
+index 10f39aa..fe48f9a 100644
+--- a/game-release.json
++++ b/game-release.json
+@@ -1 +1 @@
+-{"revision":"20261110-solitaire-unified1"}
++{"revision":"20261110-sacheonseong-landscape1"}
+diff --git a/games/sacheonseong/index.html b/games/sacheonseong/index.html
+index 9cc7944..1650ee9 100644
+--- a/games/sacheonseong/index.html
++++ b/games/sacheonseong/index.html
+@@ -7,7 +7,7 @@
+   <meta name="description" content="같은 그림 2장과 4장을 섞어 즐기는 200단계 사천성. 십자·고리·계단 등 다양한 모양과 여러 층의 정원을 차례로 열어 보세요.">
+   <title>사천성</title>
+   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23214f43'/%3E%3Cpath d='M11 27C9 13 22 9 30 10c0 13-6 22-19 17' fill='%23dbe9c1'/%3E%3Cpath d='m12 28 13-13' stroke='%23214f43' stroke-width='2'/%3E%3C/svg%3E">
+-  <link rel="stylesheet" href="style.css?v=20261108-monthly-personal1">
++  <link rel="stylesheet" href="style.css?v=20261110-sacheonseong-landscape1">
+   <link rel="stylesheet" href="/shared/games/game-results.css?v=20261109-unified-multiplayer-ui2">
+   <script src="/shared/games/game-results.js?v=20261108-monthly-personal1" defer></script>
+   <script src="engine.js?v=20261109-sacheonseong-floor150-1" defer></script>
+diff --git a/games/sacheonseong/style.css b/games/sacheonseong/style.css
+index c749993..f5294cc 100644
+--- a/games/sacheonseong/style.css
++++ b/games/sacheonseong/style.css
+@@ -91,6 +91,13 @@ dialog{max-height:calc(100dvh - 24px);overflow:auto}
+ @media(max-width:380px){.game-hud{gap:8px;padding-inline:8px;font-size:11px}#all-stages{padding-inline:8px}.game-actions{gap:5px;padding-inline:6px}.action-button{padding-inline:10px;font-size:12px}.zoom-controls{gap:4px}.zoom-controls button{min-width:40px;padding-inline:7px}}
+ @media(max-height:600px){.completion{padding:16px}.completion-card{padding:20px 16px}.win-bloom{width:50px;height:56px;margin-bottom:8px}.completion h2{font-size:20px;margin:10px 0}.completion p{margin-bottom:16px}.completion .completion-hint{margin-top:10px}.level-choice{min-height:60px}}
+ @media(max-height:450px){.topbar{flex-basis:38px}.back-link,.icon-button{min-height:38px;height:38px}.game-hud{flex-basis:36px}#all-stages{min-height:32px}.game-actions{flex-basis:48px;padding-block:3px}.completion-card{max-width:420px;padding:12px 16px}.win-bloom,.completion .eyebrow{display:none}.completion h2{font-size:19px;margin:5px 0}.completion p{line-height:1.5;margin-bottom:10px}.completion .win-time{font-size:26px;line-height:1.25}.completion .win-rank{line-height:1.4;margin-bottom:3px}.completion small{margin-top:8px}}
++/* The 38px header controls plus its border exceed the old 38px basis.
++   Budget 40px + 34px + 46px explicitly, leaving 270px at 844x390. */
++@media(max-height:450px) and (orientation:landscape){
++ .topbar{flex-basis:40px}
++ .game-hud{flex-basis:34px}
++ .game-actions{flex-basis:46px;padding-block:2px}
++}
+ @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+ 
+ .game-actions>.action-button{flex:0 1 88px;min-width:0;padding:4px 8px;font-size:12px;white-space:nowrap}
+diff --git a/games/sacheonseong/world-sacheonseong-game.js b/games/sacheonseong/world-sacheonseong-game.js
+index 1f50244..3825d0e 100644
+--- a/games/sacheonseong/world-sacheonseong-game.js
++++ b/games/sacheonseong/world-sacheonseong-game.js
+@@ -68,7 +68,7 @@
+   dialog.querySelector('.ge-primary').addEventListener('click',()=>{
+    if(frame)return;
+    frame=document.createElement('iframe');frame.title='사천성 게임판';frame.allow='web-share';
+-   frame.src='/games/sacheonseong/index.html?v=20261109-sacheonseong-floor150-1';
++   frame.src='/games/sacheonseong/index.html?v=20261110-sacheonseong-landscape1';
+    frame.addEventListener('load',initialize);
+    dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
+    dialog.classList.add('sacheonseong-playing');frame.focus();
+diff --git a/shared/games/world-game-assets.js b/shared/games/world-game-assets.js
+index 13dd5de..bacda78 100644
+--- a/shared/games/world-game-assets.js
++++ b/shared/games/world-game-assets.js
+@@ -1,7 +1,7 @@
+ /* Download game assets when a game is selected, and share successful loads. */
+ (()=>{
+  'use strict';
+- const revision='20261110-solitaire-unified1'
++ const revision='20261110-sacheonseong-landscape1'
+  // Each game has its own release version. This never changes the Agit version.
+  // Asset ?v= values below are cache revisions, independent of release numbers.
+  const versions=Object.freeze({
+@@ -18,7 +18,7 @@
+   tank:'1.6.3',
+   solitaire:'1.4.0',
+   mines:'1.4.3',
+-  sacheonseong:'1.16.2',
++  sacheonseong:'1.16.3',
+   saetbyeol:'1.3.3',
+   tour:'1.5.3',
+   ttang:'1.6.2',
+@@ -50,7 +50,7 @@
+   archery:['/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.css?v=20261106-source-folders1','/games/forest-archer/world-archery-game.js?v=20261109-archery-mobile-layout1'],
+   roulette:[session,'/games/roulette/world-roulette-game.css?v=20261106-source-folders1','/games/roulette/world-roulette-game.js?v=20261106-source-folders1'],
+   bang:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/bang/world-bang-game.js?v=20261106-source-folders1'],
+-  sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261109-sacheonseong-floor150-1'],
++  sacheonseong:['/games/sacheonseong/world-sacheonseong-game.css?v=20261106-source-folders1','/games/sacheonseong/world-sacheonseong-game.js?v=20261110-sacheonseong-landscape1'],
+   poker:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.css?v=20261106-source-folders1','/games/poker/world-poker-game.js?v=20261106-poker-red1'],
+   tank:[session,'/shared/games/world-tour-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.css?v=20261106-source-folders1','/games/tank/world-tank-game.js?v=20261106-source-folders1'],
+   solitaire:['/shared/games/world-tour-game.css?v=20261106-source-folders1',solitaireRules,'/games/solitaire/world-solitaire-game.js?v=20261110-solitaire-unified1'],
+diff --git a/tests/game-results-multiplayer.test.cjs b/tests/game-results-multiplayer.test.cjs
+index a666d49..b435616 100644
+--- a/tests/game-results-multiplayer.test.cjs
++++ b/tests/game-results-multiplayer.test.cjs
+@@ -73,7 +73,7 @@ test('poker uses settled net gold even when a hand received a positive gross pay
+  const online={room:{id:'private-room',seat:0,ready:[false,false],departed:[false,false]}},wallet={gold:500};
+  let game={_roomId:'private-room',_round:1,result:{net:[-75],payouts:[125]}};
+  const fmt=n=>n.toLocaleString('ko-KR'),roundKey=()=>game._roomId+':'+game._round,refillButton=()=>'',startPopup=html=>html;
+- ${section('games/poker/app.mjs','function nextHandPopup(){','\nfunction refillButton()')}
++ ${section('games/poker/app.mjs',"function nextHandButton(extraClass=''){",'\nfunction refillButton()')}
+  window.renderResult=net=>{game.result.net[0]=net;document.body.innerHTML=nextHandPopup();};
+  window.setReady=(ready,departed)=>{online.room.ready[0]=ready;online.room.departed[1]=departed;};
+  `);
+diff --git a/tests/poker-dom.test.cjs b/tests/poker-dom.test.cjs
+index d976531..c90ee66 100644
+--- a/tests/poker-dom.test.cjs
++++ b/tests/poker-dom.test.cjs
+@@ -52,7 +52,9 @@ const root=path.join(__dirname,'..');
+      assert.ok(s.find('.felt .table-start-overlay [data-action=online-ready]'),'rematch starts from the table popup');
+      s.click('[data-action=inspect-result]');assert.equal(s.find('.table-start-overlay'),null);
+      assert.equal(s.find('.player').hasAttribute('inert'),false,'reviewing the result makes cards accessible');
+-     s.click('[data-action=show-start]');assert.ok(s.find('.felt .table-start-overlay'));
++     assert.equal(s.find('[data-action=show-start]'),null,'review keeps the next-game action on the table instead of reopening the result');
++     assert.ok(s.find('.actions [data-action=online-ready]'),'the next game remains available while reviewing cards');
++     assert.equal(s.find('.actions [data-action=online-ready]').disabled,false);
+      assert.equal(s.find('.result-copy b').textContent,scenario.net>0?'골드 획득':scenario.net<0?'골드 손실':'골드 변동 없음');
+      assert.equal(s.find('.result-banner').classList.contains('result-win'),scenario.net>0);
+      const amount=s.find('.result-banner>strong');
+diff --git a/tests/sacheonseong-portrait-ui.test.cjs b/tests/sacheonseong-portrait-ui.test.cjs
+index dcb45f2..af11820 100644
+--- a/tests/sacheonseong-portrait-ui.test.cjs
++++ b/tests/sacheonseong-portrait-ui.test.cjs
+@@ -74,6 +74,10 @@ async function screenshot(page,name){
+      try{
+       const value=await layout(page),label=`stage ${stage}, ${viewport.width}x${viewport.height}`;
+       assertFits(value,`${label}: all cards fit on entry`);
++      if(viewport.width===844&&viewport.height===390){
++       assert(value.viewport.height>=268,`${label}: compact toolbar preserves readable board height`);
++       for(const box of value.controls.slice(3))assert(box.height>=42,`${label}: action targets stay usable`);
++      }
+       assert(value.cols<=E.MAX_FLOOR_COLS&&value.rows<=E.MAX_FLOOR_ROWS&&value.cols*value.rows<=E.MAX_FLOOR_CELLS,`${label}: landscape and portrait use a compact footprint`);
+       const minTile=viewport.width<=344?19:viewport.width>viewport.height?23:26;
+       assert(value.tile.width>=minTile,`${label}: cards remain readable on entry`);
+diff --git a/tests/world-game-challenges.test.cjs b/tests/world-game-challenges.test.cjs
+index 1a14f49..6bd589c 100644
+--- a/tests/world-game-challenges.test.cjs
++++ b/tests/world-game-challenges.test.cjs
+@@ -208,6 +208,7 @@ function overlayFixture(t, { shareModule = false } = {}) {
+     function worldRewardOwner(){return null;} function worldRewardRequest(){return {};} function worldRewardCurrent(){return true;}
+     async function tf(game,score){return {ok:true,best:score,guest:true};}
+     ${world.slice(world.indexOf('function installWorldGameScreen('),world.indexOf('var worldBoardScreenStop='))}
++    ${world.slice(world.indexOf("const arcadeDifficultyPrefix="),world.indexOf("const billiardsDifficulties="))}
+     ${entrance}\n${controls}\n${preview}\n${rounds}\n${close}
+   `);
+   w.eval(guestSource); w.OjjudaGuestAccess.configure(() => true);
+diff --git a/world.html b/world.html
+index 08b4a3e..206b557 100644
+--- a/world.html
++++ b/world.html
+@@ -30,7 +30,7 @@
+ <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
+ <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
+ <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
+-<script src="/shared/games/world-game-assets.js?v=20261110-solitaire-unified1" defer></script>
++<script src="/shared/games/world-game-assets.js?v=20261110-sacheonseong-landscape1" defer></script>
+ <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
+ <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
+ <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
