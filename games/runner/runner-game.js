@@ -29,8 +29,15 @@
     { kind: 'star', name: '가시 불가사리', w: 68, h: 69, lane: 'ground' },
     { kind: 'jelly', name: '독 해파리', w: 83, h: 77, lane: 'air' },
     { kind: 'mine', name: '심해 기뢰', w: 73, h: 73, lane: 'air' },
-    { kind: 'eel', name: '번개 장어', w: 110, h: 59, lane: 'air' }
+    { kind: 'eel', name: '번개 장어', w: 110, h: 59, lane: 'air' },
+    { kind: 'shark', name: '심해 상어', w: 162, h: 83, lane: 'high' }
   ]);
+  const REGULAR_OBSTACLES = OBSTACLES.filter(item => item.lane !== 'high');
+  // Each shark varies its pace while staying faster than the scrolling seafloor.
+  function sharkSpeed(shark, groundSpeed, time) {
+    return Math.max(groundSpeed + 65,
+      groundSpeed * (shark.pace + Math.sin(time * 4.5 + shark.phase) * .09));
+  }
   const MELODY = [392, 440, 523.25, 587.33, 523.25, 440, 349.23, 392,
     392, 523.25, 659.25, 587.33, 523.25, 440, 392, 329.63];
   const safeGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
@@ -469,6 +476,46 @@
     ellipse(c, 92, -14, 1.2, 1.6, '#fff');
     c.restore();
   }
+  function shark(c, x, y, w, h, time, reduced) {
+    c.save(); c.translate(x + w / 2, y + h / 2); c.scale(w / 162, h / 83);
+    const tail = reduced ? 0 : Math.sin(time * 8 + x * .02) * 6;
+    // Broad tail and high dorsal fin keep the silhouette legible at speed.
+    c.beginPath(); c.moveTo(40, -12); c.lineTo(77, -29 + tail);
+    c.lineTo(64, -2); c.lineTo(80, 29 + tail); c.lineTo(39, 12); c.closePath();
+    c.fillStyle = '#287a91'; c.fill(); c.lineWidth = 5;
+    c.strokeStyle = '#19364f'; c.stroke();
+    c.beginPath(); c.moveTo(-4, -17); c.lineTo(20, -43);
+    c.lineTo(27, -11); c.closePath(); c.fillStyle = '#1f627f';
+    c.fill(); c.strokeStyle = '#172f4b'; c.lineWidth = 5; c.stroke();
+    c.beginPath(); c.moveTo(-70, -2);
+    c.quadraticCurveTo(-51, -24, -13, -24);
+    c.bezierCurveTo(23, -29, 49, -17, 64, -5);
+    c.quadraticCurveTo(67, 7, 54, 17);
+    c.bezierCurveTo(13, 29, -30, 23, -59, 12);
+    c.quadraticCurveTo(-75, 8, -70, -2); c.closePath();
+    c.fillStyle = gradient(c, 0, -28, 0, 26,
+      [[0, '#7fd6d2'], [.24, '#356b92'], [.66, '#1f436b'], [1, '#102b4a']]);
+    c.fill(); c.lineWidth = 5; c.strokeStyle = '#122b45'; c.stroke();
+    c.beginPath(); c.moveTo(-65, 8);
+    c.bezierCurveTo(-25, 24, 23, 22, 49, 12);
+    c.quadraticCurveTo(-11, 42, -65, 8); c.closePath();
+    c.fillStyle = '#c2eff0'; c.fill();
+    c.beginPath(); c.moveTo(-4, 15); c.lineTo(19, 37);
+    c.lineTo(25, 10); c.closePath(); c.fillStyle = '#286a84';
+    c.fill(); c.lineWidth = 4; c.strokeStyle = '#19334e'; c.stroke();
+    // Little teeth, gills and an alert eye make this clearly a shark, not a fish silhouette.
+    stroke(c, [[-67, 9], [-45, 8], [-33, 3]], '#142f4a', 3.8);
+    for (const tx of [-57, -49, -41]) {
+      c.beginPath(); c.moveTo(tx, 9); c.lineTo(tx + 4, 14); c.lineTo(tx + 7, 8);
+      c.closePath(); c.fillStyle = '#fff9e5'; c.fill();
+    }
+    ellipse(c, -42, -8, 6, 6, '#fff6da');
+    ellipse(c, -43, -8, 3.4, 3.8, '#20283f');
+    ellipse(c, -44, -10, 1.2, 1.2, '#fff');
+    for (let i = 0; i < 3; i++)
+      stroke(c, [[-20 + i * 9, -5], [-23 + i * 9, 7]], '#87d6d5', 3);
+    c.restore();
+  }
   function drawObstacle(c, obstacle, time, reduced, stage) {
     const { x, y, w, h, kind } = obstacle;
     ellipse(c, x + w / 2, GROUND + 2, w * .68, 5, '#1c385776');
@@ -482,6 +529,7 @@
     else if (kind === 'star') starHazard(c, x, y, w, h, time);
     else if (kind === 'mine') mine(c, x, y, w, h, time);
     else if (kind === 'eel') eel(c, x, y, w, h, time);
+    else if (kind === 'shark') shark(c, x, y, w, h, time, reduced);
   }
   function platform(c, p) {
     const top = p.y, seg = 54;
@@ -653,6 +701,7 @@
     let time = 0, distance = 0, speed = 455, offset = 0, vy = 0;
     let jumps = 0, slide = 0, hearts = 3, invulnerable = 0, shielded = false;
     let hazardIn = 1.2, pearlIn = .55, shieldIn = 15, platformIn = 8.8;
+    let sharkIn = 6.2 + Math.random() * 5.8;
     let hazards = [], pickups = [], effects = [];
     let platforms = [{ x: W + 45, y: GROUND - 125, w: 370 }];
     for (let i = 0; i < 6; i++)
@@ -734,7 +783,7 @@
       if (button) { button.textContent = musicOn ? '♫ 음악 켜짐' : '♪ 음악 꺼짐'; button.setAttribute('aria-pressed', String(musicOn)); }
     }
     function spawnHazard() {
-      const available = time < 4.5 ? OBSTACLES.slice(0, 5) : OBSTACLES;
+      const available = time < 4.5 ? REGULAR_OBSTACLES.slice(0, 5) : REGULAR_OBSTACLES;
       let index = Math.floor(Math.random() * available.length);
       if (available[index].kind === lastHazard) index = (index + 1) % available.length;
       const obstacle = available[index]; lastHazard = obstacle.kind;
@@ -742,6 +791,13 @@
       const y = lane === 'air' ? GROUND - h - 70 :
         kind === 'puffer' ? GROUND - h - 7 : GROUND - h;
       hazards.push({ x: W + 55, y, w, h, kind });
+    }
+    function spawnShark() {
+      const species = OBSTACLES.find(item => item.kind === 'shark');
+      hazards.push({ kind: species.kind, w: species.w, h: species.h,
+        x: W + 100, y: GROUND - 351,
+        pace: 1.2 + Math.random() * .46, phase: Math.random() * TAU,
+        currentSpeed: speed + 65 });
     }
     function spawnPearls() {
       const high = Math.random() > .48;
@@ -821,6 +877,11 @@
           spawnHazard();
           hazardIn = Math.max(.68, 1.26 - time * .011) + Math.random() * .32;
         }
+        sharkIn -= dt;
+        if (sharkIn <= 0) {
+          spawnShark();
+          sharkIn = 9 + Math.random() * 11.5;
+        }
         pearlIn -= dt;
         if (pearlIn <= 0) { spawnPearls(); pearlIn = 1.08 + Math.random() * .42; }
         platformIn -= dt;
@@ -830,7 +891,11 @@
           pickups.push({ x: W + 34, y: GROUND - 91, kind: 'shield' });
           shieldIn = 18 + Math.random() * 9;
         }
-        for (const item of hazards) item.x -= speed * dt;
+        for (const item of hazards) {
+          const velocity = item.kind === 'shark' ? sharkSpeed(item, speed, time) : speed;
+          item.x -= velocity * dt;
+          if (item.kind === 'shark') item.currentSpeed = velocity;
+        }
         for (const item of pickups) item.x -= speed * dt;
         for (const item of platforms) item.x -= speed * dt;
         hazards = hazards.filter(item => item.x + item.w > -70);
@@ -848,7 +913,7 @@
           ? { l: HERO_X - 39, r: HERO_X + 39, t: foot - 37, b: foot - 2 }
           : { l: HERO_X - 31, r: HERO_X + 31, t: foot - 91, b: foot - 4 };
         for (const item of hazards) {
-          const inset = item.kind === 'urchin' ? 6 : 8;
+          const inset = item.kind === 'urchin' ? 6 : item.kind === 'shark' ? 17 : 8;
           if (item.x + item.w - inset > box.l && item.x + inset < box.r &&
               item.y + item.h - inset > box.t && item.y + inset < box.b) {
             hit(); if (ended) break;
@@ -907,6 +972,12 @@
         foreground(c, distance, time, view, reduced);
         if (flash > 0) { c.fillStyle = `rgba(255,190,187,${Math.min(.33, flash)})`; c.fillRect(0, 0, W, view.h); }
         hud(c, { hearts, pearls, combo, stage, shielded, fever }, view, score());
+        if (sharkIn < .85 && sharkIn > 0) {
+          rounded(c, 754, 120, 180, 35, 16, '#17395ed9');
+          c.textAlign = 'center'; c.font = `bold 18px ${FONT}`;
+          c.fillStyle = '#fff0bd'; c.fillText('⚠ 상어 접근!', 844, 144);
+          c.textAlign = 'left';
+        }
         if (bonusLife > 0) {
           c.save(); c.globalAlpha = Math.min(1, bonusLife);
           c.font = `bold 32px ${FONT}`; c.textAlign = 'center';
@@ -938,7 +1009,9 @@
       },
       get state() { return { hearts, pearls, combo, distance, jumps, sliding: slide > 0,
         paused, ended, stage, shielded, score: score(), speed, fever,
-        platforms: platforms.length, hazards: hazards.map(h => h.kind) }; },
+        platforms: platforms.length, hazards: hazards.map(h => h.kind), sharkIn,
+        sharks: hazards.filter(h => h.kind === 'shark').map(h =>
+          ({ x: h.x, y: h.y, speed: h.currentSpeed })) }; },
       destroy() {
         document.removeEventListener?.('pointerdown', handleButtonPointer);
         ended = true; hazards = []; pickups = []; effects = []; platforms = [];
@@ -955,6 +1028,7 @@
     platform(c, { x: 548, y: GROUND - 124, w: 317 });
     drawObstacle(c, { x: 690, y: GROUND - 60, w: 82, h: 60, kind: 'crab' }, 0, true, stage);
     drawObstacle(c, { x: 840, y: GROUND - 143, w: 73, h: 73, kind: 'mine' }, 0, true, stage);
+    drawObstacle(c, { x: 754, y: GROUND - 351, w: 162, h: 83, kind: 'shark' }, 0, true, stage);
     hero(c, 287, GROUND - 51, .2, true, false, false, false, true);
     for (let i = 0; i < 7; i++) pearl(c, 396 + i * 59, GROUND - 120 - Math.sin(i * .58) * 47, .5, 15);
     c.restore(); foreground(c, 340, 0, view, true);

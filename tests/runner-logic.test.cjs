@@ -24,10 +24,12 @@ const sandbox = {
 vm.runInNewContext(source, sandbox);
 assert.equal(typeof sandbox.window.OjjudaRunnerGame.create, 'function');
 const obstacleTypes = sandbox.window.OjjudaRunnerGame.obstacleTypes;
-assert.equal(obstacleTypes.length, 10, 'ten distinct original hazards are available');
-assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 10);
+assert.equal(obstacleTypes.length, 11, 'eleven distinct original hazards are available');
+assert.equal(new Set(obstacleTypes.map(x => x.kind)).size, 11);
 assert.equal(obstacleTypes.filter(x => x.lane === 'air').length, 3,
   'floating hazards require a slide, ground hazards a jump');
+assert.equal(obstacleTypes.filter(x => x.lane === 'high').length, 1,
+  'the shark patrols only double-jump altitude');
 assert.ok(obstacleTypes.some(x => x.kind === 'eel') && obstacleTypes.some(x => x.kind === 'crab'));
 sandbox.window.OjjudaRunnerGame.drawPreview(context);
 assert.equal(canvas.width, 960, 'landscape game backing uses 960px logical width');
@@ -64,6 +66,57 @@ assert.equal(ended.length, 1);
 assert.ok(game.state.score > 0 && points.length > 0);
 game.destroy();
 
+// Keep the test avatar safe so a long shark patrol can be measured independent
+// of ordinary ground hazards; production collision logic is tested above.
+const safeSource = source.replace('function hit() {', 'function hit() { return;');
+assert.notEqual(safeSource, source, 'isolated no-damage timing fixture is applied');
+const sharkSandbox = {
+  ...sandbox,
+  window: { devicePixelRatio: 1, matchMedia: () => ({ matches: true }) },
+  Math: Object.assign(Object.create(Math), { random: () => .4 })
+};
+vm.runInNewContext(safeSource, sharkSandbox);
+const patrol = sharkSandbox.window.OjjudaRunnerGame.create({
+  setScore: noop, end: noop, sound: { tap: noop, hit: noop, bad: noop }
+});
+assert.ok(patrol.state.sharkIn >= 6.2 && patrol.state.sharkIn <= 12,
+  'first shark arrival waits a variable interval');
+let sharkSeen = false, varyingSpeed = false, firstSpeed = null;
+for (let i = 0; i < 1500; i++) {
+  patrol.update(1 / 60);
+  for (const shark of patrol.state.sharks) {
+    sharkSeen = true;
+    assert.ok(shark.speed >= patrol.state.speed + 64.9,
+      'sharks always outrun floor obstacles, even when the runner accelerates');
+    assert.equal(shark.y, 114, 'sharks stay at double-jump height');
+    if (firstSpeed !== null && Math.abs(shark.speed - firstSpeed) > 1) varyingSpeed = true;
+    firstSpeed = shark.speed;
+  }
+}
+assert.ok(sharkSeen, 'a shark is spawned during an extended game');
+assert.ok(varyingSpeed, 'the shark changes speed during its pass');
+patrol.destroy();
+
+const collisionSource = source.replace('const game = {',
+  'window.__sharkProbe = { put() { hazards.push({ kind: "shark", x: HERO_X - 80, y: 114, w: 162, h: 83, pace: 1.35, phase: 0 }); }, altitude(v) { offset = v; vy = 0; } }; const game = {');
+assert.notEqual(collisionSource, source, 'collision test injects a position-only fixture');
+const collisionSandbox = { ...sandbox,
+  window: { devicePixelRatio: 1, matchMedia: () => ({ matches: true }) } };
+vm.runInNewContext(collisionSource, collisionSandbox);
+const collisionGame = collisionSandbox.window.OjjudaRunnerGame.create({
+  setScore: noop, end: noop, sound: { tap: noop, hit: noop, bad: noop }
+});
+collisionSandbox.window.__sharkProbe.put();
+collisionSandbox.window.__sharkProbe.altitude(-153);
+collisionGame.update(1 / 60);
+assert.equal(collisionGame.state.hearts, 3,
+  'a maximum-height first jump passes below the shark');
+collisionSandbox.window.__sharkProbe.altitude(-270);
+collisionGame.update(1 / 60);
+assert.equal(collisionGame.state.hearts, 2,
+  'a double jump entering the shark lane takes one hit');
+collisionGame.destroy();
+
 points = []; ended = [];
 const sliding = make();
 sliding.onDown(300);
@@ -72,5 +125,5 @@ sliding.onKey('ArrowUp');
 assert.equal(sliding.state.sliding, false);
 sliding.draw(context);
 sliding.destroy();
-console.log('Runner physics, pause, slide, rendering and score callback passed.');
+console.log('Runner physics, random shark pace, pause, slide, rendering and score callback passed.');
 
