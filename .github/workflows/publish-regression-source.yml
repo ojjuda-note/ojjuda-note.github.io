@@ -1,0 +1,51 @@
+name: Publish verified regression source branch
+on:
+  push:
+    branches: [ops/publish-regression-20261110]
+    paths: ['.github/workflows/publish-regression-source.yml']
+permissions:
+  contents: read
+concurrency:
+  group: publish-regression-source-20261110
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'ojjuda-note/ojjuda-note.github.io'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 3689672ac39d94aec975b523e0a2111aee5c6a90
+          path: input
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: dc542c342f9e49e95a7bac3b123f1439694dab24
+          path: source
+      - name: Verify immutable input and publish source-only branch
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch="$GITHUB_WORKSPACE/input/tests/validation/ojjuda-regression-fix.patch"
+          echo "c9b3e2de0530c4d276cb4645027e3c96e4a31697825d5edcfd38a32bbf1a45eb  $patch" | sha256sum -c -
+          test "$(git rev-parse HEAD)" = "dc542c342f9e49e95a7bac3b123f1439694dab24"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "dc542c342f9e49e95a7bac3b123f1439694dab24"
+          test -z "$(git ls-remote origin refs/heads/fix/ojjuda-regression-20261110)"
+          git apply --check "$patch"
+          git apply "$patch"
+          git diff --check
+          printf '%s\n' game-release.json games/sacheonseong/index.html games/sacheonseong/style.css games/sacheonseong/world-sacheonseong-game.js shared/games/world-game-assets.js tests/game-results-multiplayer.test.cjs tests/poker-dom.test.cjs tests/sacheonseong-portrait-ui.test.cjs tests/world-game-challenges.test.cjs world.html | sort > "$RUNNER_TEMP/expected-files"
+          git diff --name-only | sort > "$RUNNER_TEMP/changed-files"
+          diff -u "$RUNNER_TEMP/expected-files" "$RUNNER_TEMP/changed-files"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c fix/ojjuda-regression-20261110
+          git add -- game-release.json games/sacheonseong/index.html games/sacheonseong/style.css games/sacheonseong/world-sacheonseong-game.js shared/games/world-game-assets.js tests/game-results-multiplayer.test.cjs tests/poker-dom.test.cjs tests/sacheonseong-portrait-ui.test.cjs tests/world-game-challenges.test.cjs world.html
+          git commit -m 'Fix isolated game fixtures and compact landscape tile readability'
+          git push origin HEAD:refs/heads/fix/ojjuda-regression-20261110
+          echo "Published source commit: $(git rev-parse HEAD)"
+          git diff-tree --no-commit-id --stat -r HEAD
