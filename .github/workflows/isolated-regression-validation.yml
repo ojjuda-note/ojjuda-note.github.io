@@ -1,0 +1,71 @@
+name: Isolated regression patch validation
+on:
+  push:
+    branches: [validation/ojjuda-regression-cloud-20261110]
+    paths:
+      - tests/validation/ojjuda-regression-fix.patch
+      - .github/workflows/isolated-regression-validation.yml
+permissions:
+  contents: read
+concurrency:
+  group: isolated-regression-patch-validation
+  cancel-in-progress: false
+jobs:
+  validate:
+    name: Cloud validation - ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [fixtures, poker, sacheonseong, unit, ui]
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+      SACHEONSEONG_QA_DIR: ${{ github.workspace }}/validation-screenshots
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify exact patch and immutable source baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor ae8180dc3f47d7a0c52dd9afe4c40570a52ca749 HEAD
+          test -z "$(git diff --name-only ae8180dc3f47d7a0c52dd9afe4c40570a52ca749 HEAD -- . ':!tests/validation/ojjuda-regression-fix.patch' ':!.github/workflows/isolated-regression-validation.yml')"
+          echo 'bd764853e7ef60da785469d73511d95635dafe8004ab8aae840fbb8b6f428aea  tests/validation/ojjuda-regression-fix.patch' | sha256sum -c -
+          git apply --check tests/validation/ojjuda-regression-fix.patch
+          git apply tests/validation/ojjuda-regression-fix.patch
+          git diff --check
+          git diff --stat
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium on the isolated runner
+        if: matrix.suite == 'sacheonseong' || matrix.suite == 'ui'
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Run strict unmodified suite commands on patched sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ matrix.suite }}" in
+            fixtures)
+              npm --prefix tests run test:results:unit
+              node --test tests/world-game-challenges.test.cjs
+              node scripts/check-source-layout.mjs
+              ;;
+            poker) npm --prefix tests run test:poker ;;
+            sacheonseong) npm --prefix tests run test:sacheonseong ;;
+            unit) npm --prefix tests run test:unit ;;
+            ui) npm --prefix tests run test:ui ;;
+          esac
+      - name: Save only synthetic Sacheonseong screenshots
+        if: always() && matrix.suite == 'sacheonseong'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sacheonseong-validation-screenshots
+          path: validation-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
