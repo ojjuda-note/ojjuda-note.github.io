@@ -67,9 +67,10 @@
   }
   function themeFor(date = kstDate()) {
     const month = Number(date.slice(5, 7));
-    const season = month >= 3 && month <= 5 ? 'spring' : month >= 6 && month <= 8 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter';
     const calendar = root.OjjudaThemes;
-    const key = calendar?.resolve(new Date(date + 'T03:00:00Z')) || season;
+    const instant = new Date(date + 'T03:00:00Z');
+    const season = calendar?.seasonFor?.(instant) || (month >= 3 && month <= 5 ? 'spring' : month >= 6 && month <= 8 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter');
+    const key = calendar?.resolve(instant) || season;
     const names = {spring:'봄', summer:'여름', autumn:'가을', winter:'겨울'};
     return {key, season, isEvent:key !== season, name:calendar?.catalog?.[key]?.name || names[key] || '오늘', copy:calendar?.catalog?.[key]?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
   }

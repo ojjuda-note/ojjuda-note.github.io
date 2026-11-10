@@ -105,7 +105,7 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   for(const season of ['spring','summer','autumn','winter'])assert.ok(fs.existsSync(path.join(__dirname,'../features/home/theme-scenes',season+'.webp')),season+' illustrated hero exists');
   assert.match(html,/theme-scenes\/autumn\.webp/);
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes2'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 

@@ -58,9 +58,17 @@ function eventInSeason(value=new Date()){
  });
  return nearby[0]?.key||null;
 }
+function seasonFor(value=new Date()){
+ const {year,month,stamp}=koreaDate(value),today=Date.parse(stamp+'T12:00:00Z');
+ for(const [date,key] of [['03-01','spring'],['06-01','summer'],['09-01','autumn'],['12-01','winter']]){
+  const days=(Date.parse(year+'-'+date+'T12:00:00Z')-today)/DAY;
+  if(days>=0&&days<=7)return key;
+ }
+ return month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
+}
 function resolve(value=new Date()){
  const event=eventInSeason(value);if(event)return event;
- const {month}=koreaDate(value);return month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
+ return seasonFor(value);
 }
 // Older devices may still have a manual choice saved; calendar selection always wins.
 try{localStorage.removeItem(STORAGE);}catch{}
@@ -86,6 +94,6 @@ function schedule(){
 function sync(){apply();schedule();}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
 window.addEventListener('pageshow',sync);
-window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,eventInSeason,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
+window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,eventInSeason,seasonFor,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
 sync();
 })();
