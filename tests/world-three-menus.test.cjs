@@ -120,8 +120,8 @@ function fixture(url='https://ojjuda.kr/world.html'){
   t.actions.tab({tab:'my'});assert.equal(active(),'my');assert.equal(w.document.querySelector('.my-hub .h2').textContent,'설정');
   assert.equal(w.document.querySelector('[data-act="door-toggle"]'),null);
   for(const tab of ['friends','board','home','deco','life','shop']){
-   t.actions.tab({tab});assert.equal(active(),'arcade',tab+' old navigation redirects to arcade');
-   t.state.tab=tab;t.render();assert.equal(active(),'arcade',tab+' restored state redirects to arcade');
+   t.actions.tab({tab});assert.equal(active(),'hub',tab+' old navigation redirects to hub');
+   t.state.tab=tab;t.render();assert.equal(active(),'hub',tab+' restored state redirects to hub');
   }
   for(const id of ['cafe','library']){t.actions['enter-place']({id});assert.equal(active(),'arcade');}
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
