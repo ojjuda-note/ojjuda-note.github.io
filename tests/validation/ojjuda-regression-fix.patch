@@ -1,9 +1,9 @@
 diff --git a/game-release.json b/game-release.json
-index 4badbef..fe48f9a 100644
+index 9f8f6b2..fe48f9a 100644
 --- a/game-release.json
 +++ b/game-release.json
 @@ -1 +1 @@
--{"revision":"20261110-janggi-replay1"}
+-{"revision":"20261110-restaurants-c2s30-jeonbuk8"}
 +{"revision":"20261110-sacheonseong-landscape1"}
 diff --git a/games/sacheonseong/index.html b/games/sacheonseong/index.html
 index 9cc7944..1650ee9 100644
@@ -50,14 +50,14 @@ index 1f50244..3825d0e 100644
     dialog.querySelector('.sacheonseong-entry-wrap').remove();dialog.append(frame);
     dialog.classList.add('sacheonseong-playing');frame.focus();
 diff --git a/shared/games/world-game-assets.js b/shared/games/world-game-assets.js
-index fdf0100..53a6c7a 100644
+index 383bc6a..79b51b7 100644
 --- a/shared/games/world-game-assets.js
 +++ b/shared/games/world-game-assets.js
 @@ -1,7 +1,7 @@
  /* Download game assets when a game is selected, and share successful loads. */
  (()=>{
   'use strict';
-- const revision='20261110-janggi-replay1'
+- const revision='20261110-restaurants-c2s30-jeonbuk8'
 + const revision='20261110-sacheonseong-landscape1'
   // Each game has its own release version. This never changes the Agit version.
   // Asset ?v= values below are cache revisions, independent of release numbers.
@@ -173,14 +173,14 @@ index 1a14f49..6bd589c 100644
    `);
    w.eval(guestSource); w.OjjudaGuestAccess.configure(() => true);
 diff --git a/world.html b/world.html
-index 5c6a3d1..ba1a1eb 100644
+index f44fa4a..ba1a1eb 100644
 --- a/world.html
 +++ b/world.html
 @@ -31,7 +31,7 @@
  <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
  <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
  <link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
--<script src="/shared/games/world-game-assets.js?v=20261110-janggi-replay1" defer></script>
+-<script src="/shared/games/world-game-assets.js?v=20261110-restaurants-c2s30-jeonbuk8" defer></script>
 +<script src="/shared/games/world-game-assets.js?v=20261110-sacheonseong-landscape1" defer></script>
  <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
  <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">

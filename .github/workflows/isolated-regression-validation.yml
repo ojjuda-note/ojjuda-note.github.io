@@ -31,9 +31,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor d1027608d803443561e623f6e4b81fae777ddd4d HEAD
-          test -z "$(git diff --name-only d1027608d803443561e623f6e4b81fae777ddd4d HEAD -- . ':!tests/validation/ojjuda-regression-fix.patch' ':!.github/workflows/isolated-regression-validation.yml')"
-          echo '067552db8e900104bc430f171b7877f323dcdb62a43d71fd6e7a20291c1fb825  tests/validation/ojjuda-regression-fix.patch' | sha256sum -c -
+          git merge-base --is-ancestor dc542c342f9e49e95a7bac3b123f1439694dab24 HEAD
+          test -z "$(git diff --name-only dc542c342f9e49e95a7bac3b123f1439694dab24 HEAD -- . ':!tests/validation/ojjuda-regression-fix.patch' ':!.github/workflows/isolated-regression-validation.yml')"
+          echo 'c9b3e2de0530c4d276cb4645027e3c96e4a31697825d5edcfd38a32bbf1a45eb  tests/validation/ojjuda-regression-fix.patch' | sha256sum -c -
           git apply --check tests/validation/ojjuda-regression-fix.patch
           git apply tests/validation/ojjuda-regression-fix.patch
           git diff --check
