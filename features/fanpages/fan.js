@@ -34,7 +34,114 @@
     return `<div class="image-surface ${extra}"><span class="image-placeholder" aria-hidden="true">✳</span><img data-external-image src="${src}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer"></div>`;
   }
 
+  function initFeatured() {
+    const stage = $('#featured-carousel');
+    if (!stage || artists.length < 2) return;
+    const total = artists.length;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+    const slides = [artists[total - 1], ...artists, artists[0]];
+    const slideHtml = (item) => `<a class="feature-group feature-slide ${item.name.length > 9 ? 'feature-long' : ''}" href="${groupUrl(item.id)}" aria-label="${item.korean} 팬페이지 열기">
+      <span class="feature-mini">FAN SPACE / ${String(artists.indexOf(item) + 1).padStart(2, '0')}</span>
+      <div class="feature-portrait"><span class="feature-photo-fallback" aria-hidden="true">${item.shape}</span><img data-external-image src="${item.image}" alt="${item.korean} 그룹 사진" loading="${item.id === artists[0].id ? 'eager' : 'lazy'}" referrerpolicy="no-referrer"></div>
+      <span class="feature-name">${item.name}<span>↗</span></span><span class="feature-sub">${item.korean} · ${item.fan}</span><span class="feature-sticker">${item.shape}</span>
+    </a>`;
+    stage.innerHTML = `<div class="feature-track">${slides.map(slideHtml).join('')}</div><div class="feature-dots" role="group" aria-label="아이돌 슬라이드 선택">${artists.map((item, i) => `<button type="button" class="feature-dot" data-slide="${i}" aria-label="${item.korean} 보기" aria-pressed="false"></button>`).join('')}</div>`;
+    const track = $('.feature-track', stage);
+    const cards = [...stage.querySelectorAll('.feature-slide')];
+    const dots = [...stage.querySelectorAll('.feature-dot')];
+    let position = 1;
+    let moving = false;
+    let paused = false;
+    let touchX = null;
+    let swipedAt = 0;
+    let timer = null;
+    let sequence = 0;
+
+    function updateControls() {
+      const active = (position - 1 + total) % total;
+      cards.forEach((card, index) => {
+        const visible = index === position;
+        card.inert = !visible;
+        card.tabIndex = visible ? 0 : -1;
+        card.setAttribute('aria-hidden', String(!visible));
+      });
+      dots.forEach((dot, index) => {
+        const selected = index === active;
+        dot.classList.toggle('is-active', selected);
+        dot.setAttribute('aria-pressed', String(selected));
+      });
+    }
+    function setPosition(instant = false) {
+      track.style.transition = instant || reducedMotion ? 'none' : '';
+      track.style.transform = `translate3d(${-100 * position}%, 0, 0)`;
+    }
+    function finish() {
+      if (!moving) return;
+      if (position === 0 || position === total + 1) {
+        position = position === 0 ? total : 1;
+        setPosition(true);
+        void track.offsetWidth;
+        track.style.transition = '';
+      }
+      moving = false;
+      updateControls();
+    }
+    function move(to) {
+      if (moving || to === position) return;
+      if (reducedMotion) {
+        position = to === 0 ? total : to === total + 1 ? 1 : to;
+        setPosition(true);
+        updateControls();
+        return;
+      }
+      moving = true;
+      position = to;
+      setPosition();
+      updateControls();
+      const currentSequence = ++sequence;
+      setTimeout(() => { if (sequence === currentSequence) finish(); }, 900);
+    }
+    function restartTimer() {
+      if (timer) clearInterval(timer);
+      if (!reducedMotion) timer = setInterval(() => {
+        if (!paused && !document.hidden) move(position + 1);
+      }, 5700);
+    }
+    track.addEventListener('transitionend', (event) => {
+      if (event.target === track && event.propertyName === 'transform') finish();
+    });
+    dots.forEach((dot, index) => dot.addEventListener('click', () => {
+      const target = index + 1;
+      if (position === total && target === 1) move(total + 1);
+      else if (position === 1 && target === total) move(0);
+      else move(target);
+      restartTimer();
+    }));
+    stage.addEventListener('mouseenter', () => { paused = true; });
+    stage.addEventListener('mouseleave', () => { paused = stage.contains(document.activeElement); });
+    stage.addEventListener('focusin', () => { paused = true; });
+    stage.addEventListener('focusout', () => { paused = stage.matches(':hover'); });
+    stage.addEventListener('touchstart', (event) => { touchX = event.touches[0]?.clientX ?? null; }, { passive: true });
+    stage.addEventListener('touchend', (event) => {
+      if (touchX === null) return;
+      const distance = (event.changedTouches[0]?.clientX ?? touchX) - touchX;
+      touchX = null;
+      if (Math.abs(distance) < 45) return;
+      swipedAt = Date.now();
+      move(position + (distance < 0 ? 1 : -1));
+      restartTimer();
+    }, { passive: true });
+    stage.addEventListener('click', (event) => {
+      if (Date.now() - swipedAt < 500 && event.target.closest('a')) event.preventDefault();
+    }, true);
+    setPosition(true);
+    updateControls();
+    attachImageFallback(stage);
+    restartTimer();
+  }
+
   function initHub() {
+    initFeatured();
     const grid = $('#artist-grid');
     const search = $('#artist-search');
     const buttons = [...document.querySelectorAll('[data-category]')];
