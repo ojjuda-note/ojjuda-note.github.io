@@ -6,25 +6,19 @@ const hub=require('../features/home/agit-hub.js');
 
 const date='2026-11-10';
 const plus=(value,days)=>new Date(Date.parse(value+'T00:00:00Z')+days*86400000).toISOString().slice(0,10);
-const puzzles=new Set(['trivia','baseball','chosung']);
+const missionIds=['park','baseball','quiz','recommend','visit'];
 
 test('Korean midnight chooses the correct visit day',()=>{
   assert.equal(hub.kstDate(new Date('2026-11-09T14:59:59Z')),'2026-11-09');
   assert.equal(hub.kstDate(new Date('2026-11-09T15:00:00Z')),'2026-11-10');
 });
 
-test('daily missions change and always include one playable puzzle',()=>{
-  const signatures=new Set(),seen=new Set();
+test('all five daily missions stay together; the page target rotates in order',()=>{
   for(let offset=0;offset<21;offset++){
-    const tasks=hub.missions(plus(date,offset));
-    assert.equal(tasks.length,3);
-    assert.equal(new Set(tasks).size,3);
-    assert.equal(tasks.filter(id=>puzzles.has(id)).length,1);
-    signatures.add(tasks.join(','));
-    for(const id of tasks)seen.add(id);
+    const day=plus(date,offset);
+    assert.deepEqual(hub.missions(day),missionIds);
+    assert.equal(hub.visitTarget(day).id,['festival','restaurants','fanpages','group'][offset%4]);
   }
-  assert.ok(signatures.size>=9);
-  for(const id of [...puzzles,'stamp','recommend','daily','arcade'])assert.ok(seen.has(id),id+' must appear');
 });
 
 test('stamp records at most once a day and saves mission progress separately by day',()=>{
@@ -91,7 +85,7 @@ test('trivia and consonant questions give answerable puzzles',()=>{
   }
 });
 
-test('Agit markup contains recommended game, stamp, rotating missions and Daily fan content',()=>{
+test('Agit markup contains one five-mission panel and Daily fan content',()=>{
   const games={spot:{name:'틀린그림찾기'},festival:{name:'축제일정',test:true},group:{name:'그룹',test:true,memberOnly:true},poker:{name:'세븐포커',test:true,age:19}};
   const settings={};
   const html=hub.markup(settings,games,date);
@@ -99,14 +93,15 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.ok(!html.includes('세븐포커'),'adult games stay out of Daily');
   assert.ok(html.includes('data-act="agit-stamp"'));
   assert.ok(html.includes('data-act="agit-play"'));
-  assert.equal((html.match(/class="agit-quest-card /g)||[]).length,3);
-  assert.ok(html.includes('agit-quest-label-short'));
+  assert.equal((html.match(/class="agit-quest-card /g)||[]).length,5);
+  assert.match(html,/축제 페이지 들어가기/);
+  assert.doesNotMatch(html,/5번 페이지는|agit-quest-next|agit-quest-label-short/,'no redundant instructions below the missions');
   for(const section of ['agit-hero','agit-checkin','agit-quest-grid','agit-life-grid','agit-footer'])assert.ok(html.includes(section),section);
   for(const theme of ['classic','spring','summer','autumn','winter','newyear','seollal','valentine','white','children','parents','teachers','buddha','liberation','chuseok','hangeul','halloween','pepero','christmas'])assert.ok(fs.existsSync(path.join(__dirname,'../features/home/theme-illustrations',theme+'.webp')),theme+' illustrated hero exists');
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-admin-record-free1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-quests-panel1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 
@@ -118,7 +113,7 @@ test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
       catalog:{pepero:{name:'빼빼로데이',headline:['달콤한','안부 하나.'],copy:'빼빼로 하나, 마음 한 조각. 오쭈다에서 나눠요.'}}
     };
     const html=hub.markup({}, {}, '2026-11-10');
-    assert.match(html,/<h1>달콤한 <em>안부 하나\.<\/em><\/h1>/);
+    assert.match(html,/<h1><span class="agit-hero-highlight">달콤한 <em>안부 하나\.<\/em><\/span><\/h1>/);
     assert.match(html,/빼빼로 하나, 마음 한 조각\. 오쭈다에서 나눠요\./);
     assert.match(html,/data-agit-theme="pepero"/);
     assert.doesNotMatch(html,/오늘도 <em>잘 왔어!<\/em>/);
@@ -128,10 +123,11 @@ test('occasion headline and Ojjuda copy replace the everyday greeting',()=>{
   }
 });
 
-test('mobile mission cards stay in one horizontal row',()=>{
+test('mobile missions use one compact panel instead of oversized cards',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
   const mobile=css.slice(css.indexOf('@media(max-width:740px)'));
-  assert.match(mobile,/\.agit-quest-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(css,/\.agit-quest-grid\{display:grid;grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(mobile,/\.agit-quest-card\{grid-template-columns:23px 36px minmax\(0,1fr\) 18px/);
 });
 
 test('themed hero uses narrow inline white highlights without masking the artwork',()=>{
@@ -143,8 +139,8 @@ test('themed hero uses narrow inline white highlights without masking the artwor
   assert.match(css,/box-decoration-break:clone/);
   assert.match(js,/class="agit-hero-highlight"/);
   assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
-  assert.match(world,/agit-hub\.css\?v=20261110-hero-highlight2/);
-  assert.match(world,/agit-hub\.js\?v=20261110-hero-highlight2/);
+  assert.match(world,/agit-hub\.css\?v=20261110-quests-panel1/);
+  assert.match(world,/agit-hub\.js\?v=20261110-quests-panel1/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{

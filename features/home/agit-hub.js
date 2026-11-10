@@ -11,14 +11,11 @@
     {id:'group', name:'그룹'}
   ];
   const missionLabels = {
-    park: ['공원에 글 남기기', '카드 쓰기', '🌷'],
-    baseball: ['숫자야구', '풀기', '⚾'],
-    quiz: ['초성·상식 퀴즈', '선택해서 풀기', '🧩'],
-    recommend: ['추천게임 시작하기', '플레이', '🎮'],
-    visit: ['아지트 페이지 들어가기', '들어가기', '🚪']
-  };
-  const missionCompactLabels = {
-    park: '공원 글쓰기', baseball: '숫자야구', quiz: '초성·상식', recommend: '추천게임', visit: '페이지 방문'
+    park: ['공원에 글 남기기', '🌷'],
+    baseball: ['숫자야구', '⚾'],
+    quiz: ['초성·상식 퀴즈', '🧩'],
+    recommend: ['추천게임 시작하기', '🎮'],
+    visit: ['아지트 페이지 들어가기', '🚪']
   };
   const triviaQuestions = [
     ['대한민국의 수도는?', ['부산', '서울', '대전', '인천'], 1],
@@ -165,18 +162,18 @@
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
     return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
-      <header class="agit-section-head"><div><span class="agit-section-kicker">매일 다섯 가지</span><h2>오늘의 미션</h2></div><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
+      <header class="agit-section-head"><h2>오늘의 미션</h2><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
       <div class="agit-quest-grid">${today.map((id,i) => {
         const target=id==='visit'?visitTarget(date):null;
-        const [label,action,emoji]=target?[`${target.name} 페이지 들어가기`,'들어가기','🚪']:missionLabels[id];
-        const compact=target?`${target.name} 방문`:missionCompactLabels[id];
+        const [label,emoji]=target?[`${target.name} 페이지 들어가기`,'🚪']:missionLabels[id];
         const finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
-          <span class="agit-quest-upper"><span class="agit-quest-number">0${i+1}</span><span class="agit-quest-state">${finished?'✓ 완료':'오늘 도전'}</span></span>
-          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong><span class="agit-quest-label-full">${label}</span><span class="agit-quest-label-short">${compact}</span></strong></span>
-          <span class="agit-quest-bottom"><span>${finished?'완료했어요':action+' →'}</span><span class="agit-quest-arrow" aria-hidden="true">↗</span></span>
+          <span class="agit-quest-number">0${i+1}</span>
+          <span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span>
+          <strong class="agit-quest-name">${label}</strong>
+          <span class="agit-quest-arrow" aria-hidden="true">${finished?'✓':'↗'}</span>
         </button>`;
-      }).join('')}</div><p class="agit-quest-next">${done===today.length?'오늘도 성공! 내일 새로운 미션이 열려요.':'5번 페이지는 축제 → 맛집 → 팬페이지 → 그룹 순서로 매일 바뀌어요.'}</p></section>`;
+      }).join('')}</div></section>`;
   }
   function markup(settings, games, date = kstDate()) {
     const state = safeState(settings), game = recommended(games, date), theme = themeFor(date);
