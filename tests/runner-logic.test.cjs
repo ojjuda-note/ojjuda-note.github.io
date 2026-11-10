@@ -95,6 +95,10 @@ for (let i = 0; i < 1500; i++) {
 }
 assert.ok(sharkSeen, 'a shark is spawned during an extended game');
 assert.ok(varyingSpeed, 'the shark changes speed during its pass');
+for (let i = 0; i < 3000; i++) patrol.update(1 / 60);
+assert.equal(patrol.state.speed, 1000, 'runner reaches the new 1000px/s maximum');
+for (let i = 0; i < 600; i++) patrol.update(1 / 60);
+assert.equal(patrol.state.speed, 1000, 'runner never exceeds its 1000px/s maximum');
 patrol.destroy();
 
 const collisionSource = source.replace('const game = {',
