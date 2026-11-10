@@ -524,13 +524,17 @@
     } else {
       c.translate(0, -bounce);
     }
-    // Curled tail, dorsal fin, long snout and crown define an original seahorse.
-    const tail = [[-3, -23], [-15, -17], [-16, -4], [-7, -5]];
-    c.beginPath(); c.moveTo(tail[0][0], tail[0][1]);
-    c.bezierCurveTo(tail[1][0], tail[1][1], tail[2][0], tail[2][1], tail[3][0], tail[3][1]);
-    c.bezierCurveTo(1, -5, 0, -16, -10, -12);
-    c.strokeStyle = '#263d55'; c.lineWidth = 12; c.lineCap = 'round'; c.stroke();
-    c.strokeStyle = '#f6a268'; c.lineWidth = 8; c.stroke();
+    // Wide spiral tail stays visible beyond the body, even at mobile size.
+    const curl = () => {
+      c.beginPath(); c.moveTo(-5, -26);
+      c.bezierCurveTo(-18, -11, -33, -10, -32, -25);
+      c.bezierCurveTo(-31, -40, -11, -37, -15, -23);
+      c.bezierCurveTo(-17, -15, -27, -18, -25, -26);
+    };
+    curl(); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.strokeStyle = '#263d55'; c.lineWidth = 16; c.stroke();
+    curl(); c.strokeStyle = '#ffb579'; c.lineWidth = 10.5; c.stroke();
+    curl(); c.strokeStyle = '#ffe1a2'; c.lineWidth = 2.4; c.stroke();
     // Crown spikes and fluttering back fin.
     c.beginPath(); c.moveTo(-14, -63); c.lineTo(-13, -78);
     c.lineTo(-3, -70); c.lineTo(1, -82); c.lineTo(10, -66);
@@ -556,10 +560,13 @@
     c.fillStyle = gradient(c, -22, -72, 25, -11,
       [[0, '#fff0bc'], [.37, '#ffc375'], [.78, '#f28f69'], [1, '#ce6577']]);
     c.fill(); c.lineWidth = 3.3; c.strokeStyle = '#263b55'; c.stroke();
-    // Distinct cream belly and hand-painted scales.
+    // Curved cream belly and rib marks identify the seahorse silhouette.
     ellipse(c, 2, -33, 8.6, 15, '#ffe6ac');
     ellipse(c, 3.5, -31, 5.6, 11, '#fff6d0a6');
-    for (let i = 0; i < 3; i++) ellipse(c, -11 + i * 2, -37 + i * 8, 2, 2.7, '#c66b718f');
+    for (let i = 0; i < 4; i++) {
+      stroke(c, [[-3, -40 + i * 7], [2.5, -38 + i * 7]], '#d7867d', 1.5);
+    }
+    for (let i = 0; i < 3; i++) ellipse(c, -13 + i * 2, -48 + i * 9, 2, 2.7, '#c66b718f');
     ellipse(c, 27, -52, 5, 2.5, '#ffdc9c');
     stroke(c, [[27, -47], [31, -46]], '#825470', 1.7);
     if (blink) stroke(c, [[2, -59], [10, -59]], '#293b55', 2.4);
@@ -569,15 +576,13 @@
       ellipse(c, 9.4, -61.4, .9, 1.2, '#fff');
     }
     ellipse(c, 14, -51, 3, 2.2, '#e47582');
-    // Two tiny paddling fins animate the character's run without changing size.
+    // Fluttering swimming fins replace feet: this character never turns bipedal.
     if (!sliding) {
-      for (const [px, direction] of [[-5, -1], [7, 1]]) {
-        const sx = px + stride * direction * 5;
-        stroke(c, [[px, -18], [sx, -8]], '#263b55', 8);
-        stroke(c, [[px, -18], [sx, -8]], '#7dd9c7', 5);
-        rounded(c, sx - 7, -7, 15, 7, 3, '#fff4d8');
-        rounded(c, sx - 7, -7, 15, 3, 2, '#325471');
-      }
+      c.beginPath(); c.moveTo(-1, -20);
+      c.quadraticCurveTo(-4 + stride * 5, -7, 8 + stride * 4, -6);
+      c.quadraticCurveTo(12 + stride * 3, -16, 7, -23); c.closePath();
+      c.fillStyle = '#6ddcc5'; c.fill(); c.strokeStyle = '#28425a'; c.lineWidth = 3; c.stroke();
+      stroke(c, [[2, -17], [7 + stride * 2, -11]], '#f2fff1', 2);
     }
     if (jumping) {
       ellipse(c, -29, -50, 4, 4, '#e7fff4');
