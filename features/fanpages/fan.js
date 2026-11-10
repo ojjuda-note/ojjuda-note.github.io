@@ -1,6 +1,12 @@
 (() => {
   'use strict';
-  const artists = window.OJJUDA_FAN_ARTISTS || [];
+  const popularity = window.OJJUDA_FAN_POPULARITY || { rankedIds: [] };
+  const popularityRanks = new Map(popularity.rankedIds.map((id, index) => [id, index]));
+  const artists = [...(window.OJJUDA_FAN_ARTISTS || [])].sort((a, b) => {
+    const aRank = popularityRanks.get(a.id) ?? Infinity;
+    const bRank = popularityRanks.get(b.id) ?? Infinity;
+    return aRank === bRank ? a.korean.localeCompare(b.korean, 'ko') : aRank - bRank;
+  });
   const profiles = window.OJJUDA_FAN_PROFILES || {};
   const videoLibrary = window.OJJUDA_FAN_VIDEOS || {};
   const savedKey = 'ojjuda-fanpages-saved-v1';
@@ -81,9 +87,8 @@
   function initFeatured() {
     const stage = $('#featured-carousel');
     if (!stage || artists.length < 2) return;
-    // Keep the featured carousel compact when the directory has many artists.
-    const featuredIds = ['rescene', 'ive', 'aespa', 'lesserafim', 'nmixx', 'babymonster', 'bts', 'straykids', 'seventeen'];
-    const featured = featuredIds.map((id) => artists.find((item) => item.id === id)).filter(Boolean);
+    // Feature the first nine artists in the same popularity order as the grid.
+    const featured = artists.slice(0, 9);
     const total = featured.length;
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
     const slides = [featured[total - 1], ...featured, featured[0]];
