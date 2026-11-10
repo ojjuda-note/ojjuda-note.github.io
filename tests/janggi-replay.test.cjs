@@ -12,7 +12,7 @@ const plain=value=>JSON.parse(JSON.stringify(value));
 function fixture(){
  const stored=new Map();
  const context=vm.createContext({
-  Date,Math,console,
+  Date,Math,console,adminGamePreviewActive:()=>false,
   D:{online:false},E:null,
   localStorage:{getItem:key=>stored.get(key)||null,setItem:(key,value)=>stored.set(key,value)},
   Xe:{janggi:{side:{c:'초',h:'한'}}},
@@ -90,4 +90,12 @@ test('the defender may repeat an escape from check without being declared checkm
   assert.ok(engine.find(state,{f:75,t:76}));
   assert.notEqual(engine.status(state).over,true);
  }
+});
+
+test('administrator preview never archives a Janggi result',()=>{
+ const {context,stored}=fixture();
+ context.adminGamePreviewActive=()=>true;
+ context.jgArchiveCurrent();
+ assert.equal(stored.size,0);
+ assert.equal(context.E.replayArchived,undefined);
 });

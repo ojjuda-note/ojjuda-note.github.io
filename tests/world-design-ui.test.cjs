@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const proof=process.env.WORLD_DESIGN_PROOF_DIR||'/tmp/world-design-proof';fs.mkdirSync(proof,{recursive:true});
 let world=read('world.html').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-world=world.replace('</head>','<script>'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
+world=world.replace('</head>','<script>'+read('features/home/agit-hub.js')+'\n'+read('app/world/world-themes.js')+'\n'+read('shared/games/world-game-rankings.js')+'\n'+read('shared/games/world-game-assets.js')+'\n'+read('features/arcade/arcade-rooms.js')+'\n'+read('app/world/world-navigation.js').split('/* World-only ambient audio;')[0]+'</script></head>');
 const boot=world.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
 world=world.slice(0,boot)+`
  $.me.nick='오쭈다';$.me.bio='오늘도 반가워요.';$.coins=250;D.online=false;S={rpc:async()=>({data:{ok:true,rooms:[],mine:null}})};
@@ -24,13 +24,11 @@ world=world.slice(0,boot)+`
  assert.equal(await page.locator('.sidenav').isVisible(),true);assert.equal(await page.locator('.bottomnav').isVisible(),false);
  const soloGames=['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'];
  assert.deepEqual(await page.locator('[data-arcade-games=solo] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),soloGames.map(id=>({id,images:1})),'solo cards retain exactly their intended games and cover images');
- assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi','test'],'test games follow every regular category visible to guests');
- assert.deepEqual(await page.locator('[data-arcade-games=test] .gbtn').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('.ge img').length}))),[{id:'group',images:1},{id:'festival',images:1},{id:'restaurants',images:1}],'only active daily features retain their covers in the current order');
+ assert.deepEqual(await page.locator('[data-arcade-games]').evaluateAll(grids=>grids.map(grid=>grid.dataset.arcadeGames)),['solo','multi'],'Arcade contains game categories only');
+ assert.equal(await page.locator('[data-arcade-games=test]').count(),0,'daily tools have moved out of Arcade');
  assert.equal(await page.locator('[data-arcade-games] [data-v=recommendations]').count(),0,'member recommendations are reached through the certified directory');
  assert.equal(await page.locator('[data-arcade-games] [data-v=archery]').count(),1,'Archery appears once across all game categories');
  assert.equal(await page.locator('[data-arcade-games=solo] [data-v=archery] .game-test-badge').count(),0,'released archery has no test badge');
- assert.equal(await page.locator('[data-arcade-test-heading] h2').innerText(),'일상');
- assert.deepEqual(await page.locator('[data-arcade-games=test] .game-test-badge').allTextContents(),['회원 전용','회원 전용'],'only the two member-only daily tools carry badges');
  assert.equal(await page.locator('[data-arcade-adult]').count(),0,'guests have no adult section');
  assert.equal(await page.getByRole('button',{name:'사천성',exact:true}).count(),1);
  assert.equal(await page.locator('.arcade-social').isVisible(),true);
@@ -122,12 +120,17 @@ world=world.slice(0,boot)+`
   }
   if(width<900){
    const buttons=await page.locator('.bottomnav>button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,width:r.width,height:r.height};}));
-   assert.equal(buttons.length,3);assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
+   assert.equal(buttons.length,4);assert.ok(buttons.every(b=>b.width>=44&&b.height>=44),'every mobile menu has a reachable touch area');
    assert.ok(Math.max(...buttons.map(b=>b.width))-Math.min(...buttons.map(b=>b.width))<1,'mobile menus have equal widths');
-   assert.ok(buttons[0].x<width/3&&buttons[2].x>width/2,'mobile menus span the bottom bar');
+   assert.ok(buttons[0].x<width/4&&buttons[3].x>width/2,'mobile menus span the bottom bar');
   }
  }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{document.documentElement.dataset.worldTheme='autumn';designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
+ await page.locator('.bottomnav [data-tab=hub]').click();
+ assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'festival',images:1},{id:'restaurants',images:1}],'Hub retains daily features and covers in their intended order');
+ assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
+ assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
+ await fits('mobile Hub');
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);
  assert.equal(await page.locator('[data-my-group=themes],.settings-theme-section,[data-world-theme-settings],[data-act=theme],[data-act=accent]').count(),0,'all manual appearance controls are removed');await fits('mobile settings');
  await page.screenshot({path:path.join(proof,'settings-mobile.png'),fullPage:true});

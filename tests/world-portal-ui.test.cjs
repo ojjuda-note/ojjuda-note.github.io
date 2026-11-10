@@ -45,7 +45,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
     for (const width of [320, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 844 });
       await page.goto(origin + '/');
-      await page.waitForURL(origin + '/world.html?tab=arcade');
+      await page.waitForURL(origin + '/world.html?tab=hub');
       await page.goto(origin + '/?auth=login');
       await page.locator('#auth-dialog[open]').waitFor();
       await page.locator('[data-close-dialog]').click();
@@ -55,7 +55,7 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
       assert.equal(await page.locator('[data-destination]').count(), 1, 'World entrance');
       assert.equal(await page.locator('[data-destination="world"]').count(), 1);
       assert.equal(await page.locator('[data-destination="note"]').count(), 0);
-      assert.equal(await page.locator('.world-feature').count(), 3, 'all actual bottom menus');
+      assert.equal(await page.locator('.world-feature').count(), 3, 'three destination previews alongside the Hub entrance');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'landing fits ' + width);
       if (process.env.OJJUDA_COPY_PROOF_DIR) { fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `landing-${width}.png`) }); }
       await page.goto(origin + '/sitemap.html');

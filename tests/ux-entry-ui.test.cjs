@@ -25,9 +25,9 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
    },mode);
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
    await page.goto(origin+'/');
-   await page.waitForURL(origin+'/world.html?tab=arcade');
+   await page.waitForURL(origin+'/world.html?tab=hub');
    await page.waitForFunction(()=>window.entryFixture);
-   assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade','the root opens Arcade even if portal scripts are unavailable');
+   assert.equal(await page.evaluate(()=>entryFixture.tab()),'hub','the root opens the Hub even if portal scripts are unavailable');
    await page.goto(origin+'/?auth=login');
    if(mode==='normal'||mode==='identity-missing'){
     await page.locator('#auth-dialog[open]').waitFor();
@@ -42,8 +42,8 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
     await page.locator('#signup-tab').click();assert.equal(await page.locator('#guest-browse').isVisible(),false);
     await page.locator('#login-tab').click();
     await page.locator('#email').fill('fixture@example.invalid');await page.locator('#password').fill('fixture-password');await page.locator('#auth-submit').click();
-    await page.waitForURL(origin+'/world.html');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'arcade');
-    for(const tab of ['park','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
+    await page.waitForURL(origin+'/world.html');await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),'hub');
+    for(const tab of ['arcade','park','my']){await page.goto(origin+'/world.html?tab='+tab);await page.waitForFunction(()=>window.entryFixture);assert.equal(await page.evaluate(()=>entryFixture.tab()),tab);}
    }else{
     await page.locator('#entry-status').waitFor({state:'visible',timeout:12000});
     assert.equal(await page.getByRole('button',{name:'다시 시도',exact:true}).isVisible(),true);
@@ -59,6 +59,6 @@ world=world.slice(0,boot)+'my();window.entryFixture={tab:()=>g.tab===\'place\'?g
    }
    assert.deepEqual(errors,[],mode+' has no unhandled runtime failure');await context.close();
   }
-  console.log('PASS: current three-menu routes, Arcade after login, missing identity/portal scripts, slow account timeout and guest recovery');
+  console.log('PASS: current four-menu routes, Hub after login, missing identity/portal scripts, slow account timeout and guest recovery');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

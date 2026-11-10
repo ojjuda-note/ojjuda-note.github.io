@@ -11,7 +11,7 @@ const origin = 'https://back.test';
 let world = read('world.html')
   .replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '')
   .replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";', 'const screwGame={};');
-const scripts = ['shared/games/game-session.js', 'app/world/world-navigation.js', 'games/mines/world-mines-game.js', 'games/saetbyeol/world-saetbyeol-game.js',
+const scripts = ['features/home/agit-hub.js', 'shared/games/game-session.js', 'app/world/world-navigation.js', 'games/mines/world-mines-game.js', 'games/saetbyeol/world-saetbyeol-game.js',
   'games/ojjuda-tour/world-tour-game.js', 'games/certified-restaurants/world-restaurant-guide.js', 'games/certified-restaurants/recommended-restaurants.js', 'games/tank/world-tank-game.js', 'games/spot-difference/world-spot-game.js', 'games/ttang/ttang-bridge.js',
   'games/photo-ttang/photo-ttang-bridge.js', 'games/matgo/matgo-bridge.js', 'games/festival-schedule/world-festival-schedule.js', 'games/forest-archer/world-archery-game.js',
   'games/sacheonseong/world-sacheonseong-game.js', 'games/bang/world-bang-game.js', 'games/poker/world-poker-game.js', 'games/roulette/world-roulette-game.js', 'games/screw/screw-loader.js'].map(read).join('\n');
@@ -23,8 +23,8 @@ window.backFixture={initVersion:j1,open:Al,link:openWorldGameLink,render:H,state
   billiards:()=>ep('carom4','local'),nativeBack:()=>window.nativeBack({canGoBack:false})};
 window.OjjudaMatgoAccess={configure(){},check:async()=>({userId:'fixture',age:25}),getClient:()=>S,visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
 window.OjjudaPhotoTtangAccess={configure(){},check:async()=>({userId:'fixture'}),visible:()=>true,allowed:()=>true,subscribe:()=>()=>{},refresh:async()=>{}};
-D.online=false;D.isAdmin=false;const settled=async()=>({data:{ok:true,room:null},error:null});S={functions:{invoke:settled},rpc:settled};g.tab='arcade';
-gm(()=>sr.tab({tab:'arcade'}));H();
+D.online=false;D.isAdmin=false;const settled=async()=>({data:{ok:true,room:null},error:null});S={functions:{invoke:settled},rpc:settled};g.tab=new URL(location.href).searchParams.has('game')?'arcade':'hub';
+gm(()=>sr.tab({tab:'hub'}));H();
 ` + world.slice(world.indexOf('</script>', boot));
 
 const child = `<!doctype html><p>Game transport fixture</p><script>
@@ -80,7 +80,7 @@ window.childReady=true;
       const main = async () => {
         await page.waitForFunction(() => history.state?.ojjudaWorld === 'main' && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
         assert.equal(new URL(page.url()).pathname, '/world.html', 'closing a game stays inside World');
-        assert.equal(await page.locator('.arcade-home').isVisible(), true, 'the Arcade main screen returns');
+        assert.equal(await page.locator('#agit-hub-view').isVisible(), true, 'the Hub main screen returns');
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
       const games = [
@@ -209,7 +209,7 @@ window.childReady=true;
       assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Arcade');
       assert.equal(await retired.locator('[data-v=byeolcheonji]').count(),0,'retired vacancy alert has no game card');
       await context.close();
-      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Arcade, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
+      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Hub, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });

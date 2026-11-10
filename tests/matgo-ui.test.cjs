@@ -64,9 +64,9 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     let file=path.join(root,decodeURIComponent(url.pathname));
     if(url.pathname==='/world.html'){
       let html=fs.readFileSync(file,'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g,'').replace('import { screw3d as screwGame } from "./games/screw/screw3d.js";','const screwGame={};');
-      html=html.replace('<script type="module">',`<script>${['games/matgo/matgo-access.js','games/matgo/matgo-bridge.js','shared/games/multiplayer-entry.js','shared/viewport/mobile-viewport.js','app/world/world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
+      html=html.replace('<script type="module">',`<script>${['features/home/agit-hub.js','games/matgo/matgo-access.js','games/matgo/matgo-bridge.js','shared/games/multiplayer-entry.js','shared/viewport/mobile-viewport.js','app/world/world-navigation.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n')}</script><script type="module">`);
       const boot=html.indexOf('j1(()=>H());gm(');assert.ok(boot>0);
-      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,auth:D,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'arcade'}));H();`+html.slice(html.indexOf('</script>',boot));
+      html=html.slice(0,boot)+`window.placeTest={enter:xf,render:H,auth:D,freeze(){clearInterval(g.placeT);g.placeT=null;}};g.tab='arcade';gm(()=>sr.tab({tab:'hub'}));H();`+html.slice(html.indexOf('</script>',boot));
       return route.fulfill({contentType:'text/html',body:html});
     }
     if(url.pathname==='/games/matgo.html'){
@@ -491,6 +491,7 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
         assert.ok(box&&box.x>=-1&&box.x+box.width<=width+1&&box.y>=top-1&&box.y+box.height<=bottom+1,`${width}px ${label}: ${JSON.stringify(box)} inside ${top}..${bottom}`);
       }
       async function open(){
+        if(await f.page.locator('#agit-hub-view').count())await f.page.locator('.bottomnav [data-tab=arcade]').tap();
         await f.page.locator('[data-act="matgo-open"]').tap();
         await child.locator('#content:not([inert]) #solo').waitFor();
         await f.page.waitForFunction(()=>document.querySelector('#matgo-overlay')?.dataset.mpActive==='true'&&history.state?.ojjudaWorld==='menu');
@@ -506,8 +507,8 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
           assert.equal(await f.page.locator('#matgo-overlay').count(),1,'the round stays mounted until exit is confirmed');
           await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).tap();
         }
-        await f.page.waitForFunction(()=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld==='main');
-        assert.equal(await f.page.locator('.arcade-home').isVisible(),true);
+        await f.page.waitForFunction(expected=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld===expected,confirmExit?'main':'menu');
+        assert.equal(await f.page.locator(confirmExit?'#agit-hub-view':'.arcade-home').isVisible(),true,'confirmed game exit returns to Hub; entrance dismissal stays in Arcade');
         assert.equal(await f.page.evaluate(()=>window.nativeExits||0),0,'game exit stays in the app');
       }
       async function back(confirmExit=false){
