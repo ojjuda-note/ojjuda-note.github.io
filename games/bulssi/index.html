@@ -174,7 +174,7 @@ body[data-world^="life"] #biomeMeter{border-color:var(--biome-edge);box-shadow:0
 <script src="./upgrade-branches.js?v=20261110-bulssi-life1"></script>
 <script src="./encounters.js?v=20261110-saetbyeol-worlds1"></script>
 <script src="./tree-controls.js?v=20261013-sky2001"></script>
-<script src="./life-expansion.js?v=20261110-saetbyeol-worlds1"></script>
+<script src="./life-expansion.js?v=20261110-saetbyeol-bloom1"></script>
 <script src="./shadow-enemies.js?v=20261110-saetbyeol-hazards1"></script>
 <script>
 (()=>{
@@ -579,7 +579,7 @@ function startRun(withBoss){
   refreshBooster();refreshTime();
   for(let i=0;i<(withBoss?6:12);i++)spawnRandom(true);
   setMode('run');refreshShadowHUD();
-  if(!S.tut){toast('끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
+  if(!S.tut){toast(S.stage>=5?'움직이면서 생명빛을 모으고 작은 친구들을 키워 주세요':'끌거나 움직여서 천체를 태우세요',3200);S.tut=true;save()}
   else if(S.stage>=5&&!withBoss)toast(`${BIOMES[S.stage-5].icon} ${BIOMES[S.stage-5].name} · 먹이를 모아 특별한 힘을 깨워요`,2400);
 }
 function refreshBooster(){
