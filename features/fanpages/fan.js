@@ -21,6 +21,47 @@
   }
   function groupUrl(id) { return `./artist.html?group=${encodeURIComponent(id)}`; }
   function openLink(url, label, className = '') { return `<a class="${className}" href="${url}" target="_blank" rel="noopener noreferrer">${label} <span aria-hidden="true">↗</span></a>`; }
+  function initShareButton(button, url, title) {
+    if (!button) return;
+    const label = $('.share-label', button);
+    const originalLabel = label.textContent;
+    let feedbackTimer;
+    function feedback(message) {
+      clearTimeout(feedbackTimer);
+      label.textContent = message;
+      feedbackTimer = setTimeout(() => { label.textContent = originalLabel; }, 2500);
+    }
+    button.addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, url });
+          feedback('공유 완료');
+          return;
+        } catch (error) {
+          if (error?.name === 'AbortError') return;
+        }
+      }
+      let copied = false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+          copied = true;
+        }
+      } catch { /* Try legacy clipboard fallback. */ }
+      if (!copied) {
+        const field = document.createElement('textarea');
+        field.value = url;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.append(field);
+        field.select();
+        try { copied = document.execCommand('copy'); } catch { /* Clipboard unavailable. */ }
+        field.remove();
+      }
+      feedback(copied ? '링크 복사됨' : '주소창에서 복사해 주세요');
+    });
+  }
   function attachImageFallback(root = document) {
     root.querySelectorAll('img[data-external-image]').forEach((image) => {
       const fallback = () => {
@@ -143,6 +184,7 @@
 
   function initHub() {
     initFeatured();
+    initShareButton($('#hub-share'), new URL('./index.html', location.href).href, '오쭈다 아이돌 팬페이지');
     const grid = $('#artist-grid');
     const search = $('#artist-search');
     const buttons = [...document.querySelectorAll('[data-category]')];
@@ -250,15 +292,20 @@
 
   function artistProfileHtml(artist, profile) {
     if (!profile) return '';
+    const profileSources = [
+      ...profile.sources,
+      { label: '키 참고', href: profile.heightSource },
+      ...profile.members.filter((member) => member.heightSource).map((member) => ({ label: `${member.name} 키`, href: member.heightSource }))
+    ].filter((source) => source.href);
     const dossier = (label, value, extra = '') => `<div class="profile-fact"><span>${label}</span><strong class="${extra}">${value}</strong></div>`;
     const revealButton = (id, closedLabel, openLabel, extra = '') => `<button type="button" class="content-reveal ${extra}" data-reveal-target="${id}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${id}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
-    const history = (entries, label, sign, id) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list ${entries.length > 1 ? 'is-preview' : ''}" id="${id}">${entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('')}</div>${entries.length > 1 ? revealButton(id, `${label} 더 보기`, `${label} 접기`, 'content-reveal-small') : ''}</div>`;
+    const history = (entries, label, sign, id) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list ${entries.length > 1 ? 'is-preview' : ''}" id="${id}">${entries.length ? entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('') : '<span class="profile-history-pending">확인된 수상 내역 없음</span>'}</div>${entries.length > 1 ? revealButton(id, `${label} 더 보기`, `${label} 접기`, 'content-reveal-small') : ''}</div>`;
     const members = profile.members.map((member, i) => {
-      const birthDate = member.birthday.replaceAll('.', '-');
+      const birthDate = member.birthday?.replaceAll('.', '-');
       return `<article class="profile-member-card">
         <div class="profile-member-top"><span class="profile-member-index">${String(i + 1).padStart(2, '0')}</span><span class="profile-member-spark" aria-hidden="true">${artist.shape}</span></div>
         <div class="profile-member-name"><h4>${member.name}</h4><span>${member.note || 'MEMBER'}</span></div>
-        <dl><div><dt>생일</dt><dd><time datetime="${birthDate}">${member.birthday}</time></dd></div><div><dt>고향·출신</dt><dd>${member.hometown || '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>학교·학력</dt><dd>${member.school || '<span class="profile-pending">확인 중</span>'}</dd></div></dl>
+        <dl><div><dt>생일</dt><dd>${birthDate ? `<time datetime="${birthDate}">${member.birthday}</time>` : '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>키·참고</dt><dd>${member.height ? `${member.height}cm` : '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>고향·출신</dt><dd>${member.hometown || '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>학교·학력</dt><dd>${member.school || '<span class="profile-pending">확인 중</span>'}</dd></div></dl>
         ${member.source ? `<a class="profile-member-source" href="${member.source}" target="_blank" rel="noopener noreferrer" aria-label="${member.name} 관련 자료 보기">관련 자료 <span aria-hidden="true">↗</span></a>` : ''}
       </article>`;
     }).join('');
@@ -271,7 +318,7 @@
       <div class="profile-members-title"><div><span>MEMBER ARCHIVE</span><h3>멤버 프로필</h3></div><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div>
       <div class="profile-member-grid ${profile.members.length > 3 ? 'is-preview' : ''}" id="profile-members">${members}</div>
       ${profile.members.length > 3 ? revealButton('profile-members', `멤버 ${profile.members.length}명 모두 보기`, '멤버 간단히 보기') : ''}
-      <details class="profile-sources"><summary><span>자료 출처</span><small>${profile.sources.length}곳</small><span class="profile-sources-arrow" aria-hidden="true">⌄</span></summary><div class="profile-source-links">${profile.sources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>학교·학력은 재학 이력을 포함하며, 미확인 정보는 표시하지 않아요.</small></div></details>
+      <details class="profile-sources"><summary><span>자료 출처</span><small>${profileSources.length}곳</small><span class="profile-sources-arrow" aria-hidden="true">⌄</span></summary><div class="profile-source-links">${profileSources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>키는 공개 참고치이며, 확인되지 않은 개인정보는 비워 둡니다.</small></div></details>
     </section>`;
   }
 
@@ -310,6 +357,22 @@
       <div class="detail-photo-caption"><div><small>${photo.meta}</small><strong>${photo.label}</strong><span>${photo.credit}</span></div><span class="out-arrow" aria-hidden="true">⤢</span></div>
     </button>`).join('');
     const resources = (entries, kind) => entries.map((entry, i) => `<a class="resource-item" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="resource-icon">${kind === 'merch' ? '◈' : '▦'}</span><div><small>${entry.sub}</small><strong>${entry.title}</strong></div><span class="resource-arrow">↗</span></a>`).join('');
+    const reveal = (target, closedLabel, openLabel) => `<button type="button" class="content-reveal" data-reveal-target="${target}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${target}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
+    const albums = artist.music || [];
+    const albumCards = albums.map((album, i) => `<article class="album-card">
+      <div class="album-card-top"><span class="album-number">${String(i + 1).padStart(2, '0')}</span><span>${album.type}</span></div>
+      <a class="album-card-title" href="${album.href}" target="_blank" rel="noopener noreferrer"><strong>${album.title}</strong><span aria-hidden="true">↗</span></a>
+      <time datetime="${album.date.replaceAll('.', '-')}">${album.date}</time>
+      <ol class="album-tracks">${album.songs.map((song, n) => `<li><span>${String(n + 1).padStart(2, '0')}</span><strong>${song}</strong></li>`).join('')}</ol>
+    </article>`).join('');
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+    const events = (artist.appearances || []).filter((event) => (event.endDate || event.date) >= today).sort((a, b) => a.date.localeCompare(b.date));
+    const eventCards = events.map((event) => `<a class="event-card" href="${event.href}" target="_blank" rel="noopener noreferrer">
+      <time datetime="${event.date}"><strong>${event.date.slice(5).replace('-', '.')}</strong><small>${event.date.slice(0, 4)}</small></time>
+      <span class="event-card-info"><strong>${event.title}</strong><small>${event.sub}</small></span><span class="event-arrow" aria-hidden="true">↗</span>
+    </a>`).join('');
+    const campaigns = artist.campaigns || [];
+    const campaignCards = campaigns.map((entry) => `<a class="campaign-card" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="campaign-type">${entry.kind}</span><span class="campaign-info"><strong>${entry.title}</strong><small>${entry.sub}</small></span><span class="campaign-date">${entry.date}</span><b aria-hidden="true">↗</b></a>`).join('');
     const other = artists.filter((item) => item.id !== artist.id).map((item) => `<a href="${groupUrl(item.id)}" class="other-group" style="--other-light:${item.light};--other-accent:${item.accent}"><span>${item.shape}</span><div><strong>${item.name}</strong><small>${item.korean}</small></div><span>↗</span></a>`).join('');
 
     root.innerHTML = `
@@ -322,12 +385,12 @@
           <span class="stage-glyph stage-glyph-a">${artist.shape}</span><span class="stage-glyph stage-glyph-b">${artist.shape}</span><span class="stage-glyph stage-glyph-c">${artist.shape}</span>
           <span class="stage-ghost-number">${String(index + 1).padStart(2, '0')}</span>
         </div>
-        <div class="detail-hero-copy"><span class="detail-overline">OJJUDA FAN SPACE / ${String(index + 1).padStart(2, '0')}</span><div class="detail-hero-main"><div class="detail-heart">${artist.shape}</div><h1>${artist.name}</h1><p>${artist.korean} <span>·</span> ${artist.fan}</p></div><div class="detail-hero-actions"><a href="#photos" class="detail-primary">사진 보기 ↗</a><button class="detail-save ${saved ? 'is-saved' : ''}" type="button" id="detail-save" aria-pressed="${saved}">${saved ? '♥ 관심 등록됨' : '♡ 관심 등록'}</button></div><span class="agency-label">${artist.agency} · FAN MADE</span></div>
+        <div class="detail-hero-copy"><span class="detail-overline">OJJUDA FAN SPACE / ${String(index + 1).padStart(2, '0')}</span><div class="detail-hero-main"><div class="detail-heart">${artist.shape}</div><h1>${artist.name}</h1><p>${artist.korean} <span>·</span> ${artist.fan}</p></div><div class="detail-hero-actions"><a href="#photos" class="detail-primary">사진 보기 ↗</a><button class="detail-save ${saved ? 'is-saved' : ''}" type="button" id="detail-save" aria-pressed="${saved}">${saved ? '♥ 관심 등록됨' : '♡ 관심 등록'}</button><button class="fan-share detail-share" type="button" id="detail-share" aria-label="${artist.korean} 팬페이지 공유"><span aria-hidden="true">↗</span><span class="share-label" aria-live="polite">공유</span></button></div><span class="agency-label">${artist.agency} · FAN MADE</span></div>
         <div class="detail-hero-visual">${imageHtml(artist.image, `${artist.korean} 그룹 사진`, 'detail-hero-image')}<span class="hero-vertical">${artist.status}</span><span class="stage-visual-tag" aria-hidden="true">${artist.fan}</span><span class="hero-image-credit">${artist.imageCredit} ↗</span></div>
       </section>
       <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
-      <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>03</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>04</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>05</span><strong>소식</strong><b>↗</b></a></nav>
+      <nav class="detail-shortcuts ${campaigns.length ? 'has-campaigns' : ''}" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#music"><span>03</span><strong>음악</strong><b>↗</b></a><a href="#goods"><span>04</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>05</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>06</span><strong>소식</strong><b>↗</b></a>${campaigns.length ? '<a href="#collabs"><span>07</span><strong>콜라보</strong><b>↗</b></a>' : ''}</nav>
       ${artistProfileHtml(artist, profile)}
       <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid ${artist.photos.length > 3 ? 'is-preview' : ''}" id="artist-photo-grid">${gallery}</div>${artist.photos.length > 3 ? `<button type="button" class="content-reveal" data-reveal-target="artist-photo-grid" data-label-closed="사진 ${artist.photos.length}장 모두 보기" data-label-open="사진 간단히 보기" aria-controls="artist-photo-grid" aria-expanded="false"><span class="content-reveal-text">사진 ${artist.photos.length}장 모두 보기</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>` : ''}<p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
       <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
@@ -335,9 +398,11 @@
         <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
         <div class="photo-viewer-bottom"><div><h3 id="photo-viewer-title"></h3><p id="photo-viewer-credit"></p></div><div class="photo-viewer-actions"><a id="photo-viewer-license" href="#" target="_blank" rel="noopener noreferrer" hidden>이용 조건</a><a id="photo-viewer-source" href="#" target="_blank" rel="noopener noreferrer">원본·출처 ↗</a></div></div>
       </div></dialog>
-      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>03 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
-      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>04 / CALENDAR</span><h2>일정 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
-      <section id="news" class="detail-section"><div class="detail-heading"><div><span>05 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
+      <section id="music" class="detail-section music-section"><div class="detail-heading"><div><span>03 / DISCOGRAPHY</span><h2>앨범·노래 <em>${artist.shape}</em></h2></div><span class="section-count">${albums.length} RELEASES</span></div><div class="album-grid ${albums.length > 2 ? 'is-preview' : ''}" id="artist-albums">${albumCards}</div>${albums.length > 2 ? reveal('artist-albums', `앨범 ${albums.length}개 모두 보기`, '앨범 간단히 보기') : ''}</section>
+      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>04 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
+      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>05 / UPCOMING</span><h2>출연 예정 <em>${artist.shape}</em></h2></div><span class="section-count">${events.length} EVENTS</span></div><div class="event-list ${events.length > 2 ? 'is-preview' : ''}" id="artist-events">${events.length ? eventCards : '<div class="event-empty">확인된 예정 행사 없음</div>'}</div>${events.length > 2 ? reveal('artist-events', `행사 ${events.length}개 모두 보기`, '행사 간단히 보기') : ''}<div class="resource-subhead">공식 일정 확인</div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
+      <section id="news" class="detail-section"><div class="detail-heading"><div><span>06 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
+      ${campaigns.length ? `<section id="collabs" class="detail-section campaign-section"><div class="detail-heading"><div><span>07 / PARTNERSHIPS</span><h2>콜라보·광고 <em>${artist.shape}</em></h2></div><span class="section-count">${campaigns.length} STORIES</span></div><div class="campaign-list ${campaigns.length > 3 ? 'is-preview' : ''}" id="artist-campaigns">${campaignCards}</div>${campaigns.length > 3 ? reveal('artist-campaigns', `${campaigns.length}건 모두 보기`, '간단히 보기') : ''}</section>` : ''}
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
       <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
@@ -348,6 +413,7 @@
       saveButton.textContent = active ? '♥ 관심 등록됨' : '♡ 관심 등록';
       saveButton.setAttribute('aria-pressed', String(active));
     });
+    initShareButton($('#detail-share', root), new URL(groupUrl(artist.id), location.href).href, `${artist.korean} | 오쭈다 팬페이지`);
     attachImageFallback(root);
     initProgressiveReveal(root);
     initPhotoViewer(root, artist);

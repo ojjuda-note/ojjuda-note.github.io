@@ -468,6 +468,41 @@ body[data-artist="twice"] .stage-orb-c { border-color: #ffc5ef9c; }
 body[data-artist="twice"] .stage-beam { background: linear-gradient(90deg, transparent, #fff5d4c9, transparent); }
 body[data-artist="twice"] .detail-shortcuts a { border-bottom-color: #e86d9e; }
 
+/* ILLIT: rotating prismatic halo and weightless pastel light */
+body[data-artist="illit"] { --stage-glow:#a1a1e78c;--stage-flare:#f8ffdacc;--stage-spark:#fffef3;--stage-strip:linear-gradient(95deg,#777adf,#a893ef 45%,#c7e991);--stage-strip-ink:#fff; }
+body[data-artist="illit"] .detail-hero.stage-hero { background:linear-gradient(120deg,#c9dbff,#eddefa 55%,#faffbb);border:2px solid #fafff1;box-shadow:0 26px 74px #9595db7f; }
+body[data-artist="illit"] .stage-ring { border:16px dotted #fffed2a4;box-shadow:0 0 40px #fffef5; }
+body[data-artist="illit"] .stage-glyph { color:#fff;filter:drop-shadow(0 0 13px #fff8); }
+body[data-artist="illit"] .stage-hero .detail-hero-main h1 { color:#4b538b;text-shadow:5px 5px 0 #ffffe3,0 0 38px #e7edff; }
+body[data-artist="illit"] .detail-shortcuts a { border-bottom-color:#c7b0fb; }
+
+/* A2O MAY: glittering cherry-chrome zigzags */
+body[data-artist="a2omay"] { --stage-glow:#df5e8492;--stage-flare:#ffe0d3b8;--stage-spark:#ffeef6;--stage-strip:linear-gradient(100deg,#892245,#d44667 48%,#d98f83);--stage-strip-ink:#fff; }
+body[data-artist="a2omay"] .detail-hero.stage-hero { background:linear-gradient(125deg,#ee869e,#f9bc9c 52%,#f78cae);border:2px solid #fff0e4;box-shadow:16px 16px 0 #c14b6540,0 25px 54px #d04f7080; }
+body[data-artist="a2omay"] .stage-ring { border:8px double #fff2dc8d;border-radius:2px; }
+body[data-artist="a2omay"] .stage-beam { background:linear-gradient(90deg,transparent,#fffcdbad,transparent); }
+body[data-artist="a2omay"] .stage-hero .detail-hero-main h1 { color:#6f2346;text-shadow:5px 5px 0 #fff5ea; }
+body[data-artist="a2omay"] .detail-shortcuts a { border-bottom-color:#d23e64; }
+
+/* A2O LITE: luminous mint beams, energetic matrix grid */
+body[data-artist="a2olite"] { --stage-glow:#40efb985;--stage-flare:#6dfeb88b;--stage-spark:#a4ffcd;--stage-strip:linear-gradient(90deg,#16c29c,#7dffc2 56%,#7ee9f2);--stage-strip-ink:#0e3041; }
+body[data-artist="a2olite"] .detail-hero.stage-hero { background:radial-gradient(circle at 12% 35%,#166a66,#0e3045 65%,#0b233c);border:2px solid #7dfac2;box-shadow:0 0 64px #47edbc64; }
+body[data-artist="a2olite"] .stage-energy { background-image:linear-gradient(#a1ffd61d 1px,transparent 1px),linear-gradient(90deg,#a1ffd61d 1px,transparent 1px);background-size:34px 34px;animation:stage-grid-shift 12s linear infinite; }
+body[data-artist="a2olite"] .stage-beam { background:linear-gradient(90deg,transparent,#b1ffdcc7,transparent); }
+body[data-artist="a2olite"] .stage-ring { border-color:#b1ffd9;box-shadow:0 0 25px #7efdc793; }
+body[data-artist="a2olite"] .stage-glyph { filter:drop-shadow(0 0 20px #baffcd); }
+body[data-artist="a2olite"] .stage-hero .detail-hero-main h1 { color:#eeffe8;text-shadow:3px 4px 0 #0b7b76,0 0 30px #8fffc4; }
+body[data-artist="a2olite"] .detail-shortcuts a { border-bottom-color:#83f5ab; }
+
+/* A2O SOUL: gliding violet portal rings, concert-night contrast */
+body[data-artist="a2osoul"] { --stage-glow:#746dea96;--stage-flare:#817cf386;--stage-spark:#c8c5ff;--stage-strip:linear-gradient(100deg,#3d3b93,#756ae7 48%,#354a9f);--stage-strip-ink:#fff; }
+body[data-artist="a2osoul"] .detail-hero.stage-hero { background:radial-gradient(circle at 22% 26%,#5952a0,#20264c 52%,#121b3a);border:2px solid #8d88e7;box-shadow:0 0 69px #595ac584; }
+body[data-artist="a2osoul"] .stage-ring { border-color:#ada4ff9c;box-shadow:0 0 42px #b9aaff70; }
+body[data-artist="a2osoul"] .stage-orb-c { border-color:#c3bbff80; }
+body[data-artist="a2osoul"] .stage-beam { background:linear-gradient(90deg,transparent,#aaa4ff9a,transparent); }
+body[data-artist="a2osoul"] .stage-hero .detail-hero-main h1 { color:#f2f0ff;text-shadow:4px 5px 0 #4743a4,0 0 38px #cbc3ff; }
+body[data-artist="a2osoul"] .detail-shortcuts a { border-bottom-color:#aaa4ff; }
+
 /* The hub is a moving window into the stages, not another static card grid. */
 body[data-page="hub"] .feature-carousel {
   box-shadow: 0 20px 60px #975dba5e;

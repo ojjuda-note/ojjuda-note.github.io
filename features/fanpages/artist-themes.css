@@ -1,4 +1,4 @@
-/* Five visual directions for the existing artist pages.
+/* Individual visual directions for the artist pages.
    These palettes are fan-made interpretations, not official brand guidelines. */
 
 body[data-artist] {
@@ -409,6 +409,70 @@ body[data-artist="twice"] .channels-section {
   border-radius: 31px;
 }
 
+/* ILLIT — pearly prismatic glass, lemon light and sky-blue stickers */
+body[data-artist="illit"] {
+  --theme-bg:#f7fbff;--theme-ink:#35415f;--theme-card:#fffefa;--theme-line:#d9dff5;
+  --theme-chip:#eeeaff;--theme-hover:#eff4ff;--theme-mist:#e2e9ff;
+  --theme-muted:#7c84a2;--theme-topbar:#fbfcffed;
+  --group-accent:#7774e7;--group-light:#eff1c3;--group-dark:#30396c;
+}
+body[data-artist="illit"] .detail-hero {
+  background:radial-gradient(circle at 28% 13%,#ffffe3 0,transparent 40%),linear-gradient(120deg,#d2e3ff,#eee5ff 47%,#faffbd);
+  border:2px solid #ffffff;border-radius:39px;box-shadow:0 0 0 1px #cccaf3,0 22px 65px #9c95e04d;
+}
+body[data-artist="illit"] .detail-hero:before { border:11px dotted #ffffff84;width:490px;height:490px;top:-270px;left:-230px; }
+body[data-artist="illit"] .detail-hero:after { content:'✧';position:absolute;right:41%;bottom:-110px;font:240px/1 Georgia,serif;color:#fff9;pointer-events:none; }
+body[data-artist="illit"] .detail-hero-main h1 { font-style:italic;letter-spacing:-4px;text-shadow:4px 5px 0 #fff9; }
+body[data-artist="illit"] .detail-primary,body[data-artist="illit"] .detail-save,body[data-artist="illit"] .detail-shortcuts a,body[data-artist="illit"] .detail-photo { border-radius:25px; }
+body[data-artist="illit"] .resource-item { background:linear-gradient(135deg,#fff,#f3f0ff);border-radius:20px; }
+body[data-artist="illit"] .channels-section { background:linear-gradient(115deg,#7c8be4,#a98bdf 60%,#8084d9);border-radius:32px; }
+
+/* A2O MAY — cherry-metallic fashion editorial with bold cut corners */
+body[data-artist="a2omay"] {
+  --theme-bg:#fff9f8;--theme-ink:#592839;--theme-card:#fffefd;--theme-line:#f0cbd0;
+  --theme-chip:#ffe6e7;--theme-hover:#ffeff1;--theme-mist:#ffced2;
+  --theme-muted:#936d75;--theme-topbar:#fff9f9ed;
+  --group-accent:#cd3b61;--group-light:#ffd7d6;--group-dark:#602034;
+}
+body[data-artist="a2omay"] .detail-hero { background:linear-gradient(135deg,#f9aabc,#f6d1b4 55%,#faacc8);border:2px solid #fff5e8;border-radius:5px 48px 5px 48px;box-shadow:14px 14px 0 #b844602d; }
+body[data-artist="a2omay"] .detail-hero:before { border:18px dotted #ffecda98;top:-205px;left:-230px;width:420px;height:420px; }
+body[data-artist="a2omay"] .detail-hero:after { content:'MAY';position:absolute;right:32%;top:90px;font:900 130px/1 Impact,sans-serif;letter-spacing:-9px;transform:rotate(-17deg);opacity:.10;color:#992445;pointer-events:none; }
+body[data-artist="a2omay"] .detail-hero-main h1 { font-style:italic;letter-spacing:-3px;text-shadow:4px 5px 0 #fff8; }
+body[data-artist="a2omay"] .detail-shortcuts a { border-radius:6px 18px 6px 18px; }
+body[data-artist="a2omay"] .detail-photo,body[data-artist="a2omay"] .resource-item { border-radius:6px 23px 6px 23px; }
+body[data-artist="a2omay"] .channels-section { background:linear-gradient(115deg,#a51f4c,#d44a69 48%,#8c2149);border-radius:8px 40px; }
+
+/* A2O LITE — kinetic mint lasers across a dark neon circuit */
+body[data-artist="a2olite"] {
+  --theme-bg:#0b1b2b;--theme-ink:#e9fff8;--theme-card:#12293a;--theme-line:#3a5b60;
+  --theme-chip:#1e494e;--theme-hover:#1d384a;--theme-mist:#17455a;
+  --theme-muted:#a4c9ce;--theme-topbar:#0d2334f5;
+  --group-accent:#7df4ab;--group-light:#e1fef3;--group-dark:#132d4c;
+  background:radial-gradient(ellipse at 85% 350px,#234f5a 0,transparent 48%),#0b1b2b;
+}
+body[data-artist="a2olite"] .site-mark,body[data-artist="a2olite"] .top-links a,body[data-artist="a2olite"] .footer-inner { color:#eafff7; }
+body[data-artist="a2olite"] .detail-hero { background:repeating-linear-gradient(-55deg,#103c46 0 65px,#0f3342 66px 70px);border:2px solid #8dfec6;box-shadow:0 0 0 5px #69eabd22,0 0 65px #42eab56b;border-radius:13px; }
+body[data-artist="a2olite"] .detail-hero:before { border:3px solid #7df4ab84;box-shadow:0 0 0 25px #72f8ad0f,0 0 0 64px #72f8ad08; }
+body[data-artist="a2olite"] .detail-hero-main h1 { font-weight:900;font-style:italic;color:#e0ffdc;text-shadow:3px 4px 0 #004d55,0 0 33px #baffc0; }
+body[data-artist="a2olite"] .detail-shortcuts a,body[data-artist="a2olite"] .resource-item,body[data-artist="a2olite"] .detail-photo { border-radius:11px;box-shadow:0 0 0 1px #86f6bd1a; }
+body[data-artist="a2olite"] .channels-section { background:linear-gradient(120deg,#0f675e,#155e7e 50%,#383b7d);border:1px solid #65eebe;border-radius:13px; }
+
+/* A2O SOUL — after-dark cosmic cobalt and holographic lavender */
+body[data-artist="a2osoul"] {
+  --theme-bg:#101327;--theme-ink:#f1f0ff;--theme-card:#1e2240;--theme-line:#45476f;
+  --theme-chip:#303457;--theme-hover:#282e50;--theme-mist:#35365b;
+  --theme-muted:#b1b2d0;--theme-topbar:#16182df1;
+  --group-accent:#aaa4ff;--group-light:#cbe5ff;--group-dark:#1e2350;
+  background:radial-gradient(ellipse at 75% 160px,#333457 0,transparent 46%),#101327;
+}
+body[data-artist="a2osoul"] .site-mark,body[data-artist="a2osoul"] .top-links a,body[data-artist="a2osoul"] .footer-inner { color:#f1efff; }
+body[data-artist="a2osoul"] .detail-hero { background:radial-gradient(circle at 18% 26%,#4c4799,#20234c 50%,#141c39);border:1px solid #928fff;box-shadow:0 0 45px #7675ed62;border-radius:19px; }
+body[data-artist="a2osoul"] .detail-hero:before { border:2px dashed #c5c3ff75;box-shadow:0 0 0 42px #9d8fee12; }
+body[data-artist="a2osoul"] .detail-hero:after { content:'✷';position:absolute;left:34%;top:13%;font:290px/1 Georgia,serif;color:#a39cfd19;pointer-events:none; }
+body[data-artist="a2osoul"] .detail-hero-main h1 { color:#f1efff;text-shadow:4px 6px 0 #5455ad,0 0 35px #aaa5ff75;letter-spacing:-3px; }
+body[data-artist="a2osoul"] .detail-photo,body[data-artist="a2osoul"] .resource-item { border-radius:17px; }
+body[data-artist="a2osoul"] .channels-section { background:linear-gradient(125deg,#3b326d,#59539c 55%,#2a4574);border:1px solid #9691ef;border-radius:21px; }
+
 @media (max-width: 640px) {
   body[data-artist="rescene"] .detail-hero,
   body[data-artist="twice"] .detail-hero { border-radius: 26px; }
@@ -421,6 +485,9 @@ body[data-artist="twice"] .channels-section {
   body[data-artist="aespa"] .detail-hero-visual { border-left: 0; border-top: 1px solid #a2deff5a; }
   body[data-artist="lesserafim"] .detail-hero { box-shadow: 8px 8px 0 #d94c4630; }
   body[data-artist="twice"] .detail-photo { border-width: 4px; }
+  body[data-artist="illit"] .detail-hero { border-radius:27px; }
+  body[data-artist="a2omay"] .detail-hero:after { font-size:80px;left:12%;top:23%; }
+  body[data-artist="a2olite"] .detail-hero-main h1,body[data-artist="a2osoul"] .detail-hero-main h1 { font-size:clamp(49px,12.3vw,73px);letter-spacing:-2px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
