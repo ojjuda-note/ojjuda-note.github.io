@@ -84,6 +84,15 @@
     }
     c.restore();
   }
+  function fish(c, x, y, size, color) {
+    c.save(); c.translate(x, y);
+    c.beginPath(); c.moveTo(-size * .6, 0);
+    c.lineTo(-size * 1.1, -size * .48); c.lineTo(-size * 1.1, size * .48); c.closePath();
+    c.fillStyle = color; c.fill();
+    ellipse(c, 0, 0, size, size * .55, color);
+    ellipse(c, size * .48, -size * .12, 1.25, 1.25, '#ffffffb0');
+    c.restore();
+  }
   function sea(c, dist, time, view, stage, reduced = false) {
     const z = ZONES[stage];
     c.fillStyle = gradient(c, 0, 0, 0, view.h, [[0, z.deep], [.55, z.mid], [1, z.light]]);
@@ -105,6 +114,11 @@
       c.lineTo(x, view.ground - 105 + h);
     }
     c.lineTo(W, view.ground); c.lineTo(0, view.ground); c.closePath(); c.fill();
+    for (let i = 0; i < 7; i++) {
+      const x = ((i * 97 - dist * (i % 2 ? .16 : .09)) % 670 + 670) % 670 - 100;
+      const y = view.ground - 150 - (i % 4) * 44 + (reduced ? 0 : Math.sin(time * .8 + i) * 4);
+      fish(c, x, y, 6 + i % 3 * 2, i % 2 ? '#b1f9e077' : '#b8d5f47b');
+    }
     const nearShift = dist * .24;
     for (let i = 0; i < 9; i++) {
       let x = ((i * 84 - nearShift) % 756 + 756) % 756 - 90;
@@ -329,15 +343,16 @@
     let musicOn = safeGet('ojjuda:runner:music') !== 'off';
     let audio = null;
     const score = () => Math.floor(distance / 9) + pearls * 25 + Math.floor(combo * 8);
+    const globalSoundOn = () => typeof window.Wr !== 'function' || window.Wr() !== '🔇';
     function ensureAudio() {
-      if (!musicOn || audio) { if (audio?.state === 'suspended') void audio.resume().catch(() => {}); return; }
+      if (!musicOn || !globalSoundOn() || audio) { if (audio?.state === 'suspended' && globalSoundOn()) void audio.resume().catch(() => {}); return; }
       try {
         audio = new (window.AudioContext || window.webkitAudioContext)();
         if (audio.state === 'suspended') void audio.resume().catch(() => {});
       } catch { audio = null; }
     }
     function tone(frequency, duration, volume, wave = 'sine') {
-      if (!musicOn || !audio || audio.state !== 'running') return;
+      if (!musicOn || !globalSoundOn() || !audio || audio.state !== 'running') return;
       try {
         const now = audio.currentTime, oscillator = audio.createOscillator(), gain = audio.createGain();
         oscillator.type = wave; oscillator.frequency.setValueAtTime(frequency, now);
@@ -356,7 +371,9 @@
     function sound(kind) {
       if (kind === 'jump' || kind === 'slide') api.sound?.tap?.();
       else if (kind === 'pearl' || kind === 'shield') api.sound?.hit?.();
-      else if (kind === 'hurt') api.sound?.bad?.() || api.sound?.hit?.();
+      else if (kind === 'hurt') {
+        if (api.sound?.bad) api.sound.bad(); else api.sound?.hit?.();
+      }
     }
     function particle(x, y, kind, count = 7) {
       if (reduced) return;
@@ -518,7 +535,12 @@
         c.restore();
       },
       onDown(x) { if (x >= W * .62) crouch(); else jump(); },
-      onSwipe(direction) { if (direction === 'D') crouch(); else if (direction === 'U') jump(); },
+      onSwipe(direction) {
+        if (direction === 'D') {
+          if (offset < -5 && !paused && !ended) { vy = Math.max(vy, 760); slide = .85; }
+          else crouch();
+        } else if (direction === 'U') jump();
+      },
       onKey(key) {
         if (['ArrowUp', ' ', 'w', 'W', 'Enter'].includes(key)) { jump(); return true; }
         if (['ArrowDown', 's', 'S', 'Shift', 'c', 'C'].includes(key)) { crouch(); return true; }
