@@ -176,6 +176,77 @@
     render();
   }
 
+  function initPhotoViewer(root, artist) {
+    const dialog = $('#photo-viewer', root);
+    const buttons = [...root.querySelectorAll('[data-photo-index]')];
+    if (!dialog || !buttons.length) return;
+
+    const image = $('#photo-viewer-image', dialog);
+    const missing = $('#photo-viewer-missing', dialog);
+    const number = $('#photo-viewer-number', dialog);
+    const title = $('#photo-viewer-title', dialog);
+    const credit = $('#photo-viewer-credit', dialog);
+    const source = $('#photo-viewer-source', dialog);
+    const license = $('#photo-viewer-license', dialog);
+    const close = $('.photo-viewer-close', dialog);
+    const stage = $('.photo-viewer-stage', dialog);
+    let active = 0;
+    let trigger = null;
+    let touchX = null;
+
+    function show(index) {
+      active = (index + artist.photos.length) % artist.photos.length;
+      const photo = artist.photos[active];
+      number.textContent = `${String(active + 1).padStart(2, '0')} / ${String(artist.photos.length).padStart(2, '0')}`;
+      title.textContent = photo.label;
+      credit.textContent = `${photo.meta} · ${photo.credit}`;
+      source.href = photo.href;
+      license.hidden = !photo.licenseUrl;
+      if (photo.licenseUrl) {
+        license.href = photo.licenseUrl;
+        license.textContent = photo.license;
+      }
+      missing.hidden = true;
+      image.hidden = false;
+      image.alt = `${artist.korean} ${photo.label} 사진`;
+      image.onerror = () => { image.hidden = true; missing.hidden = false; };
+      image.src = photo.full || photo.image;
+    }
+
+    buttons.forEach((button) => button.addEventListener('click', () => {
+      if (typeof dialog.showModal !== 'function') {
+        window.open(artist.photos[Number(button.dataset.photoIndex)].image, '_blank', 'noopener');
+        return;
+      }
+      trigger = button;
+      show(Number(button.dataset.photoIndex));
+      dialog.showModal();
+      document.body.classList.add('photo-viewing');
+      close.focus();
+    }));
+    close.addEventListener('click', () => dialog.close());
+    $('.photo-viewer-prev', dialog).addEventListener('click', () => show(active - 1));
+    $('.photo-viewer-next', dialog).addEventListener('click', () => show(active + 1));
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => {
+      document.body.classList.remove('photo-viewing');
+      trigger?.focus();
+    });
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        show(active + (event.key === 'ArrowRight' ? 1 : -1));
+      }
+    });
+    stage.addEventListener('touchstart', (event) => { touchX = event.touches[0]?.clientX ?? null; }, { passive: true });
+    stage.addEventListener('touchend', (event) => {
+      if (touchX === null) return;
+      const delta = (event.changedTouches[0]?.clientX ?? touchX) - touchX;
+      touchX = null;
+      if (Math.abs(delta) > 55) show(active + (delta < 0 ? 1 : -1));
+    }, { passive: true });
+  }
+
   function initArtist() {
     const id = new URLSearchParams(location.search).get('group');
     const artist = artists.find((item) => item.id === id);
@@ -192,11 +263,10 @@
     document.documentElement.style.setProperty('--group-light', artist.light);
     document.documentElement.style.setProperty('--group-dark', artist.dark);
     document.title = `${artist.korean} (${artist.name}) | 오쭈다 팬페이지`;
-    const gallery = artist.photos.map((photo, i) => `<a class="detail-photo" href="${photo.href}" target="_blank" rel="noopener noreferrer">
+    const gallery = artist.photos.map((photo, i) => `<button class="detail-photo" type="button" data-photo-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${photo.label} 사진 크게 보기">
       ${imageHtml(photo.image, `${artist.korean} ${photo.label} 사진`, `detail-photo-image image-${i}`)}
-      <div class="detail-photo-caption"><div><small>${photo.meta}</small><strong>${photo.label}</strong><span>${photo.credit}</span></div><span class="out-arrow">↗</span></div>
-    </a>`).join('');
-    const extraMedia = artist.photos.length < 3 ? artist.links.filter((link) => /Instagram|YouTube/.test(link.label)).map((link, i) => `<a class="detail-media-tile media-tile-${i}" href="${link.url}" target="_blank" rel="noopener noreferrer"><span class="media-symbol">${link.icon}</span><small>OFFICIAL</small><strong>${link.label}</strong><span class="media-arrow">↗</span></a>`).join('') : '';
+      <div class="detail-photo-caption"><div><small>${photo.meta}</small><strong>${photo.label}</strong><span>${photo.credit}</span></div><span class="out-arrow" aria-hidden="true">⤢</span></div>
+    </button>`).join('');
     const resources = (entries, kind) => entries.map((entry, i) => `<a class="resource-item" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="resource-icon">${kind === 'merch' ? '◈' : '▦'}</span><div><small>${entry.sub}</small><strong>${entry.title}</strong></div><span class="resource-arrow">↗</span></a>`).join('');
     const other = artists.filter((item) => item.id !== artist.id).map((item) => `<a href="${groupUrl(item.id)}" class="other-group" style="--other-light:${item.light};--other-accent:${item.accent}"><span>${item.shape}</span><div><strong>${item.name}</strong><small>${item.korean}</small></div><span>↗</span></a>`).join('');
 
@@ -216,7 +286,12 @@
       <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
       <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#photos"><span>01</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>02</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>03</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>04</span><strong>소식</strong><b>↗</b></a></nav>
-      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div><div class="detail-photo-grid">${gallery}${extraMedia}</div><p class="photo-disclaimer">사진 제공·저작권: 각 출처. 사진을 누르면 원본으로 이동합니다.</p></section>
+      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid">${gallery}</div><p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
+      <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
+        <div class="photo-viewer-top"><span>OJJUDA PHOTO GALLERY <b id="photo-viewer-number"></b></span><button type="button" class="photo-viewer-close" aria-label="사진 닫기">✕</button></div>
+        <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
+        <div class="photo-viewer-bottom"><div><h3 id="photo-viewer-title"></h3><p id="photo-viewer-credit"></p></div><div class="photo-viewer-actions"><a id="photo-viewer-license" href="#" target="_blank" rel="noopener noreferrer" hidden>이용 조건</a><a id="photo-viewer-source" href="#" target="_blank" rel="noopener noreferrer">원본·출처 ↗</a></div></div>
+      </div></dialog>
       <section id="goods" class="detail-section"><div class="detail-heading"><div><span>02 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
       <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>03 / CALENDAR</span><h2>일정 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
       <section id="news" class="detail-section"><div class="detail-heading"><div><span>04 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
@@ -231,6 +306,7 @@
       saveButton.setAttribute('aria-pressed', String(active));
     });
     attachImageFallback(root);
+    initPhotoViewer(root, artist);
     if ('IntersectionObserver' in window && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
