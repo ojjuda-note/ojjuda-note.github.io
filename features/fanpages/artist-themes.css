@@ -1,0 +1,429 @@
+/* Five visual directions for the existing artist pages.
+   These palettes are fan-made interpretations, not official brand guidelines. */
+
+body[data-page="artist"][data-artist] {
+  --theme-bg: #fbf9fc;
+  --theme-ink: #352c42;
+  --theme-card: #fff;
+  --theme-line: #e8e0e9;
+  --theme-chip: #f4eff7;
+  --theme-hover: #f8f2fb;
+  --theme-mist: #efe0f7;
+  --theme-muted: #85778d;
+  --theme-topbar: #fffdfced;
+  background: radial-gradient(ellipse at 85% 120px, var(--theme-mist), transparent 42%), var(--theme-bg);
+  color: var(--theme-ink);
+}
+
+body[data-artist] .site-topbar {
+  background: var(--theme-topbar);
+  border-bottom-color: var(--theme-line);
+}
+body[data-artist] .mark-flower,
+body[data-artist] .top-links a:hover,
+body[data-artist] .breadcrumb a,
+body[data-artist] .footer-inner a {
+  color: var(--group-accent);
+}
+body[data-artist] .top-links,
+body[data-artist] .breadcrumb,
+body[data-artist] .footer-inner {
+  color: var(--theme-muted);
+}
+body[data-artist] .detail-hero {
+  border: 1px solid var(--theme-line);
+  box-shadow: 0 24px 55px -35px var(--group-accent);
+}
+body[data-artist] .detail-hero-main p span { color: var(--theme-muted); }
+body[data-artist] .member-strip { border-bottom-color: var(--theme-line); }
+body[data-artist] .member-strip > div span {
+  background: var(--theme-chip);
+  color: var(--theme-ink);
+}
+body[data-artist] .detail-shortcuts a,
+body[data-artist] .resource-item,
+body[data-artist] .detail-photo,
+body[data-artist] .other-group {
+  background: var(--theme-card);
+  border-color: var(--theme-line);
+  color: var(--theme-ink);
+}
+body[data-artist] .detail-shortcuts a:hover,
+body[data-artist] .resource-item:hover,
+body[data-artist] .detail-news-row:hover { background: var(--theme-hover); }
+body[data-artist] .detail-shortcuts span,
+body[data-artist] .detail-photo-caption small,
+body[data-artist] .detail-photo-caption span,
+body[data-artist] .resource-item small,
+body[data-artist] .detail-news-date,
+body[data-artist] .photo-disclaimer,
+body[data-artist] .detail-source-note,
+body[data-artist] .other-group small {
+  color: var(--theme-muted);
+}
+body[data-artist] .detail-heading h2 em { color: var(--group-accent); }
+body[data-artist] .detail-news-row { border-bottom-color: var(--theme-line); }
+body[data-artist] .footer {
+  background: var(--theme-card);
+  border-top-color: var(--theme-line);
+}
+
+/* RESCENE — lavender haze, soft-focus florals and floating paper */
+body[data-artist="rescene"] {
+  --theme-bg: #fcf7fc;
+  --theme-ink: #493653;
+  --theme-card: #fffbff;
+  --theme-line: #e7d8ed;
+  --theme-chip: #f2e7f9;
+  --theme-hover: #f7eafa;
+  --theme-mist: #f2d9f6;
+  --theme-muted: #84718b;
+  --theme-topbar: #fdf8fbed;
+  --group-light: #f0e0f7;
+  --group-accent: #7956a7;
+  --group-dark: #48325f;
+}
+body[data-artist="rescene"] .detail-hero {
+  background: radial-gradient(circle at 12% 83%, #ffe9f4 0, transparent 45%),
+              linear-gradient(125deg, #e5d8f5, #f8e9f4 82%);
+  border-radius: 35px;
+  box-shadow: 0 28px 65px #ba93c832;
+}
+body[data-artist="rescene"] .detail-hero:before {
+  border: 2px solid #ffffffa8;
+  width: 480px;
+  height: 480px;
+  top: -260px;
+  left: -180px;
+  box-shadow: 0 0 0 38px #ffffff17, 0 0 0 80px #ffffff10;
+}
+body[data-artist="rescene"] .detail-hero:after {
+  content: '✳';
+  position: absolute;
+  right: 48%;
+  bottom: -65px;
+  color: #ffffff70;
+  font-size: 245px;
+  line-height: 1;
+  pointer-events: none;
+}
+body[data-artist="rescene"] .detail-hero-main h1 {
+  font-weight: 800;
+  letter-spacing: -4px;
+}
+body[data-artist="rescene"] .detail-heart { color: #fff9; }
+body[data-artist="rescene"] .detail-primary,
+body[data-artist="rescene"] .detail-save,
+body[data-artist="rescene"] .detail-shortcuts a,
+body[data-artist="rescene"] .resource-item,
+body[data-artist="rescene"] .detail-photo {
+  border-radius: 23px;
+}
+body[data-artist="rescene"] .resource-item {
+  background: linear-gradient(135deg, #fff, #fff5fd);
+}
+body[data-artist="rescene"] .channels-section {
+  background: linear-gradient(125deg, #614078, #9d78bc);
+  border-radius: 30px;
+}
+
+/* IVE — pearl, champagne and refined editorial typography */
+body[data-artist="ive"] {
+  --theme-bg: #fcf8f2;
+  --theme-ink: #503543;
+  --theme-card: #fffdfa;
+  --theme-line: #e7d7cc;
+  --theme-chip: #f9ece5;
+  --theme-hover: #fff0e8;
+  --theme-mist: #f8e8e4;
+  --theme-muted: #8f746f;
+  --theme-topbar: #fffaf5ed;
+  --group-light: #f8ebe5;
+  --group-accent: #955071;
+  --group-dark: #61364b;
+}
+body[data-artist="ive"] .detail-hero {
+  background: linear-gradient(130deg, #f7e8e7 5%, #fff6ec 65%, #f5e3e6);
+  border-color: #d5b9a7;
+  border-radius: 14px;
+  box-shadow: 0 24px 48px #8f62701c;
+}
+body[data-artist="ive"] .detail-hero:before {
+  inset: 13px;
+  width: auto;
+  height: auto;
+  border: 1px solid #c9a88692;
+  border-radius: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+body[data-artist="ive"] .detail-hero:after {
+  content: '✧';
+  position: absolute;
+  top: -37px;
+  left: 43%;
+  color: #be977a56;
+  font: 190px/1 Georgia, serif;
+  pointer-events: none;
+}
+body[data-artist="ive"] .detail-hero-main h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(68px, 7vw, 103px);
+  letter-spacing: -6px;
+  font-weight: 700;
+}
+body[data-artist="ive"] .detail-heart { color: #cda58e87; }
+body[data-artist="ive"] .detail-heading h2 {
+  font-family: Georgia, 'Noto Sans KR', serif;
+  font-weight: 700;
+}
+body[data-artist="ive"] .detail-primary,
+body[data-artist="ive"] .detail-save,
+body[data-artist="ive"] .detail-shortcuts a,
+body[data-artist="ive"] .resource-item,
+body[data-artist="ive"] .detail-photo {
+  border-radius: 8px;
+}
+body[data-artist="ive"] .detail-photo { box-shadow: 0 14px 32px #966b7113; }
+body[data-artist="ive"] .detail-shortcuts a { border-top: 2px solid #c6a083; }
+body[data-artist="ive"] .channels-section {
+  background: linear-gradient(120deg, #623e50, #a36e7c);
+  border-radius: 12px;
+}
+
+/* aespa — chrome-blue light on a midnight digital stage */
+body[data-artist="aespa"] {
+  --theme-bg: #0d1426;
+  --theme-ink: #e9f4ff;
+  --theme-card: #16223a;
+  --theme-line: #354967;
+  --theme-chip: #243552;
+  --theme-hover: #233753;
+  --theme-mist: #172c54;
+  --theme-muted: #acc0db;
+  --theme-topbar: #10182bec;
+  --group-light: #1e2c4b;
+  --group-accent: #86d6ff;
+  --group-dark: #ddf2ff;
+  background: radial-gradient(ellipse at 80% 110px, #2a3f78 0, transparent 45%),
+              radial-gradient(ellipse at 6% 45%, #252449 0, transparent 40%), #0d1426;
+}
+body[data-artist="aespa"] .mark-divider { color: #536f96; }
+body[data-artist="aespa"] .site-mark { color: #e4f4ff; }
+body[data-artist="aespa"] .detail-hero {
+  background: linear-gradient(135deg, #1c2b4b, #151d38 70%);
+  border-color: #526d98;
+  border-radius: 10px;
+  box-shadow: 0 28px 65px #0008, 0 0 0 1px #8bd7ff20;
+}
+body[data-artist="aespa"] .detail-hero:before {
+  inset: 0;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background-image: linear-gradient(#96d5ff17 1px, transparent 1px),
+                    linear-gradient(90deg, #96d5ff17 1px, transparent 1px);
+  background-size: 39px 39px;
+  opacity: .6;
+}
+body[data-artist="aespa"] .detail-hero:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 42%, #8edaff22 48%, transparent 52%);
+  pointer-events: none;
+}
+body[data-artist="aespa"] .detail-hero-main h1 {
+  color: #e4f8ff;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-style: italic;
+  letter-spacing: -4px;
+  text-shadow: 0 0 22px #61bfff6b;
+}
+body[data-artist="aespa"] .detail-overline,
+body[data-artist="aespa"] .detail-hero-main p { color: #a3e2ff; }
+body[data-artist="aespa"] .detail-heart { color: #66d3ff70; }
+body[data-artist="aespa"] .detail-primary {
+  background: #a5e7ff;
+  color: #14243c;
+}
+body[data-artist="aespa"] .detail-save { background: #263957; color: #e1f4ff; border-color: #567296; }
+body[data-artist="aespa"] .detail-save.is-saved { background: #573f66; border-color: #9e7fb2; color: #fff; }
+body[data-artist="aespa"] .detail-hero-visual { border-left: 1px solid #a2deff5a; }
+body[data-artist="aespa"] .detail-shortcuts a,
+body[data-artist="aespa"] .resource-item,
+body[data-artist="aespa"] .detail-photo {
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 #c3eaff12;
+}
+body[data-artist="aespa"] .resource-icon { background: #263d61; color: #a3e2ff; }
+body[data-artist="aespa"] .media-tile-1 { background: #222a51; }
+body[data-artist="aespa"] .detail-media-tile small { color: #b3c7e0; }
+body[data-artist="aespa"] .other-group:hover { color: #17233a; }
+body[data-artist="aespa"] .channels-section {
+  background: linear-gradient(115deg, #243c68, #111a35);
+  border: 1px solid #455f88;
+  border-radius: 8px;
+}
+body[data-artist="aespa"] .footer { background: #10192b; }
+body[data-artist="aespa"] .footer-inner > span:first-child { color: #d7ebff; }
+body[data-artist="aespa"] .footer-inner b { color: #93d4ff; }
+
+/* LE SSERAFIM — black-and-white editorial with a fearless red strike */
+body[data-artist="lesserafim"] {
+  --theme-bg: #f5f3f0;
+  --theme-ink: #272629;
+  --theme-card: #fff;
+  --theme-line: #d8d3d0;
+  --theme-chip: #ece9e6;
+  --theme-hover: #f9eeec;
+  --theme-mist: #eee5df;
+  --theme-muted: #777173;
+  --theme-topbar: #f8f7f5f2;
+  --group-light: #26252a;
+  --group-accent: #c83e39;
+  --group-dark: #fff;
+}
+body[data-artist="lesserafim"] .detail-hero {
+  background: #222125;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: 14px 14px 0 #d94c4630;
+}
+body[data-artist="lesserafim"] .detail-hero:before {
+  inset: 0;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: repeating-linear-gradient(-45deg, transparent 0 47px, #ffffff09 48px 49px);
+}
+body[data-artist="lesserafim"] .detail-hero:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  background: #e04a42;
+}
+body[data-artist="lesserafim"] .detail-hero-main h1 {
+  color: #fff;
+  font-family: Impact, 'Arial Narrow', 'Noto Sans KR', sans-serif;
+  font-stretch: condensed;
+  font-style: italic;
+  font-size: clamp(54px, 6.2vw, 87px);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: .93;
+}
+body[data-artist="lesserafim"] .detail-overline,
+body[data-artist="lesserafim"] .detail-hero-main p { color: #ffaaa0; }
+body[data-artist="lesserafim"] .detail-heart { color: #ea5343a6; }
+body[data-artist="lesserafim"] .detail-primary {
+  background: #e44842;
+  color: #fff;
+}
+body[data-artist="lesserafim"] .detail-save { background: #fff; color: #292629; }
+body[data-artist="lesserafim"] .detail-save.is-saved { background: #ffbcb8; color: #672921; }
+body[data-artist="lesserafim"] .detail-hero-visual { filter: grayscale(.35) contrast(1.06); }
+body[data-artist="lesserafim"] .detail-shortcuts a,
+body[data-artist="lesserafim"] .resource-item,
+body[data-artist="lesserafim"] .detail-photo {
+  border-radius: 3px;
+}
+body[data-artist="lesserafim"] .detail-shortcuts a { border-top: 3px solid #302f33; }
+body[data-artist="lesserafim"] .resource-item { border-left: 4px solid #d5453e; }
+body[data-artist="lesserafim"] .resource-icon { background: #f6e8e5; }
+body[data-artist="lesserafim"] .detail-news-list { border-top-color: #d5453e; }
+body[data-artist="lesserafim"] .channels-section {
+  background: #242327;
+  border-left: 7px solid #e44842;
+  border-radius: 4px;
+}
+
+/* TWICE — bright peach-and-pink pop, with playful rounded paper cards */
+body[data-artist="twice"] {
+  --theme-bg: #fff8f0;
+  --theme-ink: #6b3c55;
+  --theme-card: #fffcfb;
+  --theme-line: #f3d5dc;
+  --theme-chip: #ffe8ed;
+  --theme-hover: #fff0f3;
+  --theme-mist: #ffe4df;
+  --theme-muted: #997483;
+  --theme-topbar: #fff8f5f0;
+  --group-light: #ffe4de;
+  --group-accent: #a53a68;
+  --group-dark: #803a60;
+  background: radial-gradient(circle at 12px 12px, #eaa5b32b 1px, transparent 2px) 0 0 / 48px 48px,
+              radial-gradient(ellipse at 80% 120px, #ffe5e0 0, transparent 42%), #fff8f0;
+}
+body[data-artist="twice"] .detail-hero {
+  background: linear-gradient(128deg, #ffe0d8 0%, #ffe9ee 58%, #fff0c9 100%);
+  border-color: #f3c4ca;
+  border-radius: 37px;
+  box-shadow: 0 20px 58px #e07c9b32;
+}
+body[data-artist="twice"] .detail-hero:before {
+  width: 360px;
+  height: 360px;
+  left: -130px;
+  top: -170px;
+  border: 24px solid #fff9;
+  box-shadow: 0 0 0 30px #ffffff24;
+}
+body[data-artist="twice"] .detail-hero:after {
+  content: '✿';
+  position: absolute;
+  left: 42%;
+  bottom: -70px;
+  font: 240px/1 Georgia, serif;
+  color: #fff7;
+  pointer-events: none;
+}
+body[data-artist="twice"] .detail-hero-main h1 {
+  font-family: 'Trebuchet MS', 'Noto Sans KR', sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -4px;
+  text-shadow: 3px 4px 0 #ffffff9c;
+}
+body[data-artist="twice"] .detail-heart { color: #e98fad9e; }
+body[data-artist="twice"] .detail-primary,
+body[data-artist="twice"] .detail-save,
+body[data-artist="twice"] .detail-shortcuts a,
+body[data-artist="twice"] .resource-item,
+body[data-artist="twice"] .detail-photo {
+  border-radius: 24px;
+}
+body[data-artist="twice"] .detail-shortcuts a { box-shadow: 0 5px 0 #f3cad8; }
+body[data-artist="twice"] .resource-item { background: linear-gradient(125deg, #fff, #fff4f4); }
+body[data-artist="twice"] .detail-photo { border-width: 6px; }
+body[data-artist="twice"] .detail-photo-image { border-radius: 17px; }
+body[data-artist="twice"] .channels-section {
+  background: linear-gradient(120deg, #e9729a, #ba628f);
+  border-radius: 31px;
+}
+
+@media (max-width: 640px) {
+  body[data-artist="rescene"] .detail-hero,
+  body[data-artist="twice"] .detail-hero { border-radius: 26px; }
+  body[data-artist="ive"] .detail-hero:before { inset: 9px; }
+  body[data-artist="ive"] .detail-hero-main h1 { font-size: clamp(62px, 16vw, 85px); }
+  body[data-artist="lesserafim"] .detail-hero-main h1 {
+    font-size: clamp(43px, 11.3vw, 63px);
+    letter-spacing: -1px;
+  }
+  body[data-artist="aespa"] .detail-hero-visual { border-left: 0; border-top: 1px solid #a2deff5a; }
+  body[data-artist="lesserafim"] .detail-hero { box-shadow: 8px 8px 0 #d94c4630; }
+  body[data-artist="twice"] .detail-photo { border-width: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-artist] .detail-shortcuts a,
+  body[data-artist] .resource-item,
+  body[data-artist] .detail-photo { transition: none; }
+}

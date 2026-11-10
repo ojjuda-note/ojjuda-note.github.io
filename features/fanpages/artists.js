@@ -2,7 +2,7 @@
 window.OJJUDA_FAN_ARTISTS = [
   {
     id: "rescene", name: "RESCENE", korean: "리센느", fan: "REMINE", agency: "THE MUZE", members: ["원이", "리브", "미나미", "메이", "제나"],
-    accent: "#7653b5", light: "#efe4fc", dark: "#34244f", shape: "✳", status: "PULSE · 2026.11.03",
+    accent: "#7956a7", light: "#eee1fa", dark: "#48325f", shape: "✳", status: "PULSE · 2026.11.03",
     image: "https://pbs.twimg.com/media/HNbGjvlaEAAXooN.jpg", imageCredit: "RESCENE OFFICIAL X", imageLink: "https://x.com/RESCENEofficial",
     photos: [
       { label: "Pretty Girl", meta: "2026 · OFFICIAL", image: "https://pbs.twimg.com/media/HNbGjvlaEAAXooN.jpg", href: "https://x.com/RESCENEofficial", credit: "RESCENE 공식 X" },
@@ -31,7 +31,7 @@ window.OJJUDA_FAN_ARTISTS = [
   },
   {
     id: "ive", name: "IVE", korean: "아이브", fan: "DIVE", agency: "STARSHIP", members: ["안유진", "가을", "레이", "장원영", "리즈", "이서"],
-    accent: "#bb547e", light: "#ffe6ed", dark: "#602642", shape: "♡", status: "REVIVE+ · 2026",
+    accent: "#ab5b80", light: "#ffede9", dark: "#63354e", shape: "♡", status: "REVIVE+ · 2026",
     image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", imageCredit: "K-POPIT / IVE", imageLink: "https://k-popit.com/articles/2026092890542",
     photos: [{ label: "IVE · Group", meta: "2026 · PHOTO", image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", href: "https://k-popit.com/articles/2026092890542", credit: "K-POPIT" }],
     links: [
@@ -55,7 +55,7 @@ window.OJJUDA_FAN_ARTISTS = [
   },
   {
     id: "aespa", name: "aespa", korean: "에스파", fan: "MY", agency: "SM ENTERTAINMENT", members: ["카리나", "지젤", "윈터", "닝닝"],
-    accent: "#5680b6", light: "#dcecff", dark: "#243957", shape: "✦", status: "LEMONADE · 2026",
+    accent: "#4b67aa", light: "#dce7ff", dark: "#242b55", shape: "✦", status: "LEMONADE · 2026",
     image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/aespa/profile.jpg?v=1778208612013", imageCredit: "kpopping / aespa", imageLink: "https://kpopping.com/kpics/aespa-2026-Season-s-Greetings-Western-House-Teaser",
     photos: [{ label: "Western House", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/aespa/profile.jpg?v=1778208612013", href: "https://kpopping.com/kpics/aespa-2026-Season-s-Greetings-Western-House-Teaser", credit: "kpopping" }],
     links: [
@@ -79,7 +79,7 @@ window.OJJUDA_FAN_ARTISTS = [
   },
   {
     id: "lesserafim", name: "LE SSERAFIM", korean: "르세라핌", fan: "FEARNOT", agency: "SOURCE MUSIC", members: ["김채원", "사쿠라", "허윤진", "카즈하", "홍은채"],
-    accent: "#729c97", light: "#e1f3ee", dark: "#2d514e", shape: "✶", status: "FEARNOT · OFFICIAL",
+    accent: "#c63d38", light: "#f2ede8", dark: "#27262a", shape: "✶", status: "FEARNOT · OFFICIAL",
     image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", imageCredit: "조선 / SOURCE MUSIC", imageLink: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/",
     photos: [{ label: "Pureflow", meta: "2026 · PHOTO", image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", href: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/", credit: "조선" }],
     links: [
@@ -103,7 +103,7 @@ window.OJJUDA_FAN_ARTISTS = [
   },
   {
     id: "twice", name: "TWICE", korean: "트와이스", fan: "ONCE", agency: "JYP ENTERTAINMENT", members: ["나연", "정연", "모모", "사나", "지효", "미나", "다현", "채영", "쯔위"],
-    accent: "#e28b72", light: "#fff0e6", dark: "#6a443f", shape: "✿", status: "THIS IS FOR · TOUR",
+    accent: "#b74175", light: "#ffe8df", dark: "#743b58", shape: "✿", status: "THIS IS FOR · TOUR",
     image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", imageCredit: "kpopping / TWICE", imageLink: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos",
     photos: [{ label: "Captured Moments", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", href: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos", credit: "kpopping" }],
     links: [
