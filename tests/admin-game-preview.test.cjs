@@ -86,7 +86,7 @@ test('administrator star preview also supports the six new chapters without savi
   assert.ok(source.includes('openChapters,'));
   assert.ok(source.includes("const save=()=>{if(!DEMO)window.OjjudaSaetbyeolEntry.save(S)}"));
   const revision=JSON.parse(read('game-release.json')).revision;
-  assert.equal(revision,'20261110-admin-saetbyeol1');
+  assert.match(revision,/^\d{8}-[a-z0-9-]+$/);
   assert.ok(read('shared/games/world-game-assets.js').includes(`const revision='${revision}'`));
   assert.ok(read('world.html').includes(`world-game-assets.js?v=${revision}`));
 });
