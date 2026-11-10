@@ -11,6 +11,6 @@ window.OJJUDA_CONFIG = {
 (() => {
   if (typeof document === 'undefined' || !['ojjuda.kr', 'www.ojjuda.kr'].includes(location.hostname.toLowerCase())) return;
   const activityScript = document.createElement('script');
-  activityScript.src = '/shared/activity/member-navigation.js?v=20261110-account-history1';
+  activityScript.src = '/shared/activity/member-navigation.js?v=20261111-shared-member-auth1';
   document.head.append(activityScript);
 })();
