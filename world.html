@@ -1403,7 +1403,7 @@ function installWorldGameScreen(session){
   if(R!==session||!session.ov.isConnected)return;
   const bounds=play.getBoundingClientRect();
   if(bounds.width<=0||bounds.height<=0)return;
-  const scale=Math.min(bounds.width/Z,bounds.height/he),width=session.id==='runner'?bounds.width:Z*scale,height=session.id==='runner'?bounds.height:he*scale;
+  const scale=Math.min(bounds.width/Z,bounds.height/he),width=session.id==='runner'?play.clientWidth:Z*scale,height=session.id==='runner'?play.clientHeight:he*scale;
   canvas.style.width=width+'px';canvas.style.height=height+'px';
   session.ov.style.setProperty('--world-canvas-width',width+'px');
   if(session.id!=='runner'){
