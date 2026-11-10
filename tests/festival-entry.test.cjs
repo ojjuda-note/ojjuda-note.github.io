@@ -120,8 +120,10 @@ function routeFixture(){
  assert.equal(boot.window.OjjudaGameAssets.version('festival'),'1.6.2');
  assert.equal(boot.window.OjjudaGameAssets.version('archery'),archeryVersion,'loading festival preserves the independent archery release');
  const festivalRevision=new URL(urls.find(url=>url.includes('.js?')),'https://ojjuda.kr').searchParams.get('v');
- assert.equal(new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v'),festivalRevision);
- assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalRevision,'iframe and bridge use the same independent cache revision');
+ assert.ok(festivalRevision,'the updated festival wrapper has its own cache revision');
+ const festivalContentRevision=new URL(urls.find(url=>url.includes('.css?')),'https://ojjuda.kr').searchParams.get('v');
+ assert.equal(bridge.match(/src="\/games\/festival-schedule\/index\.html\?v=([^&"]+)/)?.[1],festivalContentRevision,'the unchanged festival content and stylesheet keep their shared cache revision');
+ assert.equal(read('games/festival-schedule/index.html').match(/app\.js\?v=([^"]+)/)?.[1],festivalContentRevision,'the festival iframe loads its matching app revision');
  assert.equal(world.match(/var Go="([^"]+)"/)?.[1],JSON.parse(read('version.json')).version,'the separate Agit version remains internally consistent');
  assert.ok(world.includes("gameDialog.dispatchEvent(new Event('cancel'")&&bridge.includes("addEventListener('cancel'"),'app Back runs the festival exit handler');
  console.log('PASS: festival test-only entry, lazy cold routing, isolated account access, iframe cleanup, focus return and independent release');

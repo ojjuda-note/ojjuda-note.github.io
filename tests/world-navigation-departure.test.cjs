@@ -33,7 +33,7 @@ function fixture({tab='hub', gameUrl=null}={}) {
     isMain: () => tab==='hub', hasOverlay: () => overlay,
     isSectionRoot: () => ['park','my'].includes(tab),
     arcadeReturnUrl: () => gameUrl && 'https://world.test/world.html?tab=hub',
-    gameCloseUrl: () => gameUrl && 'https://world.test/world.html?tab=arcade',
+    gameCloseUrl: () => 'https://world.test/world.html?tab=arcade',
     closeOverlay() { closeCalls++; const wasOpen=overlay; overlay=false; return wasOpen; },
     canLeave: () => true, toMain() { mainCalls++; tab='hub'; },
     tabs: ['hub','arcade','park','my'], currentTab: () => tab
@@ -92,6 +92,7 @@ test('closing an arcade game with its own exit button stays in the arcade', () =
   assert.equal(f.tab,'arcade');
   assert.equal(f.mainCalls,0);
   assert.equal(f.history.state.ojjudaWorld,'menu');
+  assert.equal(f.history.replacements.at(-1),'https://world.test/world.html?tab=arcade','refreshing after any game exit reopens the arcade');
 });
 
 test('Back from the arcade menu itself returns to the Agit hub', () => {
