@@ -1,4 +1,22 @@
-/* Curated links only. Keep dates tied to their sources; this is not a live feed. */
+/* Curated photographs and source links. Keep dates tied to their sources; this is not a live feed. */
+const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
+  const name = encodeURIComponent(file.replaceAll(' ', '_'));
+  const licenseUrl = license === 'CC BY 3.0'
+    ? 'https://creativecommons.org/licenses/by/3.0/'
+    : license === 'CC BY-SA 4.0'
+      ? 'https://creativecommons.org/licenses/by-sa/4.0/'
+      : 'https://creativecommons.org/licenses/by/4.0/';
+  return {
+    label,
+    meta: `${year} · PHOTO`,
+    image: `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=960`,
+    full: `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=1920`,
+    href: `https://commons.wikimedia.org/wiki/File:${name}`,
+    credit: author,
+    license,
+    licenseUrl,
+  };
+};
 window.OJJUDA_FAN_ARTISTS = [
   {
     id: "rescene", name: "RESCENE", korean: "리센느", fan: "REMINE", agency: "THE MUZE", members: ["원이", "리브", "미나미", "메이", "제나"],
@@ -7,7 +25,14 @@ window.OJJUDA_FAN_ARTISTS = [
     photos: [
       { label: "Pretty Girl", meta: "2026 · OFFICIAL", image: "https://pbs.twimg.com/media/HNbGjvlaEAAXooN.jpg", href: "https://x.com/RESCENEofficial", credit: "RESCENE 공식 X" },
       { label: "lip bomb", meta: "2025 · OFFICIAL", image: "https://pbs.twimg.com/media/G6iDfUgbAAAhZyt.jpg", href: "https://x.com/RESCENEofficial", credit: "RESCENE 공식 X" },
-      { label: "Re:Scene", meta: "2024 · OFFICIAL", image: "https://pbs.twimg.com/media/GHeLpKIb0AAGZdc.jpg", href: "https://x.com/RESCENEofficial/status/1763036399006327254", credit: "RESCENE 공식 X" }
+      { label: "Re:Scene", meta: "2024 · OFFICIAL", image: "https://pbs.twimg.com/media/GHeLpKIb0AAGZdc.jpg", href: "https://x.com/RESCENEofficial/status/1763036399006327254", credit: "RESCENE 공식 X" },
+      commonsPhoto('RESCENE at Incheon Airport, 12 August 2026.png', '인천공항 · 단체', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Woni of RESCENE at Incheon Airport, 12 August 2026.png', '원이 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Liv of RESCENE at Incheon Airport, 12 August 2026.png', '리브 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Minami of RESCENE at Incheon Airport, 12 August 2026.png', '미나미 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('May of RESCENE at Incheon Airport, 12 August 2026.png', '메이 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Zena of RESCENE at Incheon Airport, 12 August 2026.png', '제나 · 공항', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Rescene 250205.jpg', '2025 · 단체', '2025', '티비텐 TV10', 'CC BY 3.0')
     ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/rescene_official/" },
@@ -33,7 +58,15 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "ive", name: "IVE", korean: "아이브", fan: "DIVE", agency: "STARSHIP", members: ["안유진", "가을", "레이", "장원영", "리즈", "이서"],
     accent: "#ab5b80", light: "#ffede9", dark: "#63354e", shape: "♡", status: "REVIVE+ · 2026",
     image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", imageCredit: "K-POPIT / IVE", imageLink: "https://k-popit.com/articles/2026092890542",
-    photos: [{ label: "IVE · Group", meta: "2026 · PHOTO", image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", href: "https://k-popit.com/articles/2026092890542", credit: "K-POPIT" }],
+    photos: [
+      { label: "IVE · Group", meta: "2026 · PHOTO", image: "https://imagedelivery.net/l1Bzo8LRyoaogf5OFVsfnA/600802b6-5256-4afe-dfe1-ad4eab2b0600/public", href: "https://k-popit.com/articles/2026092890542", credit: "K-POPIT" },
+      commonsPhoto('Ive in Seattle.jpg', '시애틀 공연', '2026', 'David Lee'),
+      commonsPhoto('Ive at the 2026 Golden Disc Awards.png', '골든디스크 · 무대', '2026', '티비텐 TV10'),
+      commonsPhoto('Ive at the 40th Golden Disc Awards, January 10, 2026 (2).png', '골든디스크 · 레드카펫', '2026', 'K-POPIT 케이팝잇'),
+      commonsPhoto('Ive at the 2024 Melon Music Awards.png', '멜론뮤직어워드', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+      commonsPhoto('IVE 2024 MMA 1.jpg', 'IVE · 2024 MMA', '2024', '10Asia', 'CC BY 3.0'),
+      commonsPhoto('An Yu-jin of Ive, April 19, 2025.png', '안유진 · 포토월', '2025', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+    ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/ivestarship/" },
       { label: "YouTube", icon: "▷", url: "https://www.youtube.com/@IVEstarship" },
@@ -57,7 +90,15 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "aespa", name: "aespa", korean: "에스파", fan: "MY", agency: "SM ENTERTAINMENT", members: ["카리나", "지젤", "윈터", "닝닝"],
     accent: "#4b67aa", light: "#dce7ff", dark: "#242b55", shape: "✦", status: "LEMONADE · 2026",
     image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/aespa/profile.jpg?v=1778208612013", imageCredit: "kpopping / aespa", imageLink: "https://kpopping.com/kpics/aespa-2026-Season-s-Greetings-Western-House-Teaser",
-    photos: [{ label: "Western House", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/aespa/profile.jpg?v=1778208612013", href: "https://kpopping.com/kpics/aespa-2026-Season-s-Greetings-Western-House-Teaser", credit: "kpopping" }],
+    photos: [
+      { label: "Western House", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/aespa/profile.jpg?v=1778208612013", href: "https://kpopping.com/kpics/aespa-2026-Season-s-Greetings-Western-House-Teaser", credit: "kpopping" },
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (1).png', '미장센 · 포토월 01', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (2).png', '미장센 · 포토월 02', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (3).png', '미장센 · 포토월 03', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (4).png', '미장센 · 포토월 04', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (5).png', '미장센 · 포토월 05', '2026', '티비텐 TV10'),
+      commonsPhoto('Aespa at Mise-en-Scene event on 19022026 (7).png', '미장센 · 포토월 07', '2026', '티비텐 TV10')
+    ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/aespa_official/" },
       { label: "YouTube", icon: "▷", url: "https://www.youtube.com/@aespa" },
@@ -81,7 +122,15 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "lesserafim", name: "LE SSERAFIM", korean: "르세라핌", fan: "FEARNOT", agency: "SOURCE MUSIC", members: ["김채원", "사쿠라", "허윤진", "카즈하", "홍은채"],
     accent: "#c63d38", light: "#f2ede8", dark: "#27262a", shape: "✶", status: "FEARNOT · OFFICIAL",
     image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", imageCredit: "조선 / SOURCE MUSIC", imageLink: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/",
-    photos: [{ label: "Pureflow", meta: "2026 · PHOTO", image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", href: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/", credit: "조선" }],
+    photos: [
+      { label: "Pureflow", meta: "2026 · PHOTO", image: "https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/G5RDQNLDGE2WMMLGME3DAMLFHE.jpg", href: "https://www.chosun.com/english/kpop-culture-en/2026/07/02/HEG2E7HZ3ZFPVE6TKQ7UKYDSEY/", credit: "조선" },
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963237).jpg', '시애틀 투어 01', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963367).jpg', '시애틀 투어 02', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963372).jpg', '시애틀 투어 03', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963817).jpg', '시애틀 투어 04', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54795963857).jpg', '시애틀 투어 05', '2025', 'David Lee'),
+      commonsPhoto('Easy Crazy Hot Tour in Seattle - le sserafim (54796820611).jpg', '시애틀 투어 06', '2025', 'David Lee')
+    ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/le_sserafim/" },
       { label: "YouTube", icon: "▷", url: "https://www.youtube.com/@LESSERAFIM_official" },
@@ -105,7 +154,15 @@ window.OJJUDA_FAN_ARTISTS = [
     id: "twice", name: "TWICE", korean: "트와이스", fan: "ONCE", agency: "JYP ENTERTAINMENT", members: ["나연", "정연", "모모", "사나", "지효", "미나", "다현", "채영", "쯔위"],
     accent: "#b74175", light: "#ffe8df", dark: "#743b58", shape: "✿", status: "THIS IS FOR · TOUR",
     image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", imageCredit: "kpopping / TWICE", imageLink: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos",
-    photos: [{ label: "Captured Moments", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", href: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos", credit: "kpopping" }],
+    photos: [
+      { label: "Captured Moments", meta: "2026 · CONCEPT", image: "https://pub-dc9a9c6ac2a64ba48bce426ced0ac56a.r2.dev/groups/TWICE/profile.webp", href: "https://kpopping.com/kpics/TWICE-Japan-Season-s-Greetings-2026-CAPTURED-MOMENTS-Concept-Photos", credit: "kpopping" },
+      commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 0.jpg', 'LA 투어 · 01', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
+      commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 1.jpg', 'LA 투어 · 02', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
+      commonsPhoto('20260122 Twice @ This is For World Tour in Los Angeles 2.jpg', 'LA 투어 · 03', '2026', 'Shelby Lee', 'CC BY-SA 4.0'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55044093832).jpg', '시애틀 투어 01', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55044985796).jpg', '시애틀 투어 02', '2026', 'David Lee'),
+      commonsPhoto('Twice in Seattle 2026 - TWICE (55044987391).jpg', '시애틀 투어 03', '2026', 'David Lee')
+    ],
     links: [
       { label: "Instagram", icon: "◎", url: "https://www.instagram.com/twicetagram/" },
       { label: "YouTube", icon: "▷", url: "https://www.youtube.com/c/TWICE" },
