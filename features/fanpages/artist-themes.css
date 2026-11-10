@@ -1,7 +1,7 @@
 /* Five visual directions for the existing artist pages.
    These palettes are fan-made interpretations, not official brand guidelines. */
 
-body[data-page="artist"][data-artist] {
+body[data-artist] {
   --theme-bg: #fbf9fc;
   --theme-ink: #352c42;
   --theme-card: #fff;
@@ -329,6 +329,7 @@ body[data-artist="lesserafim"] .detail-primary {
 body[data-artist="lesserafim"] .detail-save { background: #fff; color: #292629; }
 body[data-artist="lesserafim"] .detail-save.is-saved { background: #ffbcb8; color: #672921; }
 body[data-artist="lesserafim"] .detail-hero-visual { filter: grayscale(.35) contrast(1.06); }
+body[data-artist="lesserafim"] .hero-vertical { color: #292629; }
 body[data-artist="lesserafim"] .detail-shortcuts a,
 body[data-artist="lesserafim"] .resource-item,
 body[data-artist="lesserafim"] .detail-photo {
