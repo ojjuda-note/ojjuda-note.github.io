@@ -16,6 +16,10 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
    window.withdrawn=[{id:'withdrawn-1',nickname:'보관한 회원',email_masked:'p***@example.invalid',account_created_at:'2026-08-01T00:00:00Z',withdrawn_at:'2026-10-01T00:00:00Z',expires_at:'2026-11-01T00:00:00Z',phone_number:'01099998888',birth_date:'2000-01-01',raw_snapshot:{password:'do-not-render'}}];
    window.client={auth:{onAuthStateChange(fn){window.authChanged=fn;return{data:{subscription:{unsubscribe(){unsubscribed++}}}}}},async rpc(name,args){
     calls.push({name,args});if(defer)return new Promise(resolve=>pending.push(resolve));if(fail)return{error:{message:fail===true?'synthetic transport failure':fail}};
+    if(name==='admin_member_navigation_history'){
+     const entries=args.p_user_id==='member-0'?[{id:1,kind:'game',title:'솔리테어',created_at:'2026-10-04T01:00:00Z'},{id:2,kind:'page',title:'<img src=x onerror=alert(1)>',created_at:'2026-10-03T01:00:00Z'}]:[];
+     return{data:{items:entries.slice(args.p_offset,args.p_offset+args.p_limit),total:entries.length}};
+    }
     if(name==='admin_referral_counts'){
      const rows=[{id:'referrer-a',nickname:'추천한 회원',referral_count:7,pending_count:2,last_referred_at:'2026-10-21T03:00:00Z'}].filter(row=>!args.p_query||row.nickname.includes(args.p_query));
      return{data:{items:rows,total:rows.length,total_referrals:rows.length?7:0,pending_referrals:rows.length?2:0}};
@@ -43,6 +47,11 @@ const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
   assert.equal(await sortMenu.inputValue(),'last_seen');assert.equal(await page.evaluate(()=>calls.at(-1).args.p_sort),'last_seen');
   assert.match(await page.locator('.acct-card').first().textContent(),/방문횟수0회/);
   assert.match(await page.locator('.acct-card').first().textContent(),/게임/);
+  await page.locator('.acct-card').first().getByRole('button',{name:'방문·게임 기록 보기'}).click();
+  await page.locator('.acct-history-item').first().getByText('솔리테어').waitFor();
+  assert.match(await page.locator('.acct-card').first().textContent(),/방문·게임 기록 2건/);
+  assert.equal(await page.locator('.acct-history img').count(),0,'visited page titles cannot inject markup');
+  await page.locator('.acct-card').first().getByRole('button',{name:'방문·게임 기록 닫기'}).click();
   assert.equal(await page.locator('.acct-card img').count(),0,'member text cannot inject markup');
   assert.equal(await page.locator('.acct-card').first().getByText('기록 없음',{exact:true}).count(),1,'missing visit is not rendered as 1970');
   await page.getByRole('button',{name:'다음',exact:true}).click();await idle();assert.match(await page.locator('.acct-card').first().textContent(),/회원 22/);

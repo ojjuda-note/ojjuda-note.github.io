@@ -2,7 +2,23 @@
 (() => {
   'use strict';
   const PAGE_SIZE = 20;
-  const activityKinds = {room:'프로필',chat:'대화',game:'게임'};
+  const HISTORY_SIZE = 15;
+  const activityKinds = {
+    room:'프로필 수정', diary:'다이어리 작성', guestbook:'방명록 작성', intro:'소개글 작성',
+    media:'사진·영상 등록', comment:'댓글 작성', chat:'대화', house_post:'우리집 글 작성',
+    game:'게임', page:'페이지 방문'
+  };
+  const gameTitles = {
+    screw_box:'나사 풀기 (박스형)', screw_flat:'나사 풀기 (평면형)',
+    saetbyeol:'새별', runner:'쭈달리기', breakout:'벽돌깨기', mole:'두더지 팡!',
+    stacker:'탑 쌓기', chacha_rush:'차차 러시', ttang:'월드땅따먹기',
+    mines:'지뢰찾기', spot:'틀린그림 찾기', tour:'오쭈다 투어',
+    solitaire:'솔리테어', snake:'스네이크', archery:'바람의 궁수',
+    matgo:'맞고', poker:'세븐포커', roulette:'룰렛', bang:'뱅!', tank:'탱크게임'
+  };
+  const activityTitle = (kind, raw) => !raw ? '' : kind === 'game'
+    ? (/^sacheonseong_\d+$/.test(raw) ? '사천성' : gameTitles[raw] || raw)
+    : raw;
   const filters = [['all', '전체'], ['today', '오늘 가입'], ['admin', '관리자']];
   const sorts = [['last_seen', '최근 방문순'], ['created_at', '가입일순'], ['visit_count', '방문횟수순']];
   const el = (tag, text, className = '') => {
@@ -125,7 +141,11 @@
       } else {
         detail('마지막 방문', date(record.last_seen));
         detail('방문횟수', Math.max(0, Number(record.visit_count) || 0).toLocaleString('ko-KR') + '회');
-        if (record.last_active) detail('마지막 활동', `${date(record.last_active)}${activityKinds[record.last_active_kind] ? ' · ' + activityKinds[record.last_active_kind] : ''}`);
+        if (record.last_active) {
+          const kind = activityKinds[record.last_active_kind] || record.last_active_kind || '';
+          const title = activityTitle(record.last_active_kind, record.last_active_title);
+          detail('마지막 활동', [date(record.last_active), kind, title].filter(Boolean).join(' · '));
+        }
         if (banned) detail(permanent ? '정지 기간' : '정지 종료', permanent ? '무기한 · 관리자 해제 가능' : date(record.banned_until));
         detail('보유 ZU', Number(record.coins || 0).toLocaleString('ko-KR') + ' ZU');
       }
@@ -148,6 +168,65 @@
           actions.append(action);
         }
         if (actions.childElementCount) card.append(actions);
+
+        const historyToggle = button('방문·게임 기록 보기', 'btn sm acct-history-toggle');
+        const history = el('section', undefined, 'acct-history');
+        history.hidden = true;
+        history.id = `acct-history-${String(record.id).replace(/[^a-zA-Z0-9-]/g, '')}`;
+        historyToggle.setAttribute('aria-controls', history.id);
+        historyToggle.setAttribute('aria-expanded', 'false');
+        const historyIntro = el('p', '방문한 페이지와 실행한 게임을 최근 순서로 보여줘요. 기록은 이 기능이 적용된 뒤부터 쌓여요.', 'acct-history-intro');
+        const historyStatus = el('p', '', 'acct-history-status');
+        historyStatus.setAttribute('role', 'status');
+        const historyList = el('ol', undefined, 'acct-history-list');
+        const historyPager = el('div', undefined, 'acct-history-pager');
+        history.append(historyIntro, historyStatus, historyList, historyPager);
+        let historyOffset = 0, historyRun = 0;
+        async function loadHistory() {
+          if (!current() || !card.isConnected) return;
+          const request = ++historyRun;
+          historyStatus.textContent = '방문 기록을 불러오고 있어요.';
+          historyList.replaceChildren(); historyPager.replaceChildren();
+          try {
+            const { data, error } = await client.rpc('admin_member_navigation_history', {
+              p_user_id: record.id, p_limit: HISTORY_SIZE, p_offset: historyOffset
+            });
+            if (request !== historyRun || !current() || !card.isConnected || history.hidden) return;
+            if (error) throw error;
+            if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(Number(data.total))) throw new Error('invalid_navigation_history');
+            const total = Number(data.total);
+            historyStatus.textContent = total ? `방문·게임 기록 ${total.toLocaleString('ko-KR')}건` : '아직 저장된 방문·게임 기록이 없어요.';
+            for (const entry of data.items) {
+              const line = el('li', undefined, 'acct-history-item');
+              const description = entry.kind === 'game' ? '🎮 게임' : '📄 페이지';
+              line.append(el('span', description, 'acct-history-kind'),
+                el('strong', activityTitle(entry.kind, entry.title) || '이름 없음'),
+                el('time', date(entry.created_at), 'acct-history-time'));
+              historyList.append(line);
+            }
+            if (total > HISTORY_SIZE) {
+              const back = button('이전', 'btn sm'), forward = button('다음', 'btn sm');
+              back.disabled = historyOffset === 0;
+              forward.disabled = historyOffset + HISTORY_SIZE >= total;
+              back.addEventListener('click', () => { historyOffset = Math.max(0, historyOffset - HISTORY_SIZE); void loadHistory(); });
+              forward.addEventListener('click', () => { historyOffset += HISTORY_SIZE; void loadHistory(); });
+              historyPager.append(back, el('span', `${Math.floor(historyOffset / HISTORY_SIZE) + 1} / ${Math.ceil(total / HISTORY_SIZE)}페이지`), forward);
+            }
+          } catch {
+            if (request !== historyRun || !current() || !card.isConnected || history.hidden) return;
+            historyStatus.textContent = '방문 기록을 불러오지 못했어요.';
+            historyPager.replaceChildren(button('다시 불러오기', 'btn sm'));
+            historyPager.firstElementChild.addEventListener('click', () => void loadHistory());
+          }
+        }
+        historyToggle.addEventListener('click', () => {
+          history.hidden = !history.hidden;
+          historyToggle.setAttribute('aria-expanded', String(!history.hidden));
+          historyToggle.textContent = history.hidden ? '방문·게임 기록 보기' : '방문·게임 기록 닫기';
+          if (!history.hidden) { historyOffset = 0; void loadHistory(); }
+          else historyRun++;
+        });
+        card.append(historyToggle, history);
       }
       return card;
     }
