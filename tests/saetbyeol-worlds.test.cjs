@@ -72,6 +72,24 @@ test('five worlds, moving atmospheres, and every food silhouette draw independen
   assert.equal(f.life.drawFood(context,{x:2,y:2,r:12,born:1},f.types.rock,0,false,0,0),false,'original chapter uses its original art');
 });
 
+test('each biome reveals more of its own scenery as its 200 growth nodes awaken',t=>{
+  const x=game();t.after(()=>x.dom.window.close());
+  const signatures=new Set();
+  const stars=Array.from({length:40},(_,i)=>({x:i*17,y:i*9,s:1+i%3,p:i/3}));
+  for(let stage=5;stage<=9;stage++){
+    const first=canvasRecorder(),grown=canvasRecorder(),reduced=canvasRecorder();
+    x.w.fixture.life.drawAtmosphere(first.context,stars,390,720,stage,4,0,0,false,0);
+    x.w.fixture.life.drawAtmosphere(grown.context,stars,390,720,stage,4,0,0,false,1);
+    x.w.fixture.life.drawAtmosphere(reduced.context,stars,390,720,stage,4,0,0,true,1);
+    assert.ok(grown.calls.length>first.calls.length+12,`world ${stage} must visibly bloom`);
+    assert.ok(reduced.calls.length>first.calls.length+12,`world ${stage} must still grow with reduced motion`);
+    assert.ok(grown.calls.every(call=>call.slice(1).every(arg=>typeof arg!=='number'||Number.isFinite(arg))),`world ${stage} uses valid positions`);
+    const growingCalls=grown.calls.slice(first.calls.length);
+    signatures.add(growingCalls.map(call=>call[0]).join(','));
+  }
+  assert.equal(signatures.size,5,'each world should bloom with a different silhouette');
+});
+
 test('each world unlocks a distinct reward when its local food meter fills',t=>{
   for(let index=0;index<5;index++){
     const stage=5+index;

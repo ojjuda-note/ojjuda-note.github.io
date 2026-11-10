@@ -329,6 +329,69 @@
     }
     ctx.restore();
   }
+  // A living world responds to growth. The permanent scenery stays cached;
+  // these lightweight discoveries bloom over it as each chapter advances.
+  function drawGrowingWorld(ctx,w,h,stage,progress,time,reduced=false){
+    const growth=Math.max(0,Math.min(1,Number(progress)||0));
+    const revealed=Math.floor(growth*12);
+    if(!revealed)return;
+    const chapter=Math.max(0,Math.min(4,stage-5)),small=Math.min(w,h),t=reduced?0:time;
+    const TAU=Math.PI*2,pal=chapters[chapter].pal;
+    ctx.save();ctx.globalCompositeOperation='screen';ctx.lineCap='round';
+    for(let i=0;i<revealed;i++){
+      const drift=reduced?0:Math.sin(t*.43+i*2.4)*small*.009;
+      const shimmer=.37+.21*Math.sin(t*.7+i*1.87);
+      if(chapter===0){ // Portal embryos learn to orbit together.
+        const a=i*2.39996+t*.09,rr=small*(.15+.055*(i%3));
+        const x=w*.52+Math.cos(a)*rr+drift,y=h*.4+Math.sin(a)*rr*1.3;
+        ctx.strokeStyle=`rgba(${pal[i%5]},${.14+shimmer*.23})`;ctx.lineWidth=1.6;
+        ctx.beginPath();ctx.moveTo(w*.52,h*.4);ctx.quadraticCurveTo(x+drift*2,y-small*.08,x,y);ctx.stroke();
+        ctx.fillStyle=`rgba(${pal[i%5]},${.3+shimmer*.36})`;
+        ctx.beginPath();ctx.ellipse(x,y,small*.009,small*.012,.3,0,TAU);ctx.fill();
+      }else if(chapter===1){ // Bioluminescent coral slowly covers the reef.
+        const side=i%2?-1:1,x=w*(side<0?.08:.92)+side*small*.018*Math.floor(i/2),y=h*(.9-.017*(i%4));
+        const height=small*(.035+.012*(i%3)+growth*.038);
+        ctx.strokeStyle=`rgba(${pal[i%5]},${.24+shimmer*.42})`;ctx.lineWidth=2.4+(i%3);
+        ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x-side*height*.3,y-height*.7,x+drift,y-height);ctx.stroke();
+        for(let arm=-1;arm<=1;arm+=2){
+          ctx.beginPath();ctx.moveTo(x+drift*.5,y-height*.56);
+          ctx.quadraticCurveTo(x+arm*height*.65,y-height*.65,x+arm*height*.72,y-height*.82);ctx.stroke();
+        }
+        ctx.fillStyle=`rgba(200,255,244,${.3+shimmer*.45})`;
+        ctx.beginPath();ctx.arc(x+drift,y-height,1.3+growth*2,0,TAU);ctx.fill();
+      }else if(chapter===2){ // Little mushrooms and crystal buds light up the undergrowth.
+        const x=w*(.12+.76*((i*7%13)/12)),y=h*(.82+.12*((i*3%7)/6));
+        const size=small*(.012+.011*(i%3)+growth*.008);
+        ctx.fillStyle=`rgba(${pal[i%5]},${.24+shimmer*.32})`;
+        ctx.beginPath();ctx.ellipse(x+drift,y,size*1.05,size*.42,0,Math.PI,TAU);ctx.fill();
+        ctx.strokeStyle=`rgba(190,255,218,${.25+shimmer*.32})`;ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.moveTo(x+drift,y);ctx.lineTo(x+drift,y+size*.95);ctx.stroke();
+        ctx.fillStyle=`rgba(255,255,221,${.24+shimmer*.28})`;
+        ctx.beginPath();ctx.arc(x+drift-size*.36,y-size*.14,1.4,0,TAU);ctx.fill();
+      }else if(chapter===3){ // Higher growth paints deeper aurora ribbons in the sky.
+        const yy=h*(.1+.034*i),wave=small*(.02+.006*i);
+        ctx.strokeStyle=`rgba(${pal[i%5]},${.11+shimmer*.26})`;ctx.lineWidth=2+(i%4)*1.2;
+        ctx.beginPath();ctx.moveTo(-w*.12,yy);
+        ctx.bezierCurveTo(w*.23,yy-wave+drift,w*.44,yy+wave,w*.7,yy-wave*.4);
+        ctx.quadraticCurveTo(w*.87,yy-wave,w*1.12,yy+wave*.4);ctx.stroke();
+        const x=w*(.14+.72*((i*5%11)/10));
+        ctx.fillStyle=`rgba(255,249,232,${.13+shimmer*.3})`;
+        ctx.beginPath();ctx.ellipse(x,yy+wave*.6,small*.007,small*.002,-.4,0,TAU);ctx.fill();
+      }else{ // The final tree slowly gathers the lights of its new friends.
+        const a=i*2.39996+t*.035,rr=small*(.07+.014*i),x=w*.25+Math.cos(a)*rr+drift;
+        const y=h*.57-small*.16+Math.sin(a)*rr*.76;
+        ctx.strokeStyle=`rgba(${pal[i%5]},${.13+shimmer*.25})`;ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.moveTo(w*.25,h*.57-small*.16);ctx.lineTo(x,y);ctx.stroke();
+        for(let p=0;p<5;p++){
+          const aa=p*TAU/5+t*.08;
+          ctx.fillStyle=`rgba(${pal[i%5]},${.19+shimmer*.38})`;
+          ctx.beginPath();ctx.ellipse(x+Math.cos(aa)*small*.008,y+Math.sin(aa)*small*.008,small*.008,small*.004,aa,0,TAU);ctx.fill();
+        }
+        ctx.fillStyle='rgba(255,249,216,.76)';ctx.beginPath();ctx.arc(x,y,small*.0025,0,TAU);ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
   function drawAtmosphere(ctx,stars,w,h,stage,time,px=0,py=0,reduced=false,progress=0){
     const chapter=Math.max(0,Math.min(4,stage-5));
     const colors=chapters[chapter].pal,TAU=Math.PI*2,t=reduced?0:time;
@@ -363,6 +426,7 @@
       }
     }
     ctx.restore();
+    drawGrowingWorld(ctx,w,h,stage,progress,time,reduced);
   }
   function drawFood(ctx,food,type,time=0,reduced=false,progress=0,currentStage=type.stage){
     const sceneStage=type.mem?currentStage:type.stage,form=type.mem?'bubble':type.form;
