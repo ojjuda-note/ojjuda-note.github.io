@@ -15,7 +15,7 @@ const root=path.join(__dirname,'..');
   },functions:{invoke:async(name,{body})=>{assert.equal(name,'poker');const data=await f.call(actor,body);return {data,error:data.error?{context:{json:async()=>data}}:null};}}};
   w.eval(fs.readFileSync(path.join(root,'features/arcade/arcade-rooms.js'),'utf8'));
   const html=fs.readFileSync(path.join(root,'world.html'),'utf8'),part=html.slice(html.indexOf('var worldArcadeRooms=null'),html.indexOf('window.OjjudaArcadeRoomCreated='));
-  w.eval(`const D={online:true,user:{id:window.__actor}},S=window.__client,g={tab:'place',place:{id:'arcade'}},M=window.__notice,Al=window.__open;function dt(){document.querySelector('#modal-root').innerHTML=''}function ct(html){document.querySelector('#modal-root').innerHTML=html}function xf(){};window.OjjudaMatgoAccess={visible:()=>window.__adult};`+part+';window.__rooms={sync:syncWorldArcadeRooms,get controller(){return worldArcadeRooms}};');
+  w.eval(`const D={online:true,user:{id:window.__actor}},S=window.__client,g={tab:'place',place:{id:'arcade'}},M=window.__notice,Al=window.__open;function dt(){document.querySelector('#modal-root').innerHTML=''}function ct(html){document.querySelector('#modal-root').innerHTML=html}function xf(){}function adminGamePreviewActive(){return false};window.OjjudaMatgoAccess={visible:()=>window.__adult};`+part+';window.__rooms={sync:syncWorldArcadeRooms,get controller(){return worldArcadeRooms}};');
   w.__rooms.sync();
   const find=s=>w.document.querySelector(s),click=s=>{assert.ok(find(s),s);find(s).click();};
   return {w,find,click,opened,notices,refresh:()=>w.__rooms.controller.refresh()};

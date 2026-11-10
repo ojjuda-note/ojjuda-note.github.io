@@ -12,6 +12,9 @@ const catalogEnd = world.indexOf(',Z=360', catalogStart);
 const menuStart = world.indexOf('function Df(){');
 const menuEnd = world.indexOf('function eo(){', menuStart);
 assert.ok(catalogStart > 0 && catalogEnd > catalogStart && menuStart > 0 && menuEnd > menuStart);
+const hubMenuStart = world.indexOf('const renderArcadeMenuOriginal=Df;');
+const hubMenuEnd = world.indexOf('// Keep the new Agit tab', hubMenuStart);
+assert.ok(hubMenuStart > 0 && hubMenuEnd > hubMenuStart);
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(test, message, timeout = 2600) {
   const limit = Date.now() + timeout;
@@ -53,6 +56,8 @@ async function until(test, message, timeout = 2600) {
     w.eval(world.slice(start, end));
     w.eval(world.slice(catalogStart, catalogEnd) + ';');
     w.eval(world.slice(menuStart, menuEnd));
+    w.eval(world.slice(hubMenuStart, hubMenuEnd));
+    w.eval(fs.readFileSync(path.join(root, 'features/home/agit-hub.js'), 'utf8'));
     const panel = w.document.querySelector('#ppanel');
     panel.innerHTML = w.Df() + '<input id="pmsg">';
     const adultIds = Object.keys(adultGames);
@@ -61,29 +66,31 @@ async function until(test, message, timeout = 2600) {
     const adultSection = () => panel.querySelector('[data-arcade-adult]');
     const testIds = ['group','festival','restaurants'];
     assert.deepEqual([...testIds].sort(), Object.entries(w._r).filter(([, game]) => game.test).map(([id]) => id).sort(), 'daily cards remain the complete registered set');
-    const assertTestGamesLast = host => {
-      const testMenu = host.querySelector('[data-arcade-games=test]');
-      assert.ok(testMenu, 'test features remain available');
-      assert.equal(host.querySelector('[data-arcade-test-heading] h2').textContent, '일상');
+    const assertDailyInHub = host => {
+      assert.equal(host.querySelector('[data-arcade-games=test]'), null, 'daily tools no longer appear in Arcade');
+      assert.equal(host.querySelector('[data-arcade-test-heading]'), null, 'no orphan daily heading remains');
       assert.equal(host.querySelectorAll('[data-arcade-games=solo] [data-v=archery]').length, 1, 'released archery belongs to solo play');
-      assert.equal(testMenu.querySelector('[data-v=archery]'), null, 'released archery no longer appears in tests');
       assert.equal(host.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'), null);
-      assert.equal(host.querySelector('.arcade-card').lastElementChild, testMenu, 'test games stay last across access changes');
-      assert.deepEqual([...testMenu.querySelectorAll('.gbtn')].map(buttonId), testIds, 'all test games retain their display order');
-      for (const id of testIds) assert.equal(host.querySelectorAll(`[data-arcade-games] [data-v="${id}"]`).length, 1, id + ' appears exactly once');
+      const hub = w.document.createElement('div');hub.innerHTML = w.OjjudaAgitHub.markup({},w._r);
+      assert.deepEqual([...hub.querySelectorAll('[data-act=agit-daily]')].map(buttonId), testIds, 'Hub keeps all daily tools in order across access changes');
+      for (const id of testIds) {
+        assert.equal(host.querySelectorAll(`[data-arcade-games] [data-v="${id}"]`).length, 0, id + ' is not duplicated in Arcade');
+        assert.equal(hub.querySelectorAll(`[data-act=agit-daily][data-v="${id}"]`).length, 1, id + ' appears once in Hub');
+      }
+      assert.equal(hub.querySelectorAll('[data-act=agit-fan]').length, 1, 'Hub also retains the fanpage link');
     };
     const noAdultMenu = (host = panel) => {
       assert.equal(host.querySelector('[data-arcade-adult]'), null, 'access loss removes the complete adult section');
-      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이', '일상'], 'no orphan adult heading remains');
-      assert.deepEqual([...host.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'test']);
+      assert.deepEqual(headings(host), ['나만의 플레이', '함께하는 플레이'], 'no orphan adult heading remains');
+      assert.deepEqual([...host.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi']);
       assert.equal([...host.querySelectorAll('.gbtn')].filter(button => adultIds.includes(buttonId(button))).length, 0, 'restricted games are absent from every category');
-      assertTestGamesLast(host);
+      assertDailyInHub(host);
     };
     const completeAdultMenu = () => {
       assert.equal(panel.querySelectorAll('[data-arcade-adult]').length, 1);
-      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이', '일상']);
-      assert.deepEqual([...panel.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'adult', 'test'], 'restored adult games stay between multiplayer and test games');
-      assertTestGamesLast(panel);
+      assert.deepEqual(headings(panel), ['나만의 플레이', '함께하는 플레이', '어른들 플레이']);
+      assert.deepEqual([...panel.querySelectorAll('[data-arcade-games]')].map(grid => grid.dataset.arcadeGames), ['solo', 'multi', 'adult'], 'restored adult games follow multiplayer');
+      assertDailyInHub(panel);
       const section = adultSection();
       assert.equal(section.getAttribute('aria-label'), '어른들 플레이');
       assert.notEqual(w.getComputedStyle(section).display, 'none');

@@ -19,38 +19,36 @@ function fixture(url='https://ojjuda.kr/world.html'){
  w.OjjudaParkNotes={install:()=>({markup:()=>'<section data-park-app>공원 카드</section>',sync(){},route(){},canLeave:()=>true,preserveShell:()=>false})};
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-rankings.js'),'utf8'));
  w.eval(fs.readFileSync(path.join(root,'shared/games/world-game-assets.js'),'utf8'));
+ w.eval(fs.readFileSync(path.join(root,'features/home/agit-hub.js'),'utf8'));
  w.eval(source);
  return dom;
 }
 (async()=>{
  let dom=fixture();
  try{
-  const w=dom.window,t=w.worldTest;t.render();
+  const w=dom.window,t=w.worldTest;t.start();
   const active=()=>t.state.tab==='place'?t.state.place.id:t.state.tab;
-  const assertTestGamesLast=()=>{
-   const grids=[...w.document.querySelectorAll('[data-arcade-games]')];
-   assert.equal(grids.at(-1).dataset.arcadeGames,'test','test games follow every regular game category');
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.gbtn')].map(button=>button.dataset.v),['group','festival','restaurants']);
-   assert.equal(w.document.querySelector('[data-v=byeolcheonji]'),null,'the retired vacancy alert has no menu entry');
-   assert.equal(w.document.querySelector('[data-v=star]'),null,'the retired reservation helper has no menu entry');
-   assert.equal(w.document.querySelector('[data-arcade-games] [data-v=recommendations]'),null,'member recommendations belong inside the certified directory');
+  const assertArcadeCategories=()=>{
+   assert.equal(w.document.querySelector('[data-arcade-games=test]'),null,'daily tools live in Hub, not Arcade');
+   for(const id of ['byeolcheonji','star','recommendations'])assert.equal(w.document.querySelector('[data-arcade-games] [data-v='+id+']'),null,id+' has no Arcade entry');
    assert.equal(w.document.querySelectorAll('[data-arcade-games] [data-v=archery]').length,1,'released archery appears exactly once');
-   assert.equal(w.document.querySelector('[data-arcade-test-heading] h2').textContent,'일상');
    assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=archery] .game-test-badge'),null);
-   assert.ok(w.document.querySelector('[data-arcade-games=solo] [data-v=archery]'));
-   assert.deepEqual([...grids.at(-1).querySelectorAll('.game-test-badge')].map(badge=>badge.textContent),['회원 전용'],'only the group tool carries a member-only badge');
   };
-  assert.equal(active(),'arcade','the initial page opens the arcade');
+  assert.equal(active(),'hub','the initial page opens Hub');
   for(const selector of ['.bottomnav','.sidenav']){
-   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['오락실','공원','설정']);
-   assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'arcade');
+   assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','오락실','공원','설정']);
+   assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'hub');
   }
+  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily]')].map(b=>b.dataset.v),['group','festival','restaurants']);
+  assert.equal(w.document.querySelector('#agit-daily h2').textContent,'일상 둘러보기');
+  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),['group']);
+  t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
   assert.equal(w.document.querySelector('#pstage'),null,'the old arcade illustration is removed');
   assert.ok(w.document.querySelector('[data-arcade-rank-root]'));
   assert.ok(w.document.querySelector('[data-arcade-games=solo]'));
   assert.ok(w.document.querySelector('[data-arcade-games=multi]'));
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'guests have no adult section');
-  assertTestGamesLast();
+  assertArcadeCategories();
   assert.equal(w.document.querySelector('[data-arcade-games=solo] [data-v=poker]'),null,'poker is not duplicated in the solo list');
   w.OjjudaMatgoAccess={visible:minimum=>(minimum||19)<=19};
   t.auth.online=true;t.auth.user={id:'adult-menu-fixture'};t.render();
@@ -66,11 +64,10 @@ function fixture(url='https://ojjuda.kr/world.html'){
   const categories={
    solo:['chacha_rush','solitaire','archery','sacheonseong','mines','saetbyeol','mole','runner','stacker','breakout','spot','screw'],
    multi:['bang','tank','tour','ttang','janggi','chess','billiards'],
-   adult:['matgo','poker','roulette','photo_ttang'],
-   test:['group','festival','restaurants']
+   adult:['matgo','poker','roulette','photo_ttang']
   };
-  assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'test games follow solo, multiplayer and adult games');
-  assertTestGamesLast();
+  assert.deepEqual([...w.document.querySelectorAll('[data-arcade-games]')].map(grid=>grid.dataset.arcadeGames),Object.keys(categories),'Arcade has solo, multiplayer and adult games');
+  assertArcadeCategories();
   for(const [category,expected]of Object.entries(categories)){
    const actual=[...w.document.querySelectorAll(`[data-arcade-games=${category}] .gbtn`)].map(gameId);
    assert.deepEqual(actual,expected,category+' contains exactly its intended games in display order');
@@ -100,9 +97,9 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.equal(w.document.querySelector('[data-act=matgo-open]'),null,'Matgo uses the same age threshold');
   assert.equal(w.document.querySelector('[data-v=photo_ttang]'),null,'photo games use the same age threshold');
   assert.equal(w.document.querySelector('[data-arcade-adult]'),null,'underage members have no adult section');
-  assertTestGamesLast();
+  assertArcadeCategories();
   delete w.OjjudaMatgoAccess;t.auth.online=false;t.auth.user=null;t.render();
-  assertTestGamesLast();
+  assertArcadeCategories();
   assert.ok(w.document.querySelector('[data-arcade-rank-root]').compareDocumentPosition(w.document.querySelector('#ppanel'))&w.Node.DOCUMENT_POSITION_FOLLOWING,'rankings precede games');
   assert.equal(t.state.placeT,null,'arcade presence needs no repeating scene-update timer');
   const room=t.state.place,presence=t.presence();room.live=true;room.presenceStatus='auth';
@@ -123,7 +120,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   }
   for(const id of ['cafe','library']){t.actions['enter-place']({id});assert.equal(active(),'arcade');}
   t.auth.isAdmin=true;t.auth.online=true;t.actions.tab({tab:'my'});
-  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,3,'administration is inside settings');
+  assert.equal(w.document.querySelectorAll('.sidenav [data-tab]').length,4,'administration is inside settings');
   assert.ok(w.document.querySelector('.my-hub [data-tab=admin]'));
   assert.deepEqual(Array.from(t.adminTabs.content,x=>x[0]),['cards','messages','groups','photo-stages','risk','map','rewards']);
   assert.equal(t.adminTabs.operations.some(x=>x[0]==='quiz'),false);
@@ -144,7 +141,7 @@ function fixture(url='https://ojjuda.kr/world.html'){
   assert.deepEqual(removed,[channel],'entering settings removes the live presence channel exactly once');
   t.render();await tick();assert.deepEqual(removed,[channel],'rerendering settings does not repeat presence cleanup');
  }finally{dom.window.close();}
- for(const [query,expected] of [['?tab=arcade','arcade'],['?game=star','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','arcade'],['?tab=home','arcade']]){
+ for(const [query,expected] of [['','hub'],['?tab=hub','hub'],['?tab=arcade','arcade'],['?game=star','arcade'],['?tab=my','my'],['?tab=settings','my'],['?place=park','park'],['?tab=park','park'],['?tab=board','hub'],['?tab=home','hub']]){
   dom=fixture('https://ojjuda.kr/world.html'+query);
   try{const t=dom.window.worldTest;t.start();assert.equal(t.state.tab==='place'?t.state.place.id:t.state.tab,expected,'initial link '+query);}finally{dom.window.close();}
  }
@@ -169,5 +166,5 @@ function fixture(url='https://ojjuda.kr/world.html'){
   w.OjjudaGameRankings.mount(host,{client,owner:null,rankingsOnly:true});assert.ok(host.textContent.includes('로그인하면 게임 기록을 저장하고 순위에 도전'));
   w.OjjudaGameRankings.mount(null);
  }finally{dom.window.close();}
- console.log('PASS: three menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
+ console.log('PASS: four menus, legacy redirects, initial links, settings, presence, rankings-only requests, game launch, score refresh and access isolation');
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -75,7 +75,7 @@ const park=read('park/index.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi
    document.documentElement.dataset.worldTheme='christmas';
    window.dispatchEvent(new Event('ojjuda:themechange'));
   });
-  assert.equal(await page.locator('.nb-season').first().textContent(),'크리스마스 · 따뜻한 마음이 모이는 날.');
+  assert.equal(await page.locator('.nb-season').first().textContent(),'크리스마스 · 오쭈다에 모인 마음이 오늘의 선물이에요.');
   await page.evaluate(()=>{window.OjjudaThemes=window.originalThemes;window.dispatchEvent(new Event('ojjuda:themechange'));});
   // A late network response must update just the announcement, preserving the
   // live Park iframe, invitation controls, and an in-progress form selection.

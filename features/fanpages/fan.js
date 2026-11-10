@@ -242,7 +242,7 @@
       const photo = artist.photos[active];
       number.textContent = `${String(active + 1).padStart(2, '0')} / ${String(artist.photos.length).padStart(2, '0')}`;
       title.textContent = photo.label;
-      credit.textContent = `${photo.meta} · ${photo.credit}`;
+      credit.textContent = `${photo.meta} · ${photo.credit}${photo.optimized ? ' · 크기 조정 WebP' : ''}`;
       source.href = photo.href;
       license.hidden = !photo.licenseUrl;
       if (photo.licenseUrl) {
@@ -302,10 +302,13 @@
     const history = (entries, label, sign, id) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list ${entries.length > 1 ? 'is-preview' : ''}" id="${id}">${entries.length ? entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('') : '<span class="profile-history-pending">확인된 수상 내역 없음</span>'}</div>${entries.length > 1 ? revealButton(id, `${label} 더 보기`, `${label} 접기`, 'content-reveal-small') : ''}</div>`;
     const members = profile.members.map((member, i) => {
       const birthDate = member.birthday?.replaceAll('.', '-');
+      const pending = '<span class="profile-pending">확인 중</span>';
+      const stat = (label, value) => `<div><span>${label}</span><strong>${value || pending}</strong></div>`;
       return `<article class="profile-member-card">
         <div class="profile-member-top"><span class="profile-member-index">${String(i + 1).padStart(2, '0')}</span><span class="profile-member-spark" aria-hidden="true">${artist.shape}</span></div>
         <div class="profile-member-name"><h4>${member.name}</h4><span>${member.note || 'MEMBER'}</span></div>
-        <dl><div><dt>생일</dt><dd>${birthDate ? `<time datetime="${birthDate}">${member.birthday}</time>` : '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>키·참고</dt><dd>${member.height ? `${member.height}cm` : '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>고향·출신</dt><dd>${member.hometown || '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>학교·학력</dt><dd>${member.school || '<span class="profile-pending">확인 중</span>'}</dd></div></dl>
+        <div class="profile-member-vitals">${stat('키', member.height ? `${member.height}cm` : '')}${stat('혈액형', member.bloodType ? `${member.bloodType}형` : '')}${stat('MBTI', member.mbti)}</div>
+        <dl><div><dt>생일</dt><dd>${birthDate ? `<time datetime="${birthDate}">${member.birthday}</time>` : pending}</dd></div><div><dt>고향·출신</dt><dd>${member.hometown || pending}</dd></div><div><dt>학교·학력</dt><dd>${member.school || pending}</dd></div></dl>
         ${member.source ? `<a class="profile-member-source" href="${member.source}" target="_blank" rel="noopener noreferrer" aria-label="${member.name} 관련 자료 보기">관련 자료 <span aria-hidden="true">↗</span></a>` : ''}
       </article>`;
     }).join('');
@@ -318,7 +321,7 @@
       <div class="profile-members-title"><div><span>MEMBER ARCHIVE</span><h3>멤버 프로필</h3></div><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div>
       <div class="profile-member-grid ${profile.members.length > 3 ? 'is-preview' : ''}" id="profile-members">${members}</div>
       ${profile.members.length > 3 ? revealButton('profile-members', `멤버 ${profile.members.length}명 모두 보기`, '멤버 간단히 보기') : ''}
-      <details class="profile-sources"><summary><span>자료 출처</span><small>${profileSources.length}곳</small><span class="profile-sources-arrow" aria-hidden="true">⌄</span></summary><div class="profile-source-links">${profileSources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>키는 공개 참고치이며, 확인되지 않은 개인정보는 비워 둡니다.</small></div></details>
+      <details class="profile-sources"><summary><span>자료 출처</span><small>${profileSources.length}곳</small><span class="profile-sources-arrow" aria-hidden="true">⌄</span></summary><div class="profile-source-links">${profileSources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>키·혈액형은 공개 참고치, MBTI는 변동 가능해요. 미확인 정보는 비워 둡니다.</small></div></details>
     </section>`;
   }
 

@@ -1,6 +1,10 @@
 /* Curated photographs and source links. Keep dates tied to their sources; this is not a live feed. */
 const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
   const name = encodeURIComponent(file.replaceAll(' ', '_'));
+  // The Pages build stores permission-checked Commons photos on the Ojjuda CDN.
+  // Preview builds or failed downloads safely use the original Commons image.
+  const stored = window.OJJUDA_FAN_LOCAL_PHOTOS?.[file];
+  const actualLicense = stored?.license || license;
   const licenseUrl = license === 'CC BY 3.0'
     ? 'https://creativecommons.org/licenses/by/3.0/'
     : license === 'CC BY-SA 4.0'
@@ -9,12 +13,13 @@ const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
   return {
     label,
     meta: `${year} · PHOTO`,
-    image: `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=960`,
-    full: `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=1920`,
+    image: stored?.thumb || `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=960`,
+    full: stored?.full || `https://commons.wikimedia.org/wiki/Special:FilePath/${name}?width=1920`,
     href: `https://commons.wikimedia.org/wiki/File:${name}`,
     credit: author,
-    license,
-    licenseUrl,
+    license: actualLicense,
+    licenseUrl: stored?.licenseUrl || licenseUrl,
+    optimized: Boolean(stored),
   };
 };
 const creditedPhoto = (image, label, year, credit, href) => ({

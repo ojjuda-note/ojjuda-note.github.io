@@ -14,8 +14,8 @@ function initialRoute(path) {
   vm.runInNewContext(entryScript, {location, URL, URLSearchParams});
   return navigations;
 }
-for (const path of ['/', '/index.html']) assert.deepEqual(initialRoute(path), ['/world.html?tab=arcade']);
-assert.deepEqual(initialRoute('/?utm_source=share'), ['/world.html?utm_source=share&tab=arcade']);
+for (const path of ['/', '/index.html']) assert.deepEqual(initialRoute(path), ['/world.html?tab=hub']);
+assert.deepEqual(initialRoute('/?utm_source=share'), ['/world.html?utm_source=share&tab=hub']);
 assert.deepEqual(initialRoute('/?tab=board'), ['/world.html?tab=board']);
 for (const path of ['/?auth=login', '/?auth=signup&next=world', '/?auth=forgot', '/?next=note&card=fixture',
   '/?reset=1', '/?code=fixture-code', '/?token_hash=fixture-hash&type=signup',
