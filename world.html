@@ -40,7 +40,7 @@
 <script src="/app/world/world-navigation.js?v=20261110-game-back-arcade1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-stamp-week1">
-<script src="/features/home/agit-hub.js?v=20261110-one-quiz1" defer></script>
+<script src="/features/home/agit-hub.js?v=20261110-progress-save1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -476,7 +476,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  if(!adminCanLeave())return;js();L.risk=null;L.log=void 0;bt()
 },"adm-members"(t){L.area="account";L.tab="users";L.accountFilter=t.filter||"all";L.accountState=null;L.accountReset=true;bt()},"adm-report"(t,e){Wt(e,()=>U.setReport(+t.id,t.st),t.st==="actioned"?"조치함으로 옮겼어요":"확인함으로 옮겼어요")},"adm-del"(t){Tt("신고된 글을 지울까요? 되돌릴 수 없어요.","지우기",()=>Wt(null,async()=>{let e=await U.deleteContent(t.kind,t.tid,t.uid||null);M(e?`${e}개를 지웠어요`:"지울 글이 없어요 (이미 지워졌을 수 있어요)")}))},"adm-ban"(t){const days=Number(t.days);if(![-1,0,7,30].includes(days))return;const name=t.name||"이 회원";const title=days===-1?`${name}님을 영구정지할까요? 로그인과 서비스 이용이 제한되고, 관리자만 해제할 수 있어요.`:days===0?`${name}님의 정지를 해제할까요?`:`${name}님을 ${days}일 정지할까요? 로그인과 서비스 이용이 제한돼요.`;Tt(title,days===-1?"영구정지":days===0?"해제":"정지",()=>Wt(null,()=>U.ban(t.uid,days),days===-1?"영구정지했어요":days===0?"정지를 풀었어요":`${days}일 정지했어요`))},"adm-fb"(t,e){Wt(e,()=>U.setFeedback(+t.id,t.st),t.st==="done"?"확인함으로 옮겼어요":"다시 열었어요")},"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.58.6-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.58.7-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
  const owner=D.online&&D.user?.id;
  if(!owner)return false;
  try{
@@ -1471,8 +1471,7 @@ function Al(t,options={}){
  if(t==="group"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
   const returnUrl=worldArcadeReturnUrl();if(returnUrl)history.replaceState(history.state,'',returnUrl);
-  markAgitPageVisit('group');
-  location.assign("/groups/");return;
+  navigateAgitPage('/groups/',markAgitPageVisit('group'));return;
  }
  if(t==="recommendations")return Al("restaurants",{...options,openRecommendations:true});
  if(window.OjjudaGuestAccess?.canPlay()===false)return;
@@ -2603,7 +2602,8 @@ async function Un(user,epoch=worldAuthEpoch){
   }
   const defaults=Ao(true);
   if(!record.priv){await Z1(owner,defaults);if(!current())return;}
-  Fs(U1(record,defaults));await rm(owner,record.priv,epoch);
+  Fs(U1(record,defaults));
+  if(await rm(owner,record.priv,epoch)&&current())restoreAgitProgress(owner);
  }catch(error){if(current()){console.error(error);tm(error);}}
  finally{if(current())ga=false;}
 }
@@ -3188,10 +3188,54 @@ sr.tab=function(action){
  g.tab='hub';g.visiting=null;g.visitData=null;g.sel=null;
  H();window.scrollTo(0,0);
 };
-function updateAgitProgress(changed){if(changed){I();refreshAgitHub();}}
+function agitProgressKey(owner){return 'ojjuda-agit-progress-v1:'+owner;}
+function readAgitProgress(owner){
+ try{return JSON.parse(localStorage.getItem(agitProgressKey(owner))||'null');}catch{return null;}
+}
+function backUpAgitProgress(){
+ const owner=D.online&&D.user?.id,hub=window.OjjudaAgitHub;
+ if(!owner||!hub)return;
+ try{
+  const merged=hub.mergeProgress(readAgitProgress(owner),$.settings.agitHub);
+  localStorage.setItem(agitProgressKey(owner),JSON.stringify(merged));
+ }catch{}
+}
+function restoreAgitProgress(owner){
+ const hub=window.OjjudaAgitHub,backup=readAgitProgress(owner);
+ if(!hub||!backup||!$.settings)return;
+ const merged=hub.mergeProgress($.settings.agitHub,backup);
+ if(JSON.stringify(hub.safeState($.settings))===JSON.stringify(merged))return;
+ $.settings.agitHub=merged;
+ updateAgitProgress(true);
+}
+async function flushAgitProgress(){
+ if(!ua||!de)return true;
+ const deadline=Date.now()+4000;
+ while(pc&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,75));
+ if(pc)return false;
+ let timer;
+ try{
+  return await Promise.race([
+   Wn().then(()=>!ua||!de||de.priv===no(mi(pi).priv)).catch(error=>{console.error('미션 저장 실패',error);return false;}),
+   new Promise(resolve=>{timer=setTimeout(()=>resolve(false),Math.max(0,deadline-Date.now()));})
+  ]);
+ }finally{clearTimeout(timer);}
+}
+function updateAgitProgress(changed){
+ if(!changed)return null;
+ backUpAgitProgress();
+ Ti();
+ refreshAgitHub();
+ return flushAgitProgress();
+}
 function markAgitPageVisit(id){
  const hub=window.OjjudaAgitHub;
- if(hub?.visitTarget()?.id===id)updateAgitProgress(hub.complete($.settings,'visit'));
+ if(hub?.visitTarget()?.id===id)return updateAgitProgress(hub.complete($.settings,'visit'));
+ return null;
+}
+function navigateAgitPage(url,pending){
+ if(!pending){location.assign(url);return;}
+ void pending.then(()=>location.assign(url),()=>location.assign(url));
 }
 function agitMissionStillCurrent(id){
  if(window.OjjudaAgitHub?.missions().includes(id))return true;
@@ -3215,10 +3259,15 @@ sr['agit-daily']=function(action){
  if(!['festival','restaurants','recommendations','group'].includes(action.v))sr.tab({tab:'arcade'});
  Al(action.v);
 };
-sr['agit-fan']=function(){markAgitPageVisit('fanpages');};
+sr['agit-fan']=function(action,element,event){
+ const pending=markAgitPageVisit('fanpages');
+ if(!pending)return;
+ event?.preventDefault();
+ navigateAgitPage('/features/fanpages/index.html',pending);
+};
 sr['agit-visit']=function(){
  const target=window.OjjudaAgitHub?.visitTarget();if(!target)return;
- if(target.id==='fanpages'){markAgitPageVisit('fanpages');location.assign('/features/fanpages/index.html');return;}
+ if(target.id==='fanpages'){navigateAgitPage('/features/fanpages/index.html',markAgitPageVisit('fanpages'));return;}
  sr['agit-daily']({v:target.id});
 };
 function openAgitPuzzle(id){
@@ -3234,7 +3283,7 @@ function finishAgitPuzzle(id){
  if(!active||active.id!==id||active.date!==hub?.kstDate()){
   dt();refreshAgitHub();M('오늘의 미션이 새로 바뀌었어요.');return;
  }
- updateAgitProgress(hub.complete($.settings,id==='baseball'?'baseball':'quiz'));
+ updateAgitProgress(hub.complete($.settings,id==='baseball'?'baseball':'quiz')||id==='baseball');
  refreshAgitHub();
  dt();g.agitPuzzle=null;M('정답! 미션 완료 🎉');
 }

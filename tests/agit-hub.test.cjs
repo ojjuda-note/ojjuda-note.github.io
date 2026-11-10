@@ -2,6 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const vm=require('node:vm');
 const hub=require('../features/home/agit-hub.js');
 
 const date='2026-11-10';
@@ -36,6 +37,54 @@ test('stamp records at most once a day and saves mission progress separately by 
   assert.equal(hub.isComplete(settings,task,tomorrow),false);
   assert.equal(hub.stamp(settings,tomorrow),true);
   assert.equal(settings.agitHub.stamps.length,2);
+});
+
+test('a pending local completion merges with older cloud data without erasing either day',()=>{
+  const yesterday=plus(date,-1);
+  const server={stamps:[yesterday],completed:{[yesterday]:['park'],[date]:['quiz']},guesses:{}};
+  const backup={stamps:[date],completed:{[date]:['park','baseball','quiz']},guesses:{}};
+  const merged=hub.mergeProgress(server,backup,date);
+  assert.deepEqual(merged.stamps,[yesterday,date]);
+  assert.deepEqual(new Set(merged.completed[date]),new Set(['quiz','park','baseball']));
+  assert.deepEqual(merged.completed[yesterday],['park']);
+  assert.equal(hub.isComplete({agitHub:merged},'park',plus(date,1)),false,'tomorrow is a new mission day');
+});
+
+test('mission completion is backed up immediately and navigation waits for cloud save',async()=>{
+  const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
+  const start=world.indexOf('function agitProgressKey('),end=world.indexOf('function agitMissionStillCurrent(');
+  assert.ok(start>=0&&end>start,'mission save functions are present');
+  const content=world.slice(start,end);
+  const storage=new Map(),settings={agitHub:{}},model={settings},departures=[];
+  let resolveSave,localWrites=0;
+  const context={
+    D:{online:true,user:{id:'member-a'}},
+    window:{OjjudaAgitHub:{...hub,visitTarget:()=>({id:'group'}),complete:(state,id)=>hub.complete(state,id,date),mergeProgress:(a,b)=>hub.mergeProgress(a,b,date)}},
+    localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},
+    ua:'member-a',de:{priv:'old-cloud'},pi:model,pc:false,no:JSON.stringify,
+    mi:current=>({priv:{settings:current.settings}}),
+    Ti:()=>{localWrites++;},refreshAgitHub:()=>{},
+    Wn:()=>new Promise(resolve=>{resolveSave=()=>{context.de.priv=JSON.stringify({settings:model.settings});resolve();};}),
+    location:{assign:url=>departures.push(url)},console,setTimeout,clearTimeout
+  };
+  context.$=model;
+  vm.runInNewContext(content,context);
+  hub.complete(settings,'park',date);
+  const pending=context.markAgitPageVisit('group');
+  context.navigateAgitPage('/groups/',pending);
+  assert.ok(localWrites>0,'a local write occurs before navigation');
+  const backup=JSON.parse(storage.get('ojjuda-agit-progress-v1:member-a'));
+  assert.equal(hub.isComplete({agitHub:backup},'park',date),true);
+  assert.equal(hub.isComplete({agitHub:backup},'visit',date),true);
+  assert.deepEqual(departures,[],'navigation waits while the remote save is pending');
+  resolveSave();await pending;
+  assert.deepEqual(departures,['/groups/']);
+  model.settings={agitHub:{stamps:[],completed:{},guesses:{}}};
+  context.restoreAgitProgress('member-a');
+  assert.equal(hub.isComplete(model.settings,'park',date),true,'stale cloud state does not erase completion');
+  assert.equal(hub.isComplete(model.settings,'visit',date),true);
+  assert.equal(context.readAgitProgress('member-b'),null,'backups stay scoped to each account');
+  resolveSave();
 });
 
 test('visit stamps display the current Monday-to-Sunday week',()=>{
@@ -119,7 +168,7 @@ test('Agit markup contains one five-mission panel and Daily fan content',()=>{
   assert.match(html,/theme-illustrations\/autumn\.webp/);
   assert.doesNotMatch(html,/agit-hero-event-art|agit-hero-season-art|theme-scenes/,'the illustration must be one standalone theme scene');
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-one-quiz1'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-progress-save1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
 });
 
@@ -158,7 +207,8 @@ test('themed hero uses narrow inline white highlights without masking the artwor
   assert.match(js,/class="agit-hero-highlight"/);
   assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
   assert.match(world,/agit-hub\.css\?v=20261110-stamp-week1/);
-  assert.match(world,/agit-hub\.js\?v=20261110-one-quiz1/);
+  assert.match(world,/agit-hub\.js\?v=20261110-progress-save1/);
+  assert.match(world,/updateAgitProgress\(hub\.complete\(\$\.settings,id==='baseball'\?'baseball':'quiz'\)\|\|id==='baseball'\)/,'baseball wins also trigger an immediate save');
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{

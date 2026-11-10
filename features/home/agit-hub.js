@@ -86,6 +86,27 @@
     const guesses = raw.guesses && typeof raw.guesses === 'object' && !Array.isArray(raw.guesses) ? raw.guesses : {};
     return {stamps: [...new Set(stamps)].sort().slice(-120), completed, guesses};
   }
+  function mergeProgress(remote, local, date = kstDate()) {
+    const first = safeState({agitHub:remote}), second = safeState({agitHub:local});
+    const stamps = [...new Set([...first.stamps, ...second.stamps])].filter(d => d <= date).sort().slice(-120);
+    const completed = {}, guesses = {};
+    for (const day of new Set([...Object.keys(first.completed), ...Object.keys(second.completed)])) {
+      if (day < addDays(date, -35) || day > date || !/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+      const ids = [...(Array.isArray(first.completed[day]) ? first.completed[day] : []),
+        ...(Array.isArray(second.completed[day]) ? second.completed[day] : [])];
+      const valid = [...new Set(ids.filter(id => missions(day).includes(id)))];
+      if (valid.length) completed[day] = valid;
+    }
+    for (const day of new Set([...Object.keys(first.guesses), ...Object.keys(second.guesses)])) {
+      if (day < addDays(date, -7) || day > date || !/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+      const entries = [...(Array.isArray(first.guesses[day]) ? first.guesses[day] : []),
+        ...(Array.isArray(second.guesses[day]) ? second.guesses[day] : [])];
+      const unique = new Map();
+      for (const entry of entries) if (entry && typeof entry.guess === 'string' && /^[1-9]{3}$/.test(entry.guess) && new Set(entry.guess).size === 3) unique.set(entry.guess, entry);
+      if (unique.size) guesses[day] = [...unique.values()].slice(-25);
+    }
+    return {stamps, completed, guesses};
+  }
   function visitStreak(settings, date = kstDate()) {
     const stamps = new Set(safeState(settings).stamps);
     let current = stamps.has(date) ? date : addDays(date, -1), count = 0;
@@ -250,7 +271,7 @@
     }
     return '';
   }
-  const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
+  const api = {kstDate, missions, visitTarget, quizMode, recommended, themeFor, safeState, mergeProgress, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
