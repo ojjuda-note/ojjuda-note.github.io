@@ -192,8 +192,8 @@
       <header class="agit-hero" aria-label="아지트">
         <div class="agit-hero-story">
           <span class="agit-hero-eyebrow"><span aria-hidden="true">✦</span> ${Number(month)}월 ${Number(day)}일 ${weekday}요일 <strong>${escapeHtml(theme.name)} 테마</strong></span>
-          <h1>${escapeHtml(theme.headline[0])} <em>${escapeHtml(theme.headline[1])}</em></h1>
-          <p>${escapeHtml(theme.copy)}</p>
+          <h1><span class="agit-hero-highlight">${escapeHtml(theme.headline[0])} <em>${escapeHtml(theme.headline[1])}</em></span></h1>
+          <p><span class="agit-hero-highlight agit-hero-highlight--copy">${escapeHtml(theme.copy)}</span></p>
         </div>
         <section class="agit-hero-pick" id="agit-recommend" aria-label="오늘의 추천게임">
             <div class="agit-pick-top">오늘의 추천게임 <span>매일 바뀌어요</span></div>

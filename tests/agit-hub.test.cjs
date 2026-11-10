@@ -134,12 +134,17 @@ test('mobile mission cards stay in one horizontal row',()=>{
   assert.match(mobile,/\.agit-quest-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
-test('themed hero copy has a subtle outline without fogging the artwork',()=>{
+test('themed hero uses narrow inline white highlights without masking the artwork',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
+  const js=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.js'),'utf8');
+  const world=fs.readFileSync(path.join(__dirname,'../world.html'),'utf8');
   assert.doesNotMatch(css,/\.agit-hero-story::before\{/);
-  assert.match(css,/\.agit-hero-story h1\{[^}]*-webkit-text-stroke:\.8px/);
-  assert.match(css,/\.agit-hero-story p\{[^}]*-webkit-text-stroke:\.45px/);
-  assert.match(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8'),/agit-hub\.css\?v=20261110-hero-outline1/);
+  assert.match(css,/\.agit-hero-highlight\{[^}]*padding:\.012em \.10em \.025em/);
+  assert.match(css,/box-decoration-break:clone/);
+  assert.match(js,/class="agit-hero-highlight"/);
+  assert.match(js,/class="agit-hero-highlight agit-hero-highlight--copy"/);
+  assert.match(world,/agit-hub\.css\?v=20261110-hero-highlight2/);
+  assert.match(world,/agit-hub\.js\?v=20261110-hero-highlight2/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{
