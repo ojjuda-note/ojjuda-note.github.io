@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const artists = window.OJJUDA_FAN_ARTISTS || [];
+  const profiles = window.OJJUDA_FAN_PROFILES || {};
   const savedKey = 'ojjuda-fanpages-saved-v1';
   const $ = (selector, base = document) => base.querySelector(selector);
   const page = document.body.dataset.page;
@@ -247,6 +248,31 @@
     }, { passive: true });
   }
 
+  function artistProfileHtml(artist, profile) {
+    if (!profile) return '';
+    const dossier = (label, value, extra = '') => `<div class="profile-fact"><span>${label}</span><strong class="${extra}">${value}</strong></div>`;
+    const history = (entries, label, sign) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list">${entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('')}</div></div>`;
+    const members = profile.members.map((member, i) => {
+      const birthDate = member.birthday.replaceAll('.', '-');
+      return `<article class="profile-member-card">
+        <div class="profile-member-top"><span class="profile-member-index">${String(i + 1).padStart(2, '0')}</span><span class="profile-member-spark" aria-hidden="true">${artist.shape}</span></div>
+        <div class="profile-member-name"><h4>${member.name}</h4><span>${member.note || 'MEMBER'}</span></div>
+        <dl><div><dt>생일</dt><dd><time datetime="${birthDate}">${member.birthday}</time></dd></div><div><dt>고향·출신</dt><dd>${member.hometown || '<span class="profile-pending">확인 중</span>'}</dd></div><div><dt>학교·학력</dt><dd>${member.school || '<span class="profile-pending">확인 중</span>'}</dd></div></dl>
+        ${member.source ? `<a class="profile-member-source" href="${member.source}" target="_blank" rel="noopener noreferrer" aria-label="${member.name} 관련 자료 보기">관련 자료 <span aria-hidden="true">↗</span></a>` : ''}
+      </article>`;
+    }).join('');
+    return `<section id="profile" class="detail-section profile-section" aria-labelledby="profile-heading">
+      <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED 2026.11.10</span></div>
+      <div class="profile-overview">
+        <div class="profile-identity"><div class="profile-identity-shape" aria-hidden="true">${artist.shape}</div><span class="profile-kicker">${artist.name} / THE STORY</span><strong class="profile-debut"><small>DEBUT</small><time datetime="${profile.debut.replaceAll('.', '-')}">${profile.debut}</time></strong><p>${profile.concept}</p><div class="profile-facts">${dossier('데뷔곡·음반', profile.debutWork)}${dossier('기획사', profile.agency)}${dossier('팬덤', artist.fan)}</div></div>
+        <div class="profile-history">${history(profile.awards, '수상', '✦')}${history(profile.records, '기록', '↗')}</div>
+      </div>
+      <div class="profile-members-title"><div><span>MEMBER ARCHIVE</span><h3>멤버 프로필</h3></div><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div>
+      <div class="profile-member-grid">${members}</div>
+      <div class="profile-sources"><span>자료 출처</span>${profile.sources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>학교·학력은 재학 이력을 포함하며, 미확인 정보는 표시하지 않아요.</small></div>
+    </section>`;
+  }
+
   function initArtist() {
     const id = new URLSearchParams(location.search).get('group');
     const artist = artists.find((item) => item.id === id);
@@ -257,6 +283,7 @@
       return;
     }
     const index = artists.indexOf(artist);
+    const profile = profiles[artist.id];
     const saved = getSaved().includes(artist.id);
     document.body.dataset.artist = artist.id;
     document.documentElement.style.setProperty('--group-accent', artist.accent);
@@ -285,16 +312,17 @@
       </section>
       <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
-      <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#photos"><span>01</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>02</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>03</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>04</span><strong>소식</strong><b>↗</b></a></nav>
-      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>01 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid">${gallery}</div><p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
+      <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>03</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>04</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>05</span><strong>소식</strong><b>↗</b></a></nav>
+      ${artistProfileHtml(artist, profile)}
+      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid">${gallery}</div><p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
       <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
         <div class="photo-viewer-top"><span>OJJUDA PHOTO GALLERY <b id="photo-viewer-number"></b></span><button type="button" class="photo-viewer-close" aria-label="사진 닫기">✕</button></div>
         <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
         <div class="photo-viewer-bottom"><div><h3 id="photo-viewer-title"></h3><p id="photo-viewer-credit"></p></div><div class="photo-viewer-actions"><a id="photo-viewer-license" href="#" target="_blank" rel="noopener noreferrer" hidden>이용 조건</a><a id="photo-viewer-source" href="#" target="_blank" rel="noopener noreferrer">원본·출처 ↗</a></div></div>
       </div></dialog>
-      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>02 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
-      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>03 / CALENDAR</span><h2>일정 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
-      <section id="news" class="detail-section"><div class="detail-heading"><div><span>04 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
+      <section id="goods" class="detail-section"><div class="detail-heading"><div><span>03 / COLLECTION</span><h2>굿즈 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.merch, 'merch')}</div></section>
+      <section id="schedule" class="detail-section"><div class="detail-heading"><div><span>04 / CALENDAR</span><h2>일정 <em>${artist.shape}</em></h2></div></div><div class="resource-grid">${resources(artist.schedules, 'schedule')}</div></section>
+      <section id="news" class="detail-section"><div class="detail-heading"><div><span>05 / UPDATES</span><h2>소식 <em>${artist.shape}</em></h2></div></div><div class="detail-news-list">${artist.news.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="detail-news-row"><span class="detail-news-date">${entry.date}</span><div><span>${entry.tag}</span><strong>${entry.title}</strong></div><b>↗</b></a>`).join('')}</div></section>
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
       <div class="detail-source-note">비공식 팬페이지 · 2026.11.10 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
