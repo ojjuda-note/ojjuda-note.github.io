@@ -228,3 +228,19 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
   .agit-hero-visual img{max-width:76%}
 }
 @media(max-width:740px){.agit-hero-story h1,.agit-hero-story p{-webkit-text-stroke:0}}
+
+/* Phones read the visit ritual top-to-bottom, with a full-width stamp action. */
+@media(max-width:540px){
+  .agit-checkin{grid-template-columns:minmax(0,1fr);gap:12px}
+  .agit-checkin-label{grid-column:1;grid-row:1}
+  .agit-stamp-days{grid-column:1;grid-row:2}
+  .agit-stamp-button{grid-column:1;grid-row:3;justify-self:stretch}
+}
+/* Short screens keep the mission title whole; summary wraps only if needed. */
+@media(max-width:360px){
+  .agit-section-head{align-items:center;flex-wrap:wrap;gap:8px}
+  .agit-section-head h2{white-space:nowrap}
+  .agit-quest-summary{gap:8px;margin-left:auto}
+  .agit-quest-meter{gap:3px}
+  .agit-quest-meter span{width:15px}
+}

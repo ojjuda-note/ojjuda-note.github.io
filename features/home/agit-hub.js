@@ -210,6 +210,15 @@
     const [, month, day] = date.split('-');
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
     const daily = Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19));
+    const lifeItems = daily.map(([id, item]) => ({id, item}));
+    const festivalPosition = lifeItems.findIndex(entry => entry.id === 'festival');
+    if (festivalPosition >= 0) {
+      const [festival] = lifeItems.splice(festivalPosition, 1);
+      lifeItems.splice(festivalPosition, 0, {id:'fanpages'});
+      lifeItems.push(festival);
+    } else {
+      lifeItems.push({id:'fanpages'});
+    }
     const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
     return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
       <header class="agit-hero" aria-label="아지트">
@@ -234,14 +243,15 @@
       </section>
       ${missionMarkup(settings,date)}
       <section class="agit-life" id="agit-daily" aria-label="일상"><header class="agit-section-head"><div><span class="agit-section-kicker">쉬어 가는 곳</span><h2>일상 둘러보기</h2></div></header>
-        <div class="agit-life-grid">${daily.map(([id,item],i) => {
+        <div class="agit-life-grid">${lifeItems.map(({id,item},i) => {
+           if(id==='fanpages')return `<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span><span class="agit-life-art"><img src="/features/fanpages/fan-tile.svg?v=20261110-fanpages1" alt="" width="160" height="112" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a>`;
           if(!/^[a-z0-9_]+$/.test(id))return '';
-          return `<button type="button" class="agit-life-tile agit-life-tile--${i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
+          return `<button type="button" class="agit-life-tile agit-life-tile--${id==='festival'?2:id==='group'?1:id==='restaurants'?3:i%4+1}" data-act="agit-daily" data-v="${id}" aria-label="${escapeHtml(item.name)}${item.memberOnly?' · 회원 전용':''}">
             <span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span>
             <span class="agit-life-art"><img src="/assets/design/games/${id}.svg" alt="" width="160" height="112" loading="lazy"></span>
             <span class="agit-life-title"><strong>${escapeHtml(item.name)}</strong><small>${item.memberOnly?'회원 전용':escapeHtml(dailyHints[id]||'구경하기')}</small></span>
           </button>`;
-        }).join('')}<a class="agit-life-tile agit-life-tile--4" href="/features/fanpages/index.html" data-act="agit-fan" aria-label="팬페이지"><span class="agit-life-top"><span class="agit-life-tile-arrow" aria-hidden="true">↗</span></span><span class="agit-life-art"><img src="/features/fanpages/fan-tile.svg?v=20261110-fanpages1" alt="" width="160" height="112" loading="lazy"></span><span class="agit-life-title"><strong>팬페이지</strong><small>좋아하는 이야기</small></span></a></div>
+        }).join('')}</div>
       </section>
       <footer class="agit-footer"><span>오쭈다 아지트</span><button type="button" data-act="feedback-open">의견 보내기 <span aria-hidden="true">→</span></button></footer>
     </div>`;
