@@ -242,8 +242,17 @@ async function noteFixture(context, mobile, errors) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `existing Note action ${id} stays reachable`);
   }
   assert.equal(await page.locator('#note-my-screen [data-show="events"]').isVisible(), true);
-  assert.equal(await page.locator('#note-my-screen a[href="/guide.html"]').isVisible(), true);
-  assert.equal(await page.locator('#note-my-screen a[href="/world.html"]').isVisible(), true);
+  // The Park menu keeps return/context parameters; assert real destinations, not bare hrefs.
+  for (const [selector, destination] of [
+    ['#note-my-screen a[href^="/guide.html"]', '/guide.html'],
+    ['#note-my-screen a[href^="/world.html"]', '/world.html']
+  ]) {
+    const link = page.locator(selector).first();
+    assert.equal(await link.isVisible(), true, `${destination} remains reachable`);
+    const target = new URL(await link.getAttribute('href'), 'https://ojjuda.test/');
+    assert.equal(target.origin, 'https://ojjuda.test', `${destination} stays same-origin`);
+    assert.equal(target.pathname, destination, `${destination} keeps its actual destination`);
+  }
   assert.equal(await page.locator('#note-my-screen .support-entry').isVisible(), true);
   assert.equal(await page.locator('#note-help-actions .support-entry').count(), 1,
     'the real support module attaches its entry to Help after regrouping');

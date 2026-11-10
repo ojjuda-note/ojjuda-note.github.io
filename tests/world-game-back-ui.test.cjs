@@ -220,9 +220,10 @@ window.childReady=true;
       }
       const retired=await context.newPage();
       await retired.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
-      await retired.locator('#agit-hub-view').waitFor();
-      assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Hub');
+      await retired.locator('#app .bottomnav').waitFor();
+      assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay inside World');
       assert.equal(await retired.locator('[data-v=byeolcheonji]').count(),0,'retired vacancy alert has no game card');
+      assert.ok(await retired.locator('#agit-hub-view,.arcade-home').filter({visible:true}).count()>0,'old game links still open a usable World section');
       await context.close();
       console.log(`PASS: ${native?'native':'browser'} Back returns game families to Arcade and public directories to Hub, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
     }
