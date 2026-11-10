@@ -20,7 +20,9 @@ function jgCompletesBikjang(state,move){
 }
 function jgRepeats(state,move){
  const last=state.shuttle?.[state.t];
- return !move.pass&&!state.b[move.t]&&!!last&&last.run>=4&&move.f===last.t&&move.t===last.f&&!jgCompletesBikjang(state,move);
+ // A player escaping check must never lose because the only escape shuttles a piece.
+ // The checking side must choose a new move instead of forcing a false checkmate.
+ return !hl(state)&&!move.pass&&!state.b[move.t]&&!!last&&last.run>=4&&move.f===last.t&&move.t===last.f&&!jgCompletesBikjang(state,move);
 }
 function jgShuttleAfter(state,move){
  const last=state.shuttle?.[state.t];
