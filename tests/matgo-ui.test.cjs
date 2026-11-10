@@ -194,8 +194,8 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
     assert.equal(await f.page.locator('.card.result-card').evaluate(el=>el.scrollHeight<=el.clientHeight+1),true,'the concise result fits on one page');
   }
   await f.page.screenshot({path:'/tmp/matgo-result-exit-solo.png'});
-  await f.page.route('**/world.html',r=>r.fulfill({body:'<p>오락실</p>',contentType:'text/html'}));
-  await f.page.locator('#result-exit').click();await f.page.waitForURL('**/world.html');
+  await f.page.route('**/world.html?tab=arcade',r=>r.fulfill({body:'<p>오락실</p>',contentType:'text/html'}));
+  await f.page.locator('#result-exit').click();await f.page.waitForURL('**/world.html?tab=arcade');
   assert.equal(f.state.requests.filter(r=>r.action==='settle').length,1,'leaving a completed game does not settle twice');
   assert.deepEqual(f.errors,[]);await f.context.close();
   {
@@ -501,14 +501,14 @@ const root=path.join(__dirname,'..'),member='00000000-0000-4000-8000-00000000000
       }
       async function closed(confirmExit=false){
         if(confirmExit){
-          const prompt=f.page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+          const prompt=f.page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true});
           await prompt.waitFor();
           assert.equal(await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).isVisible(),true);
           assert.equal(await f.page.locator('#matgo-overlay').count(),1,'the round stays mounted until exit is confirmed');
-          await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).tap();
+          await prompt.getByRole('button',{name:'오락실로 나가기',exact:true}).tap();
         }
-        await f.page.waitForFunction(expected=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld===expected,confirmExit?'main':'menu');
-        assert.equal(await f.page.locator(confirmExit?'#agit-hub-view':'.arcade-home').isVisible(),true,'confirmed game exit returns to Hub; entrance dismissal stays in Arcade');
+        await f.page.waitForFunction(()=>!document.querySelector('#matgo-overlay')&&history.state?.ojjudaWorld==='menu');
+        assert.equal(await f.page.locator('.arcade-home').isVisible(),true,'game exit and entrance dismissal both return to Arcade');
         assert.equal(await f.page.evaluate(()=>window.nativeExits||0),0,'game exit stays in the app');
       }
       async function back(confirmExit=false){

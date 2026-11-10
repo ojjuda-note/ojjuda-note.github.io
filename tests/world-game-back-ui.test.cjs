@@ -83,6 +83,11 @@ window.childReady=true;
         assert.equal(await page.locator('#agit-hub-view').isVisible(), true, 'the Hub main screen returns');
         assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
       };
+      const arcade = async () => {
+        await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu' && !!document.querySelector('.arcade-home') && !document.querySelector('#gov,#matgo-overlay,#ttang-overlay,#photo-ttang-overlay,dialog[open],[data-bl="close"]'));
+        assert.equal(await page.locator('.arcade-home').isVisible(), true, 'the Arcade returns after a game closes');
+        assert.equal(await page.evaluate(() => backFixture.exits), 0, 'game Back never exits the native app');
+      };
       const games = [
         ['restaurants','.restaurant-guide-dialog'],['festival','.festival-schedule-dialog'],['archery','.archery-game-dialog'],
         ['sacheonseong','.sacheonseong-game-dialog'],['bang','.bang-game-dialog'],['poker','.poker-game-dialog'],['roulette','.roulette-game-dialog'],
@@ -93,6 +98,7 @@ window.childReady=true;
       ];
       for (const [game, selector] of games) {
         await page.evaluate(async game => {
+          backFixture.actions.tab({tab:['festival','restaurants'].includes(game)?'hub':'arcade'});
           if (game === 'matgo') await openMatgo();
           else if (game === 'photo_ttang') await OjjudaPhotoTtangBridge.open({owner:'fixture'});
           else if (game === 'billiards') backFixture.billiards();
@@ -106,11 +112,12 @@ window.childReady=true;
         for (const frame of page.frames().slice(1)) await frame.waitForFunction(() => window.childReady);
         await back();
         if(game==='billiards')await page.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
-        await main();
+        if(['festival','restaurants'].includes(game))await main();else await arcade();
       }
 
       // Both public directories have a visible return and support the same browser/native Back.
       for(const game of ['festival','restaurants']){
+        await page.evaluate(()=>backFixture.actions.tab({tab:'hub'}));
         await page.evaluate(game=>backFixture.open(game),game);
         await page.getByRole('button',{name:'아지트로 돌아가기',exact:true}).click();
         await main();
@@ -129,6 +136,7 @@ window.childReady=true;
 
       // The embedded minefield also has an in-game Back button. Its own handler must
       // not remove the round before the player picks an option in the parent dialog.
+      await page.evaluate(()=>backFixture.actions.tab({tab:'arcade'}));
       await page.evaluate(()=>backFixture.open('mines'));
       const mines=page.frameLocator('.mines-game-dialog iframe');
       await mines.locator('body').evaluate(body=>{
@@ -142,9 +150,9 @@ window.childReady=true;
         await question.getByRole('button',{name:choice,exact:true}).click();
         if(choice==='게임 계속하기')assert.ok(await mines.locator('#face2').isVisible());
       }
-      await main();
+      await arcade();
 
-      // The return target of a shared game URL is the Agit hub after refresh.
+      // A shared game URL returns to Arcade and loses its game-only query after exit.
       await page.evaluate(()=>{
         history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
         backFixture.initVersion(()=>{});
@@ -154,7 +162,7 @@ window.childReady=true;
       assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
       assert.equal(new URL(page.url()).searchParams.has('v'),false);
       await back();
-      await page.waitForFunction(()=>document.querySelector('.arcade-home')&&!document.querySelector('#gov'));
+      await arcade();
       const returned=new URL(page.url());
       assert.equal(returned.searchParams.get('tab'),'arcade');
       assert.equal(returned.searchParams.get('keep'),'yes');
@@ -170,12 +178,14 @@ window.childReady=true;
         assert.equal(await original.evaluate(node=>node.isConnected),true,'continuing retains the same game');
         await back();
         await prompt.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
-        await main();
+        await arcade();
       }
+      await page.evaluate(()=>backFixture.actions.tab({tab:'arcade'}));
       await page.evaluate(() => backFixture.open('stacker'));
       await page.locator('#gov [data-g="start"]').click();
       await chooseExit('#gov');
       await page.locator('.bottomnav [data-tab="my"]').click();
+      await page.evaluate(()=>backFixture.actions.tab({tab:'arcade'}));
       await page.evaluate(()=>backFixture.open('stacker'));
       await page.locator('#gov [data-g="start"]').click();
       await chooseExit('#gov');
@@ -191,7 +201,8 @@ window.childReady=true;
         await page.evaluate(() => backFixture.open('stacker'));
         await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
         await page.locator('#gov .ghead [data-g="close"]').click();
-        await main();
+        await page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true}).getByRole('button',{name:'오락실로 나가기',exact:true}).click();
+        await arcade();
       }
       assert.equal(await page.evaluate(() => history.length), historySize, 'reopening does not grow duplicate return entries');
       await page.locator('.bottomnav [data-tab="my"]').click();
@@ -214,7 +225,7 @@ window.childReady=true;
       assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Hub');
       assert.equal(await retired.locator('[data-v=byeolcheonji]').count(),0,'retired vacancy alert has no game card');
       await context.close();
-      console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Hub, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
+      console.log(`PASS: ${native?'native':'browser'} Back returns game families to Arcade and public directories to Hub, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode=1; });

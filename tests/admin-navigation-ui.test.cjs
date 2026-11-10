@@ -297,20 +297,20 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     assert.equal(await page.locator('.adm-areas a').textContent(), '원고실');
     assert.equal(await page.locator('.adm-areas').locator('button,a').last().textContent(), '원고실', 'the studio follows operations');
     assert.equal(await page.locator('.adm-site-links [data-act="adm-back"]').getAttribute('type'), 'button');
-    // Each administrator section goes straight to the dashboard, then to World.
+    // Each administrator section goes straight to the dashboard; its Back stays in Admin.
     await area('operations'); await tab('errors');
     await page.locator('[data-act="adm-back"]').click();
     assert.deepEqual(await current(), {area:'account',tab:'overview'});
-    assert.equal(await page.locator('[data-act="adm-back"]').textContent(), '← 오쭈다 메인');
-    await page.locator('[data-act="adm-back"]').click();
-    await page.waitForFunction(() => worldTest.state.place?.id === 'arcade');
+    assert.equal(await page.locator('[data-act="adm-back"]').count(), 0, 'the admin dashboard has no leave-admin Back');
+    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin');
     await page.evaluate(() => worldTest.actions.tab({tab:'admin'}));
     assert.deepEqual(await current(), {area:'account',tab:'overview'}, 'reopening admin starts at its dashboard');
     await area('content'); await tab('risk');
     await page.evaluate(() => history.back());
     await page.waitForFunction(() => worldTest.admin.area === 'account' && worldTest.admin.tab === 'overview');
     await page.evaluate(() => history.back());
-    await page.waitForFunction(() => worldTest.state.place?.id === 'arcade');
+    await page.waitForTimeout(100);
+    assert.equal(await page.evaluate(() => worldTest.state.tab), 'admin', 'Back at the dashboard stays in administrator mode');
     // Exercise the real embedded editor with the host guard: discard is asked once.
     await page.goto('https://fixture.test/world.html?admin=notice&actualNote=1'); await loaded();
     await page.getByLabel(/^서비스 공지/).waitFor();

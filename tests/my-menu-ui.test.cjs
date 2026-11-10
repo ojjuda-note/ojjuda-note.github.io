@@ -152,7 +152,7 @@ async function worldFixture(context, mobile, errors) {
   assert.equal(guideUrl.origin, 'https://ojjuda.test', 'the guide stays on the same site');
   assert.equal(guideUrl.pathname, '/guide.html', 'the guide keeps its exact destination path');
   for (const href of ['terms.html', 'privacy.html']) {
-    assert.equal(await page.locator(`a[href="${href}"]`).isVisible(), true, `existing link ${href} stays reachable`);
+    assert.equal(await page.locator(`a[href="${href}?from=my"]`).isVisible(), true, `existing link ${href} returns to settings`);
   }
   assert.equal(await page.locator('[data-act="enter-place"][data-id="park"]').count(),0,'menu omits the park shortcut');
   await uniqueIds(page);

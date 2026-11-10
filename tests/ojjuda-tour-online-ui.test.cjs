@@ -59,7 +59,7 @@ const root=path.resolve(__dirname,'..');
   await a.frame.locator('#marbleRoomCode').waitFor({state:'visible'});const code=await a.frame.locator('#marbleRoomCode').innerText();
   assert.match(code,/^[A-F0-9]{8}$/);
   fs.mkdirSync('/tmp/ojjuda-tour-proof',{recursive:true});
-  await b.page.getByRole('button',{name:'게임 목록으로 돌아가기',exact:true}).click();
+  await b.page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();
   await a.frame.getByRole('button',{name:'친구 초대',exact:true}).click();
   await a.page.getByRole('dialog',{name:'초대할 친구 선택',exact:true}).waitFor();
   assert.equal(await a.page.locator('.tour-game-dialog .game-friend-picker-overlay').count(),1,'friend picker is inside the native top-layer game dialog');
@@ -125,7 +125,7 @@ const root=path.resolve(__dirname,'..');
   }
   assert.equal((await f.db.query('select count(*)::integer n from public.game_scores')).rows[0].n,2,'the timeout-assisted seat is excluded from this result');
   // A new active room exercises the real bridge's exit → AI handoff → fresh entry.
-  await b.page.getByRole('button',{name:'게임 목록으로 돌아가기',exact:true}).click();await b.page.locator('.tour-game-dialog').waitFor({state:'detached'});
+  await b.page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();await b.page.locator('.tour-game-dialog').waitFor({state:'detached'});
   await b.page.locator('#launch').click();await b.frame.locator('#tourTitle').waitFor();await b.frame.getByRole('button',{name:'온라인 대전',exact:true}).click();
   await b.frame.locator('#marbleCreate button:not([disabled])').waitFor();await b.frame.locator('#marbleCreate [name=capacity]').selectOption('2');
   await b.frame.getByRole('button',{name:'온라인 방 만들기',exact:true}).click();await b.frame.locator('#marbleRoomCode').waitFor({state:'visible'});
@@ -134,7 +134,7 @@ const root=path.resolve(__dirname,'..');
   assert.equal((await f.call(ids[0],{action:'join',code:nextCode})).ok,true);
   await b.frame.locator('#marbleStart:not([disabled])').waitFor();await b.frame.locator('#marbleStart').click();await b.frame.locator('#game').waitFor({state:'visible'});
   await a.page.evaluate(code=>launch(code),nextCode);await a.frame.locator('#game').waitFor({state:'visible',timeout:60000});
-  await b.page.getByRole('button',{name:'게임 목록으로 돌아가기',exact:true}).click();await b.page.locator('.tour-game-dialog').waitFor({state:'detached'});
+  await b.page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();await b.page.locator('.tour-game-dialog').waitFor({state:'detached'});
   f.dice(0,1);await f.db.query("update ojjuda_marble_internal.rooms set deadline=clock_timestamp()-interval '1 second' where id=$1",[next.id]);
   await a.embedded().waitForFunction(()=>G.players[0].name.includes('컴퓨터')&&G.turn===1&&MarbleOnline.canAct(),{},{timeout:60000});
   assert.match(await a.frame.locator('#players').innerText(),/여행친구.*컴퓨터/,'remaining people see the original nickname and computer label');

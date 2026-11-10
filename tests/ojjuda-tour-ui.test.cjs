@@ -53,7 +53,7 @@ const root=path.resolve(__dirname,'..');
     await frame.locator('#three').evaluate(()=>new Promise((resolve,reject)=>{let attempts=0;const timer=setInterval(()=>{if(G.players[0].pos>0){clearInterval(timer);resolve()}else if(++attempts>400){clearInterval(timer);reject(Error('dice did not move the player'))}},100)}));
     assert.equal(await frame.locator('#three').evaluate(canvas=>canvas.width>0&&canvas.height>0),true);
     const oldRun=await frame.locator('#three').evaluate(()=>G.runId);
-    await page.getByRole('button',{name:'게임 목록으로 돌아가기'}).click();await page.locator('.tour-game-dialog').waitFor({state:'detached'});
+    await page.getByRole('button',{name:'오락실로 돌아가기'}).click();await page.locator('.tour-game-dialog').waitFor({state:'detached'});
     await page.locator('#launch').click();
     await frame.locator('#tourTitle').waitFor();assert.equal(await frame.locator('#resumeBtn').isVisible(),false,'a fresh visit has no saved round');
     await frame.locator('#minus').click();await frame.locator('[data-tour-mode=computer]').click();await frame.locator('#startBtn').click();
@@ -99,7 +99,7 @@ const root=path.resolve(__dirname,'..');
     assert.equal(records.length,2);assert.equal(records[0].won,false,'elimination records a loss under the current win-streak contract');assert.equal(records[1].id,records[0].id);
     assert.equal(await frame.locator('#sheet2 .game-result-card').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true,'result receipt fits mobile');
    }
-   await page.getByRole('button',{name:'게임 목록으로 돌아가기'}).click();
+   await page.getByRole('button',{name:'오락실로 돌아가기'}).click();
    assert.equal(await page.locator('dialog').count(),0);
    assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('gaming')),false);
    assert.deepEqual(errors,[]);

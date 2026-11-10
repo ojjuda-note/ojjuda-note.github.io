@@ -72,7 +72,7 @@ function fixture(){
   const w=host.window;w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};let closed=0;
   w.eval(fs.readFileSync(path.join(root,'../../games/spot-difference/world-spot-game.js'),'utf8'));w.OjjudaSpotGame.open({onClose:()=>closed++});
   const frame=w.document.querySelector('iframe'),send=(origin,source)=>w.dispatchEvent(new w.MessageEvent('message',{origin,source,data:{type:'ojjuda:spot-home'}}));
-  assert.equal(w.document.querySelector('.spot-game-header button').textContent,'아지트 홈');
+  assert.equal(w.document.querySelector('.spot-game-header button').textContent,'오락실로');
   send('https://other.test',frame.contentWindow);send(w.location.origin,w);assert.ok(w.document.querySelector('.spot-game-dialog'),'ignore foreign home requests');
   send(w.location.origin,frame.contentWindow);await flush();assert.equal(w.document.querySelector('.spot-game-dialog'),null);assert.equal(w.document.body.classList.contains('gaming'),false);assert.equal(closed,1);
   assert.match(read('index.html'),/id="game-home"[^>]+href="\/world.html\?tab=arcade"/);assert.match(read('index.html'),/id="zoom-home"[^>]+href="\/world.html\?tab=arcade"/);

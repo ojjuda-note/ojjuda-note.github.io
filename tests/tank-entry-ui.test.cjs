@@ -84,11 +84,11 @@ window.tankEntryFixture={completed:[],coins:()=>$.coins};
    async function close(){
     assert.equal(await frame.locator('body').evaluate(()=>!!document.fullscreenElement),false,'system Back is available during play');
     await page.goBack();
-    const prompt=page.getByRole('dialog',{name:'아지트로 갈까요?',exact:true});
+    const prompt=page.getByRole('dialog',{name:'오락실로 갈까요?',exact:true});
     await prompt.getByRole('button',{name:'게임 계속하기',exact:true}).click();
     await playing();
     await page.goBack();
-    await prompt.getByRole('button',{name:'아지트로 나가기',exact:true}).click();
+    await prompt.getByRole('button',{name:'오락실로 나가기',exact:true}).click();
     await page.locator('.tank-game-dialog').waitFor({state:'detached'});
    }
    await frame.locator('#startSolo:not([disabled])').waitFor();await entry();
