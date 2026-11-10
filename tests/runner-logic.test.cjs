@@ -170,3 +170,13 @@ assert.equal(sliding.state.sliding, false);
 sliding.draw(context);
 sliding.destroy();
 console.log('Runner vortex chapters, unlimited speed, multilevel gaps, squid ink, shark and controls passed.');
+
+// Real Canvas rejects negative arcTo radii; the last platform inset may be <= 0.
+const roundedSource = source.slice(source.indexOf('function rounded('), source.indexOf('  function gradient('));
+const drawRounded = vm.runInNewContext('(' + roundedSource + ')');
+for (const width of [-5, -1, 0, .01, 1, 5, 48]) {
+  let calls = 0;
+  const canvasProbe = new Proxy({ arcTo(...args) { assert.ok(args[4] >= 0); calls++; } }, { get: (o, k) => k in o ? o[k] : noop });
+  drawRounded(canvasProbe, 0, 0, width, 38, 9, '#fff');
+  assert.equal(calls, width > 0 ? 4 : 0, 'nonpositive inset is skipped, positive segment still renders');
+}

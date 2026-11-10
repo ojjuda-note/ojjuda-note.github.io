@@ -325,3 +325,34 @@ test('the inline Leaflet picker saves a tapped point, restores it on edit and pr
   assert.equal(await page.evaluate(() => rrFixture.calls.filter(call => call.name === 'save_restaurant_recommendation_with_location').length), 2, 'cancel, Back and account changes never create unintended post saves');
   assert.ok(f.tiles.length > 0, 'the real Leaflet layer rendered only locally fulfilled tile responses');
 });
+
+test('real asset loader executes the recommendation factory once across both entrance orders', async t => {
+  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'], ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}) });
+  t.after(() => browser.close());
+  for (const order of [['restaurants', 'recommendations'], ['recommendations', 'restaurants'], ['concurrent']]) {
+    const context = await browser.newContext(), errors = [], requests = [];
+    await context.route('**/*', route => {
+      const url = new URL(route.request().url());
+      if (url.origin !== origin) return route.abort();
+      if (url.pathname === '/loader-fixture') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><meta charset="utf-8"></head><body><script src="/shared/games/world-game-assets.js"></script></body></html>' });
+      if (!url.pathname.startsWith('/games/certified-restaurants/') && url.pathname !== '/shared/games/world-game-assets.js') return route.abort();
+      if (url.pathname.endsWith('/recommended-restaurants.js')) {
+        requests.push(url.href);
+        return route.fulfill({ contentType: 'application/javascript', body: 'window.recommendationExecutions=(window.recommendationExecutions||0)+1;\n' + fs.readFileSync(path.join(root, url.pathname.slice(1)), 'utf8') });
+      }
+      return route.fulfill({ path: path.join(root, url.pathname.slice(1)) });
+    });
+    const page = await context.newPage();
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(origin + '/loader-fixture');
+    await page.evaluate(async order => {
+      if (order[0] === 'concurrent') await Promise.all(['restaurants', 'recommendations'].map(id => OjjudaGameAssets.load(id)));
+      else for (const id of order) await OjjudaGameAssets.load(id);
+    }, order);
+    assert.equal(requests.length, 1, `one request for ${order.join(' then ')}`);
+    assert.equal(new URL(requests[0]).searchParams.get('v'), '20261110-navigation-return1');
+    assert.deepEqual(await page.evaluate(() => [recommendationExecutions, typeof OjjudaRecommendedRestaurants.create, OjjudaGameAssets.ready('restaurants'), OjjudaGameAssets.ready('recommendations')]), [1, 'function', true, true]);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+});

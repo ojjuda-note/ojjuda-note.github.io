@@ -86,3 +86,17 @@ test('a Bang direct link uses the guarded game entrance',()=>{
  assert.ok(start>=0&&end>start);vm.runInContext(world.slice(start,end),context);
  onLoad();assert.deepEqual(starts,['bang']);
 });
+
+for(const order of [['restaurants','recommendations'],['recommendations','restaurants'],['concurrent']]){
+ test(`restaurant entries share one recommendation script: ${order.join(' then ')}`,async()=>{
+  const f=fixture();
+  if(order[0]==='concurrent'){
+   const pending=Promise.all([f.api.load('restaurants'),f.api.load('recommendations')]);f.finish();await pending;
+  }else for(const id of order){const pending=f.api.load(id);f.finish();await pending;}
+  const scripts=f.nodes.filter(node=>node.src?.split('?')[0]==='/games/certified-restaurants/recommended-restaurants.js');
+  assert.equal(scripts.length,1,'the same factory must not be inserted or executed twice');
+  assert.match(scripts[0].src,/\?v=20261110-navigation-return1$/,'both paths use the revision containing current return navigation');
+  assert.equal(f.api.ready('restaurants'),true);assert.equal(f.api.ready('recommendations'),true);
+  assert.equal(f.timers.size,0);
+ });
+}
