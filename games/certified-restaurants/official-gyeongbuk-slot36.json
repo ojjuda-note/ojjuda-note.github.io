@@ -1,1 +1,396 @@
-{"updatedAt":"2026-11-10","sourceName":"포항시 퐝퐝여행 및 경주시 문화관광 공식 음식점 안내","sourceUrls":["https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd="],"sourceScope":"1순환 36회차 포항4·경주4에 이어 2순환 36회차 포항시 공식 관광 음식점 목록에서 추가 6곳의 상호·도로명 주소 확인. 경주시 기존 항목 재점검, 두 도시 전수조사 아님.","verificationLimit":"2026-11-10 현재 공개된 포항시 음식점 안내의 상호·주소 수록 확인일. 새 공식 수상·선정 연도, 현재 영업 상태, 정규 블루리본 리본 등급의 증거로 해석하지 않음. 경주시 공식 관광 기존 4건 유지.","coordinatePolicy":"이번 추가 6곳 정확 상호·지점·현재 주소에 대응하는 신뢰 가능한 공개 수치좌표 교차확인 미완료. 신규 좌표 null, 회원 위치·추정값 미수집. 기존 8건 좌표 null 보존.","completeRegionalCollection":false,"restaurants":[{"id":"local-pohang-slot36-ugong-sushi-namgu","name":"우공초밥 포항남구점","category":"일식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 상공로 47-1 (상도동) 1층","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-07"},{"id":"local-pohang-slot36-marado-hoesikdang","name":"마라도회식당","category":"한식","region":"경북","district":"포항시","address":"경상북도 포항시 북구 해안로 217-1 (두호동) 1층","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-07"},{"id":"local-pohang-slot36-gwasuwon-saenggogi","name":"과수원 생고기","category":"한식","region":"경북","district":"포항시","address":"경상북도 포항시 북구 양학로17번길 5 (득량동)","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-07"},{"id":"local-pohang-slot36-jangnyong-jangeo","name":"장룡민물장어나라","category":"한식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 희망대로 911 (해도동)","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-07"},{"id":"local-gyeongju-slot36-sambu-sikdang","name":"삼부식당","category":"한식","region":"경북","district":"경주시","address":"경상북도 경주시 봉황로51번길 14","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"경주시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","sourceName":"경주시 문화관광 · 한식 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","addressSourceCheckedAt":"2026-11-07"},{"id":"local-gyeongju-slot36-gohyang-milmyeon","name":"고향밀면","category":"한식","region":"경북","district":"경주시","address":"경상북도 경주시 태종로791번길 7","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"경주시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","sourceName":"경주시 문화관광 · 한식 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","addressSourceCheckedAt":"2026-11-07"},{"id":"local-gyeongju-slot36-hwangnam-kalguksu","name":"황남칼국수","category":"한식","region":"경북","district":"경주시","address":"경상북도 경주시 봉황로 40-1","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"경주시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","sourceName":"경주시 문화관광 · 한식 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=","addressSourceCheckedAt":"2026-11-07"},{"id":"local-gyeongju-slot36-seasoning","name":"시즈닝","category":"양식","region":"경북","district":"경주시","address":"경상북도 경주시 첨성로99번길 25-2 (황남동)","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"경주시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd=","sourceName":"경주시 문화관광 · 양식 음식점","verifiedAt":"2026-11-07","status":"official_publication_listing","selectionCriteria":"해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd=","addressSourceCheckedAt":"2026-11-07"},{"id":"local-pohang-c2s36-hwanggojip","name":"황고집","category":"한식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 송도해안길 30-2 (송도동)","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"},{"id":"local-pohang-c2s36-wookine-mundeok","name":"욱이네식당 문덕점","category":"한식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 오천읍 원동로 76 (원리) 1층","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"},{"id":"local-pohang-c2s36-lunapiena","name":"루나피에나","category":"양식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 상도로26번길 8 (상도동) 1층","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"},{"id":"local-pohang-c2s36-juhyosil","name":"주효실의 앙금스토리","category":"디저트","region":"경북","district":"포항시","address":"경상북도 포항시 북구 삼호로 398 (환호동), 1층","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"},{"id":"local-pohang-c2s36-kaeru","name":"카에루식당","category":"일식","region":"경북","district":"포항시","address":"경상북도 포항시 남구 대이로 13 (대잠동), 107호","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"},{"id":"local-pohang-c2s36-yumimi","name":"유미미케이크","category":"디저트","region":"경북","district":"포항시","address":"경상북도 포항시 북구 용당로 110 (대흥동)","lat":null,"lng":null,"menu":[],"guides":[{"provider":"local-guide","label":"포항시 공식 관광 음식점 수록","year":null,"yearType":"listing","sourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","sourceName":"포항시 퐝퐝여행 · 음식점","verifiedAt":"2026-11-10","status":"official_publication_listing","selectionCriteria":"공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."}],"addressSourceUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","addressSourceCheckedAt":"2026-11-10"}],"cycle2Slot36":{"scheduledAtKST":"2026-11-10T18:00:00+09:00","checkedAtKST":"2026-11-10","officialListUrl":"https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118","officialDirectoryTotalDisplayed":202,"addedRestaurantIds":["local-pohang-c2s36-hwanggojip","local-pohang-c2s36-wookine-mundeok","local-pohang-c2s36-lunapiena","local-pohang-c2s36-juhyosil","local-pohang-c2s36-kaeru","local-pohang-c2s36-yumimi"],"coordinatesAdded":0,"addressesFromOfficialList":true,"notExhaustive":true}}
+{
+  "updatedAt": "2026-11-10",
+  "sourceName": "포항시 퐝퐝여행 및 경주시 문화관광 공식 음식점 안내",
+  "sourceUrls": [
+    "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+    "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+    "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd="
+  ],
+  "sourceScope": "1순환 36회차 포항4·경주4에 이어 2순환 36회차 포항시 공식 관광 음식점 목록에서 추가 6곳의 상호·도로명 주소 확인. 경주시 기존 항목 재점검, 두 도시 전수조사 아님.",
+  "verificationLimit": "2026-11-10 현재 공개된 포항시 음식점 안내의 상호·주소 수록 확인일. 새 공식 수상·선정 연도, 현재 영업 상태, 정규 블루리본 리본 등급의 증거로 해석하지 않음. 경주시 공식 관광 기존 4건 유지.",
+  "coordinatePolicy": "이번 추가 6곳 정확 상호·지점·현재 주소에 대응하는 신뢰 가능한 공개 수치좌표 교차확인 미완료. 신규 좌표 null, 회원 위치·추정값 미수집. 기존 8건 좌표 null 보존.",
+  "completeRegionalCollection": false,
+  "restaurants": [
+    {
+      "id": "local-pohang-slot36-ugong-sushi-namgu",
+      "name": "우공초밥 포항남구점",
+      "category": "일식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 상공로 47-1 (상도동) 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-pohang-slot36-marado-hoesikdang",
+      "name": "마라도회식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 북구 해안로 217-1 (두호동) 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-pohang-slot36-gwasuwon-saenggogi",
+      "name": "과수원 생고기",
+      "category": "한식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 북구 양학로17번길 5 (득량동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-pohang-slot36-jangnyong-jangeo",
+      "name": "장룡민물장어나라",
+      "category": "한식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 희망대로 911 (해도동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeongju-slot36-sambu-sikdang",
+      "name": "삼부식당",
+      "category": "한식",
+      "region": "경북",
+      "district": "경주시",
+      "address": "경상북도 경주시 봉황로51번길 14",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경주시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "sourceName": "경주시 문화관광 · 한식 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeongju-slot36-gohyang-milmyeon",
+      "name": "고향밀면",
+      "category": "한식",
+      "region": "경북",
+      "district": "경주시",
+      "address": "경상북도 경주시 태종로791번길 7",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경주시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "sourceName": "경주시 문화관광 · 한식 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeongju-slot36-hwangnam-kalguksu",
+      "name": "황남칼국수",
+      "category": "한식",
+      "region": "경북",
+      "district": "경주시",
+      "address": "경상북도 경주시 봉황로 40-1",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경주시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+          "sourceName": "경주시 문화관광 · 한식 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1001&listType=list&mnu_uid=2502&pageNo=&sortKwd=&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-gyeongju-slot36-seasoning",
+      "name": "시즈닝",
+      "category": "양식",
+      "region": "경북",
+      "district": "경주시",
+      "address": "경상북도 경주시 첨성로99번길 25-2 (황남동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "경주시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd=",
+          "sourceName": "경주시 문화관광 · 양식 음식점",
+          "verifiedAt": "2026-11-07",
+          "status": "official_publication_listing",
+          "selectionCriteria": "해당 지자체 공식 관광 사이트의 음식점 이름·주소 수록 확인. 새 선정 연도·정규 리본 등급·현 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://www.gyeongju.go.kr/tour/page.do?code_uid=1000&listType=list&mnu_uid=4831&pageNo=3&sortKwd=&srchKwd=",
+      "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-pohang-c2s36-hwanggojip",
+      "name": "황고집",
+      "category": "한식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 송도해안길 30-2 (송도동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-pohang-c2s36-wookine-mundeok",
+      "name": "욱이네식당 문덕점",
+      "category": "한식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 오천읍 원동로 76 (원리) 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-pohang-c2s36-lunapiena",
+      "name": "루나피에나",
+      "category": "양식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 상도로26번길 8 (상도동) 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-pohang-c2s36-juhyosil",
+      "name": "주효실의 앙금스토리",
+      "category": "디저트",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 북구 삼호로 398 (환호동), 1층",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-pohang-c2s36-kaeru",
+      "name": "카에루식당",
+      "category": "일식",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 남구 대이로 13 (대잠동), 107호",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-pohang-c2s36-yumimi",
+      "name": "유미미케이크",
+      "category": "디저트",
+      "region": "경북",
+      "district": "포항시",
+      "address": "경상북도 포항시 북구 용당로 110 (대흥동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "포항시 공식 관광 음식점 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+          "sourceName": "포항시 퐝퐝여행 · 음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "공식 관광 사이트의 상호·주소 수록만 확인. 선정 연도·정규 리본 등급·현재 영업 상태는 별도 미확인."
+        }
+      ],
+      "addressSourceUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+      "addressSourceCheckedAt": "2026-11-10"
+    }
+  ],
+  "cycle2Slot36": {
+    "scheduledAtKST": "2026-11-10T18:00:00+09:00",
+    "checkedAtKST": "2026-11-10",
+    "officialListUrl": "https://pohang.go.kr/phtour/wmap/tourInformation/index.do?cate_id=105&menu_idx=118",
+    "officialDirectoryTotalDisplayed": 202,
+    "addedRestaurantIds": [
+      "local-pohang-c2s36-hwanggojip",
+      "local-pohang-c2s36-wookine-mundeok",
+      "local-pohang-c2s36-lunapiena",
+      "local-pohang-c2s36-juhyosil",
+      "local-pohang-c2s36-kaeru",
+      "local-pohang-c2s36-yumimi"
+    ],
+    "coordinatesAdded": 0,
+    "addressesFromOfficialList": true,
+    "notExhaustive": true
+  }
+}
