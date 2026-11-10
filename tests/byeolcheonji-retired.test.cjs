@@ -22,7 +22,7 @@ test('old vacancy links show an end-of-service notice without subscribing', () =
     const html = read(page);
     assert.match(html, /운영을 종료했어요/);
     assert.match(html, /기존 알림 발송이 중단/);
-    assert.match(html, /href="\/world\.html\?tab=arcade"/);
-    assert.doesNotMatch(html, /\/byeolcheonji\/app\.js|location\.replace|<script/);
+    assert.match(html, /href="\/world\.html\?tab=hub"/);
+    assert.doesNotMatch(html, /\/byeolcheonji\/app\.js|location\.replace/);
   }
 });

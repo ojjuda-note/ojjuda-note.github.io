@@ -48,7 +48,7 @@ function fixture(query='') {
   normal.send(frame,{origin:'https://other.invalid'});normal.send(frame,{source:normal.w});normal.send(frame,{type:'unrecognized-menu'});
   assert.equal(normal.$('[data-rr=dialog]'),null,'foreign origin, wrong frame and wrong message cannot open the member view');assert.equal(normal.calls.length,0);
   normal.send(frame);await normal.memberReady();assert.equal(normal.calls[0].owner,A);assert.equal(normal.created[0].options.getUser().id,A);
-  assert.equal(normal.$('[data-rr=close]').textContent,'← 오락실');await normal.api.setupNavigation(()=>{});
+  assert.equal(normal.$('[data-rr=close]').textContent,'← 아지트');await normal.api.setupNavigation(()=>{});
   assert.equal(normal.navigation().closeOverlay(),true);
   assert.equal(normal.$('[data-rr=dialog],.restaurant-guide-dialog'),null,'one Back leaves both layers for the arcade');
   assert.equal(normal.w.document.body.classList.contains('gaming'),false);

@@ -112,6 +112,7 @@ test('lazy entry opens the game after assets load and ignores a cancelled reques
       g: {tab: 'place', place: {id: 'arcade'}},
       worldGameAssetRequest: 0,
       worldGameEntryGate: () => true,
+      markAgitPageVisit: () => null,
       M: () => assert.fail('no error toast expected')
     };
     vm.runInNewContext(world.slice(start, end), state);

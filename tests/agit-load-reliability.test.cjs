@@ -77,3 +77,34 @@ test('Agit admin preview reuses the World auth client without a second GoTrue in
   await Promise.resolve();
   assert.equal(created, 0, 'shared client remains the only auth instance');
 });
+
+test('World reuses an already-started standalone auth client', async () => {
+  const admin = read('shared/games/admin-preview.js'), world = read('world.html');
+  const listeners = {};
+  let creations = 0;
+  const existing = {auth:{
+    onAuthStateChange() {return {data:{subscription:{unsubscribe() {}}}};},
+    getSession() {return Promise.resolve({data:{session:null}});}
+  }};
+  const sharedWindow = {
+    OJJUDA_CONFIG:{supabaseUrl:'https://fixture.example',supabaseKey:'public-key'},
+    supabase:{createClient() {creations++;return existing;}},
+    addEventListener() {},dispatchEvent() {}
+  };
+  const context = {
+    window:sharedWindow,
+    document:{readyState:'loading',addEventListener(name, callback) {listeners[name]=callback;}},
+    CustomEvent:class {constructor() {}},
+    localStorage:{getItem() {return null;}},
+    setTimeout() {}
+  };
+  vm.runInNewContext(admin,context);
+  listeners.DOMContentLoaded();
+  assert.equal(creations,1,'fallback creates one client only on a standalone page');
+  assert.equal(sharedWindow.ojjudaSupabase,existing);
+  const start=world.indexOf('function Oc('),end=world.indexOf('var Hc=',start);
+  assert.ok(start>=0&&end>start);
+  vm.runInNewContext(world.slice(start,end),context);
+  assert.equal(context.Oc('https://fixture.example','public-key'),existing);
+  assert.equal(creations,1,'World must never construct another auth client');
+});

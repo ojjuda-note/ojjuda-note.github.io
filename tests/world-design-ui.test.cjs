@@ -127,8 +127,9 @@ world=world.slice(0,boot)+`
  }
  await page.setViewportSize({width:390,height:850});await page.evaluate(()=>{document.documentElement.dataset.worldTheme='autumn';designFixture.rank();});await page.screenshot({path:path.join(proof,'arcade-mobile.png'),fullPage:true});
  await page.locator('.bottomnav [data-tab=hub]').click();
- assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'festival',images:1},{id:'restaurants',images:1}],'Hub retains daily features and covers in their intended order');
+ assert.deepEqual(await page.locator('[data-act=agit-daily]').evaluateAll(buttons=>buttons.map(button=>({id:button.dataset.v,images:button.querySelectorAll('img').length}))),[{id:'group',images:1},{id:'restaurants',images:1},{id:'festival',images:1}],'Hub preserves the current daily card order and covers');
  assert.equal(await page.locator('#agit-daily h2').innerText(),'일상 둘러보기');
+ assert.equal(await page.locator('#agit-daily a[href="/features/fanpages/index.html"]').count(),1,'Fanpage remains visible between Group and Restaurants');
  assert.deepEqual(await page.locator('[data-act=agit-daily][aria-label*="회원 전용"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.v)),['group'],'only Group requires membership in the current daily tools');
  await fits('mobile Hub');
  await page.locator('.bottomnav [data-tab=my]').click();assert.equal(await page.locator('[data-ju-shop-open]').count(),0);

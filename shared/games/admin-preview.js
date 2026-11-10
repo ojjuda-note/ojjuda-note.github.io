@@ -67,9 +67,12 @@
   // Standalone pages still create a fallback client if none was supplied.
   function configureFallback() {
     if (client) return;
+    if (window.ojjudaSupabase?.auth) {configure(window.ojjudaSupabase);return;}
     const config = window.OJJUDA_CONFIG;
-    if (config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient)
-      configure(window.supabase.createClient(config.supabaseUrl, config.supabaseKey));
+    if (config?.supabaseUrl && config?.supabaseKey && window.supabase?.createClient) {
+      window.ojjudaSupabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+      configure(window.ojjudaSupabase);
+    }
   }
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', configureFallback, {once:true});
