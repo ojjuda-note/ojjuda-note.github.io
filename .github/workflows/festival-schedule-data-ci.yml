@@ -1,0 +1,37 @@
+name: Festival schedule data validation
+
+on:
+  pull_request:
+    paths:
+      - 'games/festival-schedule/**'
+      - 'tests/festival-*.mjs'
+      - 'tests/festival-*.cjs'
+      - 'tests/game-release-refresh.test.cjs'
+      - 'shared/games/world-game-assets.js'
+      - 'world.html'
+  push:
+    branches:
+      - festival-schedule-slot52-20261111-gwangju-jeonnam
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Validate festival, sports and performance schedule
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check events schema and sources
+        run: node games/festival-schedule/validate.mjs
+      - name: Check schedule core
+        run: node tests/festival-core.test.mjs
+      - name: Check arcade entry
+        run: node tests/festival-entry.test.cjs
+      - name: Check independent game refresh
+        run: node tests/game-release-refresh.test.cjs
