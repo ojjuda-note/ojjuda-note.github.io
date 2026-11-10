@@ -102,6 +102,9 @@ body[data-mode="hub"] #panel{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #settings{position:fixed;right:16px;top:calc(env(safe-area-inset-top,0px) + 50px);background:var(--space);border:1px solid var(--line);border-radius:14px;padding:12px;display:none;flex-direction:column;gap:8px;z-index:8;min-width:180px}
 #settings.on{display:flex}
+#demoStageWrap{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--ink)}
+#demoStageWrap[hidden]{display:none}
+#demoStageSelect{width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--space);color:var(--ink);font:inherit}
 @media (prefers-reduced-motion: reduce){#ovText p.new{animation:none}#toast,#lifeProgress i{transition:none}}
 </style>
 </head>
@@ -140,7 +143,7 @@ body[data-mode="hub"] #panel{display:block}
   <div class="monthly-bulssi-entry"><a class="monthly-bulssi-link" href="/features/arcade/monthly-ranking.html?game=saetbyeol" target="_blank" rel="noopener noreferrer">🏆 이번 달 1~10위 · 내 순위</a></div>
 </div></div>
 <div id="toast" class="serif" role="status"></div>
-<div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
+<div id="settings"><button id="catalogBtn">천체 도감 · 50종</button><label id="demoStageWrap" for="demoStageSelect" hidden>관리자 체험 단계<select id="demoStageSelect"></select></label><button id="demoBtn" hidden disabled></button><button id="sndBtn"></button><button id="resetBtn">처음부터 다시</button></div>
 <section id="chapterSelect" role="dialog" aria-modal="true" aria-labelledby="chapterTitle" hidden>
   <div class="chapter-shell">
     <header class="chapter-heading"><div><span class="chapter-kicker">샛별키우기 · 우주의 여정</span><h2 id="chapterTitle" class="serif">어느 별로 떠날까요?</h2><p>이전 챕터의 엔딩을 보면 다음 별이 열려요.</p></div><button id="chapterClose" type="button" aria-label="챕터 선택 닫기">닫기</button></header>
@@ -348,6 +351,7 @@ function openChapters(){
 function closeChapters(){$('#chapterSelect').hidden=true;$('#chapterBtn').focus({preventScroll:true})}
 function chooseChapter(number){
   if(mode!=='hub'||!chapterUnlocked(number)||R?.boostPending)return;
+  if(DEMO){closeChapters();startDemo(number===1?4:CHAPTERS[number-1].stage);return;}
   closeChapters();
   if(number===2&&S.ended&&!S.lifeStarted){S.stage=4;enterLife();return;}
   S.stage=number===1?Math.min(4,S.maxStage):CHAPTERS[number-1].stage;
@@ -494,9 +498,24 @@ $('#catalogBtn').onclick=()=>{
   $('#overlay').classList.add('catalog');
 };
 $('#sndBtn').onclick=()=>{S.sound=!S.sound;save();refresh()};
-function startDemo(){if(!demoAllowed||R?.boostPending)return;DEMO=JSON.parse(JSON.stringify(S));const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;S.tut=true;S.stage=S.maxStage=4;for(const u of UP)if(u.r<=4)S.lv[u.id]=u.mx;for(let i=0;i<5;i++)S.mem[i]=3;S.cur={light:1e12,metal:1e6,mass:1e4,life:0};S.sel=UP[0].id;st=stats();R=null;applyTheme();closeOv();setMode('hub');toast('풀 업그레이드 체험 중이에요. 원래 진행은 그대로 보관돼요',3600)}
+function startDemo(stage=9){
+  if(!demoAllowed||R?.boostPending||!Number.isInteger(stage)||stage<0||stage>=STAGES.length)return;
+  if(!DEMO)DEMO=JSON.parse(JSON.stringify(S));
+  const snd=S.sound;S=fresh();S.sound=snd;S.intro=true;S.tut=true;S.stage=stage;S.maxStage=STAGES.length-1;
+  for(const u of UP)if(u.r<=stage)S.lv[u.id]=u.mx;
+  for(let i=0;i<=stage;i++)S.mem[i]=3;
+  S.cur={light:1e15,metal:1e15,mass:1e15,life:1e15};
+  S.ended=stage>=4;S.legacyEnding=stage>=4?'아침의 별':null;
+  S.lifeStarted=stage>=5;S.lifeEnded=stage>=9;
+  if(stage>=5){S.genes={light:12,water:12,wind:12};S.geneLast='light';S.geneType=LIFE.choose(S.genes,S.geneLast);}
+  S.sel=(UP.find(u=>u.r===stage)||UP[0]).id;
+  st=stats();R=null;applyTheme();closeOv();setMode('hub');
+  toast(`${STAGES[stage].name} · 풀 업그레이드 체험 중이에요. 실제 기록은 그대로예요`,3600);
+}
 function endDemo(){S=DEMO;DEMO=null;st=stats();R=null;applyTheme();closeOv();if(!S.sel)selectDefault();setMode('hub');toast('원래 진행으로 돌아왔어요',2600)}
-$('#demoBtn').onclick=()=>{if(!demoAllowed)return;$('#settings').classList.remove('on');if(DEMO)endDemo();else startDemo()};
+$('#demoStageSelect').innerHTML=STAGES.map((stage,i)=>`<option value="${i}"${i===9?' selected':''}>${i+1}단계 · ${stage.name}</option>`).join('');
+$('#demoStageSelect').onchange=()=>{if(demoAllowed&&DEMO)startDemo(Number($('#demoStageSelect').value))};
+$('#demoBtn').onclick=()=>{if(!demoAllowed)return;$('#settings').classList.remove('on');if(DEMO)endDemo();else startDemo(Number($('#demoStageSelect').value))};
 let resetArm=false;
 $('#resetBtn').onclick=()=>{if(!resetArm){resetArm=true;$('#resetBtn').textContent='한 번 더 누르면 모두 지워집니다';return}resetArm=false;$('#resetBtn').textContent='처음부터 다시';$('#settings').classList.remove('on');resetGame()};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#settings')&&e.target.id!=='setBtn'){$('#settings').classList.remove('on');if(resetArm){resetArm=false;$('#resetBtn').textContent='처음부터 다시'}}});
@@ -1159,8 +1178,9 @@ $('#treeFocus').onclick=()=>{if(S.sel)treeControls.focus(TREE[S.sel]);};
 applyTheme();
 window.OjjudaSaetbyeolEntry.connect({
   upgrades:UP,getState:()=>S,isDemo:()=>!!DEMO,isRunning:()=>mode==='run',loadState:loadProgress,notice:toast,openChapters,
-  allowDemo(allowed){demoAllowed=allowed===true;$('#demoBtn').hidden=!demoAllowed;$('#demoBtn').disabled=!demoAllowed;$('#starDemoNotice').hidden=!demoAllowed;},
+  allowDemo(allowed){demoAllowed=allowed===true;$('#demoBtn').hidden=!demoAllowed;$('#demoBtn').disabled=!demoAllowed;$('#demoStageWrap').hidden=!demoAllowed;$('#starDemoNotice').hidden=!demoAllowed;},
   start(growth=false){
+    if(demoAllowed&&!DEMO){startDemo(Number($('#demoStageSelect').value));return;}
     S.intro=true;save();selectDefault();closeOv();
     if(!growth&&S.stage===4&&S.ended&&!S.lifeStarted){enterLife();return;}
     if(growth||S.lifeEnded){ensureAudio();setMode('hub');}else startRun(false);

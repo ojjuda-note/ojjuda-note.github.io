@@ -7,7 +7,7 @@
       const previous=document.activeElement;
       const dialog=document.createElement('dialog');
       dialog.className='spot-game-dialog arcade-game-view';dialog.setAttribute('aria-label','틀린그림찾기');
-      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261108-spot62-hard10" allow="fullscreen; web-share"></iframe>';
+      dialog.innerHTML='<div class="spot-game-header"><strong>🔎 틀린그림찾기</strong><button type="button" aria-label="오락실로 돌아가기">아지트 홈</button></div><iframe title="쭈다 틀린그림찾기" src="/games/spot-difference/index.html?v=20261110-admin-game-preview1" allow="fullscreen; web-share"></iframe>';
       const frame=dialog.querySelector('iframe');
       let scoreQueue=Promise.resolve(),guestFinished=false;
       const current=()=>active===dialog&&authorized();

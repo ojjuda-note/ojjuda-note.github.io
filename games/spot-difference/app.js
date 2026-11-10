@@ -14,7 +14,9 @@
     if(previous?.pending)state.rounds[p.id]={...core.freshRound(),status:'payment',pending:previous.pending,rankOwner:previous.rankOwner||previous.pending.userId};
     else if(previous?.deferredHelp)state.rounds[p.id]={...previous,status:'ready',deadline:null};
   }
-  const canPlay=index=>core.canSelectPuzzle(state,puzzles,index);
+  const adminPreview=()=>wallet.getState().canViewAnswers===true;
+  let previewSession=false;
+  const canPlay=index=>Number.isInteger(index)&&index>=0&&index<puzzles.length&&(adminPreview()||core.canSelectPuzzle(state,puzzles,index));
   const canOpen=index=>canPlay(index)||!!state.rounds[puzzles[index]?.id]?.pending;
   if(!canOpen(state.current))state.current=core.nextUnclearedIndex(state,puzzles);
   const surfaces=[...document.querySelectorAll('.picture')],zoomDialog=$('zoom-dialog'),authDialog=$('auth-dialog');
@@ -32,8 +34,9 @@
   const position=()=>state.order.indexOf(state.current);
   const clearedRound=()=>round().status==='won'&&isSolved(puzzle());
   function save(){
-    try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
-    $('storage-note').textContent=storageWorks?'한 그림을 완료하면 다음 그림이 열려요. 완료한 그림은 다시 고를 수 있어요.':'완료하면 다음 그림이 열려요. 진행을 기억하고 ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
+    if(adminPreview())previewSession=true;
+    if(!previewSession)try{localStorage.setItem(storageKey,JSON.stringify({version:2,...state}));storageWorks=true;}catch{storageWorks=false;}
+    $('storage-note').textContent=previewSession?'관리자 체험 중에는 실제 완료 기록이 바뀌지 않아요.':storageWorks?'한 그림을 완료하면 다음 그림이 열려요. 완료한 그림은 다시 고를 수 있어요.':'완료하면 다음 그림이 열려요. 진행을 기억하고 ZU를 쓰려면 브라우저 저장을 허용해 주세요.';
     return storageWorks;
   }
   function speak(message,good=false){
@@ -125,9 +128,9 @@
     $('retry-extend').textContent=pending?(paymentBusy?'확인 중…':'구매 다시 확인'):'30초 연장 · 1 ZU';
     $('zoom').disabled=(!playing&&!won&&!answerReview)||paymentBusy||!imagesReady;
     const previousIndex=state.order[position()-1],nextIndex=state.order[position()+1];
-    $('prev').disabled=previousIndex===undefined||!canOpen(previousIndex)||paymentBusy||pending;$('next').disabled=nextIndex===undefined||!canPlay(nextIndex)||paymentBusy||pending||!clearedRound();
-    $('stage-picker').disabled=paymentBusy||pending;$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
-    $('continue').disabled=paymentBusy||pending||!!answerReview||!clearedRound()||(nextIndex!==undefined&&!canPlay(nextIndex));
+    $('prev').disabled=previousIndex===undefined||!canOpen(previousIndex)||paymentBusy||(!adminPreview()&&pending);$('next').disabled=nextIndex===undefined||!canPlay(nextIndex)||paymentBusy||(!adminPreview()&&pending)||(!adminPreview()&&!clearedRound());
+    $('stage-picker').disabled=paymentBusy||(!adminPreview()&&pending);$('reset').disabled=paymentBusy||pending||!!answerReview;$('wallet-logout').disabled=paymentBusy;
+    $('continue').disabled=paymentBusy||(!adminPreview()&&pending)||!!answerReview||(!adminPreview()&&!clearedRound())||(nextIndex!==undefined&&!canPlay(nextIndex));
     for(const id of ['game-home','zoom-home'])$(id).setAttribute('aria-disabled',String(paymentBusy));
     const canViewAnswers=wallet.getState().canViewAnswers===true;
     for(const id of ['reveal-answers','zoom-reveal-answers']){
@@ -176,7 +179,7 @@
     refresh();if(announce)speak(wasPlaying?'정답을 닫았어요. 이어서 찾아보세요.':'정답을 닫았어요.');
   }
   function toggleAnswers(){
-    if(wallet.getState().canViewAnswers!==true||!imagesReady||paymentBusy||round().pending)return;
+    if(wallet.getState().canViewAnswers!==true||!imagesReady||paymentBusy||(!adminPreview()&&round().pending))return;
     if(answerReview){closeAnswers(true);return;}
     tick();const r=round();answerReview={wasPlaying:r.status==='playing'};
     if(answerReview.wasPlaying){r.remainingMs=core.timeLeft(r);r.deadline=null;r.status='ready';}
@@ -189,7 +192,7 @@
   function updateEndChoices(prefix){
     for(const [i,name] of ['previous','current','next'].entries()){
       const button=$(prefix+'-'+name),pos=position()+i-1;
-      const outside=pos<0||pos>=state.order.length,needsClear=i===2&&!clearedRound(),locked=!outside&&!canOpen(state.order[pos]);
+      const outside=pos<0||pos>=state.order.length,needsClear=i===2&&!adminPreview()&&!clearedRound(),locked=!outside&&!canOpen(state.order[pos]);
       button.disabled=outside||needsClear||locked||paymentBusy||!!round().pending;
       button.querySelector('small').textContent=outside?'없음':needsClear?'이번 그림 완료 후':locked?'앞선 그림 완료 후':`${pos+1} / ${puzzles.length} · ${difficultyLabels[core.puzzleDifficulty(puzzles[state.order[pos]])]}`;
     }
@@ -198,7 +201,7 @@
     if(paymentBusy||round().pending||!['won','lost'].includes(round().status))return;
     if(window.OjjudaGameResults?.canPlay?.()===false)return;
     if(![-1,0,1].includes(offset))return;
-    if(offset===1&&!clearedRound())return;
+    if(offset===1&&!adminPreview()&&!clearedRound())return;
     const index=state.order[position()+offset];
     if(index===undefined||!canOpen(index))return;
     const id=puzzles[index].id;
@@ -240,8 +243,8 @@
     if(reason==='time')r.remainingMs=0;
     if(zoomDialog.open)zoomDialog.close();hideHint();refresh();
     speak(reason==='won'?`${targetCount()}곳을 모두 찾았어요!`:reason==='time'?'시간이 다 됐어요. 1 ZU로 30초를 연장할 수 있어요.':'하트를 모두 썼어요. 다시 도전해 보세요.',reason==='won');
-    if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-finished'},window.location.origin);
-    if(reason==='won'&&found().length===targetCount()&&(r.rankOwner||window.parent!==window)){
+    if(!previewSession&&window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-finished'},window.location.origin);
+    if(!previewSession&&reason==='won'&&found().length===targetCount()&&(r.rankOwner||window.parent!==window)){
       const stage=puzzle().id,owner=r.rankOwner;
       if(window.parent!==window)window.parent.postMessage({type:'ojjuda:spot-clear',stage,owner},window.location.origin);
       else Promise.resolve(wallet.recordClear?.(owner,stage)).then(result=>{if(!result?.ok)throw Error('save');}).catch(()=>speak('완료 기록을 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));
@@ -277,11 +280,11 @@
   }
   function show(index,{autoStart=false,navigation='select'}={}){
     if(!Number.isInteger(index)||index<0||index>=puzzles.length)throw new Error('문제 번호를 확인해 주세요.');
-    if(paymentBusy||(index!==state.current&&round().pending)){$('stage-picker').value=state.current;return false;}
+    if(paymentBusy||(!adminPreview()&&index!==state.current&&round().pending)){$('stage-picker').value=state.current;return false;}
     if(!canOpen(index)){
       $('stage-picker').value=state.current;speak('앞선 그림을 완료하면 이 그림이 열려요.');return false;
     }
-    if(navigation==='next'&&(!clearedRound()||state.order.indexOf(index)!==position()+1)){
+    if(navigation==='next'&&((!adminPreview()&&!clearedRound())||state.order.indexOf(index)!==position()+1)){
       $('stage-picker').value=state.current;speak('이번 그림을 모두 찾으면 다음 그림으로 갈 수 있어요.');return false;
     }
     clearCelebration();autoStartToken=null;
@@ -300,7 +303,7 @@
     const layers=p.layers||(p.contrast?[p.contrast]:[]);
     $('stage-picker').value=index;$('load-error').hidden=true;const token=++loadToken,loaded=new Set(),required=2+layers.length;autoStartToken=autoStart?token:null;
     surfaces.forEach(surface=>surface.querySelectorAll('.contrast-overlay').forEach(image=>image.remove()));
-    function loadedSide(side){if(token!==loadToken)return;loaded.add(side);if($(side))$(side).parentElement.classList.remove('loading');if(loaded.size===required){imagesReady=true;$('load-error').hidden=true;refreshControls();startNextWhenReady();}}
+    function loadedSide(side){if(token!==loadToken)return;loaded.add(side);if($(side))$(side).parentElement.classList.remove('loading');if(loaded.size===required){imagesReady=true;$('load-error').hidden=true;refreshControls();if(adminPreview()&&!answerReview)toggleAnswers();startNextWhenReady();}}
     for(const side of ['original','difference']){
       const im=$(side);im.parentElement.classList.add('loading');im.onload=()=>loadedSide(side);
       im.onerror=()=>{if(token!==loadToken)return;imagesReady=false;$('load-error').hidden=false;im.parentElement.classList.add('loading');refreshControls();};
@@ -374,6 +377,7 @@
   }
   function openAuth(){if(zoomDialog.open)zoomDialog.close();$('auth-error').textContent='';authDialog.showModal();}
   async function purchase(kind,spot=-1){
+    if(adminPreview()||window.OjjudaAdminPreview?.isEnabled?.()===true){speak('관리자 체험에서는 ZU를 쓰지 않아요. 정답을 무료로 볼 수 있어요.');if(!answerReview)toggleAnswers();return;}
     if(paymentBusy||answerReview)return;tick();
     const r=round(),p=puzzle(),w=wallet.getState();
     if(!w.userId){openAuth();return;}
@@ -603,10 +607,11 @@
   $('wallet-logout').onclick=async()=>{if(paymentBusy)return;closeWalletMenu();walletMenu.querySelector('summary').focus();try{await wallet.signOut();$('wallet-login').focus();speak('로그아웃했어요.');}catch{speak('로그아웃하지 못했어요. 다시 시도해 주세요.');}};
   wallet.subscribe(w=>{
     if(w.canViewAnswers!==true&&answerReview)closeAnswers();
+    if(w.canViewAnswers===true){previewSession=true;if(imagesReady&&!answerReview)toggleAnswers();}
     $('wallet-balance').textContent=w.userId?(w.coins===null?'잔액 확인 중':`${w.coins.toLocaleString()} ZU`):'로그인 필요';
     $('wallet-login').hidden=!!w.userId;$('wallet-refresh').hidden=!w.userId;$('wallet-logout').hidden=!w.userId;
     $('wallet-note').textContent=w.error||`힌트 1개 1 ZU · 30초 연장 1 ZU${w.userId?'':' · 로그인 후 이용할 수 있어요.'}`;
-    $('wallet-note').classList.toggle('error-note',!!w.error);refreshControls();
+    $('wallet-note').classList.toggle('error-note',!!w.error);refresh();
   });
   show(state.current);setInterval(tick,200);window.addEventListener('pageshow',event=>{if(event.persisted){location.reload();return;}tick();});document.addEventListener('visibilitychange',()=>{tick();startNextWhenReady();});
   if(document.modelContext?.registerTool){

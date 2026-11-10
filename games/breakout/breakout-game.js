@@ -4,7 +4,7 @@
   const BASE_PADDLE=80,MIN_PADDLE=48,MAX_PADDLE=144,PADDLE_STEP=16,DROP_W=44,DROP_H=26;
   const STAGE_KEY='ojjuda-breakout-last-stage-v1';
   function readStage(){try{const n=Number(localStorage.getItem(STAGE_KEY));return Number.isInteger(n)&&n>=1&&n<=LEVELS?n:1;}catch(_){return 1;}}
-  function saveStage(stage){try{localStorage.setItem(STAGE_KEY,String(stage));}catch(_){/* Storage restrictions must not interrupt play. */}}
+  function saveStage(stage){if(typeof window!=='undefined'&&window.OjjudaAdminPreview?.isEnabled?.()===true)return;try{localStorage.setItem(STAGE_KEY,String(stage));}catch(_){/* Storage restrictions must not interrupt play. */}}
   const COLORS=['#F0679A','#F4A66B','#FFD37A','#7FD1A1','#8FB3F7','#B69CF0'];
   const ITEMS={
     two:{text:'공 2배',box:'white'},

@@ -1207,15 +1207,16 @@ const RESUME_KEY = 'ojjuda-screw-box-last-stage-v2';
 const PURCHASE_KEY = 'ojjuda-screw-purchases-v2';
 const ATTEMPT_KEY = 'ojjuda-screw-active-attempt-v1';
 function stageStorageKey(prefix,api) { return prefix + ':' + String(api.getUserId?.() || 'guest'); }
+const adminPreview=()=>typeof window!=='undefined'&&window.OjjudaAdminPreview?.isEnabled?.()===true;
 function loadStage(api) { try { const v = Number(localStorage.getItem(stageStorageKey(STAGE_KEY,api))); return Number.isInteger(v) && v >= 1 && v <= STAGES ? v : 1; } catch (_) { return 1; } }
-function saveStage(api,L) { try { localStorage.setItem(stageStorageKey(STAGE_KEY,api),String(Math.max(loadStage(api),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function saveStage(api,L) { if(adminPreview())return;try { localStorage.setItem(stageStorageKey(STAGE_KEY,api),String(Math.max(loadStage(api),L))); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 // Keep the last played level separate from the highest unlocked milestone.
 function loadResumeStage(api) { try { const v = Number(localStorage.getItem(stageStorageKey(RESUME_KEY,api))); if (Number.isInteger(v) && v >= 1 && v <= STAGES) return Math.min(v,loadStage(api)); } catch (_) {} return loadStage(api); }
-function saveResumeStage(api,L) { try { localStorage.setItem(stageStorageKey(RESUME_KEY,api),String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
+function saveResumeStage(api,L) { if(adminPreview())return;try { localStorage.setItem(stageStorageKey(RESUME_KEY,api),String(L)); } catch (_) { /* 저장 못 해도 괜찮아요 */ } }
 function screw3d(api,startStage) {
   const initialStage = startStage === undefined ? loadResumeStage(api) : startStage;
   const depthRenderer=createScrewDepthRenderer();
-  const st = { L: Number.isInteger(initialStage)&&initialStage>=1&&initialStage<=STAGES?Math.min(initialStage,loadStage(api)):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
+  const st = { L: Number.isInteger(initialStage)&&initialStage>=1&&initialStage<=STAGES?(adminPreview()?initialStage:Math.min(initialStage,loadStage(api))):1, attemptId:null, score: 0, lvl: null, qi: 0, boxes: [null, null], buf: Array(BUF_N).fill(null), fly: [], msg: '', msgT: 0, shake: null, over: 0, next: 0,
     yaw: 0.65, pitch: 0.45, drag: null, drawn: [], heads: new Map(), t: 0, lens: null, lensHold: false, revealed: [], zm: 1, pan: [0, 0], sc: 1, ptrs: new Map(), pinch: null, big: false };
   let buying = false, destroyed = false, ended = false;
   let restoreBlocked = false, retryAt = 0;
@@ -1242,11 +1243,13 @@ function screw3d(api,startStage) {
 
   const activeAttemptKey = walletUser ? `${ATTEMPT_KEY}:${walletUser}` : null;
   function finishAttempt() {
+    if(adminPreview())return;
     if(!activeAttemptKey||!st.attemptId)return;
     try{const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');if(record?.id===st.attemptId)localStorage.setItem(activeAttemptKey,JSON.stringify({...record,done:true}));}catch(_){}
   }
   function selectAttempt(L,fresh=false) {
     const id=crypto.randomUUID();
+    if(adminPreview())return id;
     if(!activeAttemptKey)return id;
     try{
       const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');
@@ -1303,8 +1306,11 @@ function screw3d(api,startStage) {
     st.modelRadius=R;
     st.sc = Math.max(1, R * SC / 135); st.zm = 1; st.pan = [0, st.sc > 1.05 ? -36 : 0]; st.qi = 0; st.parkedBoxes = []; st.takenGroups = new Set();
     st.sorting = 0; st.sorts = 0; st.detours = 0;
-    st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
-    if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
+    st.boxes = [newBox(), newBox()]; st.buf = Array(BUF_N).fill(null); st.fly = []; st.next = 0; st.purchases = adminPreview()?{paid:[],pending:{}}:loadPurchases(L); st.appliedPurchaseIds = new Set(); restoreBlocked = false; say(`${L} / ${STAGES}단계 · ${st.lvl.name}`, 1.4);
+    if(adminPreview()){
+      while(st.boxes.length<BOX_MAX)st.boxes.push(newBox());
+      while(st.buf.length<BUF_MAX)st.buf.push(null);
+    }else if (st.purchases.paid.length || Object.keys(st.purchases.pending).length) void verifyPurchases(false);
     prepareNextLevel(L+1);
   }
   // Keep numerical angles bounded, while allowing any number of full 360° turns in either direction.
@@ -1363,6 +1369,7 @@ function screw3d(api,startStage) {
     } finally { buying = false; retryAt = Date.now() + 3000; if (restoreBlocked) say('구매 내역을 확인하는 중이에요', 3); }
   }
   async function spend(kind, price) {
+    if(adminPreview())return true;
     if (buying || restoreBlocked) return false;
     const balance = coins();
     if (!sameWallet() || !api.buyScrew || (balance === null && !st.purchases.pending[kind])) { say('ZU 지갑이 연결되면 구매할 수 있어요', 1.4); return false; }
@@ -1520,7 +1527,7 @@ function screw3d(api,startStage) {
   return {
     get stage() { return st.L; },
     get levels() { return STAGES; },
-    get unlockedStage() { return loadStage(api); },
+    get unlockedStage() { return adminPreview()?STAGES:loadStage(api); },
     get stageCleared() { return !!st.next; },
     get stageFailed() { return ended && !st.next; },
     async prepareStageChoice() {

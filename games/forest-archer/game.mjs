@@ -12,6 +12,7 @@ import {LASER_PRICE, LASER_CLICK_DEGREES, LASER_MAX_CLICKS, canEquipLaser, norma
 const $ = id => document.getElementById(id);
 const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const canvas = $('gameCanvas'), ctx = canvas.getContext('2d', {alpha:false}), touchpad = $('aimTouchpad');
+const adminPreview = window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
 // Import only released epoch-5 saves. A separate key keeps an older open tab
 // from replacing scores already converted to distance-based stage numbers.
 const SAVE_KEY = 'forest-archer-progress-distance-v5';
@@ -43,7 +44,7 @@ function stageCleared(id,saved=progress){
 function stageAvailable(id,saved=progress){
   // Keep genuine older clears replayable without opening the gaps before them
   // or the next uncleared mission beyond the sequential frontier.
-  return Number.isInteger(id)&&id>=1&&id<=STAGES.length&&((id<=saved.unlocked)||stageCleared(id,saved));
+  return Number.isInteger(id)&&id>=1&&id<=STAGES.length&&(adminPreview||(id<=saved.unlocked)||stageCleared(id,saved));
 }
 // Only these weapons could own a paid scope before magnification choices existed.
 const LEGACY_SCOPE_IDS=new Set([3,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24]);
@@ -115,7 +116,7 @@ function migrateLegacyGuns(raw){
   return next;
 }
 function loadProgress(){
-  removeTestSaves();
+  if(!adminPreview)removeTestSaves();
   try {
     const current = localStorage.getItem(SAVE_KEY);
     const stored = JSON.parse(current ?? localStorage.getItem(PREVIOUS_SAVE_KEY) ?? 'null');
@@ -163,7 +164,20 @@ function loadProgress(){
   }catch{persistence=false;return defaults();}
 }
 let progress=loadProgress();
+if(adminPreview){
+  const scopeLoadouts={};
+  for(const item of BOWS){
+    const owned=SCOPES.map(scope=>scope.magnification).filter(zoom=>getScopePrice(item.id,zoom)!==null);
+    if(owned.length)scopeLoadouts[item.id]={owned,equipped:owned.at(-1)};
+  }
+  progress={...progress,coins:CONSUMABLE_LIMIT,clayCredits:CONSUMABLE_LIMIT,stabilizers:CONSUMABLE_LIMIT,
+    ownedBows:BOWS.map(item=>item.id),ownedArrows:ARROWS.map(item=>item.id),ownedBullets:BULLETS.map(item=>item.id),
+    scopedBows:Object.keys(scopeLoadouts).map(Number),scopeLoadouts,
+    laserLoadouts:Object.fromEntries(BOWS.filter(canEquipLaser).map(item=>[item.id,normalizeLaserSettings({enabled:true})])),
+    unlocked:STAGES.length};
+}
 function save(){
+  if(adminPreview){$('saveStatus').textContent='관리자 체험 · 실제 기록과 코인은 저장되지 않아요';$('saveFooter').classList.add('visually-hidden');return true;}
   let exchangeChanged=false;
   try{
     const saved=localStorage.getItem(SAVE_KEY);
@@ -200,6 +214,7 @@ let ammo=null,roundRegistration=Promise.resolve();
 const resultUUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 let resultBridge=null,finishedMainRound=null;
 function reportFinishedMainRound(){
+  if(adminPreview)return;
   if((!resultBridge)||!finishedMainRound||finishedMainRound.sent||window.parent===window)return;
   try{
     window.parent.postMessage({source:'ojjuda-archery-game',type:'round-finished',kind:'main',
@@ -225,7 +240,7 @@ async function refreshAmmoStatus(){
   state.ammoRefreshing=true;
   try{await ammo.refresh();}finally{state.ammoRefreshing=false;onAmmoChange();}
 }
-const ammoLocked=()=>!!state.roundSaving||!!ammo?.pending;
+const ammoLocked=()=>!adminPreview&&(!!state.roundSaving||!!ammo?.pending);
 const preparingMainRound=()=>!state.practiceOnly&&!state.serverRunId&&ammo?.connection!=='unavailable'&&state.mode!=='finished';
 function guardAmmoAction(){
   if(!ammoLocked())return false;
@@ -246,6 +261,7 @@ function updateAmmoPanel(){
 }
 function onAmmoChange(){
   if(!ammo)return;
+  if(adminPreview)return;
   coinExchange?.updateBalance(ammo.snapshot?.coins);
   if(Number.isInteger(ammo.snapshot?.main_rounds)&&!state.roundSaving&&progress.mainRounds!==ammo.snapshot.main_rounds){progress.mainRounds=ammo.snapshot.main_rounds;save();updateRound();}
   updateAmmoPanel();
@@ -256,6 +272,7 @@ function resumeRoundRegistration(){
   if(state.deferRegistration&&!state.registering&&state.mode!=='finished'&&!state.roundSaving&&!ammo?.pending&&ammo?.connection==='ready')registerMainRound();
 }
 function registerMainRound(){
+  if(adminPreview){state.practiceOnly=true;state.serverRunId=null;state.deferRegistration=false;state.registering=false;return state.roundStart=Promise.resolve({ok:false,reason:'admin_preview'});}
   if(state.registering)return state.roundStart;
   const epoch=state.roundEpoch,requestId=state.runId,stage=state.stage.recordId;
   state.serverRunId=null;state.deferRegistration=false;state.registering=true;
@@ -735,7 +752,7 @@ function resetRound(stage=state.stage){
   if(stage.kind==='clay'||!stageAvailable(stage.id)){toast(`${progress.unlocked}단계부터 차례로 통과해 주세요.`);return;}
   state.isEvent=false;
   state.resultSummary=null;
-  state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=false;state.ammoNotice='';state.ammoLoading=false;
+  state.roundEpoch=(state.roundEpoch||0)+1;state.runId=createRequestId();state.awaitingRoundSave=null;state.deferRegistration=false;state.registering=false;state.practiceOnly=adminPreview;state.ammoNotice='';state.ammoLoading=false;
   cancelDraw();state.stage=prepareStage(stage,Math.floor(Math.random()*0x100000000));state.time=0;state.score=0;state.used=0;state.hits=0;state.arrowHits=0;state.earned=0;state.shotScores=[];state.shotMaxScores=[];state.targetMarks=[];state.stuck=[];state.effects=[];state.mode='ready';state.shot=null;state.volley=null;state.cinematic=null;state.coachSaid=false;state.coachReady=false;state.coachLastCueAt=-Infinity;state.coachCueUntil=0;state.coachLastCheck=-Infinity;state.returnCamera=null;state.settle=0;state.charge=0;state.feedbackUntil=0;state.zoom=1;
   state.stabilizerActive=false;state.stabilizerNotice='';
   state.roundShotLimit=usingGun()?10:state.stage.shots;prepareGunRound();
@@ -755,7 +772,7 @@ const mainStageForChoices=()=>state.stage.id;
 function mainRoundCleared(){return state.mode==='finished'&&state.score>=state.stage.goal;}
 const mainGoalForChoices=()=>state.stage.goal;
 const canAdvanceStage=()=>mainStageForChoices()<STAGES.length&&stageAvailable(mainStageForChoices()+1)&&
-  ((state.mode==='finished'&&mainRoundCleared()));
+  (adminPreview||(state.mode==='finished'&&mainRoundCleared()));
 function navigateStage(delta){
   if(guardAmmoAction())return;
   if(delta>0&&!canAdvanceStage()){
@@ -1025,10 +1042,11 @@ function finishRound(){
   finishedMainRound={runId:state.runId,stage:state.stage.id,sent:false};
   reportFinishedMainRound();
   progress.best[state.stage.id]=Math.max(previous,state.score);
-  progress.unlocked=unlockedStage(progress.best);
+  progress.unlocked=adminPreview?STAGES.length:unlockedStage(progress.best);
   let bonus=0;
   if(passed){bonus=previous<state.stage.goal?25:12;progress.coins+=bonus;state.earned+=bonus;sound('clear');}
   const record={epoch:state.roundEpoch,stage:state.stage.recordId,score:state.score,passed,bonus,startPromise:state.roundStart,serverRunId:state.serverRunId};
+  if(adminPreview){state.awaitingRoundSave=null;finishMainScreen(record,false);return;}
   state.awaitingRoundSave=record;save();saveFinishedMainRound(record);
 }
 
@@ -1193,6 +1211,7 @@ function creditExchangedCoins(receipt){
   updateHeader();return true;
 }
 function showCoinShop(){
+  if(adminPreview){toast('관리자 체험에서는 모든 장비를 무료로 사용해요. ZU 교환은 꺼져 있어요.');return;}
   const pending=coinExchange?.pending,busy=!!coinExchange?.busy,available=(!!coinExchange?.available);
   const amount=pending?.zu||shopCoinPack,coins=amount*COINS_PER_ZU,balance=coinExchange?.balance??ammo?.snapshot?.coins;
   const shortage=Number.isSafeInteger(balance)&&balance<amount;
@@ -1203,6 +1222,7 @@ function showCoinShop(){
   openModal('shop',`<div class="shop-layout">${shopHeadingMarkup()}<section class="shop-coin-panel" aria-label="코인 교환"><h3>코인 교환</h3><p>10 ZU = 100코인</p>${available&&Number.isSafeInteger(balance)?`<p class="shop-zu-balance">보유 <strong>${formatCoins(balance)} ZU</strong></p>`:''}<div class="coin-pack-options" aria-label="교환할 ZU 선택">${COIN_PACKS.map(zu=>`<button type="button" class="button coin-pack-button" data-coin-pack="${zu}" aria-pressed="${amount===zu}" ${busy||pending?'disabled':''}><strong>${formatCoins(zu)} ZU</strong><small>${formatCoins(zu*COINS_PER_ZU)}코인</small></button>`).join('')}</div><button type="button" class="button primary-button coin-exchange-button" data-action="${action}" ${busy?'disabled':''}>${label}</button><p class="coin-exchange-notice" role="status">${coinExchange?.notice||reason||'교환한 코인으로 활·화살·조준경을 구매하세요.'}</p><small class="shop-coin-save-note">게임 코인과 장비는 현재 기기에 저장돼요.</small></section></div>`);
 }
 function reconnectCoinShop(){
+  if(adminPreview)return;
   if(state.modal!=='shop'||shopTab!=='coin'||coinExchange?.busy)return;
   if((!save())){toast('진행 상황을 저장하지 못했어요. 저장 공간을 확인해 주세요.');return;}
   // Re-open the authenticated host too: replacing only game assets leaves an
@@ -1211,6 +1231,7 @@ function reconnectCoinShop(){
   try{window.parent.location.replace(url);}catch{window.location.assign(url);}
 }
 async function exchangeShopCoins(){
+  if(adminPreview){toast('관리자 체험에서는 실제 ZU 교환을 사용하지 않아요.');return;}
   if((state.modal!=='shop'||shopTab!=='coin')||!coinExchange?.available||coinExchange.busy)return;
   if(guardAmmoAction())return;
   if(!coinExchange.pending&&progress.coins>1e8-shopCoinPack*COINS_PER_ZU){toast('게임 코인을 사용한 뒤 교환해 주세요.');return;}
@@ -1785,6 +1806,9 @@ function tick(now){
   }
   render();updatePower();requestAnimationFrame(tick);
 }
-coinExchange=createCoinExchangeClient({onCredit:creditExchangedCoins,onChange:()=>{if(state.modal==='shop'&&shopTab==='coin')showCoinShop();}});
-ammo=createAmmoClient({onChange:onAmmoChange,recordsOnly:true});save();resetRound(state.stage);requestAnimationFrame(tick);
+if(!adminPreview){
+  coinExchange=createCoinExchangeClient({onCredit:creditExchangedCoins,onChange:()=>{if(state.modal==='shop'&&shopTab==='coin')showCoinShop();}});
+  ammo=createAmmoClient({onChange:onAmmoChange,recordsOnly:true});
+}
+save();resetRound(state.stage);requestAnimationFrame(tick);
 if(/(?:^|[?&])shop=coin(?:&|$)/.test(window.location.search||''))showShop('coin');

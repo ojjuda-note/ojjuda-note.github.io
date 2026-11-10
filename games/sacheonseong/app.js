@@ -2,6 +2,7 @@
   'use strict';
   const E=window.TileGarden, $=id=>document.getElementById(id);
   const KEY='ojjuda-sacheonseong-v1', RECORDS='ojjuda-sacheonseong-records-v1';
+  const adminPreview=window.parent!==window&&window.parent.OjjudaAdminPreview?.isEnabled?.()===true;
   const faces=window.GardenFaces,TOOL_PRICES=Object.freeze({hint:3,shuffle:10}),WRONG_PAIR_MS=10000;
   let state,records={},selected=null,locked=false,hints=[],toastTimer,moveTimer,customSize=null,overview=true,fitSize=1,panHintDismissed=false;
   const removalTimers=new Set(),REMOVE_MS=120,TOUCH_SLOP=14,MIN_PLAY_TILE=48,OVERVIEW_TILE_MAX=28;
@@ -11,7 +12,7 @@
   let audioContext,saveAvailable=true,rankingStage=1;
   function read(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}}
   function write(key,data){try{localStorage.setItem(key,JSON.stringify(data));return true;}catch{saveAvailable=false;$('save-note').textContent='이 브라우저에서는 기록 저장을 사용할 수 없어요.';return false;}}
-  function save(){return write(KEY,state);}
+  function save(){return adminPreview?true:write(KEY,state);}
   const occupied=grid=>grid.flat().filter(v=>v!==E.EMPTY).length;
   const layers=()=>[state.grid,...(state.upcoming||[])];
   function activeCount(){return occupied(state.grid);}
@@ -35,6 +36,7 @@
     return row&&rules?.game(row.stage)&&rules.duration(row.score)!==null?row:null;
   }
   function prepareGlobalResult(){
+    if(adminPreview)return;
     const online=window.OjjudaSacheonseongOnline;if(window.parent===window||!online?.leaderboard)return;
     const owner=online.owner();if(owner===undefined)return;
     const result={runId:state.runId,stage:state.stage,owner,period:rankingMonth(),before:null,finished:false,outcome:'success',encouragement:'',notice:''};globalResult=result;
@@ -177,16 +179,16 @@
     state.penaltyMs=(state.penaltyMs||0)+WRONG_PAIR_MS;save();updateStats();
     const notice=message+' (+10초)';$('status').textContent=notice;toast(notice);
   }
-  function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
+  function chooseStage(s){if(state.pendingPurchase){toast('먼저 구매 다시 확인을 눌러 주세요.');return;}if(!adminPreview&&s>state.unlocked)return;if($('modal').open)$('modal').close();if(s===state.stage&&count())return;if(state.startedAt&&count())confirmChange('다른 정원으로 갈까요?','현재 단계의 진행은 새로 시작하게 돼요.',()=>newStage(s));else newStage(s);}
   function openStages(){
-    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stackInfo(s,s===state.stage?state.grid[0].length:boardColumns(s));return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${s>state.unlocked?'disabled':''} aria-label="${s}단계, ${info.layerCount}층, ${info.total}개의 패${s>state.unlocked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계 · ${info.layerCount}층</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${s>state.unlocked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
+    const cards=Array.from({length:E.MAX_STAGE},(_,i)=>{const s=i+1,info=E.stackInfo(s,s===state.stage?state.grid[0].length:boardColumns(s)),locked=!adminPreview&&s>state.unlocked;return `<button class="stage-card${s===state.stage?' current':''}" data-stage="${s}" ${locked?'disabled':''} aria-label="${s}단계, ${info.layerCount}층, ${info.total}개의 패${locked?', 잠김':''}"><span>${String(s).padStart(2,'0')}단계 · ${info.layerCount}층</span><strong>${info.total}<small>개</small></strong><small>${info.typeCount}종 · 최대 ${s===1?2:4}개씩</small>${locked?'<svg class="icon"><use href="#i-lock"/></svg>':''}</button>`;}).join('');
     showModal(`<div class="eyebrow">층마다 새로운 모양</div><h2 id="modal-title">200개의 정원을 만나보세요.</h2><p>십자·계단·고리처럼 모양이 달라져요.<br>아랫패 네 장의 가운데에 윗패 한 장이 걸쳐요. 겹치지 않은 패부터 연결해요.</p><div class="all-stage-grid">${cards}</div>`);
     $('modal-content').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>chooseStage(Number(b.dataset.stage))));
     $('modal-content').querySelector('.stage-card.current')?.scrollIntoView?.({block:'nearest'});
   }
   function recordRows(stage,limit){const list=(records[stage]||[]).slice(0,limit);return list.length?list.map((r,i)=>`<div class="rank-row${r.id===state.lastRecord?' recent':''}"><span class="rank-number">${i+1}</span><strong>${time(r.duration)}</strong><span class="rank-date">${new Date(r.at).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}</span></div>`).join(''):'<p class="rank-empty">정원을 비우면<br>첫 시간 기록이 남아요.</p>';}
   function render(){
-    window.OjjudaSacheonseongOnline?.stage(state.stage);
+    if(!adminPreview)window.OjjudaSacheonseongOnline?.stage(state.stage);
     $('board-scroll').setAttribute('aria-label',`${state.stage}단계, 총 ${state.layerCount}층이 반 칸씩 번갈아 쌓여 있어요. 모든 패가 한 화면에 맞춰 보이며, 필요하면 확대할 수 있어요.`);
     $('status').textContent=state.layerCount>1?'카드 한 장 너비의 빈 통로를 따라 연결하세요. 큰 판은 밀어서 볼 수 있어요.':'가로·세로로 연결하고, 두 번까지만 꺾어요.';
     $('sound').innerHTML=`효과음 ${state.sound?'켬':'끔'} <svg class="icon"><use href="#i-${state.sound?'sound':'muted'}"/></svg>`;$('sound').setAttribute('aria-pressed',String(state.sound));$('sound').setAttribute('aria-label',`효과음 ${state.sound?'끄기':'켜기'}`);
@@ -253,11 +255,11 @@
     locked=true;state.finishedMs=duration;state.unlocked=Math.min(E.MAX_STAGE,Math.max(state.unlocked,state.stage+1));
     const id=`${Date.now()}-${Math.random().toString(36).slice(2,8)}`;state.lastRecord=id;
     const record={id,duration:Math.max(1,duration),at:Date.now(),hints:state.hints,shuffles:state.shuffles,rulesVersion:E.RULES_VERSION};
-    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);write(RECORDS,records);save();updateStats();if(present){showCompletion(rank);sound('win');}
-    const delivery=window.OjjudaSacheonseongOnline?.record(state.stage,record);
+    const list=[...(records[state.stage]||[]),record].sort((a,b)=>a.duration-b.duration||a.at-b.at);const rank=list.findIndex(r=>r.id===id)+1;state.lastRank=rank;records[state.stage]=list.slice(0,30);if(!adminPreview)write(RECORDS,records);save();updateStats();if(present){showCompletion(rank);sound('win');}
+    const delivery=adminPreview?null:window.OjjudaSacheonseongOnline?.record(state.stage,record);
     if(comparison)comparison.deliveryId=delivery?.id;
     if(comparison&&delivery?.then)delivery.then(result=>compareGlobalResult(comparison,result)).catch(()=>compareGlobalResult(comparison,{ok:false}));
-    if(window.parent!==window)window.parent.postMessage({source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:state.runId,stage:state.stage},location.origin);
+    if(window.parent!==window&&!adminPreview)window.parent.postMessage({source:'ojjuda-sacheonseong-game',type:'ojjuda:sacheonseong-finished',runId:state.runId,stage:state.stage},location.origin);
   }
   function showCompletion(rank){
     if(!completedRound())return;
@@ -311,6 +313,19 @@
   }
   async function useTool(kind){
     if(locked||purchaseBusy||!count())return;
+    if(adminPreview){
+      ensureMove();
+      if(kind==='hint'){
+        const move=availableMove();if(!move)return;
+        state.hints++;state.hintPair=[move.a,move.b];clearSelection();hints=[move.a,move.b];restoreHint();
+        toast('관리자 체험 · 힌트를 무료로 확인했어요');
+      }else{
+        const reshuffled=layers().map(grid=>occupied(grid)?E.reshuffle(grid).grid:E.copy(grid)),remade=E.recoverVisibleStack(reshuffled);
+        state.grid=remade[0];state.upcoming=remade.slice(1);state.shuffles++;state.hintPair=null;clearSelection();renderBoard();
+        toast('관리자 체험 · 패를 무료로 섞었어요');
+      }
+      save();return;
+    }
     const online=window.OjjudaSacheonseongOnline,owner=online?.owner?.();
     if(!online||owner==='guest'){toast('로그인 후 힌트 3쭈, 섞기 10쭈로 이용할 수 있어요.');return;}
     if(!owner){toast('오락실 연결을 확인하고 있어요. 잠시 뒤 다시 눌러 주세요.');return;}
@@ -439,7 +454,7 @@
   window.addEventListener('pagehide',save);
   window.addEventListener('ojjuda:sacheonseong-record',event=>{if(globalResult?.deliveryId&&event.detail?.id===globalResult.deliveryId)compareGlobalResult(globalResult,event.detail);});
   function validPurchase(item){const uuid=value=>typeof value==='string'&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(value);return item&&uuid(item.id)&&uuid(item.runId)&&uuid(item.owner)&&Number.isInteger(item.stage)&&item.stage>=1&&item.stage<=E.MAX_STAGE&&['hint','shuffle'].includes(item.kind);}
-  const saved=read(KEY),storedRecords=read(RECORDS);
+  const saved=adminPreview?null:read(KEY),storedRecords=adminPreview?null:read(RECORDS);
   if(storedRecords&&typeof storedRecords==='object'&&!Array.isArray(storedRecords)){for(const [k,v]of Object.entries(storedRecords))if(/^\d+$/.test(k)&&Array.isArray(v))records[k]=v.filter(r=>r&&Number.isFinite(r.duration)&&r.duration>0&&Number.isFinite(r.at)).sort((a,b)=>a.duration-b.duration).slice(0,30);}
   // Start a fresh visit at the last played level, keeping achievements and
   // unresolved receipts without restoring the old board, result or clock.

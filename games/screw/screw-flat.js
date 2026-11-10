@@ -21,14 +21,15 @@
   const Physics=typeof module!=='undefined'&&module.exports?require('./screw-flat-physics.js'):window.OjjudaFlatPhysics;
   const {BOARD,LAST_STAGE,createPhysics,layoutSpareHoles,canUnscrew,canAccessHole,canSeatScrew,bareHole,plateCovers,screwPoint,screwDepth}=Physics;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  const adminPreview=()=>typeof window!=='undefined'&&window.OjjudaAdminPreview?.isEnabled?.()===true;
   function readStage() {
     try { const n = Number(localStorage.getItem(STAGE_KEY)); return Number.isInteger(n) && n >= 1 && n <= LAST_STAGE ? n : 1; }
     catch (_) { return 1; }
   }
-  function saveStage(n) { try { localStorage.setItem(STAGE_KEY, String(Math.max(readStage(),n))); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
+  function saveStage(n) { if(adminPreview())return;try { localStorage.setItem(STAGE_KEY, String(Math.max(readStage(),n))); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   // A completed level stays current until the player actually starts the next one.
   function readResumeStage() { try { const n = Number(localStorage.getItem(RESUME_KEY)); if (Number.isInteger(n) && n >= 1 && n <= LAST_STAGE) return Math.min(n,readStage()); } catch (_) {} return readStage(); }
-  function saveResumeStage(n) { try { localStorage.setItem(RESUME_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
+  function saveResumeStage(n) { if(adminPreview())return;try { localStorage.setItem(RESUME_KEY, String(n)); } catch (_) { /* A blocked storage area must not interrupt play. */ } }
   function makeFlatLevel(stage) {
     const level=Physics.makeFlatLevel(stage);level.picture=(level.stage-1)%PICTURES.length;level.name=PICTURES[level.picture].name;return level;
   }
@@ -63,14 +64,15 @@
   }
   const Drills=typeof module!=='undefined'&&module.exports?require('./screw-flat-drills.js'):window.OjjudaFlatDrills;
   function flat(api,startStage=readResumeStage()) {
-    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?Math.min(startStage,readStage()):1,attemptId:null,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Map(),pinch:null,gestureBlocked:false,focus:null,
+    const st={view:{zoom:1,x:180,y:316},L:Number.isInteger(startStage)&&startStage>=1&&startStage<=LAST_STAGE?(adminPreview()?startStage:Math.min(startStage,readStage())):1,attemptId:null,score:0,stageScore:0,t:0,level:null,physics:null,moves:0,selected:null,pending:null,message:'',messageTime:0,complete:false,ended:false,failed:false,failureMarker:'',destroyed:false,down:null,pointers:new Map(),pinch:null,gestureBlocked:false,focus:null,
       albumOpen:false,albumPicture:null,albumFocus:null,collection:Pictures.readCollection(),extraHoles:0,extraMoves:0,moveLimit:0,shopKind:null,shopBusy:'',shopReady:false,shopRun:0};
     const walletUser=api.getUserId?.()||null,sameWallet=()=>!!walletUser&&api.getUserId?.()===walletUser;
 
-    const drills=Drills.create(api,walletUser,readStage(),Physics.replayVersion);
+    const drills=adminPreview()?{state:{balance:0,ready:false},use:async()=>({ok:false}),start:()=>null,finish:()=>{},fail:()=>{}}:Drills.create(api,walletUser,readStage(),Physics.replayVersion);
     let drillRun,drillTrace=[],usingDrill=false;
     const physicsTick=()=>Math.round(st.physics.engine.timing.timestamp*120/1000);
     async function useDrill(){
+      if(adminPreview())return;
       if(usingDrill||st.shopBusy||st.pending||st.complete||st.ended||st.failed||st.destroyed)return;
       const run=drillRun;usingDrill=true;st.shopBusy='buying';api.drillChanged?.();
       try{
@@ -85,11 +87,13 @@
     const activeAttemptKey=walletUser?`${ATTEMPT_KEY}:${walletUser}`:null;
     const isUuid=id=>typeof id==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id);
     function finishAttempt(){
+      if(adminPreview())return;
       if(!activeAttemptKey||!st.attemptId)return;
       try{const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');if(record?.id===st.attemptId)localStorage.setItem(activeAttemptKey,JSON.stringify({...record,done:true}));}catch(_){}
     }
     function selectAttempt(L,fresh=false){
       const id=crypto.randomUUID();
+      if(adminPreview())return id;
       if(!activeAttemptKey)return id;
       try{
         const record=JSON.parse(localStorage.getItem(activeAttemptKey)||'null');
@@ -145,6 +149,7 @@
       finally{if(st.shopRun===run)st.shopBusy='';}
     }
     async function buyUpgrade(kind){
+      if(adminPreview()){tell('관리자 체험 · 최대 강화가 이미 적용됐어요');return;}
       if(st.shopBusy||st.pending||st.complete||st.destroyed||(st.level.plates.every(p=>p.state==='gone')&&!st.level.route))return;
       if(!sameWallet()||!api.buyScrew){tell('로그인 후 구매할 수 있어요');return;}
       if(!st.shopReady){await readUpgrades();return;}
@@ -173,8 +178,9 @@
       st.physics?.destroy();st.L=L;st.level=makeFlatLevel(L);st.moveLimit=moveLimit(st.level);st.physics=createPhysics(st.level);st.moves=0;st.selected=null;st.pending=null;saveResumeStage(L);
       resetView();st.complete=false;st.ended=false;st.failed=false;st.failureMarker='';st.down=null;st.pointers.clear();st.pinch=null;st.gestureBlocked=false;st.focus=null;st.stageScore=st.score;st.messageTime=0;
       st.albumOpen=false;st.albumPicture=null;st.albumFocus=null;Pictures.preload(st.level.picture,true);
-      usingDrill=false;drillTrace=[];drillRun=drills.start(L,st.attemptId);
-      if(sameWallet()&&api.buyScrew)void readUpgrades();
+      usingDrill=false;drillTrace=[];drillRun=adminPreview()?null:drills.start(L,st.attemptId);
+      if(adminPreview()){addHoles(MAX_EXTRA_HOLES);st.extraMoves=99;}
+      else if(sameWallet()&&api.buyScrew)void readUpgrades();
     }
     function openAlbum(){
       if(st.pending)return;
@@ -239,8 +245,8 @@
       if(fallen.length){st.score+=fallen.length*10;api.setScore(st.score);}
       if(!st.pending&&st.level.plates.every(p=>p.state==='gone')) {
         resetView();st.complete=true;st.selected=null;st.focus=null;st.score+=st.L*10;api.setScore(st.score);api.saveScore?.(st.score);saveStage(Math.min(LAST_STAGE,st.L+1));finishAttempt();
-        st.collection=Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
-        drills.finish(drillRun,drillTrace,physicsTick(),st.extraHoles>0||st.extraMoves>0);
+        st.collection=adminPreview()?new Set([...st.collection,PICTURES[st.level.picture].id]):Pictures.collect(st.level.picture,st.collection);Pictures.preload((st.level.picture+1)%PICTURES.length);
+        if(!adminPreview())drills.finish(drillRun,drillTrace,physicsTick(),st.extraHoles>0||st.extraMoves>0);
         api.stageClear?.(st.score);
       }
       // Let a released plate finish falling before judging the last move.
@@ -250,7 +256,7 @@
       if(!st.complete&&!st.pending&&st.selected===null&&st.moves>=allowance&&
         !st.level.plates.some(p=>p.state!=='gone'&&p.pins.length===0)&&
         st.failureMarker!==`moves:${allowance}`){
-        st.failureMarker=`moves:${allowance}`;st.failed=true;void drills.fail(drillRun);api.stageFail?.(st.score);
+        st.failureMarker=`moves:${allowance}`;st.failed=true;if(!adminPreview())void drills.fail(drillRun);api.stageFail?.(st.score);
       }
     }
     function drawHole(c,h,scale=1) {
@@ -376,12 +382,13 @@
       get controls(){return '<button type="button" class="flat-drill-button" data-g="screw-drill">드릴 '+drills.state.balance+'개 · 구멍 추가</button>';},
       get stage(){return st.L;},
       get levels(){return LAST_STAGE;},
-      get unlockedStage(){return readStage();},
+      get unlockedStage(){return adminPreview()?LAST_STAGE:readStage();},
       get stageCleared(){return st.complete;},
       get stageFailed(){return st.failed;},
       get canResume(){return st.failed&&!st.destroyed&&!st.ended;},
       viewPicture(){if(!st.complete||st.destroyed)return false;openAlbum();st.albumPicture=st.level.picture;return true;},
       async prepareStageChoice(){
+        if(adminPreview())return !st.destroyed;
         if(st.destroyed||st.shopBusy||(walletUser&&!sameWallet()))return false;
         if(sameWallet()&&Object.keys(PURCHASE_KEYS).some(kind=>pendingPurchase(st.L,kind)))await readUpgrades();
         return !st.destroyed&&!st.shopBusy&&!(walletUser&&!sameWallet())&&(!sameWallet()||!Object.keys(PURCHASE_KEYS).some(kind=>pendingPurchase(st.L,kind)));

@@ -1,0 +1,59 @@
+/* The Agit tab reuses World's colors and game tiles. */
+body .bottomnav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.agit-hub{max-width:1100px;margin:0 auto;padding:5px 0 42px;color:var(--ink)}
+.agit-heading{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:0 0 20px}
+.agit-heading h1{margin:2px 0 0;font-size:clamp(27px,4vw,36px);font-weight:800;line-height:1.3;letter-spacing:-.04em}
+.agit-heading .world-eyebrow{font-size:11px;color:var(--accent-ink);letter-spacing:.12em;font-weight:800}
+.agit-date{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.agit-feature-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+.agit-panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:19px 20px;box-shadow:0 6px 22px #25274708}
+.agit-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+.agit-panel-head h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.035em}
+.agit-tag{font-size:11px;color:var(--ink-2);font-weight:700;white-space:nowrap}
+.agit-pick{background:linear-gradient(125deg,color-mix(in srgb,var(--accent) 15%,var(--surface)),var(--surface) 72%);overflow:hidden}
+.agit-pick-body{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:133px}
+.agit-pick-copy{display:flex;flex-direction:column;align-items:start;gap:17px;flex:1;min-width:0}
+.agit-pick-copy strong{font-size:clamp(19px,2.6vw,26px);font-weight:800;letter-spacing:-.04em;word-break:keep-all}
+.agit-pick-body img{display:block;flex:0 1 42%;width:42%;height:142px;min-width:80px;object-fit:contain;filter:drop-shadow(0 8px 10px #171e3120)}
+.agit-primary,.agit-stamp-button{min-height:43px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:9px 16px;border:0;border-radius:13px;background:var(--accent);color:var(--on-accent);font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.agit-primary:hover,.agit-stamp-button:hover:not(:disabled){filter:brightness(.96)}
+.agit-primary:focus-visible,.agit-stamp-button:focus-visible,.agit-mission:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.agit-stamp-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:18px 0}
+.agit-stamp-day{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;color:var(--ink-2)}
+.agit-stamp-day span{font-size:11px;font-weight:700}
+.agit-stamp-day strong{display:grid;place-items:center;width:100%;max-width:43px;aspect-ratio:1;border:1px dashed var(--line);border-radius:50%;background:var(--surface-2);color:color-mix(in srgb,var(--ink-2) 45%,transparent);font-size:18px}
+.agit-stamp-day.is-stamped strong{background:var(--accent-soft);border:2px solid var(--accent);color:var(--accent-ink)}
+.agit-stamp-day.is-today span{color:var(--accent-ink)}
+.agit-stamp-button{width:100%;background:var(--ink);color:var(--surface)}
+.agit-stamp-button:disabled{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);cursor:default}
+.agit-missions{margin-bottom:14px}
+.agit-mission-count{font-size:14px;font-weight:800;color:var(--accent-ink)}
+.agit-mission-progress{height:5px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:0 0 14px}
+.agit-mission-progress span{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .2s}
+.agit-mission-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.agit-mission{display:flex;align-items:center;gap:9px;min-height:66px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.agit-mission:hover{background:var(--surface-2)}
+.agit-mission-icon{display:grid;place-items:center;flex:none;width:35px;height:35px;border-radius:11px;background:var(--surface-2);font-size:18px}
+.agit-mission-title{flex:1;min-width:0;font-size:12px;font-weight:750;word-break:keep-all}
+.agit-mission-action{font-size:11px;color:var(--accent-ink);font-weight:800;white-space:nowrap}
+.agit-mission.is-done{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.agit-mission.is-done .agit-mission-icon{background:var(--accent);color:var(--on-accent)}
+.agit-mission.is-done .agit-mission-action{color:var(--ink-2)}
+.agit-daily .agit-panel-head{margin-bottom:17px}
+.agit-daily .agit-daily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.agit-daily .gbtn{text-decoration:none;cursor:pointer}
+.agit-daily .gbtn .ge img{max-width:100%;object-fit:contain}
+.agit-puzzle-question{margin:5px 0 17px;text-align:center;font-size:20px;line-height:1.5;word-break:keep-all}
+.agit-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.agit-choices button{min-height:48px;white-space:normal}
+.agit-puzzle-symbol{margin:5px 0 10px;text-align:center;font-size:36px;letter-spacing:.15em;font-weight:800;color:var(--accent-ink)}
+.agit-puzzle-hint{margin:7px 0 18px;text-align:center;color:var(--ink-2);font-size:13px}
+.agit-puzzle-input{display:flex;gap:8px}
+.agit-puzzle-input .inp{min-width:0;flex:1}
+.agit-puzzle-feedback{min-height:22px;margin:10px 0 0;text-align:center;font-size:13px;color:var(--accent-ink);font-weight:700}
+.agit-guess-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}
+.agit-guess-list span{display:flex;justify-content:space-between;gap:9px;background:var(--surface-2);border-radius:9px;padding:7px 10px;font-size:12px;font-variant-numeric:tabular-nums}
+.agit-guess-list strong{color:var(--accent-ink)}
+@media(max-width:900px){.agit-feature-grid{grid-template-columns:1fr}.agit-mission-list{grid-template-columns:1fr}.agit-mission{min-height:55px}.agit-hub{padding-bottom:24px}}
+@media(max-width:520px){.agit-panel{padding:16px;border-radius:18px}.agit-heading{margin-bottom:14px}.agit-feature-grid,.agit-missions{margin-bottom:11px}.agit-pick-body{min-height:115px}.agit-pick-body img{height:115px;min-width:76px}.agit-stamp-grid{gap:4px}.agit-stamp-day strong{font-size:16px}.agit-daily .agit-daily-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.agit-pick-copy strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.agit-mission-progress span{transition:none}}

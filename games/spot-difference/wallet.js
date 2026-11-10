@@ -2,30 +2,35 @@
   'use strict';
   const listeners=new Set();
   const state={ready:false,userId:null,coins:null,error:null,canViewAnswers:false};
-  const ownerUserId='22188825-167a-488b-8914-1b6ecc5ea717';
   // This is the public browser key already used by Ojjuda Agit, never a secret.
   const client=window.supabase?.createClient('https://ziezbdjofcugznowiuda.supabase.co','sb_publishable_iUpPUBr2HlJr9LhDRVtB0Q_toJUMazo',{
     auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
   });
+  window.OjjudaAdminPreview?.configure(client);
   const emit=()=>listeners.forEach(fn=>fn({...state}));
-  let revision=0;
+  let revision=0,adminVerified=false;
+  function syncAnswerAccess(){
+    const allowed=adminVerified&&window.OjjudaAdminPreview?.isEnabled()===true;
+    if(state.canViewAnswers!==allowed){state.canViewAnswers=allowed;emit();}
+  }
+  window.addEventListener('ojjuda:admin-preview',syncAnswerAccess);
   async function checkAnswerAccess(userId){
-    if(userId!==ownerUserId)return false;
+    if(!userId)return false;
     const {data:identity,error:identityError}=await client.auth.getUser();
-    if(identityError||identity.user?.id!==ownerUserId)return false;
+    if(identityError||identity.user?.id!==userId)return false;
     const {data,error}=await client.rpc('is_admin').abortSignal(AbortSignal.timeout(10000));
     return !error&&data===true;
   }
   async function sync(session){
     const rev=++revision;
-    state.userId=session?.user?.id||null;state.coins=null;state.error=null;state.canViewAnswers=false;state.ready=true;emit();
+    state.userId=session?.user?.id||null;state.coins=null;state.error=null;adminVerified=false;state.canViewAnswers=false;state.ready=true;emit();
     if(!state.userId)return;
     const [balance,canViewAnswers]=await Promise.all([
       client.from('user_private').select('coins').eq('user_id',state.userId).maybeSingle(),
       checkAnswerAccess(state.userId).catch(()=>false)
     ]);
     if(rev!==revision)return;
-    const {data,error}=balance;state.canViewAnswers=canViewAnswers;
+    const {data,error}=balance;adminVerified=canViewAnswers;syncAnswerAccess();
     if(error||!data||!Number.isInteger(data.coins))state.error='잔액을 불러오지 못했어요. 다시 확인해 주세요.';
     else state.coins=data.coins;
     emit();
