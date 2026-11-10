@@ -146,7 +146,7 @@
 }
 #gov[data-game="runner"] .jju-mini {
   position: absolute;
-  top: clamp(6px, 1vw, 12px);
+  top: 15%;
   height: clamp(27px, 3.7vw, 38px);
   border: 1px solid #ddfff0be;
   border-radius: 999px;
