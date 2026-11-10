@@ -1,7 +1,7 @@
 /* Download game assets when a game is selected, and share successful loads. */
 (()=>{
  'use strict';
- const revision='20261110-runner-speed1000-v3-2-1'
+ const revision='20261110-restaurants-c2s38-sangju4-map2'
  // Each game has its own release version. This never changes the Agit version.
  // Asset ?v= values below are cache revisions, independent of release numbers.
  const versions=Object.freeze({
@@ -9,7 +9,7 @@
   chacha_rush:'1.0.5',
   byeolcheonji:'1.0.5',
   festival:'1.6.1',
-  restaurants:'1.12.28',
+  restaurants:'1.12.29',
   recommendations:'1.7.0',
   archery:'3.3.1',
   roulette:'1.9.4',

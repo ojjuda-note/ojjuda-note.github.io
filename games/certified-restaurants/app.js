@@ -645,7 +645,7 @@
         fetch('./official-daegu-slot34.json?v=20261107-restaurants-slot34-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeongbuk-slot36.json?v=20261110-restaurants-c2s36-pohang6', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeongbuk-slot37.json?v=20261110-restaurants-c2s37-location2', { signal: controller.signal, cache: 'no-cache' }),
-        fetch('./official-gyeongbuk-slot38.json?v=20261107-restaurants-slot38-1', { signal: controller.signal, cache: 'no-cache' }),
+        fetch('./official-gyeongbuk-slot38.json?v=20261110-restaurants-c2s38-sangju4-map2', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-busan-slot39.json?v=20261107-restaurants-slot39-1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-busan-slot41-michelin-map.json?v=20261107-restaurants-slot41-map1', { signal: controller.signal, cache: 'no-cache' }),
         fetch('./official-gyeongnam-slot44.json?v=20261107-restaurants-slot44-1', { signal: controller.signal, cache: 'no-cache' }),
