@@ -1961,7 +1961,7 @@ function createScrewScoreRecorder(game){
 }
 var screwScoreRecoveries=new Set();
 function resumeScrewScores(){
- if(adminGamePreviewActive())return;
+ if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive())return;
  if(!S||R?.running)return;
  const owner=worldRewardOwner();if(owner===''||owner===null&&!window.OjjudaGuestScores)return;
  const box=screwBoxScoreState(owner);

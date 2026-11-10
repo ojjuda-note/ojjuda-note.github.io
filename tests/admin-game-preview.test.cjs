@@ -156,7 +156,7 @@ test('guest score and game-result endpoints are not called in admin preview',asy
 test('individual game progress and replay saves are isolated from admin preview',()=>{
   const source=read('world.html');
   assert.ok(source.includes('if(adminGamePreviewActive())return;\n if(!E||E.kind'));
-  assert.ok(source.includes('if(adminGamePreviewActive())return;\n if(!S||R?.running)return;'));
+  assert.ok(source.includes("if(typeof adminGamePreviewActive==='function'&&adminGamePreviewActive())return;\n if(!S||R?.running)return;"));
   assert.ok(source.includes("render(null,adminPreview?'관리자 체험 · 기록은 저장하지 않아요.'"));
   const guarded=[
     ['games/spot-difference/wallet.js','async recordClear(owner,stage){'],
