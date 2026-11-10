@@ -1173,7 +1173,8 @@
         }
         if (vortexRemaining > 0) {
           drawVortex(c, vortexRemaining, time, vortexTarget);
-          hud(c, { hearts, pearls, combo, stage, shielded, fever,
+          // Hide the regular combo/fever banner while the chapter title is up.
+          hud(c, { hearts, pearls, combo: 0, stage, shielded, fever: 0,
             chapter, difficulty: difficulty(), speed }, view, score());
           c.restore(); return;
         }
