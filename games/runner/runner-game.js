@@ -9,7 +9,7 @@
   const W = 960;
   const H = 540;
   const GROUND = 465;
-  const HERO_X = 207;
+  const HERO_X = 246;
   const HERO_SCALE = 1.43;
   const TAU = Math.PI * 2;
   const FONT = '"Jua","Gowun Dodum","Apple SD Gothic Neo",sans-serif';
