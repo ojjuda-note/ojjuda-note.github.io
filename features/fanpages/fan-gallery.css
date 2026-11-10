@@ -216,6 +216,14 @@ body[data-artist] .photo-viewer::backdrop {
   .photo-viewer-bottom p { font-size: 10px; }
   .photo-viewer-actions a { min-height: 34px; }
 }
+@media (max-width: 430px) {
+  body[data-artist] .detail-photo-grid { grid-template-columns: minmax(0,1fr); }
+  body[data-artist] .detail-photo:first-child { grid-column: auto; }
+  body[data-artist] .detail-photo-image,
+  body[data-artist] .detail-photo:first-child .detail-photo-image { height: auto;aspect-ratio: 4/3; }
+  body[data-artist] .detail-photo-caption { min-height: 0; }
+  body[data-artist] .detail-photo-caption strong { font-size: 14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   body[data-artist] .detail-photo-image img,
   .photo-viewer-close,

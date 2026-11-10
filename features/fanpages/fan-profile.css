@@ -135,10 +135,10 @@ body[data-artist="twice"] .profile-member-card { border-top-color:color-mix(in s
   .profile-source-links>small { flex-basis:100%; }
 }
 @media(max-width:640px) {
-  body[data-artist] .detail-shortcuts,body[data-artist] .detail-shortcuts.has-campaigns { display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;margin-bottom:55px; }
-  body[data-artist] .detail-shortcuts::-webkit-scrollbar { display:none; }
-  body[data-artist] .detail-shortcuts a { flex:0 0 83px;min-width:83px;padding:11px 8px;scroll-snap-align:start; }
-  body[data-artist] .detail-shortcuts strong { font-size:11px; }
+  body[data-artist] .detail-shortcuts,body[data-artist] .detail-shortcuts.has-campaigns { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible;scroll-snap-type:none;margin-bottom:50px; }
+  body[data-artist] .detail-shortcuts a { display:flex;flex-direction:row;align-items:center;flex:none;min-width:0;gap:7px;padding:12px 10px; }
+  body[data-artist] .detail-shortcuts strong { font-size:12px;min-width:0; }
+  body[data-artist] .detail-shortcuts b { margin-left:auto;align-self:center; }
   .album-grid { grid-template-columns:1fr;gap:11px; }
   .album-grid.is-preview:not(.is-expanded)>.album-card:nth-child(n+2) { display:none; }
   .album-card { padding:21px; }

@@ -592,6 +592,13 @@ body[data-page="hub"] .artist-tile:hover .tile-cover:before { transform: transla
   .stage-glyph-a { font-size: 92px; }
   .stage-ghost-number { font-size: 240px; }
 }
+@media (min-width: 641px) and (max-width: 820px) {
+  body[data-artist] .detail-hero.stage-hero { grid-template-columns: minmax(0,1fr);min-height:0; }
+  body[data-artist] .stage-hero .detail-hero-copy { min-height:305px;padding:38px 36px 32px; }
+  body[data-artist] .stage-hero .detail-hero-visual { height:clamp(320px,49vw,410px);min-height:0; }
+  .stage-energy { inset:0 0 clamp(320px,49vw,410px) 0; }
+  .stage-ghost-number { font-size:190px; }
+}
 @media (max-width: 640px) {
   body[data-artist] .detail-hero.stage-hero { grid-template-columns: 1fr; min-height: 0; }
   body[data-artist] .stage-hero .detail-hero-copy { min-height: 330px; padding: 31px 25px 26px; }
