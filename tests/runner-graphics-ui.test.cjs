@@ -77,8 +77,20 @@ g.tab='friends'; H();
         box.y + box.height <= height + .5, 'game and controls fit every viewport');
       assert.ok(Math.abs(visible.width / visible.height - pixels.width / pixels.height) < .005,
         'canvas matches CSS ratio without distorted shapes');
+      assert.ok(Math.abs(visible.width / visible.height - 16 / 9) < .008,
+        'character proportions stay consistent with the landscape reference');
+      assert.ok(await page.evaluate(() => runnerTest.current.game.state.speed >= 450),
+        'action begins at high speed without a slow introduction');
       assert.ok(await page.locator('.jju-controls [data-g="key:ArrowUp"]').isVisible());
       assert.ok(await page.locator('.jju-controls [data-g="key:ArrowDown"]').isVisible());
+      for (const key of ['ArrowUp', 'ArrowDown']) {
+        const b = await page.locator('.jju-controls [data-g="key:' + key + '"]').boundingBox();
+        assert.ok(b.x >= visible.x && b.y >= visible.y &&
+          b.x + b.width <= visible.x + visible.width + 1 &&
+          b.y + b.height <= visible.y + visible.height + 1,
+        'large round ' + key + ' control overlays the game stage');
+        assert.ok(Math.abs(b.width - b.height) < 2, key + ' control is circular');
+      }
       await page.locator('.jju-controls [data-g="key:ArrowDown"]').click();
       assert.equal(await page.evaluate(() => runnerTest.current.game.state.sliding), true);
       await page.locator('.jju-controls [data-g="key:ArrowUp"]').click();
