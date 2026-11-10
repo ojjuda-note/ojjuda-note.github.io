@@ -102,8 +102,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy with a longer sync deadline
+      - name: Deploy using the supported Pages deadline
         id: deployment
         uses: actions/deploy-pages@v5
         with:
-          timeout: 1800000
+          # deploy-pages@v5 caps larger values to 600000 ms.
+          timeout: 600000
