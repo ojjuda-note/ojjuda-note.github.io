@@ -21,8 +21,8 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-hero-story h1 em{color:color-mix(in srgb,var(--accent-ink,#c25567) 55%,#c25567);font-style:normal;white-space:nowrap}
 .agit-hero-story p{margin:0;color:#765a67;font-size:15px;font-weight:550;letter-spacing:-.025em}
 /* Thin white marker strokes hug each wrapped text line. */
-.agit-hero-story .agit-hero-highlight{padding:0 .04em;border-radius:.04em;background:linear-gradient(180deg,transparent 54%,rgba(255,253,249,.92) 54%,rgba(255,253,249,.92) 86%,transparent 86%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.agit-hero-story .agit-hero-highlight--copy{padding:0 .055em;background:linear-gradient(180deg,transparent 56%,rgba(255,253,249,.93) 56%,rgba(255,253,249,.93) 85%,transparent 85%)}
+.agit-hero-story .agit-hero-highlight{padding:0 .04em;border-radius:.04em;background:linear-gradient(180deg,transparent 64%,rgba(255,253,249,.78) 64%,rgba(255,253,249,.78) 84%,transparent 84%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.agit-hero-story .agit-hero-highlight--copy{padding:0 .055em;background:linear-gradient(180deg,transparent 64%,rgba(255,253,249,.78) 64%,rgba(255,253,249,.78) 84%,transparent 84%)}
 .agit-hero-visual{grid-area:visual;position:relative;display:grid;align-items:end;justify-items:center;min-width:0;min-height:0;pointer-events:none}
 .agit-hero-visual img{position:relative;z-index:1;display:block;width:min(118%,660px);max-width:none;max-height:390px;height:auto;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 20px 18px #7d4a5a16);transform:translate(4px,12px)}
 .agit-hero-halo{position:absolute;inset:12% 6% 0;border-radius:50%;background:#fff6e65c;filter:blur(16px)}
@@ -209,38 +209,43 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 }
 @media(prefers-reduced-motion:reduce){.agit-play-button,.agit-stamp-button,.agit-quest-card,.agit-life-tile,.agit-life-art img{transition:none}.agit-stamp-day.is-today.is-stamped strong{animation:none}}
 
-/* Mobile copy occupies the full card width, with illustration in its own row. */
-@media(max-width:540px){
-  .agit-hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"story" "visual" "pick";grid-template-rows:auto 132px auto}
-  .agit-hero-story{padding:20px 17px 0}
-  .agit-hero-story h1{margin:12px 0 9px;font-size:clamp(28px,8.2vw,36px);letter-spacing:-.065em;line-height:1.2;word-break:keep-all}
-  .agit-hero-story h1 em{white-space:nowrap}
-  .agit-hero-story p{font-size:13px;line-height:1.5;letter-spacing:-.015em;word-break:keep-all}
-  .agit-hero-story .agit-hero-highlight{padding:0 .035em;background:linear-gradient(180deg,transparent 56%,rgba(255,255,255,.92) 56%,rgba(255,255,255,.92) 86%,transparent 86%)}
-  .agit-hero-story .agit-hero-highlight--copy{padding:0 .045em;background:linear-gradient(180deg,transparent 58%,rgba(255,255,255,.93) 58%,rgba(255,255,255,.93) 86%,transparent 86%)}
-  .agit-hero-visual{align-self:stretch;justify-items:end;align-items:end;max-height:none;height:132px;padding-right:8px}
-  .agit-hero-visual img{width:auto;max-width:70%;height:130px;max-height:130px;object-fit:contain;transform:none}
-  .agit-hero-pick{margin:0 12px 16px}
+/* Responsive hero: keep the story clear of the illustration at every width. */
+@media(min-width:511px) and (max-width:740px){
+ .agit-hero-story{padding:24px 0 8px 22px}
+ .agit-hero-story h1{font-size:clamp(29px,5.4vw,37px);letter-spacing:-.06em;line-height:1.16;text-wrap:balance}
+ .agit-hero-story p{max-width:100%;word-break:keep-all;text-wrap:pretty}
+ .agit-hero-visual{justify-items:end;overflow:hidden}
+ .agit-hero-visual img{width:100%;max-width:100%;max-height:170px;transform:none}
 }
-@media(max-width:390px){
-  .agit-hero{grid-template-columns:minmax(0,1fr)}
-  .agit-hero-story{padding:19px 15px 0}
-  .agit-hero-visual img{max-width:76%}
+@media(max-width:510px){
+ .agit-hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"story" "visual" "pick";grid-template-rows:auto auto auto}
+ .agit-hero-story{padding:clamp(17px,4vw,23px) clamp(15px,4vw,21px) 0}
+ .agit-hero-eyebrow{display:flex;flex-wrap:wrap;gap:5px 7px;line-height:1.4}
+ .agit-hero-eyebrow strong{margin-left:0}
+ .agit-hero-story h1{margin:12px 0 8px;font-size:clamp(27px,7vw,35px);letter-spacing:-.06em;line-height:1.17;word-break:keep-all;text-wrap:balance}
+ .agit-hero-story h1 em{white-space:normal}
+ .agit-hero-story p{font-size:clamp(12px,2.6vw,14px);line-height:1.5;letter-spacing:-.015em;word-break:keep-all;text-wrap:pretty}
+ .agit-hero-story .agit-hero-highlight{padding:0 .035em;background:linear-gradient(180deg,transparent 64%,rgba(255,255,255,.78) 64%,rgba(255,255,255,.78) 84%,transparent 84%)}
+ .agit-hero-story .agit-hero-highlight--copy{padding:0 .04em;background:linear-gradient(180deg,transparent 64%,rgba(255,255,255,.78) 64%,rgba(255,255,255,.78) 84%,transparent 84%)}
+ .agit-hero-visual{align-self:stretch;align-items:center;justify-items:center;max-height:none;height:clamp(118px,27vw,140px);padding:0 8px}
+ .agit-hero-halo{inset:12% 22% 8%}
+ .agit-hero-visual img{width:auto;max-width:85%;height:100%;max-height:100%;object-fit:contain;transform:none}
+ .agit-hero-pick{margin:4px 12px 15px}
 }
 @media(max-width:740px){.agit-hero-story h1,.agit-hero-story p{-webkit-text-stroke:0}}
 
-/* Phones read the visit ritual top-to-bottom, with a full-width stamp action. */
+/* Small phones place the visit button below the seven stamps. */
 @media(max-width:540px){
-  .agit-checkin{grid-template-columns:minmax(0,1fr);gap:12px}
-  .agit-checkin-label{grid-column:1;grid-row:1}
-  .agit-stamp-days{grid-column:1;grid-row:2}
-  .agit-stamp-button{grid-column:1;grid-row:3;justify-self:stretch}
+ .agit-checkin{grid-template-columns:minmax(0,1fr);gap:12px}
+ .agit-checkin-label{grid-column:1;grid-row:1}
+ .agit-stamp-days{grid-column:1;grid-row:2}
+ .agit-stamp-button{grid-column:1;grid-row:3;justify-self:stretch}
 }
-/* Short screens keep the mission title whole; summary wraps only if needed. */
+/* Small headings keep their labels intact and let counters move below. */
 @media(max-width:360px){
-  .agit-section-head{align-items:center;flex-wrap:wrap;gap:8px}
-  .agit-section-head h2{white-space:nowrap}
-  .agit-quest-summary{gap:8px;margin-left:auto}
-  .agit-quest-meter{gap:3px}
-  .agit-quest-meter span{width:15px}
+ .agit-section-head{align-items:center;flex-wrap:wrap;gap:8px}
+ .agit-section-head h2{white-space:nowrap}
+ .agit-quest-summary{gap:8px;margin-left:auto}
+ .agit-quest-meter{gap:3px}
+ .agit-quest-meter span{width:15px}
 }
