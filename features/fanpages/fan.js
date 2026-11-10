@@ -7,6 +7,7 @@
   const $ = (selector, base = document) => base.querySelector(selector);
   const page = document.body.dataset.page;
   const ids = new Set(artists.map((item) => item.id));
+  const categoryOf = (artist) => artist.category || (artist.id === 'a2osoul' ? 'boy' : 'girl');
 
   function getSaved() {
     try {
@@ -80,15 +81,18 @@
   function initFeatured() {
     const stage = $('#featured-carousel');
     if (!stage || artists.length < 2) return;
-    const total = artists.length;
+    // Keep the featured carousel compact when the directory has many artists.
+    const featuredIds = ['rescene', 'ive', 'aespa', 'lesserafim', 'nmixx', 'babymonster', 'bts', 'straykids', 'seventeen'];
+    const featured = featuredIds.map((id) => artists.find((item) => item.id === id)).filter(Boolean);
+    const total = featured.length;
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-    const slides = [artists[total - 1], ...artists, artists[0]];
-    const slideHtml = (item) => `<a class="feature-group feature-slide ${item.name.length > 9 ? 'feature-long' : ''}" href="${groupUrl(item.id)}" aria-label="${item.korean} 팬페이지 열기">
+    const slides = [featured[total - 1], ...featured, featured[0]];
+    const slideHtml = (item) => `<a class="feature-group feature-slide ${item.name.length > 9 ? 'feature-long' : ''}" style="--artist-light:${item.light};--artist-accent:${item.accent}" href="${groupUrl(item.id)}" aria-label="${item.korean} 팬페이지 열기">
       <span class="feature-mini">FAN SPACE / ${String(artists.indexOf(item) + 1).padStart(2, '0')}</span>
       <div class="feature-portrait"><span class="feature-photo-fallback" aria-hidden="true">${item.shape}</span><img data-external-image src="${item.image}" alt="${item.korean} 그룹 사진" loading="${item.id === artists[0].id ? 'eager' : 'lazy'}" referrerpolicy="no-referrer"></div>
       <span class="feature-name">${item.name}<span>↗</span></span><span class="feature-sub">${item.korean} · ${item.fan}</span><span class="feature-sticker">${item.shape}</span>
     </a>`;
-    stage.innerHTML = `<div class="feature-track">${slides.map(slideHtml).join('')}</div><div class="feature-dots" role="group" aria-label="아이돌 슬라이드 선택">${artists.map((item, i) => `<button type="button" class="feature-dot" data-slide="${i}" aria-label="${item.korean} 보기" aria-pressed="false"></button>`).join('')}</div>`;
+    stage.innerHTML = `<div class="feature-track">${slides.map(slideHtml).join('')}</div><div class="feature-dots" role="group" aria-label="아이돌 슬라이드 선택">${featured.map((item, i) => `<button type="button" class="feature-dot" data-slide="${i}" aria-label="${item.korean} 보기" aria-pressed="false"></button>`).join('')}</div>`;
     const track = $('.feature-track', stage);
     const cards = [...stage.querySelectorAll('.feature-slide')];
     const dots = [...stage.querySelectorAll('.feature-dot')];
@@ -196,9 +200,10 @@
       const saved = new Set(getSaved());
       const items = artists.filter((item) => {
         if (filter === 'saved' && !saved.has(item.id)) return false;
+        if ((filter === 'girl' || filter === 'boy') && categoryOf(item) !== filter) return false;
         return `${item.name} ${item.korean} ${item.fan}`.toLocaleLowerCase().includes(query);
       });
-      grid.innerHTML = items.map((item, index) => `<article class="artist-tile" style="--artist-accent:${item.accent};--artist-light:${item.light};--artist-dark:${item.dark}">
+      grid.innerHTML = items.map((item, index) => `<article class="artist-tile ${item.theme?.night ? 'is-night' : ''}" style="--artist-accent:${item.accent};--artist-light:${item.light};--artist-dark:${item.dark}">
         <a class="tile-cover" href="${groupUrl(item.id)}" aria-label="${item.korean} 팬페이지 열기">
           ${imageHtml(item.image, `${item.korean} 그룹 사진`, 'tile-photo')}
           <span class="tile-number">${String(artists.indexOf(item) + 1).padStart(2, '0')} / FAN SPACE</span>
@@ -234,6 +239,10 @@
     const license = $('#photo-viewer-license', dialog);
     const close = $('.photo-viewer-close', dialog);
     const stage = $('.photo-viewer-stage', dialog);
+    if (artist.photos.length < 2) {
+      $('.photo-viewer-prev', dialog).hidden = true;
+      $('.photo-viewer-next', dialog).hidden = true;
+    }
     let active = 0;
     let trigger = null;
     let touchX = null;
@@ -333,6 +342,16 @@
 
   function artistProfileHtml(artist, profile) {
     if (!profile) return '';
+    if (profile.basic) {
+      const official = profile.sources[0];
+      return `<section id="profile" class="detail-section profile-section basic-profile" aria-labelledby="profile-heading">
+        <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED ${profile.checkedAt}</span></div>
+        <div class="basic-profile-card">
+          <div class="basic-profile-story"><span>${artist.name} / THE STORY</span><strong>${profile.concept}</strong><p>데뷔 ${profile.debut} · ${profile.debutWork}</p><p>${profile.agency} · ${artist.fan}</p><a href="${official.href}" target="_blank" rel="noopener noreferrer">공식 정보 확인 ↗</a></div>
+          <div class="basic-profile-members"><div><span>MEMBER ARCHIVE</span><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div><ul>${profile.members.map((member) => `<li>${member.name}</li>`).join('')}</ul><small>개인 정보는 공식 자료가 확인되는 대로 보완해요.</small></div>
+        </div>
+      </section>`;
+    }
     const profileSources = [
       ...profile.sources,
       { label: '키 참고', href: profile.heightSource },
@@ -395,6 +414,22 @@
     document.documentElement.style.setProperty('--group-accent', artist.accent);
     document.documentElement.style.setProperty('--group-light', artist.light);
     document.documentElement.style.setProperty('--group-dark', artist.dark);
+    if (artist.theme) {
+      const night = artist.theme.night;
+      document.body.dataset.theme = night ? 'night' : 'day';
+      const vars = {
+        bg: artist.theme.bg,
+        ink: night ? '#f7f3fa' : artist.dark,
+        card: night ? `color-mix(in srgb, ${artist.theme.bg} 80%, ${artist.light})` : '#fff',
+        line: night ? `color-mix(in srgb, ${artist.accent} 35%, ${artist.theme.bg})` : `color-mix(in srgb, ${artist.accent} 24%, #fff)`,
+        chip: artist.light,
+        hover: night ? `color-mix(in srgb, ${artist.theme.bg} 65%, ${artist.accent})` : `color-mix(in srgb, ${artist.light} 74%, #fff)`,
+        mist: night ? `color-mix(in srgb, ${artist.accent} 25%, ${artist.theme.bg})` : artist.light,
+        muted: night ? '#bdb1c8' : `color-mix(in srgb, ${artist.dark} 63%, #aeb0ba)`,
+        topbar: `color-mix(in srgb, ${artist.theme.bg} 92%, transparent)`
+      };
+      Object.entries(vars).forEach(([name, value]) => document.body.style.setProperty(`--theme-${name}`, value));
+    }
     document.title = `${artist.korean} (${artist.name}) | 오쭈다 팬페이지`;
     const gallery = artist.photos.map((photo, i) => `<button class="detail-photo" type="button" data-photo-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${photo.label} 사진 크게 보기">
       ${imageHtml(photo.image, `${artist.korean} ${photo.label} 사진`, `detail-photo-image image-${i}`)}
@@ -404,7 +439,7 @@
     const videoCards = videos.map((video, i) => `<button type="button" class="video-card" data-video-index="${i}" aria-haspopup="dialog" aria-label="${artist.korean} ${video.title} ${video.kind} 재생">
       <span class="video-card-visual"><img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="video-card-play" aria-hidden="true">▶</span><span class="video-card-kind">${video.kind}</span></span>
       <span class="video-card-info"><strong>${video.title}</strong><small>${video.source}</small></span>
-    </button>`).join('');
+    </button>`).join('') || `<a class="fan-video-empty" href="${artist.links.find((link) => link.label === 'YouTube')?.url || artist.official}" target="_blank" rel="noopener noreferrer">공식 YouTube에서 영상 둘러보기 ↗</a>`;
     const resources = (entries, kind) => entries.map((entry, i) => `<a class="resource-item" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="resource-icon">${kind === 'merch' ? '◈' : '▦'}</span><div><small>${entry.sub}</small><strong>${entry.title}</strong></div><span class="resource-arrow">↗</span></a>`).join('');
     const reveal = (target, closedLabel, openLabel) => `<button type="button" class="content-reveal" data-reveal-target="${target}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${target}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
     const albums = artist.music || [];
@@ -422,7 +457,10 @@
     </a>`).join('');
     const campaigns = artist.campaigns || [];
     const campaignCards = campaigns.map((entry) => `<a class="campaign-card" href="${entry.href}" target="_blank" rel="noopener noreferrer"><span class="campaign-type">${entry.kind}</span><span class="campaign-info"><strong>${entry.title}</strong><small>${entry.sub}</small></span><span class="campaign-date">${entry.date}</span><b aria-hidden="true">↗</b></a>`).join('');
-    const other = artists.filter((item) => item.id !== artist.id).map((item) => `<a href="${groupUrl(item.id)}" class="other-group" style="--other-light:${item.light};--other-accent:${item.accent}"><span>${item.shape}</span><div><strong>${item.name}</strong><small>${item.korean}</small></div><span>↗</span></a>`).join('');
+    const other = artists.filter((item) => item.id !== artist.id)
+      .sort((a, b) => Number(categoryOf(b) === categoryOf(artist)) - Number(categoryOf(a) === categoryOf(artist)))
+      .slice(0, 8)
+      .map((item) => `<a href="${groupUrl(item.id)}" class="other-group" style="--other-light:${item.light};--other-accent:${item.accent}"><span>${item.shape}</span><div><strong>${item.name}</strong><small>${item.korean}</small></div><span>↗</span></a>`).join('');
 
     root.innerHTML = `
       <nav class="breadcrumb" aria-label="위치"><a href="./index.html">← 전체 팬페이지</a><span>/</span><span>${artist.korean}</span></nav>
@@ -441,7 +479,7 @@
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
       <nav class="detail-shortcuts ${campaigns.length ? 'has-campaigns' : ''}" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#videos"><span>03</span><strong>영상</strong><b>↗</b></a><a href="#music"><span>04</span><strong>음악</strong><b>↗</b></a><a href="#goods"><span>05</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>06</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>07</span><strong>소식</strong><b>↗</b></a>${campaigns.length ? '<a href="#collabs"><span>08</span><strong>콜라보</strong><b>↗</b></a>' : ''}</nav>
       ${artistProfileHtml(artist, profile)}
-      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid ${artist.photos.length > 3 ? 'is-preview' : ''}" id="artist-photo-grid">${gallery}</div>${artist.photos.length > 3 ? `<button type="button" class="content-reveal" data-reveal-target="artist-photo-grid" data-label-closed="사진 ${artist.photos.length}장 모두 보기" data-label-open="사진 간단히 보기" aria-controls="artist-photo-grid" aria-expanded="false"><span class="content-reveal-text">사진 ${artist.photos.length}장 모두 보기</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>` : ''}<p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
+      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, artist.basicProfile ? '사진 출처 보기' : '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid ${artist.photos.length > 3 ? 'is-preview' : ''}" id="artist-photo-grid">${gallery}</div>${artist.photos.length > 3 ? `<button type="button" class="content-reveal" data-reveal-target="artist-photo-grid" data-label-closed="사진 ${artist.photos.length}장 모두 보기" data-label-open="사진 간단히 보기" aria-controls="artist-photo-grid" aria-expanded="false"><span class="content-reveal-text">사진 ${artist.photos.length}장 모두 보기</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>` : ''}<p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
       <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
         <div class="photo-viewer-top"><span>OJJUDA PHOTO GALLERY <b id="photo-viewer-number"></b></span><button type="button" class="photo-viewer-close" aria-label="사진 닫기">✕</button></div>
         <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
@@ -456,7 +494,7 @@
       ${campaigns.length ? `<section id="collabs" class="detail-section campaign-section"><div class="detail-heading"><div><span>08 / PARTNERSHIPS</span><h2>콜라보·광고 <em>${artist.shape}</em></h2></div><span class="section-count">${campaigns.length} STORIES</span></div><div class="campaign-list ${campaigns.length > 3 ? 'is-preview' : ''}" id="artist-campaigns">${campaignCards}</div>${campaigns.length > 3 ? reveal('artist-campaigns', `${campaigns.length}건 모두 보기`, '간단히 보기') : ''}</section>` : ''}
       <section class="channels-section"><div><span>OFFICIAL CHANNELS</span><h2>공식 채널</h2></div><div class="channel-links">${artist.links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer"><span>${link.icon}</span><strong>${link.label}</strong><b>↗</b></a>`).join('')}</div></section>
       <section class="other-section"><div class="detail-heading"><div><span>MORE FAN SPACES</span><h2>다른 아이돌</h2></div><a class="section-more" href="./index.html">모두 보기 ↗</a></div><div class="other-grid">${other}</div></section>
-      <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 일정·판매 정보는 공식 원문 확인</div>`;
+      <div class="detail-source-note">비공식 팬페이지 · 소개 정보 ${profile?.checkedAt || '확인 중'} 기준 · 사진 출처 및 일정·판매 정보는 공식 원문 확인 · 테마 색상은 팬메이드</div>`;
     const saveButton = $('#detail-save', root);
     saveButton.addEventListener('click', () => {
       const active = toggleSaved(artist.id);

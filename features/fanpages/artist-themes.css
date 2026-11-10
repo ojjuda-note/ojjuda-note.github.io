@@ -495,3 +495,57 @@ body[data-artist="a2osoul"] .channels-section { background:linear-gradient(125de
   body[data-artist] .resource-item,
   body[data-artist] .detail-photo { transition: none; }
 }
+
+/* The 21 new artists each supply their own background and palette in artists-extra.js. */
+body[data-artist][data-theme] {
+  --stage-glow: color-mix(in srgb, var(--group-accent) 30%, transparent);
+  --stage-flare: color-mix(in srgb, var(--group-accent) 45%, white);
+  --stage-strip: linear-gradient(90deg, var(--group-accent), var(--group-dark));
+}
+body[data-artist][data-theme] .detail-hero {
+  background: linear-gradient(126deg, var(--group-light) 0%,
+    color-mix(in srgb, var(--group-light) 52%, #fff) 62%,
+    color-mix(in srgb, var(--group-accent) 20%, #fff) 100%);
+  border-color: var(--theme-line);
+  border-radius: 24px;
+}
+body[data-artist][data-theme] .detail-hero:before {
+  border-color: color-mix(in srgb, var(--group-accent) 35%, #fff);
+}
+body[data-artist][data-theme] .detail-hero-main h1 {
+  color: var(--group-dark);
+  text-shadow: 0 8px 30px color-mix(in srgb, var(--group-accent) 20%, transparent);
+}
+body[data-artist][data-theme] .detail-hero-visual {
+  background: linear-gradient(140deg, var(--group-accent), var(--group-light));
+}
+body[data-artist][data-theme] .detail-primary {
+  background: var(--group-dark);
+  color: #fff;
+}
+body[data-artist][data-theme] .channels-section {
+  background: linear-gradient(125deg, var(--group-dark), var(--group-accent));
+  border: 1px solid var(--theme-line);
+}
+body[data-artist][data-theme="night"] {
+  --stage-strip: linear-gradient(90deg, var(--theme-bg), var(--group-accent));
+  --stage-strip-ink: #fff;
+}
+body[data-artist][data-theme="night"] .site-mark,
+body[data-artist][data-theme="night"] .top-links a,
+body[data-artist][data-theme="night"] .footer-inner {
+  color: var(--theme-ink);
+}
+body[data-artist][data-theme="night"] .detail-hero {
+  background: linear-gradient(125deg,
+    color-mix(in srgb, var(--theme-bg) 75%, var(--group-accent)),
+    var(--group-light) 75%, var(--theme-bg));
+}
+body[data-artist][data-theme="night"] .detail-primary {
+  background: var(--group-accent);
+  color: #211826;
+}
+body[data-artist][data-theme="night"] .channels-section {
+  background: linear-gradient(115deg, var(--theme-bg),
+    color-mix(in srgb, var(--theme-bg) 65%, var(--group-accent)));
+}

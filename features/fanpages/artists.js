@@ -5,11 +5,13 @@ const commonsPhoto = (file, label, year, author, license = 'CC BY 4.0') => {
   // Preview builds or failed downloads safely use the original Commons image.
   const stored = window.OJJUDA_FAN_LOCAL_PHOTOS?.[file];
   const actualLicense = stored?.license || license;
-  const licenseUrl = license === 'CC BY 3.0'
-    ? 'https://creativecommons.org/licenses/by/3.0/'
-    : license === 'CC BY-SA 4.0'
-      ? 'https://creativecommons.org/licenses/by-sa/4.0/'
-      : 'https://creativecommons.org/licenses/by/4.0/';
+  const licenseUrl = {
+    'CC BY 3.0': 'https://creativecommons.org/licenses/by/3.0/',
+    'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/',
+    'CC BY-SA 2.0': 'https://creativecommons.org/licenses/by-sa/2.0/',
+    'CC BY-SA 4.0': 'https://creativecommons.org/licenses/by-sa/4.0/',
+    'Public domain': 'https://commons.wikimedia.org/wiki/Commons:Public_domain'
+  }[actualLicense] || 'https://commons.wikimedia.org/wiki/Commons:Licensing';
   return {
     label,
     meta: `${year} · PHOTO`,
