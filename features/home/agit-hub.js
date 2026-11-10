@@ -13,6 +13,10 @@
     baseball: ['숫자야구', '풀기', '⚾'],
     chosung: ['초성 맞추기', '풀기', '🔤']
   };
+  const missionCompactLabels = {
+    stamp: '방문 도장', recommend: '추천게임', daily: '일상 보기', arcade: '오락실',
+    trivia: '상식 퀴즈', baseball: '숫자야구', chosung: '초성 맞추기'
+  };
   const triviaQuestions = [
     ['대한민국의 수도는?', ['부산', '서울', '대전', '인천'], 1],
     ['태양계에서 가장 큰 행성은?', ['지구', '화성', '목성', '금성'], 2],
@@ -60,6 +64,14 @@
     if (!list.length) return null;
     const id = list[((dayNumber(date) % list.length) + list.length) % list.length];
     return {id, ...games[id]};
+  }
+  function themeFor(date = kstDate()) {
+    const month = Number(date.slice(5, 7));
+    const season = month >= 3 && month <= 5 ? 'spring' : month >= 6 && month <= 8 ? 'summer' : month >= 9 && month <= 11 ? 'autumn' : 'winter';
+    const calendar = root.OjjudaThemes;
+    const key = calendar?.resolve(new Date(date + 'T03:00:00Z')) || season;
+    const names = {spring:'봄', summer:'여름', autumn:'가을', winter:'겨울'};
+    return {key, season, isEvent:key !== season, name:calendar?.catalog?.[key]?.name || names[key] || '오늘', copy:calendar?.catalog?.[key]?.copy || '잠깐 쉬다가, 한 판 놀다 가.'};
   }
   function safeState(settings) {
     const raw = settings && typeof settings.agitHub === 'object' && settings.agitHub || {};
@@ -135,6 +147,15 @@
     save(settings, state, date);
     return {valid:true, strike, ball, won};
   }
+  function appendBaseballDigit(current, digit) {
+    const value = String(current || ''), next = String(digit);
+    return /^[1-9]$/.test(next) && /^[1-9]{0,3}$/.test(value) && value.length < 3 && !value.includes(next) ? value + next : value;
+  }
+  function baseballResultMarkup(strike, ball) {
+    return Number(strike) === 0 && Number(ball) === 0
+      ? '<span class="agit-baseball-chip is-out">OUT · 아웃</span>'
+      : `<span class="agit-baseball-chip is-strike">${Number(strike)} 스트라이크</span><span class="agit-baseball-chip is-ball">${Number(ball)} 볼</span>`;
+  }
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
     return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
@@ -143,34 +164,33 @@
         const [label,action,emoji]=missionLabels[id],finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
           <span class="agit-quest-upper"><span class="agit-quest-number">0${i+1}</span><span class="agit-quest-state">${finished?'✓ 완료':'오늘 도전'}</span></span>
-          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong>${label}</strong></span>
+          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong><span class="agit-quest-label-full">${label}</span><span class="agit-quest-label-short">${missionCompactLabels[id]}</span></strong></span>
           <span class="agit-quest-bottom"><span>${finished?'완료했어요':action+' →'}</span><span class="agit-quest-arrow" aria-hidden="true">↗</span></span>
         </button>`;
       }).join('')}</div><p class="agit-quest-next">${done===3?'오늘도 성공! 내일 새로운 미션이 열려요.':'내일은 또 다른 미션이 기다려요.'}</p></section>`;
   }
   function markup(settings, games, date = kstDate()) {
-    const state = safeState(settings), game = recommended(games, date);
+    const state = safeState(settings), game = recommended(games, date), theme = themeFor(date);
     const lastDays = Array.from({length:7}, (_, i) => addDays(date, i - 6));
     const stamped = state.stamps.includes(date);
     const stampedCount = lastDays.filter(d => state.stamps.includes(d)).length;
     const streak = visitStreak(settings, date);
     const [, month, day] = date.split('-');
     const weekday = ['일','월','화','수','목','금','토'][new Date(date+'T00:00:00Z').getUTCDay()];
-    const done = missions(date).filter(id => isComplete(settings,id,date)).length;
     const daily = Object.entries(games || {}).filter(([, r]) => r.test && !(r.age >= 19));
     const dailyHints = {group:'함께하는 이야기',festival:'이번 주 어디 갈까?',restaurants:'맛있는 발견',tour:'가볍게 떠나요'};
-    return `<div class="agit-hub" id="agit-hub-view" data-agit-hub>
+    return `<div class="agit-hub" id="agit-hub-view" data-agit-hub data-agit-season="${theme.season}" data-agit-theme="${theme.key}">
       <header class="agit-hero" aria-label="아지트">
         <div class="agit-hero-story">
-          <span class="agit-hero-eyebrow"><span aria-hidden="true">✦</span> ${Number(month)}월 ${Number(day)}일 ${weekday}요일 <strong>미션 ${done}/3</strong></span>
+          <span class="agit-hero-eyebrow"><span aria-hidden="true">✦</span> ${Number(month)}월 ${Number(day)}일 ${weekday}요일 <strong>${escapeHtml(theme.name)} 테마</strong></span>
           <h1>오늘도 <em>잘 왔어!</em></h1>
-          <p>잠깐 쉬다가, 한 판 놀다 가.</p>
+          <p>${escapeHtml(theme.copy)}</p>
         </div>
         <section class="agit-hero-pick" id="agit-recommend" aria-label="오늘의 추천게임">
             <div class="agit-pick-top">오늘의 추천게임 <span>매일 바뀌어요</span></div>
             ${game ? `<div class="agit-pick-body"><div class="agit-pick-art"><img src="/assets/design/games/${game.id}.svg" alt="" width="62" height="62" loading="lazy"></div><div class="agit-pick-foot"><strong>${escapeHtml(game.name)}</strong><button type="button" class="agit-play-button" data-act="agit-play" data-v="${game.id}" aria-label="${escapeHtml(game.name)} 게임 시작">한 판 놀기 <span aria-hidden="true">↗</span></button></div></div>` : '<p>추천게임을 준비하고 있어요.</p>'}
           </section>
-        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img src="/features/home/agit-arcade-scene.webp?v=20261110-agit-warm4" alt="" width="600" height="400" decoding="async"><span class="agit-hero-sparkle">✳</span></div>
+        <div class="agit-hero-visual" aria-hidden="true"><span class="agit-hero-halo"></span><img class="agit-hero-season-art" src="/features/home/theme-scenes/${theme.season}.webp?v=20261110-themes1" alt="" width="768" height="512" decoding="async">${theme.isEvent?'<span class="agit-hero-event-art"></span>':''}<span class="agit-hero-sparkle">✳</span></div>
       </header>
       <section class="agit-checkin" id="agit-stamp" aria-label="방문 도장">
         <div class="agit-checkin-label"><span class="agit-checkin-symbol" aria-hidden="true">✿</span><div><h2>방문 도장</h2><small>${streak?streak+'일 연속 방문 중!':'오늘부터 시작해요'} <span aria-hidden="true">·</span> 최근 7일 ${stampedCount}/7</small></div></div>
@@ -205,11 +225,21 @@
     }
     if (id === 'baseball') {
       const history = safeState(settings).guesses[date] || [];
-      return `<p class="agit-puzzle-hint">1~9 중 다른 숫자 3개를 맞혀요</p><div class="agit-puzzle-input"><input id="agit-puzzle-answer" class="inp" type="text" inputmode="numeric" pattern="[1-9]{3}" maxlength="3" autocomplete="off" aria-label="숫자야구 추측" placeholder="예: 123"><button type="button" class="btn pri" data-act="agit-solve">확인</button></div><p class="agit-puzzle-feedback" role="status"></p><div class="agit-guess-list">${history.slice(-8).reverse().map(item => `<span>${escapeHtml(item.guess)} <strong>${item.strike}S ${item.ball}B</strong></span>`).join('')}</div>`;
+      return `<p class="agit-puzzle-hint">서로 다른 숫자 3개를 순서대로 눌러봐요.</p>
+        <div class="agit-baseball-picked" role="status" aria-live="polite" aria-label="선택한 숫자 없음">${[1,2,3].map(i=>`<span class="agit-baseball-slot" data-baseball-slot="${i}" aria-hidden="true">·</span>`).join('')}</div>
+        <input id="agit-puzzle-answer" type="hidden" value="">
+        <div class="agit-baseball-keypad" role="group" aria-label="숫자 선택">${[1,2,3,4,5,6,7,8,9].map(digit=>`<button type="button" class="agit-baseball-key" data-act="agit-baseball-digit" data-v="${digit}" aria-label="숫자 ${digit} 선택">${digit}</button>`).join('')}
+          <button type="button" class="agit-baseball-key is-utility" data-act="agit-baseball-backspace">← 지우기</button>
+          <button type="button" class="agit-baseball-key is-utility" data-act="agit-baseball-clear">초기화</button>
+          <button type="button" class="agit-baseball-key is-submit" data-act="agit-solve" disabled>확인 ↗</button>
+        </div>
+        <div class="agit-baseball-legend"><span class="is-strike">● 스트라이크</span><span class="is-ball">● 볼</span><span class="is-out">● 아웃</span></div>
+        <p class="agit-puzzle-feedback" role="status"></p>
+        <div class="agit-guess-list" role="list">${history.slice(-8).reverse().map(item => `<div class="agit-baseball-history-row" role="listitem"><strong>${escapeHtml(item.guess)}</strong><span class="agit-baseball-result">${baseballResultMarkup(item.strike,item.ball)}</span></div>`).join('')}</div>`;
     }
     return '';
   }
-  const api = {kstDate, missions, recommended, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, guessBaseball, markup, puzzleMarkup};
+  const api = {kstDate, missions, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

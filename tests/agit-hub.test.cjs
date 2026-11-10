@@ -61,6 +61,22 @@ test('number baseball validates guesses and records strikes and balls',()=>{
   assert.equal(settings.agitHub.guesses[day].length,2,'duplicate guesses do not grow history');
 });
 
+test('number baseball shows three tapped digits in order with colored S/B/OUT',()=>{
+  let selected='';
+  for(const digit of ['5','2','9'])selected=hub.appendBaseballDigit(selected,digit);
+  assert.equal(selected,'529');
+  assert.equal(hub.appendBaseballDigit(selected,'1'),'529','only three digits are accepted');
+  assert.equal(hub.appendBaseballDigit('52','5'),'52','duplicate digit is ignored');
+  assert.equal(hub.appendBaseballDigit('52','0'),'52','zero is not allowed');
+  const puzzle=hub.puzzleMarkup({},'baseball',date);
+  assert.equal((puzzle.match(/data-baseball-slot=/g)||[]).length,3);
+  assert.equal((puzzle.match(/data-act="agit-baseball-digit"/g)||[]).length,9);
+  assert.ok(puzzle.includes('data-act="agit-baseball-backspace"'));
+  assert.ok(puzzle.includes('data-act="agit-baseball-clear"'));
+  assert.match(hub.baseballResultMarkup(2,1),/2 스트라이크.*1 볼/);
+  assert.match(hub.baseballResultMarkup(0,0),/OUT · 아웃/);
+});
+
 test('trivia and consonant questions give answerable puzzles',()=>{
   for(let offset=0;offset<12;offset++){
     const day=plus(date,offset);
@@ -84,10 +100,19 @@ test('Agit markup contains recommended game, stamp, rotating missions and Daily 
   assert.ok(html.includes('data-act="agit-stamp"'));
   assert.ok(html.includes('data-act="agit-play"'));
   assert.equal((html.match(/class="agit-quest-card /g)||[]).length,3);
+  assert.ok(html.includes('agit-quest-label-short'));
   for(const section of ['agit-hero','agit-checkin','agit-quest-grid','agit-life-grid','agit-footer'])assert.ok(html.includes(section),section);
+  for(const season of ['spring','summer','autumn','winter'])assert.ok(fs.existsSync(path.join(__dirname,'../features/home/theme-scenes',season+'.webp')),season+' illustrated hero exists');
+  assert.match(html,/theme-scenes\/autumn\.webp/);
   assert.ok(html.includes('data-act="feedback-open"'));
-  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-agit-warm4'));
+  assert.ok(fs.readFileSync(path.join(__dirname,'../world.html'),'utf8').includes('/features/home/agit-hub.js?v=20261110-themes1'));
   assert.ok(fs.readFileSync(path.join(__dirname,'../index.html'),'utf8').includes("url.searchParams.set('tab', 'hub')"),'the main entry must open the Agit first');
+});
+
+test('mobile mission cards stay in one horizontal row',()=>{
+  const css=fs.readFileSync(path.join(__dirname,'../features/home/agit-hub.css'),'utf8');
+  const mobile=css.slice(css.indexOf('@media(max-width:740px)'));
+  assert.match(mobile,/\.agit-quest-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
 test('visit streak continues through yesterday but resets after a missed day',()=>{

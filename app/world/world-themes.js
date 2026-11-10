@@ -41,8 +41,25 @@ function eventsOn(value=new Date()){
  for(const key of order)if(catalog[key].date===md)events.push(key);
  return events;
 }
+// Welcome each occasion a week early. When windows overlap, the closest
+// upcoming occasion wins; the actual day (and lunar holiday leave) wins first.
+function eventInSeason(value=new Date()){
+ const {year,stamp}=koreaDate(value),today=Date.parse(stamp+'T12:00:00Z'),nearby=[];
+ for(const y of [year-1,year,year+1])for(const key of order){
+  const date=lunar[y]?.[key]||(catalog[key].date?y+'-'+catalog[key].date:null);
+  if(!date)continue;
+  const days=(Date.parse(date+'T12:00:00Z')-today)/DAY;
+  if(days>=-(['seollal','chuseok'].includes(key)?1:0)&&days<=7)nearby.push({key,days});
+ }
+ nearby.sort((a,b)=>{
+  const aLive=a.days<=0,bLive=b.days<=0;
+  if(aLive!==bLive)return aLive?-1:1;
+  return aLive?b.days-a.days:a.days-b.days;
+ });
+ return nearby[0]?.key||null;
+}
 function resolve(value=new Date()){
- const events=eventsOn(value);if(events.length)return events[0];
+ const event=eventInSeason(value);if(event)return event;
  const {month}=koreaDate(value);return month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
 }
 // Older devices may still have a manual choice saved; calendar selection always wins.
@@ -69,6 +86,6 @@ function schedule(){
 function sync(){apply();schedule();}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync();});
 window.addEventListener('pageshow',sync);
-window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
+window.OjjudaThemes=Object.freeze({catalog,order,koreaDate,eventsOn,eventInSeason,resolve,getMode:()=>"auto",getCurrent:()=>current,sync,syncAppearance,scheduleFor(year){return order.filter(k=>catalog[k].date||lunar[year]?.[k]).map(k=>({key:k,name:catalog[k].name,date:lunar[year]?.[k]||year+'-'+catalog[k].date,period:catalog[k].period})).sort((a,b)=>a.date.localeCompare(b.date));}});
 sync();
 })();
