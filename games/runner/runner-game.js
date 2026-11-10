@@ -10,14 +10,27 @@
   const H = 540;
   const GROUND = 465;
   const HERO_X = 246;
-  const HERO_SCALE = 1.43;
+  const HERO_SCALE = 1.35;
   const TAU = Math.PI * 2;
   const FONT = '"Jua","Gowun Dodum","Apple SD Gothic Neo",sans-serif';
   const ZONES = [
-    { name: '산호 정원', deep: '#d4f7ff', mid: '#65d7ef', light: '#259db8', reef: '#579db8', coral: '#ff9d88' },
-    { name: '물빛 해초숲', deep: '#c3fff2', mid: '#67cfca', light: '#217f9d', reef: '#4baaa7', coral: '#ffca88' },
-    { name: '별빛 진주동굴', deep: '#bfdfff', mid: '#649bd1', light: '#456ea7', reef: '#526db5', coral: '#d4aaec' }
+    { name: '산호 정원', deep: '#e4faff', mid: '#a1e5f0', light: '#6dc6da', reef: '#a5d0cc', coral: '#ff6c85' },
+    { name: '물빛 해초숲', deep: '#ebfff5', mid: '#a6e3d6', light: '#70c6bc', reef: '#9fccc1', coral: '#ffad6d' },
+    { name: '별빛 진주동굴', deep: '#e6eeff', mid: '#b4cbed', light: '#7cadd5', reef: '#9cadce', coral: '#e28bdf' }
   ];
+  // Ground shapes require a jump; suspended shapes are designed for a slide.
+  const OBSTACLES = Object.freeze([
+    { kind: 'urchin', name: '가시 성게', w: 47, h: 48, lane: 'ground' },
+    { kind: 'coral', name: '불꽃 산호', w: 58, h: 89, lane: 'ground' },
+    { kind: 'crab', name: '집게 게', w: 82, h: 60, lane: 'ground' },
+    { kind: 'clam', name: '가시 조개', w: 78, h: 58, lane: 'ground' },
+    { kind: 'rock', name: '검은 암초', w: 77, h: 82, lane: 'ground' },
+    { kind: 'puffer', name: '복어 폭탄', w: 70, h: 70, lane: 'ground' },
+    { kind: 'star', name: '가시 불가사리', w: 68, h: 69, lane: 'ground' },
+    { kind: 'jelly', name: '독 해파리', w: 83, h: 77, lane: 'air' },
+    { kind: 'mine', name: '심해 기뢰', w: 73, h: 73, lane: 'air' },
+    { kind: 'eel', name: '번개 장어', w: 110, h: 59, lane: 'air' }
+  ]);
   const MELODY = [392, 440, 523.25, 587.33, 523.25, 440, 349.23, 392,
     392, 523.25, 659.25, 587.33, 523.25, 440, 392, 329.63];
   const safeGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
@@ -97,6 +110,8 @@
   }
   function reefGlider(c, x, y, size, time, warm) {
     c.save(); c.translate(x, y + Math.sin(time * 2 + x * .01) * 5);
+    // Decorative fish belong to the distance plane, never the danger plane.
+    c.globalAlpha = .28;
     c.rotate(Math.sin(time * 1.1) * .08);
     c.beginPath(); c.moveTo(-size * .52, 0);
     c.lineTo(-size * 1.25, -size * .63);
@@ -176,20 +191,20 @@
     for (let i = 0; i < 9; i++) {
       const x = ((i * 238 - dist * .09) % 2142 + 2142) % 2142 - 250;
       reefTower(c, x, view.ground + 40, 230 + i % 4 * 68,
-        i % 2 ? '#7db5bb67' : '#5daec27e', time + i);
+        i % 2 ? '#a3d1d76b' : '#9bc6d36a', time + i);
     }
     for (let i = 0; i < 12; i++) {
       const x = ((i * 163 - dist * .18) % 1956 + 1956) % 1956 - 180;
       ellipse(c, x, view.ground + 6, 75 + i % 3 * 30, 85 + i % 4 * 15,
-        i % 3 ? '#61a1be60' : '#a3d1c781');
-      ellipse(c, x - 32, view.ground - 65, 40, 55, '#e3e5c352');
+        i % 3 ? '#a6d5d96b' : '#d3e6dc78');
+      ellipse(c, x - 32, view.ground - 65, 40, 55, '#e5edd77a');
       if (i % 2 === 0) seaFan(c, x + 32, view.ground - 30, 115 + i % 3 * 26,
-        reduced ? i : time * .6 + i, i % 3 ? '#95bfa69e' : '#e8ce9f8c');
+        reduced ? i : time * .6 + i, i % 3 ? '#b0d7c681' : '#ebdcb587');
     }
     for (let i = 0; i < 20; i++) {
       const x = ((i * 113 - dist * (i % 2 ? .28 : .14)) % 2260 + 2260) % 2260 - 120;
       const y = 95 + i % 6 * 50 + (reduced ? 0 : Math.sin(time * 1.2 + i) * 8);
-      fish(c, x, y, 5 + i % 3 * 3, i % 2 ? '#ffeaa3b5' : '#e9fff2bf');
+      fish(c, x, y, 5 + i % 3 * 3, i % 2 ? '#fff6d95e' : '#eafff270');
     }
     for (let i = 0; i < 6; i++) {
       const x = ((i * 287 - dist * .24) % 1722 + 1722) % 1722 - 100;
@@ -202,6 +217,7 @@
       bubble(c, x, y, 2 + i % 4 * 1.8, .23 + i % 3 * .1);
       if (i % 9 === 2) sparkle(c, x - 12, y - 14, 3, '#fffdf69c', time * .6);
     }
+    c.fillStyle = '#ffffff0e'; c.fillRect(0, 0, W, view.ground - 5);
     // The sandy running track has a bold turquoise outline and a moving tile pattern.
     c.fillStyle = gradient(c, 0, view.ground, 0, view.h,
       [[0, '#f2caa7'], [.55, '#d9a981'], [1, '#c38a70']]);
@@ -275,13 +291,19 @@
   function coral(c, x, y, w, h, time, color) {
     c.save(); c.translate(x + w / 2, y + h);
     const drift = Math.sin(time * .9 + x) * 1.4;
-    stroke(c, [[0, 0], [0, -h * .58], [-4 + drift, -h]], '#c65f79', 9);
-    stroke(c, [[0, -h * .28], [-w * .38, -h * .56], [-w * .32 + drift, -h * .87]], color, 7);
-    stroke(c, [[0, -h * .37], [w * .39, -h * .59], [w * .32 + drift, -h * .94]], color, 7);
-    stroke(c, [[-w * .15, -h * .48], [-w * .43, -h * .68]], '#ffd5ae', 3);
-    stroke(c, [[w * .12, -h * .45], [w * .37, -h * .66]], '#ffe0b6', 3);
-    ellipse(c, -4 + drift, -h, 4.5, 4.5, '#ffe3b6');
-    ellipse(c, w * .32 + drift, -h * .94, 4.5, 4.5, '#ffe3b6');
+    const spine = [[0, 0], [0, -h * .58], [-4 + drift, -h]];
+    const left = [[0, -h * .28], [-w * .38, -h * .56], [-w * .32 + drift, -h * .87]];
+    const right = [[0, -h * .37], [w * .39, -h * .59], [w * .32 + drift, -h * .94]];
+    for (const path of [spine, left, right]) stroke(c, path, '#253650', 16);
+    stroke(c, spine, '#e34d77', 11);
+    stroke(c, left, color, 11);
+    stroke(c, right, '#ff865e', 11);
+    stroke(c, [[-2, -h * .33], [-5, -h * .76]], '#ffd3a4', 3.5);
+    stroke(c, [[w * .12, -h * .48], [w * .32, -h * .77]], '#ffd7bd', 3.5);
+    for (const [xx, yy] of [[-4 + drift, -h], [w * .32 + drift, -h * .94], [-w * .32 + drift, -h * .87]]) {
+      ellipse(c, xx, yy, 7, 7, '#243c57');
+      ellipse(c, xx, yy, 4, 4, '#fff0bd');
+    }
     c.restore();
   }
   function jelly(c, x, y, w, h, time, reduced) {
@@ -291,7 +313,8 @@
     for (let i = -2; i <= 2; i++) {
       c.beginPath(); c.moveTo(i * 7, 3);
       c.quadraticCurveTo(i * 6 + Math.sin(time * 5 + i) * 4, 15, i * 7, h * .48);
-      c.strokeStyle = '#f7c8f1c9'; c.lineWidth = 2.5; c.stroke();
+      c.strokeStyle = '#2c3d61'; c.lineWidth = 6; c.stroke();
+      c.strokeStyle = '#f65bc8'; c.lineWidth = 3; c.stroke();
     }
     c.beginPath(); c.moveTo(-w * .49, 3);
     c.bezierCurveTo(-w * .5, -h * .66, -w * .13, -h * .85, 0, -h * .7);
@@ -299,19 +322,166 @@
     c.quadraticCurveTo(w * .25, 10, 0, 4);
     c.quadraticCurveTo(-w * .25, 10, -w * .49, 3);
     c.fillStyle = gradient(c, 0, -h * .8, 0, h * .25,
-      [[0, '#ffe4fc'], [.58, '#dca4eb'], [1, '#9e70d2']]); c.fill();
+      [[0, '#ffd4fc'], [.58, '#b65dea'], [1, '#7650b9']]); c.fill();
+    c.lineWidth = 4.5; c.strokeStyle = '#29375d'; c.stroke();
     ellipse(c, -6, -6, 2.1, 2.4, '#513e72');
     ellipse(c, 6, -6, 2.1, 2.4, '#513e72');
     ellipse(c, 0, 0, 3, 1.4, '#fcf1ff');
     ellipse(c, -w * .25, -h * .36, 5.5, 3.5, '#ffffff70');
     c.restore();
   }
+  function crab(c, x, y, w, h, time) {
+    c.save(); c.translate(x + w / 2, y + h / 2); c.scale(w / 82, h / 60);
+    const wave = Math.sin(time * 10) * 3;
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < 3; i++) {
+        const p = [[side * 18, i * 6], [side * (30 + i * 2), 8 + i * 6], [side * (36 + i * 2), 17 + i * 5]];
+        stroke(c, p, '#25334c', 7); stroke(c, p, '#f27756', 4);
+      }
+      stroke(c, [[side * 24, -7], [side * 38, -22 + side * wave]], '#26354e', 11);
+      stroke(c, [[side * 24, -7], [side * 38, -22 + side * wave]], '#ff9361', 7);
+      ellipse(c, side * 39, -22 + side * wave, 11, 12, '#25334e');
+      ellipse(c, side * 39, -23 + side * wave, 8, 9, '#ff9e69');
+      c.beginPath(); c.moveTo(side * 42, -22 + side * wave);
+      c.lineTo(side * 50, -32 + side * wave); c.lineTo(side * 48, -18 + side * wave);
+      c.fillStyle = '#27364f'; c.fill();
+    }
+    ellipse(c, 0, 4, 29, 22, '#26354f');
+    ellipse(c, 0, 1, 26, 19, gradient(c, 0, -19, 0, 20,
+      [[0, '#ffcc88'], [.45, '#ff705f'], [1, '#bb3b59']]));
+    for (const a of [-12, 12]) {
+      stroke(c, [[a, -11], [a, -24]], '#25334d', 6);
+      ellipse(c, a, -25, 6.8, 7.3, '#25334d');
+      ellipse(c, a, -25, 5, 5.4, '#ffffff');
+      ellipse(c, a + 1, -24, 2.4, 3.4, '#25334d');
+    }
+    stroke(c, [[-8, 10], [0, 14], [8, 10]], '#562e50', 2.6);
+    c.restore();
+  }
+  function clam(c, x, y, w, h, time) {
+    c.save(); c.translate(x + w / 2, y + h / 2); c.scale(w / 78, h / 58);
+    rounded(c, -36, 8, 72, 19, 9, '#223b58');
+    rounded(c, -31, 10, 62, 12, 7, '#8554b7');
+    c.beginPath(); c.moveTo(-36, 9);
+    c.quadraticCurveTo(-37, -18, -24, -20);
+    c.quadraticCurveTo(-15, -36, -1, -25);
+    c.quadraticCurveTo(11, -39, 24, -20);
+    c.quadraticCurveTo(38, -13, 36, 9); c.closePath();
+    c.fillStyle = gradient(c, -20, -28, 18, 20,
+      [[0, '#d9adff'], [.48, '#9a6bd5'], [1, '#59449a']]);
+    c.fill(); c.strokeStyle = '#243752'; c.lineWidth = 4.5; c.stroke();
+    for (let i = -2; i <= 2; i++) stroke(c, [[0, 10], [i * 13, -19 - (i % 2 ? 4 : 9)]], '#614489', 3);
+    for (let i = -3; i <= 3; i++) {
+      c.beginPath(); c.moveTo(i * 10 - 3, -18); c.lineTo(i * 10 + 2, -33);
+      c.lineTo(i * 10 + 7, -16); c.closePath();
+      c.fillStyle = '#26334e'; c.fill();
+      c.beginPath(); c.moveTo(i * 10, -19); c.lineTo(i * 10 + 2, -27);
+      c.lineTo(i * 10 + 4, -18); c.fillStyle = '#f3c872'; c.fill();
+    }
+    ellipse(c, -9, 5, 3, 3, '#ffe4f7'); ellipse(c, 9, 5, 3, 3, '#ffe4f7');
+    c.restore();
+  }
+  function rock(c, x, y, w, h, time) {
+    c.save(); c.translate(x, y); c.scale(w / 77, h / 82);
+    c.beginPath(); c.moveTo(5, 79); c.lineTo(2, 54); c.lineTo(16, 32);
+    c.lineTo(11, 15); c.lineTo(37, 2); c.lineTo(59, 19);
+    c.lineTo(75, 35); c.lineTo(69, 55); c.lineTo(75, 80); c.closePath();
+    c.fillStyle = gradient(c, 0, 0, 75, 75,
+      [[0, '#586985'], [.4, '#2e4167'], [1, '#17283e']]);
+    c.fill(); c.strokeStyle = '#17283c'; c.lineWidth = 5; c.stroke();
+    c.beginPath(); c.moveTo(37, 3); c.lineTo(16, 33); c.lineTo(39, 53);
+    c.lineTo(75, 35); c.lineTo(59, 19); c.closePath(); c.fillStyle = '#7d8bab'; c.fill();
+    stroke(c, [[36, 7], [34, 30], [48, 41], [37, 62]], '#18263c', 9);
+    stroke(c, [[36, 7], [34, 30], [48, 41], [37, 62]], '#ff8a63', 5);
+    stroke(c, [[7, 74], [19, 57], [32, 63]], '#f8b676', 3);
+    sparkle(c, 52, 24, 4, '#ffe5ac', time * .3);
+    c.restore();
+  }
+  function puffer(c, x, y, w, h, time) {
+    c.save(); c.translate(x + w / 2, y + h / 2);
+    c.scale(w / 70, h / 70); c.rotate(Math.sin(time * 3) * .06);
+    for (let i = 0; i < 12; i++) {
+      const a = i * TAU / 12;
+      c.beginPath(); c.moveTo(Math.cos(a) * 24, Math.sin(a) * 24);
+      c.lineTo(Math.cos(a - .1) * 38, Math.sin(a - .1) * 38);
+      c.lineTo(Math.cos(a + .1) * 38, Math.sin(a + .1) * 38); c.closePath();
+      c.fillStyle = '#27364e'; c.fill();
+      stroke(c, [[Math.cos(a) * 24, Math.sin(a) * 24], [Math.cos(a) * 33, Math.sin(a) * 33]], '#ffb45e', 4);
+    }
+    ellipse(c, 0, 0, 29, 27, '#24364e');
+    ellipse(c, 0, -2, 25, 24, gradient(c, 0, -27, 0, 24,
+      [[0, '#fff0a2'], [.45, '#ffb750'], [1, '#e35d58']]));
+    ellipse(c, -9, -7, 4.2, 5.6, '#27364e');
+    ellipse(c, 9, -7, 4.2, 5.6, '#27364e');
+    ellipse(c, -10, -9, 1.2, 1.5, '#fff'); ellipse(c, 8, -9, 1.2, 1.5, '#fff');
+    ellipse(c, 0, 6, 4.8, 3.5, '#984057');
+    c.restore();
+  }
+  function starHazard(c, x, y, w, h, time) {
+    c.save(); c.translate(x + w / 2, y + h / 2);
+    c.scale(w / 68, h / 69); c.rotate(Math.sin(time * 2) * .08);
+    c.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = i * Math.PI / 5 - Math.PI / 2;
+      const r = i % 2 ? 18 : 36;
+      const xx = Math.cos(a) * r, yy = Math.sin(a) * r;
+      if (!i) c.moveTo(xx, yy); else c.lineTo(xx, yy);
+    }
+    c.closePath(); c.fillStyle = gradient(c, 0, -35, 0, 35,
+      [[0, '#ffc39f'], [.45, '#e45e87'], [1, '#a53675']]);
+    c.fill(); c.lineWidth = 5; c.strokeStyle = '#243750'; c.stroke();
+    ellipse(c, -8, -1, 2.8, 3.5, '#24334b');
+    ellipse(c, 8, -1, 2.8, 3.5, '#24334b');
+    stroke(c, [[-4, 9], [1, 12], [5, 8]], '#63345b', 2.5);
+    c.restore();
+  }
+  function mine(c, x, y, w, h, time) {
+    c.save(); c.translate(x + w / 2, y + h / 2); c.scale(w / 73, h / 73);
+    c.rotate(Math.sin(time * 1.5) * .08);
+    for (let i = 0; i < 8; i++) {
+      const a = TAU * i / 8;
+      stroke(c, [[Math.cos(a) * 22, Math.sin(a) * 22], [Math.cos(a) * 37, Math.sin(a) * 37]], '#273047', 12);
+      stroke(c, [[Math.cos(a) * 23, Math.sin(a) * 23], [Math.cos(a) * 35, Math.sin(a) * 35]], '#f2776b', 5);
+    }
+    ellipse(c, 0, 0, 28, 28, '#1b314d');
+    ellipse(c, -2, -4, 24, 24, gradient(c, -20, -22, 22, 26,
+      [[0, '#6b789d'], [.5, '#34486d'], [1, '#192f4e']]));
+    ellipse(c, 0, 0, 16, 16, '#ef715e');
+    ellipse(c, 0, 0, 12, 12, '#ffc07a');
+    stroke(c, [[0, -7], [0, 3]], '#744759', 4);
+    ellipse(c, 0, 9, 2.8, 2.8, '#744759');
+    c.restore();
+  }
+  function eel(c, x, y, w, h, time) {
+    c.save(); c.translate(x, y + h / 2); c.scale(w / 110, h / 59);
+    const wave = Math.sin(time * 5 + x * .02) * 6;
+    const body = () => {
+      c.beginPath(); c.moveTo(9, 8);
+      c.bezierCurveTo(33, -24 + wave, 65, 19 - wave, 101, -8);
+    };
+    body(); c.lineCap = 'round'; c.strokeStyle = '#203550'; c.lineWidth = 34; c.stroke();
+    body(); c.strokeStyle = '#28bcb7'; c.lineWidth = 27; c.stroke();
+    body(); c.strokeStyle = '#a5f8d1'; c.lineWidth = 8; c.stroke();
+    c.beginPath(); c.moveTo(7, 7); c.lineTo(-5, -7); c.lineTo(2, -18);
+    c.closePath(); c.fillStyle = '#263d55'; c.fill();
+    stroke(c, [[26, -12], [37, -3], [47, -14], [60, 3], [73, -7]], '#ffed76', 4);
+    ellipse(c, 91, -13, 4, 5, '#22334e');
+    ellipse(c, 92, -14, 1.2, 1.6, '#fff');
+    c.restore();
+  }
   function drawObstacle(c, obstacle, time, reduced, stage) {
     const { x, y, w, h, kind } = obstacle;
-    ellipse(c, x + w / 2, GROUND + 2, w * .65, 3, '#315d6957');
+    ellipse(c, x + w / 2, GROUND + 2, w * .68, 5, '#1c385776');
     if (kind === 'jelly') jelly(c, x, y, w, h, time, reduced);
     else if (kind === 'urchin') urchin(c, x, y, w, h, time);
-    else coral(c, x, y, w, h, time, ZONES[stage].coral);
+    else if (kind === 'coral') coral(c, x, y, w, h, time, ZONES[stage].coral);
+    else if (kind === 'crab') crab(c, x, y, w, h, time);
+    else if (kind === 'clam') clam(c, x, y, w, h, time);
+    else if (kind === 'rock') rock(c, x, y, w, h, time);
+    else if (kind === 'puffer') puffer(c, x, y, w, h, time);
+    else if (kind === 'star') starHazard(c, x, y, w, h, time);
+    else if (kind === 'mine') mine(c, x, y, w, h, time);
+    else if (kind === 'eel') eel(c, x, y, w, h, time);
   }
   function platform(c, p) {
     const top = p.y, seg = 54;
@@ -345,65 +515,73 @@
   function hero(c, x, bottom, time, jumping, sliding, blink, shielded, reduced) {
     c.save(); c.translate(x, bottom); c.scale(HERO_SCALE, HERO_SCALE);
     const stride = reduced || jumping || sliding ? 0 : Math.sin(time * 25);
-    const bounce = reduced || jumping || sliding ? 0 : Math.abs(Math.sin(time * 25)) * 2.5;
-    c.translate(0, -bounce);
-    if (shielded) bubble(c, 0, -34, sliding ? 40 : 49, .87);
+    const bounce = reduced || jumping || sliding ? 0 : Math.abs(stride) * 2.5;
+    if (shielded) bubble(c, 0, -36, sliding ? 45 : 54, .9);
     if (sliding) {
-      ellipse(c, -14, -8, 33, 8, '#86fbdd73');
-      for (let i = 0; i < 4; i++)
-        stroke(c, [[-14 + i * 9, -7], [-23 + i * 14, -3]], '#ed8d9f', 4);
-      ellipse(c, 0, -17, 30, 17, '#4c426b');
-      ellipse(c, 0, -18, 27, 14, gradient(c, -25, -31, 22, -2,
-        [[0, '#ffe0c7'], [.48, '#ff9ca7'], [1, '#dc6e92']]));
-      ellipse(c, 10, -20, 7, 4, '#fff4e7');
-      stroke(c, [[5, -24], [11, -23], [17, -25]], '#563e64', 2);
-      ellipse(c, 18, -16, 4, 3, '#ffc6bb');
-      rounded(c, -21, -27, 16, 5, 2, '#79d4b8');
+      // The seahorse tucks into a horizontal dash; no octopus form remains.
+      c.translate(-11, -19); c.rotate(Math.PI / 2); c.scale(.7, .87);
+      ellipse(c, -30, -12, 30, 7, '#fff5b05e');
     } else {
-      // Four springy tentacles and tiny running shoes belong to Ojjuda's own 쭈.
-      for (let i = 0; i < 4; i++) {
-        const xx = -16 + i * 10;
-        const swing = (i % 2 ? 1 : -1) * stride * 5;
-        stroke(c, [[xx, -19], [xx + swing, -8], [xx + swing * 1.25, -3]],
-          i % 2 ? '#e97998' : '#f7a1a2', 7);
-        rounded(c, xx + swing * 1.25 - 6, -6, 12, 5, 2.5, '#f8f5e6');
+      c.translate(0, -bounce);
+    }
+    // Curled tail, dorsal fin, long snout and crown define an original seahorse.
+    const tail = [[-3, -23], [-15, -17], [-16, -4], [-7, -5]];
+    c.beginPath(); c.moveTo(tail[0][0], tail[0][1]);
+    c.bezierCurveTo(tail[1][0], tail[1][1], tail[2][0], tail[2][1], tail[3][0], tail[3][1]);
+    c.bezierCurveTo(1, -5, 0, -16, -10, -12);
+    c.strokeStyle = '#263d55'; c.lineWidth = 12; c.lineCap = 'round'; c.stroke();
+    c.strokeStyle = '#f6a268'; c.lineWidth = 8; c.stroke();
+    // Crown spikes and fluttering back fin.
+    c.beginPath(); c.moveTo(-14, -63); c.lineTo(-13, -78);
+    c.lineTo(-3, -70); c.lineTo(1, -82); c.lineTo(10, -66);
+    c.closePath(); c.fillStyle = '#f48f77'; c.fill();
+    c.lineWidth = 3; c.strokeStyle = '#253d58'; c.stroke();
+    c.beginPath(); c.moveTo(-12, -44);
+    c.lineTo(-36 - stride * 3, -43 + stride * 3);
+    c.lineTo(-31 - stride * 2, -27 - stride * 2);
+    c.lineTo(-13, -26); c.closePath(); c.fillStyle = '#6ed8c3'; c.fill();
+    c.lineWidth = 3; c.strokeStyle = '#25435b'; c.stroke();
+    stroke(c, [[-16, -42], [-29, -34]], '#e6fff0', 2);
+    // Upright body, chest and recognizable protruding snout.
+    c.beginPath(); c.moveTo(-9, -65);
+    c.quadraticCurveTo(-3, -74, 7, -65);
+    c.quadraticCurveTo(12, -62, 12, -58);
+    c.lineTo(29, -57); c.quadraticCurveTo(37, -54, 33, -49);
+    c.quadraticCurveTo(30, -46, 24, -47);
+    c.lineTo(12, -47);
+    c.bezierCurveTo(7, -43, 12, -39, 13, -34);
+    c.bezierCurveTo(18, -17, 8, -12, -4, -17);
+    c.bezierCurveTo(-21, -22, -23, -33, -14, -45);
+    c.bezierCurveTo(-21, -55, -15, -64, -9, -65); c.closePath();
+    c.fillStyle = gradient(c, -22, -72, 25, -11,
+      [[0, '#fff0bc'], [.37, '#ffc375'], [.78, '#f28f69'], [1, '#ce6577']]);
+    c.fill(); c.lineWidth = 3.3; c.strokeStyle = '#263b55'; c.stroke();
+    // Distinct cream belly and hand-painted scales.
+    ellipse(c, 2, -33, 8.6, 15, '#ffe6ac');
+    ellipse(c, 3.5, -31, 5.6, 11, '#fff6d0a6');
+    for (let i = 0; i < 3; i++) ellipse(c, -11 + i * 2, -37 + i * 8, 2, 2.7, '#c66b718f');
+    ellipse(c, 27, -52, 5, 2.5, '#ffdc9c');
+    stroke(c, [[27, -47], [31, -46]], '#825470', 1.7);
+    if (blink) stroke(c, [[2, -59], [10, -59]], '#293b55', 2.4);
+    else {
+      ellipse(c, 7, -60, 5.2, 5.7, '#fffefa');
+      ellipse(c, 8.8, -60, 2.4, 3.6, '#283955');
+      ellipse(c, 9.4, -61.4, .9, 1.2, '#fff');
+    }
+    ellipse(c, 14, -51, 3, 2.2, '#e47582');
+    // Two tiny paddling fins animate the character's run without changing size.
+    if (!sliding) {
+      for (const [px, direction] of [[-5, -1], [7, 1]]) {
+        const sx = px + stride * direction * 5;
+        stroke(c, [[px, -18], [sx, -8]], '#263b55', 8);
+        stroke(c, [[px, -18], [sx, -8]], '#7dd9c7', 5);
+        rounded(c, sx - 7, -7, 15, 7, 3, '#fff4d8');
+        rounded(c, sx - 7, -7, 15, 3, 2, '#325471');
       }
-      stroke(c, [[-17, -33], [-29 - stride * 4, -25], [-27, -21]], '#5b506f', 9);
-      stroke(c, [[-17, -33], [-29 - stride * 4, -25], [-27, -21]], '#eb8396', 6);
-      stroke(c, [[16, -33], [27 + stride * 4, -22], [24, -18]], '#5b506f', 9);
-      stroke(c, [[16, -33], [27 + stride * 4, -22], [24, -18]], '#f3999c', 6);
-      // The mantle silhouette is an original rounded squid, not a sprite sheet.
-      c.beginPath(); c.moveTo(-20, -41);
-      c.bezierCurveTo(-26, -63, -13, -70, 0, -70);
-      c.bezierCurveTo(15, -70, 27, -59, 22, -40);
-      c.quadraticCurveTo(29, -18, 5, -16);
-      c.quadraticCurveTo(-24, -17, -20, -41);
-      c.fillStyle = gradient(c, -21, -70, 18, -13,
-        [[0, '#ffe2c9'], [.45, '#ff9da9'], [1, '#dd6c90']]); c.fill();
-      c.strokeStyle = '#4c4a71'; c.lineWidth = 2.8; c.stroke();
-      ellipse(c, -9, -53, 7, 5, '#ffffff66');
-      // Soft mint running headband and Ojjuda's little star.
-      stroke(c, [[-20, -51], [-9, -55], [9, -55], [22, -51]], '#64cdb9', 5);
-      stroke(c, [[20, -51], [31, -49], [29, -43]], '#9df3d8', 3);
-      sparkle(c, -6, -57, 3.6, '#fff9cf');
-      sparkle(c, 14, -66, 2.8, '#fff9ce');
-      if (!blink) {
-        ellipse(c, -7, -38, 2.3, 3.3, '#3c4564');
-        ellipse(c, 8, -38, 2.3, 3.3, '#3c4564');
-        ellipse(c, -7.5, -39, .75, .9, '#ffffff');
-        ellipse(c, 7.5, -39, .75, .9, '#ffffff');
-      } else {
-        stroke(c, [[-10, -37], [-4, -37]], '#3c4564', 2);
-        stroke(c, [[5, -37], [11, -37]], '#3c4564', 2);
-      }
-      ellipse(c, -15, -32, 4, 2.5, '#ffb7ad');
-      ellipse(c, 15, -32, 4, 2.5, '#ffb7ad');
-      c.beginPath(); c.arc(1, -32, 4, .25, Math.PI - .25);
-      c.lineWidth = 1.6; c.strokeStyle = '#8d586d'; c.stroke();
     }
     if (jumping) {
-      ellipse(c, 27, -53, 3.5, 3.5, '#c8fff1');
-      ellipse(c, 33, -64, 2.1, 2.1, '#c8fff1a6');
+      ellipse(c, -29, -50, 4, 4, '#e7fff4');
+      ellipse(c, -37, -62, 2.5, 2.5, '#d4fff3a9');
     }
     c.restore();
   }
@@ -478,6 +656,7 @@
     let stage = 0, shake = 0, flash = 0, dustIn = 0, musicTick = .16, note = 0;
     let fever = 0, scoreSync = 0, bonus = '', bonusLife = 0;
     let lastButtonKey = '', lastButtonAt = -1000;
+    let lastHazard = '';
     let musicOn = safeGet('ojjuda:runner:music') !== 'off';
     let audio = null;
     const score = () => Math.floor(distance / 7) + pearls * 25 + Math.floor(combo * 10);
@@ -550,11 +729,13 @@
       if (button) { button.textContent = musicOn ? '♫ 음악 켜짐' : '♪ 음악 꺼짐'; button.setAttribute('aria-pressed', String(musicOn)); }
     }
     function spawnHazard() {
-      const r = Math.random();
-      const kind = time > 4.5 && r < .28 ? 'jelly' : r < .63 ? 'urchin' : 'coral';
-      const w = kind === 'jelly' ? 80 : kind === 'urchin' ? 47 : 58;
-      const h = kind === 'jelly' ? 75 : kind === 'urchin' ? 48 : 89;
-      const y = kind === 'jelly' ? GROUND - 132 : GROUND - h;
+      const available = time < 4.5 ? OBSTACLES.slice(0, 5) : OBSTACLES;
+      let index = Math.floor(Math.random() * available.length);
+      if (available[index].kind === lastHazard) index = (index + 1) % available.length;
+      const obstacle = available[index]; lastHazard = obstacle.kind;
+      const { kind, w, h, lane } = obstacle;
+      const y = lane === 'air' ? GROUND - h - 70 :
+        kind === 'puffer' ? GROUND - h - 7 : GROUND - h;
       hazards.push({ x: W + 55, y, w, h, kind });
     }
     function spawnPearls() {
@@ -751,7 +932,8 @@
         return false;
       },
       get state() { return { hearts, pearls, combo, distance, jumps, sliding: slide > 0,
-        paused, ended, stage, shielded, score: score(), speed, fever, platforms: platforms.length }; },
+        paused, ended, stage, shielded, score: score(), speed, fever,
+        platforms: platforms.length, hazards: hazards.map(h => h.kind) }; },
       destroy() {
         document.removeEventListener?.('pointerdown', handleButtonPointer);
         ended = true; hazards = []; pickups = []; effects = []; platforms = [];
@@ -766,7 +948,8 @@
     c.save(); sea(c, 340, .3, view, stage, true);
     c.save(); c.translate(0, view.ground - GROUND);
     platform(c, { x: 548, y: GROUND - 124, w: 317 });
-    drawObstacle(c, { x: 692, y: GROUND - 47, w: 47, h: 47, kind: 'urchin' }, 0, true, stage);
+    drawObstacle(c, { x: 690, y: GROUND - 60, w: 82, h: 60, kind: 'crab' }, 0, true, stage);
+    drawObstacle(c, { x: 840, y: GROUND - 143, w: 73, h: 73, kind: 'mine' }, 0, true, stage);
     hero(c, 287, GROUND - 51, .2, true, false, false, false, true);
     for (let i = 0; i < 7; i++) pearl(c, 396 + i * 59, GROUND - 120 - Math.sin(i * .58) * 47, .5, 15);
     c.restore(); foreground(c, 340, 0, view, true);
@@ -786,7 +969,10 @@
         '<path d="M17 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>') + '</svg>';
   }
   function shoeIcon() {
-    return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M4 13c3-4 5-8 9-8 4 0 6 4 6 8s-3 7-8 7S4 17 4 13Z" fill="#ff9cac"/><circle cx="9" cy="12" r="1.5" fill="#264e62"/><circle cx="16" cy="12" r="1.5" fill="#264e62"/><path d="M9 16q3 3 6 0" stroke="#9a5367" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M9 3 7 1 5 6c-4 4-3 10 2 13 4 2 7-1 6-4-1-2-4-1-3 1" fill="#ffc17c" stroke="#34516a" stroke-width="1.8" stroke-linejoin="round"/><path d="m11 5 8 1q3 0 2 3l-9-1" fill="#ffd49a" stroke="#34516a" stroke-width="1.5"/><path d="m4 11-3 3 4 2" fill="#62d8c0" stroke="#34516a" stroke-width="1.4"/><circle cx="12" cy="6" r="1.6" fill="#29435e"/></svg>';
   }
-  window.OjjudaRunnerGame = { create, drawPreview, soundIcon, shoeIcon, get ready() { return Promise.resolve(true); } };
+  window.OjjudaRunnerGame = { create, drawPreview, soundIcon, shoeIcon,
+    obstacleTypes: OBSTACLES.map(({ kind, name, lane }) => ({ kind, name, lane })),
+    get ready() { return Promise.resolve(true); } };
 })();
+
