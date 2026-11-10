@@ -251,7 +251,8 @@
   function artistProfileHtml(artist, profile) {
     if (!profile) return '';
     const dossier = (label, value, extra = '') => `<div class="profile-fact"><span>${label}</span><strong class="${extra}">${value}</strong></div>`;
-    const history = (entries, label, sign) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list">${entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('')}</div></div>`;
+    const revealButton = (id, closedLabel, openLabel, extra = '') => `<button type="button" class="content-reveal ${extra}" data-reveal-target="${id}" data-label-closed="${closedLabel}" data-label-open="${openLabel}" aria-controls="${id}" aria-expanded="false"><span class="content-reveal-text">${closedLabel}</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>`;
+    const history = (entries, label, sign, id) => `<div class="profile-history-group"><div class="profile-history-label"><span>${sign}</span><strong>${label}</strong><small>${String(entries.length).padStart(2, '0')}</small></div><div class="profile-history-list ${entries.length > 1 ? 'is-preview' : ''}" id="${id}">${entries.map((entry) => `<a href="${entry.href}" target="_blank" rel="noopener noreferrer" class="profile-history-item"><span class="profile-history-year">${entry.year}</span><span class="profile-history-main"><strong>${entry.title}</strong><small>${entry.detail}</small></span><span class="profile-history-arrow" aria-hidden="true">↗</span></a>`).join('')}</div>${entries.length > 1 ? revealButton(id, `${label} 더 보기`, `${label} 접기`, 'content-reveal-small') : ''}</div>`;
     const members = profile.members.map((member, i) => {
       const birthDate = member.birthday.replaceAll('.', '-');
       return `<article class="profile-member-card">
@@ -265,12 +266,26 @@
       <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED ${profile.checkedAt}</span></div>
       <div class="profile-overview">
         <div class="profile-identity"><div class="profile-identity-shape" aria-hidden="true">${artist.shape}</div><span class="profile-kicker">${artist.name} / THE STORY</span><strong class="profile-debut"><small>DEBUT</small><time datetime="${profile.debut.replaceAll('.', '-')}">${profile.debut}</time></strong><p>${profile.concept}</p><div class="profile-facts">${dossier('데뷔곡·음반', profile.debutWork)}${dossier('기획사', profile.agency)}${dossier('팬덤', artist.fan)}</div></div>
-        <div class="profile-history">${history(profile.awards, '수상', '✦')}${history(profile.records, '기록', '↗')}</div>
+        <div class="profile-history">${history(profile.awards, '수상', '✦', 'profile-awards')}${history(profile.records, '기록', '↗', 'profile-records')}</div>
       </div>
       <div class="profile-members-title"><div><span>MEMBER ARCHIVE</span><h3>멤버 프로필</h3></div><strong>${String(profile.members.length).padStart(2, '0')} MEMBERS</strong></div>
-      <div class="profile-member-grid">${members}</div>
-      <div class="profile-sources"><span>자료 출처</span>${profile.sources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>학교·학력은 재학 이력을 포함하며, 미확인 정보는 표시하지 않아요.</small></div>
+      <div class="profile-member-grid ${profile.members.length > 3 ? 'is-preview' : ''}" id="profile-members">${members}</div>
+      ${profile.members.length > 3 ? revealButton('profile-members', `멤버 ${profile.members.length}명 모두 보기`, '멤버 간단히 보기') : ''}
+      <details class="profile-sources"><summary><span>자료 출처</span><small>${profile.sources.length}곳</small><span class="profile-sources-arrow" aria-hidden="true">⌄</span></summary><div class="profile-source-links">${profile.sources.map((source) => `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`).join('')}<small>학교·학력은 재학 이력을 포함하며, 미확인 정보는 표시하지 않아요.</small></div></details>
     </section>`;
+  }
+
+  function initProgressiveReveal(root) {
+    root.querySelectorAll('[data-reveal-target]').forEach((button) => {
+      const target = root.querySelector(`#${button.dataset.revealTarget}`);
+      if (!target) return;
+      button.addEventListener('click', () => {
+        const expanded = button.getAttribute('aria-expanded') !== 'true';
+        target.classList.toggle('is-expanded', expanded);
+        button.setAttribute('aria-expanded', String(expanded));
+        $('.content-reveal-text', button).textContent = expanded ? button.dataset.labelOpen : button.dataset.labelClosed;
+      });
+    });
   }
 
   function initArtist() {
@@ -314,7 +329,7 @@
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>
       <nav class="detail-shortcuts" aria-label="팬페이지 메뉴"><a href="#profile"><span>01</span><strong>소개</strong><b>↗</b></a><a href="#photos"><span>02</span><strong>사진</strong><b>↗</b></a><a href="#goods"><span>03</span><strong>굿즈</strong><b>↗</b></a><a href="#schedule"><span>04</span><strong>일정</strong><b>↗</b></a><a href="#news"><span>05</span><strong>소식</strong><b>↗</b></a></nav>
       ${artistProfileHtml(artist, profile)}
-      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid">${gallery}</div><p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
+      <section id="photos" class="detail-section"><div class="detail-heading"><div><span>02 / GALLERY</span><h2>사진 <em>${artist.shape}</em></h2></div><div class="gallery-heading-actions"><span class="gallery-count">${artist.photos.length} PHOTOS</span>${openLink(artist.links.find((item) => item.label === 'Instagram')?.url || artist.imageLink, '공식 사진 더 보기', 'section-more')}</div></div><div class="detail-photo-grid ${artist.photos.length > 3 ? 'is-preview' : ''}" id="artist-photo-grid">${gallery}</div>${artist.photos.length > 3 ? `<button type="button" class="content-reveal" data-reveal-target="artist-photo-grid" data-label-closed="사진 ${artist.photos.length}장 모두 보기" data-label-open="사진 간단히 보기" aria-controls="artist-photo-grid" aria-expanded="false"><span class="content-reveal-text">사진 ${artist.photos.length}장 모두 보기</span><span class="content-reveal-icon" aria-hidden="true">⌄</span></button>` : ''}<p class="photo-disclaimer">사진을 누르면 이 페이지에서 크게 볼 수 있어요. 원본 출처·이용 조건은 확대 화면에 표시됩니다.</p></section>
       <dialog class="photo-viewer" id="photo-viewer" aria-labelledby="photo-viewer-title"><div class="photo-viewer-panel">
         <div class="photo-viewer-top"><span>OJJUDA PHOTO GALLERY <b id="photo-viewer-number"></b></span><button type="button" class="photo-viewer-close" aria-label="사진 닫기">✕</button></div>
         <div class="photo-viewer-stage"><button type="button" class="photo-viewer-arrow photo-viewer-prev" aria-label="이전 사진">‹</button><div class="photo-viewer-frame"><img id="photo-viewer-image" alt=""><span class="photo-viewer-missing" id="photo-viewer-missing" hidden>사진을 불러올 수 없어요.</span></div><button type="button" class="photo-viewer-arrow photo-viewer-next" aria-label="다음 사진">›</button></div>
@@ -334,6 +349,7 @@
       saveButton.setAttribute('aria-pressed', String(active));
     });
     attachImageFallback(root);
+    initProgressiveReveal(root);
     initPhotoViewer(root, artist);
     if ('IntersectionObserver' in window && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
