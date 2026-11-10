@@ -107,6 +107,13 @@
     if (event.data?.type === 'ojjuda:park-host-ready') { previousOverlay = previousDetail = previousBalance = null; scheduleReport(); }
   });
 
+  // The parent Hub counts a mission only after the card RPC has succeeded.
+  document.addEventListener('ojjuda:card-published', event => {
+    const detail = event.detail;
+    if (!hosted || !detail || detail.userId !== session?.user?.id || typeof detail.cardId !== 'string') return;
+    send({ type: 'ojjuda:park-card-published', userId: detail.userId, cardId: detail.cardId });
+  });
+
   window.OjjudaNoteNavigation?.leaveMy();
   window.OjjudaParkFull = Object.freeze({ embedded: hosted, navigate, compose: () => navigate('compose'), back, canLeave, overlayOpen, cardOpen:()=>!detail.hidden,
     refresh: () => overlayOpen()||!canLeave()?false:detail.hidden?loadFeed(false,true):refreshCards(true),

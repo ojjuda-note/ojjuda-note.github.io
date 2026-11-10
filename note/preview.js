@@ -2533,6 +2533,11 @@ async function publishCard() {
         : editId ? '수정하지 못했어요. 권한과 연결을 확인해 주세요' : '등록하지 못했어요. 다시 시도해 주세요');
     return;
   }
+  if (!editId && publishKind === 'memo') {
+    document.dispatchEvent(new CustomEvent('ojjuda:card-published', {
+      detail: { userId: actionUserId, cardId: publishedId }
+    }));
+  }
   if (editId && publishedId && publishKind !== 'event') {
     try { await noteRpc('set_card_style', { p_card_id: publishedId, p_style: currentStyle() }); }
     catch (styleError) { console.warn('Note style:', styleError); message('글은 저장됐지만 꾸미기는 적용되지 않았어요.'); }

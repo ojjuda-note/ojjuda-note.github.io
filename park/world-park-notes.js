@@ -63,7 +63,7 @@
       forget();
       panel=next;owner=app.userId();overlayOpen=false;cardOpen=false;
       const view=initial&&new URL(location.href).searchParams.get('view')==='glasses'?'glasses':'cards';
-      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261110-navigation-return1');
+      const url=new URL(view==='glasses'?'/park/glasses.html':'/park/',location.origin);url.searchParams.set('embedded','1');url.searchParams.set('v','20261110-park-mission1');
       if(initial){const source=new URL(location.href);for(const key of ['card','keep','compose'])if(source.searchParams.has(key))url.searchParams.set(key,source.searchParams.get(key));initial=false;}
       frame=document.createElement('iframe');frame.title='공원 카드';frame.allow='geolocation; clipboard-write; web-share';frame.dataset.view=view;frame.src=url.pathname+url.search;
       frameVisible=true;
@@ -86,7 +86,7 @@
       if(!actions.has(action))return;
       pending=action;
       if(!active()){app.enter();return;}
-      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261110-navigation-return1';return;}
+      if(frame?.dataset.view==='glasses'&&action!=='glasses'){loading(true);frame.src='/park/?embedded=1&v=20261110-park-mission1';return;}
       flush();
     }
     function refreshBalance(){api()?.refreshBalance?.();}
@@ -126,6 +126,7 @@
         if(event.data.action==='library')app.previousPlace?.();
       }
       if(event.data?.type==='ojjuda:park-balance'&&event.data.userId===owner&&owner&&Number.isSafeInteger(event.data.coins)&&event.data.coins>=0)app.onBalance?.(event.data.coins,owner);
+      if(event.data?.type==='ojjuda:park-card-published'&&event.data.userId===owner&&owner&&typeof event.data.cardId==='string'&&/^[0-9a-f-]{36}$/i.test(event.data.cardId))app.onCardPublished?.(event.data.cardId);
     });
     return {refresh:()=>active()?(api()?.refresh?.()??false):false,markup,sync,route,canLeave,close,open,refreshBalance,preserveShell,requested};
   }};

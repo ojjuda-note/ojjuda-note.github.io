@@ -56,7 +56,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-stamp-button:hover:not(:disabled){background:#873b59;transform:translateY(-2px)}
 .agit-stamp-button:disabled{background:#f5e8ed;color:#a2687b;cursor:default}
 
-/* Three small victories instead of a flat checklist. */
+/* Five clear daily missions, each with a real destination. */
 .agit-quests,.agit-life{margin-top:34px}
 .agit-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 3px 16px}
 .agit-section-kicker{display:block;margin-bottom:3px;color:#b47989;font-size:12px;font-weight:650}
@@ -68,10 +68,12 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
 .agit-quest-meter{display:flex;align-items:center;gap:4px}
 .agit-quest-meter span{width:19px;height:7px;border-radius:9px;background:#ecdee3}
 .agit-quest-meter span.is-on{background:#c86d92}
-.agit-quest-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.agit-quest-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
 .agit-quest-card{--quest-color:#be655e;--quest-icon:#ffe3d5;display:flex;flex-direction:column;justify-content:space-between;gap:13px;min-width:0;min-height:173px;padding:19px;border:1px solid #f0ded9;border-radius:21px;background:#fff1e8;color:var(--agit-ink);text-align:left;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
 .agit-quest-card--2{--quest-color:#8160b2;--quest-icon:#e7ddff;background:#f2edfc;border-color:#e8e1f7}
 .agit-quest-card--3{--quest-color:#478878;--quest-icon:#d8f0e7;background:#eaf7f2;border-color:#dfeee8}
+.agit-quest-card--4{--quest-color:#aa6b37;--quest-icon:#ffebcf;background:#fff6e7;border-color:#f3e5cf}
+.agit-quest-card--5{--quest-color:#4675a2;--quest-icon:#dcecfb;background:#edf6ff;border-color:#dceaf6}
 .agit-quest-card:hover{transform:translateY(-3px);box-shadow:0 11px 23px #83606c17}
 .agit-quest-card.is-done{background:#e8f6e8;border-color:#b9dabb;--quest-color:#397752;--quest-icon:#cfebd5}
 .agit-quest-upper,.agit-quest-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -147,6 +149,7 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-checkin-label{grid-column:1;grid-row:1}
  .agit-stamp-button{grid-column:2;grid-row:1;min-width:138px}
  .agit-stamp-days{grid-column:1/-1;grid-row:2;justify-self:stretch}
+ .agit-quest-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:740px){
  .agit-hub{padding:0 0 28px}
@@ -176,13 +179,14 @@ body:has(.agit-hub) .bottomnav button.on{color:#a84d64}
  .agit-quests,.agit-life{margin-top:30px}
  .agit-section-head h2{font-size:24px}
  .agit-quest-tally b{font-size:23px}
- .agit-quest-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .agit-quest-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .agit-quest-card:last-child{grid-column:1/-1;min-height:114px}
  .agit-quest-card{display:grid;grid-template-rows:auto 1fr auto;justify-items:center;gap:9px;min-height:144px;padding:12px 7px 9px;border-radius:17px}
  .agit-quest-upper{width:100%}
  .agit-quest-state{font-size:9px}
  .agit-quest-main{flex-direction:column;justify-content:center;gap:8px;min-width:0;width:100%;text-align:center}
  .agit-quest-emoji{width:39px;height:39px;border-radius:13px;font-size:20px}
- .agit-quest-main strong{font-size:12px;white-space:nowrap;line-height:1.2}
+ .agit-quest-main strong{font-size:12px;white-space:normal;line-height:1.3;word-break:keep-all}
  .agit-quest-label-full{display:none}
  .agit-quest-label-short{display:inline}
  .agit-quest-bottom{width:100%;padding:0;border:0}

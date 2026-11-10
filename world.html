@@ -39,8 +39,8 @@
 <script src="/shared/games/game-results.js?v=20261109-unified-multiplayer-ui2" defer></script>
 <script src="/app/world/world-navigation.js?v=20261110-game-back-arcade1" defer></script>
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
-<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-hero-outline1">
-<script src="/features/home/agit-hub.js?v=20261110-admin-record-free1" defer></script>
+<link rel="stylesheet" href="/features/home/agit-hub.css?v=20261110-five-missions1">
+<script src="/features/home/agit-hub.js?v=20261110-five-missions1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -57,7 +57,7 @@
 <script src="/games/sacheonseong/ranking.js?v=20261108-sacheonseong-200-stacks1" defer></script>
 <script src="/shared/games/world-game-rankings.js?v=20261109-signup-cta1" defer></script>
 <link rel="stylesheet" href="/park/world-park-notes.css?v=20261107-park-card-loading1">
-<script src="/park/world-park-notes.js?v=20261110-navigation-return1" defer></script>
+<script src="/park/world-park-notes.js?v=20261110-park-mission1" defer></script>
 
 <!-- 서버 연결 도구 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2" defer></script>
@@ -476,7 +476,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  if(!adminCanLeave())return;js();L.risk=null;L.log=void 0;bt()
 },"adm-members"(t){L.area="account";L.tab="users";L.accountFilter=t.filter||"all";L.accountState=null;L.accountReset=true;bt()},"adm-report"(t,e){Wt(e,()=>U.setReport(+t.id,t.st),t.st==="actioned"?"조치함으로 옮겼어요":"확인함으로 옮겼어요")},"adm-del"(t){Tt("신고된 글을 지울까요? 되돌릴 수 없어요.","지우기",()=>Wt(null,async()=>{let e=await U.deleteContent(t.kind,t.tid,t.uid||null);M(e?`${e}개를 지웠어요`:"지울 글이 없어요 (이미 지워졌을 수 있어요)")}))},"adm-ban"(t){const days=Number(t.days);if(![-1,0,7,30].includes(days))return;const name=t.name||"이 회원";const title=days===-1?`${name}님을 영구정지할까요? 로그인과 서비스 이용이 제한되고, 관리자만 해제할 수 있어요.`:days===0?`${name}님의 정지를 해제할까요?`:`${name}님을 ${days}일 정지할까요? 로그인과 서비스 이용이 제한돼요.`;Tt(title,days===-1?"영구정지":days===0?"해제":"정지",()=>Wt(null,()=>U.ban(t.uid,days),days===-1?"영구정지했어요":days===0?"정지를 풀었어요":`${days}일 정지했어요`))},"adm-fb"(t,e){Wt(e,()=>U.setFeedback(+t.id,t.st),t.st==="done"?"확인함으로 옮겼어요":"다시 열었어요")},"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.58.1-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.58.2-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
  const owner=D.online&&D.user?.id;
  if(!owner)return false;
  try{
@@ -1471,6 +1471,7 @@ function Al(t,options={}){
  if(t==="group"){
   const exit=worldGameEntryGate(()=>Al(t,options));if(exit!==true)return exit;
   const returnUrl=worldArcadeReturnUrl();if(returnUrl)history.replaceState(history.state,'',returnUrl);
+  markAgitPageVisit('group');
   location.assign("/groups/");return;
  }
  if(t==="recommendations")return Al("restaurants",{...options,openRecommendations:true});
@@ -1498,12 +1499,12 @@ function Al(t,options={}){
  if(t==="festival"){
   if(!window.OjjudaFestivalSchedule){M("축제일정을 불러오지 못했어요. 다시 눌러 주세요.");return;}
   const owner=D.online?D.user?.id:null;
-  window.OjjudaFestivalSchedule.open({owner,authorized:()=>(D.online?D.user?.id:null)===owner});return;
+  window.OjjudaFestivalSchedule.open({owner,authorized:()=>(D.online?D.user?.id:null)===owner});markAgitPageVisit('festival');return;
  }
  if(t==="restaurants"){
   if(!window.OjjudaRestaurantGuide){M("인증맛집을 불러오지 못했어요. 다시 눌러 주세요.");return;}
   const owner=D.online&&D.user?.id&&!D.user.is_anonymous?D.user.id:null;
-  window.OjjudaRestaurantGuide.open({owner,authorized:()=>(D.online&&D.user?.id&&!D.user.is_anonymous?D.user.id:null)===owner,recommendations:worldRecommendedApi(),openRecommendations:options.openRecommendations===true});return;
+  window.OjjudaRestaurantGuide.open({owner,authorized:()=>(D.online&&D.user?.id&&!D.user.is_anonymous?D.user.id:null)===owner,recommendations:worldRecommendedApi(),openRecommendations:options.openRecommendations===true});markAgitPageVisit('restaurants');return;
  }
  if(t==="bang"){if(!window.OjjudaBangGame){M("게임을 불러오지 못했어요. 다시 눌러 주세요.");return;}const owner=D.online?D.user?.id:null,authorized=()=>(D.online?D.user?.id:null)===owner;window.OjjudaBangGame.open({nickname:$.me.nick,owner,client:S,authorized,joinCode:options.joinCode,onHintBuy:async(requestId,roomId,version)=>{if(!owner||!authorized())return {ok:false,reason:'sign_in'};return vl('bang_hint_buy',{p_request_id:requestId,p_room_id:roomId,p_version:version},worldRewardRequest());}});return;}
  if(t==="sacheonseong"){
@@ -3009,7 +3010,8 @@ try{window.OjjudaGameChallenges?.configure?.({client:S,notify:M})}catch{}
 var worldParkNotes=window.OjjudaParkNotes?.install({
   previousPlace:()=>sr.tab({tab:"arcade"}),
   onFrameReady:frame=>attachWorldGestures(frame,()=>g.tab==="place"&&g.place?.id==="park"&&!frame.contentDocument?.querySelector('.dialog-backdrop:not([hidden]),.nn-backdrop:not([hidden])')),
-  place:()=>g.tab==="place"?g.place:null,userId:()=>D.user?.id||null,enter:()=>sr.tab({tab:"park"}),toWorld:()=>sr.tab({tab:"arcade"}),toMenu:()=>sr.tab({tab:"my"}),toBoard:()=>sr.tab({tab:"arcade"}),onBalance:(coins,userId)=>{if(D.user?.id!==userId)return;$.coins=coins;I();qf()}
+  place:()=>g.tab==="place"?g.place:null,userId:()=>D.user?.id||null,enter:()=>sr.tab({tab:"park"}),toWorld:()=>sr.tab({tab:"arcade"}),toMenu:()=>sr.tab({tab:"my"}),toBoard:()=>sr.tab({tab:"arcade"}),onBalance:(coins,userId)=>{if(D.user?.id!==userId)return;$.coins=coins;I();qf()},
+  onCardPublished:()=>{if(!D.online||!D.user?.id)return;const changed=window.OjjudaAgitHub?.complete($.settings,'park');updateAgitProgress(changed);if(changed)M('공원에 글 남기기 미션 완료! 🌷');}
 });
 
 var worldPlaceArt=null;
@@ -3182,13 +3184,16 @@ Df=function(){
 // Keep the new Agit tab separate from the personal-room route used elsewhere.
 const navigateWorldTabOriginal=sr.tab;
 sr.tab=function(action){
- if(action?.tab==='arcade'&&g.tab==='hub'&&window.OjjudaAgitHub?.complete($.settings,'arcade'))I();
  if(action?.tab!=='hub')return navigateWorldTabOriginal.call(this,action);
  worldVisitRequest++;
  g.tab='hub';g.visiting=null;g.visitData=null;g.sel=null;
  H();window.scrollTo(0,0);
 };
 function updateAgitProgress(changed){if(changed){I();refreshAgitHub();}}
+function markAgitPageVisit(id){
+ const hub=window.OjjudaAgitHub;
+ if(hub?.visitTarget()?.id===id)updateAgitProgress(hub.complete($.settings,'visit'));
+}
 function agitMissionStillCurrent(id){
  if(window.OjjudaAgitHub?.missions().includes(id))return true;
  refreshAgitHub();M('오늘의 미션이 새로 바뀌었어요.');return false;
@@ -3208,14 +3213,22 @@ sr['agit-play']=function(action){
 sr['agit-daily']=function(action){
  const game=_r[action.v];
  if(!game?.test||game.age>=19)return;
- updateAgitProgress(window.OjjudaAgitHub?.complete($.settings,'daily'));
  if(!['festival','restaurants','recommendations','group'].includes(action.v))sr.tab({tab:'arcade'});
  Al(action.v);
 };
-sr['agit-fan']=function(){if(window.OjjudaAgitHub?.complete($.settings,'daily'))I();};
+sr['agit-fan']=function(){markAgitPageVisit('fanpages');};
+sr['agit-visit']=function(){
+ const target=window.OjjudaAgitHub?.visitTarget();if(!target)return;
+ if(target.id==='fanpages'){markAgitPageVisit('fanpages');location.assign('/features/fanpages/index.html');return;}
+ sr['agit-daily']({v:target.id});
+};
+function openAgitQuizPicker(){
+ if(!agitMissionStillCurrent('quiz'))return;
+ ct('<div class="mhead"><h3>초성·상식 퀴즈</h3><button type="button" class="btn sm ghost" data-act="close">닫기</button></div><p>둘 중 하나의 정답을 맞히면 미션 완료!</p><div class="row"><button type="button" class="btn pri" data-act="agit-quiz-mode" data-v="chosung">🔤 초성 퀴즈</button><button type="button" class="btn pri" data-act="agit-quiz-mode" data-v="trivia">💡 상식 퀴즈</button></div>','퀴즈 선택');
+}
 function openAgitPuzzle(id){
  const hub=window.OjjudaAgitHub,date=hub?.kstDate();
- if(!['trivia','baseball','chosung'].includes(id)||!agitMissionStillCurrent(id))return;
+ if(!['trivia','baseball','chosung'].includes(id)||!agitMissionStillCurrent(id==='baseball'?'baseball':'quiz'))return;
  g.agitPuzzle={id,date};
  const title={trivia:'상식 퀴즈',baseball:'숫자야구',chosung:'초성 맞추기'}[id];
  ct(`<div class="mhead"><h3>${title}</h3><button type="button" class="btn sm ghost" data-act="close">닫기</button></div><div id="agit-puzzle-panel">${hub.puzzleMarkup($.settings,id,date)}</div>`,title);
@@ -3226,7 +3239,7 @@ function finishAgitPuzzle(id){
  if(!active||active.id!==id||active.date!==hub?.kstDate()){
   dt();refreshAgitHub();M('오늘의 미션이 새로 바뀌었어요.');return;
  }
- updateAgitProgress(hub.complete($.settings,id));
+ updateAgitProgress(hub.complete($.settings,id==='baseball'?'baseball':'quiz'));
  refreshAgitHub();
  dt();g.agitPuzzle=null;M('정답! 미션 완료 🎉');
 }
@@ -3234,12 +3247,13 @@ sr['agit-task']=function(action){
  const id=action.v,hub=window.OjjudaAgitHub;
  if(!agitMissionStillCurrent(id))return;
  if(hub.isComplete($.settings,id)){M('이미 완료한 미션이에요.');return;}
- if(id==='stamp')return sr['agit-stamp']();
+ if(id==='park')return worldParkNotes?.open('compose');
+ if(id==='baseball')return openAgitPuzzle('baseball');
+ if(id==='quiz')return openAgitQuizPicker();
  if(id==='recommend')return sr['agit-play']({v:hub.recommended(_r)?.id});
- if(id==='daily')return z('#agit-daily')?.scrollIntoView({behavior:qt?'auto':'smooth',block:'start'});
- if(id==='arcade')return sr.tab({tab:'arcade'});
- openAgitPuzzle(id);
+ if(id==='visit')return sr['agit-visit']();
 };
+sr['agit-quiz-mode']=function(action){if(['chosung','trivia'].includes(action.v))openAgitPuzzle(action.v);};
 sr['agit-quiz-answer']=function(action){
  if(g.agitPuzzle?.id!=='trivia')return;
  const correct=Number(action.v)===window.OjjudaAgitHub?.trivia(g.agitPuzzle.date)[2];

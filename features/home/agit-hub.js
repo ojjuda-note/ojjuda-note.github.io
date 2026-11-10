@@ -1,21 +1,24 @@
-/* Ojjuda Agit: simple daily visits, rotating missions, and mini-puzzles. */
+/* Ojjuda Agit: daily visits, five missions, and mini-puzzles. */
 (function (root) {
   'use strict';
 
   const gameIds = ['spot', 'sacheonseong', 'archery', 'mines', 'breakout', 'stacker', 'solitaire', 'screw', 'mole', 'saetbyeol', 'runner'];
   const consonants = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const visitPages = [
+    {id:'festival', name:'축제'},
+    {id:'restaurants', name:'맛집'},
+    {id:'fanpages', name:'팬페이지'},
+    {id:'group', name:'그룹'}
+  ];
   const missionLabels = {
-    stamp: ['방문 도장 찍기', '도장 찍기', '📍'],
-    recommend: ['추천게임 시작하기', '플레이', '🎮'],
-    daily: ['일상 둘러보기', '보러가기', '✨'],
-    arcade: ['오락실 방문하기', '이동', '🕹️'],
-    trivia: ['상식 퀴즈', '풀기', '💡'],
+    park: ['공원에 글 남기기', '카드 쓰기', '🌷'],
     baseball: ['숫자야구', '풀기', '⚾'],
-    chosung: ['초성 맞추기', '풀기', '🔤']
+    quiz: ['초성·상식 퀴즈', '선택해서 풀기', '🧩'],
+    recommend: ['추천게임 시작하기', '플레이', '🎮'],
+    visit: ['아지트 페이지 들어가기', '들어가기', '🚪']
   };
   const missionCompactLabels = {
-    stamp: '방문 도장', recommend: '추천게임', daily: '일상 보기', arcade: '오락실',
-    trivia: '상식 퀴즈', baseball: '숫자야구', chosung: '초성 맞추기'
+    park: '공원 글쓰기', baseball: '숫자야구', quiz: '초성·상식', recommend: '추천게임', visit: '페이지 방문'
   };
   const triviaQuestions = [
     ['대한민국의 수도는?', ['부산', '서울', '대전', '인천'], 1],
@@ -53,11 +56,12 @@
     return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   }
   function missions(date = kstDate()) {
-    const n = dayNumber(date);
-    const activities = ['stamp', 'recommend', 'daily', 'arcade'];
-    const puzzle = ['trivia', 'baseball', 'chosung'][((n % 3) + 3) % 3];
-    const first = ((n % activities.length) + activities.length) % activities.length;
-    return [activities[first], puzzle, activities[(first + 1 + Math.floor(n / 4) % 2 + activities.length) % activities.length]];
+    return ['park', 'baseball', 'quiz', 'recommend', 'visit'];
+  }
+  function visitTarget(date = kstDate()) {
+    // Start with festivals on 2026-11-10, then rotate one destination per KST day.
+    const offset = dayNumber(date) - dayNumber('2026-11-10');
+    return visitPages[((offset % visitPages.length) + visitPages.length) % visitPages.length];
   }
   function recommended(games, date = kstDate()) {
     const list = gameIds.filter(id => games && games[id] && !(games[id].age >= 19));
@@ -113,7 +117,6 @@
     const state = safeState(settings);
     if (state.stamps.includes(date)) return false;
     state.stamps.push(date);
-    if (missions(date).includes('stamp')) state.completed[date] = [...new Set([...(state.completed[date] || []), 'stamp'])];
     return save(settings, state, date);
   }
   function trivia(date = kstDate()) {
@@ -162,15 +165,18 @@
   function missionMarkup(settings, date) {
     const today = missions(date), done = today.filter(id => isComplete(settings, id, date)).length;
     return `<section class="agit-quests" id="agit-missions" aria-label="오늘의 미션">
-      <header class="agit-section-head"><div><span class="agit-section-kicker">매일 새롭게</span><h2>오늘의 미션</h2></div><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ 3</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${done}" aria-label="미션 완료">${[0,1,2].map(i=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
+      <header class="agit-section-head"><div><span class="agit-section-kicker">매일 다섯 가지</span><h2>오늘의 미션</h2></div><div class="agit-quest-summary"><span class="agit-quest-tally"><b>${done}</b><small>/ ${today.length}</small></span><div class="agit-quest-meter" role="progressbar" aria-valuemin="0" aria-valuemax="${today.length}" aria-valuenow="${done}" aria-label="미션 완료">${today.map((_,i)=>`<span class="${i<done?'is-on':''}"></span>`).join('')}</div></div></header>
       <div class="agit-quest-grid">${today.map((id,i) => {
-        const [label,action,emoji]=missionLabels[id],finished=isComplete(settings,id,date);
+        const target=id==='visit'?visitTarget(date):null;
+        const [label,action,emoji]=target?[`${target.name} 페이지 들어가기`,'들어가기','🚪']:missionLabels[id];
+        const compact=target?`${target.name} 방문`:missionCompactLabels[id];
+        const finished=isComplete(settings,id,date);
         return `<button type="button" class="agit-quest-card agit-quest-card--${i+1}${finished?' is-done':''}" data-act="agit-task" data-v="${id}" aria-label="${finished?'완료한 미션':'오늘의 미션'}: ${label}">
           <span class="agit-quest-upper"><span class="agit-quest-number">0${i+1}</span><span class="agit-quest-state">${finished?'✓ 완료':'오늘 도전'}</span></span>
-          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong><span class="agit-quest-label-full">${label}</span><span class="agit-quest-label-short">${missionCompactLabels[id]}</span></strong></span>
+          <span class="agit-quest-main"><span class="agit-quest-emoji" aria-hidden="true">${finished?'✓':emoji}</span><strong><span class="agit-quest-label-full">${label}</span><span class="agit-quest-label-short">${compact}</span></strong></span>
           <span class="agit-quest-bottom"><span>${finished?'완료했어요':action+' →'}</span><span class="agit-quest-arrow" aria-hidden="true">↗</span></span>
         </button>`;
-      }).join('')}</div><p class="agit-quest-next">${done===3?'오늘도 성공! 내일 새로운 미션이 열려요.':'내일은 또 다른 미션이 기다려요.'}</p></section>`;
+      }).join('')}</div><p class="agit-quest-next">${done===today.length?'오늘도 성공! 내일 새로운 미션이 열려요.':'5번 페이지는 축제 → 맛집 → 팬페이지 → 그룹 순서로 매일 바뀌어요.'}</p></section>`;
   }
   function markup(settings, games, date = kstDate()) {
     const state = safeState(settings), game = recommended(games, date), theme = themeFor(date);
@@ -242,7 +248,7 @@
     }
     return '';
   }
-  const api = {kstDate, missions, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
+  const api = {kstDate, missions, visitTarget, recommended, themeFor, safeState, visitStreak, isComplete, complete, stamp, trivia, chosung, initials, baseballAnswer, appendBaseballDigit, baseballResultMarkup, guessBaseball, markup, puzzleMarkup};
   root.OjjudaAgitHub = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
