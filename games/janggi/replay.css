@@ -1,0 +1,20 @@
+.jg-review{max-width:520px}
+.jg-review .mhead{margin-bottom:8px}
+.jg-review-result{margin:0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-size:14px;font-weight:700;line-height:1.5}
+.jg-review-players{margin:8px 0 4px;text-align:center;font-size:13px;color:var(--ink-2)}
+.jg-review-board{max-width:360px;margin:0 auto}
+.jg-review-board .bd-svg{pointer-events:none}
+.jg-review-current{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:13px;text-align:center}
+.jg-review-current strong{font-variant-numeric:tabular-nums}
+.jg-review-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
+.jg-review-controls .btn{width:100%;padding:0 5px}
+.jg-review-moves{display:grid;gap:5px;max-height:150px;overflow:auto;overscroll-behavior:contain;padding:7px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.jg-review-move{width:100%;padding:6px 9px;border:1px solid transparent;border-radius:8px;background:var(--surface);text-align:left;font-size:12px;line-height:1.4}
+.jg-review-move.on,.jg-review-move[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.jg-review .note{margin:8px 0 0;text-align:center}
+.jg-replay-history{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:14px}
+.jg-replay-history h4{margin:0 0 8px;font-size:14px}
+.jg-replay-history h4 small{font-weight:400;color:var(--ink-2)}
+.jg-replay-history-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:172px;overflow:auto}
+.jg-replay-history-list .btn{height:auto;min-height:36px;white-space:normal;line-height:1.3;padding:6px 8px;font-size:12px}
+@media(max-width:390px){.jg-replay-history-list{grid-template-columns:1fr}.jg-review-controls .btn{font-size:12px}}

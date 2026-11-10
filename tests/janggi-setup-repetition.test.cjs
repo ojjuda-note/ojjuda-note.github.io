@@ -45,6 +45,22 @@ test('browser and server allow two shuttles, reject the third, and keep other mo
  }
 });
 
+test('a repeated defensive escape from check stays legal and never creates a false checkmate',async()=>{
+ const {boards}=await import('../supabase/functions/game-action/engines.mjs');
+ const {janggiRules}=await import('../games/janggi/worker-rules.mjs');
+ const board=Array(90).fill('');
+ board[75]='K';board[13]='k';board[3]='r';board[49]='p';
+ const state={b:board,t:'c',n:9,passes:0,shuttle:{c:{f:76,t:75,run:4}}};
+ const escape={f:75,t:76};
+ for(const engine of [browserEngine,boards.janggi]){
+  assert.ok(engine.status(state).check,'Cho is in check');
+  assert.deepEqual(plain(engine.find(state,escape)),escape,'the repeated escape is still legal');
+  assert.ok(!engine.status(state).over,'the defended king was not checkmated by a repetition ban');
+ }
+ assert.ok(janggiRules.isCheck(state));
+ assert.ok(janggiRules.moves(state).some(move=>move.f===escape.f&&move.t===escape.t),'AI worker agrees');
+});
+
 test('online validation rejects a forged third shuttle, accepts legacy histories and validates computer replacements',async()=>{
  const {verifyAction,verifyComputerAction}=await import('../supabase/functions/game-action/rules.mjs');
  const game={kind:'janggi',p1:'a',p2:'b',status:'playing',moves:opening,janggi_layout:{c:'eheh',h:'hehe'}};

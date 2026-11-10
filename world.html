@@ -30,7 +30,8 @@
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261108-janggi-level-grid1">
-<script src="/shared/games/world-game-assets.js?v=20261110-solitaire-unified1" defer></script>
+<link rel="stylesheet" href="/games/janggi/replay.css?v=20261110-janggi-replay1">
+<script src="/shared/games/world-game-assets.js?v=20261110-janggi-replay1" defer></script>
 <script src="/shared/games/game-launch-loading.js?v=20261107-game-lifecycle1" defer></script>
 <link rel="stylesheet" href="/shared/games/game-challenges.css?v=20261106-source-folders1">
 <script src="/shared/games/game-challenges.js?v=20261106-source-folders1" defer></script>
@@ -1083,7 +1084,9 @@ function jgCompletesBikjang(state,move){
 }
 function jgRepeats(state,move){
  const last=state.shuttle?.[state.t];
- return !move.pass&&!state.b[move.t]&&!!last&&last.run>=4&&move.f===last.t&&move.t===last.f&&!jgCompletesBikjang(state,move);
+ // A player escaping check must never lose because the only escape shuttles a piece.
+ // The checking side must choose a new move instead of forcing a false checkmate.
+ return !hl(state)&&!move.pass&&!state.b[move.t]&&!!last&&last.run>=4&&move.f===last.t&&move.t===last.f&&!jgCompletesBikjang(state,move);
 }
 function jgShuttleAfter(state,move){
  const last=state.shuttle?.[state.t];
@@ -1118,7 +1121,7 @@ function jgMasterThink(state, level) {
    error ? reject(error) : resolve(move);
   };
   try {
-   worker = new Worker('/games/janggi/master-worker.mjs?v=20261108-janggi-master-ai1', { type: 'module' });
+   worker = new Worker('/games/janggi/master-worker.mjs?v=20261110-janggi-replay1', { type: 'module' });
    const requestId = crypto.randomUUID();
    worker.onmessage = event => {
     if (event.data?.requestId !== requestId) return;
@@ -1142,15 +1145,105 @@ var gl=(t,e)=>`<ellipse cx="0" cy="${e*.38}" rx="${e*.34}" ry="${e*.075}" fill="
 function c2(){let o=xl()==="b",r=E.s.b,a=E.st||{},i=p=>{let f=p>>3,m=p&7;return o&&(f=7-f,m=7-m),[14+m*44,14+f*44]},l=a.check?r.indexOf(E.s.t==="w"?"K":"k"):-1,s=E.over&&E.over.reason==="checkmate"?r.indexOf(E.over.result==="w"?"k":"K"):-1,c=`<svg class="bd-svg" viewBox="0 0 380 380" role="img" aria-label="체스판">${l2()}<rect x="0" y="0" width="380" height="380" rx="12" fill="url(#cboard)"/><rect x="12" y="12" width="356" height="356" rx="3" fill="#3B2412" opacity=".5"/>`;for(let p=0;p<64;p++){let[f,m]=i(p),h=((p>>3)+(p&7))%2===1,u=h?"#B58E6B":"#F2E3C6";E.last&&!E.last.pass&&(E.last.f===p||E.last.t===p)&&(u=h?"#C9A24A":"#EED68A"),p===E.sel&&(u="#F7C948"),c+=`<rect x="${f}" y="${m}" width="44" height="44" fill="${u}"/>`,(p===l||p===s)&&(c+=`<circle cx="${f+44/2}" cy="${m+44/2}" r="${44*.46}" fill="#F25C5C" opacity=".45"/>`)}for(let p=0;p<8;p++)c+=`<text x="${14+p*44+44/2}" y="377" text-anchor="middle" font-size="9" fill="#F2E3C6" opacity=".85">${o?"hgfedcba"[p]:"abcdefgh"[p]}</text>`;for(let p=0;p<8;p++)c+=`<text x="${14/2}" y="${14+p*44+44/2+3}" text-anchor="middle" font-size="9" fill="#F2E3C6" opacity=".85">${o?p+1:8-p}</text>`;let d=E.anim&&E.anim.cap;if(d){let[p,f]=i(d.sq);c+=`<g transform="translate(${p+44/2} ${f+44/2})"><g class="bd-ghost">${gl(d.p,44*.9)}</g></g>`}for(let p=0;p<64;p++){let f=r[p];if(!f)continue;let[m,h]=i(p);c+=`<g transform="translate(${m+44/2} ${h+44/2})"><g class="bd-pc" data-sq="${p}">${gl(f,44*.9)}</g></g>`}for(let p of E.targets){let[f,m]=i(p);c+=r[p]?`<circle cx="${f+44/2}" cy="${m+44/2}" r="${44*.45}" fill="none" stroke="#F0679A" stroke-width="3.5" pointer-events="none"/>`:`<circle cx="${f+44/2}" cy="${m+44/2}" r="${44*.15}" fill="#F0679A" opacity=".8" pointer-events="none"/>`}for(let p=0;p<64;p++){let[f,m]=i(p);c+=`<rect x="${f}" y="${m}" width="44" height="44" fill="transparent" data-act="bd-sq" data-i="${p}"/>`}return c+"</svg>"}var d2={c:{K:"楚",A:"士",E:"象",H:"馬",R:"車",C:"包",P:"卒"},h:{K:"漢",A:"士",E:"象",H:"馬",R:"車",C:"包",P:"兵"}},Ip={c:"#1C63C7",h:"#D22F36"},_p=(t,e)=>t==="K"?e*.49:t==="A"||t==="P"?e*.36:e*.43;function bl(t,e){let o=ue(t),r=t.toUpperCase(),a=Ip[o],i=l=>Array.from({length:8},(s,c)=>{let d=Math.PI/8+c*Math.PI/4;return`${(l*Math.cos(d)).toFixed(1)},${(l*Math.sin(d)).toFixed(1)}`}).join(" ");return`<ellipse cx="1.5" cy="${(e*.9).toFixed(1)}" rx="${(e*.95).toFixed(1)}" ry="${(e*.28).toFixed(1)}" fill="#000" opacity=".22"/><polygon points="${i(e)}" fill="url(#jgw)" stroke="${a}" stroke-width="2.2"/><polygon points="${i(e*.8)}" fill="none" stroke="${a}" stroke-width=".8" opacity=".55"/><text x="0" y="${(e*.37).toFixed(1)}" text-anchor="middle" font-size="${(e*1.05).toFixed(1)}" font-weight="700" fill="${a}" class="bd-han">${d2[o][r]}</text>`}function p2(){let a=xl()==="h",i=E.s.b,l=E.st||{},s=u=>{let[b,F]=kn(u);return a&&(b=8-b,F=9-F),[26+b*38,26+F*38]},c=(u,b,F,C)=>`<line x1="${26+u*38}" y1="${26+b*38}" x2="${26+F*38}" y2="${26+C*38}"/>`,d=`<svg class="bd-svg" viewBox="0 0 356 394" role="img" aria-label="장기판"><defs><linearGradient id="jwood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6DDA6"/><stop offset=".55" stop-color="#EDC985"/><stop offset="1" stop-color="#E2B670"/></linearGradient><radialGradient id="jgw" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#FFFDF4"/><stop offset="1" stop-color="#F1DDB0"/></radialGradient></defs>
     <rect x="0" y="0" width="356" height="394" rx="14" fill="#A8703C"/><rect x="5" y="5" width="346" height="384" rx="10" fill="url(#jwood)"/>`;for(let u=0;u<7;u++)d+=`<path d="M8 ${18+u*55} q${356/2} ${u%2?10:-10} 340 0" stroke="#D9A860" stroke-width="1" fill="none" opacity=".35"/>`;d+='<g stroke="#7A5530" stroke-width="1.3">';for(let u=0;u<9;u++)d+=c(u,0,u,9);for(let u=0;u<10;u++)d+=c(0,u,8,u);for(let u of[0,7])d+=c(3,u,5,u+2)+c(5,u,3,u+2);d+="</g>";let p=[[1,2],[7,2],[1,7],[7,7],[0,3],[2,3],[4,3],[6,3],[8,3],[0,6],[2,6],[4,6],[6,6],[8,6]];for(let[u,b]of p){let F=a?9-b:b,C=a?8-u:u,x=26+C*38,A=26+F*38,v=4,B=6;for(let[j,J]of[[-1,-1],[1,-1],[-1,1],[1,1]])C===0&&j<0||C===8&&j>0||(d+=`<path d="M${x+j*v} ${A+J*(v+B)} V${A+J*v} H${x+j*(v+B)}" stroke="#7A5530" stroke-width="1.2" fill="none"/>`)}let f=l.check?i.indexOf(E.s.t==="c"?"K":"k"):-1,m=E.over&&E.over.reason==="checkmate"?i.indexOf(E.over.result==="c"?"k":"K"):-1;for(let u=0;u<90;u++){let[b,F]=s(u);E.last&&!E.last.pass&&(E.last.f===u||E.last.t===u)&&(d+=`<circle cx="${b}" cy="${F}" r="${38*.5}" fill="#FFE08A" opacity=".7"/>`),u===E.sel&&(d+=`<circle cx="${b}" cy="${F}" r="${38*.53}" fill="#F7C948" opacity=".85"/>`),(u===f||u===m)&&(d+=`<circle cx="${b}" cy="${F}" r="${38*.56}" fill="#F25C5C" opacity=".5"/>`)}let h=E.anim&&E.anim.cap;if(h){let[u,b]=s(h.sq);d+=`<g transform="translate(${u} ${b})"><g class="bd-ghost">${bl(h.p,_p(h.p.toUpperCase(),38))}</g></g>`}for(let u=0;u<90;u++){let b=i[u];if(!b)continue;let[F,C]=s(u);d+=`<g transform="translate(${F} ${C})"><g class="bd-pc" data-sq="${u}">${bl(b,_p(b.toUpperCase(),38))}</g></g>`}for(let u of E.targets){let[b,F]=s(u);d+=i[u]?`<circle cx="${b}" cy="${F}" r="${38*.5}" fill="none" stroke="#F0679A" stroke-width="3.5" pointer-events="none"/>`:`<circle cx="${b}" cy="${F}" r="${38*.14}" fill="#F0679A" opacity=".85" pointer-events="none"/>`}for(let u=0;u<90;u++){let[b,F]=s(u);d+=`<circle cx="${b}" cy="${F}" r="${38/2}" fill="transparent" data-act="bd-sq" data-i="${u}"/>`}return d+"</svg>"}var yl={q:9,r:5,b:3,n:3,p:1,k:0},f2={R:13,C:7,H:5,E:3,A:3,P:2,K:0};function Sp(t){let e=ze(),o=e.init().b,r=E.s.b,a={},i=c=>E.kind==="chess"?c===c.toUpperCase()?"w":"b":ue(c);for(let c of o)c&&i(c)!==t&&(a[c]=(a[c]||0)+1);for(let c of r)c&&i(c)!==t&&(a[c]=(a[c]||0)-1);let l=[];for(let[c,d]of Object.entries(a))for(let p=0;p<d;p++)l.push(c);let s=c=>E.kind==="chess"?yl[c.toLowerCase()]:f2[c.toUpperCase()];return l.sort((c,d)=>s(d)-s(c))}function m2(t){let e=Sp(t);if(!e.length)return"";let o=a=>E.kind==="chess"?`<svg class="bd-capi" viewBox="-12 -12 24 24">${gl(a,22)}</svg>`:`<svg class="bd-capi" viewBox="-12 -12 24 24">${bl(a,9.5)}</svg>`,r="";if(E.kind==="chess"){let a=e.reduce((l,s)=>l+yl[s.toLowerCase()],0),i=Sp(da(t)).reduce((l,s)=>l+yl[s.toLowerCase()],0);a>i&&(r=`<b class="bd-adv">+${a-i}</b>`)}return`<span class="bd-caps">${e.map(o).join("")}${r}</span>`}function Op(){let t=ze(),e=E.online;if(E.mode==="online"){let o=e.p1n||"신청한 사람",r=e.p2n||"받은 사람";return{[t.first]:o,[t.second]:r}}return E.mode==="ai"?{[E.me]:"나",[da(E.me)]:`컴퓨터 (${(E.kind==="janggi"?[...Rp,...JG_EXTRA_LEVELS]:Rp).find(o=>o[0]===E.level)?.[1]||"보통"})`}:{[t.first]:t.side[t.first],[t.second]:t.side[t.second]}}var Lp={checkmate:"",stalemate:"스테일메이트",fifty:"50수 동안 잡거나 폰을 움직이지 않았어요",repetition:"같은 장면이 세 번 나왔어요",bikjang:"같은 빅장 3회",material:"서로 이길 수 있는 말이 모자라요",resign:"기권",points:"점수"};function Pp(){let t=ze(),e=E.st||{},o=Op(),r=E.over;if(r){if(r.result==="draw")return`무승부예요${Lp[r.reason]?` (${Lp[r.reason]})`:""}`;let i=o[r.result]||t.side[r.result],l=E.mode!=="local"&&r.result===E.me,s=r.reason==="checkmate"?E.kind==="chess"?"체크메이트!":"외통!":r.reason==="resign"?`${o[da(r.result)]} 기권.`:r.reason==="points"&&r.points?`점수 초 ${r.points.c} : 한 ${r.points.h}.`:"";return E.mode==="local"?`${s} ${t.side[r.result]} 승리 🎉`:`${s} ${l?"이겼어요! 🎉":"졌어요"}`}return E.kind==="janggi"&&E.mode==="online"&&!E.online?.layoutReady?"양쪽 배치가 정해지길 기다리고 있어요…":E.thinking?"컴퓨터가 생각 중이에요…":`${E.mode==="local"?`${t.side[E.s.t]} 차례예요`:E.s.t===E.me?`내 차례예요 (${t.side[E.me]})`:E.mode==="online"?`${w(o[E.s.t])}님 차례예요`:"컴퓨터 차례예요"}${e.check?` · ${t.check}!`:""}${e.mustPass?" · 둘 수 있는 수가 없어서 한 수 쉬어야 해요":""}`}function bU(t){let e=ze(),o=E.mode==="online"?(t===e.first?E.online?.undoP1Count:E.online?.undoP2Count):E.undoUsed?.[t];return Math.max(0,3-(Number(o)||0))}
 function vU(){if(!E||E.over||E.thinking||E.closing||E.undoBusy||E.undoPending||E.mode==="online"&&(E.online?.undoRequestedBy||E.online?.computerSeats?.length))return!1;let t=E.mode==="local"?da(E.s.t):E.me;return bU(t)>0&&(E.mode==="online"?E.moves.length>0&&E.s.t!==E.me&&E.online?.layoutReady!==!1&&!E.online?.moveBusy:E.mode==="ai"?E.hist.length>=(E.s.t===E.me?2:1):E.hist.length>0)}
+// Finished Janggi games are kept on this device, under the current account.
+function jgReplayStorageKey(){return`ojjuda:janggi:replays:v1:${D?.online&&D.user?.id?D.user.id:'guest'}`}
+function jgRecentReplays(){
+ try{
+  const records=JSON.parse(localStorage.getItem(jgReplayStorageKey())||'[]');
+  return Array.isArray(records)?records.filter(record=>record&&Array.isArray(record.moves)&&record.moves.length<=400&&
+   record.moves.every(move=>move&&(move.pass===1||Number.isInteger(move.f)&&Number.isInteger(move.t)&&move.f>=0&&move.f<90&&move.t>=0&&move.t<90))&&
+   record.layout&&record.over&&['ai','local','online'].includes(record.mode)).slice(0,10):[];
+ }catch{return[]}
+}
+function jgArchiveCurrent(){
+ if(!E||E.kind!=='janggi'||!E.over||E.reviewArchive||E.replayArchived)return;
+ const record={at:Date.now(),mode:E.mode,me:E.me,level:E.level,layout:E.layout,
+  moves:E.moves.slice(),over:{...E.over},names:Op()};
+ try{localStorage.setItem(jgReplayStorageKey(),JSON.stringify([record,...jgRecentReplays()].slice(0,10)));E.replayArchived=true}
+ catch(error){console.warn('장기 기보를 이 기기에 저장하지 못했어요',error)}
+}
+function jgReplayReason(){
+ const result=E.over||{},names=E.archiveNames||Op(),winner=names[result.result]||Xe.janggi.side[result.result]||'';
+ const score=result.reason==='points'?(result.points||{c:Fn(E.s.b,'c'),h:Fn(E.s.b,'h')}):null;
+ const why=result.reason==='checkmate'?'외통 · 장군을 피할 수 있는 수가 없어요':
+  result.reason==='points'?`점수 판정 · 초 ${score.c}점 / 한 ${score.h}점`:
+  result.reason==='bikjang'?'빅장 3회로 무승부':result.reason==='resign'?'기권':result.reason==='repetition'?'반복 수':
+  result.reason?Lp[result.reason]||'결과 사유 미확인':'결과 사유 미확인';
+ return`${result.result==='draw'?'무승부':`${winner} 승리`} · ${why}`;
+}
+function jgMoveText(state,move,index){
+ const side=state.t,party=Xe.janggi.side[side];
+ if(move.pass)return`${index+1}수 ${party} 한 수 쉬기`;
+ const piece=state.b[move.f],letter=d2[side]?.[piece?.toUpperCase()]||'말';
+ const square=s=>{const[x,y]=kn(s);return`(${x+1},${y+1})`};
+ return`${index+1}수 ${party} ${letter} ${square(move.f)} → ${square(move.t)}${state.b[move.t]?' 잡음':''}`;
+}
+function jgReplayMoves(){
+ let state=vp(E.layout||{});
+ return E.moves.map((move,index)=>{
+  const title=jgMoveText(state,move,index);
+  state=ca(state,move);
+  return`<button type="button" data-act="bd-review-step" data-i="${index+1}" aria-pressed="${E.reviewStep===index+1}" class="jg-review-move${E.reviewStep===index+1?' on':''}">${w(title)}</button>`;
+ }).join('');
+}
+function jgReplayBoard(){
+ const record=y2('janggi',E.moves.slice(0,E.reviewStep),E.layout||{});
+ if(record.bad)return'<p class="note" role="alert">이 수순은 복기할 수 없어요.</p>';
+ const saved={s:E.s,last:E.last,sel:E.sel,targets:E.targets,st:E.st,anim:E.anim,over:E.over};
+ try{
+  E.s=record.s;E.last=record.last;E.sel=-1;E.targets=[];E.st=Mp(record.s);E.anim=null;E.over=null;
+  return p2().replaceAll('data-act="bd-sq"','data-act="bd-review-board"');
+ }finally{Object.assign(E,saved)}
+}
+function jgReplayMarkup(){
+ const step=E.reviewStep,total=E.moves.length,names=E.archiveNames||Op();
+ const active=step?jgMoveText(y2('janggi',E.moves.slice(0,step-1),E.layout||{}).s,E.moves[step-1],step-1):'초기 배치';
+ return`<div id="bd-root" class="bd-root jg-review" data-world-board="janggi"><div class="mhead"><h3>🀄 장기 기보 · 복기</h3><button class="btn sm ghost" data-act="bd-review-back">돌아가기</button></div>
+ <p class="jg-review-result" role="status">${w(jgReplayReason())}</p>
+ <p class="jg-review-players">${w(names.c||'초')} (초) · ${w(names.h||'한')} (한)</p>
+ <div class="jg-review-board">${jgReplayBoard()}</div>
+ <p class="jg-review-current"><strong>${step} / ${total}수</strong> ${w(active)}</p>
+ <div class="jg-review-controls"><button class="btn sm" data-act="bd-review-step" data-i="0"${step===0?' disabled':''}>처음</button><button class="btn sm" data-act="bd-review-step" data-i="${step-1}"${step===0?' disabled':''}>◀ 이전</button><button class="btn sm" data-act="bd-review-step" data-i="${step+1}"${step===total?' disabled':''}>다음 ▶</button><button class="btn sm" data-act="bd-review-step" data-i="${total}"${step===total?' disabled':''}>끝</button></div>
+ <div class="jg-review-moves" role="group" aria-label="장기 수순 목록"><button type="button" data-act="bd-review-step" data-i="0" aria-pressed="${step===0}" class="jg-review-move${step===0?' on':''}">0 · 처음 배치</button>${jgReplayMoves()}</div>
+ <p class="note">수를 누르면 그때의 장기판으로 돌아가요. 최근 10판은 이 기기에 저장돼요.</p></div>`;
+}
+function jgReplayMenuMarkup(){
+ const records=jgRecentReplays();
+ if(!records.length)return'';
+ return`<section class="jg-replay-history"><h4>내 최근 기보 <small>(이 기기)</small></h4><div class="jg-replay-history-list">${records.map((record,index)=>{
+  const date=new Date(record.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const outcome=record.over.result==='draw'?'무승부':record.mode==='local'?'대국 종료':record.over.result===record.me?'승리':'패배';
+  return`<button type="button" class="btn sm" data-act="bd-review-saved" data-i="${index}">${w(date)} · ${outcome} · ${record.moves.length}수 보기</button>`;
+ }).join('')}</div></section>`;
+}
+function jgOpenSavedReplay(index){
+ const record=jgRecentReplays()[index];if(!record)return;
+ const replay=y2('janggi',record.moves,record.layout);
+ if(replay.bad){M('이 기보를 읽지 못했어요');return}
+ E=jp('janggi',record.mode,{level:record.level,me:record.me,layout:record.layout});
+ E.s=replay.s;E.last=replay.last;E.moves=record.moves.slice();E.over=record.over;
+ E.archiveNames=record.names;E.reviewArchive=true;E.reviewStep=E.moves.length;E.reviewReturn='menu';
+ if(record.mode==='online')E.online={p1n:record.names?.c,p2n:record.names?.h};
+ Je();
+}
 function worldBoardResultMarkup(){
  const result=E.over,draw=result.result==='draw',won=!draw&&(E.mode==='local'||result.result===E.me),names=Op();
- const metric=draw?(result.reason==='bikjang'?'같은 빅장 3회':''):E.mode==='local'?`${names[result.result]||ze().side[result.result]} 승리`:result.reason==='checkmate'?(E.kind==='chess'?'체크메이트':'외통'):'';
- return `<div id="bd-root" class="bd-root bd-result-root" data-world-board="${E.kind}">${worldGameResultMarkup({game:E.kind,outcome:draw?'draw':won?'success':'failure',metric,key:worldGameResultKey(E,'end'),actions:`<button class="btn" data-act="close">닫기</button><button class="btn pri" data-act="bd-again" data-game-result-play>${E.mode==='online'?'목록으로':'다시 하기'}</button>`})}</div>`;
+ const metric=E.kind==='janggi'&&typeof jgReplayReason==='function'?jgReplayReason():draw?(result.reason==='bikjang'?'같은 빅장 3회':''):E.mode==='local'?`${names[result.result]||ze().side[result.result]} 승리`:result.reason==='checkmate'?(E.kind==='chess'?'체크메이트':'외통'):'';
+ return `<div id="bd-root" class="bd-root bd-result-root" data-world-board="${E.kind}">${worldGameResultMarkup({game:E.kind,outcome:draw?'draw':won?'success':'failure',metric,key:worldGameResultKey(E,'end'),actions:`<button class="btn" data-act="close">닫기</button>${E.kind==='janggi'?'<button class="btn" data-act="bd-review-open">기보 보기</button>':''}<button class="btn pri" data-act="bd-again" data-game-result-play>${E.mode==='online'?'목록으로':'다시 하기'}</button>`})}</div>`;
 }
 var cPromoGlyph={q:{w:"♕",b:"♛"},r:{w:"♖",b:"♜"},b:{w:"♗",b:"♝"},n:{w:"♘",b:"♞"}};function qp(){if(E.over)return worldBoardResultMarkup();let t=ze(),e=Op(),o=xl(),r=da(o),a=E.st||{},i=E.mode==="ai"?"컴퓨터와":E.mode==="local"?"같은 폰에서 둘이":"온라인",l=d=>`<div class="bd-who${!E.over&&E.s.t===d?" on":""}"><span class="bd-dot" style="background:${E.kind==="chess"?d==="w"?"#FFFFFF":"#2E2E3A":Ip[d]}"></span><b>${w(e[d])}</b><span class="note">${t.side[d]}</span>${E.mode!=="ai"||d===E.me?`<span class="note">무르기 ${bU(d)}회 남음</span>`:""}${m2(d)}</div>`,s=[];E.over?s.push(`<button class="btn sm pri" data-act="bd-again">${E.mode==="online"?"목록으로":"새 판"}</button>`):(s.push(`<button class="btn sm" data-act="bd-undo"${vU()?"":" disabled"}>무르기</button>`),E.kind==="janggi"&&s.push(`<button class="btn sm" data-act="bd-pass"${$l()&&Za(E.s)?"":" disabled"}>한 수 쉬기</button>`),s.push(`<button class="btn sm ghost danger" data-act="bd-resign"${E.thinking?" disabled":""}>기권</button>`));let u=E.mode==="online"&&E.online?.undoRequestedBy?{by:E.online.undoRequestedBy===E.online.p1?t.first:t.second,mine:E.online.undoRequestedBy===D.user?.id}:E.mode==="local"?E.undoPending:null,n=u?`<div class="bd-undo-request" role="status"><span>${E.mode==="online"&&u.mine?"무르기를 요청했어요. 상대의 답을 기다려요.":`${t.side[u.by]}의 무르기 요청이에요. 상대가 결정해 주세요.`}</span>${E.mode==="online"&&u.mine?`<button class="btn sm ghost" data-act="bd-undo-answer" data-accept="0"${E.undoBusy?" disabled":""}>요청 취소</button>`:`<span class="row"><button class="btn sm pri" data-act="bd-undo-answer" data-accept="1"${E.undoBusy?" disabled":""}>승인</button><button class="btn sm ghost" data-act="bd-undo-answer" data-accept="0"${E.undoBusy?" disabled":""}>거부</button></span>`}</div>`:"";let c=E.promo?`<div class="bd-promo" role="dialog" aria-label="승진할 말 고르기"><p>폰이 끝까지 왔어요! 무엇으로 바꿀까요?</p><div class="row">${[["q","퀸"],["r","룩"],["b","비숍"],["n","나이트"]].map(([d,p])=>`<button class="btn" data-act="bd-promo" data-p="${d}"><span class="bd-glyph" aria-hidden="true">${cPromoGlyph[d]?.[E.s.t]||d.toUpperCase()}</span> ${p}</button>`).join("")}</div></div>`:"";return`<div id="bd-root" class="bd-root" data-world-board="${E.kind}"><div class="mhead"><h3>${t.emoji} ${t.name} · ${i}${worldArcadeCaption(E.online?.id)}</h3><span class="bd-headbtns">${Wi()?`<button class="btn sm ghost" data-act="bd-sound" aria-label="효과음 켜기·끄기">${Wr()}</button>`:""}<button class="btn sm ghost" data-act="close">닫기</button></span></div>
     <div class="bd-match"><div class="bd-table">${l(r)}<div class="bd-play"><div class="bd-wrap">${E.kind==="chess"?c2():p2()}${c}</div></div>${l(o)}</div><div class="bd-tools">
     <p class="bd-status${E.over?" over":a.check?" check":""}" aria-live="polite">${Pp()}</p>
-    ${n}<div class="bd-acts">${s.join("")}</div></div></div></div>`}function Je(){if(!E||E.closing)return;if(E.over)void savePracticeStreak(E,E.over.result);let t=document.getElementById("bd-root");t?t.outerHTML=qp():ct(qp(),`${ze().name} 대국`),fitWorldBoardScreen(),u2()}var wn=520;function u2(){let t=E&&E.anim;if(!t||(E.anim=null,qt))return;let e=document.querySelector("#bd-root .bd-svg");if(e)for(let o of t.moves){let r=e.querySelector(`.bd-pc[data-sq="${o.t}"]`),a=e.querySelector(`[data-act="bd-sq"][data-i="${o.f}"]`),i=e.querySelector(`[data-act="bd-sq"][data-i="${o.t}"]`);if(!r||!a||!i)continue;let l=h=>h.tagName==="circle"?[+h.getAttribute("cx"),+h.getAttribute("cy")]:[+h.getAttribute("x")+ +h.getAttribute("width")/2,+h.getAttribute("y")+ +h.getAttribute("height")/2],[s,c]=l(a),[d,p]=l(i),f=s-d,m=c-p;r.animate&&r.animate([{transform:`translate(${f}px, ${m}px) scale(1)`},{transform:`translate(${f*.45}px, ${m*.45}px) scale(1.12)`,offset:.5},{transform:"translate(0px, 0px) scale(1)"}],{duration:wn,easing:"cubic-bezier(.45,.05,.3,1)"})}}function Ka(t,e){if(!e&&E.kind==="janggi"&&jgRepeats(E.s,t)){M("같은 말을 같은 두 칸으로 3번 반복할 수 없어요");return}let o=ze();if(E.hist.push({s:E.s,last:E.last,moves:E.moves.slice()}),!t.pass){let r=[{f:t.f,t:t.t}];E.kind==="chess"&&t.k&&r.push({f:t.f+3,t:t.f+1}),E.kind==="chess"&&t.q&&r.push({f:t.f-4,t:t.f-1});let a=E.kind==="chess"&&t.e?t.t+(E.s.t==="w"?8:-8):t.t;E.anim={moves:r,cap:E.s.b[a]?{sq:a,p:E.s.b[a]}:null}}E.s=o.apply(E.s,t),E.last=t,E.moves.push(t.pass?{pass:1}:E.kind==="chess"?{f:t.f,t:t.t,...t.p?{p:t.p}:{}}:{f:t.f,t:t.t}),E.sel=-1,E.targets=[],E.promo=null,pa();{let r=qt?0:wn*.8/1e3;t.pass||(E.anim&&E.anim.cap?gt.capture(E.kind,r):gt.place(E.kind,r)),E.st&&E.st.check&&!E.over&&gt.check(r+.12),E.over&&setTimeout(()=>{let a=E&&E.over;a&&(a.result==="draw"?gt.lose():E.mode==="local"||a.result===E.me?gt.win():gt.lose())},wn+100)}E.mode==="online"&&!e&&$2(E.moves[E.moves.length-1],E.moves.length-1),E.over&&E.mode==="online"&&F2(),Je(),E.mode==="ai"&&!E.over&&E.s.t!==E.me&&Fl()}function h2(){let t=document.querySelector("#bd-root .bd-status");t&&(t.textContent=Pp()),document.querySelectorAll('#bd-root [data-act="bd-undo"], #bd-root [data-act="bd-resign"], #bd-root [data-act="bd-pass"]').forEach(e=>{e.disabled=E.thinking||e.disabled})}function Fl(){
+    ${n}<div class="bd-acts">${s.join("")}</div></div></div></div>`}function Je(){
+ if(!E||E.closing)return;
+ if(E.over&&!E.reviewArchive){jgArchiveCurrent();void savePracticeStreak(E,E.over.result)}
+ const root=document.getElementById('bd-root'),priorList=root?.querySelector('.jg-review-moves');
+ const priorScroll=priorList?.scrollTop||0,markup=E.kind==='janggi'&&Number.isInteger(E.reviewStep)?jgReplayMarkup():qp();
+ root?root.outerHTML=markup:ct(markup,`${ze().name} 대국`);
+ const list=document.querySelector('#bd-root .jg-review-moves');
+ if(list)list.scrollTop=priorList?priorScroll:list.scrollHeight;
+ fitWorldBoardScreen();u2();
+}var wn=520;function u2(){let t=E&&E.anim;if(!t||(E.anim=null,qt))return;let e=document.querySelector("#bd-root .bd-svg");if(e)for(let o of t.moves){let r=e.querySelector(`.bd-pc[data-sq="${o.t}"]`),a=e.querySelector(`[data-act="bd-sq"][data-i="${o.f}"]`),i=e.querySelector(`[data-act="bd-sq"][data-i="${o.t}"]`);if(!r||!a||!i)continue;let l=h=>h.tagName==="circle"?[+h.getAttribute("cx"),+h.getAttribute("cy")]:[+h.getAttribute("x")+ +h.getAttribute("width")/2,+h.getAttribute("y")+ +h.getAttribute("height")/2],[s,c]=l(a),[d,p]=l(i),f=s-d,m=c-p;r.animate&&r.animate([{transform:`translate(${f}px, ${m}px) scale(1)`},{transform:`translate(${f*.45}px, ${m*.45}px) scale(1.12)`,offset:.5},{transform:"translate(0px, 0px) scale(1)"}],{duration:wn,easing:"cubic-bezier(.45,.05,.3,1)"})}}function Ka(t,e){if(!e&&E.kind==="janggi"&&jgRepeats(E.s,t)){M("같은 말을 같은 두 칸으로 3번 반복할 수 없어요");return}let o=ze();if(E.hist.push({s:E.s,last:E.last,moves:E.moves.slice()}),!t.pass){let r=[{f:t.f,t:t.t}];E.kind==="chess"&&t.k&&r.push({f:t.f+3,t:t.f+1}),E.kind==="chess"&&t.q&&r.push({f:t.f-4,t:t.f-1});let a=E.kind==="chess"&&t.e?t.t+(E.s.t==="w"?8:-8):t.t;E.anim={moves:r,cap:E.s.b[a]?{sq:a,p:E.s.b[a]}:null}}E.s=o.apply(E.s,t),E.last=t,E.moves.push(t.pass?{pass:1}:E.kind==="chess"?{f:t.f,t:t.t,...t.p?{p:t.p}:{}}:{f:t.f,t:t.t}),E.sel=-1,E.targets=[],E.promo=null,pa();{let r=qt?0:wn*.8/1e3;t.pass||(E.anim&&E.anim.cap?gt.capture(E.kind,r):gt.place(E.kind,r)),E.st&&E.st.check&&!E.over&&gt.check(r+.12),E.over&&setTimeout(()=>{let a=E&&E.over;a&&(a.result==="draw"?gt.lose():E.mode==="local"||a.result===E.me?gt.win():gt.lose())},wn+100)}E.mode==="online"&&!e&&$2(E.moves[E.moves.length-1],E.moves.length-1),E.over&&E.mode==="online"&&F2(),Je(),E.mode==="ai"&&!E.over&&E.s.t!==E.me&&Fl()}function h2(){let t=document.querySelector("#bd-root .bd-status");t&&(t.textContent=Pp()),document.querySelectorAll('#bd-root [data-act="bd-undo"], #bd-root [data-act="bd-resign"], #bd-root [data-act="bd-pass"]').forEach(e=>{e.disabled=E.thinking||e.disabled})}function Fl(){
  E.thinking = true;
  h2();
  const session = E;
@@ -1225,7 +1318,8 @@ function $2(t,e){let o=E.online.id,r=E;r.online.moveBusy=!0,r.pendingAction=veri
  ${t==='janggi'?`<div class="ge-janggi-colors" role="group" aria-label="내 장기 진영 색상"><span class="ge-label">내 말 색상</span><div class="seg bd-seg jg-color-choices">${[['first','파랑 · 초','blue'],['second','빨강 · 한','red']].map(([side,label,color])=>`<button type="button" class="${r===side?'on':''}" data-act="bd-side" data-v="${side}" data-k="janggi" aria-pressed="${r===side}"><span class="jg-color-dot ${color}" aria-hidden="true"></span>${label}</button>`).join('')}</div><p class="ge-color-note">파랑(초)이 먼저, 빨강(한)은 나중에 둬요.</p></div>`:''}
  <button class="btn pri ge-primary" data-act="bd-start" data-k="${t}" data-mode="ai">시작하기</button>
  ${t==='janggi'?'':`<details class="ge-more"><summary>순서 설정</summary><div class="seg bd-seg">${[['first',`먼저 두기 (${e.side[e.first]})`],['second',`나중에 두기 (${e.side[e.second]})`]].map(([l,s])=>`<button class="${r===l?'on':''}" data-act="bd-side" data-v="${l}" data-k="${t}" aria-pressed="${r===l}">${s}</button>`).join('')}</div></details>`}</section>
- <section data-entry-panel="opponent" hidden>${await ln([t],t,e.side[e.first],entry)}<details class="ge-more"><summary>같은 기기에서 둘이 하기</summary><button class="btn ge-secondary" data-act="bd-start" data-k="${t}" data-mode="local">둘이서 시작하기</button></details></section></div>`;
+ <section data-entry-panel="opponent" hidden>${await ln([t],t,e.side[e.first],entry)}<details class="ge-more"><summary>같은 기기에서 둘이 하기</summary><button class="btn ge-secondary" data-act="bd-start" data-k="${t}" data-mode="local">둘이서 시작하기</button></details></section>
+ ${t==='janggi'&&typeof jgReplayMenuMarkup==='function'?jgReplayMenuMarkup():''}</div>`;
 }
 async function vn(t){
  if(window.OjjudaGuestAccess?.canPlay()===false)return;
@@ -1264,6 +1358,20 @@ var Qp={"bd-open"(t){vn(t.v)},"bd-lv"(t){g.bdLevel=t.v,Tp(t.k)},"bd-side"(t){g.b
  if(!window.OjjudaGuestScores)return {ok:false,reason:'unavailable'};
  return window.OjjudaGuestScores.submit(t,e,request.guestId||(request.guestId=crypto.randomUUID()));
 }async function ef(t){if(D.online&&D.user){let{data:r,error:a}=await S.rpc("community_game_ranking",{p_game:t});if(a)throw a;return r||[]}return window.OjjudaGuestScores?.ranking(t)||[]}var _r={solitaire:{name:"솔리테어",pinInRanking:true,emoji:"♠",unit:"초",rankingBasis:"difficulty_time",bg:"#E6EDE0",how:"카드를 A부터 K까지 미션칸에 모아요. 초보 1장·보통 3장, 길게 누르면 묶음 이동."},group:{name:"그룹",emoji:"👥",unit:"",bg:"#E6EDE0",test:true,memberOnly:true,how:"그룹을 만들고 가입을 승인해요. 우리끼리 글·사진·동영상과 약속·여행계획을 나눠요."},byeolcheonji:{name:"별천지 빈방",emoji:"🏡",unit:"",bg:"#E9EEE5",test:true,memberOnly:true,how:"날짜와 인원을 고르고 빈방 알림을 받아요. 금·토와 공휴일 전날 입실은 주말이에요. 알림에서 해당 객실 예약으로 바로 이어져요."},festival:{name:"축제일정",emoji:"📅",unit:"",bg:"#E8EEDD",test:true,how:"전국 지역축제·대학축제·영화제·박람회를 지도와 캘린더로 확인해요. 지역과 날짜로 골라 보고 관심 행사를 저장해요."},restaurants:{name:"인증맛집",emoji:"🍽️",unit:"",bg:"#E6EDE7",test:true,how:"내 위치에서 가까운 미쉐린·블루리본 선정과 우체국 추천 맛집을 찾아요. 음식 종류·지역별로 고르고 지도와 출처를 확인해요."},archery:{name:"바람의 궁수",emoji:"🏹",unit:"점",rankingBasis:"stage_score",bg:"#E3ECE0",how:"누른 채 조준하고 손을 떼면 발사해요. 10초 뒤에는 자동 발사! 장비에 따라 0.5~2초간 찾아오는 조준 안정 순간을 노려 보세요."},bang:{name:"뱅!",emoji:"🤠",unit:"연승",rankingBasis:"current_streak",bg:"#D9C195",how:"4~7명이 각자 접속해서 정체를 숨기고 대결해요. 이번 달 최고 연승으로 순위를 정하며, 패배·기권하면 현재 연승은 0부터 다시 세요."},sacheonseong:{name:"사천성",emoji:"🀄",unit:"초",rankingBasis:"stage_time",bg:"#E3ECE0",how:"같은 그림의 패 두 개를 가로·세로로 연결해요. 두 번까지 꺾을 수 있어요. 총 200단계, 십자·계단·고리 등 다양한 모양과 여러 층으로 진행해요. 같은 그림 2장과 4장을 섞어 배치해요. 최고 완료 단계가 우선이고, 같은 단계는 가장 짧은 시간으로 순위를 정해요."},roulette:{name:"룰렛",age:19,emoji:"🎡",unit:"G",rankingBasis:"best_round_gain",bg:"#DDECE5",how:"컴퓨터 대전과 최대 4명의 온라인 대전을 골라요. 온라인은 첫 시작 후 30초에 마감하고, 모두 시작하면 바로 돌아요."},poker:{name:"세븐포커",age:19,emoji:"♠️",unit:"골드",bg:"#E3ECE0",how:"2~4명이 함께하는 세븐포커. 방 코드로 참여하고, 7장 중 가장 좋은 5장으로 승부해요. 컴퓨터 연습도 가능해요."},mines:{name:"지뢰찾기",emoji:"🚩",unit:"초",rankingBasis:"difficulty_time",bg:"#EEF1FF",how:"숫자를 보고 지뢰 없는 칸을 모두 열어요. 8개 난이도와 커스텀 · 길게 눌러 깃발 · 두 손가락으로 확대"},saetbyeol:{name:"샛별키우기",emoji:"⭐",unit:"점",bg:"#F3E8FF",how:"작은 불씨를 키워 별로 진화해요. 진화·강화·기억 수집으로 성장 점수를 올려요."},ttang:{name:"월드땅따먹기",emoji:"🟣",unit:"연승",rankingBasis:"current_streak",bg:"#DDC9F5",how:"친구와 각자 폰으로 땅을 넓히며 대결해요."},photo_ttang:{name:"포토땅따먹기",age:19,emoji:"🖼️",unit:"단계",bg:"#DDC9F5",how:"혼자 땅을 넓혀 가려진 사진을 공개해요."},mole:{name:"두더지 잡기",emoji:"🔨",unit:"점",rankingBasis:"mole_grid_score",bg:"#BFE8C4",how:"3×3부터 6×6까지 선택해 7종 두더지를 잡아요. 구멍이 많을수록 여러 마리가 함께 나와요. 순위는 큰 판을 우선하고 같은 크기는 점수순이에요. 금색 +3점 · 폭탄 -2점"},runner:{name:"쭈 달리기",emoji:"🏃",unit:"점",bg:"#CFE8FF",how:"장애물을 넘으며 달려요. 화면을 누르면 점프, 공중에서 한 번 더 누르면 한 번 더 뛰어요. ZU 동전은 20점!"},stacker:{name:"탑 쌓기",emoji:"🏗️",unit:"층",bg:"#F3E8FF",how:"좌우로 움직이는 블록을 눌러서 멈춰요. 아래 블록과 겹친 만큼만 남아요. 딱 맞추면 퍼펙트!"},breakout:{name:"벽돌깨기",emoji:"🎾",unit:"점",bg:"#1F2238",how:"흰색 ?는 공 2배·10배(최대 100개) 또는 관통, 노란색 ?는 받침대 확대 또는 공 속도 −10%, 검은색 ?는 받침대 축소, 공 속도 +10%, 마지막으로 받침대에 닿은 공 하나만 남기기 중 하나예요. 내용은 먹으면 드러나요. 검은 상자는 30% 느리게 떨어져요. 관통은 판에 2번 튕기면 끝. 숫자 벽돌은 2회, ∞는 무적."},spot:{name:"틀린그림찾기",emoji:"🔎",unit:"장",rankingBasis:"picture_clears",bg:"#EEF1FF",how:"하트 3개와 30초로 다른 곳 6개를 찾아요. 힌트는 1 ZU, 30초 연장은 3 ZU예요."},screw: { name: '나사 풀기', emoji: '🔩', unit: '점', bg: '#F6E9DD', how: '박스형은 물건을 돌려 분해하며 같은 색 나사 3개를 상자에 모아요. 평면형은 나사를 선택해 빈 구멍에 옮겨 끼워요. 조각난 철판은 남은 나사를 축으로 회전하고 서로 부딪히거나 걸려요. 나사를 모두 옮겨 아래로 떨어뜨리면 그림이 드러나요.' }},Z=360,he=540,R=null;function Ut(t,e,o,r,a,i){i=Math.min(i,r/2,a/2),t.beginPath(),t.moveTo(e+i,o),t.arcTo(e+r,o,e+r,o+a,i),t.arcTo(e+r,o+a,e,o+a,i),t.arcTo(e,o+a,e,o,i),t.arcTo(e,o,e+r,o,i),t.closePath()}function X(t,e,o,r,a){t.beginPath(),t.ellipse(e,o,r,a,0,0,Math.PI*2)}function af(t,e,o,r){t.fillStyle="#F2B84B",X(t,e,o+1.5,r,r),t.fill(),t.fillStyle="#FFD37A",X(t,e,o,r,r),t.fill(),t.fillStyle="#8C5A1E",t.font=`bold ${Math.round(r*1.1)}px sans-serif`,t.textAlign="center",t.textBaseline="middle",t.fillText("ZU",e,o+.5),t.textBaseline="alphabetic"}function Br(t,e,o,r="left",a="#2E3358"){t.fillStyle=a,t.font="bold 18px sans-serif",t.textAlign=r,t.fillText(e,o,38)}var worldGameAssetRequest=0;
+Qp['bd-review-open']=()=>{
+ if(!E||E.kind!=='janggi'||!E.over)return;
+ E.reviewStep=E.moves.length;E.reviewReturn='result';Je();
+};
+Qp['bd-review-step']=action=>{
+ if(!E||E.kind!=='janggi'||!Number.isInteger(E.reviewStep))return;
+ E.reviewStep=Math.max(0,Math.min(E.moves.length,Number(action.i)||0));Je();
+};
+Qp['bd-review-back']=()=>{
+ if(!E||E.kind!=='janggi')return;
+ if(E.reviewReturn==='menu'){vn('janggi');return}
+ E.reviewStep=null;E.reviewReturn=null;Je();
+};
+Qp['bd-review-saved']=action=>jgOpenSavedReplay(Number(action.i));
 // The box puzzle is public; only the flat puzzle is temporarily closed.
 var worldRecommendedRestaurants=null,worldRecommendedClient=null;
 function worldRecommendedApi(){
