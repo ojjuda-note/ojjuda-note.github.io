@@ -5,8 +5,8 @@ const test = require('node:test');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../app/world/world-navigation.js'), 'utf8');
 
-function fixture() {
-  let overlay = false, mutations, backCalls = 0, closeCalls = 0;
+function fixture({tab='hub', gameUrl=null}={}) {
+  let overlay = false, gaming = false, mutations, backCalls = 0, closeCalls = 0, mainCalls = 0;
   const events = new Map();
   const window = {
     addEventListener(type, callback) {
@@ -16,32 +16,39 @@ function fixture() {
   };
   window.top = {};
   const history = {
-    state: null,
-    replaceState(state) { this.state = state; },
-    pushState(state) { this.state = state; },
+    state: null, replacements: [],
+    replaceState(state, title, url) { this.state = state; if (url) this.replacements.push(url); },
+    pushState(state, title, url) { this.state = state; this.menuUrl = url; },
     back() { backCalls++; }
   };
-  const document = { body: {}, addEventListener() {}, defaultView: window };
+  const document = { body: {classList:{contains(name) {return name==='gaming'&&gaming;}}}, addEventListener() {}, defaultView: window };
   vm.runInNewContext(source, {
-    window, document, history, location: { href: 'https://world.test/world.html' },
+    window, document, history, location: { href: 'https://world.test/world.html'+(gameUrl?'?game='+gameUrl:'') },
     MutationObserver: class {
       constructor(callback) { mutations = callback; }
       observe() {}
     }
   });
   const navigation = window.OjjudaWorldNavigation.install({
-    isMain: () => true, hasOverlay: () => overlay,
+    isMain: () => tab==='hub', hasOverlay: () => overlay,
+    isSectionRoot: () => ['park','my'].includes(tab),
+    arcadeReturnUrl: () => gameUrl && 'https://world.test/world.html?tab=hub',
     closeOverlay() { closeCalls++; overlay = false; return true; },
-    canLeave: () => true, toMain() {}, tabs: ['arcade'], currentTab: () => 'arcade'
+    canLeave: () => true, toMain() { mainCalls++; tab='hub'; },
+    tabs: ['hub','arcade','park','my'], currentTab: () => tab
   });
   navigation.sync();
   return {
     history, navigation,
     show() { overlay = true; mutations(); },
     remove() { overlay = false; mutations(); },
+    showGame() { overlay = true; gaming = true; mutations(); },
+    closeGame() { overlay = false; gaming = false; mutations(); },
     emit(type) { for (const callback of events.get(type) || []) callback(); },
     get backCalls() { return backCalls; },
-    get closeCalls() { return closeCalls; }
+    get closeCalls() { return closeCalls; },
+    get mainCalls() { return mainCalls; },
+    get tab() { return tab; }
   };
 }
 
@@ -76,4 +83,26 @@ test('departure during an unfinished return cannot leave restored navigation stu
   f.emit('pagehide'); f.emit('popstate'); f.emit('pageshow');
   f.show(); f.remove();
   assert.equal(f.backCalls, 2, 'a later game can close after an interrupted return');
+});
+
+test('closing an arcade game with its own exit button returns to the Agit hub', () => {
+  const f = fixture({tab:'arcade'});
+  f.showGame(); f.closeGame();
+  assert.equal(f.tab,'hub');
+  assert.equal(f.mainCalls,1);
+});
+
+test('park and settings Back stay in their own main sections', () => {
+  for (const tab of ['park','my']) {
+    const f = fixture({tab});
+    f.emit('popstate');
+    assert.equal(f.tab,tab);
+    assert.equal(f.mainCalls,0);
+    assert.equal(f.history.state.ojjudaWorld,'menu');
+  }
+});
+
+test('a direct game link creates a hub return history entry', () => {
+  const f = fixture({tab:'arcade',gameUrl:'mines'});
+  assert.equal(f.history.replacements.at(-1),'https://world.test/world.html?tab=hub');
 });

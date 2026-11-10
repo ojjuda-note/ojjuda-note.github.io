@@ -10,7 +10,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='tour-game-dialog festival-schedule-dialog';
    dialog.setAttribute('aria-label','축제일정 · 일상');
-   dialog.innerHTML='<header class="tour-game-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>축제일정 <small>일상</small></span><button type="button" aria-label="오락실로 돌아가기">← 오락실</button></header><iframe title="축제일정 · 전국 행사 지도와 캘린더" src="/games/festival-schedule/index.html?v=20261107-festival-location2&embedded=1" allow="geolocation; clipboard-write; web-share"></iframe>';
+   dialog.innerHTML='<header class="tour-game-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>축제일정 <small>일상</small></span><button type="button" aria-label="아지트로 돌아가기">← 아지트</button></header><iframe title="축제일정 · 전국 행사 지도와 캘린더" src="/games/festival-schedule/index.html?v=20261107-festival-location2&embedded=1" allow="geolocation; clipboard-write; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const current=()=>active?.dialog===dialog&&authorized();
    function close(){

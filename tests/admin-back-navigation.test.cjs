@@ -42,13 +42,13 @@ function createFixture() {
   vm.runInContext(adminBackCode, context);
   vm.runInContext(navigation, context);
   context.worldNavigation = window.OjjudaWorldNavigation.install({
-    isMain:() => g.tab === 'arcade',
+    isMain:() => g.tab === 'hub',
     hasOverlay:() => false,
     closeOverlay:() => false,
     handleBack:() => g.tab === 'admin' && context.adminBack(),
     canLeave:() => true,
-    toMain:() => { g.tab = 'arcade'; },
-    tabs:['arcade','admin'], currentTab:() => g.tab
+    toMain:() => { g.tab = 'hub'; },
+    tabs:['hub','arcade','admin'], currentTab:() => g.tab
   });
   context.worldNavigation.sync();
   return {
@@ -60,15 +60,15 @@ function createFixture() {
   };
 }
 
-test('browser Back goes directly from any administrator section to admin overview, then World', () => {
+test('browser Back goes from any administrator section to admin overview and stays in admin mode', () => {
   const f = createFixture();
   assert.equal(f.history.state.ojjudaWorld, 'menu');
   f.back();
   assert.deepEqual([f.g.tab,f.L.area,f.L.tab],['admin','account','overview']);
   assert.equal(f.history.state.ojjudaWorld, 'menu', 'keep a Back entry for the administrator dashboard');
   f.back();
-  assert.equal(f.g.tab, 'arcade');
-  assert.equal(f.history.state.ojjudaWorld, 'main');
+  assert.deepEqual([f.g.tab,f.L.area,f.L.tab],['admin','account','overview']);
+  assert.equal(f.history.state.ojjudaWorld, 'menu');
 });
 
 test('unsaved administrator work blocks Back without skipping its menu', () => {
@@ -80,10 +80,10 @@ test('unsaved administrator work blocks Back without skipping its menu', () => {
   assert.deepEqual([f.g.tab,f.L.area,f.L.tab],['admin','account','overview']);
 });
 
-test('the visible Back button uses the same two-stage navigation', () => {
+test('the visible Back button returns to admin overview without leaving admin mode', () => {
   const f = createFixture();
   f.button();assert.deepEqual([f.L.area,f.L.tab],['account','overview']);
-  f.button();assert.equal(f.g.tab,'arcade');
+  f.button();assert.equal(f.g.tab,'admin');
   assert.ok(f.renders >= 1);
 });
 

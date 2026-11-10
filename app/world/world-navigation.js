@@ -8,7 +8,7 @@
       const state = page => ({...(history.state || {}), ojjudaWorld: page});
       let menuHref;
       const pushMenu = (href = location.href) => {
-        const mainUrl = options.isMain() && options.arcadeReturnUrl?.();
+        const mainUrl = options.arcadeReturnUrl?.();
         if (mainUrl) history.replaceState(state('main'), '', mainUrl);
         menuHref = href;
         history.pushState(state('menu'), '', href);
@@ -51,6 +51,7 @@
         if (requestGameExit()) return true;
         if (options.closeOverlay()) return true;
         if (options.handleBack?.()) return true;
+        if (options.isSectionRoot?.()) return true;
         if (options.isMain()) return false;
         if (options.canLeave()) options.toMain();
         return true;
@@ -87,6 +88,7 @@
       // Keep one return entry while an overlay is open, and consume it when the
       // game closes by its own button. A cancelled exit keeps the same guard.
       let overlayActive = !!options.hasOverlay?.();
+      let gamingActive = document.body.classList?.contains('gaming') === true;
       new MutationObserver(() => {
         if (exitChoice && !exitChoice.game.isConnected) exitChoice.finish();
         if (pendingArcadeReturn && !pendingArcadeReturn.game.isConnected) {
@@ -94,6 +96,10 @@
           pendingArcadeReturn = null;
           if (!departing && options.currentTab() === tab && !options.isMain() && options.canLeave()) options.toMain();
         }
+        const wasGaming = gamingActive;
+        gamingActive = document.body.classList?.contains('gaming') === true;
+        if (wasGaming && !gamingActive && !departing && options.currentTab() === 'arcade'
+          && options.canLeave()) options.toMain();
         const active = !!options.hasOverlay?.();
         if (active === overlayActive) return;
         overlayActive = active;

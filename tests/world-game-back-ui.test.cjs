@@ -112,7 +112,7 @@ window.childReady=true;
       // Both public directories have a visible return and support the same browser/native Back.
       for(const game of ['festival','restaurants']){
         await page.evaluate(game=>backFixture.open(game),game);
-        await page.getByRole('button',{name:'오락실로 돌아가기',exact:true}).click();
+        await page.getByRole('button',{name:'아지트로 돌아가기',exact:true}).click();
         await main();
         await page.evaluate(game=>backFixture.open(game),game);
         await page.locator('.agit-home-link').click();
@@ -144,7 +144,7 @@ window.childReady=true;
       }
       await main();
 
-      // The return target of a shared game URL must stay on the arcade after refresh.
+      // The return target of a shared game URL is the Agit hub after refresh.
       await page.evaluate(()=>{
         history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
         backFixture.initVersion(()=>{});
@@ -155,7 +155,7 @@ window.childReady=true;
       assert.equal(new URL(page.url()).searchParams.has('v'),false);
       await back();await main();
       const returned=new URL(page.url());
-      assert.equal(returned.searchParams.get('tab'),'arcade');
+      assert.equal(returned.searchParams.get('tab'),'hub');
       assert.equal(returned.searchParams.get('keep'),'yes');
       for(const key of ['game','challenge','score'])assert.equal(returned.searchParams.has(key),false);
 
@@ -194,6 +194,8 @@ window.childReady=true;
       await page.locator('.bottomnav [data-tab="my"]').click();
       await page.waitForFunction(() => history.state?.ojjudaWorld === 'menu');
       await back();
+      assert.equal(await page.locator('.my-hub').isVisible(),true,'settings Back stays in settings');
+      await page.locator('.bottomnav [data-tab="hub"]').click();
       await main();
       assert.deepEqual(errors, [], 'no navigation or game bridge errors');
       if (!native) {
@@ -205,8 +207,8 @@ window.childReady=true;
       }
       const retired=await context.newPage();
       await retired.goto(origin+'/world.html?game=byeolcheonji',{waitUntil:'commit'});
-      await retired.locator('.arcade-home').waitFor();
-      assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Arcade');
+      await retired.locator('#agit-hub-view').waitFor();
+      assert.equal(new URL(retired.url()).pathname,'/world.html','retired vacancy links stay in the Hub');
       assert.equal(await retired.locator('[data-v=byeolcheonji]').count(),0,'retired vacancy alert has no game card');
       await context.close();
       console.log(`PASS: ${native?'native':'browser'} Back returns nested directories and every game family to Hub, keeps the current round on Continue, confirms exit from active games and consumes stale history.`);

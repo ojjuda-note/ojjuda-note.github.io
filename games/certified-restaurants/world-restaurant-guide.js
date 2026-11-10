@@ -25,7 +25,7 @@
    const dialog=document.createElement('dialog');
    dialog.className='restaurant-guide-dialog';
    dialog.setAttribute('aria-label','인증맛집 · 일상');
-   dialog.innerHTML='<header class="restaurant-guide-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>인증맛집 <small>일상</small></span><button type="button" aria-label="오락실로 돌아가기">← 오락실</button></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation; clipboard-write; web-share"></iframe>';
+   dialog.innerHTML='<header class="restaurant-guide-header"><a class="agit-home-link" href="/world.html" aria-label="오쭈다 아지트 홈으로 이동"><img src="/favicon.svg?v=20261022-agit-logo2" alt="" width="24" height="24"><span>오쭈다 <strong>아지트</strong></span></a><span>인증맛집 <small>일상</small></span><button type="button" aria-label="아지트로 돌아가기">← 아지트</button></header><p class="restaurant-guide-message" role="status" hidden></p><iframe title="인증맛집 · 가이드 선정과 우체국 추천 지도" allow="geolocation; clipboard-write; web-share"></iframe>';
    const frame=dialog.querySelector('iframe');
    const hasMemberMenu=typeof recommendations?.open==='function';
    const ratings=recommendations?.ratings;
@@ -34,7 +34,7 @@
    const hasComments=typeof comments?.list==='function'&&typeof comments?.save==='function'&&typeof comments?.remove==='function';
    const hasMemberData=!!owner&&typeof recommendations?.getMapPage==='function';
    const ratingRequests=new Set(),commentRequests=new Set(),mapRequests=new Set();
-   frame.src='/games/certified-restaurants/index.html?v=20261110-restaurants-c2s38-sangju4-map2&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasComments?'&member-comments=1':'')+(owner&&hasComments?'&can-comment=1':'')+(hasMemberData?'&member-recommendations=1':'');
+   frame.src='/games/certified-restaurants/index.html?v=20261110-navigation-return1&embedded=1'+(hasMemberMenu?'&member-menu=1':'')+(hasRatings?'&member-ratings=1':'')+(hasComments?'&member-comments=1':'')+(owner&&hasComments?'&can-comment=1':'')+(hasMemberData?'&member-recommendations=1':'');
    const status=dialog.querySelector('.restaurant-guide-message');
    let disposed=false,closing=null,authTimer=null,unsubscribeChanges=null,childWasOpen=false;
    const current=()=>!disposed&&active?.dialog===dialog&&allowed();

@@ -8,7 +8,7 @@
   function toolbar(close) {
     const bar = document.createElement('header'); bar.className = 'mp-entry-bar';
     const back = document.createElement('button'); back.type = 'button'; back.className = 'mp-entry-back';
-    back.textContent = '← 게임 목록'; back.onclick = close;
+    back.textContent = '← 아지트'; back.onclick = close;
     const brand = document.createElement('span'); brand.textContent = '오쭈다 오락실';
     bar.append(back, brand); return bar;
   }

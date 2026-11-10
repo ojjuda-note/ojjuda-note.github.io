@@ -1,6 +1,19 @@
 /* Progressive enhancements for the public guide; no account or game state. */
 (() => {
   'use strict';
+  // Help is shared by the hub, park and settings. Its Back link keeps the caller's section.
+  const returnTo = new URLSearchParams(location.search).get('from');
+  const returnSections = {
+    my: ['/world.html?tab=my', '설정으로'],
+    park: ['/world.html?tab=park', '공원으로'],
+    admin: ['/world.html?admin=overview', '관리자 모드로']
+  };
+  const [returnHref, returnLabel] = returnSections[returnTo] || ['/world.html?tab=hub', '아지트로'];
+  const returnLink = document.querySelector('.header-back');
+  if (returnLink) {
+    returnLink.href = returnHref;
+    returnLink.textContent = `${returnLabel} 돌아가기`;
+  }
   const cards = [...document.querySelectorAll('[data-game]')];
   const groups = [...document.querySelectorAll('[data-game-group]')];
   const search = document.getElementById('game-search');

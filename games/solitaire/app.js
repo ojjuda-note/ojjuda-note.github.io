@@ -326,8 +326,8 @@ function notifyArcade(type,data={}){if(window.parent!==window)window.parent.post
 function requestExit(){
   save();
   if(window.parent!==window){notifyArcade('ojjuda-game-exit-request');return;}
-  openDialog('<h2 class="dialog-title">오락실로 돌아갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">게임 목록으로</button></div>');
-  $('#leave-arcade').onclick=()=>location.assign('/world.html?tab=arcade');
+  openDialog('<h2 class="dialog-title">아지트로 돌아갈까요?</h2><div class="dialog-buttons"><button data-close>게임 계속하기</button><button class="primary" id="leave-arcade">아지트로</button></div>');
+  $('#leave-arcade').onclick=()=>location.assign('/world.html?tab=hub');
 }
 $('#game-home').onclick=requestExit;
 window.OjjudaSolitaireControls={save,pause(){

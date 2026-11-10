@@ -751,8 +751,8 @@
       observeAuth();
       const dialog = hook(node('dialog', 'recommended-restaurants-dialog'), 'dialog'); dialog.setAttribute('aria-label', '회원 추천맛집');
       const header = node('header', 'rr-header'), backButton = button('←', 'rr-header-button', 'back'), heading = node('h1', '', '추천맛집'), closeButton = button('×', 'rr-header-button', 'close');
-      backButton.setAttribute('aria-label', onReturn ? '오락실로 돌아가기' : '이전 화면으로'); closeButton.setAttribute('aria-label', '추천맛집 닫기');
-      if (returnLabel) { closeButton.textContent = '← ' + returnLabel; closeButton.classList.add('rr-return-button'); closeButton.setAttribute('aria-label', returnLabel + '으로 돌아가기'); }
+      backButton.setAttribute('aria-label', onReturn ? '아지트로 돌아가기' : '이전 화면으로'); closeButton.setAttribute('aria-label', '추천맛집 닫기');
+      if (returnLabel) { closeButton.textContent = '← ' + returnLabel; closeButton.classList.add('rr-return-button'); closeButton.setAttribute('aria-label', returnLabel + '로 돌아가기'); }
       header.append(backButton, heading, closeButton);
       const cleanupStatus = hook(node('aside', 'rr-cleanup-status'), 'cleanup-status'); cleanupStatus.hidden = true; cleanupStatus.setAttribute('role', 'status');
       const body = node('main', 'rr-body'); dialog.append(header, cleanupStatus, body);
