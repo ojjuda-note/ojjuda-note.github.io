@@ -18903,6 +18903,107 @@
         "정기연주회"
       ],
       "status": "scheduled"
+    },
+    {
+      "id": "chuncheon-hapstage-2026",
+      "title": "2026 합스테이지 — 다섯 편의 신작 공연",
+      "category": "local",
+      "section": "performance",
+      "start": "2026-11-18",
+      "end": "2026-11-21",
+      "region": "강원",
+      "city": "춘천시",
+      "venue": "춘천시공연예술창업지원센터",
+      "address": "",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "춘천시공연예술창업지원센터에서 새롭게 제작한 공연 다섯 편을 선보이는 신작 공연 프로그램입니다.",
+      "scheduleNote": "11월 18~21일 공연. 작품별 공연 시각과 회차는 공식 프로그램 안내 확인.",
+      "priceNote": "관람료 및 작품별 예매 조건은 공식 안내 확인.",
+      "accessNote": "공식 안내상 10세 이상 관람 가능(작품별 상이). 신청·접수 기간은 11월 9~21일로 공지됐으며 공연별 참여 방법은 주최 측 확인.",
+      "sourceUrl": "https://www.cccf.or.kr/home/program/etc_business",
+      "sourceName": "춘천문화재단·춘천시공연예술창업지원센터",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://www.cccf.or.kr/home/"
+      ],
+      "tags": [
+        "연극",
+        "창작공연",
+        "공연예술",
+        "신작"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "chuncheon-dreams-arts-education-festival-2026",
+      "title": "2026 춘천 문화예술교육 축제 〈꿈이 들락날락〉",
+      "category": "local",
+      "section": "festival",
+      "start": "2026-11-27",
+      "end": "2026-11-29",
+      "region": "강원",
+      "city": "춘천시",
+      "venue": "춘천 꿈꾸는 예술터",
+      "address": "",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "춘천문화재단이 예술교육 경험을 함께 나누는 문화예술교육 축제로, 다양한 체험·감상 프로그램을 진행합니다.",
+      "scheduleNote": "11월 27~29일. 세부 프로그램과 운영 시간은 춘천문화재단 공식 안내 확인.",
+      "priceNote": "프로그램별 참가비 및 무료 여부는 공식 안내 확인.",
+      "accessNote": "문화예술교육에 관심 있는 누구나 대상. 공식 신청기간은 11월 13일~27일이며 프로그램별 신청·입장 방식을 확인.",
+      "sourceUrl": "https://www.cccf.or.kr/home/program/edu_event",
+      "sourceName": "춘천문화재단 예술교육팀",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://cccf.or.kr/ccartedu/edu_apply/program/everyone_educate"
+      ],
+      "tags": [
+        "문화예술교육",
+        "체험",
+        "지역축제",
+        "가족"
+      ],
+      "status": "scheduled"
+    },
+    {
+      "id": "yanggu-kbilliards-youth-championship-2026",
+      "title": "2026 K-Billiards 디비전리그 유스챔피언십",
+      "category": "sport",
+      "section": "sports",
+      "sportType": "당구",
+      "start": "2026-11-12",
+      "end": "2026-11-13",
+      "region": "강원",
+      "city": "양구군",
+      "venue": "양구종합스포츠타운",
+      "address": "",
+      "locationStatus": "unmapped",
+      "lat": null,
+      "lng": null,
+      "geoApprox": false,
+      "summary": "대한당구연맹 K-Billiards 디비전리그의 유소년 챔피언십 대회입니다. 공식 플랫폼에 대회 일정과 경기장, 대진 공지가 게시됐습니다.",
+      "scheduleNote": "11월 12~13일. 세부 경기 시간·대진은 대한당구연맹 공식 플랫폼 확인.",
+      "priceNote": "관람료는 공식 안내 확인. 참가 신청은 마감됐으며 참가비는 주최 측 공지 확인.",
+      "accessNote": "일반 관람·입장 허용 여부는 공식 안내에서 별도 확인. 참가 신청 마감.",
+      "sourceUrl": "https://kbfapp.cuesco.net/competitions/?selYear=2026",
+      "sourceName": "대한당구연맹 KBF 공식 플랫폼",
+      "sourceCheckedAt": "2026-11-10",
+      "verificationSources": [
+        "https://kbfapp76.cuesco.net/welcome/main",
+        "https://g1.sports.or.kr/schedule/month.do?searchMonth=11&searchYear=2026"
+      ],
+      "tags": [
+        "당구",
+        "유소년",
+        "생활체육",
+        "디비전리그"
+      ],
+      "status": "scheduled"
     }
   ]
 }
