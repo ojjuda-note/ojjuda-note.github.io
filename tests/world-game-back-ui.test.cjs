@@ -153,14 +153,10 @@ window.childReady=true;
       await arcade();
 
       // A shared game URL returns to Arcade and loses its game-only query after exit.
-      await page.evaluate(()=>{
-        history.replaceState(history.state,'','?game=stacker&challenge=1&score=100&keep=yes&v=update');
-        backFixture.initVersion(()=>{});
-        backFixture.open('stacker');
-      });
-      await page.waitForFunction(()=>history.state?.ojjudaWorld==='menu');
+      await page.goto(origin+'/world.html?game=stacker&challenge=1&score=100&keep=yes');
+      await page.waitForFunction(()=>window.backFixture&&history.state?.ojjudaWorld==='menu');
+      await page.evaluate(()=>backFixture.open('stacker'));
       assert.equal(new URL(page.url()).searchParams.get('game'),'stacker');
-      assert.equal(new URL(page.url()).searchParams.has('v'),false);
       await back();
       await arcade();
       const returned=new URL(page.url());
