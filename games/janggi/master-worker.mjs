@@ -1,5 +1,5 @@
 import { analyzeJanggiMasterMove, MASTER_LEVELS } from './master-ai.mjs';
-import { janggiRules } from './worker-rules.mjs';
+import { janggiRules } from './worker-rules.mjs?v=20261110-janggi-replay1';
 
 self.onmessage = ({ data }) => {
  const requestId = data?.requestId;

@@ -105,7 +105,7 @@ test('background AI turn applies a verified move and ignores an abandoned match'
 test('advanced tiers preserve their worker while the Janggi UI gets its own release', () => {
  const revision = JSON.parse(fs.readFileSync(path.join(root, 'game-release.json'), 'utf8')).revision;
  const assets = fs.readFileSync(path.join(root, 'shared/games/world-game-assets.js'), 'utf8');
- assert.ok(source.includes('master-worker.mjs?v=20261108-janggi-master-ai1'));
+ assert.ok(source.includes('master-worker.mjs?v=20261110-janggi-replay1'));
  assert.ok(source.includes(`world-game-assets.js?v=${revision}`));
  assert.ok(assets.includes(`const revision='${revision}'`));
  const version = assets.match(/janggi:'(\d+)\.(\d+)\.(\d+)'/)?.slice(1).map(Number);
