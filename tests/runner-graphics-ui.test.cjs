@@ -66,6 +66,10 @@ g.tab='friends'; H();
     for (const [width, height] of [[320, 568], [390, 844], [844, 390], [1280, 900]]) {
       await page.setViewportSize({ width, height });
       await open(); await start();
+      if (process.env.RUNNER_ACTIVE_PROOF && width === 390) {
+        await page.evaluate(() => runnerTest.step(142));
+        await page.screenshot({ path: process.env.RUNNER_ACTIVE_PROOF });
+      }
       const box = await page.locator('#gov .gbox').boundingBox();
       const visible = await page.locator('#gcv').boundingBox();
       const pixels = await page.locator('#gcv').evaluate(c => ({ width: c.width, height: c.height }));
