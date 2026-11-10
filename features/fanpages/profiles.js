@@ -166,6 +166,7 @@ window.OJJUDA_FAN_PROFILES = {
     debut: '2024.12.20', debutWork: 'Under My Skin (A2O)',
     agency: 'A2O Entertainment',
     concept: '다섯 멤버가 선보이는 Zalpha Pop.',
+    heightSource: 'https://kpopdiscover.com/en/groups/a2o-may/',
     awards: [
       { year: '2025', title: 'Weibo Music Awards 신인상', detail: 'Annual Newcomer Group', href: 'https://tokytunes.com/the-orchard-japan-711/' }
     ],
@@ -214,3 +215,117 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   }
 };
+
+/* Extra member facts are reference values, not fixed official measurements.
+   MBTI can change after a new self-assessment. Keep conflicting or unpublished
+   values blank until confirmed; never infer a blood type or personality type. */
+const supplementaryProfiles = {
+  rescene: {
+    sources: [{ label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/rescene/' }],
+    members: {
+      '원이': { bloodType: 'B', mbti: 'ESFP' }, '리브': { bloodType: 'A', mbti: 'ESFP' },
+      '미나미': { bloodType: 'O', mbti: 'ENFP' }, '메이': { bloodType: 'AB', mbti: 'INTP' },
+      '제나': { bloodType: 'A', mbti: 'INFP' }
+    }
+  },
+  ive: {
+    sources: [{ label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/ive/' }],
+    members: {
+      '안유진': { bloodType: 'A', mbti: 'ISTP' }, '가을': { bloodType: 'B', mbti: 'ISTJ' },
+      '레이': { bloodType: 'A', mbti: 'INFJ' }, '장원영': { bloodType: 'O', mbti: 'ENTJ' },
+      '리즈': { bloodType: 'AB', mbti: 'INTP' }, '이서': { bloodType: 'O', mbti: 'ESTP' }
+    }
+  },
+  aespa: {
+    sources: [{ label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/aespa/' }],
+    members: {
+      '카리나': { bloodType: 'B', mbti: 'ENFP' }, '지젤': { bloodType: 'O', mbti: 'INFJ' },
+      '윈터': { bloodType: 'A', mbti: 'ENFJ' }, '닝닝': { bloodType: 'O', mbti: 'INFP' }
+    }
+  },
+  lesserafim: {
+    sources: [{ label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/le-sserafim/' }],
+    members: {
+      '김채원': { bloodType: 'B', mbti: 'ISTP' }, '사쿠라': { bloodType: 'A', mbti: 'INTP' },
+      '허윤진': { bloodType: 'B', mbti: 'INFJ' }, '카즈하': { bloodType: 'O', mbti: 'ENFP' },
+      '홍은채': { bloodType: 'A', mbti: 'ISFP' }
+    }
+  },
+  twice: {
+    sources: [{ label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/twice/' }],
+    members: {
+      '나연': { bloodType: 'A', mbti: 'ISTP' }, '정연': { bloodType: 'O', mbti: 'ESFJ' },
+      '모모': { bloodType: 'A', mbti: 'INTP' }, '사나': { bloodType: 'B', mbti: 'ENFP' },
+      '지효': { bloodType: 'O', mbti: 'ESTP' }, '미나': { bloodType: 'A', mbti: 'ISTP' },
+      '다현': { bloodType: 'O', mbti: 'ISFJ-T' }, '채영': { bloodType: 'B', mbti: 'INFP-T' },
+      '쯔위': { bloodType: 'A', mbti: 'ISFP-A' }
+    }
+  },
+  illit: {
+    sources: [
+      { label: '멤버 혈액형·MBTI', href: 'https://kpopdiscover.com/en/groups/illit/' },
+      { label: '아일릿 MBTI 변경 참고', href: 'https://kprofiles.com/illit-members-profile/' }
+    ],
+    members: {
+      '윤아': { bloodType: 'A', mbti: 'ENFP' }, '민주': { bloodType: 'O', mbti: 'ISTP' },
+      '모카': { bloodType: 'B', mbti: 'ISFP' }, '원희': { bloodType: 'A', mbti: 'ISFP' },
+      '이로하': { bloodType: 'A', mbti: 'INFJ' }
+    }
+  },
+  a2omay: {
+    sources: [{ label: '멤버 생일·키', href: 'https://kpopdiscover.com/en/groups/a2o-may/' }],
+    members: {
+      'CHENYU': { birthday: '2008.02.22', height: '173' },
+      'SHIJIE': { birthday: '2007.06.26', height: '170.5' },
+      'QUCHANG': { birthday: '2007.07.28', height: '178.1' },
+      'MICHE': { birthday: '2005.04.15', height: '172.5' },
+      'KAT': { birthday: '2005.04.15', height: '171' }
+    }
+  },
+  a2olite: {
+    sources: [{ label: '멤버 생일·MBTI', href: 'https://tanjoubi.today/en/group/20261013_A2OLITE_dc66' }],
+    members: {
+      'YOUNG': { birthday: '2008.10.27' },
+      'OA': { birthday: '2013.02.08', mbti: 'ENFP' },
+      'AYUNE': { birthday: '2013.01.29' },
+      'AIJING': { birthday: '2013.04.24', mbti: 'ESFJ' },
+      'HIMEKI': { birthday: '2009.10.05', mbti: 'INFJ' },
+      'RADA': { birthday: '2011.04.11' },
+      'XILI': { birthday: '2010.11.06' },
+      'VORA': { birthday: '2010.02.10', mbti: 'INTJ' },
+      'MERCI': { birthday: '2011.05.31', mbti: 'ISTJ' }
+    }
+  },
+  a2osoul: {
+    sources: [
+      { label: '멤버 생일·MBTI', href: 'https://tanjoubi.today/ja/group/20261013_A2OSOUL_3e68' },
+      { label: '멤버 성격 참고', href: 'https://kpopping.com/profiles/group/a2o-soul' }
+    ],
+    members: {
+      'MOON': { mbti: 'INFP' },
+      'TAI': { birthday: '2011.08.09', mbti: 'INTJ' },
+      'GAKU': { birthday: '2009.09.04', mbti: 'ISFP' },
+      'SEE-ONE': { birthday: '2011.02.10', mbti: 'ENFP' },
+      'SEOHA': { birthday: '2008.01.01' },
+      'SONO': { birthday: '2011.11.05', mbti: 'ENTP' },
+      'LUCIEN': { birthday: '2010.12.10' },
+      'ZAI': { birthday: '2012.01.06' },
+      'AYDEN': { birthday: '2012.03.27', mbti: 'INFP' },
+      'ALURE': { birthday: '2011.07.08' },
+      'ZET': { birthday: '2012.06.21', mbti: 'ENFP' },
+      'SORA': { birthday: '2007.07.30' },
+      'TEO': { birthday: '2009.07.30' },
+      'JUNE': { birthday: '2009.11.09' },
+      'HANSUNG': { birthday: '2010.02.25', mbti: 'ENFP' }
+    }
+  }
+};
+
+for (const [id, supplement] of Object.entries(supplementaryProfiles)) {
+  const profile = window.OJJUDA_FAN_PROFILES[id];
+  if (!profile) continue;
+  profile.sources.push(...supplement.sources);
+  for (const member of profile.members) {
+    Object.assign(member, supplement.members[member.name] || {});
+  }
+}
