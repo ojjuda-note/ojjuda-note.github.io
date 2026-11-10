@@ -100,7 +100,13 @@ function setup(query, { user = null, confirmed = false, sessionError = false, se
     for (const [key, value] of Object.entries({ nickname: '테스트', email: 'signup-fixture@ojjuda.kr', password: 'test-password', 'password-confirm': 'test-password', 'signup-birth': '000101', 'signup-code': '3', 'signup-phone': '010-2345-6789' })) element(key).value = value;
     element('age-check').checked = element('policy-check').checked = true;
   };
-  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, advance: ms => { clock += ms; } };
+  return { element, flush, emit, emitNow, submit, fill, navigations, signups, signins, passwordUpdates, recoveries, storage, location, window: context.window, client, advance: ms => { clock += ms; } };
+}
+
+// The login controller shares its auth client with navigation tracking.
+{
+  const app = setup('?auth=login');
+  assert.equal(app.window.ojjudaSupabase, app.client, 'Portal exposes one shared auth client');
 }
 
 (async () => {

@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../shared/activity/member-navigation.js'), 'utf8');
 
-async function harness(signedIn = true) {
+async function harness(signedIn = true, sharedClient = false) {
   const events = [], listeners = {};
   const location = new URL('https://ojjuda.kr/world.html?tab=arcade');
   const document = {
@@ -14,18 +14,21 @@ async function harness(signedIn = true) {
     addEventListener(name, fn) { listeners[name] = fn; },
     head: { append() { throw Error('Supabase is already loaded'); } }
   };
+  let creations = 0;
+  const client = { auth: {
+    onAuthStateChange() {},
+    async getSession() { return { data: { session: signedIn ? { user: { id: 'user-1' }, access_token: 'signed-in-token' } : null } }; }
+  } };
   const window = {
     OJJUDA_CONFIG: { supabaseUrl: 'https://example.supabase.co', supabaseKey: 'public-test-key' },
-    supabase: { createClient() { return { auth: {
-      onAuthStateChange() {},
-      async getSession() { return { data: { session: signedIn ? { user: { id: 'user-1' }, access_token: 'signed-in-token' } : null } }; }
-    } }; } }
+    supabase: { createClient() { creations++; return client; } }
   };
+  if (sharedClient) window.ojjudaSupabase = client;
   vm.runInNewContext(source, { window, document, location, URL, setTimeout, fetch: async (_url, options) => {
     events.push({ payload: JSON.parse(options.body), options }); return { ok: true };
   } });
   await new Promise(resolve => setImmediate(resolve));
-  return { events, listeners, window };
+  return { events, listeners, window, client, created: () => creations };
 }
 
 function click(listeners, action, href = null) {
@@ -49,4 +52,15 @@ test('does not report guest navigation', async () => {
   const { events, listeners } = await harness(false);
   click(listeners, { act: 'game-open', v: 'solitaire' });
   assert.equal(events.length, 0);
+});
+
+test('reuses the main authentication client and keeps one owner for fallback pages', async () => {
+  const shared = await harness(true, true);
+  assert.equal(shared.created(), 0, 'World must not create another GoTrueClient');
+  assert.equal(shared.window.ojjudaSupabase, shared.client);
+  assert.equal(shared.events.length, 1, 'navigation recording still works with the shared client');
+
+  const standalone = await harness();
+  assert.equal(standalone.created(), 1, 'standalone pages create at most one client');
+  assert.equal(standalone.window.ojjudaSupabase, standalone.client, 'later modules reuse the fallback client');
 });

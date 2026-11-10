@@ -117,7 +117,9 @@
 
   async function start() {
     if (document.readyState === 'loading') await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
-    if (!window.supabase?.createClient) {
+    // Reuse the page's member session. A second default-key GoTrueClient
+    // can race the main login client and produce duplicate-auth warnings.
+    if (!window.ojjudaSupabase?.auth && !window.supabase?.createClient) {
       try {
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
@@ -127,9 +129,11 @@
         });
       } catch { return; }
     }
-    const client = window.supabase.createClient(config.supabaseUrl, config.supabaseKey, {
-      auth: { autoRefreshToken: false, detectSessionInUrl: false }
-    });
+    const client = window.ojjudaSupabase?.auth
+      ? window.ojjudaSupabase
+      : window.supabase?.createClient?.(config.supabaseUrl, config.supabaseKey);
+    if (!client?.auth) return;
+    window.ojjudaSupabase = client;
     function accept(next) {
       const previous = session?.user?.id;
       session = next?.user?.id ? next : null;

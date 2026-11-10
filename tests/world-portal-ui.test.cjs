@@ -59,7 +59,14 @@ const copy = '오늘 하루 어땠나요? 괜찮았나요';
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'landing fits ' + width);
       if (process.env.OJJUDA_COPY_PROOF_DIR) { fs.mkdirSync(process.env.OJJUDA_COPY_PROOF_DIR, { recursive: true }); await page.screenshot({ path: path.join(process.env.OJJUDA_COPY_PROOF_DIR, `landing-${width}.png`) }); }
       await page.goto(origin + '/sitemap.html');
-      assert.equal(await page.locator('main section').count(), 3);
+      // The public sitemap now includes searchable game, food, fan and group pages.
+      assert.ok(await page.locator('main section').count() >= 7, 'World destinations and discovery sections remain visible');
+      for (const href of [
+        '/world.html?tab=arcade', '/world.html?tab=park', '/world.html?tab=my',
+        '/games/screw/index.html', '/features/fanpages/index.html', '/groups/index.html'
+      ]) {
+        assert.equal(await page.locator(`main section a[href="${href}"]`).count(), 1, `sitemap keeps ${href}`);
+      }
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     }
     await page.goto(origin + '/?auth=login&next=world');

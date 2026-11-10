@@ -39,7 +39,12 @@ function fixture(url='https://ojjuda.kr/world.html'){
    assert.deepEqual([...w.document.querySelectorAll(selector+' [data-tab]')].map(b=>b.textContent.trim()),['아지트','오락실','공원','설정']);
    assert.equal(w.document.querySelector(selector+' [aria-current=page]').dataset.tab,'hub');
   }
-  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily]')].map(b=>b.dataset.v),['group','festival','restaurants']);
+  // Fanpages were swapped with festival: group, fanpages / restaurants, festival.
+  assert.deepEqual([...w.document.querySelectorAll('#agit-daily .agit-life-grid > *')].map(el =>
+    el.dataset.act === 'agit-fan' ? 'fanpages' : el.dataset.v
+  ), ['group','fanpages','restaurants','festival']);
+  assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily]')].map(b=>b.dataset.v),
+    ['group','restaurants','festival']);
   assert.equal(w.document.querySelector('#agit-daily h2').textContent,'일상 둘러보기');
   assert.deepEqual([...w.document.querySelectorAll('[data-act=agit-daily][aria-label*="회원 전용"]')].map(b=>b.dataset.v),['group']);
   t.actions.tab({tab:'arcade'});assert.equal(active(),'arcade');
