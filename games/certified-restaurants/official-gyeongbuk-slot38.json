@@ -1,13 +1,17 @@
 {
-  "updatedAt": "2026-11-07",
+  "updatedAt": "2026-11-10",
   "sourceName": "상주시 관광상주 공식 농가맛집·모범음식점 공개 명단",
   "sourceUrls": [
     "https://www.sangju.go.kr/tour/page/15157/100048.tc",
-    "https://www.sangju.go.kr/tour/page/15158/100049.tc"
+    "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+    "https://juso.zzxxccvv.com/a/%EA%B2%BD%EB%B6%81/%EC%83%81%EC%A3%BC%EC%8B%9C/%EC%83%81%EC%82%B0%EB%A1%9C/399",
+    "https://smi.purpleo.kr/article/24540",
+    "https://www.daangn.com/kr/local-profile/%EA%B3%B5%EA%B2%80%ED%95%9C%EC%9A%B0%EB%A7%88%EC%9D%84-xnacegr2x1od/",
+    "https://tja.purpleo.kr/article/2518"
   ],
   "sourceScope": "1순환 38회차 영천시·상주시·경산시 조사 중 상주시 공식 음식점 목록 일부 6곳 신규 확인. 기본 목록과 운영 중인 보충 자료 31개에서 이름·주소 중복을 대조함.",
-  "verificationLimit": "공식 관광 목록에 수록된 이름·주소 사실만 확인. 영천시·경산시 전체 누락 검사는 미완료. 정규 가이드 선정 연도, 영업 지속 상태, 실제 가게 위치 좌표는 독립 확인되지 않음. 상주 67곳 전체 수록이라고 주장하지 않음.",
-  "coordinatePolicy": "상호·지점·현주소가 일치하는 공개 위도·경도 근거 없음. lat/lng null, 임의 좌표나 행정 중심점 사용하지 않음.",
+  "verificationLimit": "공식 관광 목록에 수록된 이름·주소 사실만 확인. 영천시·경산시 전체 누락 검사는 미완료. 정규 가이드 선정 연도, 영업 지속 상태, 실제 가게 위치 좌표는 독립 확인되지 않음. 상주 67곳 전체 수록이라고 주장하지 않음. 2순환38회차 신규 4곳의 공식명단 이름·주소를 2026-11-10 재확인. 새 2곳만 명칭·도로명·수치좌표가 명시된 공개 사업체 정보와 독립 주소에서 맞아 좌표를 추가, 나머지는 미확인. 영천·경산 신규 공식 명단 조사 미완료.",
+  "coordinatePolicy": "수치 좌표는 상주시 공식 목록의 상호·도로명·건물번호와 공개 사업체 좌표가 일치하며 별도 현재 주소 근거가 있는 두 신규 업소만 등록. 이름·주소가 같지 않거나 출처 좌표가 충돌한 건 추정하지 않음. 다른 업소는 null 유지.",
   "completeRegionalCollection": false,
   "restaurants": [
     {
@@ -165,6 +169,156 @@
       ],
       "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
       "addressSourceCheckedAt": "2026-11-07"
+    },
+    {
+      "id": "local-sangju-c2s38-gosubuji",
+      "name": "고수부지",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 상산로 399 (냉림동)",
+      "lat": 36.4267249329013,
+      "lng": 128.158465361578,
+      "menu": [
+        "돼지갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 업소명·도로명주소가 확인된 모범음식점. 현재 영업·별도 미쉐린/블루리본 정규 등급과 연도는 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-10",
+      "addressCrosscheckUrl": "https://juso.zzxxccvv.com/a/%EA%B2%BD%EB%B6%81/%EC%83%81%EC%A3%BC%EC%8B%9C/%EC%83%81%EC%82%B0%EB%A1%9C/399",
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상가정보 공개 좌표·상호와 도로명주소 일치",
+        "url": "https://smi.purpleo.kr/article/24540",
+        "method": "exact-name-and-road-address-public-business-point",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://juso.zzxxccvv.com/a/%EA%B2%BD%EB%B6%81/%EC%83%81%EC%A3%BC%EC%8B%9C/%EC%83%81%EC%82%B0%EB%A1%9C/399",
+        "note": "상주시 모범음식점 명단과 상가정보 업소의 상호·상산로399 일치, 2026 주소 자료상 냉림동371. 과거 인허가 자료의 지번370 차이는 과거 자료로 남겨 현재 지번은 추정하지 않음."
+      }
+    },
+    {
+      "id": "local-sangju-c2s38-gonggeom-hanwoo",
+      "name": "공검한우마을",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 공검면 경상대로 4256-15",
+      "lat": 36.5195415747015,
+      "lng": 128.164681644223,
+      "menu": [
+        "한우고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 업소명·도로명주소가 확인된 모범음식점. 현재 영업·별도 미쉐린/블루리본 정규 등급과 연도는 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-10",
+      "addressCrosscheckUrl": "https://www.daangn.com/kr/local-profile/%EA%B3%B5%EA%B2%80%ED%95%9C%EC%9A%B0%EB%A7%88%EC%9D%84-xnacegr2x1od/",
+      "coordinateSource": {
+        "name": "소상공인시장진흥공단 상가정보 공개 좌표·상호와 도로명주소 일치",
+        "url": "https://tja.purpleo.kr/article/2518",
+        "method": "exact-name-and-road-address-public-business-point",
+        "checkedAt": "2026-11-10",
+        "crosscheckUrl": "https://www.daangn.com/kr/local-profile/%EA%B3%B5%EA%B2%80%ED%95%9C%EC%9A%B0%EB%A7%88%EC%9D%84-xnacegr2x1od/",
+        "note": "상주시 모범음식점 명단·사업체 공개 좌표·독립 업소 공개주소의 상호/지점/경상대로4256-15 일치."
+      }
+    },
+    {
+      "id": "local-sangju-c2s38-namsan-gukbap",
+      "name": "남산 돼지국밥",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 남성3길 34 (남성동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 업소명·도로명주소가 확인된 모범음식점. 현재 영업·별도 미쉐린/블루리본 정규 등급과 연도는 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-sangju-c2s38-nokwon-garden",
+      "name": "녹원가든",
+      "category": "한식",
+      "region": "경북",
+      "district": "상주시",
+      "address": "경상북도 상주시 상산로 88 (신봉동)",
+      "lat": null,
+      "lng": null,
+      "menu": [],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "상주시 관광 모범음식점 명단 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+          "sourceName": "상주시 관광상주 · 모범음식점",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "상주시 공식 관광 목록에서 업소명·도로명주소가 확인된 모범음식점. 현재 영업·별도 미쉐린/블루리본 정규 등급과 연도는 확인하지 않음."
+        }
+      ],
+      "addressSourceUrl": "https://www.sangju.go.kr/tour/page/15158/100049.tc",
+      "addressSourceCheckedAt": "2026-11-10"
     }
-  ]
+  ],
+  "cycle2Slot38": {
+    "cycle": 2,
+    "slot": 38,
+    "checkedAt": "2026-11-10",
+    "addedRestaurantIds": [
+      "local-sangju-c2s38-gosubuji",
+      "local-sangju-c2s38-gonggeom-hanwoo",
+      "local-sangju-c2s38-namsan-gukbap",
+      "local-sangju-c2s38-nokwon-garden"
+    ],
+    "newRestaurantCount": 4,
+    "modifiedExistingCount": 0,
+    "coordinatesAddedCount": 2,
+    "locationExcludedCount": 0,
+    "locationPendingCount": 12,
+    "scope": "영천·상주·경산 배정 중 상주시 모범음식점 공개 명단 4곳 추가. 영천과 경산은 기존 1곳씩 재검토, 신규 업소의 공식 이름+주소 증거 미확보. 전수 아님.",
+    "coordinateEvidenceUrls": [
+      "https://smi.purpleo.kr/article/24540",
+      "https://juso.zzxxccvv.com/a/%EA%B2%BD%EB%B6%81/%EC%83%81%EC%A3%BC%EC%8B%9C/%EC%83%81%EC%82%B0%EB%A1%9C/399",
+      "https://tja.purpleo.kr/article/2518",
+      "https://www.daangn.com/kr/local-profile/%EA%B3%B5%EA%B2%80%ED%95%9C%EC%9A%B0%EB%A7%88%EC%9D%84-xnacegr2x1od/"
+    ],
+    "note": "정규 블루리본 리본수나 선정연도를 부여하지 않음. 나머지 12곳은 좌표 미확인으로 다음 회차 이월; 공식 선정·영업상태를 좌표 공란과 혼동하지 않음."
+  }
 }
