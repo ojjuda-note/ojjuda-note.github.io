@@ -32,6 +32,7 @@ assert.ok(read('shared/games/world-game-assets.js').includes("const revision='"+
 const restaurantRevision=read('shared/games/world-game-assets.js').match(/world-restaurant-guide\.js\?v=([\w-]+)/)?.[1];
 assert.ok(restaurantRevision,'restaurant cache revision is present');
 assert.ok(read('games/certified-restaurants/index.html').includes('app.js?v='+restaurantRevision));
-assert.ok(read('games/certified-restaurants/app.js').includes('restaurants.json?v='+restaurantRevision));
+// The unchanged base dataset keeps its own cache when a sidecar updates the app.
+assert.match(read('games/certified-restaurants/app.js'), /fetch\('\.\/restaurants\.json\?v=\d{8}-restaurants-[a-z0-9-]+'\s*,\s*\{[^}]*cache:\s*'no-cache'/, 'base restaurant data uses an independently versioned, revalidated fetch');
 assert.ok(read('games/certified-restaurants/world-restaurant-guide.js').includes('index.html?v='+restaurantRevision));
 console.log('2순환16회차 2곳 좌표·집계·리비전 검증 통과');
