@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-08",
+  "updatedAt": "2026-11-10",
   "sourceName": "광주관광(전남광주통합특별시) 공식 추천식당 상세",
   "sourceUrls": [
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1183",
@@ -11,11 +11,19 @@
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1111",
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1365",
     "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1313",
-    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069"
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1207",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1303",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1186",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1300",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=640",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1193",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1376",
+    "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206"
   ],
-  "sourceScope": "1순환 28회차 광주 공식 관광 상세 7곳에 1순환 54회차 도·광역 대조에서 확인한 광주 동구2·서구1 공식 상세 3곳을 보강(총 10곳). 전남 전체 및 광주 5개 구 전수 아님.",
+  "sourceScope": "기존 광주관광 공식 소개 10곳에 2순환28회차 8곳 추가(동구1·서구2·북구4·광산구1). 남구 기존 수록 업소 뜨락의아침 공식 선정·주소 대조. 광주5개구/전남 전체 전수 확인 아님.",
   "verificationLimit": "광주관광은 옛 광주광역시 관광정보를 제공하는 공공 페이지. 현재 영업·미쉐린/블루리본 정규 선정과 구분.",
-  "coordinatePolicy": "정확한 상호·지점·주소와 일치하는 공개 수치 좌표 미확보로 10곳 모두 lat/lng null. 추정 좌표·회원 위치 미사용.",
+  "coordinatePolicy": "라그로쏘 기존 본목록 1곳은 상호·지점·도로명주소 일치 공개 상가 좌표로 보강. 이번 신규 8곳은 개별 수치 좌표 미확보, lat/lng null 및 임의 근사값 금지.",
   "completeRegionalCollection": false,
   "restaurants": [
     {
@@ -297,6 +305,230 @@
       ],
       "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1069",
       "addressSourceCheckedAt": "2026-11-08"
+    },
+    {
+      "id": "local-gwangju-c2s28-1207",
+      "name": "꽃담",
+      "category": "한식",
+      "region": "광주",
+      "district": "동구",
+      "address": "전남광주통합특별시 동구 금남로 193-7 (금남로5가)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "생고기"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 2024년 맛집 선정 이력",
+          "year": 2024,
+          "yearType": "selection",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1207",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_local_historical_selection",
+          "selectionCriteria": "공식 관광페이지의 2024년 맛집 표기. 현재 영업 여부 및 블루리본 등급과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1207",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1303",
+      "name": "금강식육식당",
+      "category": "한식",
+      "region": "광주",
+      "district": "서구",
+      "address": "전남광주통합특별시 서구 천변우하로 373",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1303",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1303",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1186",
+      "name": "긴자상회",
+      "category": "일식",
+      "region": "광주",
+      "district": "서구",
+      "address": "전남광주통합특별시 서구 운천로17번길 4-9 (금호동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "숙성회"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1186",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1186",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1300",
+      "name": "풍년오리탕",
+      "category": "한식",
+      "region": "광주",
+      "district": "북구",
+      "address": "전남광주통합특별시 북구 경양로 125",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "오리탕"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1300",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1300",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-640",
+      "name": "절기밥상",
+      "category": "한식",
+      "region": "광주",
+      "district": "북구",
+      "address": "전남광주통합특별시 북구 하서로672번길 45 (용전동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "한우떡갈비"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=640",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=640",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1193",
+      "name": "양산대박 상추튀김",
+      "category": "분식",
+      "region": "광주",
+      "district": "북구",
+      "address": "전남광주통합특별시 북구 양산로 34 (양산동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "상추튀김"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1193",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1193",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1376",
+      "name": "장가계",
+      "category": "중식",
+      "region": "광주",
+      "district": "북구",
+      "address": "전남광주통합특별시 북구 일곡마을로 171",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "짜장면"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1376",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1376",
+      "addressSourceCheckedAt": "2026-11-10"
+    },
+    {
+      "id": "local-gwangju-c2s28-1206",
+      "name": "광후장어",
+      "category": "한식",
+      "region": "광주",
+      "district": "광산구",
+      "address": "전남광주통합특별시 광산구 임방울대로 503 (수완동)",
+      "lat": null,
+      "lng": null,
+      "menu": [
+        "장어구이"
+      ],
+      "guides": [
+        {
+          "provider": "local-guide",
+          "label": "광주관광 공식 추천식당 수록",
+          "year": null,
+          "yearType": "listing",
+          "sourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206",
+          "sourceName": "광주관광(옛 광주광역시 관광정보) 공식 추천식당",
+          "verifiedAt": "2026-11-10",
+          "status": "official_publication_listing",
+          "selectionCriteria": "과거 공식 관광 추천식당 수록이며 현재 영업 여부·정규 가이드 인증과 구분"
+        }
+      ],
+      "addressSourceUrl": "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206",
+      "addressSourceCheckedAt": "2026-11-10"
     }
   ],
   "provincialSlot54": {
@@ -317,5 +549,47 @@
     "coordinatesAdded": 0,
     "operatingStatusVerified": 0,
     "scope": "광주관광 2개 구의 공식 추천식당 상세. 전남·광주 전수 목록 미대조."
+  },
+  "cycle2Slot28": {
+    "cycle": 2,
+    "slot": 28,
+    "checkedAt": "2026-11-10",
+    "addedRestaurantIds": [
+      "local-gwangju-c2s28-1207",
+      "local-gwangju-c2s28-1303",
+      "local-gwangju-c2s28-1186",
+      "local-gwangju-c2s28-1300",
+      "local-gwangju-c2s28-640",
+      "local-gwangju-c2s28-1193",
+      "local-gwangju-c2s28-1376",
+      "local-gwangju-c2s28-1206"
+    ],
+    "modifiedRestaurantIds": [
+      "blue-gwangju-2026-a6d8e4665b"
+    ],
+    "coordinateAdded": 1,
+    "locationExcluded": 0,
+    "locationPending": 32,
+    "checkedRegions": [
+      "동구",
+      "서구",
+      "남구",
+      "북구",
+      "광산구"
+    ],
+    "previousStoredCount": 10,
+    "currentStoredCount": 18,
+    "sourceUrls": [
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1207",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1303",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1186",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1300",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=640",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1193",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1376",
+      "https://tour.gwangju.go.kr/home/tour/info/food.cs?act=view&infoId=1206"
+    ],
+    "coordinateSourceUrl": "https://acs.purpleo.kr/article/8258",
+    "statusCaveat": "옛 관광기관 수록/과거 선정은 현재 영업을 보장하지 않음"
   }
 }
