@@ -1,11 +1,11 @@
 /* 쭈달리기 3 · 16:9 original ocean arcade */
-#gov[data-game="runner"] {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) {
   background: radial-gradient(ellipse at 36% 16%, #59ddec, #166a9c 61%, #062f60);
   padding: 6px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-#gov[data-game="runner"] .gbox {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gbox {
   position: relative;
   display: block;
   width: min(100%, calc(177.777dvh - 18px), 1480px);
@@ -19,7 +19,7 @@
   box-shadow: 0 24px 74px #063a5999, 0 0 0 2px #c9fff2bd;
   overflow: visible;
 }
-#gov[data-game="runner"] .gcan {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcan {
   position: relative;
   display: block;
   flex: none;
@@ -34,7 +34,7 @@
   box-shadow: inset 0 0 0 2px #eafff3, 0 15px 40px #073c6a8a;
   overflow: hidden;
 }
-#gov[data-game="runner"] .gcan canvas {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcan canvas {
   display: block;
   position: absolute;
   inset: 0;
@@ -43,7 +43,18 @@
   height: 100%;
   touch-action: none;
 }
-#gov[data-game="runner"] .ghead {
+/* The shared fullscreen host targets these IDs; runner must retain its own stage. */
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) #gcv {
+  position: absolute;
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  border-radius: 0;
+}
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .ghead {
   position: absolute;
   z-index: 9;
   top: clamp(5px, 1.2vw, 12px);
@@ -55,9 +66,9 @@
   padding: 0;
   gap: 0;
 }
-#gov[data-game="runner"] .gt,
-#gov[data-game="runner"] .gsc { display: none; }
-#gov[data-game="runner"] .gx {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gt,
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gsc { display: none; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gx {
   display: grid;
   place-items: center;
   width: clamp(28px, 3.9vw, 40px);
@@ -69,8 +80,8 @@
   box-shadow: 0 2px 9px #16465c80;
   backdrop-filter: blur(7px);
 }
-#gov[data-game="runner"] .gx svg { vertical-align: middle; }
-#gov[data-game="runner"] .gctrl {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gx svg { vertical-align: middle; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gctrl {
   position: absolute;
   z-index: 5;
   inset: 0;
@@ -80,8 +91,16 @@
   display: block;
   pointer-events: none;
 }
-#gov[data-game="runner"] .gctrl:empty { display: none; }
-#gov[data-game="runner"] .jju-controls {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) #gctrl {
+  position: absolute;
+  inset: 0;
+  justify-self: auto;
+  width: 100%;
+  max-width: none;
+  pointer-events: none;
+}
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gctrl:empty { display: none; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-controls {
   position: absolute;
   inset: 0;
   display: block;
@@ -91,7 +110,7 @@
   user-select: none;
   -webkit-user-select: none;
 }
-#gov[data-game="runner"] .jju-controls button {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-controls button {
   pointer-events: auto;
   touch-action: none;
   cursor: pointer;
@@ -100,7 +119,7 @@
   -webkit-user-select: none;
   user-select: none;
 }
-#gov[data-game="runner"] .jju-key {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key {
   position: absolute;
   bottom: 2.2%;
   left: 1.4%;
@@ -126,12 +145,12 @@
   text-shadow: 0 2px 0 #36516d, 0 4px 9px #183b65a8;
   transition: transform 70ms ease, filter 70ms ease;
 }
-#gov[data-game="runner"] .jju-key.slide {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key.slide {
   left: auto;
   right: 1.4%;
   background: radial-gradient(circle at 31% 19%, #ffffffbf 0%, #d8d4ff72 35%, #9b66c452 78%, #5774a78c 100%);
 }
-#gov[data-game="runner"] .jju-key small {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key small {
   color: #fff;
   font-size: clamp(9px, 1.2vw, 16px);
   -webkit-text-stroke: 0;
@@ -139,12 +158,12 @@
   white-space: nowrap;
   font-weight: 700;
 }
-#gov[data-game="runner"] .jju-key:active { transform: scale(.94); filter: brightness(1.18); }
-#gov[data-game="runner"] .jju-controls button:focus-visible {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key:active { transform: scale(.94); filter: brightness(1.18); }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-controls button:focus-visible {
   outline: 4px solid #fff5b2;
   outline-offset: 4px;
 }
-#gov[data-game="runner"] .jju-mini {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini {
   position: absolute;
   top: 15%;
   height: clamp(27px, 3.7vw, 38px);
@@ -157,16 +176,16 @@
   font-size: clamp(10px, 1.4vw, 15px);
   backdrop-filter: blur(7px);
 }
-#gov[data-game="runner"] .jju-mini.pause { right: clamp(78px, 9vw, 120px); }
-#gov[data-game="runner"] .jju-mini.music { right: clamp(156px, 18vw, 225px); }
-#gov[data-game="runner"] .jju-mini[aria-pressed="true"] { background: #7855a2d6; }
-#gov[data-game="runner"] .gscreen {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini.pause { right: clamp(78px, 9vw, 120px); }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini.music { right: clamp(156px, 18vw, 225px); }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini[aria-pressed="true"] { background: #7855a2d6; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gscreen {
   z-index: 6;
   align-items: flex-end;
   padding: clamp(8px, 1.4vw, 20px);
   background: linear-gradient(180deg, #1b8cb100 20%, #053c6b22 65%, #0324509c 100%);
 }
-#gov[data-game="runner"] .gcard {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard {
   width: min(100%, 335px);
   max-width: 335px;
   max-height: 88%;
@@ -180,13 +199,20 @@
   box-shadow: 0 12px 30px #07345da6;
   backdrop-filter: blur(12px);
 }
-#gov[data-game="runner"] .gcard h3 {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) #gscreen > .gcard {
+  flex-shrink: 1;
+  max-width: 335px;
+  max-height: 88%;
+  margin: 0 auto;
+  overflow: auto;
+}
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard h3 {
   font-family: "Jua", "Gowun Dodum", sans-serif;
   font-weight: 400;
   font-size: 24px;
   color: #0d6080;
 }
-#gov[data-game="runner"] .runner-card h3 {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .runner-card h3 {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -194,8 +220,8 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-#gov[data-game="runner"] .gcard p { color: #466f88; font-size: 13px; }
-#gov[data-game="runner"] .btn.pri {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard p { color: #466f88; font-size: 13px; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .btn.pri {
   min-height: 44px;
   border: 1px solid #d66e84;
   border-radius: 14px;
@@ -204,43 +230,43 @@
   font-size: 17px;
   box-shadow: 0 4px 0 #c85c7b;
 }
-#gov[data-game="runner"] .runner-start { width: 100%; }
-#gov[data-game="runner"] .btn:not(.pri) {
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .runner-start { width: 100%; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .btn:not(.pri) {
   background: #e8faf2;
   color: #377a86;
   border-color: #b9e0d7;
 }
-#gov[data-game="runner"] .grank { max-height: 88px; overflow: auto; font-size: 11px; }
-#gov[data-game="runner"] .grank:empty { display: none; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .grank { max-height: 88px; overflow: auto; font-size: 11px; }
+#gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .grank:empty { display: none; }
 @media (max-height: 480px) and (orientation: landscape) {
-  #gov[data-game="runner"] { padding: 3px; }
-  #gov[data-game="runner"] .gbox { width: min(100%, calc(177.777dvh - 8px)); }
-  #gov[data-game="runner"] .gcard { max-width: 290px; padding: 8px; }
-  #gov[data-game="runner"] .gcard p { font-size: 11px; }
-  #gov[data-game="runner"] .gcard h3 { font-size: 19px; }
-  #gov[data-game="runner"] .btn.pri { min-height: 36px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) { padding: 3px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gbox { width: min(100%, calc(177.777dvh - 8px)); }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard { max-width: 290px; padding: 8px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard p { font-size: 11px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard h3 { font-size: 19px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .btn.pri { min-height: 36px; }
 }
 @media (orientation: portrait) and (max-width: 540px) {
   /* Use the full phone screen sideways without stretching any character. */
-  #gov[data-game="runner"] {
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  #gov[data-game="runner"] .gbox {
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gbox {
     flex: none;
     width: min(calc(100dvh - 12px), calc(177.777dvw - 14px));
     max-width: none;
     max-height: none;
     transform: rotate(90deg);
   }
-  #gov[data-game="runner"] .jju-mini { font-size: 9px; height: 23px; padding: 0 5px; }
-  #gov[data-game="runner"] .jju-mini.pause { right: 68px; }
-  #gov[data-game="runner"] .jju-mini.music { right: 137px; }
-  #gov[data-game="runner"] .jju-key small { display: none; }
-  #gov[data-game="runner"] .gcard { max-width: 270px; padding: 8px; }
-  #gov[data-game="runner"] .gcard p { font-size: 11px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini { font-size: 9px; height: 23px; padding: 0 5px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini.pause { right: 68px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-mini.music { right: 137px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key small { display: none; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard { max-width: 270px; padding: 8px; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .gcard p { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #gov[data-game="runner"] .jju-key { transition: none; }
+  #gov.gov.world-game-screen[data-game="runner"]:has(#gcv) .jju-key { transition: none; }
 }
