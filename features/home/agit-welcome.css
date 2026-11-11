@@ -145,6 +145,14 @@ dialog.agit-welcome-dialog::backdrop {
   color: #9b8493;
   font-size: 11px;
 }
+.agit-join-dialog .agit-welcome-card { padding-top: 34px; }
+.agit-join-dialog .agit-welcome-heart { width: 74px; height: 74px; margin-bottom: 12px; border-radius: 25px; font-size: 38px; }
+.agit-join-dialog #agit-welcome-title { margin-top: 8px; }
+.agit-join-dialog #agit-welcome-copy { min-height: 0; margin-bottom: 17px; }
+.agit-join-benefits { display: grid; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; text-align: left; }
+.agit-join-benefits li { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border: 1px solid #f2dce8; border-radius: 13px; background: rgba(255,255,255,.78); color: #694e64; font-size: 12.5px; line-height: 1.6; word-break: keep-all; }
+.agit-join-benefits li > span:first-child { flex: none; font-size: 22px; line-height: 1; }
+.agit-join-benefits b { color: #bd4379; font-weight: 800; }
 @keyframes agit-welcome-pop {
   from { opacity: 0; transform: translateY(14px) rotate(-13deg) scale(.78); }
   to { opacity: 1; transform: translateY(0) rotate(-7deg) scale(1); }
@@ -169,4 +177,6 @@ dialog.agit-welcome-dialog::backdrop {
   #agit-welcome-copy { color: #e8cada; }
   .agit-welcome-next { background: #5a3b52; border-color: #a16a8c; color: #ffdef0; }
   .agit-welcome-note { color: #c7a8bd; }
+  .agit-join-benefits li { border-color: #76506b; background: #493148; color: #f1d8e7; }
+  .agit-join-benefits b { color: #ffb4d0; }
 }

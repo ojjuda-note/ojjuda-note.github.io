@@ -41,6 +41,7 @@ function fixtureBoot() {
   window.OjjudaAdminActivity = { mount: options => mount('activity', options) };
   window.OjjudaPhotoStageAdmin = { mount: options => mount('photo-stages', options) };
   window.OjjudaAdminFriendMessages = { mount: options => mount('messages', options) };
+  window.OjjudaAdminAssetLibrary = { mount: options => mount('asset-library', options) };
   window.OjjudaConnections = { mount: options => mount('connections', options) };
   window.OjjudaOperations = {
     renderReports: async options => mount('reports', options),
@@ -142,9 +143,13 @@ world = world.slice(0, boot) + `(${fixtureBoot.toString()})();\n` + world.slice(
     await page.goto('https://fixture.test/world.html?admin=overview'); await loaded();
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).waitFor();
     assert.deepEqual(await page.locator('.adm-areas button').allTextContents(),
-      ['계정', '콘텐츠', '휴지통', '신고·문의', 'ZU', '운영']);
+      ['계정', '콘텐츠', '휴지통', '신고·문의', 'ZU', '운영', '자료실']);
     assert.equal(await page.locator('.adm-areas').evaluate(node => node.scrollWidth <= node.clientWidth), true,
-      'all six navigation groups fit the mobile width');
+      'all seven navigation groups fit the mobile width');
+    await area('library');
+    await mounted('asset-library');
+    assert.deepEqual(await current(), {area:'library', tab:'assets'});
+    await area('account');
     await page.locator('.adm-stat').filter({ hasText: '정지 계정' }).click();
     await mounted('accounts');
     assert.deepEqual(await current(), { area: 'account', tab: 'suspended' });
