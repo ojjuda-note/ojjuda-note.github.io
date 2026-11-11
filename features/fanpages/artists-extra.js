@@ -208,9 +208,39 @@
       id: 'kissoflife', name: 'KISS OF LIFE', korean: '키스오브라이프', category: 'girl', fan: 'KISSY', agency: 'S2 Entertainment',
       members: ['쥴리', '나띠', '벨', '하늘'],
       debut: '2023.07.05', debutWork: 'KISS OF LIFE', songs: ['쉿 (Shhh)', '안녕, 네버랜드'],
-      concept: '각자의 개성과 목소리로 완성하는 자유로운 무대.',
-      official: 'https://www.s2ent.co.kr/', youtube: 'https://www.youtube.com/@KISSOFLIFE_S2',
+      concept: '쥴리·나띠·벨·하늘 네 멤버가 각자의 개성과 목소리로 펼치는 음악과 퍼포먼스.',
+      official: 'https://kissoflife.jp/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('28082026 Kiss of Life Newsis Hallyu Expo 1.png', '2026 뉴시스 한류엑스포 · 단체', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0'),
+        commonsPhoto('28082026 Belle Newsis Hallyu Expo 1.png', '벨 · 2026 한류엑스포', '2026', 'K-POPIT 케이팝잇', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니 2집 · 타이틀 SWEAT (Japanese Ver.)', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+        { title: 'SWEAT', date: '2026.08.04', type: '싱글 3집 · 타이틀 SWEAT', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
+        { title: 'Who is she', date: '2026.04.06', type: '싱글 2집 · 타이틀 Who is she', songs: ['Who is she', "Don't mind me"], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
+        { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니 1집 · 타이틀 쉿 (Shhh)', songs: ['쉿 (Shhh)', '안녕, 네버랜드', 'Sugarcoat (NATTY)', 'Countdown (BELLE)', 'Kitty Cat (JULIE)', 'Play Love Games (HANEUL)'], href: 'https://music.apple.com/us/album/kiss-of-life-ep/1694699906' }
+      ],
+      appearances: [
+        { date: '2026-12-05', title: '2026 Asia Artist Awards (AAA)', sub: '대만 가오슝 국가체육장 · 공식 12/5 출연진 · 현지 17:00 본 행사', href: 'https://www.asiaartistawards.com/en/news/3225' }
+      ],
+      schedules: [
+        { title: '일본 컬럼비아 공식 일정', sub: '방송·행사·활동 및 변경 공지', href: 'https://columbia.jp/artist-info/kissoflife/calendar/' },
+        { title: 'KISS OF LIFE 일본 공식 사이트', sub: '공식 소식 및 공연 안내', href: 'https://kissoflife.jp/' }
+      ],
+      news: [
+        { date: '2026.10.23', tag: '시상식', title: '12.05 가오슝 AAA 공식 출연 명단 발표', href: 'https://www.asiaartistawards.com/en/news/3225' },
+        { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/media/94488.html' },
+        { date: '2026.09.16', tag: '음반', title: '일본 미니 2집 SWEAT -JAPANESE EP- 6곡 발매', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+        { date: '2026.08.04', tag: '컴백', title: '싱글 3집 SWEAT 발표 · 공식 MV 공개', href: 'https://www.youtube.com/watch?v=eTvUZymLyGY' }
+      ],
+      merch: [
+        { title: 'SWEAT -JAPANESE EP- TYPE-A·B', sub: '일본 컬럼비아 공식 CD·트레이딩카드 구성 · 재고는 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+        { title: 'SWEAT -JAPANESE EP- 통상판', sub: '일본 컬럼비아 공식 CD · 판매 여부·가격은 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.07.04', title: 'DIGIMON BEATBREAK × BREAK IT', sub: '일본 TV 애니메이션 엔딩 테마 음원 협업', href: 'https://prtimes.jp/main/html/rd/p/000005074.000019470.html' }
+      ],
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
     {

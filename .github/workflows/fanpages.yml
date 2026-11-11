@@ -42,3 +42,26 @@ jobs:
         run: npm --prefix tests ci --ignore-scripts
       - name: Check all fanpage controls and in-page navigation
         run: npm --prefix tests run test:fanpages
+
+  fanpage-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check 30 profiles and unique artist IDs
+        run: node features/fanpages/check-profiles.mjs
+      - name: Check official YouTube video IDs and duplicates
+        run: node features/fanpages/check-videos.mjs
+      - name: Check fanpage JavaScript syntax
+        run: |
+          node --check features/fanpages/artists.js
+          node --check features/fanpages/artists-extra.js
+          node --check features/fanpages/profiles.js
+          node --check features/fanpages/profiles-extra.js
+          node --check features/fanpages/videos.js
+          node --check features/fanpages/fan.js
