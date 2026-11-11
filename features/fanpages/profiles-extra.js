@@ -78,6 +78,17 @@ if (babymonsterProfile) {
   babymonsterProfile.sources.push({ label: 'YG 공식 디스코그래피 · 첫 디지털 싱글', href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' });
 }
 
+/* KISS OF LIFE: verified 2026 music and official Japanese source; unknown personal data remain blank. */
+const kissOfLifeProfile = window.OJJUDA_FAN_PROFILES.kissoflife;
+if (kissOfLifeProfile) {
+  kissOfLifeProfile.records = [
+    { year: '2025.11', title: '일본 음반 데뷔', detail: 'TOKYO MISSION START · 일본 컬럼비아', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' },
+    { year: '2026.09', title: '일본 미니 2집 발매', detail: 'SWEAT -JAPANESE EP- · 6곡', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' }
+  ];
+  kissOfLifeProfile.sources.unshift({ label: '일본 컬럼비아 공식 발매·트랙리스트', href: 'https://columbia.jp/artist-info/kissoflife/discography/album.html' });
+  kissOfLifeProfile.sources.push({ label: 'AAA 2026 공식 출연 명단', href: 'https://www.asiaartistawards.com/en/news/3225' });
+}
+
 /* Hearts2Hearts: official group milestones; private member details stay blank. */
 const hearts2heartsProfile = window.OJJUDA_FAN_PROFILES.hearts2hearts;
 if (hearts2heartsProfile) {
