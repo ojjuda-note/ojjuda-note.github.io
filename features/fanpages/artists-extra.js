@@ -316,7 +316,7 @@
       members: ['쥴리', '나띠', '벨', '하늘'],
       debut: '2023.07.05', debutWork: 'KISS OF LIFE', songs: ['쉿 (Shhh)', '안녕, 네버랜드'],
       concept: '각자의 개성과 목소리로 완성하는 자유로운 무대.',
-      official: 'https://www.s2ent.co.kr/', youtube: 'https://www.youtube.com/@KISSOFLIFE_S2',
+      official: 'https://www.s2ent.co.kr/', youtube: 'https://www.youtube.com/@KISSOFLIFE_official',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
