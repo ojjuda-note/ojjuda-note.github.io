@@ -114,8 +114,11 @@
         { title: 'SUGAR HONEY ICE TEA', date: '2026.06.08', type: '디지털 싱글', songs: ['SUGAR HONEY ICE TEA'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1664' },
         { title: '춤 (CHOOM)', date: '2026.05.04', type: '미니 3집 · 타이틀 CHOOM', songs: ['MOON', 'CHOOM', 'I LIKE IT', 'LOCKED IN'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1656' },
         { title: 'WE GO UP', date: '2025.10.10', type: '미니 2집 · 타이틀 WE GO UP', songs: ['WE GO UP', 'PSYCHO', 'SUPA DUPA LUV', 'WILD'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1644' },
+        { title: 'HOT SAUCE', date: '2025.07.01', type: '디지털 싱글', songs: ['HOT SAUCE'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1628' },
         { title: 'DRIP', date: '2024.11.01', type: '정규 1집 · 더블 타이틀 DRIP / CLIK CLAK', songs: ['CLIK CLAK', 'DRIP', 'Love, Maybe', 'Really Like You', 'BILLIONAIRE', 'Love In My Heart', 'Woke Up In Tokyo (RUKA & ASA)', 'FOREVER', 'BATTER UP (Remix)'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1615' },
+        { title: 'FOREVER', date: '2024.07.01', type: '디지털 싱글', songs: ['FOREVER'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1606' },
         { title: 'BABYMONS7ER', date: '2024.04.01', type: '7인조 정식 데뷔 미니 앨범 · 타이틀 SHEESH', songs: ['MONSTERS (Intro)', 'SHEESH', 'LIKE THAT', 'Stuck In The Middle (7 ver.)', 'BATTER UP (7 ver.)', 'DREAM', 'Stuck In The Middle (Remix)'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1594' },
+        { title: 'Stuck In The Middle', date: '2024.02.01', type: '선공개 싱글', songs: ['Stuck In The Middle'], href: 'https://ygfamily.com/en/artists/babymonster/discography/1591' },
         { title: 'BATTER UP', date: '2023.11.27', type: '첫 디지털 싱글', songs: ['BATTER UP'], href: 'https://www.ygfamily.com/en/artists/babymonster/discography/1578' }
       ],
       appearances: [
