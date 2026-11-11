@@ -82,5 +82,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'Ur7aK4FvK-U', title: 'FOCUS', kind: '뮤직비디오', source: 'SMTOWN · 2025.10.20' },
     { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
+  ],
+  blackpink: [
+    { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK Official · 2026.02.27' },
+    { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK Official · 2025.07.11' },
+    { id: 'gQlMMD8auMs', title: 'Pink Venom', kind: '뮤직비디오', source: 'BLACKPINK Official' },
+    { id: 'IHNzOHi8sJs', title: '뚜두뚜두 (DDU-DU DDU-DU)', kind: '뮤직비디오', source: 'BLACKPINK Official' }
   ]
 });
