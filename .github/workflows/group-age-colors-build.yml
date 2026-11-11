@@ -1,0 +1,40 @@
+name: Group age color refinement
+on:
+  push:
+    branches: [style/group-age-colors-20261111]
+    paths: ['.github/workflows/group-age-colors-build.yml', 'ops/patch-group-age-colors.py']
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.ref == 'refs/heads/style/group-age-colors-20261111'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Apply age colors and regression tests
+        run: |
+          python3 ops/patch-group-age-colors.py
+          rm ops/patch-group-age-colors.py .github/workflows/group-age-colors-build.yml
+      - name: Validate group UI, admission behavior, color contrast and source layout
+        run: |
+          node --check groups/app.js
+          node scripts/check-source-layout.mjs
+          npm --prefix tests run test:groups
+          git diff --check
+          test -z "$(git diff --name-only -- supabase world.html version.json game-release.json)"
+      - name: Commit tested refinements to feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add groups/app.js groups/style.css groups/index.html tests/group-board-dom.test.cjs ops/patch-group-age-colors.py .github/workflows/group-age-colors-build.yml
+          git diff --cached --stat
+          git commit -m 'style(groups): color age badges and live selection previews'
+          git push origin HEAD:style/group-age-colors-20261111
