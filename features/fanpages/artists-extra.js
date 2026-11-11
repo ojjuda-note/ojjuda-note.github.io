@@ -173,6 +173,7 @@
       music: [
         { title: 'Next Chapter', date: '2026.10.16', type: '스페셜 싱글 · Arena of Valor 10주년 협업', songs: ['Next Chapter'], href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
         { title: 'Candy Box Lover', date: '2026.10.11', type: '디지털 싱글', songs: ['Candy Box Lover'], href: 'https://music.apple.com/us/album/candy-box-lover-single/6819981721' },
+        { title: 'ICONIC HEART (Korean Ver.)', date: '2026.10.05', type: '디지털 싱글 · 일본 데뷔곡 한국어판', songs: ['ICONIC HEART (Korean Ver.)'], href: 'https://hearts2heartsofficial.jp/news/20261005/' },
         { title: 'Moonride', date: '2026.09.09', type: '디지털 싱글 · Kia 협업', songs: ['Moonride'], href: 'https://music.apple.com/us/album/moonride-single/6807315056' },
         { title: 'ICONIC HEART', date: '2026.08.12', type: '일본 데뷔 싱글 · CD 발매일 (음원 8.10)', songs: ['ICONIC HEART', 'Lemon Tang (Japanese Ver.)', 'RUDE! (Japanese Ver.)'], href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
         { title: 'Lemon Tang', date: '2026.06.22', type: '미니 2집 · 타이틀 Lemon Tang', songs: ['Lemon Tang', '15-LOVE', '처음투성이 (Baby Steps)', 'heart emoji (♡)', 'Secret Recipe', 'RUDE!'], href: 'https://music.apple.com/us/album/lemon-tang-the-2nd-mini-album-ep/6779521284' },
@@ -181,6 +182,7 @@
         { title: 'The Chase', date: '2025.02.24', type: '데뷔 싱글', songs: ['The Chase', 'Butterflies'], href: 'https://www.youtube.com/watch?v=kxUA2wwYiME' }
       ],
       appearances: [
+        { date: '2026-11-20', title: '2026 MAMA AWARDS Chapter 1 출연', sub: '일본 오사카 교세라 돔 · 18:00 시상식 · CJ ENM 주최', href: 'https://www.tenasia.co.kr/article/2026101655614' },
         { date: '2026-11-22', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 18:00 시작 (17:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-23', title: '일본 첫 팬 이벤트 READY! S2U', sub: '도쿄 아리아케 아레나 · 16:00 시작 (15:00 입장)', href: 'https://hearts2heartsofficial.jp/news/2026081203/' },
         { date: '2026-11-28', title: 'Winter Special Live at UNIVERSAL STUDIOS JAPAN', sub: '오사카 USJ 그래머시 파크 · 11:00 시작 (09:45 입장) · 주최 USJ', href: 'https://hearts2heartsofficial.jp/news/20260925/' }
@@ -188,12 +190,15 @@
       schedules: [{ title: '일본 공식 일정·공지', sub: '팬 이벤트·공연·발매·변경 확인', href: 'https://hearts2heartsofficial.jp/news/' }],
       news: [
         { date: '2026.11.06', tag: '굿즈', title: 'READY! S2U 공식 MD 공개 · 온라인 11.12 20:00 판매 시작', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
+        { date: '2026.11.02', tag: '굿즈', title: '공식 응원봉·미니 응원봉 키링 일본 판매 안내 (11.05 시작)', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { date: '2026.10.16', tag: '음악', title: '게임 Arena of Valor 10주년 협업곡 Next Chapter 공개', href: 'https://music.apple.com/us/album/next-chapter-single/6821845774' },
+        { date: '2026.10.16', tag: '공연', title: '11.20 MAMA AWARDS 오사카 첫날 무대 출연 확정', href: 'https://www.tenasia.co.kr/article/2026101655614' },
         { date: '2026.09.25', tag: '공연', title: '11.28 유니버설 스튜디오 재팬 특별 공연 발표', href: 'https://hearts2heartsofficial.jp/news/20260925/' },
         { date: '2026.08.12', tag: '공연', title: '11.22~23 일본 첫 팬 이벤트 READY! S2U 개최 발표', href: 'https://hearts2heartsofficial.jp/news/2026081203/' }
       ],
       merch: [
         { title: 'READY! S2U 일본 팬 이벤트 공식 MD', sub: '아크릴 키링·파카·토트백 등 · 온라인 판매 11.12 20:00부터', href: 'https://hearts2heartsofficial.jp/news/20261106/' },
+        { title: 'Hearts2Hearts 공식 응원봉·미니 키링', sub: 'SMTOWN 일본 공식 스토어 · 11.05 20:00 판매 시작 · 재고는 판매처 확인', href: 'https://hearts2heartsofficial.jp/news/20261102/' },
         { title: 'ICONIC HEART 일본 싱글 CD', sub: 'UNIVERSAL MUSIC STORE 한정판·초회판·통상판', href: 'https://hearts2heartsofficial.jp/discography/iconic-heart_umstore/' },
         { title: 'Lemon Tang 일본 공식 한정판', sub: 'Summer Kit 및 일본 전용판 · 가격·재고는 공식 판매처 확인', href: 'https://hearts2heartsofficial.jp/discography/lemon-tang_summer-kit/' }
       ],
