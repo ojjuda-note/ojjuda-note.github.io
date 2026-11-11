@@ -44,9 +44,11 @@
   let previousHref = location.href;
   window.addEventListener('popstate', event => {
     const href = location.href;
-    // Native anchors create null-state entries too. Fragment changes must keep
-    // native scrolling and Back/Forward instead of triggering the exit guard.
-    const fragmentNavigation = href !== previousHref && href.split('#')[0] === previousHref.split('#')[0];
+    // Activating the current fragment again can emit a null-state popstate
+    // without changing the URL. Delayed/duplicate events can also arrive after
+    // hashchange. These are still local anchors, not the marked Back boundary.
+    const sameDocument = href.split('#')[0] === previousHref.split('#')[0];
+    const fragmentNavigation = sameDocument && (href !== previousHref || href.includes('#'));
     previousHref = href;
     if (event.state?.[exitMarker] || (!event.state?.[marker] && !fragmentNavigation)) location.replace(destination);
   });
