@@ -32,7 +32,7 @@
     const saved = JSON.parse(global.localStorage.getItem(STORE) || '[]');
     if (Array.isArray(saved)) pins = [...new Set(saved.filter(item=>typeof item==='string'&&known.has(item)))].slice(0,6);
   } catch {}
-  let query = '', lastLocation = '';
+  let query = '', lastLocation = '', folderSelection = null;
 
   function activeGroup(area,tab) {
     return allItems.find(item=>item.area===area&&item.tab===tab)?.group || 'status';
@@ -55,10 +55,10 @@
   }
   function render({area='account',tab='overview',summary=null}={}) {
     const locationKey=key(area,tab);
-    if(lastLocation&&lastLocation!==locationKey)query='';
+    if(lastLocation&&lastLocation!==locationKey){query='';folderSelection=null;}
     lastLocation=locationKey;
     const selected=activeGroup(area,tab);
-    const selectedLabel=allItems.find(item=>key(item.area,item.tab)===locationKey)?.label || '운영 요약';
+    const folder=query?'all':folderSelection||selected;
     const favorites=pins.map(id=>allItems.find(item=>key(item.area,item.tab)===id)).filter(Boolean);
     const matchedFavorites=favorites.filter(item=>!query||(item.label+' '+GROUPS.find(group=>group.id===item.group)?.label).toLocaleLowerCase('ko-KR').includes(query));
     const favoriteHtml=favorites.map(item=>itemHtml(item,area,tab,summary,GROUPS.find(group=>group.id===item.group)?.label)).join('');
@@ -68,20 +68,40 @@
       const matched=group.items.some(([, ,label])=>!query||(label+' '+group.label).toLocaleLowerCase('ko-KR').includes(query))
         ||(group.id==='members'&&(!query||('상품권 등록 회원·zu').includes(query)));
       const items=group.items.map(([targetArea,targetTab,label])=>itemHtml({area:targetArea,tab:targetTab,label},area,tab,summary,group.label)).join('')+extra;
-      return `<details class="adm-menu-group" data-group="${group.id}" data-active="${selected===group.id}"${(query&&matched)||(!query&&selected===group.id)?' open':''}${query&&!matched?' hidden':''}><summary>${escape(group.label)}<span class="adm-menu-chevron" aria-hidden="true">⌄</span></summary><div class="adm-menu-group-items">${items}</div></details>`;
+      return `<section class="adm-menu-group" data-group="${group.id}"${(query&&!matched)||(!query&&folder!=='all'&&folder!==group.id)?' hidden':''}><h3>${escape(group.label)}</h3><div class="adm-menu-group-items">${items}</div></section>`;
+    }).join('');
+    const foldersHtml=[...GROUPS,{id:'all',label:'전체 보기',items:[]}].map(group=>{
+      const total=group.id==='all'?0:group.items.reduce((sum,[a,t])=>sum+badgeNumber(summary,a,t),0);
+      return `<button type="button" class="adm-folder-tab${folder===group.id?' is-current':''}" data-act="adm-folder" data-admin-folder="${group.id}" data-v="${group.id}" aria-pressed="${folder===group.id}"><span>${escape(group.label)}</span><span class="adm-menu-count" data-admin-group-count="${group.id}"${total?'':' hidden'}>${total?total.toLocaleString('ko-KR'):''}</span></button>`;
     }).join('');
     return `<aside class="adm-navigation" aria-label="관리자 메뉴" data-area="${escape(area)}" data-tab="${escape(tab)}">
-      <button type="button" class="adm-menu-toggle" data-act="adm-nav-toggle" aria-expanded="false" aria-controls="adm-nav-body"><span>☰ 메뉴 선택</span><strong>${escape(selectedLabel)}</strong><span aria-hidden="true">⌄</span></button>
-      <button type="button" class="adm-nav-backdrop" data-act="adm-nav-toggle" aria-label="관리 메뉴 닫기" tabindex="-1" hidden></button>
-      <div class="adm-nav-body" id="adm-nav-body">
-        <div class="adm-drawer-head"><strong>관리 메뉴</strong><button type="button" data-act="adm-nav-toggle" aria-label="관리 메뉴 닫기">닫기 ×</button></div>
+      <div class="adm-nav-body">
         <label class="adm-menu-search-label" for="adm-menu-search">기능 찾기</label>
         <input class="adm-menu-search" id="adm-menu-search" data-admin-search type="search" autocomplete="off" placeholder="관리 기능 검색" value="${escape(query)}">
+        <div class="adm-folder-label"><strong>관리 파일철</strong><small>분류를 누르면 바로 볼 수 있어요</small></div>
+        <nav class="adm-folder-tabs" aria-label="관리 분류">${foldersHtml}</nav>
         <section class="adm-menu-favorites" data-admin-pins${matchedFavorites.length?'':' hidden'}><h3>★ 즐겨찾기 <small>최대 6개</small></h3>${favoriteHtml}</section>
-        <div class="adm-menu-groups">${groupsHtml}</div>
+        <div class="adm-menu-groups" aria-label="관리 기능 목록">${groupsHtml}</div>
         <div class="adm-menu-external"><a href="https://yeoul-spring-reader.mj830417686850.chatgpt.site/">원고실</a></div>
       </div>
     </aside><!--adm-main-->`;
+  }
+  function showFolder(nav,folder){
+    nav.querySelectorAll('[data-admin-folder]').forEach(button=>{
+      const current=button.dataset.adminFolder===folder;
+      button.classList.toggle('is-current',current);
+      button.setAttribute('aria-pressed',String(current));
+    });
+    nav.querySelectorAll('.adm-menu-group').forEach(group=>{
+      if(!query)group.hidden=folder!=='all'&&group.dataset.group!==folder;
+    });
+  }
+  function selectFolder(button){
+    const nav=button.closest('.adm-navigation'),folder=button.dataset.adminFolder;
+    if(!nav||!(folder==='all'||GROUPS.some(group=>group.id===folder)))return;
+    folderSelection=folder;query='';
+    const search=nav.querySelector('[data-admin-search]');if(search){search.value='';filter(search);}
+    showFolder(nav,folder);
   }
   function filter(input) {
     const nav=input.closest('.adm-navigation');if(!nav)return;
@@ -93,10 +113,10 @@
         const match=!query||item.dataset.search.includes(query);
         item.hidden=!match;if(match)visible=true;
       });
-      group.hidden=!!query&&!visible;
-      group.open=query?visible:group.dataset.active==='true';
+      group.hidden=query?!visible:(folderSelection||activeGroup(nav.dataset.area,nav.dataset.tab))!=='all'&&group.dataset.group!==(folderSelection||activeGroup(nav.dataset.area,nav.dataset.tab));
       found ||= visible;
     });
+    showFolder(nav,query?'all':folderSelection||activeGroup(nav.dataset.area,nav.dataset.tab));
     const favorites=nav.querySelector('[data-admin-pins]');
     if(favorites){let shown=false;favorites.querySelectorAll('[data-admin-nav-item]').forEach(item=>{
       const match=!query||item.dataset.search.includes(query);
@@ -113,6 +133,11 @@
       const [area,tab]=badge.dataset.adminCount.split(':');
       const n=badgeNumber(summary,area,tab);badge.textContent=n?n.toLocaleString('ko-KR'):'';badge.hidden=!n;
     });
+    global.document.querySelectorAll('.adm-navigation [data-admin-group-count]').forEach(badge=>{
+      const group=GROUPS.find(item=>item.id===badge.dataset.adminGroupCount);
+      const n=group?group.items.reduce((sum,[area,tab])=>sum+badgeNumber(summary,area,tab),0):0;
+      badge.textContent=n?n.toLocaleString('ko-KR'):'';badge.hidden=!n;
+    });
   }
   function togglePin(area,tab) {
     const id=key(area,tab);if(!known.has(id))return false;
@@ -122,24 +147,15 @@
   }
   function replaceNav(options,focusKey='') {
     const old=global.document.querySelector('.adm-navigation');if(!old)return;
-    const expanded=old.classList.contains('is-open'),scrollTop=old.scrollTop,bodyScroll=old.querySelector('.adm-nav-body')?.scrollTop||0;
+    const scrollTop=old.scrollTop;
     const template=global.document.createElement('template');template.innerHTML=render(options);
     const next=template.content.querySelector('.adm-navigation');if(!next)return;
-    if(expanded){next.classList.add('is-open');next.querySelector('.adm-menu-toggle')?.setAttribute('aria-expanded','true');next.querySelector('.adm-nav-backdrop')?.removeAttribute('hidden');}
-    old.replaceWith(next);next.scrollTop=scrollTop;if(next.querySelector('.adm-nav-body'))next.querySelector('.adm-nav-body').scrollTop=bodyScroll;
+    old.replaceWith(next);next.scrollTop=scrollTop;
     if(focusKey){const [area,tab]=focusKey.split(':');next.querySelector(`[data-act="adm-pin"][data-area="${area}"][data-v="${tab}"]`)?.focus({preventScroll:true});}
-  }
-  function toggleDrawer(button) {
-    const nav=button.closest('.adm-navigation');if(!nav)return;
-    const expanded=nav.classList.toggle('is-open');
-    nav.querySelector('.adm-menu-toggle')?.setAttribute('aria-expanded',String(expanded));
-    const backdrop=nav.querySelector('.adm-nav-backdrop');if(backdrop)backdrop.hidden=!expanded;
-    if(expanded)nav.querySelector('.adm-drawer-head button')?.focus({preventScroll:true});
-    else nav.querySelector('.adm-menu-toggle')?.focus({preventScroll:true});
   }
   global.document.addEventListener('input',event=>{
     if(event.target?.matches?.('[data-admin-search]')) filter(event.target);
   });
-  global.OjjudaAdminNavigation={GROUPS,render,filter,updateCounts,togglePin,replaceNav,toggleDrawer,activeGroup,
-    resetQuery(){query='';lastLocation='';}};
+  global.OjjudaAdminNavigation={GROUPS,render,filter,selectFolder,updateCounts,togglePin,replaceNav,activeGroup,
+    resetQuery(){query='';lastLocation='';folderSelection=null;}};
 })(window);

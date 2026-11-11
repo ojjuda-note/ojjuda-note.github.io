@@ -50,8 +50,7 @@ const start=world.indexOf('j1(()=>H());gm(');assert.ok(start>0);world=world.slic
   await page.evaluate(()=>fixture.rows.push({id:'new',nick:'새 전체공개 사진',status:'pending',visibility:'public',image_path:'new.jpg',created_at:new Date().toISOString()}));
   await page.locator('.ap-stage').getByRole('button',{name:'새로고침',exact:true}).click();await card('new').waitFor();
   await page.evaluate(()=>fixture.delay=true);await card('new').getByRole('button',{name:'승인 · 공개',exact:true}).click();await page.waitForFunction(()=>typeof fixture.resolve==='function');
-  await page.locator('[data-act="adm-nav-toggle"]').click();
-  await page.locator('.adm-menu-group[data-group="status"] summary').click();
+  await page.locator('[data-admin-folder="status"]').click();
   await page.locator('[data-act="adm-open"][data-area="account"][data-v="overview"]').click();
   assert.equal(await page.locator('#world-admin-photo-stages').count(),1,'navigation is held while photo approval saves');
   await page.evaluate(()=>{fixture.delay=false;fixture.resolve();});await page.waitForFunction(()=>fixture.rows.find(r=>r.id==='new').status==='approved');await page.waitForFunction(()=>!document.querySelector('.ap-head select').disabled);
