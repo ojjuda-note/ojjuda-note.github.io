@@ -83,6 +83,13 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'ufwB9Uja_wM', title: 'Pretty Please', kind: '뮤직비디오', source: 'SMTOWN · 2025' },
     { id: 'kxUA2wwYiME', title: 'The Chase', kind: '뮤직비디오', source: 'SMTOWN · 2025.02.24' }
   ],
+  stayc: [
+    { id: 'HgewvBTOJwU', title: '2 L0VE', kind: '뮤직비디오', source: 'STAYC Official · 2026.06.16' },
+    { id: 'GwLfMAQEY9s', title: '2 L0VE', kind: '안무 영상', source: 'STAYC Official · 2026.06.16' },
+    { id: 'udOf9JGMA7U', title: 'MWUAH', kind: '뮤직비디오', source: 'STAYC Japan Official · 2026.02.10' },
+    { id: 'W8ml4ryPwic', title: 'I WANT IT', kind: '뮤직비디오', source: 'STAYC Official · 2025.07.21' },
+    { id: 'z-xfGoabprU', title: 'BEBE', kind: '뮤직비디오', source: 'STAYC Official · 2025.03.18' }
+  ],
   blackpink: [
     { id: '2GJfWMYCWY0', title: 'GO', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2026.02.27' },
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },

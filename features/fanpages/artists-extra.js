@@ -373,7 +373,25 @@
       debut: '2020.11.12', debutWork: 'Star To A Young Culture', songs: ['SO BAD', 'LIKE THIS'],
       concept: '선명한 개성과 상큼한 멜로디를 담는 여섯 멤버.',
       official: 'https://www.highup-ent.com/', youtube: 'https://www.youtube.com/@STAYC',
-      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+      photo: 'STAYC Metamorphic Showcase 240701.jpg', photoLabel: 'Metamorphic 쇼케이스', photoYear: '2024', credit: 'K-POPIT 케이팝잇 · 원저작 티비텐 TV10', license: 'CC BY 3.0',
+      music: [
+        { title: '2:LOVE', date: '2026.06.16', type: '싱글 6집 · 타이틀 2 L0VE', songs: ['2 L0VE', 'WHERE YOU AT?', 'SORRY', 'BEAT MY LOVE'], href: 'https://www.highup-ent.com/stayc/2love/' },
+        { title: 'STAY ALIVE', date: '2026.02.11', type: '일본 정규 1집 · 대표 수록곡', songs: ['MWUAH', 'Satellite', 'I WANT IT -Japanese Ver.-', 'Stay WITH me -Japanese Ver.-'], href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
+        { title: 'I WANT IT', date: '2025.07.23', type: '스페셜 싱글 · 타이틀 I WANT IT', songs: ['I WANT IT', 'BOY', '반칙 (Honestly)'], href: 'https://open.spotify.com/album/252AHBq3W65lTnnELHIi4y' },
+        { title: 'Star To A Young Culture', date: '2020.11.12', type: '데뷔 싱글 · 타이틀 SO BAD', songs: ['SO BAD', 'LIKE THIS'], href: 'https://www.highup-ent.com/stayc/star-to-a-young-culture/' }
+      ],
+      news: [
+        { date: '2026.06.16', tag: '음악', title: '싱글 6집 2:LOVE 발매 · 타이틀 2 L0VE', href: 'https://www.highup-ent.com/stayc/2love/' },
+        { date: '2026.02.11', tag: '앨범', title: '일본 정규 1집 STAY ALIVE 발매', href: 'https://www.universal-music.co.jp/stayc/news/2025-11-11/' },
+        { date: '공식', tag: '로그인', title: 'STAYC Weverse 공식 공지', href: 'https://weverse.io/stayc/notice' }
+      ],
+      merch: [
+        { title: 'STAYC 공식 상품', sub: 'Weverse Shop · 앨범·굿즈 목록', href: 'https://shop.weverse.io/ko/shop/KRW/artists/34' },
+        { title: 'STAY ALIVE 일본 정규 1집 CD', sub: 'UNIVERSAL MUSIC STORE · 통상반 · 재고·특전은 판매처 확인', href: 'https://store-annex.universal-music.co.jp/product/upch29482/' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2025.07.21', title: '태국관광청(TAT) × Kimpton Maa-Lai Bangkok', sub: 'I WANT IT 공식 뮤직비디오 협찬 · 광고 모델 계약과 별개', href: 'https://www.youtube.com/watch?v=W8ml4ryPwic' }
+      ],
       accent: '#e4897b', light: '#ffe7df', dark: '#865366', bg: '#fff8f3', shape: '✾'
     },
     {
