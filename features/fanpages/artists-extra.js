@@ -211,6 +211,36 @@
       concept: '각자의 개성과 목소리로 완성하는 자유로운 무대.',
       official: 'https://www.s2ent.co.kr/', youtube: 'https://www.youtube.com/@KISSOFLIFE_S2',
       photo: 'KISS OF LIFE at Music Bank (4K) 20240705 02.png', photoLabel: '뮤직뱅크 출근길', photoYear: '2024', credit: '티비텐 TV10', license: 'CC BY 3.0',
+
+      morePhotos: [
+        commonsPhoto('KISS OF LIFE at Music Bank (4K) 20240705 01.png', '뮤직뱅크 출근길 · 단체', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0'),
+        commonsPhoto('KISS OF LIFE at Music Bank (4K) 20240712 02.png', '뮤직뱅크 출근길 · 7월 12일', '2024', 'K-POPIT 케이팝잇', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니앨범', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' },
+        { title: 'SWEAT', date: '2026.08.04', type: '싱글 3집', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
+        { title: 'Who is she', date: '2026.04.06', type: '싱글', songs: ['Who is she', 'Don\'t mind me'], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
+        { title: '224', date: '2025.06.09', type: '미니앨범', songs: ['Lips Hips Kiss', 'Tell Me', 'Slide', 'Think Twice', 'Painting', 'Heart of Gold', 'k bye'], href: 'https://music.apple.com/us/album/224/1816140537' },
+        { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니앨범', songs: ['쉿 (Shhh)', '안녕, 네버랜드'], href: 'https://music.apple.com/us/artist/kiss-of-life/1694672936' }
+      ],
+      appearances: [],
+      schedules: [
+        { title: '일본 음반사 공식 행사·방송 일정', sub: '일본 컬럼비아의 날짜별 공식 일정', href: 'https://columbia.jp/artist-info/kissoflife/calendar/' },
+        { title: '한국 소속사 공식 소식', sub: 'S2엔터테인먼트에서 확인', href: 'https://www.s2ent.co.kr/' }
+      ],
+      news: [
+        { date: '2026.10.12', tag: '무대', title: 'THE FIRST TAKE에서 SWEAT 일본어 버전 라이브 공개', href: 'https://columbia.jp/artist-info/kissoflife/news/' },
+        { date: '2026.09.16', tag: '음악', title: '일본 2번째 미니앨범 SWEAT -JAPANESE EP- 발매', href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' },
+        { date: '2026.08.04', tag: '음악', title: '세 번째 싱글 SWEAT 발매', href: 'https://music.apple.com/us/album/sweat-single/6792701507' }
+      ],
+      merch: [
+        { title: 'SWEAT -JAPANESE EP- 공식 CD', sub: 'TYPE-A·TYPE-B·통상반 · 9.16 발매 · 재고는 공식 판매처 확인', href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' },
+        { title: 'DEJA VU 도쿄 팬미팅 공식 MD', sub: '일본 공식 팬클럽 8.4 사후 판매 안내 · 현 재고·기간 미확인', href: 'https://kissoflife.town/post/2917' }
+      ],
+      campaigns: [
+        { kind: '콜라보', date: '2026.08.07', title: 'MLB × KISS OF LIFE SWEAT 한정 에디션', sub: '브랜드 모델 협업 · 볼캡·의류 7종 공개', href: 'https://www.peoplegate.co.kr/2026/08/news-mlb-kiss-of-life-sweat-collaboration-edition.html' },
+        { kind: '콜라보', date: '2026.08.04', title: 'SAISON CARD Digital × KISS OF LIFE', sub: '일본 공식 팬 참여 이벤트 응모 캠페인 안내 · 현재 모집 여부 미확인', href: 'https://kissoflife.town/post/2916' }
+      ],
       accent: '#b74472', light: '#ffe4ed', dark: '#68314e', bg: '#fff4f7', shape: '✿'
     },
     {
