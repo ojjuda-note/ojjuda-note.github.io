@@ -37,7 +37,7 @@
 <meta name="apple-mobile-web-app-title" content="오쭈다 아지트">
 <!-- 서버 연결 정보 (같은 폴더의 config.js). 없으면 체험 모드로 실행돼요 -->
 <script src="config.js?v=20261111-shared-member-auth1" defer></script>
-<script src="/admin/world-admin-loader.js?v=20261110-member-history1" defer></script>
+<script src="/admin/world-admin-loader.js?v=20261111-asset-library1" defer></script>
 <link rel="stylesheet" href="/features/friends/friend-messages.css?v=20261106-source-folders1">
 <script src="/features/friends/friend-messages.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/games/janggi/janggi-levels.css?v=20261110-janggi-entry2">
@@ -52,8 +52,8 @@
 <script src="/app/world/world-pull-refresh.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/features/home/agit-hub.css?v=20261111-agit-audit12">
 <script src="/features/home/agit-hub.js?v=20261111-agit-audit11" defer></script>
-<link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261111-agit-welcome1">
-<script src="/features/home/agit-welcome.js?v=20261111-agit-welcome2" defer></script>
+<link rel="stylesheet" href="/features/home/agit-welcome.css?v=20261111-join-benefits1">
+<script src="/features/home/agit-welcome.js?v=20261111-join-benefits1" defer></script>
 
 <link rel="stylesheet" href="/features/profile/world-profile-photo.css?v=20261106-source-folders1">
 <script src="/features/profile/world-profile-photo.js?v=20261106-source-folders1" defer></script>
@@ -202,7 +202,7 @@
 <script src="/shared/games/game-friend-invites.js?v=20261106-source-folders1" defer></script>
 <link rel="stylesheet" href="/app/world/world-design.css?v=20261106-source-folders1">
 <link rel="stylesheet" href="/app/world/world-themes.css?v=20261110-themes3">
-<link rel="stylesheet" href="/admin/shell.css?v=20261105-admin-polish1">
+<link rel="stylesheet" href="/admin/shell.css?v=20261111-asset-library1">
 <script src="/app/world/world-themes.js?v=20261110-theme-copy1"></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="오쭈다 아지트">
@@ -377,7 +377,7 @@ function Ia(result,request){if(request.owner&&worldRewardCurrent(request)&&reque
  if(!current())return false;
  D.walletReady=true;D.walletLegacy=false;return true;
 }
-var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["suspended","정지 계정"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["groups","그룹 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]]},adminAreaForTab=t=>t.startsWith("trash-")?"trash":["overview","visitors","users","suspended","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":t==="settings"?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
+var l0=async(request=worldRewardRequest())=>request.owner&&worldRewardCurrent(request)?Ia(await ja("daily_checkin"),request):{ok:false,reason:"wallet_unavailable"};var Yr=(t,e,o)=>Kt(t,e,o).slice(t.length),adminAreas=[["account","계정"],["content","콘텐츠"],["trash","휴지통"],["support","신고·문의"],["payment","ZU"],["operations","운영"],["library","자료실"]],adminTabsByArea={account:[["overview","요약"],["visitors","방문 통계"],["users","가입자"],["suspended","정지 계정"],["referrals","추천인"]],content:[["cards","카드"],["messages","쪽지 관리"],["groups","그룹 관리"],["photo-stages","포토땅따먹기"],["risk","위험 신호"],["map","위치 지도"]],trash:[["trash-all","전체"],["trash-accounts","탈퇴 계정"],["trash-cards","삭제한 카드"],["trash-messages","삭제한 쪽지"],["trash-other","기타 보관"]],support:[["reports","신고"],["feedback","문의·의견"],["note-users","카드 이용 제한"]],payment:[["settings","무료 충전"],["users","사용자별 ZU"]],operations:[["notice","공지"],["spam","도배 방지"],["words","금칙어"],["connections","운영 연결"],["errors","오류"],["activity","작업 기록"]],library:[["assets","자료 모아보기"]]},adminAreaForTab=t=>t==="assets"?"library":t.startsWith("trash-")?"trash":["overview","visitors","users","suspended","referrals"].includes(t)?"account":["reports","note-reports","feedback","note-inquiries","note-users"].includes(t)?"support":["notice","spam","connections","errors","words","activity","note-actions"].includes(t)?"operations":t==="settings"?"payment":"content",Ku={guestbook:"방명록",chat:"동네 대화",user:"사람",media_comment:"사진 댓글",diary:"다이어리",intro:"소개글"},Xu={abuse:"욕설·비방",sexual:"음란·불쾌",spam:"스팸·광고",impersonation:"사칭",other:"기타"},Ju={bug:"고장",idea:"아이디어",other:"기타"},L={thumbs:{},tab:"cards",area:"content",noteTab:"cards",reportSource:"world",rst:"open",fst:"open",q:"",cache:{},loading:null},bt=()=>{};function h0(t){bt=t}
 // Remember only navigation, never authorization or administrator data.
 var adminRetiredTabs={archive:"trash-cards",withdrawn:"trash-accounts","note-archive":"trash-cards",trash:"trash-all",events:"cards","note-events":"cards",chats:"messages",posts:"cards","house-content":"cards",review:"cards",quiz:"overview"};
 adminTabsByArea.content.push(["rewards","상품권 등록"]);
@@ -467,6 +467,7 @@ function y0(){
  if(L.area==="account"&&L.tab==="visitors")return t+'<div id="world-admin-visitors"></div>';
  if((L.area==="account"&&["users","suspended","withdrawn","referrals"].includes(L.tab))||(L.area==="payment"&&L.tab==="users"))return t+'<div id="world-admin-accounts"></div>';
  if(L.area==="content"&&L.tab==="rewards")return t+'<section class="adm-card"><h3>상품권 등록</h3><p>등록과 지급 내역은 전용 관리 화면에서 확인할 수 있어요.</p><a class="btn pri" href="/admin/rewards.html">상품권 등록 화면 열기</a></section>';
+ if(L.area==="library"&&L.tab==="assets")return t+'<div id="world-admin-asset-library"></div>';
  if(L.area==="operations"&&L.tab==="activity")return t+'<div id="world-admin-activity"></div>';
 
  if(L.area==="trash")return t+'<div id="world-admin-trash"></div>';
@@ -501,7 +502,7 @@ async function Oa(t,e,o){adminMutationPending++;t&&(t.disabled=!0);try{await e()
  if(!adminCanLeave())return;js();L.risk=null;L.log=void 0;bt()
 },"adm-members"(t){L.area="account";L.tab="users";L.accountFilter=t.filter||"all";L.accountState=null;L.accountReset=true;bt()},"adm-report"(t,e){Wt(e,()=>U.setReport(+t.id,t.st),t.st==="actioned"?"조치함으로 옮겼어요":"확인함으로 옮겼어요")},"adm-del"(t){Tt("신고된 글을 지울까요? 되돌릴 수 없어요.","지우기",()=>Wt(null,async()=>{let e=await U.deleteContent(t.kind,t.tid,t.uid||null);M(e?`${e}개를 지웠어요`:"지울 글이 없어요 (이미 지워졌을 수 있어요)")}))},"adm-ban"(t){const days=Number(t.days);if(![-1,0,7,30].includes(days))return;const name=t.name||"이 회원";const title=days===-1?`${name}님을 영구정지할까요? 로그인과 서비스 이용이 제한되고, 관리자만 해제할 수 있어요.`:days===0?`${name}님의 정지를 해제할까요?`:`${name}님을 ${days}일 정지할까요? 로그인과 서비스 이용이 제한돼요.`;Tt(title,days===-1?"영구정지":days===0?"해제":"정지",()=>Wt(null,()=>U.ban(t.uid,days),days===-1?"영구정지했어요":days===0?"정지를 풀었어요":`${days}일 정지했어요`))},"adm-fb"(t,e){Wt(e,()=>U.setFeedback(+t.id,t.st),t.st==="done"?"확인함으로 옮겼어요":"다시 열었어요")},"adm-limit"(t,e){let o=Math.max(0,Math.min(100,parseInt(z("#adm-limit").value,10)||0));Wt(e,async()=>{await U.setConfig("beta_charge_daily_limit",o),wt.beta_charge_daily_limit=o},`하루 ${o}번으로 바꿨어요`)}};document.addEventListener("change",t=>{if(t.target&&t.target.id==="adm-free"){let e=t.target.checked;Wt(null,async()=>{await U.setConfig("beta_free_charge",e),wt.beta_free_charge=e},e?"무료 충전을 켰어요":"무료 충전을 껐어요")}});document.addEventListener("submit",t=>{t.target.id==="adm-user-form"&&(t.preventDefault(),L.q=z("#adm-q").value.trim(),bt())});var F0="ojjuda-samsung-dark-tip",Is=()=>/SamsungBrowser/i.test(navigator.userAgent),fh=()=>!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);function Os(){return`<b>색이 이상하게 보이나요?</b> 삼성 인터넷의 다크 모드가 오쭈다 아지트의 색을 바꾸고 있어요.
   아래 메뉴 <b>≡</b> → <b>설정</b> → <b>실험실</b>(Labs) → <b>웹사이트 다크 테마 사용</b>을 켜주세요.
-  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.59.0-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
+  메뉴 이름은 버전마다 조금 다를 수 있어요. 안 보이면 메뉴의 <b>다크 모드</b>를 꺼도 돼요.`}function k0(t){if(!Is()||!t&&!fh())return;try{if(!t&&localStorage.getItem(F0))return}catch{}if(document.getElementById("browser-tip"))return;let e=document.createElement("div");e.id="browser-tip",e.setAttribute("role","note"),e.innerHTML=`<p>${Os()}</p><button type="button" class="btn sm pri" id="browser-tip-ok">알겠어요</button>`,document.body.appendChild(e),document.getElementById("browser-tip-ok").addEventListener("click",()=>{try{localStorage.setItem(F0,"1")}catch{}e.remove()})}var Go="0.60.0-beta";var ce={ready:!1,blocked:new Set,list:[]};function Ps(t){if(t.error)throw t.error;return t.data}async function Ji(){let t=await S.from("blocks").select("blocked,created_at").order("created_at",{ascending:!1});if(t.error){console.error(t.error),ce.ready=!1;return}ce.ready=!0,ce.blocked=new Set(t.data.map(a=>a.blocked));let e=[...ce.blocked],o=e.length?Ps(await S.from("profiles").select("id,nickname").in("id",e)):[],r=new Map(o.map(a=>[a.id,a.nickname]));ce.list=e.map(a=>({id:a,nick:r.get(a)||"알 수 없는 사람"}))}async function Ns(t){let e=await S.from("blocks").insert({blocker:D.user.id,blocked:t});if(e.error&&e.error.code!=="23505")throw e.error;ce.blocked.add(t);let o=P.rel.get(t);o&&await S.from("friendships").delete().eq("id",o.id),await Promise.all([ke(),Ji()])}async function v0(t){Ps(await S.from("blocks").delete().eq("blocker",D.user.id).eq("blocked",t)),ce.blocked.delete(t),await Ji()}async function E0({kind:t,uid:e,id:o,content:r,reason:a,detail:i}){Ps(await S.from("reports").insert({reporter_id:D.user.id,target_user:e||null,kind:t,target_id:o||null,content:String(r||"").slice(0,2e3),reason:a,detail:i||null}))}var Le=t=>!!t&&ce.blocked.has(t);var Hs=30,tn=9,Ze=null,en={},Wo=null,Vo=0,jt={},A0=null,worldPresenceRetry=null,worldLobbyJoining=null;async function M0(){
  const owner=D.online&&D.user?.id;
  if(!owner)return false;
  try{
@@ -2335,7 +2336,7 @@ function ensureWorldAdminAssets(){
  if(!loader||loader.ready||worldAdminLoading)return;
  worldAdminLoading=loader.load().then(()=>{if(g.tab==="admin"&&D.isAdmin)H();}).catch(()=>{
   if(g.tab!=="admin"||!D.isAdmin)return;
-  const host=document.querySelector('#world-admin-review,#world-note-admin,#world-admin-visitors,#world-admin-accounts,#world-admin-activity,#world-admin-messages,#world-admin-house-content,#world-admin-photo-stages,#world-admin-groups,#world-connections,#world-operations');
+  const host=document.querySelector('#world-admin-review,#world-note-admin,#world-admin-visitors,#world-admin-accounts,#world-admin-activity,#world-admin-messages,#world-admin-house-content,#world-admin-photo-stages,#world-admin-groups,#world-admin-asset-library,#world-connections,#world-operations');
   if(host){host.textContent="관리 화면을 불러오지 못했어요. ";const retry=document.createElement('button');retry.type='button';retry.className='btn sm';retry.textContent='다시 시도';retry.onclick=()=>ensureWorldAdminAssets();host.append(retry);}
  }).finally(()=>{worldAdminLoading=null;});
 }
@@ -2388,7 +2389,7 @@ function adminCoinAction(record){
 }
 function mountAdminModule(){
  const eligible=g.tab==="admin"&&D.isAdmin&&D.user?.id;
- const name=eligible&&(L.area==="account"&&["overview","visitors"].includes(L.tab)?"visitors":((L.area==="account"&&["users","suspended","withdrawn","referrals"].includes(L.tab))||(L.area==="payment"&&L.tab==="users"))?"accounts":L.area==="operations"&&L.tab==="activity"?"activity":L.area==="content"&&L.tab==="photo-stages"?"photo-stages":L.area==="content"&&L.tab==="messages"?"messages":L.area==="content"&&L.tab==="groups"?"groups":L.area==="trash"?"trash":null);
+ const name=eligible&&(L.area==="account"&&["overview","visitors"].includes(L.tab)?"visitors":((L.area==="account"&&["users","suspended","withdrawn","referrals"].includes(L.tab))||(L.area==="payment"&&L.tab==="users"))?"accounts":L.area==="operations"&&L.tab==="activity"?"activity":L.area==="content"&&L.tab==="photo-stages"?"photo-stages":L.area==="content"&&L.tab==="messages"?"messages":L.area==="content"&&L.tab==="groups"?"groups":L.area==="library"&&L.tab==="assets"?"asset-library":L.area==="trash"?"trash":null);
  const host=name&&z("#world-admin-"+name),key=name&&D.user.id+":"+L.area+":"+L.tab;
  if(host&&host===adminModuleHost)return;
  const previous=key===adminModuleKey&&!L.accountReset?adminModuleController?.getState?.():null;
@@ -2405,6 +2406,7 @@ function mountAdminModule(){
 
   if(name==="photo-stages")adminModuleController=window.OjjudaPhotoStageAdmin?.mount({...opts,initialState:previous});
    if(name==="groups")adminModuleController=window.OjjudaAdminGroups?.mount({...opts,initialState:previous});
+  if(name==="asset-library")adminModuleController=window.OjjudaAdminAssetLibrary?.mount({...opts,initialState:previous});
 
   L.accountReset=false;
   if(!adminModuleController){adminModuleHost=null;host.textContent=worldAdminLoading?"관리 화면을 불러오는 중이에요.":"관리 화면을 불러오지 못했어요. 페이지를 새로고침해 주세요."}

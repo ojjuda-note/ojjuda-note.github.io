@@ -192,6 +192,18 @@ test('hidden existing notification and support dialogs do not block a greeting',
   }
 });
 
+test('administrator previews include all actual variants and correct guest rules', () => {
+  const list = hello.previewCatalog();
+  assert.ok(list.length > 35, 'all greetings and holiday messages are visible');
+  assert.equal(new Set(list.map(item => item.id)).size, list.length);
+  assert.equal(list.find(item => item.id === 'join-benefits').condition, '비회원이 새로 접속할 때마다');
+  assert.match(list.find(item => item.id === 'frequent-1').condition, /어제 3번 이상/);
+  assert.match(list.find(item => item.id === 'birthday-1').title, /생일/);
+  assert.ok(list.some(item => item.id === 'holiday-seollal'));
+  assert.ok(list.some(item => item.id === 'rank_overtaken-2'));
+  assert.equal(hello.preview('nonexistent'), false);
+});
+
 test('world entry wires both guest and member greeting and cache-busted CSS/JS', () => {
   const html = fs.readFileSync(path.join(__dirname, '../world.html'), 'utf8');
   for (const fragment of [
@@ -202,9 +214,9 @@ test('world entry wires both guest and member greeting and cache-busted CSS/JS',
     '/features/home/agit-welcome.js?v=',
     '/features/home/agit-welcome.css?v='
   ]) assert.ok(html.includes(fragment), fragment);
-  assert.match(html, /var Go="0\.58\.8-beta"/);
+  assert.match(html, /var Go="0\.60\.0-beta"/);
   assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8')).version,
-    '0.58.8-beta');
+    '0.60.0-beta');
   assert.match(fs.readFileSync(path.join(__dirname, '../shared/games/world-game-rankings.js'), 'utf8'),
     /ojjuda:leaders-loaded/);
 });

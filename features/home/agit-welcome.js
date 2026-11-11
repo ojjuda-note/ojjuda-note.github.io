@@ -238,6 +238,51 @@
     liberation: ['뜻깊은 광복절이에요 🇰🇷', '자유의 소중함을 기억하며 평온한 하루 보내세요.'],
     hangeul: ['한글날에 다정한 인사 하나 💬', '우리말로 전하는 따뜻한 한마디가 힘이 되길 바라요.']
   };
+  // The administrator library reads the very same copy that visitors receive.
+  const previewMeta = {
+    first: ['첫 방문', '오쭈다에 처음 들어온 날', '방문'],
+    return: ['재방문', '서로 다른 날짜로 두 번째 방문', '방문'],
+    five: ['5일 연속 방문', '5일 연속 방문을 처음 달성할 때', '방문'],
+    seven: ['7일 연속 방문', '7일 연속 방문을 처음 달성할 때', '방문'],
+    thirty: ['30일 연속 방문', '30일 연속 방문을 처음 달성할 때', '방문'],
+    week: ['일주일 기념', '첫 방문 후 7~10일 사이', '방문'],
+    month: ['한 달 기념', '첫 방문 후 30~35일 사이', '방문'],
+    away: ['오랜만의 방문', '14일 이상 쉬었다 다시 방문', '위로'],
+    farAway: ['정말 오랜만', '30일 이상 쉬었다 다시 방문', '위로'],
+    birthday: ['생일 축하', '회원이 등록한 생일 당일', '축하'],
+    new_record: ['신기록 축하', '확인된 게임 기록이 갱신된 뒤 방문', '축하'],
+    rank_overtaken: ['1등 순위가 바뀔 때', '보유했던 월간 1등을 다른 회원이 넘어선 뒤', '위로'],
+    frequent: ['하루 여러 번 방문', '어제 3번 이상 방문하고 오늘 다시 방문', '방문'],
+    morning: ['아침 인사', '오전 5시~11시 사이에 선택될 수 있어요', '시간'],
+    lunch: ['점심 인사', '오전 11시~오후 4시 사이에 선택될 수 있어요', '시간'],
+    evening: ['저녁 인사', '오후 4시~11시 사이에 선택될 수 있어요', '시간'],
+    dawn: ['새벽 인사', '오후 11시~오전 5시 사이에 선택될 수 있어요', '시간'],
+    weekend: ['주말 인사', '토요일·일요일에 선택될 수 있어요', '시간'],
+    monday: ['월요일 인사', '월요일에 선택될 수 있어요', '시간'],
+    friday: ['금요일 인사', '금요일에 선택될 수 있어요', '시간'],
+    comfort: ['안부와 위로', '평소 방문 때 무작위로 선택될 수 있어요', '위로'],
+    holiday: ['특별한 날', '등록된 기념일에 선택돼요', '명절']
+  };
+  const holidayNames = {
+    seollal: '설날', chuseok: '추석', newyear: '새해', christmas: '크리스마스',
+    pepero: '빼빼로데이', children: '어린이날', liberation: '광복절', hangeul: '한글날'
+  };
+  function previewCatalog() {
+    const rows = Object.entries(greetings).flatMap(([type, variants]) => {
+      const [name, condition, group] = previewMeta[type];
+      return variants.map(([title, body], index) => ({
+        id: type + '-' + (index + 1), type, name, condition, group, title, body, variant: index + 1
+      }));
+    });
+    for (const [holiday, [title, body]] of Object.entries(holidayText)) {
+      rows.push({ id: 'holiday-' + holiday, type: 'holiday', name: holidayNames[holiday],
+        condition: holidayNames[holiday] + ' 당일 (설날·추석은 연휴 포함)', group: '명절', title, body, variant: 1 });
+    }
+    rows.unshift({ id: 'join-benefits', type: 'join', name: '비회원 가입 혜택',
+      condition: '비회원이 새로 접속할 때마다', group: '가입', title: '여기, 같이 놀래요? 💗',
+      body: '추천인·월간 1등 상품권, 익명카드, 방문 도장 등 회원 혜택을 소개해요.', variant: 1 });
+    return rows;
+  }
   function greetingFor(type, context) {
     const variants = greetings[type] || greetings.comfort;
     const copy = choose(variants, context.today + ':' + context.seed + ':' + type);
@@ -313,7 +358,7 @@
     else openDialog?.remove();
     openDialog = null;
   }
-  function draw(greeting, session) {
+  function draw(greeting, session, previewOnly = false) {
     if (openDialog || typeof document.createElement('dialog').showModal !== 'function') return false;
     const dialog = document.createElement('dialog');
     dialog.className = 'agit-welcome-dialog';
@@ -333,10 +378,11 @@
     dialog.querySelector('#agit-welcome-copy').textContent = greeting.body;
     const next = dialog.querySelector('.agit-welcome-next');
     const destination = greeting.type === 'rank_overtaken' || greeting.type === 'new_record' ? 'arcade' : 'park';
-    next.textContent = destination === 'arcade' ? '오락실 가기 ↗' : '공원 산책하기 ↗';
+    next.textContent = previewOnly ? '미리보기 닫기' : destination === 'arcade' ? '오락실 가기 ↗' : '공원 산책하기 ↗';
     dialog.querySelector('.agit-welcome-close').addEventListener('click', close);
     dialog.querySelector('.agit-welcome-okay').addEventListener('click', close);
-    next.addEventListener('click', () => { close(); if (isCurrent(session)) session.navigate?.(destination); });
+    next.addEventListener('click', () => { close(); if (!previewOnly && isCurrent(session)) session.navigate?.(destination); });
+    if (previewOnly) dialog.querySelector('.agit-welcome-note').textContent = '관리자 미리보기 · 방문 횟수에는 영향을 주지 않아요.';
     dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
     dialog.addEventListener('close', () => { dialog.remove(); if (openDialog === dialog) openDialog = null; });
     document.body.append(dialog);
@@ -344,6 +390,48 @@
     openDialog = dialog;
     dialog.querySelector('.agit-welcome-okay').focus({ preventScroll: true });
     return true;
+  }
+  function drawJoin(session, previewOnly = false) {
+    if (openDialog || typeof document.createElement('dialog').showModal !== 'function') return false;
+    const dialog = document.createElement('dialog');
+    dialog.className = 'agit-welcome-dialog agit-join-dialog';
+    dialog.setAttribute('aria-labelledby', 'agit-welcome-title');
+    dialog.setAttribute('aria-describedby', 'agit-welcome-copy');
+    dialog.innerHTML = '<div class="agit-welcome-card">' +
+      '<button type="button" class="agit-welcome-close" aria-label="가입 안내 닫기">×</button>' +
+      '<div class="agit-welcome-orbit" aria-hidden="true"><span>✦</span><span>✿</span><span>✧</span></div>' +
+      '<div class="agit-welcome-heart" aria-hidden="true">💗</div>' +
+      '<span class="agit-welcome-eyebrow">OJJUDA AGIT · 우리 같이 놀아요</span>' +
+      '<h2 id="agit-welcome-title">여기, 같이 놀래요? 💗</h2>' +
+      '<p id="agit-welcome-copy">회원이 되면 이런 즐거움이 있어요.</p>' +
+      '<ul class="agit-join-benefits">' +
+      '<li><span aria-hidden="true">🎁</span><span>초대한 친구 10명이 가입 후 14일 중 7일 방문하면 <b>5천원 상품권</b></span></li>' +
+      '<li><span aria-hidden="true">🏆</span><span>게임별 월간 1등에게도 <b>5천원 상품권</b></span></li>' +
+      '<li><span aria-hidden="true">💬</span><span>공원에서 <b>익명카드</b>로 속마음 나누기</span></li>' +
+      '<li><span aria-hidden="true">🌷</span><span>매일 도장 찍고 내 게임 기록 남기기</span></li>' +
+      '</ul><div class="agit-welcome-actions">' +
+      '<button type="button" class="agit-welcome-okay">무료로 가입하기</button>' +
+      '<button type="button" class="agit-welcome-next">' + (previewOnly ? '미리보기 닫기' : '일단 구경할게요') + '</button></div>' +
+      '<small class="agit-welcome-note">' + (previewOnly ? '관리자 미리보기 · 실제 가입이나 방문 기록에는 영향을 주지 않아요.' : '상품권은 참여 조건 확인 후 지급돼요.') + '</small></div>';
+    dialog.querySelector('.agit-welcome-close').addEventListener('click', close);
+    dialog.querySelector('.agit-welcome-next').addEventListener('click', close);
+    dialog.querySelector('.agit-welcome-okay').addEventListener('click', () => {
+      close();
+      if (!previewOnly && isCurrent(session)) root.location.assign('/?auth=signup&next=world');
+    });
+    dialog.addEventListener('click', event => { if (event.target === dialog) close(); });
+    dialog.addEventListener('close', () => { dialog.remove(); if (openDialog === dialog) openDialog = null; });
+    document.body.append(dialog);
+    try { dialog.showModal(); } catch { dialog.remove(); return false; }
+    openDialog = dialog;
+    dialog.querySelector('.agit-welcome-okay').focus({ preventScroll: true });
+    return true;
+  }
+  function preview(id) {
+    const row = previewCatalog().find(item => item.id === id);
+    if (!row) return false;
+    close();
+    return row.type === 'join' ? drawJoin(null, true) : draw(row, null, true);
   }
   function claimAndShow(session, greeting, today) {
     const work = () => {
@@ -407,6 +495,15 @@
       await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
+  async function greetGuest(session) {
+    for (let attempts = 0; attempts < 180 && isCurrent(session); attempts++) {
+      if (!blocked()) {
+        await new Promise(resolve => setTimeout(resolve, 450));
+        if (!blocked() && isCurrent(session)) { drawJoin(session); return; }
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
   function enter(options = {}) {
     const owner = options.member && options.owner ? String(options.owner) : 'guest';
     if (active && active.owner === owner) return;
@@ -418,6 +515,8 @@
       nickname: options.nickname || ''
     };
     active = session;
+    // Guests see benefits on each new page entry; member greetings stay once/day.
+    if (!session.member) { void greetGuest(session); return; }
     const local = readLocal(owner);
     session.state = mergeStates(session.settings?.agitWelcome, local);
     const today = koreaDay();
@@ -459,6 +558,6 @@
   root.addEventListener?.('ojjuda:leaders-loaded', onLeadersLoaded);
   root.OjjudaAgitWelcome = { enter, revoke, close, isOpen: () => !!openDialog, koreaDay, koreaHour,
     cleanState, mergeStates, visit, chooseGreeting: selectGreeting, observeLeaders, observePersonalRecord,
-    addPending, monthForRanking, isBlocked: blocked };
+    addPending, monthForRanking, isBlocked: blocked, previewCatalog, preview };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.OjjudaAgitWelcome;
 })(typeof window !== 'undefined' ? window : globalThis);
