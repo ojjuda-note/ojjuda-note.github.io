@@ -351,6 +351,7 @@
         { title: 'BPCOLLECTION 공식 MD', sub: 'Weverse Shop · 2026.03.10 판매 시작 · 재고는 판매처 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/32/notices/12496' }
       ],
       news: [
+        { date: '공식', tag: '로그인', title: 'BLACKPINK Weverse 공식 공지', href: 'https://weverse.io/blackpink/notice' },
         { date: '2026.08.08', tag: '공식 행사', title: '데뷔 10주년 공식 리스닝 파티 진행', href: 'https://weverse.io/blackpink/notice/38188' },
         { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE 발매 · 타이틀 GO', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
         { date: '2026.02.20', tag: '기록', title: '유튜브 공식 아티스트 채널 최초 1억 구독자 달성', href: 'https://blog.youtube/creator-and-artist-stories/blackpink-100-million-youtube-subscribers/' }
