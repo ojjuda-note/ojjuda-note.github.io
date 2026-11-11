@@ -220,6 +220,36 @@
       concept: '틀에 얽매이지 않는 감각과 자유로운 에너지.',
       official: 'https://www.starship-ent.com/musician/kiiikiii', youtube: 'https://www.youtube.com/@KiiiKiii_starship',
       photo: 'KiiiKiii in August 2026.png', photoLabel: '2026년 단체', photoYear: '2026', credit: 'K-POPIT 케이팝잇', license: 'CC BY 4.0',
+      music: [
+        { title: 'WhyKiiiKiii', date: '2026.08.10', type: '미니 3집 · 타이틀 Pop Off Pop Off', songs: ['Ever2Late!', 'Hey Hi', 'Pop Off Pop Off', 'SWEET SOUR', 'Candy Pink Magic Hole Flip Phone (나 어떡해)', 'Blue Hour'], href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
+        { title: 'Delulu Pack', date: '2026.01.26', type: '미니 2집 · 타이틀 404 (New Era)', songs: ['Delulu', '404 (New Era)', 'UNDERDOGS', '멍냥 (MUNGNYANG)', 'Dizzy', 'To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/delulu-pack-ep/1866860579' },
+        { title: 'To Me From Me (Prod. TABLO)', date: '2025.11.04', type: '디지털 싱글', songs: ['To Me From Me (Prod. TABLO)'], href: 'https://music.apple.com/us/album/to-me-from-me-single/1848046045' },
+        { title: 'DANCING ALONE', date: '2025.08.06', type: '디지털 싱글', songs: ['DANCING ALONE', '딸기게임 (Strawberry Cheesegame)'], href: 'https://music.apple.com/us/album/dancing-alone-single/1830522219' },
+        { title: 'UNCUT GEM', date: '2025.03.24', type: '데뷔 미니 1집 · 타이틀 I DO ME', songs: ['DEBUT SONG', 'GROUNDWORK', 'I DO ME', 'THERE THEY GO', 'BTG', '한 개뿐인 (ONE OFF)'], href: 'https://music.apple.com/us/album/uncut-gem-ep/1800872866' }
+      ],
+      appearances: [
+        { date: '2026-11-15', title: 'MMA2026 · Music Day', sub: '서울 고척스카이돔 · 11월 15일 · 카카오엔터테인먼트 발표', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026-11-21', title: '2026 MAMA AWARDS · CHAPTER 2', sub: '일본 오사카 교세라돔 · CJ ENM 공식 출연 발표', href: 'https://www.cj.net/jp/press-release/view/1132' }
+      ],
+      schedules: [
+        { title: '공식 활동·공지', sub: 'KiiiKiii 공식 사이트', href: 'https://kiiikiii.kr/' },
+        { title: 'MMA2026 안내', sub: '11.15 Music Day · 주최사 보도자료', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { title: '2026 MAMA 출연 공지', sub: '11.21 CHAPTER 2 · 주최사', href: 'https://www.cj.net/jp/press-release/view/1132' }
+      ],
+      news: [
+        { date: '2026.10.15', tag: '공연', title: '2026 MAMA AWARDS 11.21 출연 확정', href: 'https://www.cj.net/jp/press-release/view/1132' },
+        { date: '2026.10.14', tag: '공연', title: 'MMA2026 Music Day 11.15 출연 확정', href: 'https://newsroom.kakaoent.com/news/mma2026-welcomes-more-k-pop-heavyweights/' },
+        { date: '2026.08.10', tag: '앨범', title: '미니 3집 WhyKiiiKiii · Pop Off Pop Off 발매', href: 'https://www.starship-ent.com/musician/kiiikiii' }
+      ],
+      merch: [
+        { title: 'WhyKiiiKiii · AMENITIES ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/amenities-ver-kiiikiii-ep-whykiiikiii/2061/category/58/display/1/' },
+        { title: 'Delulu Pack · Headphone ver.', sub: '스타쉽스퀘어 공식 앨범 · 재고는 판매처에서 확인', href: 'https://starship-square.com/product/headphone-ver-kiiikiii-the-2nd-ep-delulu-pack/1874/' },
+        { title: 'WhyKiiiKiii · SNAPSHOT 한정반', sub: '스타쉽스퀘어 · 예약판매 8.03~8.12 종료', href: 'https://starship-square.com/product/snapshot-ver-kiiikiii-ep-whykiiikiii-%ED%95%9C%EC%A0%95%EB%B0%98/2074/category/58/display/1/' }
+      ],
+      campaigns: [
+        { kind: '홍보대사', date: '2026.01.21', title: '서울시 2026 서울색·서울빛 홍보대사', sub: '모닝옐로우 · 서울시 공식 위촉', href: 'https://mediahub.seoul.go.kr/archives/2016856' },
+        { kind: '콜라보', date: '2026.02.14', title: 'New Era × KiiiKiii', sub: '59FIFTY 헤드웨어 브랜드 협업', href: 'https://www.bntnews.co.kr/article/view/bnt202602130181' }
+      ],
       accent: '#4c95c2', light: '#daf5ff', dark: '#315e7b', bg: '#f0fbff', shape: '✺'
     },
     {

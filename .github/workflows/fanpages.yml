@@ -40,5 +40,9 @@ jobs:
           node-version: '22'
       - name: Install locked test dependencies
         run: npm --prefix tests ci --ignore-scripts
+      - name: Validate fanpage profiles, group IDs and official videos
+        run: |
+          node features/fanpages/check-profiles.mjs
+          node features/fanpages/check-videos.mjs
       - name: Check all fanpage controls and in-page navigation
         run: npm --prefix tests run test:fanpages
