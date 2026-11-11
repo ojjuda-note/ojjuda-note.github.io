@@ -66,6 +66,7 @@
         field.select();
         try { copied = document.execCommand('copy'); } catch { /* Clipboard unavailable. */ }
         field.remove();
+        button.focus();
       }
       feedback(copied ? '링크 복사됨' : '주소창에서 복사해 주세요');
     });
@@ -108,6 +109,7 @@
     let swipedAt = 0;
     let timer = null;
     let sequence = 0;
+    let pendingSlide = null;
 
     function updateControls() {
       const active = (position - 1 + total) % total;
@@ -137,6 +139,11 @@
       }
       moving = false;
       updateControls();
+      if (pendingSlide !== null) {
+        const next = pendingSlide;
+        pendingSlide = null;
+        selectSlide(next);
+      }
     }
     function move(to) {
       if (moving || to === position) return;
@@ -162,11 +169,18 @@
     track.addEventListener('transitionend', (event) => {
       if (event.target === track && event.propertyName === 'transform') finish();
     });
-    dots.forEach((dot, index) => dot.addEventListener('click', () => {
+    function selectSlide(index) {
+      if (moving) {
+        pendingSlide = index;
+        return;
+      }
       const target = index + 1;
       if (position === total && target === 1) move(total + 1);
       else if (position === 1 && target === total) move(0);
       else move(target);
+    }
+    dots.forEach((dot, index) => dot.addEventListener('click', () => {
+      selectSlide(index);
       restartTimer();
     }));
     stage.addEventListener('mouseenter', () => { paused = true; });
@@ -486,7 +500,7 @@
           <span class="stage-ghost-number">${String(index + 1).padStart(2, '0')}</span>
         </div>
         <div class="detail-hero-copy"><span class="detail-overline">OJJUDA FAN SPACE / ${String(index + 1).padStart(2, '0')}</span><div class="detail-hero-main"><div class="detail-heart">${artist.shape}</div><h1>${artist.name}</h1><p>${artist.korean} <span>·</span> ${artist.fan}</p></div><div class="detail-hero-actions"><a href="#photos" class="detail-primary">사진 보기 ↗</a><button class="detail-save ${saved ? 'is-saved' : ''}" type="button" id="detail-save" aria-pressed="${saved}">${saved ? '♥ 관심 등록됨' : '♡ 관심 등록'}</button><button class="fan-share detail-share" type="button" id="detail-share" aria-label="${artist.korean} 팬페이지 공유"><span aria-hidden="true">↗</span><span class="share-label" aria-live="polite">공유</span></button></div><span class="agency-label">${artist.agency} · FAN MADE</span></div>
-        <div class="detail-hero-visual">${imageHtml(artist.image, `${artist.korean} 그룹 사진`, 'detail-hero-image')}<span class="hero-vertical">${artist.status}</span><span class="stage-visual-tag" aria-hidden="true">${artist.fan}</span><span class="hero-image-credit">${artist.imageCredit} ↗</span></div>
+        <div class="detail-hero-visual">${imageHtml(artist.image, `${artist.korean} 그룹 사진`, 'detail-hero-image')}<span class="hero-vertical">${artist.status}</span><span class="stage-visual-tag" aria-hidden="true">${artist.fan}</span>${openLink(artist.imageLink, artist.imageCredit, 'hero-image-credit')}</div>
       </section>
       <div class="stage-ticker" aria-hidden="true"><div class="stage-ticker-track">${Array.from({ length: 8 }, () => `<span>${artist.name}<b>${artist.shape}</b>${artist.fan}<b>✦</b></span>`).join('')}</div></div>
       <div class="member-strip"><span>MEMBERS</span><div>${artist.members.map((name) => `<span>${name}</span>`).join('')}</div></div>

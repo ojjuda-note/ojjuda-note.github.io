@@ -25,13 +25,19 @@ test('artist layout shows visible shortcuts and readable media on phones', () =>
   assert.match(videos, /@media\(max-width:430px\)\{\.video-grid\{grid-template-columns:minmax\(0,1fr\)/);
 });
 
-test('both fan page entry points request the updated CSS', () => {
+test('both fan page entry points request versioned CSS consistently', () => {
   const index = read('index.html'), artist = read('artist.html');
+  const version = (html, name) => {
+    const escapedName = name.replaceAll('.', '\\.');
+    const match = html.match(new RegExp(`${escapedName}\\?v=([A-Za-z0-9_-]+)`));
+    assert.ok(match, `${name} needs a cache version`);
+    assert.ok(fs.existsSync(path.join(root, name)), `${name} must exist`);
+    return match[1];
+  };
   for (const name of ['fan.css', 'fan-stage.css']) {
-    assert.ok(index.includes(`${name}?v=20261110-responsive1`));
-    assert.ok(artist.includes(`${name}?v=20261110-responsive1`));
+    assert.equal(version(index, name), version(artist, name), `${name} must match across entry points`);
   }
   for (const name of ['fan-gallery.css', 'fan-videos.css', 'fan-profile.css']) {
-    assert.ok(artist.includes(`${name}?v=20261110-responsive1`));
+    version(artist, name);
   }
 });
