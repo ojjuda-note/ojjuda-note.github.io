@@ -219,7 +219,9 @@
       music: [
         { title: 'SWEAT -JAPANESE EP-', date: '2026.09.16', type: '일본 미니앨범', songs: ['SWEAT (Japanese Ver.)', 'Was It You', 'BREAK IT', 'Who is she (Japanese Ver.)', 'Igloo (Remix)', 'BREAK IT (English Ver.)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42739.html' },
         { title: 'SWEAT', date: '2026.08.04', type: '싱글 3집', songs: ['SWEAT', 'WHAT!'], href: 'https://music.apple.com/us/album/sweat-single/6792701507' },
+        { title: 'BREAK IT', date: '2026.07.04', type: '일본 디지털 싱글', songs: ['BREAK IT'], href: 'https://columbia.jp/artist-info/kissoflife/discography/COKM-46661.html' },
         { title: 'Who is she', date: '2026.04.06', type: '싱글', songs: ['Who is she', 'Don\'t mind me'], href: 'https://music.apple.com/us/album/who-is-she-single/1886385269' },
+        { title: 'TOKYO MISSION START', date: '2025.11.05', type: '일본 첫 미니앨범', songs: ['Lucky', 'Sticky (Japanese Ver.)', 'Midas Touch (Japanese Ver.)', 'Shhh (Japanese Ver.)', 'Nobody Knows (Remix)', 'R.E.M (Remix)'], href: 'https://columbia.jp/artist-info/kissoflife/discography/COCP-42600.html' },
         { title: '224', date: '2025.06.09', type: '미니앨범', songs: ['Lips Hips Kiss', 'Tell Me', 'Slide', 'Think Twice', 'Painting', 'Heart of Gold', 'k bye'], href: 'https://music.apple.com/us/album/224/1816140537' },
         { title: 'KISS OF LIFE', date: '2023.07.05', type: '데뷔 미니앨범', songs: ['쉿 (Shhh)', '안녕, 네버랜드'], href: 'https://music.apple.com/us/artist/kiss-of-life/1694672936' }
       ],
