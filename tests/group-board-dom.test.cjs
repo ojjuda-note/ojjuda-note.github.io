@@ -144,6 +144,26 @@ test('received and shared invitations require an explicit acceptance',async()=>{
 });
 
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
+test('failed invitation declines preserve age restrictions and can be retried',async()=>{
+  for(const eligible of [false,true]){
+    let pending=deferred();
+    const f=fixture({empty:true,respond:a=>{
+      if(a==='home')return {data:{rooms:[],directory:[],invitations:[{id:entry,room_id:room,group_name:'성인 모임',sender_name:'친구',age_policy:'adults',age_eligible:eligible}]}};
+      if(a==='decline')return pending.promise;
+      if(a==='received')return {data:[]};
+    }});try{
+      await tick();const d=f.w.document,accept=d.querySelector('[data-accept-invite]'),decline=d.querySelector('[data-decline-invite]');
+      assert.equal(accept.disabled,!eligible);decline.click();await tick();
+      assert.equal(accept.disabled,true);assert.equal(decline.disabled,true);
+      pending.resolve({error:{message:'연결 실패'}});await tick();
+      assert.equal(accept.disabled,!eligible,'a failed decline must preserve the age gate');
+      assert.equal(decline.disabled,false);assert.match(d.querySelector('#toast').textContent,/연결 실패/);
+      if(!eligible){accept.click();await tick();assert.equal(f.calls.some(([a])=>a==='accept'),false);}
+      pending=deferred();decline.click();await tick();assert.equal(f.calls.filter(([a])=>a==='decline').length,2);
+      pending.resolve({data:{ok:true}});await tick();assert.equal(d.querySelector('[data-decline-invite]'),null);
+    }finally{f.dom.window.close();}
+  }
+});
 test('home uses one request and simultaneous refreshes share their work',async()=>{
   const pending=deferred();let homeCalls=0;
   const f=fixture({respond:a=>{if(a==='home'&&++homeCalls>1)return pending.promise;}});try{
