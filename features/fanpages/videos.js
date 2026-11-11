@@ -50,6 +50,7 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'pc1t3-1smUw', title: 'NEON + Dance Break', kind: '음악방송 무대', source: 'KBS WORLD' }
   ],
   a2osoul: [
+    { id: 'JPJokqIoIJI', title: 'Dancing in the Dark', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'B5Aa4gnnt9I', title: 'SUPERSTAR', kind: '인피니트 뮤직비디오', source: 'A2O WORLD' },
     { id: 'IAURqrShEUQ', title: 'SUPERSTAR', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'D8CYC5P6Z8Y', title: 'SUPERSTAR', kind: '퍼포먼스', source: 'A2O WORLD' },

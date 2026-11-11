@@ -199,7 +199,7 @@ window.OJJUDA_FAN_PROFILES = {
     ]
   },
   a2osoul: {
-    checkedAt: '2026.11.10',
+    checkedAt: '2026.11.11',
     debut: '2026.10.13', debutWork: 'SUPERSTAR 선공개',
     agency: 'A2O Entertainment',
     concept: '15명의 NEW SYNTHWAVE.',
@@ -211,7 +211,8 @@ window.OJJUDA_FAN_PROFILES = {
     sources: [
       { label: 'Melon 공식 유통 정보', href: 'https://www.melon.com/artist/detail.htm?artistId=5217448' },
       { label: '데뷔 EP 5곡', href: 'https://www.melon.com/album/detail.htm?albumId=14644792' },
-      { label: 'A2O 공식', href: 'https://www.a2oentertainment.world/' }
+      { label: 'A2O 공식', href: 'https://www.a2oentertainment.world/' },
+      { label: '15인·더블 타이틀 공식 발표', href: 'https://prtimes.jp/main/html/rd/p/000000007.000192898.html' }
     ]
   }
 };
