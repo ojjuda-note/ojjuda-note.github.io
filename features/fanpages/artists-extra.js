@@ -334,8 +334,30 @@
       members: ['지수', '제니', '로제', '리사'],
       debut: '2016.08.08', debutWork: 'SQUARE ONE', songs: ['휘파람 (WHISTLE)', '붐바야 (BOOMBAYAH)'],
       concept: '블랙과 핑크, 서로 다른 매력이 공존하는 무대.',
-      official: 'https://www.ygfamily.com/', youtube: 'https://www.youtube.com/@BLACKPINK',
+      official: 'https://ygfamily.com/ko/artists/blackpink/profile', youtube: 'https://www.youtube.com/@BLACKPINK',
       photo: '20240809 Blackpink Pink Carpet 09.png', photoLabel: '핑크 카펫', photoYear: '2024', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
+      morePhotos: [
+        commonsPhoto('Blackpink performs Jump at SoFi Stadium 01.png', '2025 DEADLINE 투어 · 로스앤젤레스 JUMP 무대', '2025', 'theCwE', 'CC BY 3.0'),
+        commonsPhoto('Blackpink performs Jump at SoFi Stadium 11.png', '2025 DEADLINE 투어 · SoFi 스타디움 무대', '2025', 'theCwE', 'CC BY 3.0')
+      ],
+      music: [
+        { title: 'DEADLINE', date: '2026.02.27', type: '미니 3집 · 타이틀 GO', songs: ['JUMP', 'GO', 'Me and my', 'Champion', 'Fxxxboy'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
+        { title: 'JUMP', date: '2025.07.11', type: '디지털 싱글 · DEADLINE 선공개', songs: ['JUMP'], href: 'https://ygfamily.com/en/artists/blackpink/discography/1632' },
+        { title: 'SQUARE ONE', date: '2016.08.08', type: '데뷔 싱글 · WHISTLE / BOOMBAYAH', songs: ['WHISTLE', 'BOOMBAYAH'], href: 'https://ygfamily.com/en/artists/blackpink/discography/228' }
+      ],
+      merch: [
+        { title: 'DEADLINE BLACK Ver.', sub: 'YG SELECT · 공식 미니 3집 음반 · 가격·재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-black-ver/12808/' },
+        { title: 'DEADLINE PINK Ver.', sub: 'YG SELECT · 공식 미니 3집 음반 · 가격·재고는 판매처 확인', href: 'https://ygselect.com/product/blackpink-3rd-mini-album-deadline-pink-ver/12809/' },
+        { title: 'BPCOLLECTION 공식 MD', sub: 'Weverse Shop · 2026.03.10 판매 시작 · 재고는 판매처 확인', href: 'https://shop.weverse.io/ko/shop/USD/artists/32/notices/12496' }
+      ],
+      news: [
+        { date: '2026.08.08', tag: '공식 행사', title: '데뷔 10주년 공식 리스닝 파티 진행', href: 'https://weverse.io/blackpink/notice/38188' },
+        { date: '2026.02.27', tag: '컴백', title: '미니 3집 DEADLINE 발매 · 타이틀 GO', href: 'https://ygfamily.com/en/artists/blackpink/discography/1651' },
+        { date: '2026.02.20', tag: '기록', title: '유튜브 공식 아티스트 채널 최초 1억 구독자 달성', href: 'https://blog.youtube/creator-and-artist-stories/blackpink-100-million-youtube-subscribers/' }
+      ],
+      campaigns: [
+        { kind: '콜라보', title: '국립중앙박물관 × BLACKPINK × Spotify · DEADLINE', date: '2026.02.26~03.08', sub: '음반 청음 공간·박물관 문화유산 오디오 해설 · 종료된 행사', href: 'https://en.yna.co.kr/view/AEN20260213004700315' }
+      ],
       accent: '#ff82b4', light: '#482938', dark: '#fff2f7', bg: '#180f18', night: true, shape: '♥'
     },
     {
