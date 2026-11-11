@@ -88,5 +88,11 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'CgCVZdcKcqY', title: '뛰어 (JUMP)', kind: '뮤직비디오', source: 'BLACKPINK / YG Entertainment · 2025.07.11' },
     { id: 'k--lCrP69hg', title: 'BLACKPINK 10TH ANNIVERSARY', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.07' },
     { id: 'uw4OYow_v7Y', title: 'BLACKPINK 10th Anniversary MEET & GREET', kind: '기념 영상', source: 'BLACKPINK Official · 2026.08.17' }
+  ],
+  idle: [
+    { id: 'FFjDEkZg-54', title: 'Gimme Dat Love', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.07.06' },
+    { id: 'bUMLC9lCgHo', title: 'Crow', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.06.14 공개' },
+    { id: 'w6FzChNkVrY', title: 'Crow', kind: '퍼포먼스', source: 'i-dle Official / CUBE · 2026.06.17' },
+    { id: 'DYgE3SGPEqk', title: 'Mono (Feat. skaiwater)', kind: '뮤직비디오', source: 'i-dle Official / CUBE · 2026.01.27' }
   ]
 });
