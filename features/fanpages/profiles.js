@@ -186,7 +186,7 @@ window.OJJUDA_FAN_PROFILES = {
     agency: 'A2O Entertainment',
     concept: '아홉 멤버의 네온빛 Zalpha Pop.',
     awards: [
-      { year: '2026.10', title: '인기가요 1위', detail: 'NEON', href: 'https://a2o.monstr.dev/en/groups/a2o-lite' }
+      { year: '2026.10', title: '인기가요 1위', detail: 'NEON', href: 'https://m.programs.sbs.co.kr/programTemplate/amp/clip/mobile/22000638968' }
     ],
     records: [
       { year: '2026.10', title: '멜론 TOP100 1위', detail: 'NEON · 데뷔 다음 날', href: 'https://en.yna.co.kr/view/AEN20261015001400315' }
