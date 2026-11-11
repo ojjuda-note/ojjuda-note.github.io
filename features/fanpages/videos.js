@@ -55,5 +55,12 @@ window.OJJUDA_FAN_VIDEOS = Object.freeze({
     { id: 'IAURqrShEUQ', title: 'SUPERSTAR', kind: '뮤직비디오', source: 'A2O WORLD' },
     { id: 'D8CYC5P6Z8Y', title: 'SUPERSTAR', kind: '퍼포먼스', source: 'A2O WORLD' },
     { id: 'GfXhRyw4L8A', title: 'SUPERSTAR EP', kind: '하이라이트 메들리', source: 'A2O WORLD' }
+  ],
+  nmixx: [
+    { id: 'roHWN9fL2SM', title: '긴 소원 (Birthday Wish)', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
+    { id: 'jPjK8fPCwE4', title: '긴 소원 (Birthday Wish)', kind: '퍼포먼스', source: 'NMIXX Official' },
+    { id: '6Ycn9qZK09I', title: 'Heavy Serenade', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
+    { id: '-SEKt_0pdHM', title: 'Crescendo', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' },
+    { id: 'EmeW6li6bbo', title: 'Blue Valentine', kind: '뮤직비디오', source: 'NMIXX / JYP Entertainment' }
   ]
 });

@@ -27,24 +27,25 @@
       image: image.image,
       imageCredit: image.credit + ' · ' + image.license,
       imageLink: image.href,
-      photos: [image],
+      photos: [image, ...(entry.morePhotos || [])],
       links: [
         { label: '공식 사이트', icon: '✦', url: entry.official },
         { label: 'YouTube', icon: '▷', url: entry.youtube }
       ],
-      merch: [
+      merch: entry.merch || [
         { title: '공식 앨범·굿즈 안내', sub: '아티스트 공식 채널에서 확인', href: entry.official }
       ],
-      music: [
+      music: entry.music || [
         { title: entry.debutWork, date: entry.debut, type: '데뷔 음반·싱글', songs: entry.songs, href: entry.official }
       ],
-      appearances: [],
-      schedules: [
+      appearances: entry.appearances || [],
+      schedules: entry.schedules || [
         { title: '공식 활동·일정 확인', sub: '아티스트 공식 채널', href: entry.official }
       ],
-      news: [
+      news: entry.news || [
         { date: '공식', tag: '소식', title: entry.name + ' 최신 안내', href: entry.official }
       ],
+      campaigns: entry.campaigns || [],
       official: entry.official
     };
   };
@@ -57,6 +58,40 @@
       concept: '새로운 조합으로 넓혀 가는 NMIXX의 음악 세계.',
       official: 'https://nmixx.jype.com/', youtube: 'https://www.youtube.com/@NMIXXOfficial',
       photo: 'Nmixx in Frankfurt 20260324 (1).jpg', photoLabel: '프랑크푸르트 공연', photoYear: '2026', credit: 'PFNKa', license: 'CC BY 4.0',
+      morePhotos: [
+        commonsPhoto('20260320 NMIXX Amsterdam concert 01.jpg', '암스테르담 월드투어 무대', '2026', 'Robbie Klinkenberg', 'CC BY 4.0'),
+        commonsPhoto('20260320 NMIXX Amsterdam concert 12.jpg', '암스테르담 공연 현장', '2026', 'Robbie Klinkenberg', 'CC BY 4.0')
+      ],
+      music: [
+        { title: 'Strange Muse', date: '2026.10.19', type: '미니 6집 · 타이틀 긴 소원 (Birthday Wish)', songs: ['긴 소원 (Birthday Wish)', 'Kerosene', 'RudE TaLK', '너는 달 (Sing to the Moon) (LILY, HAEWON)', "Hot 'n Unbothered (SULLYOON, BAE)", '휙 (WHIP) (JIWOO, KYUJIN)'], href: 'https://nmixx.jype.com/discography/vmgvjirm' },
+        { title: 'Heavy Serenade', date: '2026.05.11', type: '미니 5집 · 타이틀 Heavy Serenade', songs: ['Crescendo', 'Heavy Serenade', 'IDESERVEIT', 'Different Girl', 'Superior', 'LOUD'], href: 'https://nmixx.jype.com/discography/dru5zt6g' },
+        { title: 'AD MARE', date: '2022.02.22', type: '데뷔 싱글 · 타이틀 O.O', songs: ['O.O', '占 (TANK)'], href: 'https://nmixx.jype.com/discography' }
+      ],
+      appearances: [
+        { date: '2026-11-27', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 19:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
+        { date: '2026-11-28', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 17:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
+        { date: '2026-11-29', title: '첫 월드투어 ZERO FRONTIER 피날레', sub: '인천 인스파이어 아레나 · 16:00 · JYP 주최', href: 'https://nol.yanolja.com/ticket/products/26013946' },
+        { date: '2026-12-09', title: '일본 첫 베스트 앨범 N=MIXX 발매', sub: '일본 정식 발매 예정 · 공식 일본 사이트', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' },
+        { date: '2026-12-12', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 18:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' },
+        { date: '2026-12-13', title: '일본 데뷔 쇼케이스 N=MIXX', sub: '일본 아이치 · 쿠로코군 홀 · 17:00 · 워너뮤직 재팬 주최', href: 'https://nmixxjapan.com/s/222o/page/Japan_debut_showcase' }
+      ],
+      news: [
+        { date: '2026.10.19', tag: '컴백', title: '미니 6집 Strange Muse · 긴 소원 (Birthday Wish) 발매', href: 'https://nmixx.jype.com/notice/fsigcq5u' },
+        { date: '2026.09.19', tag: '수상', title: '더팩트 뮤직 어워즈 올해의 사운드 대상 수상', href: 'https://www.soompi.com/article/1871808wpp/winners-of-2026-the-fact-music-awards' },
+        { date: '발매 예정', tag: '소식', title: '일본 첫 베스트 앨범 N=MIXX, 12월 9일 발매 안내', href: 'https://nmixxjapan.com/s/222o/page/best_album_n_mixx' }
+      ],
+      merch: [
+        { title: 'Strange Muse 공식 앨범', sub: 'JYP JAPAN · 포맷·재고·특전은 판매처에서 확인', href: 'https://jypj-store.com/collections/nmixx-music' },
+        { title: 'NMIXX OFFICIAL LIGHT STICK VER.2', sub: 'JYP JAPAN · 공식 응원봉', href: 'https://jypj-store.com/collections/nmixx-official-goods' }
+      ],
+      schedules: [
+        { title: 'JYP 공식 NMIXX 일정', sub: '공식 활동 달력', href: 'https://nmixx.jype.com/schedule' },
+        { title: '인천 피날레 공식 예매', sub: 'NOL 티켓 · 변경·취소 규정 확인', href: 'https://nol.yanolja.com/ticket/products/26013946' }
+      ],
+      campaigns: [
+        { kind: '광고', date: '2026.09.01', title: 'MAKE UP FOR EVER × NMIXX', sub: '아티스트 컬러글로우 립밤 공식 캠페인', href: 'https://prtimes.jp/main/html/rd/p/000000124.000019175.html' },
+        { kind: '홍보대사', date: '2026.06.11', title: '주한영국대사관 Girls Can Dream', sub: '꿈꾸는 소녀에게 불가능은 없다 · 캠페인 홍보대사', href: 'https://www.bntnews.co.kr/article/view/bnt202606120142' }
+      ],
       accent: '#3478ba', light: '#dcefff', dark: '#23436a', bg: '#f1f8ff', shape: '✳'
     },
     {

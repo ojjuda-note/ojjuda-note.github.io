@@ -355,7 +355,7 @@
 
   function artistProfileHtml(artist, profile) {
     if (!profile) return '';
-    if (profile.basic) {
+    if (profile.basic && !profile.expanded) {
       const official = profile.sources[0];
       return `<section id="profile" class="detail-section profile-section basic-profile" aria-labelledby="profile-heading">
         <div class="detail-heading"><div><span>01 / ARTIST FILE</span><h2 id="profile-heading">소개 <em>${artist.shape}</em></h2></div><span class="profile-checked">CHECKED ${profile.checkedAt}</span></div>
