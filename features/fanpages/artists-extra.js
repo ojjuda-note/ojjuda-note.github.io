@@ -284,7 +284,7 @@
       members: ['RM', '진', '슈가', '제이홉', '지민', '뷔', '정국'],
       debut: '2013.06.13', debutWork: '2 COOL 4 SKOOL', songs: ['No More Dream', 'We Are Bulletproof Pt.2'],
       concept: '음악과 이야기를 통해 전 세계 아미와 연결되는 일곱 멤버.',
-      official: 'https://ibighit.com/bts/eng/', youtube: 'https://www.youtube.com/@BTS',
+      official: 'https://ibighit.com/ko/bts/profile/', youtube: 'https://www.youtube.com/@BTS',
       photo: 'BTS during a White House press conference May 31, 2022 (cropped).jpg', photoLabel: '백악관 기자회견', photoYear: '2022', credit: 'The White House', license: 'Public domain',
       accent: '#875dca', light: '#eadfff', dark: '#52367b', bg: '#f7f2ff', shape: '✧'
     },
@@ -311,7 +311,7 @@
       members: ['수빈', '연준', '범규', '태현', '휴닝카이'],
       debut: '2019.03.04', debutWork: '꿈의 장: STAR', songs: ['어느날 머리에서 뿔이 자랐다 (CROWN)', 'Blue Orangeade'],
       concept: '다섯 멤버가 함께 그려 나가는 성장과 판타지.',
-      official: 'https://ibighit.com/txt/eng/', youtube: 'https://www.youtube.com/@TXT_bighit',
+      official: 'https://ibighit.com/ko/txt/profile/', youtube: 'https://www.youtube.com/@TXT_bighit',
       photo: 'Tomorrow X Together at a Dior event, April 18, 2025.png', photoLabel: '디올 행사', photoYear: '2025', credit: 'K-POPIT 케이팝잇', license: 'CC BY 3.0',
       accent: '#299da9', light: '#d9fbf4', dark: '#28656e', bg: '#f3fffc', shape: '✳'
     },
@@ -338,7 +338,7 @@
       members: ['성호', '리우', '명재현', '태산', '이한', '운학'],
       debut: '2023.05.30', debutWork: 'WHO!', songs: ['돌아버리겠다 (But I Like You)', 'One and Only', 'Serenade'],
       concept: '일상의 이야기를 솔직하게 들려주는 여섯 멤버.',
-      official: 'https://kozofficial.com/artist/boynextdoor', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
+      official: 'https://kozofficial.com/artist/profile/BOYNEXTDOOR', youtube: 'https://www.youtube.com/@BOYNEXTDOOR_official',
       photo: '2026-01-16 BOYNEXTDOOR at Golden Disc Awards 05 (cropped).png', photoLabel: '골든디스크 시상식', photoYear: '2026', credit: '티비텐 TV10', license: 'CC BY 4.0',
       accent: '#478bc5', light: '#dfefff', dark: '#2d5678', bg: '#f3faff', shape: '✱'
     },

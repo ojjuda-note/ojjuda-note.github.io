@@ -22,13 +22,34 @@
     if (label) label.textContent = `${labels[section] || labels.hub} 돌아가기`;
   }
   const marker = 'ojjudaSectionBack';
+  const exitMarker = 'ojjudaSectionExit';
   try {
-    if (!history.state?.[marker]) history.pushState({ ...(history.state || {}), [marker]: true }, '', location.href);
+    if (!history.state?.[marker]) {
+      const originalState = history.state;
+      const activeState = { ...(originalState || {}), [marker]: true };
+      delete activeState[exitMarker];
+      // Mark the entry being left so multi-step Back cannot mistake it for an anchor.
+      history.replaceState({ ...(originalState || {}), [exitMarker]: true }, '', location.href);
+      try {
+        history.pushState(activeState, '', location.href);
+      } catch (error) {
+        try { history.replaceState(originalState, '', location.href); } catch { /* Best-effort rollback. */ }
+        throw error;
+      }
+    }
   } catch (error) {
     console.warn('페이지 뒤로가기를 준비하지 못했어요.', error);
   }
 
+  let previousHref = location.href;
   window.addEventListener('popstate', event => {
-    if (!event.state?.[marker]) location.replace(destination);
+    const href = location.href;
+    // Native anchors create null-state entries too. Fragment changes must keep
+    // native scrolling and Back/Forward instead of triggering the exit guard.
+    const fragmentNavigation = href !== previousHref && href.split('#')[0] === previousHref.split('#')[0];
+    previousHref = href;
+    if (event.state?.[exitMarker] || (!event.state?.[marker] && !fragmentNavigation)) location.replace(destination);
   });
+  // Some fragment changes emit only hashchange, so keep the comparison current.
+  window.addEventListener('hashchange', () => { previousHref = location.href; });
 })();
