@@ -1,0 +1,37 @@
+name: Verify group invitation age retry fix
+on:
+  push:
+    branches: [fix/group-invitation-disabled-20261111]
+    paths: ['.github/workflows/group-invitation-age-fix-build.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.ref == 'refs/heads/fix/group-invitation-disabled-20261111'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Generate exact reviewed files
+        run: python ops/generate-group-invitation-fix.py
+      - name: Install locked test dependencies
+        run: npm --prefix tests ci --ignore-scripts
+      - name: Install Chromium
+        working-directory: tests
+        run: npx playwright install --with-deps chromium
+      - name: Check group rules and browser failure recovery
+        run: |
+          node --check groups/app.js
+          npm --prefix tests run test:groups
+          node --test tests/group-invitation-age-ui.test.cjs
+          node scripts/check-source-layout.mjs
+          git diff --check
+      - name: Publish only reviewed source and tests
+        run: |
+          git rm ops/generate-group-invitation-fix.py .github/workflows/group-invitation-age-fix-build.yml
+          git add groups/app.js groups/index.html tests/group-board-dom.test.cjs tests/group-invitation-age-ui.test.cjs tests/package.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(groups): preserve age gates after failed invitation decisions'
+          git push origin HEAD:fix/group-invitation-disabled-20261111
