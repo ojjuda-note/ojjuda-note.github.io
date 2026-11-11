@@ -138,6 +138,63 @@ for(const mode of ['box','flat'])for(const outcome of ['success','failure'])test
  assert.deepEqual(f.events,[['finished']]);assert.equal(f.cards.at(-1).outcome,outcome);
  await f.context.chooseScrewStage(1);assert.equal(f.context.R.game,game);assert.equal(f.context.R.running,false,'retrying the same stage is also gated');
 });
+function screwResultFixture(t,{mode='box',preview=false,save=async()=>({ok:true})}={}){
+ const {JSDOM}=require('jsdom'),dom=new JSDOM('<div id="gov"><div id="gctrl"></div><div id="gscreen"></div></div>');
+ t.after(()=>dom.window.close());
+ const f=roundFixture({id:'screw'}),calls=[],overlay=dom.window.document.querySelector('#gov');
+ f.context.window.OjjudaAdminPreview={isEnabled:()=>preview};
+ f.context.window.OjjudaGameResults.markup=options=>{f.cards.push(options);return '<div data-result>'+options.metric+(options.extra||'')+(options.actions||'')+'</div>';};
+ f.context.ti=html=>{overlay.querySelector('#gscreen').innerHTML=html;};
+ const game={draw(){},stage:8,levels:1000,unlockedStage:9,stageCleared:true,stageFailed:false};
+ Object.assign(f.context.R,{game,ov:overlay,running:true,screwMode:mode,saveScore:score=>{calls.push(score);return save(score);}});
+ return {...f,calls,game,overlay,status:()=>overlay.querySelector('#screw-save-state'),settle:()=>new Promise(resolve=>setImmediate(resolve))};
+}
+test('screw result waits for the existing checkpoint and shows the acknowledged cumulative total',async t=>{
+ const pending=deferred(),f=screwResultFixture(t,{save:()=>pending.promise});
+ f.context.screwStageResult(40,'success');
+ assert.equal(f.status()?.getAttribute('role'),'status','score persistence has its own accessible status');
+ assert.equal(f.status().textContent,'점수 저장 중…');
+ await f.settle();assert.deepEqual(f.calls,[40],'the result reuses the session recorder for this score');
+ assert.equal(f.status().textContent,'점수 저장 중…','an unresolved request cannot claim success');
+ pending.resolve({ok:true,total:1234,best:9999});await f.settle();
+ assert.match(f.status().textContent,/^누적 1,?234점 저장 완료$/,'the cumulative total, not the daily best or current run score, is shown');
+ f.context.screwStageResult(40,'success');assert.deepEqual(f.calls,[40],'opening the same completed result twice cannot submit again');
+});
+for(const [mode,receipt]of [['flat',{ok:true,total:1234}],['box',{ok:true}],['box',{ok:true,total:1.5}]])test('screw '+mode+' result confirms a successful save without inventing a cumulative total: '+JSON.stringify(receipt),async t=>{
+ const f=screwResultFixture(t,{mode,save:async()=>receipt});f.context.screwStageResult(40,'success');await f.settle();
+ assert.equal(f.status()?.textContent,'점수 저장 완료');
+});
+for(const [name,save]of [['rejected',async()=>({ok:false,reason:'network'})],['exception',async()=>{throw Error('offline');}]])test('screw result exposes a failed save: '+name,async t=>{
+ const f=screwResultFixture(t,{save});f.context.screwStageResult(40,'success');await f.settle();
+ assert.equal(f.status()?.textContent,'점수를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+ assert.doesNotMatch(f.status().textContent,/저장 완료/);
+});
+test('screw administrator preview is explicit and does not call the score recorder',async t=>{
+ const f=screwResultFixture(t,{preview:true});f.context.screwStageResult(40,'success');await f.settle();
+ assert.equal(f.status()?.textContent,'관리자 체험 · 점수는 저장하지 않아요.');assert.deepEqual(f.calls,[]);
+});
+test('screw preview receipts never appear as a real saved score',async t=>{
+ const f=screwResultFixture(t,{save:async()=>({ok:true,preview:true,total:1234})});f.context.screwStageResult(40,'success');await f.settle();
+ assert.equal(f.status()?.textContent,'관리자 체험 · 점수는 저장하지 않아요.');
+});
+test('screw zero-point results explain that there is nothing to save',async t=>{
+ const f=screwResultFixture(t);f.context.screwStageResult(0,'success');await f.settle();
+ assert.equal(f.status()?.textContent,'아직 저장할 점수가 없어요.');assert.deepEqual(f.calls,[]);
+});
+for(const [name,change]of [
+ ['closed session',f=>{f.context.R=null;}],
+ ['replaced session',f=>{f.context.R={...f.context.R};}],
+ ['replaced game',f=>{f.context.R.game={...f.game};}],
+ ['changed account',f=>f.owner('another-member')],
+ ['advanced stage',f=>{f.game.stage++;}],
+ ['replaced result node',f=>{const replacement=f.status().cloneNode(true);replacement.textContent='다른 결과';f.status().replaceWith(replacement);}]
+])test('screw late save response cannot repaint after '+name,async t=>{
+ const pending=deferred(),f=screwResultFixture(t,{save:()=>pending.promise});f.context.screwStageResult(40,'success');await f.settle();
+ const oldStatus=f.status(),before=oldStatus.textContent;change(f);const currentStatus=f.status(),currentText=currentStatus.textContent;
+ pending.resolve({ok:true,total:1234});await f.settle();
+ assert.equal(oldStatus.textContent,before,'an obsolete result must keep its earlier state');
+ assert.equal(currentStatus.textContent,currentText,'a newer result must not receive the old save receipt');
+});
 test('screw failure recovery cannot resume play during the guest login delay',()=>{
  let allowed=false,resumed=0;
  const c=vm.createContext({window:{OjjudaGuestAccess:{canPlay:()=>allowed}},performance,worldRewardOwner:()=>null,R:{id:'screw',owner:null,game:{resume:()=>{resumed++;return true;}}},ti(){},sf(){}});

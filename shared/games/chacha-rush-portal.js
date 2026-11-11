@@ -2,7 +2,7 @@
 // Never send a member's session or credentials to the game origin.
 const GAME_ORIGIN = 'https://chacharush-arcade-2611.mj830417686850.chatgpt.site';
 const CHANNEL = 'ojjuda:chacha-rush';
-const MAX_SCORE = 9_999_999;
+const MAX_SCORE = 1_999_999_999;
 const SESSION_LIFETIME_MS = 6 * 60 * 60 * 1000;
 
 export function installChachaRushPortal({ currentOwner, submitScore, onSaved, onNotice }) {
@@ -68,8 +68,8 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     return true;
   }
 
-  function respond(session, nonce, action, extra = {}) {
-    session.target?.postMessage({ channel: CHANNEL, nonce, action, round: session.round, ...extra }, GAME_ORIGIN);
+  function respond(session, nonce, action, extra = {}, round = session.round) {
+    session.target?.postMessage({ channel: CHANNEL, nonce, action, round, ...extra }, GAME_ORIGIN);
   }
 
   document.addEventListener('click', event => {
@@ -104,30 +104,37 @@ export function installChachaRushPortal({ currentOwner, submitScore, onSaved, on
     }
     if (data.action !== 'finish' || data.round !== session.round || session.finished) return;
     session.finished = true;
+    const round = session.round, owner = session.owner, nonce = data.nonce;
+    const current = () => sessions.get(nonce) === session && session.round === round &&
+      session.owner === owner && currentOwner() === owner;
+    const resultFeedback = extra => {
+      if (current()) respond(session, nonce, 'result', extra, round);
+    };
     const seconds = (Date.now() - session.startedAt) / 1000;
     const score = data.score;
     if (!session.startedAt || !Number.isSafeInteger(score) || score <= 0 || score > MAX_SCORE ||
         seconds < 0.4 || score > 1_000_000 + seconds * 100_000) {
-      respond(session, data.nonce, 'result', { ok: false, message: '유효한 기록이 아니어서 등록되지 않았어요.' });
+      respond(session, nonce, 'result', { ok: false, message: '유효한 기록이 아니어서 등록되지 않았어요.' }, round);
       return;
     }
-    if (!session.owner || session.owner !== currentOwner()) {
-      respond(session, data.nonce, 'result', { ok: false, message: '오쭈다에 로그인한 상태에서 시작해야 순위에 등록돼요.' });
+    if (!owner || owner !== currentOwner()) {
+      respond(session, nonce, 'result', { ok: false, message: '오쭈다에 로그인한 상태에서 시작해야 순위에 등록돼요.' }, round);
       return;
     }
     try {
       const result = await submitScore(score);
+      if (!current()) return;
       if (!result?.ok) {
         const message = result?.reason === 'too_fast'
           ? '잠깐 기다린 뒤 다시 도전해 주세요.'
           : '점수 저장에 실패했어요. 다시 도전해 주세요.';
-        respond(session, data.nonce, 'result', { ok: false, message });
+        resultFeedback({ ok: false, message });
         return;
       }
-      onSaved?.(session.owner);
-      respond(session, data.nonce, 'result', { ok: true, message: '🏆 오쭈다 월간 게임순위에 등록됐어요!' });
+      onSaved?.(owner);
+      resultFeedback({ ok: true, message: '🏆 오쭈다 월간 게임순위에 등록됐어요!' });
     } catch {
-      respond(session, data.nonce, 'result', { ok: false, message: '연결 오류로 저장하지 못했어요. 다시 도전해 주세요.' });
+      resultFeedback({ ok: false, message: '연결 오류로 저장하지 못했어요. 다시 도전해 주세요.' });
     }
   });
 

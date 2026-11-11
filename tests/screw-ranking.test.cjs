@@ -69,6 +69,111 @@ function fixture(){
  const recovered=network.context.createScrewScoreRecorder('screw_flat')(90);await tick();network.timers.shift().resolve();
  assert.equal((await recovered).ok,true,'transient errors do not drop a checkpoint');
 
+ // Storage restrictions must not prevent a live server save or reset the run ID.
+ for(const method of ['setItem','getItem']){
+  const restricted=fixture();restricted.context.localStorage[method]=()=>{throw Error('storage blocked');};
+  const firstBox=restricted.context.createScrewScoreRecorder('screw_box');
+  assert.equal((await firstBox(12)).ok,true,method+' failure still permits a server save');
+  assert.equal((await firstBox(20)).ok,true);
+  const nextBox=restricted.context.createScrewScoreRecorder('screw_box');
+  assert.equal((await nextBox(7)).ok,true,'a later game in this page keeps earned points');
+  assert.deepEqual(restricted.calls.map(c=>c.score),[12,20,27]);
+  const runId=restricted.calls[0].runId;
+  assert.ok(restricted.calls.every(c=>c.runId===runId),'all checkpoints retain one idempotency key');
+  restricted.setOwner('member-b');
+  assert.equal((await firstBox(40)).reason,'stale','the prior account cannot submit after switching');
+  assert.equal((await restricted.context.createScrewScoreRecorder('screw_box')(9)).ok,true);
+  assert.equal(restricted.calls[3].score,9,'the next account starts its own total');
+  assert.notEqual(restricted.calls[3].runId,runId,'different accounts never share a score run');
+  restricted.setOwner('member-a');
+  assert.equal((await restricted.context.createScrewScoreRecorder('screw_box')(3)).ok,true);
+  assert.equal(restricted.calls[4].score,30,'returning to an account restores its in-memory total');
+  assert.equal(restricted.calls[4].runId,runId);
+  assert.deepEqual(restricted.messages,[],'successful server saves do not show a failure warning');
+ }
+
+ const oldSnapshot=fixture(),snapshotSave=oldSnapshot.context.createScrewScoreRecorder('screw_box');
+ await snapshotSave(20);
+ const snapshot=[...oldSnapshot.storage.entries()];
+ const restoreWrite=oldSnapshot.context.localStorage.setItem;
+ oldSnapshot.context.localStorage.setItem=()=>{throw Error('quota');};
+ await snapshotSave(35);
+ assert.deepEqual([...oldSnapshot.storage.entries()],snapshot,'disk retains only the older acknowledged snapshot');
+ const afterQuota=oldSnapshot.context.createScrewScoreRecorder('screw_box');
+ await afterQuota(5);
+ oldSnapshot.context.localStorage.setItem=restoreWrite;
+ await afterQuota(10);
+ assert.deepEqual(oldSnapshot.calls.map(c=>c.score),[20,35,40,45],
+  'an old disk snapshot cannot lower newer in-memory points when starting a game or restoring writes');
+ assert.ok(oldSnapshot.calls.every(c=>c.runId===oldSnapshot.calls[0].runId));
+
+ // Reads can recover before writes, exposing a different run from an older page.
+ const recoveredRead=fixture(),boxKey='ojjuda-screw-box-cumulative-v1:member-a';
+ const diskRun='11111111-1111-4111-8111-111111111111',otherRun='22222222-2222-4222-8222-222222222222';
+ recoveredRead.storage.set(boxKey,JSON.stringify({runId:diskRun,total:80,acked:50}));
+ recoveredRead.storage.set('ojjuda-screw-box-cumulative-v1:member-b',JSON.stringify({runId:otherRun,total:40,acked:40}));
+ const restoreRead=recoveredRead.context.localStorage.getItem,restoreRecoveredWrite=recoveredRead.context.localStorage.setItem;
+ recoveredRead.context.localStorage.getItem=recoveredRead.context.localStorage.setItem=()=>{throw Error('storage blocked');};
+ const activeBox=recoveredRead.context.createScrewScoreRecorder('screw_box');
+ assert.equal((await activeBox(12)).ok,true);
+ const activeRunId=recoveredRead.calls[0].runId;
+ assert.notEqual(activeRunId,diskRun,'inaccessible storage creates a fresh in-memory run');
+ recoveredRead.context.localStorage.getItem=restoreRead;
+ assert.equal((await activeBox(20)).ok,true,'recovering an older disk run cannot stale the active recorder');
+ assert.equal((await recoveredRead.context.createScrewScoreRecorder('screw_box')(7)).ok,true);
+ assert.deepEqual(recoveredRead.calls.map(c=>c.score),[12,20,27],
+  'the active run stays cumulative without adding the old disk run or its pending points');
+ assert.ok(recoveredRead.calls.every(c=>c.runId===activeRunId));
+ assert.equal(JSON.parse(recoveredRead.storage.get(boxKey)).runId,diskRun,'writes remain blocked throughout read recovery');
+ recoveredRead.setOwner('member-b');
+ assert.equal((await activeBox(40)).reason,'stale');
+ assert.equal((await recoveredRead.context.createScrewScoreRecorder('screw_box')(9)).ok,true);
+ assert.equal(recoveredRead.calls[3].score,49,'another account can restore its own durable total');
+ assert.equal(recoveredRead.calls[3].runId,otherRun);
+ recoveredRead.setOwner('member-a');
+ const returnToActive=recoveredRead.context.createScrewScoreRecorder('screw_box');
+ assert.equal((await returnToActive(3)).ok,true);
+ assert.equal(recoveredRead.calls[4].score,30);
+ assert.equal(recoveredRead.calls[4].runId,activeRunId,'returning restores the active account run despite the older disk run');
+ recoveredRead.context.localStorage.setItem=restoreRecoveredWrite;
+ assert.equal((await returnToActive(4)).ok,true);
+ assert.deepEqual(JSON.parse(recoveredRead.storage.get(boxKey)),{runId:activeRunId,total:31,acked:31},
+  'restored writes persist the active run without replaying a different run');
+
+ const beforeFirstSave=fixture();
+ beforeFirstSave.storage.set(boxKey,JSON.stringify({runId:diskRun,total:80,acked:50}));
+ const restoreEarlyRead=beforeFirstSave.context.localStorage.getItem;
+ beforeFirstSave.context.localStorage.getItem=beforeFirstSave.context.localStorage.setItem=()=>{throw Error('storage blocked');};
+ const freshBox=beforeFirstSave.context.createScrewScoreRecorder('screw_box');
+ const freshRunId=beforeFirstSave.context.screwBoxScoreState('member-a').runId;
+ assert.notEqual(freshRunId,diskRun);
+ beforeFirstSave.context.localStorage.getItem=restoreEarlyRead;
+ assert.equal((await freshBox(12)).ok,true,'read recovery before the first point cannot stale a new recorder');
+ assert.equal(beforeFirstSave.calls.length,1);
+ assert.equal(beforeFirstSave.calls[0].runId,freshRunId);
+ assert.equal(beforeFirstSave.calls[0].score,12,'an empty active run does not adopt a different disk run');
+
+ const newerSnapshot=fixture();
+ await newerSnapshot.context.createScrewScoreRecorder('screw_box')(20);
+ const sameRunId=newerSnapshot.calls[0].runId;
+ newerSnapshot.storage.set(boxKey,JSON.stringify({runId:sameRunId,total:35,acked:30}));
+ assert.equal((await newerSnapshot.context.createScrewScoreRecorder('screw_box')(5)).ok,true);
+ assert.deepEqual(newerSnapshot.calls.map(c=>c.score),[20,40],'a newer snapshot of the same run still merges');
+ assert.equal(newerSnapshot.calls[1].runId,sameRunId);
+
+ const unsavedBox=fixture();unsavedBox.context.localStorage.setItem=()=>{throw Error('quota');};
+ unsavedBox.setSubmit(async()=>({ok:false,reason:'unavailable'}));
+ assert.equal((await unsavedBox.context.createScrewScoreRecorder('screw_box')(25)).ok,false);
+ assert.equal(unsavedBox.calls.length,1,'storage failure still attempts the server before reporting failure');
+ assert.match(unsavedBox.messages[0],/저장하지 못/);
+ assert.doesNotMatch(unsavedBox.messages[0],/보관/,'failed local and server writes cannot claim durable storage');
+ unsavedBox.setSubmit(async(_,score)=>({ok:true,best:score}));
+ unsavedBox.context.S={};unsavedBox.context.resumeScrewScores();await tick();
+ assert.deepEqual(unsavedBox.calls.map(c=>c.score),[25,25],'recovery retries the in-memory points after the server returns');
+ assert.equal(unsavedBox.calls[0].runId,unsavedBox.calls[1].runId,'recovery keeps the original idempotency key');
+ await unsavedBox.context.createScrewScoreRecorder('screw_box')(0);
+ assert.equal(unsavedBox.calls.length,2,'the acknowledged recovery is not sent again');
+
  // Exercise actual World start/score/exit/mode/result handlers with only transport replaced.
  const lifecycle=fixture();const firstRun=lifecycle.session();await lifecycle.context._2();
  firstRun.api.setScore(27);lifecycle.context.El();await tick();
@@ -106,5 +211,5 @@ function fixture(){
  const blocked=fixture();blocked.context.localStorage.setItem=()=>{throw Error('quota');};blocked.setSubmit(async()=>({ok:false,reason:'unavailable'}));
  await blocked.context.createScrewScoreRecorder('screw_flat')(77);
  assert.match(blocked.messages[0],/저장하지 못/,'unavailable local storage cannot claim the score was retained');
- console.log('PASS: both screw stage checkpoints, immediate saves, durable recovery, serialized retries, account isolation, mode switch, exit and final deduplication');
+ console.log('PASS: both screw stage checkpoints, immediate saves, durable recovery, restricted storage recovery, serialized retries, account isolation, mode switch, exit and final deduplication');
 })().catch(error=>{console.error(error);process.exitCode=1;});

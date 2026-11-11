@@ -225,7 +225,9 @@ export function createAmmoClient({ onChange, recordsOnly = false } = {}) {
     let id;
     try { id = requestId || createRequestId(); } catch { return fail('unavailable'); }
     const operation = { owner: identity.owner, action, requestId: id, payload, localRunId, status: 'waiting', recovered: false, settled: null, promise: null };
-    if (!persist(operation)) return fail('storage_unavailable');
+    // Score-only rounds can keep their idempotent pending request in memory.
+    // Purchases and the legacy ammunition flow still require durable storage.
+    if (!persist(operation) && !(recordsOnly && (action === 'round-start' || action === 'round-complete'))) return fail('storage_unavailable');
     pending = operation;return dispatch(operation);
   }
   async function lookup(operation, automatic = false) {
